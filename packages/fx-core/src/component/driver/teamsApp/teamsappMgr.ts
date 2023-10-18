@@ -57,9 +57,7 @@ class TeamsAppMgr {
     return ok(undefined);
   }
 
-  async readManifestFromAppPackage(
-    appPackagePath: string
-  ): Promise<Result<TeamsAppManifest, FxError>> {
+  async readManifestFromZip(appPackagePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     const archivedFile = await fs.readFile(appPackagePath);
     const zipEntries = new AdmZip(archivedFile).getEntries();
     const manifestFile = zipEntries.find((x) => x.entryName === Constants.MANIFEST_FILE);
@@ -69,10 +67,7 @@ class TeamsAppMgr {
       return ok(manifest);
     }
     return err(
-      new FileNotFoundError(
-        "readManifestFromAppPackage",
-        appPackagePath + ":" + Constants.MANIFEST_FILE
-      )
+      new FileNotFoundError("readManifestFromZip", appPackagePath + ":" + Constants.MANIFEST_FILE)
     );
   }
 
@@ -189,19 +184,16 @@ class TeamsAppMgr {
   async validateTeamsApp(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
     const context: DriverContext = createDriverContext(inputs);
     if (!inputs["manifest-file"] && !inputs["package-file"]) {
-      // neither manifest-file nore package-file provided, use default manifest file
+      // neither manifest-file nor package-file provided, use default manifest file
       const defaultManifestPath = manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
       if (!(await fs.pathExists(defaultManifestPath))) {
-        return err(new MissingRequiredInputError("package-file/manifest-file", "updateTeamsApp"));
+        return err(new MissingRequiredInputError("package-file/manifest-file", "validateTeamsApp"));
       }
       inputs["manifest-file"] = defaultManifestPath;
-      const loadEnvRes = await this.checkAndTryToLoadEnv(inputs);
-      if (loadEnvRes.isErr()) return err(loadEnvRes.error);
     }
     if (inputs["manifest-file"]) {
-      if (inputs["env-file"]) {
-        await envUtil.loadEnvFile(inputs["env-file"]);
-      }
+      const loadEnvRes = await this.checkAndTryToLoadEnv(inputs);
+      if (loadEnvRes.isErr()) return err(loadEnvRes.error);
       const teamsAppManifestFilePath = inputs["manifest-file"];
       const args: ValidateManifestArgs = {
         manifestPath: teamsAppManifestFilePath,
@@ -271,7 +263,7 @@ class TeamsAppMgr {
     if (accountRes.isOk()) {
       loginHint = accountRes.value.unique_name as string;
     }
-    const manifestRes = await this.readManifestFromAppPackage(appPackageFile);
+    const manifestRes = await this.readManifestFromZip(appPackageFile);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }

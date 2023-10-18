@@ -176,7 +176,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         return true;
       }
       for (const tag of filterTags) {
-        if (sample.tags.indexOf(tag) >= 0) {
+        if (sample.tags.findIndex((value) => value.includes(tag)) >= 0) {
           return true;
         }
       }

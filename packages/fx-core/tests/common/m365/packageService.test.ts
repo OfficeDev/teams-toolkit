@@ -71,6 +71,67 @@ describe("Package Service", () => {
     chai.assert.isDefined(instance);
   });
 
+  it("sideLoadXmlManifest happy path with 200 return code", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    axiosPostResponses["/dev/v1/users/packages/addins"] = {
+      status: 200,
+      data: {
+        titleId: "test-title-id",
+        appId: "test-app-id",
+      },
+    };
+
+    const packageService = new PackageService("https://test-endpoint");
+    let actualError: Error | undefined;
+    try {
+      const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
+      chai.assert.equal(result[0], "test-title-id");
+      chai.assert.equal(result[1], "test-app-id");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+  });
+
+  it("sideLoadXmlManifest happy path with 202 return code", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    axiosPostResponses["/dev/v1/users/packages/addins"] = {
+      status: 202,
+      data: {
+        statusId: "testistatus-id",
+      },
+    };
+
+    axiosGetResponses["/dev/v1/users/packages/status/test-status-id"] = {
+      status: 200,
+      data: {
+        titleId: "test-title-id",
+        appId: "test-app-id",
+      },
+    };
+
+    const packageService = new PackageService("https://test-endpoint");
+    let actualError: Error | undefined;
+    try {
+      const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
+      chai.assert.equal(result[0], "test-title-id");
+      chai.assert.equal(result[1], "test-app-id");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+  });
+
   it("sideLoading happy path", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {

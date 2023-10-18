@@ -77,6 +77,7 @@ import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
 import { createDriverContext } from "../../src/component/utils";
+import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
 
 const tools = new MockTools();
 
@@ -1697,5 +1698,26 @@ describe("copilotPlugin", async () => {
     } catch (e: any) {
       assert.equal(e.name, FileNotFoundError.name);
     }
+  });
+
+  it("teamsapp management APIs", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      platform: Platform.CLI,
+    };
+    sinon.stub(teamsappMgr, "updateTeamsApp").resolves(ok(undefined));
+    sinon
+      .stub(teamsappMgr, "packageTeamsApp")
+      .resolves(ok({ manifestPath: "", outputJsonPath: "", outputZipPath: "" }));
+    sinon.stub(teamsappMgr, "validateTeamsApp").resolves(ok(undefined));
+    sinon.stub(teamsappMgr, "publishTeamsApp").resolves(ok(undefined));
+    const res1 = await core.updateTeamsAppCLIV3(inputs as any);
+    const res2 = await core.packageTeamsAppCLIV3(inputs as any);
+    const res3 = await core.validateTeamsAppCLIV3(inputs as any);
+    const res4 = await core.publishTeamsAppCLIV3(inputs as any);
+    assert.isTrue(res1.isOk());
+    assert.isTrue(res2.isOk());
+    assert.isTrue(res3.isOk());
+    assert.isTrue(res4.isOk());
   });
 });

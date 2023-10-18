@@ -157,3 +157,12 @@ export interface CreateProjectResult {
   projectPath: string;
   warnings?: Warning[];
 }
+
+export interface TeamsAppInputs extends InputsWithProjectPath {
+  "manifest-file"?: string;
+  "package-file"?: string;
+  "output-package-file"?: string;
+  "output-manifest-file"?: string;
+  env?: string;
+  "env-file"?: string;
+}

@@ -59,6 +59,7 @@
     "test:cutils": "nyc mocha \"tests/component/utils.test.ts\"",
     "test:globalVars": "nyc mocha \"tests/core/globalVars.test.ts\"",
     "test:migration": "nyc mocha \"tests/core/middleware/migration/projectMigrationV3.test.ts\"",
+    "test:teamsappMgr": "nyc mocha \"tests/component/driver/teamsApp/teamsappMgr.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

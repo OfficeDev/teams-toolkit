@@ -198,6 +198,10 @@ function confirmCondition(inputs: Inputs, isLocal: boolean): boolean {
 }
 
 async function spfxFrameworkExist(inputs: Inputs): Promise<boolean> {
+  if (inputs.platform === Platform.CLI_HELP) {
+    return false;
+  }
+
   const yorcPath = path.join(inputs[QuestionNames.SPFxFolder], Constants.YO_RC_FILE);
   if (!(await fs.pathExists(yorcPath))) {
     return false;

@@ -134,7 +134,8 @@ export class CopilotPluginGenerator {
       );
       if (templateRes.isErr()) return err(templateRes.error);
 
-      const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      url = url.trim();
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
       });

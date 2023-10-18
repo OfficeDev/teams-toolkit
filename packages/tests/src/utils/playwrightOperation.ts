@@ -10,7 +10,7 @@ import { SampledebugContext } from "../ui-test/samples/sampledebugContext";
 import path from "path";
 import fs from "fs";
 import { dotenvUtil } from "./envUtil";
-import { startDebugging } from "./vscodeOperation";
+import { startDebugging, startDebuggingAzure } from "./vscodeOperation";
 
 export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.AdaptiveCard]: async () => {
@@ -84,6 +84,15 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   },
   [TemplateProject.GraphConnectorBot]: async () => {
     await startDebugging();
+  },
+  [TemplateProject.SpfxProductivity]: async () => {
+    await startDebugging("Teams workbench (Chrome)");
+  },
+  [TemplateProject.RetailDashboard]: async () => {
+    await startDebugging("Teams workbench (Chrome)");
+  },
+  [TemplateProject.TabSSOApimProxy]: async () => {
+    await startDebuggingAzure("Debug (Chrome)", "local", `TabSSOApimProxy`);
   },
 };
 
@@ -343,42 +352,46 @@ export async function initTeamsPage(
         return;
       }
 
-      // verify add page is closed
-      await frame?.waitForSelector(
-        `h1:has-text('Add ${options?.teamsAppName} to a team')`
-      );
-
       try {
-        const frameElementHandle = await page.waitForSelector(
-          "iframe.embedded-page-content"
+        // verify add page is closed
+        await frame?.waitForSelector(
+          `h1:has-text('Add ${options?.teamsAppName} to a team')`
         );
-        const frame = await frameElementHandle?.contentFrame();
-
         try {
-          const items = await frame?.waitForSelector("li.ui-dropdown__item");
-          await items?.click();
-        } catch (error) {
-          const searchBtn = await frame?.waitForSelector(
-            "div.ui-dropdown__toggle-indicator"
+          const frameElementHandle = await page.waitForSelector(
+            "iframe.embedded-page-content"
           );
-          await searchBtn?.click();
-          await page.waitForTimeout(Timeout.shortTimeLoading);
-          const items = await frame?.waitForSelector("li.ui-dropdown__item");
-          await items?.click();
-        }
+          const frame = await frameElementHandle?.contentFrame();
 
-        const setUpBtn = await frame?.waitForSelector(
-          'button span:has-text("Set up a tab")'
-        );
-        await setUpBtn?.click();
-        await page.waitForTimeout(Timeout.shortTimeLoading);
+          try {
+            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            await items?.click();
+          } catch (error) {
+            const searchBtn = await frame?.waitForSelector(
+              "div.ui-dropdown__toggle-indicator"
+            );
+            await searchBtn?.click();
+            await page.waitForTimeout(Timeout.shortTimeLoading);
+            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            await items?.click();
+          }
+
+          const setUpBtn = await frame?.waitForSelector(
+            'button span:has-text("Set up a tab")'
+          );
+          await setUpBtn?.click();
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+        } catch (error) {
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("error"),
+            fullPage: true,
+          });
+          throw error;
+        }
       } catch (error) {
-        await page.screenshot({
-          path: getPlaywrightScreenshotPath("error"),
-          fullPage: true,
-        });
-        throw error;
+        console.log("no need to add to a team step");
       }
+
       {
         const frameElementHandle = await page.waitForSelector(
           "iframe.embedded-iframe"
@@ -949,6 +962,11 @@ export async function validateBot(
         if (popup && !popup?.isClosed()) {
           await popup
             .click('button:has-text("Reload")', {
+              timeout: Timeout.playwrightConsentPageReload,
+            })
+            .catch(() => {});
+          await popup
+            .click('button:has-text("Continue")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
@@ -1943,6 +1961,31 @@ export async function validateCreatedCard(page: Page) {
       );
       assert.fail("Unable to reach app. Please try again.");
     }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateUnfurlCard(page: Page) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    console.log("start to validate unfurl an adaptive card");
+    const unfurlurl = "https://www.botframework.com/";
+    await frame?.press("div.ui-box input.ui-box", "Escape");
+    const msgTxtbox = await frame?.waitForSelector("div[data-tid='ckeditor']");
+    await msgTxtbox?.focus();
+    await msgTxtbox?.fill(unfurlurl);
+    await msgTxtbox?.press("Space");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await frame?.waitForSelector('p:has-text("Link Unfurling card")');
+    console.log("verify unfurl card successfully!");
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

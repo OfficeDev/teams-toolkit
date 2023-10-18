@@ -50,6 +50,9 @@ export enum TemplateProject {
   OutlookSignature = "Set signature using Outlook add-in",
   ChefBot = "Teams Chef Bot",
   GraphConnectorBot = "Graph Connector Bot",
+  SpfxProductivity = "One Productivity Hub using Graph Toolkit with SPFx",
+  RetailDashboard = "Contoso Retail Dashboard",
+  TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
 }
 
 export enum TemplateProjectFolder {
@@ -79,7 +82,7 @@ export enum TemplateProjectFolder {
   GraphConnectorBot = "graph-connector-bot",
   SpfxProductivity = "spfx-productivity-dashboard",
   RetailDashboard = "react-retail-dashboard",
-  TabSSOApimProxyTestCase = "sso-enabled-tab-via-apim-proxy",
+  TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -114,6 +117,9 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.ChefBot]: TemplateProjectFolder.ChefBot,
     [TemplateProject.GraphConnectorBot]:
       TemplateProjectFolder.GraphConnectorBot,
+    [TemplateProject.SpfxProductivity]: TemplateProjectFolder.SpfxProductivity,
+    [TemplateProject.RetailDashboard]: TemplateProjectFolder.RetailDashboard,
+    [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
   };
 
 export enum Resource {
@@ -296,7 +302,8 @@ export type OptionType =
   | "timenoti"
   | "functimernoti"
   | "addin"
-  | "importaddin";
+  | "importaddin"
+  | "linkunfurl";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

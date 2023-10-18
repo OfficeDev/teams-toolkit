@@ -34,7 +34,9 @@
             }
         },
         "cases": [
-            "sample-localdebug-todo-list-with-spfx"
+            "sample-localdebug-todo-list-with-spfx",
+            "sample-localdebug-react-retail-dashboard",
+            "sample-localdebug-spfx-productivity-dashboard"
         ]
     },
     {
@@ -60,7 +62,8 @@
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
-            "sample-localdebug-chef-bot"
+            "sample-localdebug-chef-bot",
+            "sample-localdebug-bot-sso"
         ]
     },
     {

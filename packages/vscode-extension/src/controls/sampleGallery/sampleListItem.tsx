@@ -59,12 +59,6 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
               );
             })}
         </div>
-        {sample.configuration != "Ready for debug" && (
-          <div className="setting">
-            <Setting></Setting>
-            <span className="tooltip">{sample.configuration}</span>
-          </div>
-        )}
         <div className="padding" />
         {sample.versionComparisonResult != 0 && (
           <div className="info">

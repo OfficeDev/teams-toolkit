@@ -1395,7 +1395,7 @@ async function ShowScaffoldingWarningSummary(
       path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
     );
     if (manifestRes.isOk()) {
-      if (ManifestUtil.parseCommonProperties(manifestRes.value).isCopilotPlugin) {
+      if (ManifestUtil.parseCommonProperties(manifestRes.value).isApiME) {
         const message = generateScaffoldingSummary(
           createWarnings,
           manifestRes.value,
@@ -1931,26 +1931,44 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   }
 }
 
-export async function openAdaptiveCardExt(
+const acExtId = "TeamsDevApp.vscode-adaptive-cards";
+
+export async function installAdaptiveCardExt(
   args: any[] = [TelemetryTriggerFrom.TreeView]
 ): Promise<Result<unknown, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
-  const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
-  const extension = vscode.extensions.getExtension(acExtId);
-  if (!extension) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.AdaptiveCardPreviewerInstall,
+    getTriggerFromProperty(args)
+  );
+  if (acpInstalled()) {
+    await vscode.window.showInformationMessage(
+      localize("teamstoolkit.handlers.adaptiveCardExtUsage")
+    );
+  } else {
     const selection = await vscode.window.showInformationMessage(
       localize("teamstoolkit.handlers.installAdaptiveCardExt"),
       "Install",
       "Cancel"
     );
     if (selection === "Install") {
+      ExtTelemetry.sendTelemetryEvent(
+        TelemetryEvent.AdaptiveCardPreviewerInstallConfirm,
+        getTriggerFromProperty(args)
+      );
       await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
-      await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+    } else {
+      ExtTelemetry.sendTelemetryEvent(
+        TelemetryEvent.AdaptiveCardPreviewerInstallCancel,
+        getTriggerFromProperty(args)
+      );
     }
-  } else {
-    await vscode.commands.executeCommand("workbench.view.extension.cardLists");
   }
   return Promise.resolve(ok(null));
+}
+
+export function acpInstalled(): boolean {
+  const extension = vscode.extensions.getExtension(acExtId);
+  return !!extension;
 }
 
 export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxError>> {

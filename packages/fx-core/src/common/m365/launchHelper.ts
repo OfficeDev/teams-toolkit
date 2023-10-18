@@ -27,7 +27,7 @@ export class LaunchHelper {
     teamsAppId: string,
     capabilities: string[],
     withLoginHint = true,
-    isCopilotPlugin = false
+    isApiME = false
   ): Promise<Result<string, FxError>> {
     const loginHint = withLoginHint
       ? (await this.getUpnFromToken()) ?? "login_your_m365_account" // a workaround that user has the chance to login
@@ -37,7 +37,7 @@ export class LaunchHelper {
       case HubTypes.teams: {
         let installAppPackage = true;
         if (
-          isCopilotPlugin &&
+          isApiME &&
           !capabilities.includes("staticTab") &&
           !capabilities.includes("configurableTab") &&
           !capabilities.includes("Bot")

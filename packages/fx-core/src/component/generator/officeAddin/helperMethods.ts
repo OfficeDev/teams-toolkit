@@ -6,7 +6,7 @@
  */
 import axios from "axios";
 import fs from "fs";
-import * as fse from "fs-extra";
+import fse from "fs-extra";
 import * as path from "path";
 import * as unzip from "unzipper";
 import { ManifestUtil, devPreview } from "@microsoft/teamsfx-api";
@@ -98,6 +98,9 @@ export class HelperMethods {
 
     // Open project manifest file
     const manifestTemplatePath = manifestUtils.getTeamsAppManifestPath(projectRoot);
+    if (!(await fse.pathExists(manifestTemplatePath))) {
+      return;
+    }
     const manifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
       manifestTemplatePath
     );

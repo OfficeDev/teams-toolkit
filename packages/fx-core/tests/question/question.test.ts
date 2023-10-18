@@ -89,6 +89,7 @@ describe("none scaffold questions", () => {
       assert.deepEqual(questionNames, [
         QuestionNames.SPFxFolder,
         QuestionNames.SPFxWebpartName,
+        QuestionNames.SPFxFramework,
         QuestionNames.TeamsAppManifestFilePath,
         QuestionNames.ConfirmManifest,
         QuestionNames.LocalTeamsAppManifestFilePath,

@@ -14,7 +14,7 @@ import {
   IAadObject,
   IAadObjectLocal,
 } from "./interfaces/IAADDefinition";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { GraphScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { EnvConstants } from "../commonlib/constants";
 
 const baseUrl = "https://graph.microsoft.com/v1.0";
@@ -88,7 +88,7 @@ export class AadValidator {
 
   private static async getAadApp(objectId: string) {
     const appStudioTokenRes = await this.provider.getAccessToken({
-      scopes: AppStudioScopes,
+      scopes: GraphScopes,
     });
     const appStudioToken = appStudioTokenRes.isOk()
       ? appStudioTokenRes.value

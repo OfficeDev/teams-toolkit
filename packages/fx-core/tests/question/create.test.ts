@@ -1761,6 +1761,11 @@ describe("scaffold question", () => {
         CapabilityOptions.all({ platform: Platform.CLI, nonInteractive: true })
       );
     });
+    it("vs non-interactive", () => {
+      const question = capabilityQuestion();
+      const options = question.dynamicOptions!({ platform: Platform.VS });
+      assert.deepEqual(options, CapabilityOptions.dotnetCaps());
+    });
   });
   describe("ME copilot plugin template only", () => {
     const ui = new MockUserInteraction();

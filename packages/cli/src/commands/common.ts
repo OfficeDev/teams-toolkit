@@ -39,7 +39,7 @@ export const EnvOption: CLICommandOption = {
   name: "env",
   type: "string",
   description:
-    "Specifies the environment name for the project scaffolded by Microsoft Teams Tookkit.",
+    "Specifies the environment name for the project scaffolded by Microsoft Teams Toolkit.",
 };
 
 export const EnvFileOption: CLICommandOption = {

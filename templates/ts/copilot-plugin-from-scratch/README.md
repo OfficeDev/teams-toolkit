@@ -24,22 +24,23 @@ The plugin allows Teams to interact directly with third-party data, apps, and se
 
 ## What's included in the template
 
-| Folder       | Contents                                     |
-| ------------ | -------------------------------------------- |
-| `.vscode`    | VSCode files for debugging                   |
-| `appPackage` | Templates for the Teams application manifest |
-| `env`        | Environment files                            |
-| `infra`      | Templates for provisioning Azure resources   |
-| `repair`     | The source code for the repair API           |
+| Folder       | Contents                                                                                                    |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `.vscode`    | VSCode files for debugging                                                                                  |
+| `appPackage` | Templates for the Teams application manifest, the API specification and response template for API responses |
+| `env`        | Environment files                                                                                           |
+| `infra`      | Templates for provisioning Azure resources                                                                  |
+| `repair`     | The source code for the repair API                                                                          |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
 | File                                          | Contents                                                                     |
 | --------------------------------------------- | ---------------------------------------------------------------------------- |
 | `repair/function.json`                        | A configuration file that defines the function’s trigger and other settings. |
-| `src/index.ts`                                | The main file of a function in Azure Functions.                              |
+| `repair/index.ts`                             | The main file of a function in Azure Functions.                              |
 | `appPackage/apiSpecificationFiles/repair.yml` | A file that describes the structure and behavior of the repair API.          |
 | `appPackage/responseTemplates/repair.json`    | A generated Adaptive Card that used to render API response.                  |
+| `repairsData.json`                            | The data source for the repair API                                           |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

@@ -85,12 +85,16 @@ describe("Package Service", () => {
       },
     };
 
-    const packageService = new PackageService("https://test-endpoint");
+    const infoStub = sandbox.stub(logger, "info").returns();
+    const verboseStub = sandbox.stub(logger, "verbose").returns();
+    const packageService = new PackageService("https://test-endpoint", logger);
     let actualError: Error | undefined;
     try {
       const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
       chai.assert.equal(result[0], "test-title-id");
       chai.assert.equal(result[1], "test-app-id");
+      chai.assert.isTrue(infoStub.called);
+      chai.assert.isTrue(verboseStub.called);
     } catch (error: any) {
       actualError = error;
     }
@@ -119,6 +123,38 @@ describe("Package Service", () => {
       },
     };
 
+    const infoStub = sandbox.stub(logger, "info").returns();
+    const verboseStub = sandbox.stub(logger, "verbose").returns();
+    const debugStub = sandbox.stub(logger, "debug").returns();
+    const packageService = new PackageService("https://test-endpoint", logger);
+    let actualError: Error | undefined;
+    try {
+      const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
+      chai.assert.equal(result[0], "test-title-id");
+      chai.assert.equal(result[1], "test-app-id");
+      chai.assert.isTrue(infoStub.called);
+      chai.assert.isTrue(verboseStub.called);
+      chai.assert.isTrue(debugStub.called);
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+  });
+
+  it("sideLoadXmlManifest xml api with non 200/202 return code", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    axiosPostResponses["/dev/v1/users/packages/addins"] = {
+      status: 203,
+      data: {
+        statusId: "test-status-id",
+      },
+    };
+
     const packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
     try {
@@ -129,10 +165,10 @@ describe("Package Service", () => {
       actualError = error;
     }
 
-    chai.assert.isUndefined(actualError);
+    chai.assert.isDefined(actualError);
   });
 
-  it("sideLoadXmlManifest throws expected error", async () => {
+  it("sideLoadXmlManifest xml upload api throws expected error", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
         titlesServiceUrl: "https://test-url",

@@ -140,7 +140,7 @@ export class LocalDebugTestContext extends TestContext {
       case "msgsa":
         await execCommand(
           this.testRootFolder,
-          `teamsfx new --app-name ${this.appName} --interactive false --capability search-app --programming-language ${this.lang}`
+          `teamsfx new --app-name ${this.appName} --interactive false --capability search-app --me-architecture bot --programming-language ${this.lang}`
         );
         break;
       case "tabbot":

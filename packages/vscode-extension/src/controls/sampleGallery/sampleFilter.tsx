@@ -58,6 +58,9 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             options={typeOptions}
             styles={dropdownStyles}
             onChange={this.onFilterTagChanged}
+            selectedKeys={this.sampleTypes.filter((type) => {
+              return this.props.filterTags.indexOf(type) >= 0;
+            })}
           />
           <Dropdown
             placeholder="language"
@@ -65,6 +68,9 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             options={languageOptions}
             styles={dropdownStyles}
             onChange={this.onFilterTagChanged}
+            selectedKeys={this.sampleLanguages.filter((type) => {
+              return this.props.filterTags.indexOf(type) >= 0;
+            })}
           />
           <Dropdown
             placeholder="technique"
@@ -72,13 +78,16 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             options={techniqueOptions}
             styles={dropdownStyles}
             onChange={this.onFilterTagChanged}
+            selectedKeys={this.sampleTechniques.filter((type) => {
+              return this.props.filterTags.indexOf(type) >= 0;
+            })}
           />
           <div className="filter-bar"></div>
           <VSCodeButton
             onClick={() => this.props.onLayoutChanged("grid")}
             appearance="icon"
             aria-label="gallary view"
-            className={`view-button ${this.props.layout === "grid" ? "view-selected" : ""}`}
+            className={`layout-button ${this.props.layout === "grid" ? "layout-selected" : ""}`}
           >
             <Grid />
           </VSCodeButton>
@@ -86,7 +95,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             onClick={() => this.props.onLayoutChanged("list")}
             appearance="icon"
             aria-label="list view"
-            className={`view-button ${this.props.layout === "list" ? "view-selected" : ""}`}
+            className={`layout-button ${this.props.layout === "list" ? "layout-selected" : ""}`}
           >
             <span className="codicon codicon-list-unordered"></span>
           </VSCodeButton>
@@ -145,7 +154,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
   private getDropdownStyles = (): Partial<IDropdownStyles> => {
     const dropDownStyle: IStyle = {
       "span:first-child": {
-        borderRadius: 5,
+        // borderRadius: 0,
         height: 24,
         lineHeight: 24,
         backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
@@ -199,7 +208,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       },
       callout: {
         ".ms-Callout-main": {
-          borderRadius: 5,
+          // borderRadius: 5,
           border: "1px solid var(--vscode-inputValidation-infoBorder, #007ACC)",
         },
       },
@@ -234,13 +243,13 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       dropdownItemSelected: {
         minHeight: 22,
         height: 22,
-        backgroundColor: "var(--vscode-dropdown-background, #303031)",
+        backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526)",
         ".ms-Checkbox-checkbox": {
           backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
           border: 0,
         },
         ":active": {
-          backgroundColor: "var(--vscode-dropdown-background, #303031) !important",
+          backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526) !important",
         },
         "input:focus + .ms-Checkbox-label": {
           ...checkboxStyle,
@@ -249,7 +258,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
           ...checkboxStyle,
         },
         ":hover": {
-          backgroundColor: "var(--vscode-dropdown-background, #303031) !important",
+          backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526) !important",
           ...checkboxStyle,
         },
       },

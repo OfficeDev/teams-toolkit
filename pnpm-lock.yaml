@@ -566,11 +566,11 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5
       '@microsoft/dev-tunnels-contracts':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/dev-tunnels-management':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/teamsfx-api':
         specifier: workspace:*
         version: link:../api
@@ -1507,8 +1507,8 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
       '@microsoft/dev-tunnels-contracts':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/teamsfx-api':
         specifier: workspace:*
         version: link:../api
@@ -1769,17 +1769,17 @@ importers:
         version: 7.9.0
     devDependencies:
       '@microsoft/dev-tunnels-connections':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/dev-tunnels-contracts':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/dev-tunnels-management':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/dev-tunnels-ssh':
-        specifier: ~3.11.1
-        version: 3.11.1
+        specifier: ~3.11.31
+        version: 3.11.31
       '@microsoft/extra-shot-mocha':
         specifier: 0.0.1
         version: 0.0.1(mocha@10.2.0)(mochawesome@7.0.1)
@@ -1922,17 +1922,17 @@ importers:
         specifier: ^1.14.6
         version: 1.17.3
       '@microsoft/dev-tunnels-connections':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/dev-tunnels-contracts':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/dev-tunnels-management':
-        specifier: ~1.0.7360
-        version: 1.0.7360
+        specifier: ~1.0.7445
+        version: 1.0.7445
       '@microsoft/dev-tunnels-ssh':
-        specifier: ~3.11.1
-        version: 3.11.1
+        specifier: ~3.11.31
+        version: 3.11.31
       '@microsoft/teamsfx-api':
         specifier: workspace:*
         version: link:../api
@@ -6507,13 +6507,13 @@ packages:
     resolution: {integrity: sha512-PoHEgsnmcqruLNHZ/amACqdJ6YYQpED0KSRe6J7gIJTtpZC1FfFU9b1fmDKDKtFoUSrPzEh1qzO3kmRZP0betg==}
     dev: false
 
-  /@microsoft/dev-tunnels-connections@1.0.7360:
-    resolution: {integrity: sha512-M0D9a0CerEoG0+aHzJd/y39NJCev5AM9m7IYjUkuw7pZ1TwGGumsEH8aPuAn2Vvc2p0rtWExNQiZY8eS6LKnzA==}
+  /@microsoft/dev-tunnels-connections@1.0.7445:
+    resolution: {integrity: sha512-nR4J+jOo0/WQhtt8qVotbPZuBKD3R0CsFzVKa9jEvNhA7xCc725HHb60zAyKMEXNai1TzIPHZ6QNKnKUj1iZ9Q==}
     dependencies:
-      '@microsoft/dev-tunnels-contracts': 1.0.7360
-      '@microsoft/dev-tunnels-management': 1.0.7360
-      '@microsoft/dev-tunnels-ssh': 3.11.1
-      '@microsoft/dev-tunnels-ssh-tcp': 3.11.21
+      '@microsoft/dev-tunnels-contracts': 1.0.7445
+      '@microsoft/dev-tunnels-management': 1.0.7445
+      '@microsoft/dev-tunnels-ssh': 3.11.31
+      '@microsoft/dev-tunnels-ssh-tcp': 3.11.31
       await-semaphore: 0.1.3
       buffer: 5.7.1
       debug: 4.3.4(supports-color@9.4.0)
@@ -6524,8 +6524,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@microsoft/dev-tunnels-contracts@1.0.7360:
-    resolution: {integrity: sha512-RsPjmpGCEh/JHYc5HWa1CbIBnc/RyFGjSqnL1nJwmvBrS4A8gs2FpnJ6XdexJ7gZ2oGguGesbmBV3Upm3m3uJw==}
+  /@microsoft/dev-tunnels-contracts@1.0.7445:
+    resolution: {integrity: sha512-L2Gm8PhzAKnJrUV7p2HD4Ze6m7WpqZ+dUgkDw9mqW5yNiTikJVfFweMZSiuWSOlfhxe/YkqQyMmqeUyhMiIJeA==}
     dependencies:
       buffer: 5.7.1
       debug: 4.3.4(supports-color@9.4.0)
@@ -6533,10 +6533,10 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@microsoft/dev-tunnels-management@1.0.7360:
-    resolution: {integrity: sha512-L8QymYTypOG/PW2A3O2XFfR7Rw66ye62VVfLT8MtxT1BnDVLxmDtwGt+oVeIFPWrGJNJp0jxjN2Lv3NZS67Aig==}
+  /@microsoft/dev-tunnels-management@1.0.7445:
+    resolution: {integrity: sha512-fWMc9xGwu2nYXgqcl7BpyZRmnis5NUWXlX5Epr620L1PJJTI0Y2w7kE6UnztyFGw1KV/1EQUupwd7aSTjEYX0g==}
     dependencies:
-      '@microsoft/dev-tunnels-contracts': 1.0.7360
+      '@microsoft/dev-tunnels-contracts': 1.0.7445
       axios: 0.21.4(debug@4.3.4)
       buffer: 5.7.1
       debug: 4.3.4(supports-color@9.4.0)
@@ -6544,15 +6544,15 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@microsoft/dev-tunnels-ssh-tcp@3.11.21:
-    resolution: {integrity: sha512-GcuN+4Q+OpjcSrn2ibMvSiBTCadRlTo/2bwLs+8Ei8YzhKpHgBW06ZA9OJUzsG2QewUSrkufp2ojI45KIybUtQ==}
+  /@microsoft/dev-tunnels-ssh-tcp@3.11.31:
+    resolution: {integrity: sha512-zM+xRqRUTqXEuQtearhFCS+DBM0yGVXASaVL/Rx43t/T8oF6rW5E6YTTNs61/+v8nSgjVeQqrollWth7rxxxsw==}
     dependencies:
-      '@microsoft/dev-tunnels-ssh': 3.11.1
+      '@microsoft/dev-tunnels-ssh': 3.11.31
     transitivePeerDependencies:
       - supports-color
 
-  /@microsoft/dev-tunnels-ssh@3.11.1:
-    resolution: {integrity: sha512-0Ep5PS2uooj0QTTvw9g0sTVgj3WvakBcTOh1zHvAnyqAeG8tZKJpg02vdwKXNmiTUcOFKAQn3mK9E5Lz0JS8Zw==}
+  /@microsoft/dev-tunnels-ssh@3.11.31:
+    resolution: {integrity: sha512-7L33PK0+4hdQF1kB+Zso9syIU/sVH11R63xNzbVvtOtKBCuamTGIRJH7UdvCWx/KkES/S3udFZ5e8aDRPzEBgw==}
     dependencies:
       buffer: 5.7.1
       debug: 4.3.4(supports-color@9.4.0)
@@ -26332,7 +26332,7 @@ packages:
     dependencies:
       bufferutil: 4.0.7
       debug: 2.6.9(supports-color@9.4.0)
-      es5-ext: 0.10.53
+      es5-ext: 0.10.62
       typedarray-to-buffer: 3.1.5
       utf-8-validate: 5.0.10
       yaeti: 0.0.6

@@ -54,9 +54,13 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
   }
 
   static create(taskDefinition: vscode.TaskDefinition): TestDevTunnelTaskTerminal {
-    const tunnelManagementClientImpl = new TunnelManagementHttpClient("teamsfx-ut", async () => {
-      return "mock-token";
-    });
+    const tunnelManagementClientImpl = new TunnelManagementHttpClient(
+      "teamsfx-ut",
+      "2023-09-27-preview",
+      async () => {
+        return "mock-token";
+      }
+    );
     const devTunnelManager = new DevTunnelManager(tunnelManagementClientImpl);
     const devTunnelStateManager = DevTunnelStateManager.create();
     return new TestDevTunnelTaskTerminal(taskDefinition, devTunnelManager, devTunnelStateManager);

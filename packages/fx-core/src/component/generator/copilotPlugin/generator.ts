@@ -134,7 +134,8 @@ export class CopilotPluginGenerator {
       );
       if (templateRes.isErr()) return err(templateRes.error);
 
-      const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      url = url.trim();
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
       });
@@ -150,7 +151,7 @@ export class CopilotPluginGenerator {
         );
         if (apisMissingOperationId.length > 0) {
           operationIdWarning.content = util.format(
-            ConstantString.MissingOperationId,
+            getLocalizedString("core.common.MissingOperationId"),
             apisMissingOperationId.join(", ")
           );
           delete operationIdWarning.data;

@@ -394,6 +394,7 @@
   "core.common.OutlookWebClientName1": "Outlook web access client id 1",
   "core.common.OutlookWebClientName2": "Outlook web access client id 2",
   "core.common.CancelledMessage": "Operation is cancelled.",
+  "core.common.SwaggerNotSupported": "Swagger 2.0 is not supported. Please convert to OpenAPI 3.0 manually before proceeding.",
   "core.common.NoServerInformation":  "No server information is found in the OpenAPI description document.",
   "core.common.RemoteRefNotSupported": "Remote reference is not supported: %s.",
   "core.common.MissingOperationId": "Missing operationIds: %s.",

@@ -79,6 +79,7 @@ export enum ErrorType {
   NoSupportedApi = "no-supported-api",
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
   ResolveServerUrlFailed = "resolve-server-url-failed",
+  SwaggerNotSupported = "swagger-not-supported",
 
   ListFailed = "list-failed",
   ListOperationMapFailed = "list-operation-map-failed",
@@ -166,4 +167,18 @@ export interface CheckParamResult {
   requiredNum: number;
   optionalNum: number;
   isValid: boolean;
+}
+
+export interface ParseOptions {
+  allowMissingId?: boolean;
+  allowSwagger?: boolean;
+}
+
+export interface APIInfo {
+  method: string;
+  path: string;
+  title: string;
+  id: string;
+  parameters: Parameter[];
+  description: string;
 }

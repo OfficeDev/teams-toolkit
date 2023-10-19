@@ -717,6 +717,10 @@ describe("formatValidationErrors", () => {
         content: "test",
       },
       {
+        type: ErrorType.SwaggerNotSupported,
+        content: "test",
+      },
+      {
         type: ErrorType.Unknown,
         content: "unknown",
       },
@@ -734,6 +738,7 @@ describe("formatValidationErrors", () => {
     expect(res[7].content).equals(getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"));
     expect(res[8].content).equals("resolveurl");
     expect(res[9].content).equals(getLocalizedString("core.common.CancelledMessage"));
-    expect(res[10].content).equals("unknown");
+    expect(res[10].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
+    expect(res[11].content).equals("unknown");
   });
 });

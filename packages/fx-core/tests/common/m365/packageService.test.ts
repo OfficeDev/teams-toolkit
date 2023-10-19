@@ -93,8 +93,9 @@ describe("Package Service", () => {
       const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
       chai.assert.equal(result[0], "test-title-id");
       chai.assert.equal(result[1], "test-app-id");
-      chai.assert.isTrue(infoStub.called);
-      chai.assert.isTrue(verboseStub.called);
+      chai.assert.isTrue(infoStub.calledWith("TitleId: test-title-id"));
+      chai.assert.isTrue(infoStub.calledWith("AppId: test-app-id"));
+      chai.assert.isTrue(verboseStub.calledWith("Sideloading done."));
     } catch (error: any) {
       actualError = error;
     }
@@ -132,9 +133,13 @@ describe("Package Service", () => {
       const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
       chai.assert.equal(result[0], "test-title-id");
       chai.assert.equal(result[1], "test-app-id");
-      chai.assert.isTrue(infoStub.called);
-      chai.assert.isTrue(verboseStub.called);
-      chai.assert.isTrue(debugStub.called);
+      chai.assert.isTrue(
+        debugStub.calledWith("Acquiring package with statusId: test-status-id ...")
+      );
+      chai.assert.isTrue(debugStub.calledWith("Package status: 200 ..."));
+      chai.assert.isTrue(infoStub.calledWith("TitleId: test-title-id"));
+      chai.assert.isTrue(infoStub.calledWith("AppId: test-app-id"));
+      chai.assert.isTrue(verboseStub.calledWith("Sideloading done."));
     } catch (error: any) {
       actualError = error;
     }

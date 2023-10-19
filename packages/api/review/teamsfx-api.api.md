@@ -854,6 +854,22 @@ export interface SystemErrorOptions extends ErrorOptionBase {
 }
 
 // @public (undocumented)
+export interface TeamsAppInputs extends InputsWithProjectPath {
+    // (undocumented)
+    "env-file"?: string;
+    // (undocumented)
+    "manifest-file"?: string;
+    // (undocumented)
+    "output-manifest-file"?: string;
+    // (undocumented)
+    "output-package-file"?: string;
+    // (undocumented)
+    "package-file"?: string;
+    // (undocumented)
+    env?: string;
+}
+
+// @public (undocumented)
 export enum TelemetryEvent {
     // (undocumented)
     askQuestion = "askQuestion"

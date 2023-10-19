@@ -18,28 +18,30 @@ import {
 } from "@microsoft/teamsfx-api";
 import "mocha";
 import * as sinon from "sinon";
+import axios from "axios";
 import { Generator } from "../../../src/component/generator/generator";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
-import { SpecParser } from "../../../src/common/spec-parser/specParser";
+import {
+  SpecParser,
+  ErrorType,
+  ValidationStatus,
+  WarningType,
+  SpecParserError,
+} from "../../../src/common/spec-parser";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { createContextV3 } from "../../../src/component/utils";
 import { ProgrammingLanguage, QuestionNames } from "../../../src/question";
 import {
   generateScaffoldingSummary,
   OpenAIPluginManifestHelper,
+  isYamlSpecFile,
 } from "../../../src/component/generator/copilotPlugin/helper";
+import * as CopilotPluginHelper from "../../../src/component/generator/copilotPlugin/helper";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
-import {
-  ErrorType,
-  ValidationStatus,
-  WarningType,
-} from "../../../src/common/spec-parser/interfaces";
-import * as specParserUtils from "../../../src/common/spec-parser/utils";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
-import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -106,7 +108,7 @@ describe("copilotPluginGenerator", function () {
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
-    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
     const generateBasedOnSpec = sandbox
       .stub(SpecParser.prototype, "generate")
       .resolves({ allSuccess: true, warnings: [] });
@@ -147,7 +149,7 @@ describe("copilotPluginGenerator", function () {
     });
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
-    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
     const generateParser = sandbox.stub(SpecParser.prototype, "generate").resolves({
       allSuccess: true,
       warnings: [
@@ -191,7 +193,7 @@ describe("copilotPluginGenerator", function () {
     });
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({ ...teamsManifest }));
-    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
     sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -221,7 +223,7 @@ describe("copilotPluginGenerator", function () {
     sandbox
       .stub(manifestUtils, "_readAppManifest")
       .resolves(ok({ ...teamsManifest, name: { short: "", full: "" } }));
-    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
     sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -243,7 +245,7 @@ describe("copilotPluginGenerator", function () {
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
-    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(true);
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(true);
     const generateBasedOnSpec = sandbox
       .stub(SpecParser.prototype, "generate")
       .resolves({ allSuccess: true, warnings: [] });
@@ -277,7 +279,7 @@ describe("copilotPluginGenerator", function () {
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
-    sandbox.stub(specParserUtils, "isYamlSpecFile").throws(new Error("test"));
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").throws(new Error("test"));
     const generateBasedOnSpec = sandbox
       .stub(SpecParser.prototype, "generate")
       .resolves({ allSuccess: true, warnings: [] });
@@ -355,7 +357,7 @@ describe("copilotPluginGenerator", function () {
     sandbox
       .stub(manifestUtils, "_readAppManifest")
       .resolves(err(new SystemError("readManifest", "name", "", "")));
-    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
     sandbox.stub(SpecParser.prototype, "generate").resolves({ allSuccess: true, warnings: [] });
     sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -394,7 +396,7 @@ describe("copilotPluginGenerator", function () {
       .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
     sandbox.stub(fs, "ensureDir").resolves();
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
-    sandbox.stub(specParserUtils, "isYamlSpecFile").resolves(false);
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
     sandbox
       .stub(SpecParser.prototype, "generate")
       .throws(new SpecParserError("test", ErrorType.Unknown));
@@ -633,5 +635,38 @@ describe("generateScaffoldingSummary", () => {
     );
 
     assert.isFalse(res.includes("testApiFile"));
+  });
+});
+
+describe("isYamlSpecFile", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+  it("should return false for a valid JSON file", async () => {
+    const result = await isYamlSpecFile("test.json");
+    expect(result).to.be.false;
+  });
+
+  it("should return true for an yaml file", async () => {
+    const result = await isYamlSpecFile("test.yaml");
+    expect(result).to.be.true;
+  });
+
+  it("should handle local json files", async () => {
+    const readFileStub = sinon.stub(fs, "readFile").resolves('{"name": "test"}' as any);
+    const result = await isYamlSpecFile("path/to/localfile");
+    expect(result).to.be.false;
+  });
+
+  it("should handle remote files", async () => {
+    const axiosStub = sinon.stub(axios, "get").resolves({ data: '{"name": "test"}' });
+    const result = await isYamlSpecFile("http://example.com/remotefile");
+    expect(result).to.be.false;
+  });
+
+  it("should return true if it is a yaml file", async () => {
+    const readFileStub = sinon.stub(fs, "readFile").resolves("openapi: 3.0.0" as any);
+    const result = await isYamlSpecFile("path/to/localfile");
+    expect(result).to.be.true;
   });
 });

@@ -30,7 +30,8 @@ docs/cicd/azdo/*.yml
 packages/fx-core/tests/common/local/localCertificateManager.test.ts
 packages/sdk/test/unit/node/appCredential.spec.ts
 packages/sdk/test/unit/node/core/onBehalfOfUserCredential.spec.ts
-packages/fx-core/tests/core/samples_v2.zip
+packages/fx-core/tests/component/driver/teamsApp/success.zip
+packages/fx-core/tests/component/driver/teamsApp/fail.zip
 packages/cli/tests/e2e/manifest/appPackage.dev.zip
 packages/fx-core/templates/plugins/resource/cicd/azdo/*.yml
 packages/fx-core/templates/plugins/resource/cicd_v2/azdo/*.yml

@@ -28,9 +28,13 @@ import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
-import { ErrorType, ValidationStatus, WarningType } from "../../src/common/spec-parser/interfaces";
-import { SpecParser } from "../../src/common/spec-parser/specParser";
-import { SpecParserError } from "../../src/common/spec-parser/specParserError";
+import {
+  ErrorType,
+  ValidationStatus,
+  WarningType,
+  SpecParser,
+  SpecParserError,
+} from "../../src/common/spec-parser";
 import {
   DriverDefinition,
   DriverInstance,
@@ -77,6 +81,7 @@ import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
 import { createDriverContext } from "../../src/component/utils";
+import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
 
 const tools = new MockTools();
 
@@ -136,6 +141,93 @@ describe("Core basic APIs", () => {
     };
 
     const runSpy = sandbox.spy(AddWebPartDriver.prototype, "run");
+    await core.addWebpart(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    runSpy.restore();
+  });
+
+  it("add web part to SPFx - CLI help", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appPath = path.join(os.tmpdir(), appName);
+    const inputs: Inputs = {
+      platform: Platform.CLI_HELP,
+      [QuestionNames.Folder]: os.tmpdir(),
+      "spfx-folder": ".\\src",
+      "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
+      "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
+      "spfx-webpart-name": "helloworld",
+      "spfx-install-latest-package": "true",
+      "spfx-load-package-version": "loaded",
+      stage: Stage.addWebpart,
+      projectPath: appPath,
+    };
+
+    const runSpy = sandbox.spy(AddWebPartDriver.prototype, "run");
+    await core.addWebpart(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    runSpy.restore();
+  });
+
+  it("add web part to SPFx with empty .yo-rc.json", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appPath = path.join(os.tmpdir(), appName);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      "spfx-folder": ".\\src",
+      "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
+      "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
+      "spfx-webpart-name": "helloworld",
+      "spfx-install-latest-package": "true",
+      "spfx-load-package-version": "loaded",
+      stage: Stage.addWebpart,
+      projectPath: appPath,
+    };
+
+    sandbox.stub(fs, "pathExists").callsFake(async (directory: string) => {
+      if (directory.includes(path.join("webparts", "helloworld"))) {
+        return false;
+      }
+      return true;
+    });
+    sandbox.stub(fs, "readJson").resolves({});
+    const runSpy = sandbox.stub(AddWebPartDriver.prototype, "run");
+    await core.addWebpart(inputs);
+    sandbox.assert.calledOnce(runSpy);
+    runSpy.restore();
+  });
+
+  it("add web part to SPFx with framework", async () => {
+    const core = new FxCore(tools);
+    const appName = await mockV3Project();
+    const appPath = path.join(os.tmpdir(), appName);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      "spfx-folder": ".\\src",
+      "manifest-path": path.join(appPath, "appPackage\\manifest.json"),
+      "local-manifest-path": path.join(appPath, "appPackage\\manifest.local.json"),
+      "spfx-webpart-name": "helloworld",
+      "spfx-install-latest-package": "true",
+      "spfx-load-package-version": "loaded",
+      stage: Stage.addWebpart,
+      projectPath: appPath,
+    };
+
+    sandbox.stub(fs, "pathExists").callsFake(async (directory: string) => {
+      if (directory.includes(path.join("webparts", "helloworld"))) {
+        return false;
+      }
+      return true;
+    });
+    sandbox.stub(fs, "readJson").resolves({
+      "@microsoft/generator-sharepoint": {
+        template: "react",
+      },
+    });
+    const runSpy = sandbox.stub(AddWebPartDriver.prototype, "run");
     await core.addWebpart(inputs);
     sandbox.assert.calledOnce(runSpy);
     runSpy.restore();
@@ -1273,7 +1365,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "api-me-type",
+          "me-architecture",
           "programming-language",
           "folder",
           "app-name",
@@ -1301,7 +1393,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "api-me-type",
+          "me-architecture",
           "programming-language",
           "folder",
           "app-name",
@@ -1329,7 +1421,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "api-me-type",
+          "me-architecture",
           "openapi-spec-location",
           "openai-plugin-manifest",
           "api-operation",
@@ -1361,7 +1453,7 @@ describe("isEnvFile", async () => {
           "spfx-framework-type",
           "spfx-webpart-name",
           "spfx-folder",
-          "api-me-type",
+          "me-architecture",
           "programming-language",
           "folder",
           "app-name",
@@ -1633,5 +1725,26 @@ describe("copilotPlugin", async () => {
     } catch (e: any) {
       assert.equal(e.name, FileNotFoundError.name);
     }
+  });
+
+  it("teamsapp management APIs", async () => {
+    const core = new FxCore(tools);
+    const inputs = {
+      platform: Platform.CLI,
+    };
+    sinon.stub(teamsappMgr, "updateTeamsApp").resolves(ok(undefined));
+    sinon
+      .stub(teamsappMgr, "packageTeamsApp")
+      .resolves(ok({ manifestPath: "", outputJsonPath: "", outputZipPath: "" }));
+    sinon.stub(teamsappMgr, "validateTeamsApp").resolves(ok(undefined));
+    sinon.stub(teamsappMgr, "publishTeamsApp").resolves(ok(undefined));
+    const res1 = await core.updateTeamsAppCLIV3(inputs as any);
+    const res2 = await core.packageTeamsAppCLIV3(inputs as any);
+    const res3 = await core.validateTeamsAppCLIV3(inputs as any);
+    const res4 = await core.publishTeamsAppCLIV3(inputs as any);
+    assert.isTrue(res1.isOk());
+    assert.isTrue(res2.isOk());
+    assert.isTrue(res3.isOk());
+    assert.isTrue(res4.isOk());
   });
 });

@@ -2,33 +2,19 @@
 // Licensed under the MIT license.
 "use strict";
 
-import axios from "axios";
-import fs from "fs-extra";
-import { ConstantString } from "./constants";
 import { OpenAPIV3 } from "openapi-types";
 import path from "path";
-import * as util from "util";
-import { CheckParamResult, ErrorResult, ErrorType } from "./interfaces";
 import { format } from "util";
-
-export async function isYamlSpecFile(specPath: string): Promise<boolean> {
-  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
-    return true;
-  } else if (specPath.endsWith(".json")) {
-    return false;
-  }
-  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
-  const fileContent = isRemoteFile
-    ? (await axios.get(specPath)).data
-    : await fs.readFile(specPath, "utf-8");
-
-  try {
-    JSON.parse(fileContent);
-    return false;
-  } catch (error) {
-    return true;
-  }
-}
+import { ConstantString } from "./constants";
+import {
+  CheckParamResult,
+  ErrorResult,
+  ErrorType,
+  Parameter,
+  WarningResult,
+  WarningType,
+} from "./interfaces";
+import { IMessagingExtensionCommand } from "@microsoft/teamsfx-api";
 
 export function checkParameters(paramObject: OpenAPIV3.ParameterObject[]): CheckParamResult {
   const paramResult = {
@@ -286,7 +272,7 @@ export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[]
     // Http server url is not supported
     errors.push({
       type: ErrorType.UrlProtocolNotSupported,
-      content: util.format(ConstantString.UrlProtocolNotSupported, protocol.slice(0, -1)),
+      content: format(ConstantString.UrlProtocolNotSupported, protocol.slice(0, -1)),
       data: servers,
     });
   }
@@ -347,4 +333,120 @@ export function isWellKnownName(name: string, wellknownNameList: string[]): bool
     }
   }
   return false;
+}
+
+export function generateParametersFromSchema(
+  schema: OpenAPIV3.SchemaObject,
+  name: string,
+  isRequired = false
+): [Parameter[], Parameter[]] {
+  const requiredParams: Parameter[] = [];
+  const optionalParams: Parameter[] = [];
+
+  if (
+    schema.type === "string" ||
+    schema.type === "integer" ||
+    schema.type === "boolean" ||
+    schema.type === "number"
+  ) {
+    const parameter = {
+      name: name,
+      title: updateFirstLetter(name),
+      description: schema.description ?? "",
+    };
+    if (isRequired && schema.default === undefined) {
+      requiredParams.push(parameter);
+    } else {
+      optionalParams.push(parameter);
+    }
+  } else if (schema.type === "object") {
+    const { properties } = schema;
+    for (const property in properties) {
+      let isRequired = false;
+      if (schema.required && schema.required?.indexOf(property) >= 0) {
+        isRequired = true;
+      }
+      const [requiredP, optionalP] = generateParametersFromSchema(
+        properties[property] as OpenAPIV3.SchemaObject,
+        property,
+        isRequired
+      );
+
+      requiredParams.push(...requiredP);
+      optionalParams.push(...optionalP);
+    }
+  }
+
+  return [requiredParams, optionalParams];
+}
+
+export function parseApiInfo(
+  operationItem: OpenAPIV3.OperationObject
+): [IMessagingExtensionCommand, WarningResult | undefined] {
+  const requiredParams: Parameter[] = [];
+  const optionalParams: Parameter[] = [];
+  const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
+
+  if (paramObject) {
+    paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
+      const parameter: Parameter = {
+        name: param.name,
+        title: updateFirstLetter(param.name),
+        description: param.description ?? "",
+      };
+
+      const schema = param.schema as OpenAPIV3.SchemaObject;
+      if (param.in !== "header" && param.in !== "cookie") {
+        if (param.required && schema?.default === undefined) {
+          requiredParams.push(parameter);
+        } else {
+          optionalParams.push(parameter);
+        }
+      }
+    });
+  }
+
+  if (operationItem.requestBody) {
+    const requestBody = operationItem.requestBody as OpenAPIV3.RequestBodyObject;
+    const requestJson = requestBody.content["application/json"];
+    if (Object.keys(requestJson).length !== 0) {
+      const schema = requestJson.schema as OpenAPIV3.SchemaObject;
+      const [requiredP, optionalP] = generateParametersFromSchema(
+        schema,
+        "requestBody",
+        requestBody.required
+      );
+      requiredParams.push(...requiredP);
+      optionalParams.push(...optionalP);
+    }
+  }
+
+  const operationId = operationItem.operationId!;
+
+  const parameters = [];
+
+  if (requiredParams.length != 0) {
+    parameters.push(...requiredParams);
+  } else {
+    parameters.push(optionalParams[0]);
+  }
+
+  const command: IMessagingExtensionCommand = {
+    context: ["compose"],
+    type: "query",
+    title: operationItem.summary ?? "",
+    id: operationId,
+    parameters: parameters,
+    description: operationItem.description ?? "",
+  };
+  let warning: WarningResult | undefined = undefined;
+
+  if (requiredParams.length === 0 && optionalParams.length > 1) {
+    warning = {
+      type: WarningType.OperationOnlyContainsOptionalParam,
+      content: format(ConstantString.OperationOnlyContainsOptionalParam, operationId),
+      data: operationId,
+    };
+  }
+  return [command, warning];
 }

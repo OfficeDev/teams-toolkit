@@ -154,6 +154,39 @@ export async function startDebugging(
   });
 }
 
+export async function startDebuggingAzure(
+  item = "Debug (Chrome)",
+  envName = "local",
+  appName: string
+): Promise<boolean> {
+  // open terminal to avoid terminal not invisible issue
+  console.log("start debugging...");
+  await openTerminalView();
+  const driver = VSBrowser.instance.driver;
+  return await RetryHandler.retry(async () => {
+    await execCommandIfExist("Debug: Select and Start Debugging");
+    await driver.sleep(Timeout.shortTimeWait);
+    await selectQuickPick(item);
+    await driver.sleep(Timeout.shortTimeWait);
+    const subscriptionConfirmInput = await InputBox.create();
+    await subscriptionConfirmInput.selectQuickPick(Env.azureSubscriptionName);
+    await driver.sleep(Timeout.shortTimeWait);
+    const provisionConfirmInput = await InputBox.create();
+    await provisionConfirmInput.selectQuickPick("+ New resource group");
+    await driver.sleep(Timeout.shortTimeWait);
+    const rgName = `${appName}-${envName}-rg`;
+    console.log("new resource group: ", rgName);
+    await provisionConfirmInput.setText(rgName);
+    await provisionConfirmInput.confirm();
+    await driver.sleep(Timeout.shortTimeWait);
+    await provisionConfirmInput.selectQuickPick("East US");
+    console.log("location: East US");
+    await driver.sleep(Timeout.shortTimeWait);
+    console.log(`The subscription ${Env.azureSubscriptionName} is setting up.`);
+    return true;
+  });
+}
+
 export async function stopDebugging(): Promise<void> {
   try {
     await execCommandIfExist("Debug: Stop", Timeout.closeDebugWindow);

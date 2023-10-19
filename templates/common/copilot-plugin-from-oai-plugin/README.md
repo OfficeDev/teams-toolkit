@@ -31,7 +31,7 @@ The plugin allows Copilot to interact directly with third-party data, apps, and 
 | Folder       | Contents                                     |
 | ------------ | -------------------------------------------- |
 | `.vscode`    | VSCode files for debugging                   |
-| `appPackage` | Templates for the Teams application manifest |
+| `appPackage` | Templates for the Teams application manifest, the API specification and response templates for API responses |
 | `env`        | Environment files                            |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.

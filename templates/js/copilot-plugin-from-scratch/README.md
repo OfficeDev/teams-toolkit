@@ -1,17 +1,17 @@
-# Overview of API Plugin app template
+# Overview of Custom Search Results app template
 
-## Build API Plugin from a new API with Azure Functions
+## Build a message extension from a new API with Azure Functions
 
-The plugin allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. Plugins allow Teams to:
+This app template allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.
 
-## Get started with API Plugin template
+## Get started with the template
 
 > **Prerequisites**
 >
-> To run the API plugin app template in your local dev machine, you will need:
+> To run this app template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
@@ -24,22 +24,23 @@ The plugin allows Teams to interact directly with third-party data, apps, and se
 
 ## What's included in the template
 
-| Folder       | Contents                                     |
-| ------------ | -------------------------------------------- |
-| `.vscode`    | VSCode files for debugging                   |
-| `appPackage` | Templates for the Teams application manifest |
-| `env`        | Environment files                            |
-| `infra`      | Templates for provisioning Azure resources   |
-| `repair`     | The source code for the repair API           |
+| Folder       | Contents                                                                                                    |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `.vscode`    | VSCode files for debugging                                                                                  |
+| `appPackage` | Templates for the Teams application manifest, the API specification and response template for API responses |
+| `env`        | Environment files                                                                                           |
+| `infra`      | Templates for provisioning Azure resources                                                                  |
+| `repair`     | The source code for the repair API                                                                          |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
 | File                                          | Contents                                                                     |
 | --------------------------------------------- | ---------------------------------------------------------------------------- |
 | `repair/function.json`                        | A configuration file that defines the function’s trigger and other settings. |
-| `src/index.js`                                | The main file of a function in Azure Functions.                              |
+| `repair/index.js`                             | The main file of a function in Azure Functions.                              |
 | `appPackage/apiSpecificationFiles/repair.yml` | A file that describes the structure and behavior of the repair API.          |
 | `appPackage/responseTemplates/repair.json`    | A generated Adaptive Card that used to render API response.                  |
+| `repairsData.json`                            | The data source for the repair API                                           |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

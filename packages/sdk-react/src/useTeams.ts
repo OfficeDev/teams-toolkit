@@ -71,7 +71,10 @@ export function useTeams(options?: {
     : themeChangeHandler;
   useEffect(() => {
     // set initial theme based on options or query string
-    overrideThemeHandler(initialTheme);
+    if (initialTheme) {
+      overrideThemeHandler(initialTheme);
+    }
+
     app
       .initialize()
       .then(() => {

@@ -6,7 +6,7 @@
  */
 
 import React from "react";
-import { render, waitFor, act } from "@testing-library/react";
+import { render, waitFor, renderHook } from "@testing-library/react";
 import { useTeams } from "../src/useTeams";
 import { app, pages } from "@microsoft/teams-js";
 import { makeStyles, Title1, FluentProvider } from "@fluentui/react-components";
@@ -382,4 +382,16 @@ describe("useTeams", () => {
       expect(pingEffect).toBeCalledTimes(2);
     });
   });
+});
+
+it("Should change loading status", async () => {
+  const { result } = renderHook(() => useTeams({}));
+  expect(result.current[0].loading).toBeUndefined();
+
+  await waitFor(
+    () => {
+      expect(result.current[0].loading).toBe(false);
+    },
+    { interval: 1 }
+  );
 });

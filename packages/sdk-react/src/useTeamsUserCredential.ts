@@ -69,6 +69,6 @@ export function useTeamsUserCredential(
     ...result,
     teamsUserCredential: data,
     error,
-    loading: loading || (result.loading ?? false),
+    loading: loading || (result.loading ?? true),
   };
 }

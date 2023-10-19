@@ -583,8 +583,7 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
       case ErrorType.NoServerInformation:
         return getLocalizedString("core.common.NoServerInformation");
       case ErrorType.UrlProtocolNotSupported:
-        // return getLocalizedString("core.common.UrlProtocolNotSupported"); // TODO: format with data
-        return error.content;
+        return getLocalizedString("core.common.UrlProtocolNotSupported", error.data);
       case ErrorType.RelativeServerUrlNotSupported:
         return getLocalizedString("core.common.RelativeServerUrlNotSupported");
       case ErrorType.NoSupportedApi:

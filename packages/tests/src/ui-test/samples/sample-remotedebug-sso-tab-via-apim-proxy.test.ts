@@ -7,18 +7,14 @@
 
 import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
-import { validateTab } from "../../utils/playwrightOperation";
+import { validateTabApim } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
 
 class SsotabApimTestCase extends CaseFactory {
-  override async onValidate(
-    page: Page,
-    options?: { includeFunction: boolean }
-  ): Promise<void> {
-    return await validateTab(page, {
+  override async onValidate(page: Page): Promise<void> {
+    return await validateTabApim(page, {
       displayName: Env.displayName,
-      includeFunction: options?.includeFunction,
     });
   }
 }

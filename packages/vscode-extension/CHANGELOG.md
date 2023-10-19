@@ -540,7 +540,7 @@ Fixed:
 
 ## 1.2.2 - April 1 2021
 
-- Increase the timout limit when creating an Microsoft Entra password for a bot registration.
+- Increase the timout limit when creating a Microsoft Entra password for a bot registration.
 
 ## 1.2.1 - March 15 2021
 

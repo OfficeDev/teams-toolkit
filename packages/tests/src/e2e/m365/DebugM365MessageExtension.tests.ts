@@ -56,7 +56,9 @@ describe("Debug V3 m365-message-extension template", () => {
       await CliHelper.createProjectWithCapability(
         appName,
         testFolder,
-        Capability.M365SearchApp
+        Capability.M365SearchApp,
+        undefined,
+        "--me-architecture bot"
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
 

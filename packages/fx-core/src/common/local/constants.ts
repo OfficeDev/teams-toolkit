@@ -189,6 +189,7 @@ export const TaskDefaultValue = Object.freeze({
 export const Prerequisite = Object.freeze({
   nodejs: "nodejs",
   m365Account: "m365Account",
+  copilotAccess: "copilotAccess",
   devCert: "devCert",
   func: "func",
   ngrok: "ngrok",

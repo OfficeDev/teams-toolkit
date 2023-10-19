@@ -722,7 +722,7 @@ describe("formatValidationErrors", () => {
       },
     ];
 
-    const res = formatValidationErrors(errors, false);
+    const res = formatValidationErrors(errors);
 
     expect(res[0].content).equals("test");
     expect(res[1].content).includes(getLocalizedString("core.common.ErrorFetchApiSpec"));

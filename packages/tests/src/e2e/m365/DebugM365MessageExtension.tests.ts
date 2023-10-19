@@ -28,22 +28,11 @@ import {
   getBot,
   getTeamsApp,
 } from "../debug/utility";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 
 describe("Debug V3 m365-message-extension template", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  let copilotPluginEnv: string;
-
-  before(function () {
-    copilotPluginEnv = process.env[FeatureFlagName.CopilotPlugin] as string;
-    process.env[FeatureFlagName.CopilotPlugin] = "false";
-  });
-
-  after(function () {
-    process.env[FeatureFlagName.CopilotPlugin] = copilotPluginEnv;
-  });
 
   afterEach(async function () {
     const context = await readContextMultiEnvV3(projectPath, "local");
@@ -67,7 +56,9 @@ describe("Debug V3 m365-message-extension template", () => {
       await CliHelper.createProjectWithCapability(
         appName,
         testFolder,
-        Capability.M365SearchApp
+        Capability.M365SearchApp,
+        undefined,
+        "--me-architecture bot"
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
 

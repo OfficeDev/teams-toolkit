@@ -147,6 +147,80 @@ describe("Package Service", () => {
     chai.assert.isUndefined(actualError);
   });
 
+  it("sideLoadXmlManifest happy path with xml api 200 return code, status api with 202 on first try and 200 on second try", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    axiosPostResponses["/dev/v1/users/packages/addins"] = {
+      status: 202,
+      data: {
+        statusId: "test-status-id",
+      },
+    };
+
+    /*
+    axiosGetResponses["/dev/v1/users/packages/status/test-status-id"] = {
+      status: 200,
+      data: {
+        titleId: "test-title-id",
+        appId: "test-app-id",
+      },
+    };
+    */
+
+    sandbox
+      .stub(testAxiosInstance, "get")
+      .withArgs("/dev/v1/users/packages/status/test-status-id", {
+        baseURL: "https://test-url",
+        headers: { Authorization: `Bearer test-token` },
+      })
+      .onFirstCall()
+      .resolves({
+        status: 202,
+      })
+      .onSecondCall()
+      .resolves({
+        status: 200,
+        data: {
+          titleId: "test-title-id",
+          appId: "test-app-id",
+        },
+      })
+      .withArgs("/config/v1/environment", {
+        baseURL: "https://test-endpoint",
+        headers: { Authorization: `Bearer test-token` },
+      })
+      .resolves({
+        data: {
+          titlesServiceUrl: "https://test-url",
+        },
+      });
+
+    const infoStub = sandbox.stub(logger, "info").returns();
+    const verboseStub = sandbox.stub(logger, "verbose").returns();
+    const debugStub = sandbox.stub(logger, "debug").returns();
+    const packageService = new PackageService("https://test-endpoint", logger);
+    let actualError: Error | undefined;
+    try {
+      const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
+      chai.assert.equal(result[0], "test-title-id");
+      chai.assert.equal(result[1], "test-app-id");
+      chai.assert.isTrue(
+        debugStub.calledWith("Acquiring package with statusId: test-status-id ...")
+      );
+      chai.assert.isTrue(debugStub.calledWith("Package status: 200 ..."));
+      chai.assert.isTrue(infoStub.calledWith("TitleId: test-title-id"));
+      chai.assert.isTrue(infoStub.calledWith("AppId: test-app-id"));
+      chai.assert.isTrue(verboseStub.calledWith("Sideloading done."));
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+  });
+
   it("sideLoadXmlManifest xml api with non 200/202 return code", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {

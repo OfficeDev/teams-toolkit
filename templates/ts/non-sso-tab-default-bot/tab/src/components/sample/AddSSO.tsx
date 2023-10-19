@@ -18,8 +18,8 @@ export function AddSSO(props: Record<string, unknown>) {
           SSO support
         </a>
         ) and interact with Microsoft Graph for building rich and seamless user experience. With
-        Teams Toolkit, authentication is further simplified by automatic AAD app registration and
-        configuration.
+        Teams Toolkit, authentication is further simplified by automatic Microsoft Entra app
+        registration and configuration.
       </p>
       <p>
         Starting with this simple static tab app, you can follow few steps to add SSO logics to

@@ -128,7 +128,6 @@ export class OpenAIPluginManifestHelper {
 
 export async function listOperations(
   context: Context,
-  platform: Platform,
   manifest: OpenAIPluginManifest | undefined,
   apiSpecUrl: string | undefined,
   teamsManifestPath: string | undefined,
@@ -156,7 +155,7 @@ export async function listOperations(
   try {
     const specParser = new SpecParser(apiSpecUrl!);
     const validationRes = await specParser.validate();
-    validationRes.errors = formatValidationErrors(validationRes.errors, platform === Platform.CLI);
+    validationRes.errors = formatValidationErrors(validationRes.errors);
 
     logValidationResults(
       validationRes.errors,
@@ -554,20 +553,17 @@ export async function isYamlSpecFile(specPath: string): Promise<boolean> {
   }
 }
 
-export function formatValidationErrors(
-  errors: ApiSpecErrorResult[],
-  isCli: boolean
-): ApiSpecErrorResult[] {
+export function formatValidationErrors(errors: ApiSpecErrorResult[]): ApiSpecErrorResult[] {
   return errors.map((error) => {
     return {
       type: error.type,
-      content: formatValidationErrorContent(error, isCli),
+      content: formatValidationErrorContent(error),
       data: error.data,
     };
   });
 }
 
-function formatValidationErrorContent(error: ApiSpecErrorResult, isCli: boolean): string {
+function formatValidationErrorContent(error: ApiSpecErrorResult): string {
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {
@@ -577,12 +573,7 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, isCli: boolean)
             .split("\n")
             .map((o) => o.trim())
             .join(". ");
-          content =
-            content +
-            ". " +
-            (isCli
-              ? getLocalizedString("core.common.cli.ErrorFetchApiSpec")
-              : getLocalizedString("core.common.ErrorFetchApiSpec"));
+          content = content + ". " + getLocalizedString("core.common.ErrorFetchApiSpec");
         }
         return content;
       }

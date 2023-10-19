@@ -11,7 +11,8 @@ import { ConstantString } from "./constants";
 export function specFilter(
   filter: string[],
   unResolveSpec: OpenAPIV3.Document,
-  resolvedSpec: OpenAPIV3.Document
+  resolvedSpec: OpenAPIV3.Document,
+  allowMissingId: boolean
 ): OpenAPIV3.Document {
   try {
     const newSpec = { ...unResolveSpec };
@@ -20,7 +21,7 @@ export function specFilter(
       const [method, path] = filterItem.split(" ");
       const methodName = method.toLowerCase();
 
-      if (!isSupportedApi(methodName, path, resolvedSpec)) {
+      if (!isSupportedApi(methodName, path, resolvedSpec, allowMissingId)) {
         continue;
       }
 

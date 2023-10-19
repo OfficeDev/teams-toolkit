@@ -141,8 +141,46 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, true);
+    });
+
+    it("should return false if have no operationId with allowMissingId is false", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [
+                {
+                  in: "query",
+                  schema: { type: "string" },
+                  required: true,
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, false);
+      assert.strictEqual(result, false);
     });
 
     it("should return true if method is POST, path is valid, and no required parameters", () => {
@@ -193,7 +231,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, true);
     });
 
@@ -246,7 +284,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, true);
     });
 
@@ -299,7 +337,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -355,7 +393,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -412,7 +450,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, true);
     });
 
@@ -450,7 +488,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, true);
     });
 
@@ -488,7 +526,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -525,7 +563,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -562,7 +600,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -600,7 +638,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -638,7 +676,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -676,7 +714,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -703,7 +741,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -729,7 +767,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
 
@@ -761,7 +799,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any);
+      const result = isSupportedApi(method, path, spec as any, true);
       assert.strictEqual(result, false);
     });
   });
@@ -1050,7 +1088,7 @@ describe("utils", () => {
         {
           type: ErrorType.UrlProtocolNotSupported,
           content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
-          data: servers,
+          data: "http",
         },
       ]);
     });
@@ -1059,7 +1097,7 @@ describe("utils", () => {
   describe("validateServer", () => {
     it("should return an error if there is no server information", () => {
       const spec = { paths: {} };
-      const errors = validateServer(spec as OpenAPIV3.Document);
+      const errors = validateServer(spec as OpenAPIV3.Document, true);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1078,7 +1116,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any);
+      const errors = validateServer(spec as any, true);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1092,7 +1130,7 @@ describe("utils", () => {
         servers: [{ url: "https://example.com" }],
         paths: {},
       };
-      const errors = validateServer(spec as OpenAPIV3.Document);
+      const errors = validateServer(spec as OpenAPIV3.Document, true);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1104,7 +1142,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any);
+      const errors = validateServer(spec as any, true);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1136,7 +1174,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any);
+      const errors = validateServer(spec as any, true);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1170,7 +1208,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any);
+      const errors = validateServer(spec as any, true);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1204,7 +1242,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any);
+      const errors = validateServer(spec as any, true);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.RelativeServerUrlNotSupported,
@@ -1214,12 +1252,12 @@ describe("utils", () => {
         {
           type: ErrorType.UrlProtocolNotSupported,
           content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
-          data: spec.paths["/api"].servers,
+          data: "http",
         },
         {
           type: ErrorType.UrlProtocolNotSupported,
           content: util.format(ConstantString.UrlProtocolNotSupported, "ftp"),
-          data: spec.paths["/api"].get.servers,
+          data: "ftp",
         },
       ]);
     });

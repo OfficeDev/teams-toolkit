@@ -595,6 +595,8 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
         return error.content;
       case ErrorType.Cancelled:
         return getLocalizedString("core.common.CancelledMessage");
+      case ErrorType.SwaggerNotSupported:
+        return getLocalizedString("core.common.SwaggerNotSupported");
 
       default:
         return error.content;

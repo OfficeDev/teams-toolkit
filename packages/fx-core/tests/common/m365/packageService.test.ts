@@ -160,7 +160,11 @@ describe("Package Service", () => {
       },
     };
 
-    const packageService = new PackageService("https://test-endpoint");
+    const infoStub = sandbox.stub(logger, "info").returns();
+    const verboseStub = sandbox.stub(logger, "verbose").returns();
+    const debugStub = sandbox.stub(logger, "debug").returns();
+    const errorStub = sandbox.stub(logger, "error").returns();
+    const packageService = new PackageService("https://test-endpoint", logger);
     let actualError: Error | undefined;
     try {
       const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
@@ -170,25 +174,59 @@ describe("Package Service", () => {
       actualError = error;
     }
 
+    chai.assert.isFalse(debugStub.calledWith("Package status: 200 ..."));
+    chai.assert.isFalse(infoStub.calledWith("TitleId: test-title-id"));
+    chai.assert.isFalse(infoStub.calledWith("AppId: test-app-id"));
+    chai.assert.isFalse(verboseStub.calledWith("Sideloading done."));
+    chai.assert.isTrue(errorStub.calledWith("Sideloading failed."));
+
     chai.assert.isDefined(actualError);
   });
 
-  it("sideLoadXmlManifest xml upload api throws expected error", async () => {
+  it("sideLoadXmlManifest xml upload api throws error with response", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosPostResponses["/dev/v1/users/packages/addins"] = new Error("test-post");
+    const error: any = new Error("test-post");
+    error.response = {
+      data: {},
+    };
+    axiosPostResponses["/dev/v1/users/packages/addins"] = error;
 
-    const packageService = new PackageService("https://test-endpoint");
+    const errorStub = sandbox.stub(logger, "error").returns();
+    const packageService = new PackageService("https://test-endpoint", logger);
     let actualError: Error | undefined;
     try {
       await packageService.sideLoadXmlManifest("test-token", "test-path");
     } catch (error: any) {
       actualError = error;
     }
+    chai.assert.isTrue(errorStub.calledWith(`${JSON.stringify(error.response.data)}`));
+    chai.assert.isTrue(errorStub.calledWith(`Sideloading failed.`));
+    chai.assert.isDefined(actualError);
+    chai.assert.isTrue(actualError?.message.includes("test-post"));
+  });
 
+  it("sideLoadXmlManifest xml upload api throws error without response", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    const error: Error = new Error("test-post");
+    axiosPostResponses["/dev/v1/users/packages/addins"] = error;
+
+    const errorStub = sandbox.stub(logger, "error").returns();
+    const packageService = new PackageService("https://test-endpoint", logger);
+    let actualError: Error | undefined;
+    try {
+      await packageService.sideLoadXmlManifest("test-token", "test-path");
+    } catch (error: any) {
+      actualError = error;
+    }
+    chai.assert.isTrue(errorStub.calledWith(`test-post`));
     chai.assert.isDefined(actualError);
     chai.assert.isTrue(actualError?.message.includes("test-post"));
   });

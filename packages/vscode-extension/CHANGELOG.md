@@ -37,8 +37,8 @@ Incremental version for Teams Toolkit with multiple bug fixes:
 - Fixed an issue in [`script`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#script) action where charset encoding were not properly handled. ([#8769](https://github.com/OfficeDev/TeamsFx/pull/8769))
 - Fixed an issue where the app might fail to start the dev tunnel for local development due to an unexpected token error. ([#8980](https://github.com/OfficeDev/TeamsFx/pull/8980))
 - Fixed an issue where migration failed due to the expected path of the `.gitignore` file. ([#8912](https://github.com/OfficeDev/TeamsFx/pull/8912))
-- Fixed an issue [#8853](https://github.com/OfficeDev/TeamsFx/issues/8853) in [`botAadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#botaadappcreate) action where no detailed errors were printed when Teams Toolkit failed to create the app in Azure Active Directory. ([#8910](https://github.com/OfficeDev/TeamsFx/pull/8910))
-- Fixed an issue in [`aadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappcreate) and [`aadApp/update`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappupdate) actions where no detailed error messages were printed when Teams Toolkit failed to create or update the app in Azure Active Directory. ([#8911](https://github.com/OfficeDev/TeamsFx/pull/8911))
+- Fixed an issue [#8853](https://github.com/OfficeDev/TeamsFx/issues/8853) in [`botAadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#botaadappcreate) action where no detailed errors were printed when Teams Toolkit failed to create the app in Microsoft Entra. ([#8910](https://github.com/OfficeDev/TeamsFx/pull/8910))
+- Fixed an issue in [`aadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappcreate) and [`aadApp/update`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappupdate) actions where no detailed error messages were printed when Teams Toolkit failed to create or update the app in Microsoft Entra. ([#8911](https://github.com/OfficeDev/TeamsFx/pull/8911))
 - Fixed an issue where you might see multiple login prompts when Teams Toolkit failed to retrieve the token by automatically clearing the cache. ([#9026](https://github.com/OfficeDev/TeamsFx/pull/9026))
 
 ## 5.0.0 - May 16, 2023
@@ -221,7 +221,7 @@ New Features:
 - User can create Teams app that can launch and preview in other Microsoft 365 platform like Office.com and Outlook. The options are offered when user create a new Teams app.
 - User can incrementally add features to their Teams app using `Add features` in Teams Toolkit during the development process. For example, adding additional Teams extending capability, adding Azure resources like SQL Database or Azure Function etc., adding Single Sign on or API connections and so on.
 - User can preview the Teams manifest file and only deploy the manifest file without deploy the whole project.
-- User can customized Azure AD manifest file.
+- User can customized Microsoft Entra manifest file.
 - Add tutorials in the Teams Toolkit, user can find them by typing the command `Teams: View Guided Tutorials` in the command palette (Ctrl+Shift+P).
 - A new sample which use Graph Connector get on board to the Sample Gallery. Click `View Samples` in Teams Toolkit to browse Sample Gallery.
 
@@ -540,12 +540,12 @@ Fixed:
 
 ## 1.2.2 - April 1 2021
 
-- Increase the timout limit when creating an AAD password for a bot registration.
+- Increase the timout limit when creating an Microsoft Entra password for a bot registration.
 
 ## 1.2.1 - March 15 2021
 
 - Bug fix for env/manifest file automatic replacements not happening for some scaffolds.
-- Bug fix for AAD app creation where consent should be admin and users and not just admin.
+- Bug fix for Microsoft Entra app creation where consent should be admin and users and not just admin.
 
 ## 1.2.0 - March 2021
 
@@ -557,16 +557,16 @@ Fixed:
 
 ## 1.1.8 - 9 Dec 2020
 
-- Azure AD single sign-on bug fixes for Group tabs
+- Microsoft Entra single sign-on bug fixes for Group tabs
 
 ## 1.1.4 - 1 Dec 2020
 
-- Azure AD single sign-on documentation updates
+- Microsoft Entra single sign-on documentation updates
 - Bug fixes
 
 ## 1.1.3 - 24 Nov 2020
 
-- Azure AD single sign-on scaffolding for Tab apps
+- Microsoft Entra single sign-on scaffolding for Tab apps
 - Download application publishing package from VS Code
 - Bug fixes
 

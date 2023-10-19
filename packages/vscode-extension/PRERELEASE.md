@@ -193,7 +193,7 @@ Enhancements:
   - Moved `Zip Teams App Package`, `Validate Application`, and `Open Developer Portal to Publish` commands to `UTILITY` section.
     ![treeview](https://user-images.githubusercontent.com/11220663/230364045-510c7bd6-5c5a-4b32-ae61-bb069b31c016.png)
 
-- `Zip Teams App Package`, `Validate Application`, `Update Azure Active Directory App`, `Update Teams App` commands will now ask for additional inputs like `manifest.json` file path and environment name so that you have the flexibility to arrange hose files.
+- `Zip Teams App Package`, `Validate Application`, `Update Microsoft Entra App`, `Update Teams App` commands will now ask for additional inputs like `manifest.json` file path and environment name so that you have the flexibility to arrange hose files.
 
 - Simplified multiple progress notifications into a single one for provision, deploy and publish.
 
@@ -253,7 +253,7 @@ Updated the fundamental design of Teams Toolkit to make it configurable and tran
 
 - Use existing infrastructure, resource groups, and more when provisioning.
 - Use an existing Teams app ID.
-- Use an existing Azure Active Directory app registration ID.
+- Use an existing Microsoft Entra app registration ID.
 - Customizable tunneling solution.
 - Add custom steps to debugging, provisioning, deploying, publishing, etc.
 

@@ -87,7 +87,7 @@ describe("Package Service", () => {
 
     const infoStub = sandbox.stub(logger, "info").returns();
     const verboseStub = sandbox.stub(logger, "verbose").returns();
-    const packageService = new PackageService("https://test-endpoint", logger);
+    let packageService = new PackageService("https://test-endpoint", logger);
     let actualError: Error | undefined;
     try {
       const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
@@ -96,6 +96,19 @@ describe("Package Service", () => {
       chai.assert.isTrue(infoStub.calledWith("TitleId: test-title-id"));
       chai.assert.isTrue(infoStub.calledWith("AppId: test-app-id"));
       chai.assert.isTrue(verboseStub.calledWith("Sideloading done."));
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+
+    // Test with logger undefined
+    packageService = new PackageService("https://test-endpoint", undefined);
+    actualError = undefined;
+    try {
+      const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
+      chai.assert.equal(result[0], "test-title-id");
+      chai.assert.equal(result[1], "test-app-id");
     } catch (error: any) {
       actualError = error;
     }
@@ -127,7 +140,7 @@ describe("Package Service", () => {
     const infoStub = sandbox.stub(logger, "info").returns();
     const verboseStub = sandbox.stub(logger, "verbose").returns();
     const debugStub = sandbox.stub(logger, "debug").returns();
-    const packageService = new PackageService("https://test-endpoint", logger);
+    let packageService = new PackageService("https://test-endpoint", logger);
     let actualError: Error | undefined;
     try {
       const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
@@ -140,6 +153,19 @@ describe("Package Service", () => {
       chai.assert.isTrue(infoStub.calledWith("TitleId: test-title-id"));
       chai.assert.isTrue(infoStub.calledWith("AppId: test-app-id"));
       chai.assert.isTrue(verboseStub.calledWith("Sideloading done."));
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+
+    // Test with logger undefined
+    packageService = new PackageService("https://test-endpoint", undefined);
+    actualError = undefined;
+    try {
+      const result = await packageService.sideLoadXmlManifest("test-token", "test-path");
+      chai.assert.equal(result[0], "test-title-id");
+      chai.assert.equal(result[1], "test-app-id");
     } catch (error: any) {
       actualError = error;
     }
@@ -159,16 +185,6 @@ describe("Package Service", () => {
         statusId: "test-status-id",
       },
     };
-
-    /*
-    axiosGetResponses["/dev/v1/users/packages/status/test-status-id"] = {
-      status: 200,
-      data: {
-        titleId: "test-title-id",
-        appId: "test-app-id",
-      },
-    };
-    */
 
     sandbox
       .stub(testAxiosInstance, "get")

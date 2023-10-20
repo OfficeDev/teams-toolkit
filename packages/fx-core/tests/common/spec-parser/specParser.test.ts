@@ -20,6 +20,7 @@ import { OpenAPIV3 } from "openapi-types";
 import * as SpecFilter from "../../../src/common/spec-parser/specFilter";
 import * as ManifestUpdater from "../../../src/common/spec-parser/manifestUpdater";
 import * as AdaptiveCardGenerator from "../../../src/common/spec-parser/adaptiveCardGenerator";
+import * as utils from "../../../src/common/spec-parser/utils";
 import jsyaml from "js-yaml";
 
 describe("SpecParser", () => {
@@ -27,10 +28,27 @@ describe("SpecParser", () => {
     sinon.restore();
   });
 
+  describe("listSupportedAPIInfo", () => {
+    it("should throw not implemented error", async () => {
+      const specParser = new SpecParser("/path/to/spec.yaml");
+      try {
+        await specParser.listSupportedAPIInfo();
+        expect.fail("Should throw not implemented error");
+      } catch (error) {
+        expect(error.message).to.equal("Method not implemented.");
+      }
+    });
+  });
+
   describe("validate", () => {
     it("should return an error result when the spec is not valid", async () => {
       const specParser = new SpecParser("/path/to/spec.yaml");
-      const parseStub = sinon.stub(specParser.parser, "parse").rejects(new Error("Invalid spec"));
+      const spec = { openapi: "3.0.0" };
+      sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const parseStub = sinon
+        .stub(specParser.parser, "validate")
+        .rejects(new Error("Invalid spec"));
 
       const result = await specParser.validate();
 
@@ -130,6 +148,93 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(dereferenceStub);
     });
 
+    it("should return error object if the spec version is 2.0 with allowSwagger is false", async function () {
+      const specPath = "path/to/spec";
+      const spec = {
+        swagger: "2.0",
+        info: {
+          version: "1.0.0",
+          title: "Swagger Petstore",
+          description:
+            "A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification",
+        },
+        host: "petstore.swagger.io",
+        basePath: "/v2",
+        schemes: ["https"],
+        paths: {
+          "/pet": {
+            post: {
+              summary: "Add a new pet to the store",
+              operationId: "addPet",
+              consumes: ["application/json"],
+              produces: ["application/json"],
+              parameters: [
+                {
+                  in: "body",
+                  name: "body",
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      id: {
+                        type: "integer",
+                        format: "int64",
+                      },
+                      name: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  description: "Pet added to the store",
+                  schema: {
+                    type: "object",
+                    required: ["id", "name"],
+                    properties: {
+                      id: {
+                        type: "integer",
+                        format: "int64",
+                      },
+                      name: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const specParser = new SpecParser(specPath, { allowSwagger: false });
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+
+      const openapiSpecObj = await converter.convert(spec as any, {});
+      const dereferenceStub = sinon
+        .stub(specParser.parser, "dereference")
+        .resolves(openapiSpecObj.openapi);
+      const validateStub = sinon
+        .stub(specParser.parser, "validate")
+        .resolves(openapiSpecObj.openapi);
+
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        errors: [
+          {
+            type: ErrorType.SwaggerNotSupported,
+            content: ConstantString.SwaggerNotSupported,
+          },
+        ],
+        warnings: [],
+      });
+    });
+
     it("should return an error result object if no server information", async function () {
       const specPath = "path/to/spec";
       const spec = { openapi: "3.0.0" };
@@ -168,7 +273,7 @@ describe("SpecParser", () => {
           {
             type: ErrorType.UrlProtocolNotSupported,
             content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
-            data: [{ url: "http://server1" }],
+            data: "http",
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
         ],
@@ -193,7 +298,11 @@ describe("SpecParser", () => {
           {
             type: ErrorType.RelativeServerUrlNotSupported,
             content: ConstantString.RelativeServerUrlNotSupported,
-            data: [{ url: "path/to/server1" }],
+            data: [
+              {
+                url: "path/to/server1",
+              },
+            ],
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
         ],
@@ -432,16 +541,14 @@ describe("SpecParser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon
-          .stub(specParser as any, "getAllSupportedApi")
-          .throws(new Error("getAllSupportedApi error"));
+        sinon.stub(utils as any, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");
       } catch (err) {
         expect(err).to.be.instanceOf(SpecParserError);
         expect(err.errorType).to.equal(ErrorType.ValidateFailed);
-        expect(err.message).to.equal("Error: getAllSupportedApi error");
+        expect(err.message).to.equal("Error: validateSpec error");
       }
     });
   });
@@ -1035,6 +1142,66 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal(["GET /user/{userId}"]);
+    });
+
+    it("should not list api without operationId with allowMissingId is false", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowMissingId: false });
+      const spec = {
+        paths: {
+          "/pets": {
+            get: {
+              operationId: "getPetById",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/user/{userId}": {
+            get: {
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "createUser",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/store/order": {
+            post: {
+              operationId: "placeOrder",
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([]);
     });
 
     it("should throw an error when the SwaggerParser library throws an error", async () => {

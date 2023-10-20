@@ -3,6 +3,7 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
+import SwaggerParser from "@apidevtools/swagger-parser";
 import path from "path";
 import { format } from "util";
 import { ConstantString } from "./constants";
@@ -11,6 +12,8 @@ import {
   ErrorResult,
   ErrorType,
   Parameter,
+  ValidateResult,
+  ValidationStatus,
   WarningResult,
   WarningType,
 } from "./interfaces";
@@ -124,7 +127,12 @@ export function checkPostBody(
  * 5. response body should be “application/json” and not empty, and response code should be 20X
  * 6. only support request body with “application/json” content type
  */
-export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Document): boolean {
+export function isSupportedApi(
+  method: string,
+  path: string,
+  spec: OpenAPIV3.Document,
+  allowMissingId: boolean
+): boolean {
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
   if (pathObj) {
@@ -134,6 +142,9 @@ export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Doc
       !pathObj[method]?.security
     ) {
       const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
+      if (!allowMissingId && !operationObject.operationId) {
+        return false;
+      }
       const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
 
       const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
@@ -270,17 +281,18 @@ export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[]
     });
   } else if (protocol !== "https:") {
     // Http server url is not supported
+    const protocolString = protocol.slice(0, -1);
     errors.push({
       type: ErrorType.UrlProtocolNotSupported,
       content: format(ConstantString.UrlProtocolNotSupported, protocol.slice(0, -1)),
-      data: servers,
+      data: protocolString,
     });
   }
 
   return errors;
 }
 
-export function validateServer(spec: OpenAPIV3.Document): ErrorResult[] {
+export function validateServer(spec: OpenAPIV3.Document, allowMissingId: boolean): ErrorResult[] {
   const errors: ErrorResult[] = [];
 
   let hasTopLevelServers = false;
@@ -307,7 +319,7 @@ export function validateServer(spec: OpenAPIV3.Document): ErrorResult[] {
 
     for (const method in methods) {
       const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-      if (isSupportedApi(method, path, spec)) {
+      if (isSupportedApi(method, path, spec, allowMissingId)) {
         if (operationObject?.servers && operationObject.servers.length >= 1) {
           hasOperationLevelServers = true;
           const serverErrors = checkServerUrl(operationObject.servers);
@@ -449,4 +461,96 @@ export function parseApiInfo(
     };
   }
   return [command, warning];
+}
+
+export function listSupportedAPIs(
+  spec: OpenAPIV3.Document,
+  allowMissingId: boolean
+): {
+  [key: string]: OpenAPIV3.OperationObject;
+} {
+  const paths = spec.paths;
+  const result: { [key: string]: OpenAPIV3.OperationObject } = {};
+  for (const path in paths) {
+    const methods = paths[path];
+    for (const method in methods) {
+      // For developer preview, only support GET operation with only 1 parameter without auth
+      if (isSupportedApi(method, path, spec, allowMissingId)) {
+        const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
+        result[`${method.toUpperCase()} ${path}`] = operationObject;
+      }
+    }
+  }
+  return result;
+}
+
+export function validateSpec(
+  spec: OpenAPIV3.Document,
+  parser: SwaggerParser,
+  isSwaggerFile: boolean
+): ValidateResult {
+  const errors: ErrorResult[] = [];
+  const warnings: WarningResult[] = [];
+
+  if (isSwaggerFile) {
+    warnings.push({
+      type: WarningType.ConvertSwaggerToOpenAPI,
+      content: ConstantString.ConvertSwaggerToOpenAPI,
+    });
+  }
+
+  // Server validation
+  const serverErrors = validateServer(spec, true);
+  errors.push(...serverErrors);
+
+  // Remote reference not supported
+  const refPaths = parser.$refs.paths();
+
+  // refPaths [0] is the current spec file path
+  if (refPaths.length > 1) {
+    errors.push({
+      type: ErrorType.RemoteRefNotSupported,
+      content: format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
+      data: refPaths,
+    });
+  }
+
+  // No supported API
+  const apiMap = listSupportedAPIs(spec, true);
+  if (Object.keys(apiMap).length === 0) {
+    errors.push({
+      type: ErrorType.NoSupportedApi,
+      content: ConstantString.NoSupportedApi,
+    });
+  }
+
+  // OperationId missing
+  const apisMissingOperationId: string[] = [];
+  for (const key in apiMap) {
+    const pathObjectItem = apiMap[key];
+    if (!pathObjectItem.operationId) {
+      apisMissingOperationId.push(key);
+    }
+  }
+
+  if (apisMissingOperationId.length > 0) {
+    warnings.push({
+      type: WarningType.OperationIdMissing,
+      content: format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
+      data: apisMissingOperationId,
+    });
+  }
+
+  let status = ValidationStatus.Valid;
+  if (warnings.length > 0 && errors.length === 0) {
+    status = ValidationStatus.Warning;
+  } else if (errors.length > 0) {
+    status = ValidationStatus.Error;
+  }
+
+  return {
+    status,
+    warnings,
+    errors,
+  };
 }

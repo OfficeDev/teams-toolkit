@@ -56,7 +56,8 @@ export class CopilotNode extends DynamicNode {
     if (this.token != "") {
       isCopilotAllowed = await this.checkCopilot();
       if (isCopilotAllowed === false) {
-        await checkCopilotCallback();
+        // Don't popup the warning since it's noisy
+        // await checkCopilotCallback();
       }
     }
     if (isCopilotAllowed === undefined) {

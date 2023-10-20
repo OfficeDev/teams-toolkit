@@ -22,6 +22,7 @@ import {
   ManifestUtil,
   IMessagingExtensionCommand,
   SystemError,
+  Platform,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -40,6 +41,10 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
+import {
+  ErrorType,
+  ErrorResult as ApiSpecErrorResult,
+} from "../../../common/spec-parser/interfaces";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -74,6 +79,8 @@ export interface ErrorResult {
    * The content of the error.
    */
   content: string;
+
+  data?: any;
 }
 
 export class OpenAIPluginManifestHelper {
@@ -148,6 +155,7 @@ export async function listOperations(
   try {
     const specParser = new SpecParser(apiSpecUrl!);
     const validationRes = await specParser.validate();
+    validationRes.errors = formatValidationErrors(validationRes.errors);
 
     logValidationResults(
       validationRes.errors,
@@ -542,5 +550,57 @@ export async function isYamlSpecFile(specPath: string): Promise<boolean> {
     return false;
   } catch (error) {
     return true;
+  }
+}
+
+export function formatValidationErrors(errors: ApiSpecErrorResult[]): ApiSpecErrorResult[] {
+  return errors.map((error) => {
+    return {
+      type: error.type,
+      content: formatValidationErrorContent(error),
+      data: error.data,
+    };
+  });
+}
+
+function formatValidationErrorContent(error: ApiSpecErrorResult): string {
+  try {
+    switch (error.type) {
+      case ErrorType.SpecNotValid: {
+        let content = error.content;
+        if (error.content.startsWith("ResolverError: Error downloading")) {
+          content = error.content
+            .split("\n")
+            .map((o) => o.trim())
+            .join(". ");
+          content = content + ". " + getLocalizedString("core.common.ErrorFetchApiSpec");
+        }
+        return content;
+      }
+
+      case ErrorType.RemoteRefNotSupported:
+        return getLocalizedString("core.common.RemoteRefNotSupported", error.data.join(", "));
+      case ErrorType.NoServerInformation:
+        return getLocalizedString("core.common.NoServerInformation");
+      case ErrorType.UrlProtocolNotSupported:
+        return getLocalizedString("core.common.UrlProtocolNotSupported", error.data);
+      case ErrorType.RelativeServerUrlNotSupported:
+        return getLocalizedString("core.common.RelativeServerUrlNotSupported");
+      case ErrorType.NoSupportedApi:
+        return getLocalizedString("core.common.NoSupportedApi");
+      case ErrorType.NoExtraAPICanBeAdded:
+        return getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded");
+      case ErrorType.ResolveServerUrlFailed:
+        return error.content;
+      case ErrorType.Cancelled:
+        return getLocalizedString("core.common.CancelledMessage");
+      case ErrorType.SwaggerNotSupported:
+        return getLocalizedString("core.common.SwaggerNotSupported");
+
+      default:
+        return error.content;
+    }
+  } catch (e) {
+    return error.content;
   }
 }

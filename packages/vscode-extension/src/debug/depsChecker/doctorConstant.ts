@@ -15,6 +15,7 @@ export const doctorConstant = {
     "Restart all your Visual Studio Code instances after the installation is finished.",
   NodeNotFound: `Cannot find Node.js. ${InstallNode}`,
   NodeSuccess: `Node.js version (@Version) is installed`,
+  SignInCopilotSuccess: `Microsoft 365 Account (@account) is logged in and has Copilot access`,
   SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading permission is enabled`,
   SignInSuccessWithNewAccount: `You are now using a different Microsoft 365 tenant. Microsoft 365 Account (@account) is logged in and sideloading permission is enabled`,
   Cert: "Development certificate for localhost",

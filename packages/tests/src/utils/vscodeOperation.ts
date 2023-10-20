@@ -627,6 +627,7 @@ export async function createNewProject(
     case "msgsa": {
       await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
       await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with a Bot");
       await driver.sleep(Timeout.input);
       // Choose programming language
       if (lang) {

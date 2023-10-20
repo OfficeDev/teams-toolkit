@@ -14,7 +14,7 @@ New to Teams app development or Teams Toolkit? Learn more about
 Teams app manifests, deploying to the cloud, and more in the documentation 
 at https://aka.ms/teams-toolkit-vs-docs
 
-Note: This sample will only provision single tenant Azure Active Directory app.
+Note: This sample will only provision single tenant Microsoft Entra app.
 For multi-tenant support, please refer to https://aka.ms/teamsfx-multi-tenant.
 
 ## Report an issue

@@ -19,7 +19,11 @@ import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
-import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
+import {
+  runProvision,
+  runDeploy,
+  reRunDeploy,
+} from "../remotedebug/remotedebugContext";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { expect } from "chai";
 import { Page } from "playwright";
@@ -283,7 +287,11 @@ export abstract class CaseFactory {
                 false,
                 options?.type === "spfx"
               );
-              await runDeploy(Timeout.tabDeploy, options?.type === "spfx");
+              try {
+                await runDeploy(Timeout.tabDeploy, options?.type === "spfx");
+              } catch (error) {
+                await reRunDeploy(Timeout.tabDeploy);
+              }
             },
           };
           await debugEnvMap[env]();

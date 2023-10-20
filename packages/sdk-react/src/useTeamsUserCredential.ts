@@ -56,14 +56,19 @@ export function useTeamsUserCredential(
   authConfig: TeamsUserCredentialAuthConfig
 ): TeamsContextWithCredential {
   const [result] = useTeams({});
-  const { data, error, loading } = useData(async () => {
+  const { data, error, loading } = useData(() => {
     if (process.env.NODE_ENV === "development") {
       setLogLevel(LogLevel.Verbose);
       setLogFunction((level: LogLevel, message: string) => {
         console.log(message);
       });
     }
-    return new TeamsUserCredential(authConfig);
+    return Promise.resolve(new TeamsUserCredential(authConfig));
   });
-  return { teamsUserCredential: data, error, loading, ...result };
+  return {
+    ...result,
+    teamsUserCredential: data,
+    error,
+    loading: loading || (result.loading ?? true),
+  };
 }

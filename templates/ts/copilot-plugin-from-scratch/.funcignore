@@ -1,3 +1,4 @@
+.funcignore
 *.js.map
 *.ts
 .git*

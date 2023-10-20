@@ -2013,6 +2013,10 @@ export async function validateTabApim(
     );
     const frame = await frameElementHandle?.contentFrame();
 
+    const startBtn = await frame?.waitForSelector(
+      'button:has-text("Consent and log in")'
+    );
+
     await RetryHandler.retry(async () => {
       console.log("Before popup");
       const [popup] = await Promise.all([
@@ -2026,13 +2030,7 @@ export async function validateTabApim(
               .catch(() => popup)
           )
           .catch(() => {}),
-        frame?.click('button:has-text("Consent and log in")', {
-          timeout: Timeout.playwrightAddAppButton,
-          force: true,
-          noWaitAfter: true,
-          clickCount: 2,
-          delay: 10000,
-        }),
+        startBtn?.click(),
       ]);
       console.log("after popup");
 
@@ -2044,9 +2042,9 @@ export async function validateTabApim(
           .catch(() => {});
         await popup.click("input.button[type='submit'][value='Accept']");
       }
-
-      await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
     });
+
+    await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

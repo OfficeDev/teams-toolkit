@@ -695,6 +695,7 @@ describe("formatValidationErrors", () => {
       {
         type: ErrorType.UrlProtocolNotSupported,
         content: "protocol",
+        data: "http",
       },
       {
         type: ErrorType.RelativeServerUrlNotSupported,
@@ -732,7 +733,9 @@ describe("formatValidationErrors", () => {
     expect(res[1].content).includes(getLocalizedString("core.common.ErrorFetchApiSpec"));
     expect(res[2].content).equals("test");
     expect(res[3].content).equals(getLocalizedString("core.common.NoServerInformation"));
-    expect(res[4].content).equals("protocol");
+    expect(res[4].content).equals(
+      getLocalizedString("core.common.UrlProtocolNotSupported", "http")
+    );
     expect(res[5].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
     expect(res[6].content).equals(getLocalizedString("core.common.NoSupportedApi"));
     expect(res[7].content).equals(getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"));

@@ -2002,3 +2002,54 @@ export async function validateUnfurlCard(page: Page) {
     throw error;
   }
 }
+
+export async function validateTabApim(
+  page: Page,
+  options?: { displayName?: string }
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-iframe"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+
+    const startBtn = await frame?.waitForSelector(
+      'button:has-text("Consent and log in")'
+    );
+
+    await RetryHandler.retry(async () => {
+      console.log("Before popup");
+      const [popup] = await Promise.all([
+        page
+          .waitForEvent("popup")
+          .then((popup) =>
+            popup
+              .waitForEvent("close", {
+                timeout: Timeout.playwrightConsentPopupPage,
+              })
+              .catch(() => popup)
+          )
+          .catch(() => {}),
+        startBtn?.click(),
+      ]);
+      console.log("after popup");
+
+      if (popup && !popup?.isClosed()) {
+        await popup
+          .click('button:has-text("Reload")', {
+            timeout: Timeout.playwrightConsentPageReload,
+          })
+          .catch(() => {});
+        await popup.click("input.button[type='submit'][value='Accept']");
+      }
+    });
+
+    await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}

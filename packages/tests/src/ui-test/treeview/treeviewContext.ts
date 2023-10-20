@@ -1,6 +1,6 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import * as fs from "fs-extra";
 import { expect } from "chai";
@@ -64,7 +64,9 @@ export async function createSampleProject(
   let foundSample = false;
   console.log("finding sample...");
   const elements = await webView.findWebElements(
-    By.xpath('//div[@class="sample-gallery"]/div[@class="sample-stack"]/div')
+    By.xpath(
+      '//div[@class="sample-gallery"]/div[@class="sample-list"]/div[@class="sample-list-item"]'
+    )
   );
   for (const element of elements) {
     const sampleItem = await element.findElement(By.css("h3"));

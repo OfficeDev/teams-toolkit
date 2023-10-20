@@ -2045,7 +2045,7 @@ export async function validateTabApim(
         await popup.click("input.button[type='submit'][value='Accept']");
       }
 
-      await frame?.waitForSelector(`b:has-text("${options?.displayName}")`);
+      await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
     });
   } catch (error) {
     await page.screenshot({

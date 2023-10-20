@@ -22,7 +22,42 @@ import { OnBehalfOfUserCredential } from "../credential/onBehalfOfUserCredential
  * @param {initiateLoginEndpoint} initiateLoginEndpoint - Login page for Teams to redirect to.
  * @param {string | string[]} scopes - The list of scopes for which the token will have access.
  *
- * @returns SignIn link CardAction with 200 status code.
+ * @returns SignIn link SilentAuth CardAction with 200 status code.
+ */
+function getSignInResponseForMessageExtensionWithSilentAuthConfig(
+  authConfig: OnBehalfOfCredentialAuthConfig,
+  initiateLoginEndpoint: string,
+  scopes: string | string[]
+): any {
+  const scopesArray = getScopesArray(scopes);
+  const signInLink = `${initiateLoginEndpoint}?scope=${encodeURI(scopesArray.join(" "))}&clientId=${
+    authConfig.clientId
+  }&tenantId=${authConfig.tenantId}`;
+  return {
+    composeExtension: {
+      type: "silentAuth",
+      suggestedActions: {
+        actions: [
+          {
+            type: "openUrl",
+            value: signInLink,
+            title: "Message Extension OAuth",
+          },
+        ],
+      },
+    },
+  };
+}
+
+/**
+ *  Retrieve the OAuth Sign in Link to use in the MessagingExtensionResult Suggested Actions.
+ * This method just a workaround for link unfurling now.
+ *
+ * @param {OnBehalfOfCredentialAuthConfig} authConfig - User custom the message extension authentication configuration.
+ * @param {initiateLoginEndpoint} initiateLoginEndpoint - Login page for Teams to redirect to.
+ * @param {string | string[]} scopes - The list of scopes for which the token will have access.
+ *
+ * @returns SignIn link Auth CardAction with 200 status code.
  */
 function getSignInResponseForMessageExtensionWithAuthConfig(
   authConfig: OnBehalfOfCredentialAuthConfig,
@@ -35,7 +70,7 @@ function getSignInResponseForMessageExtensionWithAuthConfig(
   }&tenantId=${authConfig.tenantId}`;
   return {
     composeExtension: {
-      type: "silentAuth",
+      type: "auth",
       suggestedActions: {
         actions: [
           {
@@ -106,7 +141,7 @@ export async function executionWithTokenAndConfig(
   const valueObj = context.activity.value;
   if (!valueObj.authentication || !valueObj.authentication.token) {
     internalLogger.verbose("No AccessToken in request, return silentAuth for AccessToken");
-    return getSignInResponseForMessageExtensionWithAuthConfig(
+    return getSignInResponseForMessageExtensionWithSilentAuthConfig(
       authConfig,
       initiateLoginEndpoint,
       scopes
@@ -127,10 +162,30 @@ export async function executionWithTokenAndConfig(
       return await logic(tokenRes);
     }
   } catch (err) {
-    if (err instanceof ErrorWithCode && err.code === ErrorCode.UiRequiredError) {
+    if (
+      err instanceof ErrorWithCode &&
+      err.code === ErrorCode.UiRequiredError &&
+      context.activity.name === "composeExtension/query"
+    ) {
       internalLogger.verbose("User not consent yet, return 412 to user consent first.");
       const response = { status: 412 };
       await context.sendActivity({ value: response, type: ActivityTypes.InvokeResponse });
+      return;
+    } else if (
+      err instanceof ErrorWithCode &&
+      err.code === ErrorCode.UiRequiredError &&
+      context.activity.name === "composeExtension/queryLink"
+    ) {
+      internalLogger.verbose("User not consent yet, return auth card for user login");
+      const response = getSignInResponseForMessageExtensionWithAuthConfig(
+        authConfig,
+        initiateLoginEndpoint,
+        scopes
+      );
+      await context.sendActivity({
+        value: { status: 200, body: response },
+        type: ActivityTypes.InvokeResponse,
+      });
       return;
     }
     throw err;

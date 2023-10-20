@@ -3,7 +3,6 @@
 
 import { hooks } from "@feathersjs/hooks";
 import {
-  ResponseTemplatesFolderName,
   ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
@@ -11,19 +10,21 @@ import {
   CoreCallbackEvent,
   CreateProjectResult,
   CryptoProvider,
-  err,
   Func,
   FxError,
+  IQTreeNode,
   Inputs,
   InputsWithProjectPath,
-  IQTreeNode,
   ManifestUtil,
-  ok,
   OpenAIPluginManifest,
   Platform,
+  ResponseTemplatesFolderName,
   Result,
   Stage,
+  TeamsAppInputs,
   Tools,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
@@ -38,15 +39,14 @@ import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
-import { SpecParser } from "../common/spec-parser/specParser";
-import { SpecParserError } from "../common/spec-parser/specParserError";
+import { SpecParser, SpecParserError } from "../common/spec-parser";
 import { VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
 import {
   AadConstants,
-  SingleSignOnOptionItem,
   SPFxQuestionNames,
+  SingleSignOnOptionItem,
   ViewAadAppHelpLinkV5,
 } from "../component/constants";
 import { coordinator } from "../component/coordinator";
@@ -63,6 +63,7 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { teamsappMgr } from "../component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import {
   containsUnsupportedFeature,
@@ -72,11 +73,11 @@ import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
 import { SSO } from "../component/feature/sso";
 import {
-  convertSpecParserErrorToFxError,
   ErrorResult,
-  listOperations,
   OpenAIPluginManifestHelper,
+  convertSpecParserErrorToFxError,
   generateScaffoldingSummary,
+  listOperations,
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
@@ -88,11 +89,11 @@ import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
-import { assembleError, FileNotFoundError, InvalidProjectError } from "../error/common";
+import { FileNotFoundError, InvalidProjectError, assembleError } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ValidateTeamsAppInputs } from "../question";
-import { createProjectCliHelpNode, ScratchOptions, SPFxVersionOptionIds } from "../question/create";
+import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
 import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
 import { CallbackRegistry } from "./callback";
@@ -100,11 +101,11 @@ import { checkPermission, grantPermission, listCollaborator } from "./collaborat
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
 import { InvalidInputError } from "./error";
-import { ErrorContextMW, setErrorContext, setTools, TOOLS } from "./globalVars";
+import { ErrorContextMW, TOOLS, setErrorContext, setTools } from "./globalVars";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
-import { checkActiveResourcePlugins, ProjectMigratorMWV3 } from "./middleware/projectMigratorV3";
+import { ProjectMigratorMWV3, checkActiveResourcePlugins } from "./middleware/projectMigratorV3";
 import {
   getProjectVersionFromPath,
   getTrackingIdFromPath,
@@ -112,7 +113,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import "../component/feature/sso";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -314,6 +314,7 @@ export class FxCore {
       localManifestPath: inputs[SPFxQuestionNames.LocalManifestPath],
       spfxFolder: inputs[SPFxQuestionNames.SPFxFolder],
       webpartName: inputs[SPFxQuestionNames.WebPartName],
+      framework: inputs[QuestionNames.SPFxFramework],
       spfxPackage: SPFxVersionOptionIds.installLocally,
     };
     const Context: DriverContext = createDriverContext(inputs);
@@ -428,6 +429,55 @@ export class FxCore {
     }
     return err(res.error);
   }
+
+  /******
+   * CLI v3 commands
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "updateTeamsAppCLIV3", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async updateTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+    const res = await teamsappMgr.updateTeamsApp(inputs);
+    return res;
+  }
+  /******
+   * CLI v3 commands
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "validateTeamsAppCLIV3", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async validateTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+    const res = await teamsappMgr.validateTeamsApp(inputs);
+    return res;
+  }
+  /******
+   * CLI v3 commands
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "packageTeamsAppCLIV3", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async packageTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+    const res = await teamsappMgr.packageTeamsApp(inputs);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    return ok(undefined);
+  }
+  /******
+   * CLI v3 commands
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "publishTeamsAppCLIV3", reset: true }),
+    ErrorHandlerMW,
+  ])
+  async publishTeamsAppCLIV3(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
+    const res = await teamsappMgr.publishTeamsApp(inputs);
+    return res;
+  }
+
   /**
    * v3 only none lifecycle command
    */
@@ -570,7 +620,7 @@ export class FxCore {
       teamsAppId,
       properties.capabilities,
       true,
-      properties.isCopilotPlugin
+      properties.isApiME
     );
     return result;
   }
@@ -676,9 +726,9 @@ export class FxCore {
         (d: any) => d.uses === "teamsApp/create"
       );
       if (teamsAppCreate) {
-        const name = teamsAppCreate.with.name;
+        const name = teamsAppCreate.with.name as string;
         if (name) {
-          return ok(name.replace("-${{TEAMSFX_ENV}}", "") || "");
+          return ok(name.replace("-${{TEAMSFX_ENV}}", "").replace("${{APP_NAME_SUFFIX}}", ""));
         }
       }
     }

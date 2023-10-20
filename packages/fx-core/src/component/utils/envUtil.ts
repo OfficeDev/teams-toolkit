@@ -131,6 +131,14 @@ class EnvUtil {
     return ok(parseResult.obj);
   }
 
+  async loadEnvFile(dotEnvFilePath: string): Promise<Result<DotenvOutput, FxError>> {
+    const parseResult = dotenvUtil.deserialize(
+      await fs.readFile(dotEnvFilePath, { encoding: "utf8" })
+    );
+    this.mergeEnv(process.env, parseResult.obj);
+    return ok(parseResult.obj);
+  }
+
   mergeEnv(
     envWithHigherPriority: NodeJS.ProcessEnv | DotenvOutput,
     envWithLowerPriority: DotenvOutput

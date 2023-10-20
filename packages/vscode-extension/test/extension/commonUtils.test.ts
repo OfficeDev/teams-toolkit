@@ -2,6 +2,7 @@ import * as chai from "chai";
 import * as os from "os";
 import * as sinon from "sinon";
 import * as cp from "child_process";
+import * as vscode from "vscode";
 import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
@@ -12,6 +13,7 @@ import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/ext
 import * as commonUtils from "../../src/utils/commonUtils";
 import { MockCore } from "../mocks/mockCore";
 import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as mockfs from "mock-fs";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -350,6 +352,77 @@ describe("CommonUtils", () => {
       const result = await commonUtils.getProvisionSucceedFromEnv("test");
 
       chai.expect(result).equals(false);
+    });
+  });
+  describe("hasAdaptiveCardInWorkspace()", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      mockfs.restore();
+      sandbox.restore();
+    });
+
+    it("no workspace", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+
+      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          type: "AdaptiveCard",
+          version: "1.5",
+          actions: [
+            {
+              type: "Action.OpenUrl",
+              title: "More Info",
+              url: "https://example.com",
+            },
+          ],
+        }),
+      });
+
+      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isTrue(result);
+    });
+
+    it("hasAdaptiveCardInWorkspace() no adaptive card file", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({ hello: "world" }),
+      });
+
+      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+
+    it("hasAdaptiveCardInWorkspace() very large adaptive card file", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          type: "AdaptiveCard",
+          version: "1.5",
+          actions: [
+            {
+              type: "Action.OpenUrl",
+              title: "a".repeat(1024 * 1024 + 10),
+              url: "https://example.com",
+            },
+          ],
+        }),
+      });
+
+      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
     });
   });
 });

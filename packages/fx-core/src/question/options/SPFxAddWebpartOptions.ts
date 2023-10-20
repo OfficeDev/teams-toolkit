@@ -26,6 +26,15 @@ export const SPFxAddWebpartOptions: CLICommandOption[] = [
     default: "helloworld",
   },
   {
+    name: "spfx-framework-type",
+    type: "string",
+    shortName: "k",
+    description: "Framework.",
+    required: true,
+    default: "react",
+    choices: ["react", "minimal", "none"],
+  },
+  {
     name: "teams-manifest-file",
     questionName: "manifest-path",
     type: "string",

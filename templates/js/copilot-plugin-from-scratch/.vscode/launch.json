@@ -7,7 +7,7 @@
             "request": "launch",
             "url": "https://teams.microsoft.com?${account-hint}",
             "cascadeTerminateToConfigurations": [
-                "Attach to Local Service"
+                "Attach to Backend"
             ],
             "presentation": {
                 "group": "all",
@@ -21,7 +21,7 @@
             "request": "launch",
             "url": "https://teams.microsoft.com?${account-hint}",
             "cascadeTerminateToConfigurations": [
-                "Attach to Local Service"
+                "Attach to Backend"
             ],
             "presentation": {
                 "group": "all",

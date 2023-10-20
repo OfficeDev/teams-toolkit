@@ -4,22 +4,20 @@
 
 > **Prerequisites**
 >
-> To run the copilot plugin app template in your local dev machine, you will need:
+> To run this app template in your local dev machine, you will need:
 >
-> - [Visual Studio 2022](https://aka.ms/vs) 17.8 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
+> - [Visual Studio 2022](https://aka.ms/vs) 17.9 or higher and [install Teams Toolkit](https://aka.ms/install-teams-toolkit-vs)
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
-> - Join Microsoft 365 Copilot Plugin development [early access program](https://aka.ms/plugins-dev-waitlist).
 
 1. Right-click your project and select `Teams Toolkit > Provision in the Cloud..`. You can find everything it will do in the `teamsapp.yml`.
 2. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
 to install the app to.
-3. Right-click your project and select `Teams Toolkit > Preview in Teams`.
-4. When Teams launches in the browser, click the `Apps` icon from Teams client left rail to open Teams app store and search for `Copilot`.
-5. Open the `Copilot` app and send a prompt to trigger your plugin.
+3. Right-click your project and select `Teams Toolkit > Preview in > Teams`.
+4. When Teams launches in the browser, you can navigate to a chat message and [trigger your search commands from compose message area](https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=dotnet#search-commands).
 
 ## Learn more
 
-- [Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin)
+- [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)
 
 ## Report an issue
 

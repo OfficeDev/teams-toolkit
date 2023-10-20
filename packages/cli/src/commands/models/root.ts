@@ -21,6 +21,11 @@ import { listCommand } from "./list";
 import { helper } from "../helper";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { teamsappUpdateCommand } from "./teamsapp/update";
+import { teamsappValidateCommand } from "./teamsapp/validate";
+import { teamsappPackageCommand } from "./teamsapp/package";
+import { teamsappPublishCommand } from "./teamsapp/publish";
+import { isCliV3Enabled } from "@microsoft/teamsfx-core";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -43,17 +48,21 @@ export const rootCommand: CLICommand = {
     addCommand,
     provisionCommand,
     deployCommand,
-    packageCommand,
-    validateCommand,
-    publishCommand,
     previewCommand,
     envCommand,
     permissionCommand,
-    updateCommand,
     upgradeCommand,
     m365Command,
     listCommand,
     helpCommand,
+    ...(isCliV3Enabled()
+      ? [
+          teamsappUpdateCommand,
+          teamsappValidateCommand,
+          teamsappPackageCommand,
+          teamsappPublishCommand,
+        ]
+      : [packageCommand, updateCommand, validateCommand, publishCommand]),
   ],
   sortCommands: true,
   options: [

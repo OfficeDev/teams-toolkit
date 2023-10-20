@@ -1,5 +1,5 @@
 {
-    "$schema": "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json",
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
     "manifestVersion": "devPreview",
     "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
@@ -15,7 +15,7 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "short": "{{appName}}${{APP_NAME_SUFFIX}}",
         "full": "Full name for {{appName}}"
     },
     "description": {

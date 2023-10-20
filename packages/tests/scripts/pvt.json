@@ -47,7 +47,9 @@
       "remotedebug-tab-regen-appid-win-only",
       "remotedebug-tab-aad-deploy-win-only",
       "remotedebug-notification-func-timertrigger-ts-win-only",
-      "remotedebug-notification-func-timertrigger-win-only"
+      "remotedebug-notification-func-timertrigger-win-only",
+      "remotedebug-link-unfurling-win-only",
+      "remotedebug-link-unfurling-ts-win-only"
     ]
   },
   "ubuntu-latest": {
@@ -90,7 +92,9 @@
       "localdebug-dashboard-tab",
       "localdebug-tab-aad-deploy",
       "localdebug-notification-func-timertrigger-ts",
-      "localdebug-notification-func-timertrigger"
+      "localdebug-notification-func-timertrigger",
+      "localdebug-link-unfurling",
+      "localdebug-link-unfurling-ts"
     ]
   },
   "macos-latest": {

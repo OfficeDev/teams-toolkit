@@ -104,7 +104,7 @@ export const doctorResult = {
   SideLoadingDisabled:
     "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
   NotSignIn: "No Microsoft 365 account login",
-  SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading enabled`,
+  SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading permission enabled`,
   SkipTrustingCert: "Skip trusting development certificate for localhost",
   HelpLink: `Please refer to @Link for more information.`,
   NgrokWarning:

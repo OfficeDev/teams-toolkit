@@ -13,6 +13,7 @@ import {
   Result,
   TeamsAppManifest,
   BotOrMeScopes,
+  ICommandList,
   UserError,
   err,
   ok,
@@ -156,7 +157,7 @@ async function updateManifest(
     }
 
     if (manifest.bots[0].commandLists) {
-      manifest.bots[0].commandLists.forEach((commandList) => {
+      manifest.bots[0].commandLists.forEach((commandList: ICommandList) => {
         if (commandList.scopes) {
           commandList.scopes = decapitalizeScope(commandList.scopes) as BotOrMeScopes;
         }

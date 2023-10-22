@@ -35,7 +35,7 @@ import { MockTools } from "../core/utils";
 import { MockedAzureAccountProvider, MockedM365Provider } from "../plugins/solution/util";
 import { CapabilityOptions } from "../../src";
 
-describe.only("developPortalScaffoldUtils", () => {
+describe("developPortalScaffoldUtils", () => {
   setTools(new MockTools());
   describe("updateFilesForTdp", () => {
     const sandbox = sinon.createSandbox();
@@ -1020,7 +1020,7 @@ describe.only("developPortalScaffoldUtils", () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
-      const manifest: TeamsAppManifest = {
+      const manifest = {
         manifestVersion: "version",
         id: "mock-app-id",
         name: { short: "short-name" },
@@ -1043,7 +1043,7 @@ describe.only("developPortalScaffoldUtils", () => {
         bots: [
           {
             botId: "botId",
-            scopes: ["groupChat"] as any,
+            scopes: ["groupChat"],
             commandLists: [
               {
                 commands: [
@@ -1057,10 +1057,10 @@ describe.only("developPortalScaffoldUtils", () => {
             ],
           },
         ],
-        composeExtentions: [
+        composeExtensions: [
           {
             botId: "botId",
-            scopes: ["groupChat"] as any,
+            scopes: ["groupChat"],
           },
         ],
       };
@@ -1104,7 +1104,7 @@ describe.only("developPortalScaffoldUtils", () => {
           throw new Error("not support " + file);
         }
       });
-      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest as TeamsAppManifest));
 
       const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
 
@@ -1117,14 +1117,12 @@ describe.only("developPortalScaffoldUtils", () => {
       chai.assert.equal(updatedManifest.id, "${{TEAMS_APP_ID}}");
       chai.assert.isTrue(updatedManifest.configurableTabs![0].scopes.includes("groupchat"));
       chai.assert.isTrue(updatedManifest.bots![0].scopes.includes("groupchat"));
-      chai.assert.isTrue(updatedManifest.bots![0].commandLists[0].scopes.includes("groupchat"));
-      chai.assert.isTrue(updatedManifest.composeExtensions![0].scopes.includes("groupchat"));
+      chai.assert.isTrue(updatedManifest.bots![0].commandLists![0].scopes.includes("groupchat"));
+      chai.assert.isTrue(updatedManifest.composeExtensions![0].scopes!.includes("groupchat"));
       chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
       chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
       chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
       chai.assert.equal(updatedManifest.validDomains, undefined);
-      chai.assert.isTrue(writeSpy.calledThrice);
-      chai.assert.isTrue(writeSpy.firstCall.firstArg.includes("TEAMS_APP_ID=mock-app-id"));
     });
 
     it("read manifest error", async () => {

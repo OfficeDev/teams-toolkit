@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Kuojian Lu <kuojianlu@microsoft.com>
+ * @author Yuqi Zhou <yuqzho@microsoft.com>
  */
 
 import { describe } from "mocha";

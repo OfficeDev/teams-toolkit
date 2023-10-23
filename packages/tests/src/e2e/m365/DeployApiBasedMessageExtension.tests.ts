@@ -21,7 +21,7 @@ import {
 } from "../commonUtils";
 import { deleteTeamsApp, getTeamsApp } from "../debug/utility";
 
-describe("Deploy V3 api-based-message-extension template", () => {
+describe("Provision V3 api-based-message-extension template", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
@@ -40,8 +40,6 @@ describe("Deploy V3 api-based-message-extension template", () => {
     "happy path: scaffold and provision",
     { testPlanCaseId: 17449554, author: "yuqzho@microsoft.com" },
     async function () {
-      const e2eTestFolder = "";
-
       // create
       await CliHelper.createProjectWithCapability(
         appName,

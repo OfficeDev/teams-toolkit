@@ -995,6 +995,136 @@ describe("developPortalScaffoldUtils", () => {
       chai.assert.isTrue(updatedManifest.validDomains?.includes("valid-domain"));
     });
 
+    it("update group chat", async () => {
+      const ctx = createContextV3();
+      ctx.tokenProvider = {
+        m365TokenProvider: new MockedM365Provider(),
+        azureAccountProvider: new MockedAzureAccountProvider(),
+      };
+      ctx.projectPath = "project-path";
+      const appDefinition: AppDefinition = {
+        appId: "mock-app-id",
+        teamsAppId: "mock-app-id",
+        staticTabs: [
+          {
+            objectId: "objId",
+            entityId: "entityId",
+            name: "tab",
+            contentUrl: "https://url",
+            websiteUrl: "https:/url",
+            scopes: [],
+            context: [],
+          },
+        ],
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const manifest = {
+        manifestVersion: "version",
+        id: "mock-app-id",
+        name: { short: "short-name" },
+        description: { short: "", full: "" },
+        version: "version",
+        icons: { outline: "outline.png", color: "color.png" },
+        accentColor: "#ffffff",
+        developer: {
+          privacyUrl: "",
+          websiteUrl: "",
+          termsOfUseUrl: "",
+          name: "developer-name",
+        },
+        configurableTabs: [
+          {
+            configurationUrl: "url",
+            scopes: ["groupChat", "team"] as any,
+          },
+        ],
+        bots: [
+          {
+            botId: "botId",
+            scopes: ["groupChat"],
+            commandLists: [
+              {
+                commands: [
+                  {
+                    title: "tt",
+                    description: "ttt",
+                  },
+                ],
+                scopes: ["groupChat"],
+              },
+            ],
+          },
+        ],
+        composeExtensions: [
+          {
+            botId: "botId",
+            scopes: ["groupChat"],
+          },
+        ],
+      };
+
+      let updateManifest = false;
+      let updateLanguage = false;
+      let updateColor = false;
+      let updateOutline = false;
+      let updatedManifestData = "";
+      sandbox.stub(appStudio, "getAppPackage").resolves(
+        ok({
+          manifest: Buffer.from(JSON.stringify(manifest)),
+          icons: { color: Buffer.from(""), outline: Buffer.from("") },
+          languages: { zh: Buffer.from(JSON.stringify({})) },
+        })
+      );
+      sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+      sandbox.stub(fs, "writeFile").callsFake((file: number | fs.PathLike, data: any) => {
+        if (file === path.join(ctx.projectPath!, "appPackage", "color.png")) {
+          updateColor = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "outline.png")) {
+          updateOutline = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "zh.json")) {
+          updateLanguage = true;
+        } else if (file === path.join(ctx.projectPath!, "appPackage", "manifest.json")) {
+          updateManifest = true;
+          updatedManifestData = data;
+        } else {
+          throw new Error("not support " + file);
+        }
+      });
+
+      const mockWriteStream = new MockedWriteStream();
+      sandbox.stub(fs, "createWriteStream").returns(mockWriteStream as any);
+      const writeSpy = sandbox.stub(mockWriteStream, "write").resolves();
+      sandbox.stub(mockWriteStream, "end").resolves();
+      sandbox.stub(fs, "readFile").callsFake((file: number | fs.PathLike) => {
+        if (file === path.join(ctx.projectPath!, "env", ".env.local")) {
+          return Promise.resolve(Buffer.from("TEAMS_APP_ID=\nENV=\n"));
+        } else {
+          throw new Error("not support " + file);
+        }
+      });
+      sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest as TeamsAppManifest));
+
+      const res = await developerPortalScaffoldUtils.updateFilesForTdp(ctx, appDefinition, inputs);
+
+      chai.assert.isTrue(res.isOk());
+      chai.assert.isTrue(updateManifest);
+      chai.assert.isTrue(updateColor);
+      chai.assert.isTrue(updateOutline);
+      chai.assert.isTrue(updateLanguage);
+      const updatedManifest = JSON.parse(updatedManifestData) as TeamsAppManifest;
+      chai.assert.equal(updatedManifest.id, "${{TEAMS_APP_ID}}");
+      chai.assert.isTrue(updatedManifest.configurableTabs![0].scopes.includes("groupchat"));
+      chai.assert.isTrue(updatedManifest.bots![0].scopes.includes("groupchat"));
+      chai.assert.isTrue(updatedManifest.bots![0].commandLists![0].scopes.includes("groupchat"));
+      chai.assert.isTrue(updatedManifest.composeExtensions![0].scopes!.includes("groupchat"));
+      chai.assert.equal(updatedManifest.developer.privacyUrl, DEFAULT_DEVELOPER.privacyUrl);
+      chai.assert.equal(updatedManifest.developer.termsOfUseUrl, DEFAULT_DEVELOPER.termsOfUseUrl);
+      chai.assert.equal(updatedManifest.developer.websiteUrl, DEFAULT_DEVELOPER.websiteUrl);
+      chai.assert.equal(updatedManifest.validDomains, undefined);
+    });
+
     it("read manifest error", async () => {
       const ctx = createContextV3();
       ctx.tokenProvider = {

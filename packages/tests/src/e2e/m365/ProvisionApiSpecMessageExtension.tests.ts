@@ -49,7 +49,7 @@ describe("Provision V3 api-based-message-extension api=-spec template", () => {
         testFolder,
         Capability.M365SearchApp,
         undefined,
-        `--me-architecture api-spec --openapi-spec-location ${apiSpecPath} --api-operation GET /repairs`
+        `--me-architecture api-spec --openapi-spec-location ${apiSpecPath} --api-operation "GET /repairs"`
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
 

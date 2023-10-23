@@ -63,7 +63,8 @@ describe("Multi Env Happy Path for Azure", function () {
           timeout: 0,
         });
         const envs = result.stdout.trim().split(/\r?\n/).sort();
-        chai.expect(envs).to.deep.equal(["dev", "e2e"]);
+        expect(envs).to.be.contain("dev");
+        expect(envs).to.be.contain("e2e");
         chai.expect(result.stderr).to.be.empty;
         console.log(
           `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`

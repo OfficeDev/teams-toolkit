@@ -38,11 +38,9 @@ describe("Provision V3 api-based-message-extension api=-spec template", () => {
 
   it(
     "happy path: scaffold and provision",
-    { testPlanCaseId: 17449554, author: "yuqzho@microsoft.com" },
+    { testPlanCaseId: 25285721, author: "yuqzho@microsoft.com" },
     async function () {
-      console.log(__dirname);
       const apiSpecPath = path.join(__dirname, "apispec.yml");
-      console.log(apiSpecPath);
       // create
       await CliHelper.createProjectWithCapability(
         appName,

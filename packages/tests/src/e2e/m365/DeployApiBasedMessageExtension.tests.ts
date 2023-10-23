@@ -21,7 +21,7 @@ import {
 } from "../commonUtils";
 import { deleteTeamsApp, getTeamsApp } from "../debug/utility";
 
-describe("Provision V3 api-based-message-extension template", () => {
+describe("Provision V3 api-based-message-extension api=-spec template", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
@@ -46,7 +46,7 @@ describe("Provision V3 api-based-message-extension template", () => {
         testFolder,
         Capability.M365SearchApp,
         undefined,
-        '--me-architecture api-spec --openapi-spec-location "./apispec.yml" --api-operation "GET /repairs"'
+        '--me-architecture api-spec --openapi-spec-location "../apispec.yml" --api-operation "GET /repairs"'
       );
       console.log(`[Successfully] scaffold to ${projectPath}`);
 

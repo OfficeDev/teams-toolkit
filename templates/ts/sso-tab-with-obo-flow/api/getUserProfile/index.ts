@@ -84,7 +84,7 @@ export default async function run(
       body: {
         error:
           "Failed to construct OnBehalfOfUserCredential using your accessToken. " +
-          "Ensure your function app is configured with the right Azure AD App registration.",
+          "Ensure your function app is configured with the right Microsoft Entra App registration.",
       },
     };
   }
@@ -177,7 +177,7 @@ export default async function run(
         error:
           "App credential error:" +
           "Failed to construct TeamsFx using your accessToken. " +
-          "Ensure your function app is configured with the right Azure AD App registration.",
+          "Ensure your function app is configured with the right Microsoft Entra App registration.",
       },
     };
   }

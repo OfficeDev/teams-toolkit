@@ -207,7 +207,7 @@ describe("devTunnelTaskTerminal", () => {
       const existingTTKTunnel = {
         tunnelId: uuid.v4().substring(0, 8),
         clusterId: "test",
-        tags: ["TeamsToolkitCreatedTag"],
+        labels: ["TeamsToolkitCreatedTag"],
       };
       const devTunnelStateManager = DevTunnelStateManager.create();
       const mockResource = mock([existingTunnel, existingTTKTunnel]);
@@ -466,6 +466,20 @@ describe("devTunnelTaskTerminal", () => {
           env: 123,
         },
         errorPropertyName: "args.env",
+      },
+      {
+        message: "property env - error expiration",
+        args: {
+          type: "dev-tunnel",
+          ports: [
+            {
+              portNumber: 53000,
+              protocol: "https",
+            },
+          ],
+          expiration: "error",
+        },
+        errorPropertyName: "args.expiration",
       },
       {
         message: "happy path",

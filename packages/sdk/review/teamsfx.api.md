@@ -363,9 +363,6 @@ export class ErrorWithCode extends Error {
 }
 
 // @public
-export function executionWithTokenAndConfig(context: TurnContext, authConfig: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic?: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
-
-// @public
 export function getLogLevel(): LogLevel | undefined;
 
 // @public (undocumented)
@@ -378,7 +375,13 @@ export interface GetTeamsUserTokenOptions extends GetTokenOptions {
 export function getTediousConnectionConfig(teamsfx: TeamsFx, databaseName?: string): Promise<ConnectionConfig>;
 
 // @public
+export function handleMessageExtensionLinkQueryWithSSO(context: TurnContext, config: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<void | MessagingExtensionResponse>;
+
+// @public
 export function handleMessageExtensionQueryWithSSO(context: TurnContext, config: OnBehalfOfCredentialAuthConfig, initiateLoginEndpoint: string, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<void | MessagingExtensionResponse>;
+
+// @public @deprecated
+export function handleMessageExtensionQueryWithToken(context: TurnContext, config: AuthenticationConfiguration | null, scopes: string | string[], logic: (token: MessageExtensionTokenResponse) => Promise<any>): Promise<MessagingExtensionResponse | void>;
 
 // @public
 export enum IdentityType {

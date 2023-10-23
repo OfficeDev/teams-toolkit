@@ -322,3 +322,44 @@ export async function handleMessageExtensionQueryWithSSO(
     logic
   );
 }
+
+/**
+ * Users execute link query in message extension with SSO or access token.
+ *
+ * @param {TurnContext} context - The context object for the current turn.
+ * @param {OnBehalfOfCredentialAuthConfig} config - User custom the message extension authentication configuration.
+ * @param {initiateLoginEndpoint} initiateLoginEndpoint - Login page for Teams to redirect to.
+ * @param {string| string[]} scopes - The list of scopes for which the token will have access.
+ * @param {function} logic - Business logic when executing the link query in message extension with SSO or access token.
+ *
+ * @throws {@link ErrorCode|InternalError} when User invoke not response to message extension link query.
+ * @throws {@link ErrorCode|InternalError} when failed to get access token with unknown error.
+ * @throws {@link ErrorCode|TokenExpiredError} when SSO token has already expired.
+ * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth server.
+ * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
+ * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
+ *
+ * @returns A MessageExtension Response for the activity. If the logic not return any, return void instead.
+ */
+export async function handleMessageExtensionLinkQueryWithSSO(
+  context: TurnContext,
+  config: OnBehalfOfCredentialAuthConfig,
+  initiateLoginEndpoint: string,
+  scopes: string | string[],
+  logic: (token: MessageExtensionTokenResponse) => Promise<any>
+) {
+  if (context.activity.name != "composeExtension/queryLink") {
+    internalLogger.error(ErrorMessage.OnlySupportInQueryActivity);
+    throw new ErrorWithCode(
+      formatString(ErrorMessage.OnlySupportInQueryActivity),
+      ErrorCode.FailedOperation
+    );
+  }
+  return await executionWithTokenAndConfig(
+    context,
+    config ?? {},
+    initiateLoginEndpoint,
+    scopes,
+    logic
+  );
+}

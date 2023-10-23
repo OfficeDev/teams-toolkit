@@ -5,7 +5,7 @@ import { ErrorCode, ErrorWithCode } from "../../../../src/core/errors";
 import {
   handleMessageExtensionQueryWithSSO,
   handleMessageExtensionQueryWithToken,
-  executionWithTokenAndConfig,
+  handleMessageExtensionLinkQueryWithSSO,
 } from "../../../../src/messageExtension/executeWithSSO";
 import { MessageExtensionTokenResponse } from "../../../../src/messageExtension/teamsMsgExtTokenResponse";
 import { OnBehalfOfUserCredential } from "../../../../src/credential/onBehalfOfUserCredential";
@@ -354,7 +354,34 @@ describe("Message Extension Query With SSO Tests - Node", () => {
     assert.equal(spy.getCall(0).args[1][0].type, "invokeResponse");
   });
 
-  it("executionWithTokenAndConfig get AuthCard response in Message Extension link unfurling", async () => {
+  it("handleMessageExtensionLinkQueryWithSSO get error response without compose/linkQuery type", async () => {
+    const adapter = new SimpleAdapter();
+    const activityContext = {
+      name: "composeExtension/query",
+      value: { authentication: { token: ssoToken } },
+    };
+    const context: TurnContext = new TurnContext(adapter, activityContext);
+    try {
+      await handleMessageExtensionLinkQueryWithSSO(
+        context,
+        authConfig,
+        loginUrl,
+        "fake_scope1",
+        async (token) => {
+          token;
+        }
+      );
+    } catch (err) {
+      assert.isTrue(err instanceof ErrorWithCode);
+      assert.strictEqual(
+        (err as ErrorWithCode).message,
+        "The handleMessageExtensionLinkQueryWithSSO only support in handleTeamsAppBasedLinkQuery with composeExtension/queryLink type."
+      );
+      assert.strictEqual((err as ErrorWithCode).code, "FailedOperation");
+    }
+  });
+
+  it("handleMessageExtensionLinkQueryWithSSO get AuthCard response in Message Extension link unfurling", async () => {
     const adapter = new SimpleAdapter();
     const activityContext = {
       name: "composeExtension/queryLink",
@@ -370,7 +397,7 @@ describe("Message Extension Query With SSO Tests - Node", () => {
           ErrorCode.UiRequiredError
         )
       );
-    await executionWithTokenAndConfig(
+    await handleMessageExtensionLinkQueryWithSSO(
       context,
       authConfig,
       loginUrl,

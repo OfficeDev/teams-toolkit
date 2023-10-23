@@ -89,8 +89,9 @@ export { CardActionBot } from "./conversation/cardAction";
 export { MessageBuilder } from "./conversation/messageBuilder";
 export { InvokeResponseFactory } from "./conversation/invokeResponseFactory";
 export {
-  executionWithTokenAndConfig,
+  handleMessageExtensionQueryWithToken,
   handleMessageExtensionQueryWithSSO,
+  handleMessageExtensionLinkQueryWithSSO,
 } from "./messageExtension/executeWithSSO";
 export { MessageExtensionTokenResponse } from "./messageExtension/teamsMsgExtTokenResponse";
 

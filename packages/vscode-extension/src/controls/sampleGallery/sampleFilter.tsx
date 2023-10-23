@@ -157,22 +157,25 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         // borderRadius: 0,
         height: 24,
         lineHeight: 24,
-        backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
+        backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
         color: "var(--vscode-dropdown-foreground, #CCCCCC)",
         fontSize: 13,
-        border: 0,
+        border: "1px solid var(--vscode-menu-separatorBackground, #3C3C3C)",
       },
     };
     const caretStyle: IStyle = {
-      backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
+      backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
       color: "var(--vscode-dropdown-foreground, #CCCCCC)",
       fontSize: 11,
       lineHeight: 16,
     };
     const checkboxStyle: IStyle = {
       ".ms-Checkbox-checkbox": {
-        backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
-        border: "1px solid var(--vscode-inputValidation-infoBorder, #007ACC)",
+        backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
+        border: "1px solid var(--vscode-button-secondaryHoverBackground, #3C3C3C)",
+        i: {
+          color: "var(--vscode-peekViewTitleDescription-foreground, #cccccc)",
+        },
       },
     };
     const dropdownStyles: Partial<IDropdownStyles> = {
@@ -218,25 +221,28 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       },
       dropdownItem: {
         backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526)",
-        color: "var(--vscode-dropdown-foreground, #CCCCCC)",
         minHeight: 22,
         height: 22,
-        ".ms-Checkbox-checkbox": {
-          backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
-          border: 0,
-        },
+        ...checkboxStyle,
         ":active": {
           backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526) !important",
           ".ms-Checkbox-checkmark": {
-            color: "var(--vscode-button-foreground, #FFFFFF)",
+            color: "var(--vscode-peekViewTitleDescription-foreground, #cccccc)",
           },
         },
         "input:focus + .ms-Checkbox-label": {
           ...checkboxStyle,
         },
+        "input:focus + .ms-Checkbox-label .ms-Checkbox-checkbox": {
+          borderColor: "var(--vscode-inputValidation-infoBorder, #007ACC)",
+        },
         ":hover": {
+          backgroundColor: "var(--vscode-editorStickyScrollHover-background, #303031) !important",
           ".ms-Checkbox-checkmark": {
-            color: "var(--vscode-button-foreground, #FFFFFF)",
+            color: "var(--vscode-peekViewTitleDescription-foreground, #cccccc)",
+          },
+          ".ms-Checkbox-checkbox": {
+            borderColor: "var(--vscode-button-secondaryHoverBackground, #3C3C3C)",
           },
         },
       },
@@ -244,21 +250,21 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         minHeight: 22,
         height: 22,
         backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526)",
-        ".ms-Checkbox-checkbox": {
-          backgroundColor: "var(--vscode-dropdown-border, #3C3C3C)",
-          border: 0,
-        },
+        ...checkboxStyle,
         ":active": {
           backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526) !important",
         },
         "input:focus + .ms-Checkbox-label": {
           ...checkboxStyle,
         },
+        "input:focus + .ms-Checkbox-label .ms-Checkbox-checkbox": {
+          borderColor: "var(--vscode-inputValidation-infoBorder, #007ACC)",
+        },
         ":focus": {
           ...checkboxStyle,
         },
         ":hover": {
-          backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526) !important",
+          backgroundColor: "var(--vscode-editorStickyScrollHover-background, #303031) !important",
           ...checkboxStyle,
         },
       },

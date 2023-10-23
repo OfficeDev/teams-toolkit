@@ -23,7 +23,7 @@
 
   .search-box::part(root) {
     border-radius: 2px;
-    border: 0;
+    border: 1px solid var(--vscode-menu-separatorBackground, #3C3C3C);
     height: 24px;
   }
 
@@ -38,24 +38,14 @@
 
     &:hover {
       border-radius: 2px;
+      background: var(--vscode-button-secondaryBackground, #3C3C3C);
     }
   }
 
   .layout-selected {
     border-radius: 2px;
-    background: var(--vscode-dropdown-border, #3C3C3C);
+    background: var(--vscode-button-secondaryBackground, #3C3C3C);
   }
-
-  // .filter-dropdown {
-  //   width: 146px;
-  //   margin-left: 16px;
-  //   border-radius: 5px;
-  //   z-index: 3;
-  // }
-
-  // .filter-dropdown::part(control) {
-  //   border-radius: 5px;
-  // }
 }
 
 .filter-tag-bar {
@@ -71,8 +61,8 @@
     &::part(control) {
       font-size: 13px;
       padding: 1px 8px 3px 8px;
-      background-color: var(--vscode-keybindingLabel-border, #333333);
-      color: var(--vscode-editor-foreground, #cccccc);
+      background-color: var(--vscode-button-secondaryBackground, #333333);
+      color: var(--vscode-peekViewTitleDescription-foreground, #cccccc);
       border: 0;
     }
 

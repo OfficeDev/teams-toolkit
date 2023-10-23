@@ -14,7 +14,6 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
 import { SampleProps } from "./ISamples";
-import { Setting } from "../resources";
 
 export default class SampleListItem extends React.Component<SampleProps, unknown> {
   constructor(props: SampleProps) {

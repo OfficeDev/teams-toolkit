@@ -148,7 +148,7 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec);
+    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -189,8 +189,53 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec);
+    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true);
     expect(actualSpec).to.deep.equal(expectedSpec);
+  });
+
+  it("should filter api if operationId is missing with allowMissingId is false", () => {
+    const filter = ["get /hello/{id}"];
+    const unResolvedSpec = {
+      openapi: "3.0.0",
+      paths: {
+        "/hello/{id}": {
+          get: {
+            parameters: [
+              {
+                in: "query",
+                schema: { type: "string" },
+                required: true,
+              },
+            ],
+            responses: {
+              "200": {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+                description: "OK",
+              },
+            },
+          },
+        },
+      },
+    };
+    const expectedSpec = {
+      openapi: "3.0.0",
+      paths: {},
+    };
+
+    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, false);
+
+    expect(result).to.deep.equal(expectedSpec);
   });
 
   it("should add operationId if missing", () => {
@@ -263,7 +308,7 @@ describe("specFilter", () => {
       },
     };
 
-    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any);
+    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, true);
 
     expect(result).to.deep.equal(expectedSpec);
   });
@@ -271,7 +316,7 @@ describe("specFilter", () => {
   it("should not filter anything if filter item not exist", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    specFilter(filter, unResolveSpec, unResolveSpec);
+    specFilter(filter, unResolveSpec, unResolveSpec, true);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -297,7 +342,7 @@ describe("specFilter", () => {
       paths: {},
     };
 
-    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any);
+    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, true);
 
     expect(result).to.deep.equal(expectedSpec);
   });
@@ -305,7 +350,7 @@ describe("specFilter", () => {
   it("should not modify the original OpenAPI spec", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    specFilter(filter, unResolveSpec, unResolveSpec);
+    specFilter(filter, unResolveSpec, unResolveSpec, true);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -317,7 +362,7 @@ describe("specFilter", () => {
       .throws(new Error("isSupportedApi error"));
 
     try {
-      specFilter(filter, unResolveSpec, unResolveSpec);
+      specFilter(filter, unResolveSpec, unResolveSpec, true);
       expect.fail("Expected specFilter to throw a SpecParserError");
     } catch (err) {
       expect(err).to.be.instanceOf(SpecParserError);

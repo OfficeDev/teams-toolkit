@@ -32,16 +32,17 @@ Cases that are not breaking changes:
 * Add new features to templates that does not require any change in Teams Toolkit.
 * Totally rewrite a template but old Teams Toolkit can still work with it.
 
-## How to debug templates?
+## How to develop templates?
 
-1. Set `TEAMSFX_DEBUG_TEMPLATE=true` to your environment variables.
-2. If you would like to debug csharp scaffolding template through VS Teams Toolkit Extension, please also set `NODE_ENV="development"` to your environment variables.
-3. Add your changes in templates source code.
-4. cd to vscode-extension folder.
-5. F5 to local debug and create new project.
-6. The `FetchTemplateZipFromSourceCode` action will get template from the source code that you just changed.
+Developing templates is similiar to other packages. Follow the steps below to get started:
 
-* `FetchTemplatesUrlWithTag`, `FetchTemplatesZipFromUrl`, `FetchTemplateZipFromLocal`, these actions are skipped.
+1. Run `npm run setup` in the root folder to setup the whole project.
+1. Make changes to the templates.
+1. Run `npm run build` in the templates folder to apply your changes.
+1. Start the vscode-extension, cli or vs server and create a project that uses your updated template to preview the changes.
+
+By default, fx-core uses local template packages for scaffolding. 
+If you prefer to use the latest stable template packages from GitHub Releases, you can go to [templates-config.json](../packages/fx-core/src/common/templates-config.json), set `useLocalTemplate` to false and build the fx-core to apply the changes.
 
 ## What is template constraints?
 

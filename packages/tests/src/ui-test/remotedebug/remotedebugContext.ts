@@ -1,6 +1,6 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";

@@ -14,6 +14,7 @@ export enum ExtensionErrors {
   PortAlreadyInUse = "PortAlreadyInUse",
   PrerequisitesValidationError = "PrerequisitesValidationError",
   PrerequisitesNoM365AccountError = "PrerequisitesNoM365AccountError",
+  PrerequisitesNoCopilotAccessError = "PrerequisitesNoCopilotAccessError",
   PrerequisitesSideloadingDisabledError = "PrerequisitesSideloadingDisabledError",
   PrerequisitesInstallPackagesError = "PrerequisitesPackageInstallError",
   DebugServiceFailedBeforeStartError = "DebugServiceFailedBeforeStartError",

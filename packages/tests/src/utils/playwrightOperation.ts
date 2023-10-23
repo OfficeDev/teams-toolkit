@@ -354,9 +354,7 @@ export async function initTeamsPage(
 
       try {
         // verify add page is closed
-        await frame?.waitForSelector(
-          `h1:has-text('Add ${options?.teamsAppName} to a team')`
-        );
+        await frame?.waitForSelector(`h1:has-text('to a team')`);
         try {
           const frameElementHandle = await page.waitForSelector(
             "iframe.embedded-page-content"
@@ -366,22 +364,30 @@ export async function initTeamsPage(
           try {
             const items = await frame?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
+            console.log("selected a team.");
           } catch (error) {
             const searchBtn = await frame?.waitForSelector(
               "div.ui-dropdown__toggle-indicator"
             );
             await searchBtn?.click();
             await page.waitForTimeout(Timeout.shortTimeLoading);
+
             const items = await frame?.waitForSelector("li.ui-dropdown__item");
             await items?.click();
+            console.log("[catch] selected a team.");
           }
 
           const setUpBtn = await frame?.waitForSelector(
             'button span:has-text("Set up a tab")'
           );
           await setUpBtn?.click();
+          console.log("click 'set up a tab' button");
           await page.waitForTimeout(Timeout.shortTimeLoading);
+          await frame?.waitForSelector('button span:has-text("Set up a tab")', {
+            state: "detached",
+          });
         } catch (error) {
+          console.log(error);
           await page.screenshot({
             path: getPlaywrightScreenshotPath("error"),
             fullPage: true,
@@ -393,6 +399,7 @@ export async function initTeamsPage(
       }
 
       {
+        console.log('[start] click "save" button');
         const frameElementHandle = await page.waitForSelector(
           "iframe.embedded-iframe"
         );
@@ -412,6 +419,7 @@ export async function initTeamsPage(
           await page.waitForSelector(`button:has-text("Save")`, {
             state: "detached",
           });
+          console.log('[success] click "save" button');
         } catch (error) {
           console.log("No save button to click");
         }
@@ -1986,6 +1994,57 @@ export async function validateUnfurlCard(page: Page) {
     await page.waitForTimeout(Timeout.shortTimeLoading);
     await frame?.waitForSelector('p:has-text("Link Unfurling card")');
     console.log("verify unfurl card successfully!");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateTabApim(
+  page: Page,
+  options?: { displayName?: string }
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-iframe"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+
+    const startBtn = await frame?.waitForSelector(
+      'button:has-text("Consent and log in")'
+    );
+
+    await RetryHandler.retry(async () => {
+      console.log("Before popup");
+      const [popup] = await Promise.all([
+        page
+          .waitForEvent("popup")
+          .then((popup) =>
+            popup
+              .waitForEvent("close", {
+                timeout: Timeout.playwrightConsentPopupPage,
+              })
+              .catch(() => popup)
+          )
+          .catch(() => {}),
+        startBtn?.click(),
+      ]);
+      console.log("after popup");
+
+      if (popup && !popup?.isClosed()) {
+        await popup
+          .click('button:has-text("Reload")', {
+            timeout: Timeout.playwrightConsentPageReload,
+          })
+          .catch(() => {});
+        await popup.click("input.button[type='submit'][value='Accept']");
+      }
+    });
+
+    await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

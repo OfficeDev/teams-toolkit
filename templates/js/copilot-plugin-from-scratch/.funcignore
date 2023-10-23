@@ -1,3 +1,4 @@
+.funcignore
 *.js.map
 .git*
 .localConfigs

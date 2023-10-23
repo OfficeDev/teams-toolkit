@@ -22,6 +22,7 @@ import {
   VersionState,
   assembleError,
   getHashedEnv,
+  isCliV3Enabled,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
 import { cloneDeep, pick } from "lodash";
@@ -206,7 +207,12 @@ class CLIEngine {
     // 6. version check
     const inputs = getSystemInputs(context.optionValues.projectPath as string);
     inputs.ignoreEnvInfo = true;
-    const skipCommands = ["new", "sample", "upgrade"];
+    const skipCommands = [
+      "new",
+      "sample",
+      "upgrade",
+      ...(isCliV3Enabled() ? ["update", "package", "publish", "validate"] : []),
+    ];
     if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
       const core = getFxCore();
       const res = await core.projectVersionCheck(inputs);

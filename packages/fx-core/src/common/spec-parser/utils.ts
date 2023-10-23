@@ -2,33 +2,22 @@
 // Licensed under the MIT license.
 "use strict";
 
-import axios from "axios";
-import fs from "fs-extra";
-import { ConstantString } from "./constants";
 import { OpenAPIV3 } from "openapi-types";
+import SwaggerParser from "@apidevtools/swagger-parser";
 import path from "path";
-import * as util from "util";
-import { CheckParamResult, ErrorResult, ErrorType } from "./interfaces";
 import { format } from "util";
-
-export async function isYamlSpecFile(specPath: string): Promise<boolean> {
-  if (specPath.endsWith(".yaml") || specPath.endsWith(".yml")) {
-    return true;
-  } else if (specPath.endsWith(".json")) {
-    return false;
-  }
-  const isRemoteFile = specPath.startsWith("http:") || specPath.startsWith("https:");
-  const fileContent = isRemoteFile
-    ? (await axios.get(specPath)).data
-    : await fs.readFile(specPath, "utf-8");
-
-  try {
-    JSON.parse(fileContent);
-    return false;
-  } catch (error) {
-    return true;
-  }
-}
+import { ConstantString } from "./constants";
+import {
+  CheckParamResult,
+  ErrorResult,
+  ErrorType,
+  Parameter,
+  ValidateResult,
+  ValidationStatus,
+  WarningResult,
+  WarningType,
+} from "./interfaces";
+import { IMessagingExtensionCommand } from "@microsoft/teamsfx-api";
 
 export function checkParameters(paramObject: OpenAPIV3.ParameterObject[]): CheckParamResult {
   const paramResult = {
@@ -138,7 +127,12 @@ export function checkPostBody(
  * 5. response body should be “application/json” and not empty, and response code should be 20X
  * 6. only support request body with “application/json” content type
  */
-export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Document): boolean {
+export function isSupportedApi(
+  method: string,
+  path: string,
+  spec: OpenAPIV3.Document,
+  allowMissingId: boolean
+): boolean {
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
   if (pathObj) {
@@ -148,6 +142,9 @@ export function isSupportedApi(method: string, path: string, spec: OpenAPIV3.Doc
       !pathObj[method]?.security
     ) {
       const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
+      if (!allowMissingId && !operationObject.operationId) {
+        return false;
+      }
       const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
 
       const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
@@ -284,17 +281,18 @@ export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[]
     });
   } else if (protocol !== "https:") {
     // Http server url is not supported
+    const protocolString = protocol.slice(0, -1);
     errors.push({
       type: ErrorType.UrlProtocolNotSupported,
-      content: util.format(ConstantString.UrlProtocolNotSupported, protocol.slice(0, -1)),
-      data: servers,
+      content: format(ConstantString.UrlProtocolNotSupported, protocol.slice(0, -1)),
+      data: protocolString,
     });
   }
 
   return errors;
 }
 
-export function validateServer(spec: OpenAPIV3.Document): ErrorResult[] {
+export function validateServer(spec: OpenAPIV3.Document, allowMissingId: boolean): ErrorResult[] {
   const errors: ErrorResult[] = [];
 
   let hasTopLevelServers = false;
@@ -321,7 +319,7 @@ export function validateServer(spec: OpenAPIV3.Document): ErrorResult[] {
 
     for (const method in methods) {
       const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-      if (isSupportedApi(method, path, spec)) {
+      if (isSupportedApi(method, path, spec, allowMissingId)) {
         if (operationObject?.servers && operationObject.servers.length >= 1) {
           hasOperationLevelServers = true;
           const serverErrors = checkServerUrl(operationObject.servers);
@@ -347,4 +345,212 @@ export function isWellKnownName(name: string, wellknownNameList: string[]): bool
     }
   }
   return false;
+}
+
+export function generateParametersFromSchema(
+  schema: OpenAPIV3.SchemaObject,
+  name: string,
+  isRequired = false
+): [Parameter[], Parameter[]] {
+  const requiredParams: Parameter[] = [];
+  const optionalParams: Parameter[] = [];
+
+  if (
+    schema.type === "string" ||
+    schema.type === "integer" ||
+    schema.type === "boolean" ||
+    schema.type === "number"
+  ) {
+    const parameter = {
+      name: name,
+      title: updateFirstLetter(name),
+      description: schema.description ?? "",
+    };
+    if (isRequired && schema.default === undefined) {
+      requiredParams.push(parameter);
+    } else {
+      optionalParams.push(parameter);
+    }
+  } else if (schema.type === "object") {
+    const { properties } = schema;
+    for (const property in properties) {
+      let isRequired = false;
+      if (schema.required && schema.required?.indexOf(property) >= 0) {
+        isRequired = true;
+      }
+      const [requiredP, optionalP] = generateParametersFromSchema(
+        properties[property] as OpenAPIV3.SchemaObject,
+        property,
+        isRequired
+      );
+
+      requiredParams.push(...requiredP);
+      optionalParams.push(...optionalP);
+    }
+  }
+
+  return [requiredParams, optionalParams];
+}
+
+export function parseApiInfo(
+  operationItem: OpenAPIV3.OperationObject
+): [IMessagingExtensionCommand, WarningResult | undefined] {
+  const requiredParams: Parameter[] = [];
+  const optionalParams: Parameter[] = [];
+  const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
+
+  if (paramObject) {
+    paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
+      const parameter: Parameter = {
+        name: param.name,
+        title: updateFirstLetter(param.name),
+        description: param.description ?? "",
+      };
+
+      const schema = param.schema as OpenAPIV3.SchemaObject;
+      if (param.in !== "header" && param.in !== "cookie") {
+        if (param.required && schema?.default === undefined) {
+          requiredParams.push(parameter);
+        } else {
+          optionalParams.push(parameter);
+        }
+      }
+    });
+  }
+
+  if (operationItem.requestBody) {
+    const requestBody = operationItem.requestBody as OpenAPIV3.RequestBodyObject;
+    const requestJson = requestBody.content["application/json"];
+    if (Object.keys(requestJson).length !== 0) {
+      const schema = requestJson.schema as OpenAPIV3.SchemaObject;
+      const [requiredP, optionalP] = generateParametersFromSchema(
+        schema,
+        "requestBody",
+        requestBody.required
+      );
+      requiredParams.push(...requiredP);
+      optionalParams.push(...optionalP);
+    }
+  }
+
+  const operationId = operationItem.operationId!;
+
+  const parameters = [];
+
+  if (requiredParams.length != 0) {
+    parameters.push(...requiredParams);
+  } else {
+    parameters.push(optionalParams[0]);
+  }
+
+  const command: IMessagingExtensionCommand = {
+    context: ["compose"],
+    type: "query",
+    title: operationItem.summary ?? "",
+    id: operationId,
+    parameters: parameters,
+    description: operationItem.description ?? "",
+  };
+  let warning: WarningResult | undefined = undefined;
+
+  if (requiredParams.length === 0 && optionalParams.length > 1) {
+    warning = {
+      type: WarningType.OperationOnlyContainsOptionalParam,
+      content: format(ConstantString.OperationOnlyContainsOptionalParam, operationId),
+      data: operationId,
+    };
+  }
+  return [command, warning];
+}
+
+export function listSupportedAPIs(
+  spec: OpenAPIV3.Document,
+  allowMissingId: boolean
+): {
+  [key: string]: OpenAPIV3.OperationObject;
+} {
+  const paths = spec.paths;
+  const result: { [key: string]: OpenAPIV3.OperationObject } = {};
+  for (const path in paths) {
+    const methods = paths[path];
+    for (const method in methods) {
+      // For developer preview, only support GET operation with only 1 parameter without auth
+      if (isSupportedApi(method, path, spec, allowMissingId)) {
+        const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
+        result[`${method.toUpperCase()} ${path}`] = operationObject;
+      }
+    }
+  }
+  return result;
+}
+
+export function validateSpec(
+  spec: OpenAPIV3.Document,
+  parser: SwaggerParser,
+  isSwaggerFile: boolean
+): ValidateResult {
+  const errors: ErrorResult[] = [];
+  const warnings: WarningResult[] = [];
+
+  if (isSwaggerFile) {
+    warnings.push({
+      type: WarningType.ConvertSwaggerToOpenAPI,
+      content: ConstantString.ConvertSwaggerToOpenAPI,
+    });
+  }
+
+  // Server validation
+  const serverErrors = validateServer(spec, true);
+  errors.push(...serverErrors);
+
+  // Remote reference not supported
+  const refPaths = parser.$refs.paths();
+
+  // refPaths [0] is the current spec file path
+  if (refPaths.length > 1) {
+    errors.push({
+      type: ErrorType.RemoteRefNotSupported,
+      content: format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
+      data: refPaths,
+    });
+  }
+
+  // No supported API
+  const apiMap = listSupportedAPIs(spec, true);
+  if (Object.keys(apiMap).length === 0) {
+    errors.push({
+      type: ErrorType.NoSupportedApi,
+      content: ConstantString.NoSupportedApi,
+    });
+  }
+
+  // OperationId missing
+  const apisMissingOperationId: string[] = [];
+  for (const key in apiMap) {
+    const pathObjectItem = apiMap[key];
+    if (!pathObjectItem.operationId) {
+      apisMissingOperationId.push(key);
+    }
+  }
+
+  if (apisMissingOperationId.length > 0) {
+    warnings.push({
+      type: WarningType.OperationIdMissing,
+      content: format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
+      data: apisMissingOperationId,
+    });
+  }
+
+  let status = ValidationStatus.Valid;
+  if (warnings.length > 0 && errors.length === 0) {
+    status = ValidationStatus.Warning;
+  } else if (errors.length > 0) {
+    status = ValidationStatus.Error;
+  }
+
+  return {
+    status,
+    warnings,
+    errors,
+  };
 }

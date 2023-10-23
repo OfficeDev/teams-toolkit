@@ -91,8 +91,8 @@ describe("Multi Env Happy Path for SPFx", function () {
         timeout: 0,
       });
       const envs = result.stdout.trim().split(/\r?\n/).sort();
-      expect(envs).to.be.contain("dev");
-      expect(envs).to.be.contain("e2e");
+      expect(envs).to.include("dev");
+      expect(envs).to.include("e2e");
       expect(result.stderr).to.be.empty;
       console.log(
         `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`

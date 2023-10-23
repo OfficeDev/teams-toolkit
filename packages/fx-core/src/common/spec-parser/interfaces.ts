@@ -79,6 +79,7 @@ export enum ErrorType {
   NoSupportedApi = "no-supported-api",
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
   ResolveServerUrlFailed = "resolve-server-url-failed",
+  SwaggerNotSupported = "swagger-not-supported",
 
   ListFailed = "list-failed",
   ListOperationMapFailed = "list-operation-map-failed",
@@ -96,8 +97,6 @@ export enum ErrorType {
  * An enum that represents the types of warnings that can occur during validation.
  */
 export enum WarningType {
-  AuthNotSupported = "auth-not-supported",
-  MethodNotSupported = "method-not-supported",
   OperationIdMissing = "operationid-missing",
   GenerateCardFailed = "generate-card-failed",
   OperationOnlyContainsOptionalParam = "operation-only-contains-optional-param",
@@ -120,17 +119,23 @@ export interface TextBlockElement {
   wrap: boolean;
 }
 
+export interface ImageElement {
+  type: string;
+  url: string;
+  $when: string;
+}
+
 export interface ArrayElement {
   type: string;
   $data: string;
-  items: Array<TextBlockElement | ArrayElement>;
+  items: Array<TextBlockElement | ImageElement | ArrayElement>;
 }
 
 export interface AdaptiveCard {
   type: string;
   $schema: string;
   version: string;
-  body: Array<TextBlockElement | ArrayElement>;
+  body: Array<TextBlockElement | ImageElement | ArrayElement>;
 }
 
 export interface PreviewCardTemplate {
@@ -162,4 +167,18 @@ export interface CheckParamResult {
   requiredNum: number;
   optionalNum: number;
   isValid: boolean;
+}
+
+export interface ParseOptions {
+  allowMissingId?: boolean;
+  allowSwagger?: boolean;
+}
+
+export interface APIInfo {
+  method: string;
+  path: string;
+  title: string;
+  id: string;
+  parameters: Parameter[];
+  description: string;
 }

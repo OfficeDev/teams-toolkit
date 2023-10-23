@@ -11,7 +11,7 @@ import { CaseFactory } from "./sampleCaseFactory";
 class TabSSOApimProxyTestCase extends CaseFactory {}
 
 new TabSSOApimProxyTestCase(
-  TemplateProjectFolder.TabSSOApimProxyTestCase,
+  TemplateProjectFolder.TabSSOApimProxy,
   25191528,
   "v-ivanchen@microsoft.com",
   ["tab", "aad"]

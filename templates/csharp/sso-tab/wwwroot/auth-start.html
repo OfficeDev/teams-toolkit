@@ -16,7 +16,7 @@
     ></script>
     <script type="text/javascript">
       microsoftTeams.app.initialize().then(() => {
-        // Get the tab context, and use the information to navigate to Azure AD login page
+        // Get the tab context, and use the information to navigate to Microsoft Entra login page
         microsoftTeams.app.getContext().then(async function (context) {
           // Generate random state string and store it, so we can verify it in the callback
           let state = _guid();

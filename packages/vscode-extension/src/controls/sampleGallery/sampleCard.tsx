@@ -15,7 +15,6 @@ import {
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import { Setting, Watch } from "../resources";
 import { SampleProps } from "./ISamples";
 
 export default class SampleCard extends React.Component<SampleProps, unknown> {
@@ -33,7 +32,7 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
             <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
           </div>
         )}
-        <Image src={sample.thumbnailUrl} />
+        <Image className="thumbnail" src={sample.thumbnailUrl} />
       </>
     );
     const legacySampleImage = (
@@ -50,10 +49,14 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
     );
     const cardInformation = (
       <div className="infoBox">
+        <label className="hidden-label" id="titleLabel">
+          sample app title:
+        </label>
+        <h3>{sample.title}</h3>
         <label className="hidden-label" id="tagLabel">
           sample app tags:
         </label>
-        <div className="section" aria-labelledby="tagLabel">
+        <div className="tagSection" aria-labelledby="tagLabel">
           {sample.tags &&
             sample.tags.map((value: string) => {
               return (
@@ -62,22 +65,6 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
                 </VSCodeTag>
               );
             })}
-        </div>
-        <label className="hidden-label" id="titleLabel">
-          sample app title:
-        </label>
-        <h3>{sample.title}</h3>
-        <div className="estimation-time">
-          <div className="watch">
-            <Watch></Watch>
-          </div>
-          <label style={{ paddingLeft: 4 }}>{sample.time}</label>
-        </div>
-        <div className="configuration">
-          <div className="setting">
-            <Setting></Setting>
-          </div>
-          <label style={{ paddingLeft: 4 }}>{sample.configuration}</label>
         </div>
       </div>
     );

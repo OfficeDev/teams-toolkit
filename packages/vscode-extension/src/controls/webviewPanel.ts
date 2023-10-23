@@ -138,6 +138,21 @@ export class WebviewPanel {
           case Commands.LoadSampleCollection:
             await this.LoadSampleCollection();
             break;
+          case Commands.UpgradeToolkit:
+            await this.OpenToolkitInExtensionView(msg.data.version);
+            break;
+          case Commands.StoreData:
+            await globalVariables.context.globalState.update(msg.data.key, msg.data.value);
+            break;
+          case Commands.GetData:
+            await this.panel.webview.postMessage({
+              message: Commands.GetData,
+              data: {
+                key: msg.data.key,
+                value: globalVariables.context.globalState.get(msg.data.key),
+              },
+            });
+            break;
           default:
             break;
         }
@@ -213,6 +228,14 @@ export class WebviewPanel {
         data: sampleData,
       });
     }
+  }
+
+  private async OpenToolkitInExtensionView(version: string) {
+    // await vscode.commands.executeCommand(
+    //   "workbench.extensions.installExtension",
+    //   `teamsdevapp.ms-teams-vscode-extension@${version}`
+    // );
+    await vscode.commands.executeCommand("workbench.extensions.action.checkForUpdates");
   }
 
   private getWebpageTitle(panelType: PanelType): string {

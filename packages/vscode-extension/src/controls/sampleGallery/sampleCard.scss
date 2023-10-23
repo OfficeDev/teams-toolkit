@@ -23,10 +23,20 @@
     height: auto;
     position: relative;
     cursor: pointer;
-    padding-bottom: 8px;
     box-shadow: 0px 2px 16px rgb(0 0 0 / 36%);
     display: flex;
     flex-direction: column;
+
+    .thumbnail {
+      img {
+        aspect-ratio: 40 / 23;
+      }
+    }
+
+    .infoBox {
+      padding-top: 8px;
+      padding-bottom: 16px;
+    }
 
     .hidden-label {
       position: absolute;
@@ -54,10 +64,10 @@
       }
     }
 
-    .section {
+    .tagSection {
       display: flex;
-      margin-bottom: 0px;
       flex-wrap: wrap;
+      padding: 0px 10px 0px 10px;
     }
 
     .triangle {
@@ -93,72 +103,16 @@
     }
 
     .tag {
-      margin: 8px 0px 0px 8px;
-    }
-
-    .estimation-time {
-      padding-left: 8px;
-      height: 24px;
-      color: var(--vscode-editor-foreground);
-      display: flex;
-      font-size: 11px;
-      margin-top: 8px;
-      margin-bottom: 2px;
-
-      .watch {
-        width: 16px;
-        height: 16px;
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      .ms-Image {
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      label {
-        margin-top: auto;
-        margin-bottom: auto;
-        cursor: pointer;
-      }
-    }
-
-    .configuration {
-      padding-left: 8px;
-      height: auto;
-      color: var(--vscode-editor-foreground);
-      display: flex;
-      font-size: 11px;
-      height: 24px;
-
-      .setting {
-        width: 16px;
-        height: 16px;
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      .ms-Image {
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      label {
-        width: 242px;
-        margin-top: auto;
-        margin-bottom: auto;
-        cursor: pointer;
-      }
+      margin: 4px 8px 0px 0px;
     }
 
     h3 {
       font-size: 13px;
       text-align: center;
-      color: var(--vscode-editor-foreground);
+      color: var(--vscode-debugConsole-sourceForeground);
       font-weight: 800;
       text-align: left;
-      margin: 8px 12px 0px 12px;
+      margin: 8px 10px 4px 10px;
       line-height: 16px;
     }
 
@@ -189,12 +143,6 @@
   }
 
   .sample-card.unavailable {
-    cursor: default;
-
-    .infoBox {
-      opacity: 0.3;
-    }
-
     .tooltip {
       visibility: hidden;
       width: 90px;
@@ -229,6 +177,11 @@ body.vscode-light {
   .sample-card:not(.unavailable):hover {
     background-color: #F0F0F0;
   }
+
+  .tag::part(control) {
+    background-color: #E5E5E5;
+    color: #606060;
+  }
 }
 
 body.vscode-dark {
@@ -239,6 +192,11 @@ body.vscode-dark {
 
   .sample-card:not(.unavailable):hover {
     background-color: #303031;
+  }
+
+  .tag::part(control) {
+    background-color: #4D4D4D;
+    color: #FFFFFF;
   }
 }
 

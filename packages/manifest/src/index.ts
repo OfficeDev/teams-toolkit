@@ -124,7 +124,7 @@ export class ManifestUtil {
       version: manifest.version,
       capabilities: capabilities,
       manifestVersion: manifest.manifestVersion,
-      isCopilotPlugin: false,
+      isApiME: false,
       isSPFx: false,
     };
 
@@ -134,7 +134,7 @@ export class ManifestUtil {
       manifest.composeExtensions.length > 0 &&
       (manifest.composeExtensions[0] as IComposeExtension).composeExtensionType == "apiBased"
     ) {
-      properties.isCopilotPlugin = true;
+      properties.isApiME = true;
     }
 
     // If it's SPFx app

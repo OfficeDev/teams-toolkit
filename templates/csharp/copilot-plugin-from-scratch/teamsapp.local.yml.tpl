@@ -8,7 +8,7 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
@@ -59,7 +59,7 @@ provision:
       target: ./Properties/launchSettings.json
       content:
         profiles:
-          Copilot (browser):
+          Microsoft Teams (browser):
             commandName: "Project"
             commandLineArgs: "host start --port 5130 --pause-on-error"
             dotnetRunMessages: true

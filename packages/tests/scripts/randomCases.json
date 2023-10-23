@@ -34,7 +34,9 @@
             }
         },
         "cases": [
-            "sample-localdebug-todo-list-with-spfx"
+            "sample-localdebug-todo-list-with-spfx",
+            "sample-localdebug-react-retail-dashboard",
+            "sample-localdebug-spfx-productivity-dashboard"
         ]
     },
     {
@@ -86,8 +88,9 @@
             "sample-remotedebug-share-now",
             "sample-remotedebug-proactive-message",
             "sample-remotedebug-assistant-dashboard",
-            "sample-remotedebug-hello-world-tab-outlook"
-
+            "sample-remotedebug-hello-world-tab-outlook",
+            "sample-remotedebug-bot-sso",
+            "sample-remotedebug-sso-tab-via-apim-proxy"
         ]
     },
     {
@@ -97,7 +100,9 @@
             }
         },
         "cases": [
-            "sample-remotedebug-todo-list-with-spfx"
+            "sample-remotedebug-todo-list-with-spfx",
+            "sample-remotedebug-react-retail-dashboard",
+            "sample-remotedebug-spfx-productivity-dashboard"
         ]
     },
     {

@@ -1,15 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import Fuse from "fuse.js";
-
 export type SampleGalleryState = {
   loading: boolean;
-  samples: Array<SampleInfo>;
+  layout: "grid" | "list";
+  filteredSamples?: Array<SampleInfo>;
   error?: Error;
   selectedSampleId?: string;
-  query: string;
-  fuse: Fuse<SampleInfo>;
 };
 
 export interface SampleInfo {
@@ -36,6 +33,13 @@ export type SampleProps = {
 };
 
 export type SampleFilterProps = {
+  samples: Array<SampleInfo>;
+  layout: "grid" | "list";
+
+  onFilteredSamplesChange: (samples: SampleInfo[]) => void;
+  onLayoutChange: (layout: "grid" | "list") => void;
+};
+
+export type SampleFilterState = {
   query: string;
-  onQueryChange: (query: string) => void;
 };

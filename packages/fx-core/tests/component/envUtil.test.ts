@@ -823,6 +823,15 @@ describe("envUtils", () => {
       assert.isTrue(res === undefined);
     });
   });
+
+  describe("loadEnvFile", () => {
+    it("happy path", async () => {
+      sandbox.stub(dotenvUtil, "deserialize").returns({ obj: { KEY: "VALUE" } });
+      sandbox.stub(fs, "readFile").resolves("" as any);
+      await envUtil.loadEnvFile(".env.dev");
+      assert.equal(process.env.KEY, "VALUE");
+    });
+  });
 });
 
 describe("parseSetOutputCommand", () => {

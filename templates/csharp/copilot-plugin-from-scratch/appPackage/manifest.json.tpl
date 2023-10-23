@@ -15,12 +15,12 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "short": "{{appName}}${{APP_NAME_SUFFIX}}",
         "full": "Full name for {{appName}}"
     },
     "description": {
         "short": "Track and monitor car repair records for stress-free maintenance management.",
-        "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your car repair records a breeze. With the power of Copilot, you can effortlessly stay informed about your car's maintenance timeline."
+        "full": "The ultimate solution for hassle-free car maintenance management makes tracking and monitoring your car repair records a breeze."
     },
     "accentColor": "#FFFFFF",
     "composeExtensions": [

@@ -21,9 +21,7 @@ export class M365AccountNode extends DynamicNode {
     this.status = AccountItemStatus.SignedOut;
     this.contextValue = "signinM365";
     this.sideloadingNode = new SideloadingNode(this.eventEmitter, "");
-    if (isCopilotPluginEnabled()) {
-      this.copilotNode = new CopilotNode(this.eventEmitter, "");
-    }
+    this.copilotNode = new CopilotNode(this.eventEmitter, "");
   }
 
   public setSignedIn(upn: string) {

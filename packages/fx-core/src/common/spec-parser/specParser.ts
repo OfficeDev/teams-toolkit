@@ -2,50 +2,59 @@
 // Licensed under the MIT license.
 "use strict";
 
-import * as util from "util";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
-import { SpecParserError } from "./specParserError";
 import converter from "swagger2openapi";
+import jsyaml from "js-yaml";
+import fs from "fs-extra";
+import path from "path";
 import {
-  AdaptiveCard,
-  ErrorResult,
+  APIInfo,
   ErrorType,
   GenerateResult,
+  ParseOptions,
   ValidateResult,
   ValidationStatus,
-  WarningResult,
   WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
-import jsyaml from "js-yaml";
-import fs from "fs-extra";
+import { SpecParserError } from "./specParserError";
 import { specFilter } from "./specFilter";
-import { convertPathToCamelCase, isSupportedApi, validateServer } from "./utils";
+import { convertPathToCamelCase, listSupportedAPIs, validateSpec } from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
-import path from "path";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
  */
 export class SpecParser {
-  public readonly specPath: string;
+  public readonly pathOrSpec: string | OpenAPIV3.Document;
   public readonly parser: SwaggerParser;
+  public readonly options: ParseOptions;
 
   private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
   private isSwaggerFile: boolean | undefined;
 
+  private defaultOptions: ParseOptions = {
+    allowMissingId: true,
+    allowSwagger: true,
+  };
+
   /**
    * Creates a new instance of the SpecParser class.
-   * @param path The URL or file path of the OpenAPI specification file. The OpenAPI specification file must have a version of 3.0 or higher.
+   * @param pathOrDoc The path to the OpenAPI specification file or the OpenAPI specification object.
+   * @param options The options for parsing the OpenAPI specification file.
    */
-  constructor(path: string) {
-    this.specPath = path;
+  constructor(pathOrDoc: string | OpenAPIV3.Document, options?: ParseOptions) {
+    this.pathOrSpec = pathOrDoc;
     this.parser = new SwaggerParser();
+    this.options = {
+      ...this.defaultOptions,
+      ...(options ?? {}),
+    };
   }
 
   /**
@@ -55,88 +64,36 @@ export class SpecParser {
    */
   async validate(): Promise<ValidateResult> {
     try {
-      const errors: ErrorResult[] = [];
-      const warnings: WarningResult[] = [];
       try {
         await this.loadSpec();
         await this.parser.validate(this.spec!);
       } catch (e) {
-        // Spec not valid
-        errors.push({ type: ErrorType.SpecNotValid, content: (e as Error).toString() });
         return {
           status: ValidationStatus.Error,
-          warnings,
-          errors,
+          warnings: [],
+          errors: [{ type: ErrorType.SpecNotValid, content: (e as Error).toString() }],
         };
       }
 
-      if (this.isSwaggerFile) {
-        warnings.push({
-          type: WarningType.ConvertSwaggerToOpenAPI,
-          content: ConstantString.ConvertSwaggerToOpenAPI,
-        });
+      if (!this.options.allowSwagger && this.isSwaggerFile) {
+        return {
+          status: ValidationStatus.Error,
+          warnings: [],
+          errors: [
+            { type: ErrorType.SwaggerNotSupported, content: ConstantString.SwaggerNotSupported },
+          ],
+        };
       }
 
-      // Server validation
-      const serverErrors = validateServer(this.spec!);
-      errors.push(...serverErrors);
-
-      // Remote reference not supported
-      const refPaths = this.parser.$refs.paths();
-
-      // refPaths [0] is the current spec file path
-      if (refPaths.length > 1) {
-        errors.push({
-          type: ErrorType.RemoteRefNotSupported,
-          content: util.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
-          data: refPaths,
-        });
-      }
-
-      // No supported API
-      const apiMap = this.getAllSupportedApi(this.spec!);
-      if (Object.keys(apiMap).length === 0) {
-        errors.push({
-          type: ErrorType.NoSupportedApi,
-          content: ConstantString.NoSupportedApi,
-        });
-      }
-
-      // OperationId missing
-      const apisMissingOperationId: string[] = [];
-      for (const key in apiMap) {
-        const pathObjectItem = apiMap[key];
-        if (!pathObjectItem.operationId) {
-          apisMissingOperationId.push(key);
-        }
-      }
-
-      if (apisMissingOperationId.length > 0) {
-        warnings.push({
-          type: WarningType.OperationIdMissing,
-          content: util.format(
-            ConstantString.MissingOperationId,
-            apisMissingOperationId.join(", ")
-          ),
-          data: apisMissingOperationId,
-        });
-      }
-
-      let status = ValidationStatus.Valid;
-      if (warnings.length > 0 && errors.length === 0) {
-        status = ValidationStatus.Warning;
-      } else if (errors.length > 0) {
-        status = ValidationStatus.Error;
-      }
-
-      return {
-        status,
-        warnings,
-        errors,
-      };
+      return validateSpec(this.spec!, this.parser, !!this.isSwaggerFile);
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async listSupportedAPIInfo(): Promise<APIInfo[]> {
+    throw new Error("Method not implemented.");
   }
 
   /**
@@ -147,7 +104,7 @@ export class SpecParser {
   async list(): Promise<string[]> {
     try {
       await this.loadSpec();
-      const apiMap = this.getAllSupportedApi(this.spec!);
+      const apiMap = this.getAllSupportedAPIs(this.spec!);
       return Array.from(Object.keys(apiMap));
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
@@ -161,7 +118,7 @@ export class SpecParser {
   async listOperationMap(): Promise<Map<string, string>> {
     try {
       await this.loadSpec();
-      const apiMap = this.getAllSupportedApi(this.spec!);
+      const apiMap = this.getAllSupportedAPIs(this.spec!);
       const operationMap = new Map<string, string>();
       for (const key in apiMap) {
         const pathObjectItem = apiMap[key];
@@ -207,7 +164,12 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const newUnResolvedSpec = specFilter(filter, this.unResolveSpec!, this.spec!);
+      const newUnResolvedSpec = specFilter(
+        filter,
+        this.unResolveSpec!,
+        this.spec!,
+        this.options.allowMissingId!
+      );
       let resultStr;
       if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
         resultStr = jsyaml.dump(newUnResolvedSpec);
@@ -269,7 +231,7 @@ export class SpecParser {
 
   private async loadSpec(): Promise<void> {
     if (!this.spec) {
-      this.unResolveSpec = (await this.parser.parse(this.specPath)) as OpenAPIV3.Document;
+      this.unResolveSpec = (await this.parser.parse(this.pathOrSpec)) as OpenAPIV3.Document;
       // Convert swagger 2.0 to openapi 3.0
       if (!this.unResolveSpec.openapi && (this.unResolveSpec as any).swagger === "2.0") {
         const specObj = await converter.convert(this.unResolveSpec as any, {});
@@ -282,24 +244,13 @@ export class SpecParser {
     }
   }
 
-  private getAllSupportedApi(spec: OpenAPIV3.Document): {
+  private getAllSupportedAPIs(spec: OpenAPIV3.Document): {
     [key: string]: OpenAPIV3.OperationObject;
   } {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const paths = spec.paths;
-    const result: { [key: string]: OpenAPIV3.OperationObject } = {};
-    for (const path in paths) {
-      const methods = paths[path];
-      for (const method in methods) {
-        // For developer preview, only support GET operation with only 1 parameter without auth
-        if (isSupportedApi(method, path, spec)) {
-          const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-          result[`${method.toUpperCase()} ${path}`] = operationObject;
-        }
-      }
-    }
+    const result = listSupportedAPIs(spec, this.options.allowMissingId!);
     this.apiMap = result;
     return result;
   }

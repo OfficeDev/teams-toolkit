@@ -379,10 +379,10 @@ export class CapabilityOptions {
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     return [
       ...CapabilityOptions.copilotPlugins(),
-      ...CapabilityOptions.bots(inputs),
+      ...CapabilityOptions.bots(),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
-      ...CapabilityOptions.mes(inputs),
+      ...CapabilityOptions.collectMECaps(),
     ];
   }
 
@@ -1442,10 +1442,10 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
       step: 2, // Add "back" button
       validation: {
         validFunc: (input: string, inputs?: Inputs): Promise<string | undefined> => {
-          const result = isValidHttpUrl(input)
+          const result = isValidHttpUrl(input.trim())
             ? undefined
             : inputs?.platform === Platform.CLI
-            ? "Please enter a valid URL or local path of your API Specification"
+            ? "Please enter a valid HTTP URL without authentication to access your OpenAPI description document or enter a file path of your local OpenAPI description document."
             : getLocalizedString("core.createProjectQuestion.invalidUrl.message");
           return Promise.resolve(result);
         },
@@ -1460,8 +1460,8 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
     },
     validation: {
       validFunc: async (input: string, inputs?: Inputs): Promise<string | undefined> => {
-        if (!isValidHttpUrl(input) && !(await fs.pathExists(input))) {
-          return "Please enter a valid URL or local path of your API Specification";
+        if (!isValidHttpUrl(input.trim()) && !(await fs.pathExists(input.trim()))) {
+          return "Please enter a valid HTTP URL without authentication to access your OpenAPI description document or enter a file path of your local OpenAPI description document.";
         }
 
         return await validationOnAccept(input, inputs);

@@ -453,6 +453,10 @@ class Coordinator {
     inputs: InputsWithProjectPath
   ): Promise<Result<DotenvParseOutput, FxError>> {
     const output: DotenvParseOutput = {};
+    if (process.env.APP_NAME_SUFFIX === undefined && process.env.TEAMSFX_ENV) {
+      process.env.APP_NAME_SUFFIX = process.env.TEAMSFX_ENV;
+      output.APP_NAME_SUFFIX = process.env.TEAMSFX_ENV;
+    }
     const folderName = path.parse(ctx.projectPath).name;
 
     // 1. parse yml

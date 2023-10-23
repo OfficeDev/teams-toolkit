@@ -25,8 +25,8 @@ describe("useTeamsUserCredential() hook tests", () => {
     spyUseTeams = jest.spyOn(useTeams, "useTeams");
     spyUseTeams.mockImplementation(() => {
       return [
-        { inTeams: true, theme: teamsLightTheme, themeString: "default" },
-        { setTheme: (undefined) => {} },
+        { inTeams: true, theme: teamsLightTheme, themeString: "default", loading: false },
+        { setTheme: () => {} },
       ];
     });
     spyUseData = jest.spyOn(useData, "useData");

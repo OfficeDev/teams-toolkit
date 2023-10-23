@@ -26,7 +26,6 @@ export class Constants {
   public static readonly SetUpDevEnvironmentHelpLink =
     "https://aka.ms/teamsfx-spfx-dev-environment-setup";
   public static readonly TEMPLATE_NAME = "spfx-tab";
-  public static readonly IMPORT_TEMPLATE_NAME = "spfx-tab-import";
   public static readonly LatestVersion = "latest";
   public static readonly RecommendedLowestSpfxVersion = "v1.14.0";
   public static readonly GeneratorPackageName = "@microsoft/generator-sharepoint";

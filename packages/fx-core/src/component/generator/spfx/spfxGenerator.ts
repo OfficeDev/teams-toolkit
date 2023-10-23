@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
@@ -159,7 +160,7 @@ export class SPFxGenerator {
       const templateRes = await Generator.generateTemplate(
         context,
         destinationPath,
-        Constants.IMPORT_TEMPLATE_NAME,
+        Constants.TEMPLATE_NAME,
         "ts"
       );
       if (templateRes.isErr()) {

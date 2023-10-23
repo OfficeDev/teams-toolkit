@@ -26,7 +26,7 @@ import { createSandbox } from "sinon";
 import {
   GeneratorContext,
   fetchTemplateUrlWithTagAction,
-  fetchTemplateZipFromLocalAction,
+  fetchTemplateFromLocalAction,
   fetchZipFromUrlAction,
   unzipAction,
 } from "../../../src/component/generator/generatorAction";
@@ -38,6 +38,7 @@ import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
 import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
+import * as folderUtils from "../../../../fx-core/src/folder";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -93,6 +94,7 @@ describe("Generator utils", () => {
       TEAMSFX_TEMPLATE_PRERELEASE: "rc",
     });
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0\n 0.0.0-rc";
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     const url = await generatorUtils.fetchTemplateZipUrl("templateName");
     assert.isTrue(url.includes("0.0.0-rc"));
@@ -120,6 +122,7 @@ describe("Generator utils", () => {
     });
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
     const tag = "2.1.0";
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     sandbox.stub(templateConfig, "version").value("^2.0.0");
     sandbox.replace(templateConfig, "tagPrefix", "templates@");
@@ -371,7 +374,7 @@ describe("Generator error", async () => {
 
   it("template fallback error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").throws(new Error("test"));
-    sandbox.stub(fetchTemplateZipFromLocalAction, "run").throws(new Error("test"));
+    sandbox.stub(fetchTemplateFromLocalAction, "run").throws(new Error("test"));
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
@@ -381,7 +384,7 @@ describe("Generator error", async () => {
   it("unzip error", async () => {
     sandbox.stub(fetchTemplateUrlWithTagAction, "run").resolves();
     sandbox.stub(fetchZipFromUrlAction, "run").resolves();
-    sandbox.stub(fetchTemplateZipFromLocalAction, "run").resolves();
+    sandbox.stub(fetchTemplateFromLocalAction, "run").resolves();
     sandbox.stub(unzipAction, "run").throws(new Error("test"));
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
@@ -466,6 +469,15 @@ describe("Generator happy path", async () => {
   const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
 
+  async function buildFakeTemplateZip(templateName: string, mockFileName: string) {
+    const mockFileData = "test data";
+    const fallbackDir = path.join(tmpDir, "fallback");
+    await fs.ensureDir(fallbackDir);
+    const templateZip = new AdmZip();
+    templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
+    templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
+  }
+
   beforeEach(async () => {
     sampleProvider["samplesConfig"] = sampleConfigV3;
   });
@@ -539,6 +551,41 @@ describe("Generator happy path", async () => {
     }
     assert.isTrue(success);
     mockedEnvRestore();
+  });
+
+  it("template from fallback", async () => {
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const language = "ts";
+    const foobarTemplateZip = new AdmZip();
+    await buildFakeTemplateZip(templateName, mockFileName);
+
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+    const spyCall = sandbox.spy(fetchTemplateFromLocalAction, "run");
+
+    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
+    assert.isTrue(spyCall.calledOnce);
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("template creation failure");
+    }
+    assert.isTrue(result.isOk());
+  });
+
+  it("use local template", async () => {
+    sandbox.replace(templateConfig, "useLocalTemplate", true);
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const language = "ts";
+    await buildFakeTemplateZip(templateName, mockFileName);
+
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+
+    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("local template creation failure");
+    }
+    assert.isTrue(result.isOk());
   });
 });
 

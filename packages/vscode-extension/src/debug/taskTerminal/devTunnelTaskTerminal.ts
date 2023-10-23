@@ -56,6 +56,7 @@ export interface IDevTunnelArgs extends IBaseTunnelArgs {
     access?: string;
     writeToEnvironmentFile?: DevTunnelOutput;
   }[];
+  expiration?: number;
 }
 
 export type TunnelPortWithOutput = {
@@ -302,7 +303,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           };
         }),
         labels: [DevTunnelTag],
-        customExpiration: 3600, // 1 hour
+        customExpiration: args.expiration,
       };
       const tunnelRequestOptions: TunnelRequestOptions = {
         tokenScopes: ["host"],
@@ -426,6 +427,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           `args.ports[${i}].writeToEnvironmentFile.domain`
         );
       }
+    }
+
+    if (typeof args.expiration !== "undefined" && typeof args.expiration !== "number") {
+      throw BaseTaskTerminal.taskDefinitionError(`args.expiration`);
     }
   }
 

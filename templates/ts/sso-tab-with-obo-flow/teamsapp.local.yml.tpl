@@ -4,19 +4,19 @@
 version: 1.0.0
 
 provision:
-  # Creates a new Azure Active Directory (AAD) app to authenticate users if
+  # Creates a new Microsoft Entra app to authenticate users if
   # the environment variable that stores clientId is empty
   - uses: aadApp/create
     with:
-      # Note: when you run aadApp/update, the AAD app name will be updated
+      # Note: when you run aadApp/update, the Microsoft Entra app name will be updated
       # based on the definition in manifest. If you don't want to change the
-      # name, make sure the name in AAD manifest is the same with the name
+      # name, make sure the name in Microsoft Entra manifest is the same with the name
       # defined here.
       name: {{appName}}
       # If the value is false, the action will not generate client secret for you
       generateClientSecret: true
       # Authenticate users with a Microsoft work or school account in your
-      # organization's Azure AD tenant (for example, single tenant).
+      # organization's Microsoft Entra tenant (for example, single tenant).
       signInAudience: AzureADMyOrg
     # Write the information of created resources into environment file for the
     # specified environment variable(s).
@@ -49,12 +49,12 @@ provision:
         echo "::set-teamsfx-env FUNC_NAME=getUserProfile";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
 
-  # Apply the AAD manifest to an existing AAD app. Will use the object id in
-  # manifest file to determine which AAD app to update.
+  # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
+  # manifest file to determine which Microsoft Entra app to update.
   - uses: aadApp/update
     with:
       # Relative path to this file. Environment variables in manifest will
-      # be replaced before apply to AAD app
+      # be replaced before apply to Microsoft Entra app
       manifestPath: ./aad.manifest.json
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 

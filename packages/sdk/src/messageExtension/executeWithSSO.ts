@@ -349,9 +349,9 @@ export async function handleMessageExtensionLinkQueryWithSSO(
   logic: (token: MessageExtensionTokenResponse) => Promise<any>
 ) {
   if (context.activity.name != "composeExtension/queryLink") {
-    internalLogger.error(ErrorMessage.OnlySupportInQueryActivity);
+    internalLogger.error(ErrorMessage.OnlySupportInLinkQueryActivity);
     throw new ErrorWithCode(
-      formatString(ErrorMessage.OnlySupportInQueryActivity),
+      formatString(ErrorMessage.OnlySupportInLinkQueryActivity),
       ErrorCode.FailedOperation
     );
   }

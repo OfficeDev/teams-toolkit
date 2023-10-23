@@ -52,10 +52,11 @@
 |  [createMicrosoftGraphClientWithCredential(credential, scopes)](./teamsfx.createmicrosoftgraphclientwithcredential.md) | Get Microsoft graph client. |
 |  [createPemCertOption(cert, key, options)](./teamsfx.createpemcertoption.md) | Helper to create SecureContextOptions from PEM format cert |
 |  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
-|  [executionWithTokenAndConfig(context, authConfig, initiateLoginEndpoint, scopes, logic)](./teamsfx.executionwithtokenandconfig.md) | execution in message extension with SSO token. |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | Generate connection configuration consumed by tedious. |
+|  [handleMessageExtensionLinkQueryWithSSO(context, config, initiateLoginEndpoint, scopes, logic)](./teamsfx.handlemessageextensionlinkquerywithsso.md) | Users execute link query in message extension with SSO or access token. |
 |  [handleMessageExtensionQueryWithSSO(context, config, initiateLoginEndpoint, scopes, logic)](./teamsfx.handlemessageextensionquerywithsso.md) | Users execute query in message extension with SSO or access token. |
+|  [handleMessageExtensionQueryWithToken(context, config, scopes, logic)](./teamsfx.handlemessageextensionquerywithtoken.md) | Users execute query in message extension with SSO or access token. |
 |  [sendAdaptiveCard(target, card, onError)](./teamsfx.sendadaptivecard.md) | Send an adaptive card message to a notification target. |
 |  [sendMessage(target, text, onError)](./teamsfx.sendmessage.md) | Send a plain text message to a notification target. |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | Set custom log function. Use the function if it's set. Priority is lower than setLogger. |

@@ -21,7 +21,7 @@ import {
 } from "../commonUtils";
 import { deleteTeamsApp, getTeamsApp } from "../debug/utility";
 
-describe("Provision V3 api-based-message-extension api=-spec template", () => {
+describe("Provision V3 api-based-message-extension api-spec template", () => {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);

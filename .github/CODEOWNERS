@@ -52,7 +52,7 @@
 /packages/cli/src/commands/models/publish.ts @nliu-ms @jayzhang @MSFT-yiz
 /packages/cli/src/commands/models/updateTeamsApp.ts @nliu-ms @jayzhang @MSFT-yiz
 /packages/cli/src/commands/models/validate.ts @nliu-ms @jayzhang @MSFT-yiz
-fa
+
 /packages/cli/src/commands/models/permission.ts @KennethBWSong @SLdragon @adashen
 /packages/cli/src/commands/models/permissionGrant.ts @KennethBWSong @SLdragon @adashen
 /packages/cli/src/commands/models/permissionStatus.ts @KennethBWSong @SLdragon @adashen

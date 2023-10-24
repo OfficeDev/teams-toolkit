@@ -953,6 +953,12 @@
                       },
                       {}
                     ]
+                  },
+                  "expiration": {
+                    "type": "number",
+                    "description": "%teamstoolkit.taskDefinitions.args.expiration.title%",
+                    "minimum": 3600,
+                    "default": 3600
                   }
                 },
                 "additionalProperties": false

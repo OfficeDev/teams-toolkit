@@ -6,15 +6,18 @@
  */
 
 import * as vscode from "vscode";
+
 import { Tunnel, TunnelAccessControlEntryType, TunnelPort } from "@microsoft/dev-tunnels-contracts";
 import {
   TunnelManagementHttpClient,
   TunnelRequestOptions,
 } from "@microsoft/dev-tunnels-management";
 import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
-import { err, FxError, ok, Result, Void, UserError, SystemError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, SystemError, UserError, Void } from "@microsoft/teamsfx-api";
 import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
+
 import VsCodeLogInstance from "../../commonlib/log";
+import { ExtensionErrors } from "../../error";
 import { VS_CODE_UI } from "../../extension";
 import { tools } from "../../handlers";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
@@ -23,6 +26,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/extTelemetryEvents";
+import { FeatureFlags, isFeatureFlagEnabled } from "../../utils/commonUtils";
 import { devTunnelDisplayMessages } from "../constants";
 import { maskValue } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -32,10 +36,8 @@ import {
   OutputInfo,
   TunnelError,
 } from "./baseTunnelTaskTerminal";
-import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
 import { DevTunnelManager } from "./utils/devTunnelManager";
-import { ExtensionErrors } from "../../error";
-import { FeatureFlags, isFeatureFlagEnabled } from "../../utils/commonUtils";
+import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };
@@ -54,6 +56,7 @@ export interface IDevTunnelArgs extends IBaseTunnelArgs {
     access?: string;
     writeToEnvironmentFile?: DevTunnelOutput;
   }[];
+  expiration?: number;
 }
 
 export type TunnelPortWithOutput = {
@@ -105,6 +108,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       isFeatureFlagEnabled(FeatureFlags.DevTunnelTest)
         ? TunnelManagementTestUserAgent
         : TunnelManagementUserAgent,
+      "2023-09-27-preview",
       async () => {
         const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
           scopes: DevTunnelScopes,
@@ -182,7 +186,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           tunnelId: devTunnelState.tunnelId,
           clusterId: devTunnelState.clusterId,
         });
-        if (tunnelInstance?.tags?.includes(DevTunnelTag)) {
+        if (tunnelInstance?.labels?.includes(DevTunnelTag)) {
           await this.devTunnelManager.deleteTunnel(tunnelInstance);
         }
       } catch {
@@ -194,7 +198,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
 
   private async deleteAllTunnelsMessage(): Promise<void> {
     const tunnels = await this.devTunnelManager.listTunnels();
-    const teamsToolkitTunnels = tunnels.filter((t) => t?.tags?.includes(DevTunnelTag));
+    const teamsToolkitTunnels = tunnels.filter((t) => t?.labels?.includes(DevTunnelTag));
 
     if (teamsToolkitTunnels.length === 0) {
       return;
@@ -204,7 +208,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       [TelemetryProperty.DebugDevTunnelNum]: `${teamsToolkitTunnels.length}`,
     });
     VsCodeLogInstance.outputChannel.show();
-    await VsCodeLogInstance.info(devTunnelDisplayMessages.devTunnelListMessage());
+    VsCodeLogInstance.info(devTunnelDisplayMessages.devTunnelListMessage());
     const tableHeader =
       "Tunnel ID".padEnd(20, " ") +
       "Hosts Connections".padEnd(20, " ") +
@@ -216,7 +220,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       const line =
         `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`.padEnd(20, " ") +
         `${tunnel.endpoints?.length ?? "0"}`.padEnd(20, " ") +
-        `${tunnel?.tags?.join(",") ?? ""}`.padEnd(30, " ") +
+        `${tunnel?.labels?.join(",") ?? ""}`.padEnd(30, " ") +
         `${tunnel.created?.toISOString() ?? ""}`.padEnd(30, " ");
       VsCodeLogInstance.outputChannel.appendLine(line);
     }
@@ -234,7 +238,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
         try {
           for (const tunnel of teamsToolkitTunnels) {
             await this.devTunnelManager.deleteTunnel(tunnel);
-            await VsCodeLogInstance.info(
+            VsCodeLogInstance.info(
               devTunnelDisplayMessages.deleteDevTunnelMessage(
                 `${tunnel.tunnelId ?? ""}.${tunnel.clusterId ?? ""}`
               )
@@ -298,7 +302,8 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
             },
           };
         }),
-        tags: [DevTunnelTag],
+        labels: [DevTunnelTag],
+        customExpiration: args.expiration,
       };
       const tunnelRequestOptions: TunnelRequestOptions = {
         tokenScopes: ["host"],
@@ -422,6 +427,10 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           `args.ports[${i}].writeToEnvironmentFile.domain`
         );
       }
+    }
+
+    if (typeof args.expiration !== "undefined" && typeof args.expiration !== "number") {
+      throw BaseTaskTerminal.taskDefinitionError(`args.expiration`);
     }
   }
 

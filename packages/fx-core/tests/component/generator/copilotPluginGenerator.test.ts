@@ -522,7 +522,7 @@ describe("generateScaffoldingSummary", () => {
   });
 
   it("no warnings if exceeding length with placeholder in short name", () => {
-    const shortName = "testdebug09051-${{TEAMSFX_ENV}}";
+    const shortName = "testdebug09051${{APP_NAME_SUFFIX}}";
     const res = generateScaffoldingSummary(
       [],
       {

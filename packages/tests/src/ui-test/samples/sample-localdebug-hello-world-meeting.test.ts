@@ -41,7 +41,7 @@ new MyFirstMettingTestCase(
   "local",
   [LocalDebugTaskLabel.StartFrontend],
   {
-    teamsAppName: "hello-world-in-meeting-local",
+    teamsAppName: "hello-world-in-meetinglocal",
     type: "meeting",
     skipValidation: true,
   }

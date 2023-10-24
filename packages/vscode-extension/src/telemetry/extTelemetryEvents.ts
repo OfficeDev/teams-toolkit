@@ -120,6 +120,7 @@ export enum TelemetryEvent {
   DebugService = "debug-service",
   DebugPrereqsCheckM365Account = "debug-prereqs-check-m365-account",
   DebugPrereqsCheckM365AccountSignIn = "debug-prereqs-check-m365-account-sign-in",
+  DebugPrereqsCheckM365Copilot = "debug-prereqs-check-m365-copilot",
   DebugPrereqsCheckM365Sideloading = "debug-prereqs-check-m365-sideloading",
   DebugPrereqsCheckNode = "debug-prereqs-check-node",
   DebugPrereqsCheckPorts = "debug-prereqs-check-ports",
@@ -191,6 +192,10 @@ export enum TelemetryEvent {
   ClickLearnMoreWhenSwitchAccountForLocalDebug = "local-debug-switch-account-click-learn-more",
   ClickLocalPreview = "click-local-preview",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
+
+  AdaptiveCardPreviewerInstall = "acp-install",
+  AdaptiveCardPreviewerInstallConfirm = "acp-install-confirm",
+  AdaptiveCardPreviewerInstallCancel = "acp-install-cancel",
 
   PreviewManifestFile = "preview-manifest",
   PreviewAadManifestFile = "preview-aad-manifest",
@@ -288,6 +293,7 @@ export enum TelemetryProperty {
   DebugPortsInUse = "debug-ports-in-use",
   DebugM365AccountStatus = "debug-m365-account-status",
   DebugIsSideloadingAllowed = "debug-is-sideloading-allowed",
+  DebugHasCopilotAccess = "debug-has-copilot-access",
   DebugConcurrentCorrelationId = "debug-concurrent-correlation-id",
   DebugConcurrentLastEventName = "debug-concurrent-last-event-name",
   DebugIsTransparentTask = "debug-is-transparent-task",

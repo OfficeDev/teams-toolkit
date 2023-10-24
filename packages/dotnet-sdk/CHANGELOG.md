@@ -1,3 +1,7 @@
+# 2.2.1-rc
+
+- Fix `NotificationMiddleware` reference key generation when bot is added to a Team.
+
 # 2.2.0
 
 - Add `validationEnabled` to `GetPagedInstallationsAsync()` to enable or disable installation validation.

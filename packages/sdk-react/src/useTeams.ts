@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
 import { useEffect, useState } from "react";
 import { unstable_batchedUpdates as batchedUpdates } from "react-dom";
 import { app, pages } from "@microsoft/teams-js";
@@ -10,13 +9,11 @@ import {
   teamsHighContrastTheme,
   Theme,
 } from "@fluentui/react-components";
-
 const getTheme = (): string | undefined => {
   const urlParams = new URLSearchParams(window.location.search);
   const theme = urlParams.get("theme");
   return theme == null ? undefined : theme;
 };
-
 /**
  * Microsoft Teams React hook
  * @param options optional options
@@ -40,11 +37,13 @@ export function useTeams(options?: {
     theme: Theme;
     themeString: string;
     context?: app.Context;
+    loading?: boolean;
   },
   {
     setTheme: (theme: string | undefined) => void;
   }
 ] {
+  const [loading, setLoading] = useState<boolean | undefined>(undefined);
   const [inTeams, setInTeams] = useState<boolean | undefined>(undefined);
   const [fullScreen, setFullScreen] = useState<boolean | undefined>(undefined);
   const [theme, setTheme] = useState<Theme>(teamsLightTheme);
@@ -53,7 +52,6 @@ export function useTeams(options?: {
     options && options.initialTheme ? options.initialTheme : getTheme()
   );
   const [context, setContext] = useState<app.Context | undefined>(undefined);
-
   const themeChangeHandler = (theme: string | undefined) => {
     setThemeString(theme || "default");
     switch (theme) {
@@ -68,14 +66,14 @@ export function useTeams(options?: {
         setTheme(teamsLightTheme);
     }
   };
-
   const overrideThemeHandler = options?.setThemeHandler
     ? options.setThemeHandler
     : themeChangeHandler;
-
   useEffect(() => {
     // set initial theme based on options or query string
-    overrideThemeHandler(initialTheme);
+    if (initialTheme) {
+      overrideThemeHandler(initialTheme);
+    }
 
     app
       .initialize()
@@ -93,15 +91,21 @@ export function useTeams(options?: {
             pages.registerFullScreenHandler((isFullScreen) => {
               setFullScreen(isFullScreen);
             });
+            setLoading(false);
           })
           .catch(() => {
+            setLoading(false);
             setInTeams(false);
           });
       })
       .catch(() => {
+        setLoading(false);
         setInTeams(false);
       });
   }, []);
 
-  return [{ inTeams, fullScreen, theme, context, themeString }, { setTheme: overrideThemeHandler }];
+  return [
+    { inTeams, fullScreen, theme, context, themeString, loading },
+    { setTheme: overrideThemeHandler },
+  ];
 }

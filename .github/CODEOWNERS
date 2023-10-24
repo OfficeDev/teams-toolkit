@@ -67,6 +67,7 @@
 /packages/tests/src/e2e/scaffold @hund030 @eriolchan @huimiu
 /packages/tests/src/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
 /packages/tests/src/e2e/m365 @kimizhu @swatDong @kuojianlu
+/packages/tests/src/e2e/m365/ProvisionApiSpecMessageExtension.tests.ts @yuqizhou77 @Alive-Fish
 /packages/tests/src/e2e/debug @kimizhu @swatDong @kuojianlu
 /packages/tests/src/e2e/samples @LongOddCode @ayachensiyuan
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
@@ -148,7 +149,6 @@
 /packages/fx-core/README.md @jayzhang  @LongOddCode @wenytang-ms
 /packages/fx-core/package-lock.json @LongOddCode @wenytang-ms
 /packages/fx-core/package.json @LongOddCode @wenytang-ms
-/packages/fx-core/scripts/download-templates-zip.js @hund030 @eriolchan @huimiu
 /packages/fx-core/scripts/delete-unused-strings.js @jayzhang
 /packages/fx-core/scripts/find-unused-strings.js @jayzhang
 /packages/fx-core/scripts/generate-appdef.ps1 @nliu-ms

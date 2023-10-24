@@ -163,6 +163,8 @@ export class ErrorMessage {
     "The request already defined api key in query parameter with name {0}.";
   static readonly OnlySupportInQueryActivity =
     "The handleMessageExtensionQueryWithToken only support in handleTeamsMessagingExtensionQuery with composeExtension/query type.";
+  static readonly OnlySupportInLinkQueryActivity =
+    "The handleMessageExtensionLinkQueryWithSSO only support in handleTeamsAppBasedLinkQuery with composeExtension/queryLink type.";
 }
 
 /**

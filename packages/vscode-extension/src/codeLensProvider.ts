@@ -135,7 +135,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
         new vscode.Position(line.lineNumber, indexOf + match.length)
       );
       const command = {
-        title: "🔑Decrypt secret",
+        title: "🔑" + localize("teamstoolkit.codeLens.decryptSecret"),
         command: "fx-extension.decryptSecret",
         arguments: [match, range],
       };
@@ -143,35 +143,6 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
         codeLenses.push(new vscode.CodeLens(range, command));
       }
     }
-    return codeLenses;
-  }
-}
-
-export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
-  private static SEARCH_TERM = "adaptivecards.io/schemas/adaptive-card.json";
-
-  public static async detectedAdaptiveCards(): Promise<boolean> {
-    const files: vscode.Uri[] = await vscode.workspace.findFiles(`**/*.json`, "**/node_modules/**");
-    for (const file of files) {
-      const content = await fs.readFile(file.fsPath, "utf8");
-      if (content.includes(AdaptiveCardCodeLensProvider.SEARCH_TERM)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  provideCodeLenses(document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
-    if (!document.getText().includes(AdaptiveCardCodeLensProvider.SEARCH_TERM)) {
-      return [];
-    }
-    const codeLenses: vscode.CodeLens[] = [];
-    const topOfFile = new vscode.Range(0, 0, 0, 0);
-    const command = {
-      title: `👀${localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard")}`,
-      command: "fx-extension.OpenAdaptiveCardExt",
-      arguments: [TelemetryTriggerFrom.CodeLens],
-    };
-    codeLenses.push(new vscode.CodeLens(topOfFile, command));
     return codeLenses;
   }
 }
@@ -453,7 +424,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private computePreviewCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses = [];
     const command = {
-      title: "🖼️Preview",
+      title: "🖼️" + localize("teamstoolkit.codeLens.preview"),
       command: "fx-extension.openPreviewAadFile",
       arguments: [{ fsPath: document.fileName }],
     };
@@ -483,7 +454,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private computeAadManifestCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses: vscode.CodeLens[] = [];
     const updateCmd = {
-      title: "🔄Deploy AAD manifest",
+      title: "🔄" + localize("teamstoolkit.codeLens.deployMicrosoftEntraManifest"),
       command: "fx-extension.updateAadAppManifest",
       arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
@@ -498,7 +469,8 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
 
       if (aadTemplateFileExist) {
         const editTemplateCmd = {
-          title: "⚠️This file is auto-generated, click here to edit the manifest template file",
+          title:
+            "⚠️" + localize("teamstoolkit.codeLens.editDeprecatedMicrosoftEntraManifestTemplate"),
           command: "fx-extension.editAadManifestTemplate",
           arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
         };
@@ -524,8 +496,7 @@ export class PermissionsJsonFileCodeLensProvider implements vscode.CodeLensProvi
       );
       if (aadTemplateFileExist) {
         const editTemplateCmd = {
-          title:
-            "⚠️This file is deprecated and not used anymore. Please click here to use AAD manifest template file instead",
+          title: "⚠️" + localize("teamstoolkit.codeLens.editMicrosoftEntraManifestTemplate"),
           command: "fx-extension.editAadManifestTemplate",
           arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
         };

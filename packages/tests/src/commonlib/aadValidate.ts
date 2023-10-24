@@ -14,10 +14,10 @@ import {
   IAadObject,
   IAadObjectLocal,
 } from "./interfaces/IAADDefinition";
-import { AppStudioScopes } from "@microsoft/teamsfx-core/build/common/tools";
+import { GraphScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import { EnvConstants } from "../commonlib/constants";
 
-const baseUrl = "https://dev.teams.microsoft.com/api/aadapp/v2";
+const baseUrl = "https://graph.microsoft.com/v1.0";
 
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
@@ -88,7 +88,7 @@ export class AadValidator {
 
   private static async getAadApp(objectId: string) {
     const appStudioTokenRes = await this.provider.getAccessToken({
-      scopes: AppStudioScopes,
+      scopes: GraphScopes,
     });
     const appStudioToken = appStudioTokenRes.isOk()
       ? appStudioTokenRes.value
@@ -101,7 +101,9 @@ export class AadValidator {
         axios.defaults.headers.common[
           "Authorization"
         ] = `Bearer ${appStudioToken}`;
-        const aadGetResponse = await axios.get(`${baseUrl}/${objectId}`);
+        const aadGetResponse = await axios.get(
+          `${baseUrl}/applications/${objectId}`
+        );
         if (
           aadGetResponse &&
           aadGetResponse.data &&

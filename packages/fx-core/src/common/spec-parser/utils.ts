@@ -4,8 +4,6 @@
 
 import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
-import path from "path";
-import { format } from "util";
 import { ConstantString } from "./constants";
 import {
   CheckParamResult,
@@ -199,11 +197,6 @@ export function updateFirstLetter(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export function getRelativePath(from: string, to: string): string {
-  const relativePath = path.relative(path.dirname(from), to);
-  return path.normalize(relativePath).replace(/\\/g, "/");
-}
-
 export function getResponseJson(
   operationObject: OpenAPIV3.OperationObject | undefined
 ): OpenAPIV3.MediaTypeObject {
@@ -363,8 +356,8 @@ export function generateParametersFromSchema(
   ) {
     const parameter = {
       name: name,
-      title: updateFirstLetter(name),
-      description: schema.description ?? "",
+      title: updateFirstLetter(name).slice(0, ConstantString.ParameterTitleMaxLens),
+      description: (schema.description ?? "").slice(0, ConstantString.ParameterDescriptionMaxLens),
     };
     if (isRequired && schema.default === undefined) {
       requiredParams.push(parameter);
@@ -403,8 +396,8 @@ export function parseApiInfo(
     paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
       const parameter: Parameter = {
         name: param.name,
-        title: updateFirstLetter(param.name),
-        description: param.description ?? "",
+        title: updateFirstLetter(param.name).slice(0, ConstantString.ParameterTitleMaxLens),
+        description: (param.description ?? "").slice(0, ConstantString.ParameterDescriptionMaxLens),
       };
 
       const schema = param.schema as OpenAPIV3.SchemaObject;
@@ -446,10 +439,13 @@ export function parseApiInfo(
   const command: IMessagingExtensionCommand = {
     context: ["compose"],
     type: "query",
-    title: operationItem.summary ?? "",
+    title: (operationItem.summary ?? "").slice(0, ConstantString.CommandTitleMaxLens),
     id: operationId,
     parameters: parameters,
-    description: operationItem.description ?? "",
+    description: (operationItem.description ?? "").slice(
+      0,
+      ConstantString.CommandDescriptionMaxLens
+    ),
   };
   let warning: WarningResult | undefined = undefined;
 
@@ -553,4 +549,12 @@ export function validateSpec(
     warnings,
     errors,
   };
+}
+
+export function format(str: string, ...args: string[]): string {
+  let index = 0;
+  return str.replace(/%s/g, () => {
+    const arg = args[index++];
+    return arg !== undefined ? arg : "";
+  });
 }

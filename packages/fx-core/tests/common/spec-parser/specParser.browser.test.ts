@@ -15,6 +15,7 @@ import { ConstantString } from "../../../src/common/spec-parser/constants";
 import { OpenAPIV3 } from "openapi-types";
 import * as utils from "../../../src/common/spec-parser/utils";
 import SwaggerParser from "@apidevtools/swagger-parser";
+import { format } from "../../../src/common/spec-parser/utils";
 
 // TODO: After SpecParser lib become a npm package, these tests should be running in browser environment
 describe("SpecParser in Browser", () => {
@@ -101,9 +102,168 @@ describe("SpecParser in Browser", () => {
       ]);
     });
 
-    it("should not list api without operationId with allowMissingId is false", async () => {
+    it("should contain warning for GET with 2 optional parameter and without security", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
+      const spec = {
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              description: "Get user by user id, balabala",
+              summary: "Get user by user id",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  description: "User Id",
+                  schema: {
+                    type: "string",
+                  },
+                },
+                {
+                  name: "name",
+                  in: "query",
+                  description: "User Name",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "createUser",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/store/order": {
+            post: {
+              operationId: "placeOrder",
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.listSupportedAPIInfo();
+      expect(result).to.deep.equal([
+        {
+          method: "GET",
+          path: "/user/{userId}",
+          title: "Get user by user id",
+          id: "getUserById",
+          parameters: [
+            {
+              name: "userId",
+              title: "UserId",
+              description: "User Id",
+            },
+          ],
+          description: "Get user by user id, balabala",
+          warning: {
+            type: WarningType.OperationOnlyContainsOptionalParam,
+            content: format(ConstantString.OperationOnlyContainsOptionalParam, "getUserById"),
+            data: "getUserById",
+          },
+        },
+      ]);
+    });
+
+    it("should reuse apiMap if listSupportedAPIInfo is called multiple times", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowMissingId: false });
+      const spec = {
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              description: "Get user by user id, balabala",
+              summary: "Get user by user id",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  description: "User Id",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "createUser",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/store/order": {
+            post: {
+              operationId: "placeOrder",
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const listSupportedAPIsSyp = sinon.spy(utils, "listSupportedAPIs");
+      let result = await specParser.listSupportedAPIInfo();
+      result = await specParser.listSupportedAPIInfo();
+      expect(result).to.deep.equal([
+        {
+          method: "GET",
+          path: "/user/{userId}",
+          title: "Get user by user id",
+          id: "getUserById",
+          parameters: [
+            {
+              name: "userId",
+              title: "UserId",
+              description: "User Id",
+            },
+          ],
+          description: "Get user by user id, balabala",
+        },
+      ]);
+      expect(listSupportedAPIsSyp.callCount).to.equal(1);
+    });
+
+    it("should not list api without operationId with allowMissingId is true", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowMissingId: true });
       const spec = {
         paths: {
           "/pets": {

@@ -14,7 +14,7 @@ import {
   Parameter,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
-import { isSupportedApi, listSupportedAPIs, parseApiInfo, validateSpec } from "./utils";
+import { listSupportedAPIs, parseApiInfo, validateSpec } from "./utils";
 import { ConstantString } from "./constants";
 
 /**
@@ -31,8 +31,8 @@ export class SpecParser {
   private isSwaggerFile: boolean | undefined;
 
   private defaultOptions: ParseOptions = {
-    allowMissingId: true,
-    allowSwagger: true,
+    allowMissingId: false,
+    allowSwagger: false,
   };
 
   /**
@@ -91,29 +91,29 @@ export class SpecParser {
       for (const key in apiMap) {
         const pathObjectItem = apiMap[key];
         const [method, path] = key.split(" ");
-        if (isSupportedApi(method, path, this.spec!, this.options.allowMissingId!)) {
-          const operationId = pathObjectItem.operationId;
-          if (!operationId) {
-            continue;
-          }
+        const operationId = pathObjectItem.operationId;
 
-          const [command, warning] = parseApiInfo(pathObjectItem);
-
-          const apiInfo: APIInfo = {
-            method: method,
-            path: path,
-            title: command.title,
-            id: operationId,
-            parameters: command.parameters! as Parameter[],
-            description: command.description!,
-          };
-
-          if (warning) {
-            apiInfo.warning = warning;
-          }
-
-          apiInfos.push(apiInfo);
+        // In Browser environment, this api is by default not support api without operationId
+        if (!operationId) {
+          continue;
         }
+
+        const [command, warning] = parseApiInfo(pathObjectItem);
+
+        const apiInfo: APIInfo = {
+          method: method,
+          path: path,
+          title: command.title,
+          id: operationId,
+          parameters: command.parameters! as Parameter[],
+          description: command.description!,
+        };
+
+        if (warning) {
+          apiInfo.warning = warning;
+        }
+
+        apiInfos.push(apiInfo);
       }
 
       return apiInfos;
@@ -177,7 +177,7 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = listSupportedAPIs(spec, true);
+    const result = listSupportedAPIs(spec, this.options.allowMissingId!);
     this.apiMap = result;
     return result;
   }

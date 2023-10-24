@@ -376,6 +376,8 @@ export interface UserInteraction {
     shell?: string;
     timeout?: number;
     env?: { [k: string]: string };
+    shellName?: string;
+    iconPath?: string;
   }): Promise<Result<string, FxError>>;
 
   /**

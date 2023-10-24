@@ -406,6 +406,10 @@ export async function updateAutoOpenGlobalKey(
   if (warnings?.length) {
     await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
   }
+
+  if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
+    globalStateUpdate(GlobalKey.AutoInstallDependency, true);
+  }
 }
 
 export async function createProjectFromWalkthroughHandler(
@@ -1216,6 +1220,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
   const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
   const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
   const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, "")) as string;
+  const autoInstallDependency = (await globalStateGet(GlobalKey.AutoInstallDependency)) as boolean;
   if (isOpenWalkThrough) {
     await showLocalDebugMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
@@ -1238,6 +1243,10 @@ export async function autoOpenProjectHandler(): Promise<void> {
     await showLocalDebugMessage();
     await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
+  }
+  if (autoInstallDependency) {
+    await autoInstallDependencyHandler();
+    await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
   }
 }
 
@@ -1323,6 +1332,15 @@ export async function openSampleReadmeHandler(args?: any) {
       await commands.executeCommand(PreviewMarkdownCommand, uri);
     }
   }
+}
+
+export async function autoInstallDependencyHandler() {
+  await VS_CODE_UI.runCommand({
+    cmd: "npm i",
+    workingDirectory: "${workspaceFolder}/src",
+    shellName: localize("teamstoolkit.handlers.autoInstallDependency"),
+    iconPath: "cloud-download",
+  });
 }
 
 export async function showLocalDebugMessage() {

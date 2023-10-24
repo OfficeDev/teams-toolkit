@@ -1082,6 +1082,8 @@ export interface UserInteraction {
         env?: {
             [k: string]: string;
         };
+        shellName?: string;
+        iconPath?: string;
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFileOrInput?(config: SingleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;

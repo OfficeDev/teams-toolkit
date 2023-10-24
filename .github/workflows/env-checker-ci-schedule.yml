@@ -20,8 +20,8 @@ jobs:
       # macos-latest is 10.15. We need to test 11 as well.
       matrix:
         os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
-        node-version: [14, 16, 18]
-        func-version: [none, "3", "4", "~4.0.4670"]
+        node-version: [14, 16, 18, 20]
+        func-version: [none, "3", "4", "4.0.4670", "~4.0.5174"]
       max-parallel: 30
 
     runs-on: ${{ matrix.os }}

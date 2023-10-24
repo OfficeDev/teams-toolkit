@@ -2408,6 +2408,24 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(sendErrorTelemetryStub.called);
   });
 
+  it("auto install dependency", async () => {
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.autoInstallDependency") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    const globalStateStub = sandbox.stub(globalState, "globalStateUpdate");
+    const runCommandStub = sandbox.stub(extension.VS_CODE_UI, "runCommand");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(globalStateStub.calledWith("fx-extension.autoInstallDependency", false));
+    chai.assert.isTrue(runCommandStub.calledOnce);
+  });
+
   it("openFolderHandler()", async () => {
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 

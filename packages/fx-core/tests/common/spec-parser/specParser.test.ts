@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as util from "util";
 import fs from "fs-extra";
 import "mocha";
 import { expect } from "chai";
@@ -22,6 +21,7 @@ import * as ManifestUpdater from "../../../src/common/spec-parser/manifestUpdate
 import * as AdaptiveCardGenerator from "../../../src/common/spec-parser/adaptiveCardGenerator";
 import * as utils from "../../../src/common/spec-parser/utils";
 import jsyaml from "js-yaml";
+import { format } from "../../../src/common/spec-parser/utils";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -272,7 +272,7 @@ describe("SpecParser", () => {
         errors: [
           {
             type: ErrorType.UrlProtocolNotSupported,
-            content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
+            content: format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
@@ -434,7 +434,7 @@ describe("SpecParser", () => {
         warnings: [
           {
             type: WarningType.OperationIdMissing,
-            content: util.format(ConstantString.MissingOperationId, "GET /pet"),
+            content: format(ConstantString.MissingOperationId, "GET /pet"),
             data: ["GET /pet"],
           },
         ],

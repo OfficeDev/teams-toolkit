@@ -21,6 +21,12 @@ provision:
         echo "::set-teamsfx-env FUNC_NAME=repair";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
 
+  # Validate using manifest schema
+  - uses: teamsApp/validateManifest
+    with:
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:

@@ -35,11 +35,6 @@ export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }
 
-export function isImportSPFxEnabled(): boolean {
-  return true;
-  //return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
-}
-
 export function isCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
 }

@@ -68,7 +68,6 @@ import {
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
-  isImportSPFxEnabled,
   isUserCancelError,
   isValidProject,
   pathUtils,
@@ -704,9 +703,6 @@ export async function runCommand(
     switch (stage) {
       case Stage.create: {
         inputs.projectId = inputs.projectId ?? uuid.v4();
-        if (!isImportSPFxEnabled()) {
-          inputs["spfx-solution"] = "new";
-        }
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);

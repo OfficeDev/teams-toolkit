@@ -154,7 +154,6 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
   private getDropdownStyles = (): Partial<IDropdownStyles> => {
     const dropDownStyle: IStyle = {
       "span:first-child": {
-        // borderRadius: 0,
         height: 24,
         lineHeight: 24,
         backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
@@ -170,6 +169,15 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       lineHeight: 16,
     };
     const checkboxStyle: IStyle = {
+      ".ms-Checkbox-checkbox": {
+        backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
+        border: "1px solid var(--vscode-button-secondaryHoverBackground, #3C3C3C)",
+        i: {
+          color: "var(--vscode-dropdown-background, #3C3C3C)",
+        },
+      },
+    };
+    const checkboxStyleSelected: IStyle = {
       ".ms-Checkbox-checkbox": {
         backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
         border: "1px solid var(--vscode-button-secondaryHoverBackground, #3C3C3C)",
@@ -226,9 +234,6 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         ...checkboxStyle,
         ":active": {
           backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526) !important",
-          ".ms-Checkbox-checkmark": {
-            color: "var(--vscode-peekViewTitleDescription-foreground, #cccccc)",
-          },
         },
         "input:focus + .ms-Checkbox-label": {
           ...checkboxStyle,
@@ -236,10 +241,13 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         "input:focus + .ms-Checkbox-label .ms-Checkbox-checkbox": {
           borderColor: "var(--vscode-inputValidation-infoBorder, #007ACC)",
         },
+        "input:focus + .ms-Checkbox-label .ms-Checkbox-checkmark": {
+          color: "var(--vscode-dropdown-background, #3C3C3C)",
+        },
         ":hover": {
           backgroundColor: "var(--vscode-editorStickyScrollHover-background, #303031) !important",
           ".ms-Checkbox-checkmark": {
-            color: "var(--vscode-peekViewTitleDescription-foreground, #cccccc)",
+            color: "var(--vscode-dropdown-background, #3C3C3C)",
           },
           ".ms-Checkbox-checkbox": {
             borderColor: "var(--vscode-button-secondaryHoverBackground, #3C3C3C)",
@@ -250,22 +258,22 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         minHeight: 22,
         height: 22,
         backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526)",
-        ...checkboxStyle,
+        ...checkboxStyleSelected,
         ":active": {
           backgroundColor: "var(--vscode-editorGroupHeader-tabsBackground, #252526) !important",
         },
         "input:focus + .ms-Checkbox-label": {
-          ...checkboxStyle,
+          ...checkboxStyleSelected,
         },
         "input:focus + .ms-Checkbox-label .ms-Checkbox-checkbox": {
           borderColor: "var(--vscode-inputValidation-infoBorder, #007ACC)",
         },
         ":focus": {
-          ...checkboxStyle,
+          ...checkboxStyleSelected,
         },
         ":hover": {
           backgroundColor: "var(--vscode-editorStickyScrollHover-background, #303031) !important",
-          ...checkboxStyle,
+          ...checkboxStyleSelected,
         },
       },
       dropdownOptionText: {

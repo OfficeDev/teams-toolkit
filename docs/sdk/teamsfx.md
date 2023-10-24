@@ -54,6 +54,7 @@
 |  [createPfxCertOption(pfx, options)](./teamsfx.createpfxcertoption.md) | Helper to create SecureContextOptions from PFX format cert |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | Get log level. |
 |  [getTediousConnectionConfig(teamsfx, databaseName)](./teamsfx.gettediousconnectionconfig.md) | Generate connection configuration consumed by tedious. |
+|  [handleMessageExtensionLinkQueryWithSSO(context, config, initiateLoginEndpoint, scopes, logic)](./teamsfx.handlemessageextensionlinkquerywithsso.md) | Users execute link query in message extension with SSO or access token. |
 |  [handleMessageExtensionQueryWithSSO(context, config, initiateLoginEndpoint, scopes, logic)](./teamsfx.handlemessageextensionquerywithsso.md) | Users execute query in message extension with SSO or access token. |
 |  [handleMessageExtensionQueryWithToken(context, config, scopes, logic)](./teamsfx.handlemessageextensionquerywithtoken.md) | Users execute query in message extension with SSO or access token. |
 |  [sendAdaptiveCard(target, card, onError)](./teamsfx.sendadaptivecard.md) | Send an adaptive card message to a notification target. |

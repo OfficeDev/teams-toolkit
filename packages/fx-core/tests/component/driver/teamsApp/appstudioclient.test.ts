@@ -816,19 +816,22 @@ describe("App Studio API Test", () => {
       chai.assert.equal(res, appApiRegistration);
     });
 
-    it("fake exception", async () => {
+    it("Graph API failure", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
       const error = {
         response: {
           staus: 400,
-          data: "BadRequest",
+          data: {
+            statusCode: 400,
+            errorMessage:
+              "Unsuccessful response received from Teams Graph Service. Error Message: System.Net.Http.HttpConnectionResponseContent",
+          },
           headers: {
             "x-correlation-id": uuid(),
           },
         },
-        message: "fake message",
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
 

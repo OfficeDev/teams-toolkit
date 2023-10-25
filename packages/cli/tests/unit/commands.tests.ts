@@ -1278,7 +1278,24 @@ describe("CLI read-only commands", () => {
         const account = (accountRes as any).value;
         assert.include(account, "is logged in and sideloading permission enabled");
       });
-
+      it("checkM365Account - error", async () => {
+        sandbox.stub(M365TokenInstance, "getStatus").resolves(err(new UserCancelError()));
+        sandbox.stub(tools, "getSideloadingStatus").resolves(true);
+        const checker = new DoctorChecker();
+        const accountRes = await checker.checkM365Account();
+        assert.isTrue(accountRes.isOk());
+        const account = (accountRes as any).value;
+        assert.include(account, "You have not logged in");
+      });
+      it("checkM365Account - error", async () => {
+        sandbox.stub(M365TokenInstance, "getStatus").resolves(err(new UserCancelError()));
+        sandbox.stub(tools, "getSideloadingStatus").resolves(true);
+        const checker = new DoctorChecker();
+        const accountRes = await checker.checkM365Account();
+        assert.isTrue(accountRes.isOk());
+        const account = (accountRes as any).value;
+        assert.include(account, "You have not logged in");
+      });
       it("checkM365Account - signout", async () => {
         const token = "test-token";
         const tenantId = "test-tenant-id";

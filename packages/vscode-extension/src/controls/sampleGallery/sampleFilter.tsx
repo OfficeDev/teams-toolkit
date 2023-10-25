@@ -61,6 +61,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             selectedKeys={this.sampleTypes.filter((type) => {
               return this.props.filterTags.indexOf(type) >= 0;
             })}
+            dropdownWidth="auto"
           />
           <Dropdown
             placeholder="language"
@@ -71,6 +72,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             selectedKeys={this.sampleLanguages.filter((type) => {
               return this.props.filterTags.indexOf(type) >= 0;
             })}
+            dropdownWidth="auto"
           />
           <Dropdown
             placeholder="technique"
@@ -81,6 +83,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             selectedKeys={this.sampleTechniques.filter((type) => {
               return this.props.filterTags.indexOf(type) >= 0;
             })}
+            dropdownWidth="auto"
           />
           <div className="filter-bar"></div>
           <VSCodeButton
@@ -155,11 +158,12 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
     const dropDownStyle: IStyle = {
       "span:first-child": {
         height: 24,
-        lineHeight: 24,
+        lineHeight: 21,
         backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
-        color: "var(--vscode-dropdown-foreground, #CCCCCC)",
+        color: "var(--vscode-peekViewTitleDescription-foreground, #CCCCCC)",
         fontSize: 13,
         border: "1px solid var(--vscode-menu-separatorBackground, #3C3C3C)",
+        fontFamily: "var(--font-family)",
       },
     };
     const caretStyle: IStyle = {
@@ -206,7 +210,6 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             color: "var(--vscode-dropdown-foreground, #CCCCCC)",
           },
         },
-        width: 146,
         marginLeft: 16,
       },
       caretDown: {
@@ -219,7 +222,6 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       },
       callout: {
         ".ms-Callout-main": {
-          // borderRadius: 5,
           border: "1px solid var(--vscode-inputValidation-infoBorder, #007ACC)",
         },
       },

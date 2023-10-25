@@ -5,24 +5,8 @@ import { getLocalizedString } from "../../../../common/localizeUtils";
 
 // Licensed under the MIT license.
 export class Constants {
-  public static readonly FRAMEWORK_NONE = "none";
-  public static readonly FRAMEWORK_REACT = "react";
-  public static readonly MAX_ALIAS_LENGTH = 40;
-  public static readonly MAX_BUNDLE_NAME_LENGTH = 64;
-  public static readonly CALLED_ID = "teamsdev";
-  public static readonly APP_CATALOG_REFRESH_TIME = 20000;
-  public static readonly APP_CATALOG_MAX_TIMES = 6;
-  public static readonly APP_CATALOG_ACTIVE_TIME = 180000;
   public static readonly PLUGIN_NAME = "SPFx";
   public static readonly PLUGIN_DEV_NAME = "fx-resource-spfx";
-  public static readonly BUILD_SHAREPOINT_PACKAGE = "Build SharePoint Package";
-  public static readonly READ_MORE = getLocalizedString("core.Notification.ReadMore");
-  public static readonly CANCEL = getLocalizedString("core.option.cancel");
-  public static readonly DEPLOY_GUIDE =
-    "https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-spfx?tabs=vscode#deploy-your-app-to-sharepoint";
-  public static readonly CREATE_APP_CATALOG_GUIDE =
-    "https://docs.microsoft.com/en-us/sharepoint/use-app-catalog#create-the-app-catalog";
-  public static readonly SPFX_HELP_LINK = "https://aka.ms/teamsfx-spfx-help";
   public static readonly SetUpDevEnvironmentHelpLink =
     "https://aka.ms/teamsfx-spfx-dev-environment-setup";
   public static readonly TEMPLATE_NAME = "spfx-tab";
@@ -36,6 +20,7 @@ export class Constants {
     "https://developer.microsoft.com/en-us/microsoft-365/dev-program";
   public static readonly YO_RC_SOLUTION_NAME = "solutionName";
   public static readonly IMPORT_HELP_LINK = "https://aka.ms/teamsfx-spfx-help-v5";
+  public static readonly TEAMS_APP_NAME_MAX_LENGTH = 30;
 }
 
 export class TelemetryKey {

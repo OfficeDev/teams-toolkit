@@ -1495,6 +1495,81 @@
       "type": "string",
       "pattern": "^[A-Z][A-Z0-9_]*$",
       "maxLength": 256
+    },
+    "apiSecretCreate": {
+      "type": "object",
+        "additionalProperties": false,
+        "required": ["with", "writeToEnvironmentFile"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "An optional name of this action."
+          },
+          "env": {
+            "type": "object",
+            "description": "Define environment variables for this action.",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "uses": {
+            "type": "string",
+            "description": "Create Azure Active Directory application when the environment variable that stores clientId is empty. Also create client secret for the application when generateClientSecret parameter is true and the environment variable that stores clientSecret is empty. When creating new Azure Active Directory application, this action generates clientId, objectId, tenantId, authority and authorityHost. When creating new client secret, this action generates clientSecret. Refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
+            "const": "aadApp/create"
+          },
+          "with": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Parameters for this action",
+            "required": ["name", "appId"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name of api secret."
+              },
+              "appId": {
+                "type": "string",
+                "description": "Teams app id."
+              },
+              "apiSecret": {
+                "type": "string",
+                "description": "Value of api secret."
+              }
+            }
+          },
+          "writeToEnvironmentFile": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Write environment variables to environment file",
+            "required": ["clientId", "objectId", "clientSecret"],
+            "properties": {
+              "clientId": {
+                "description": "Required. The client (application) id of created Azure Active Directory application.",
+                "$ref": "#/definitions/envVarName"
+              },
+              "objectId": {
+                "description": "Required. The object id of created Azure Active Directory application.",
+                "$ref": "#/definitions/envVarName"
+              },
+              "clientSecret": {
+                "description": "Required when generateClientSecret is true. The generated client secret of the Azure Active Directory application.",
+                "$ref": "#/definitions/secretEnvVarName"
+              },
+              "tenantId": {
+                "description": "The tenant id of created Azure Active Directory application.",
+                "$ref": "#/definitions/envVarName"
+              },
+              "authority": {
+                "description": "The authority of created Azure Active Directory application.",
+                "$ref": "#/definitions/envVarName"
+              },
+              "authorityHost": {
+                "description": "The authority host name of created Azure Active Directory application.",
+                "$ref": "#/definitions/envVarName"
+              }
+            }
+          }
+        }
     }
   }
 }

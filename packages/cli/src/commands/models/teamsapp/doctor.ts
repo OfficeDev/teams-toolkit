@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
   CheckerFactory,
@@ -135,8 +135,8 @@ export class DoctorChecker {
       if (tokenObject && tokenObject.upn) {
         loginHint = tokenObject.upn as string;
       }
-    } catch (err: any) {
-      error = assembleError(err, cliSource);
+    } catch (e) {
+      error = assembleError(e, cliSource);
       return err(error);
     }
     if (result && loginHint) {

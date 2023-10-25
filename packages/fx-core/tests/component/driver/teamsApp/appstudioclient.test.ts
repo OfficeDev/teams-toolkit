@@ -815,5 +815,35 @@ describe("App Studio API Test", () => {
       );
       chai.assert.equal(res, appApiRegistration);
     });
+
+    it("fake exception", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          staus: 400,
+          data: "BadRequest",
+          headers: {
+            "x-correlation-id": uuid(),
+          },
+        },
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.createApiKeyRegistration(appStudioToken, appApiRegistration);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
   });
 });

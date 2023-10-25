@@ -114,6 +114,8 @@ export enum TelemetryEvent {
   M365Sigeloading = "m365-sideloading",
   M365Unacquire = "m365-unacquire",
   M365LaunchInfo = "m365-launch-info",
+
+  Doctor = "doctor",
 }
 
 export enum TelemetryProperty {

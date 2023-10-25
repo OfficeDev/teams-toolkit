@@ -411,13 +411,13 @@ function validateTeamsManifestLength(
   const nameFullLimit = 100;
   const descriptionShortLimit = 80;
   const descriptionFullLimit = 4000;
-  const envPlaceholder = "${{TEAMSFX_ENV}}";
+  const appnameSuffixPlaceholder = "${{APP_NAME_SUFFIX}}";
   const devEnv = "dev";
   const resultWarnings = [];
 
   // validate name
-  const shortNameLength = teamsManifest.name.short.includes(envPlaceholder)
-    ? teamsManifest.name.short.length - envPlaceholder.length + devEnv.length
+  const shortNameLength = teamsManifest.name.short.includes(appnameSuffixPlaceholder)
+    ? teamsManifest.name.short.length - appnameSuffixPlaceholder.length + devEnv.length
     : teamsManifest.name.short.length;
   if (shortNameLength > nameShortLimit) {
     resultWarnings.push(formatLengthExceedingErrorMessage("/name/short", nameShortLimit));

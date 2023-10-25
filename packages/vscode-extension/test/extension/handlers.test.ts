@@ -2410,7 +2410,7 @@ describe("autoOpenProjectHandler", () => {
 
   it("auto install dependency", async () => {
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
-      if (key === "fx-extension.autoInstallDependency") {
+      if (key === "teamsToolkit:autoInstallDependency") {
         return true;
       } else {
         return false;
@@ -2422,7 +2422,7 @@ describe("autoOpenProjectHandler", () => {
 
     await handlers.autoOpenProjectHandler();
 
-    chai.assert.isTrue(globalStateStub.calledWith("fx-extension.autoInstallDependency", false));
+    chai.assert.isTrue(globalStateStub.calledWith("teamsToolkit:autoInstallDependency", false));
     chai.assert.isTrue(runCommandStub.calledOnce);
   });
 

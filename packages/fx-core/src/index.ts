@@ -19,6 +19,7 @@ export * from "./common/projectSettingsHelperV3";
 export * from "./common/tools";
 export { LocalCertificateManager } from "./common/local/localCertificateManager";
 export { FuncToolChecker } from "./common/deps-checker/internal/funcToolChecker";
+export { LtsNodeChecker } from "./common/deps-checker/internal/nodeChecker";
 export { MetadataV3, VersionState } from "./common/versionMetadata";
 export * from "./component/constants";
 export * from "./component/migrate";

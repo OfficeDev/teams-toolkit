@@ -31,14 +31,28 @@ export const teamsappDoctorCommand: CLICommand = {
     event: TelemetryEvent.Doctor,
   },
   defaultInteractiveOption: false,
-  handler: async (ctx) => {
+  handler: async () => {
     getFxCore();
-    const res = await checkM365Account();
+    const checker = new DoctorChecker();
+    await checker.checkAccount();
+    await checker.checkNodejs();
+    await checker.checkFuncCoreTool();
+    await checker.checkCert();
+    return ok(undefined);
+  },
+};
+
+export class DoctorChecker {
+  async checkAccount(): Promise<void> {
+    const res = await this.checkM365Account();
     if (res.isErr()) {
       logger.error(res.error.message);
     } else {
       logger.info(res.value);
     }
+  }
+
+  async checkNodejs(): Promise<void> {
     const nodeChecker = CheckerFactory.createChecker(
       DepsType.LtsNode,
       new EmptyLogger(),
@@ -51,19 +65,22 @@ export const teamsappDoctorCommand: CLICommand = {
           WarningText +
             util.format(
               strings.command.doctor.node.NotSupported,
-              nodeRes.details.installVersion!,
-              nodeRes.details.supportedVersions.join(", ")
+              nodeRes.details?.installVersion,
+              nodeRes.details?.supportedVersions.join(", ")
             )
         );
       } else {
         logger.info(
           DoneText +
-            util.format(strings.command.doctor.node.Success, nodeRes.details.installVersion!)
+            util.format(strings.command.doctor.node.Success, nodeRes.details?.installVersion)
         );
       }
     } else {
       logger.info(WarningText + strings.command.doctor.node.NotFound);
     }
+  }
+
+  async checkFuncCoreTool(): Promise<void> {
     const funcChecker = new FuncToolChecker();
     try {
       const funcRes = await funcChecker.queryFuncVersion(undefined);
@@ -71,7 +88,9 @@ export const teamsappDoctorCommand: CLICommand = {
     } catch (e) {
       logger.info(WarningText + strings.command.doctor.func.NotFound);
     }
+  }
 
+  async checkCert(): Promise<void> {
     const certManager = new LocalCertificateManager();
     const certRes = await certManager.setupCertificate(true, true);
     if (!certRes.found) {
@@ -83,53 +102,52 @@ export const teamsappDoctorCommand: CLICommand = {
         logger.info(WarningText + strings.command.doctor.cert.FoundNotTrust);
       }
     }
-    return ok(undefined);
-  },
-};
+  }
 
-async function checkM365Account(): Promise<Result<string, FxError>> {
-  let result = true;
-  let summaryMsg = "";
-  let error = undefined;
-  let loginHint: string | undefined = undefined;
-  try {
-    let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-    let token = loginStatusRes.isOk() ? loginStatusRes.value.token : undefined;
-    if (loginStatusRes.isOk() && loginStatusRes.value.status === signedOut) {
-      const tokenRes = await M365TokenInstance.getAccessToken({
-        scopes: AppStudioScopes,
-        showDialog: true,
-      });
-      token = tokenRes.isOk() ? tokenRes.value : undefined;
-      loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-    }
-    if (token === undefined) {
-      result = false;
-      summaryMsg = WarningText + strings.command.doctor.account.NotSignIn;
-    } else {
-      const isSideloadingEnabled = await getSideloadingStatus(token);
-      if (isSideloadingEnabled === false) {
-        // sideloading disabled
-        result = false;
-        summaryMsg = WarningText + strings.command.doctor.account.SideLoadingDisabled;
+  async checkM365Account(): Promise<Result<string, FxError>> {
+    let result = true;
+    let summaryMsg = "";
+    let error = undefined;
+    let loginHint: string | undefined = undefined;
+    try {
+      let loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+      let token = loginStatusRes.isOk() ? loginStatusRes.value.token : undefined;
+      if (loginStatusRes.isOk() && loginStatusRes.value.status === signedOut) {
+        const tokenRes = await M365TokenInstance.getAccessToken({
+          scopes: AppStudioScopes,
+          showDialog: true,
+        });
+        token = tokenRes.isOk() ? tokenRes.value : undefined;
+        loginStatusRes = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
       }
+      if (token === undefined) {
+        result = false;
+        summaryMsg = WarningText + strings.command.doctor.account.NotSignIn;
+      } else {
+        const isSideloadingEnabled = await getSideloadingStatus(token);
+        if (isSideloadingEnabled === false) {
+          // sideloading disabled
+          result = false;
+          summaryMsg = WarningText + strings.command.doctor.account.SideLoadingDisabled;
+        }
+      }
+      const tokenObject = loginStatusRes.isOk() ? loginStatusRes.value.accountInfo : undefined;
+      if (tokenObject && tokenObject.upn) {
+        loginHint = tokenObject.upn as string;
+      }
+    } catch (err: any) {
+      result = false;
+      error = assembleError(err, cliSource);
+      return err(error);
     }
-    const tokenObject = loginStatusRes.isOk() ? loginStatusRes.value.accountInfo : undefined;
-    if (tokenObject && tokenObject.upn) {
-      loginHint = tokenObject.upn as string;
+    if (result && loginHint) {
+      summaryMsg =
+        DoneText +
+        util.format(
+          strings.command.doctor.account.SignInSuccess,
+          colorize(loginHint, TextType.Email)
+        );
     }
-  } catch (err: any) {
-    result = false;
-    error = assembleError(err, cliSource);
-    return err(error);
+    return ok(summaryMsg);
   }
-  if (result && loginHint) {
-    summaryMsg =
-      DoneText +
-      util.format(
-        strings.command.doctor.account.SignInSuccess,
-        colorize(loginHint, TextType.Email)
-      );
-  }
-  return ok(summaryMsg);
 }

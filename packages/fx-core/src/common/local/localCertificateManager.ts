@@ -41,6 +41,7 @@ export interface LocalCertificate {
   isTrusted?: boolean;
   alreadyTrusted?: boolean;
   error?: FxError;
+  found?: boolean;
 }
 
 export class LocalCertificateManager {
@@ -65,7 +66,10 @@ export class LocalCertificateManager {
    * - Check cert store if trusted (thumbprint, expiration)
    * - Add to cert store if not trusted (friendly name as well)
    */
-  public async setupCertificate(needTrust: boolean): Promise<LocalCertificate> {
+  public async setupCertificate(
+    needTrust: boolean,
+    failIfNotFound = false
+  ): Promise<LocalCertificate> {
     const certFilePath = `${this.certFolder}/${LocalDebugCertificate.CertFileName}`;
     const keyFilePath = `${this.certFolder}/${LocalDebugCertificate.KeyFileName}`;
     const localCert: LocalCertificate = {
@@ -87,6 +91,10 @@ export class LocalCertificateManager {
       }
 
       if (!certThumbprint) {
+        if (failIfNotFound) {
+          localCert.found = false;
+          return localCert;
+        }
         // generate cert and key
         certThumbprint = await this.generateCertificate(certFilePath, keyFilePath);
       }
@@ -183,10 +191,7 @@ export class LocalCertificateManager {
     return thumbprint;
   }
 
-  private verifyCertificateContent(
-    certContent: string,
-    keyContent: string
-  ): [string | undefined, boolean] {
+  verifyCertificateContent(certContent: string, keyContent: string): [string | undefined, boolean] {
     const thumbprint: string | undefined = undefined;
     try {
       const cert = pki.certificateFromPem(certContent);

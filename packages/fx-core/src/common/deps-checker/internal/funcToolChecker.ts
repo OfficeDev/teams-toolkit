@@ -363,7 +363,7 @@ export class FuncToolChecker implements DepsChecker {
     );
   }
 
-  protected async queryFuncVersion(funcBinFolder: string | undefined): Promise<FuncVersion> {
+  async queryFuncVersion(funcBinFolder: string | undefined): Promise<FuncVersion> {
     const execPath = funcBinFolder ? path.resolve(funcBinFolder, "func") : "func";
     const output = await cpUtils.executeCommand(
       undefined,

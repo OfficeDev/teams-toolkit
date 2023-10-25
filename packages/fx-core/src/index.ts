@@ -17,6 +17,8 @@ export * from "./common/permissionInterface";
 export * from "./common/projectSettingsHelper";
 export * from "./common/projectSettingsHelperV3";
 export * from "./common/tools";
+export { LocalCertificateManager } from "./common/local/localCertificateManager";
+export { FuncToolChecker } from "./common/deps-checker/internal/funcToolChecker";
 export { MetadataV3, VersionState } from "./common/versionMetadata";
 export * from "./component/constants";
 export * from "./component/migrate";

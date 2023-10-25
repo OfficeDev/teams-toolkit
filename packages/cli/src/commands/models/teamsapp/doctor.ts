@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, FxError, Result, ok } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
   CheckerFactory,
   DepsType,
   EmptyLogger,
   EmptyTelemetry,
+  FuncToolChecker,
+  LocalCertificateManager,
   assembleError,
-  dotnetExplanationHelpLink,
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../../activate";
@@ -21,7 +22,6 @@ import M365TokenInstance from "../../../commonlib/m365Login";
 import { cliSource } from "../../../constants";
 import { strings } from "../../../resource";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
-import userInteraction from "../../../userInteraction";
 
 export const teamsappDoctorCommand: CLICommand = {
   name: "doctor",
@@ -34,23 +34,21 @@ export const teamsappDoctorCommand: CLICommand = {
   handler: async (ctx) => {
     getFxCore();
 
-    const progress = userInteraction.createProgressBar(
-      "(Total: 3 Steps) Teams Toolkit is checking the required prerequisites.",
-      3
-    );
+    // const progress = userInteraction.createProgressBar(
+    //   "Teams Toolkit is checking the required prerequisites.",
+    //   5
+    // );
 
-    const summaries: string[] = [];
+    // await progress.start();
 
-    await progress.start();
-
-    await progress.next("(1/3) Checking Microsoft 365 Account ...");
+    // await progress.next("(1/4) Checking Microsoft 365 Account ...");
     const res = await checkM365Account();
     if (res.isErr()) {
-      return err(res.error);
+      logger.error(res.error.message);
     } else {
-      summaries.push(res.value);
+      logger.info(res.value);
     }
-    await progress.next("(2/3) Checking Node.js ...");
+    // await progress.next("(2/4) Checking Node.js ...");
     const nodeChecker = CheckerFactory.createChecker(
       DepsType.LtsNode,
       new EmptyLogger(),
@@ -59,7 +57,7 @@ export const teamsappDoctorCommand: CLICommand = {
     const nodeRes = await nodeChecker.getInstallationInfo();
     if (nodeRes.isInstalled) {
       if (nodeRes.error) {
-        summaries.push(
+        logger.info(
           WarningText +
             util.format(
               strings.command.doctor.node.NotSupported,
@@ -68,7 +66,7 @@ export const teamsappDoctorCommand: CLICommand = {
             )
         );
       } else {
-        summaries.push(
+        logger.info(
           DoneText +
             util.format(strings.command.doctor.node.Success, nodeRes.details.installVersion!)
         );
@@ -76,43 +74,64 @@ export const teamsappDoctorCommand: CLICommand = {
     } else {
       logger.info(WarningText + strings.command.doctor.node.NotFound);
     }
-    await progress.next("(3/3) Checking .NET Core SDK ...");
-    const dotnetChecker = CheckerFactory.createChecker(
-      DepsType.Dotnet,
-      new EmptyLogger(),
-      new EmptyTelemetry()
-    );
-    const dotnetRes = await dotnetChecker.getInstallationInfo();
-    if (dotnetRes.isInstalled) {
-      if (dotnetRes.error) {
-        summaries.push(
-          WarningText +
-            util.format(
-              strings.command.doctor.dotnet.NotSupported,
-              dotnetRes.details.installVersion!,
-              dotnetRes.details.supportedVersions.join(", ")
-            )
-        );
-      } else {
-        summaries.push(
-          DoneText +
-            util.format(strings.command.doctor.dotnet.Success, nodeRes.details.installVersion!)
-        );
-      }
+    // await progress.next("(3/5) Checking .NET Core SDK ...");
+    // const dotnetChecker = CheckerFactory.createChecker(
+    //   DepsType.Dotnet,
+    //   new EmptyLogger(),
+    //   new EmptyTelemetry()
+    // );
+    // const dotnetRes = await dotnetChecker.getInstallationInfo();
+    // if (dotnetRes.isInstalled) {
+    //   if (dotnetRes.error) {
+    //     logger.info(
+    //       WarningText +
+    //         util.format(
+    //           strings.command.doctor.dotnet.NotSupported,
+    //           dotnetRes.details.installVersion!,
+    //           dotnetRes.details.supportedVersions.join(", ")
+    //         )
+    //     );
+    //   } else {
+    //     logger.info(
+    //       DoneText +
+    //         util.format(strings.command.doctor.dotnet.Success, nodeRes.details.installVersion!)
+    //     );
+    //   }
+    // } else {
+    //   logger.info(
+    //     WarningText +
+    //       util.format(
+    //         strings.command.doctor.dotnet.NotFound,
+    //         colorize(dotnetExplanationHelpLink, TextType.Hyperlink)
+    //       )
+    //   );
+    // }
+    // await progress.next("(3/4) Azure Functions Core Tools ...");
+    const funcChecker = new FuncToolChecker();
+    try {
+      const funcRes = await funcChecker.queryFuncVersion(undefined);
+      logger.info(DoneText + util.format(strings.command.doctor.func.Success, funcRes.versionStr));
+    } catch (e) {
+      logger.info(WarningText + strings.command.doctor.func.NotFound);
+    }
+
+    // await progress.next("(4/4) Local Certificate ...");
+
+    const certManager = new LocalCertificateManager();
+    const certRes = await certManager.setupCertificate(true, true);
+
+    if (!certRes.found) {
+      logger.info(WarningText + strings.command.doctor.cert.NotFound);
     } else {
-      summaries.push(
-        WarningText +
-          util.format(
-            strings.command.doctor.dotnet.NotFound,
-            colorize(dotnetExplanationHelpLink, TextType.Hyperlink)
-          )
-      );
+      if (certRes.alreadyTrusted) {
+        logger.info(DoneText + strings.command.doctor.cert.NotFound);
+      } else {
+        logger.info(WarningText + strings.command.doctor.cert.FoundNotTrust);
+      }
     }
-    await progress.end(true);
-    logger.info("Summary:");
-    for (const log of summaries) {
-      logger.info(log);
-    }
+
+    // await progress.end(true);
+
     return ok(undefined);
   },
 };

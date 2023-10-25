@@ -43,7 +43,17 @@
       "dotnet" : {
         "NotFound": "Cannot find .NET Core SDK. For the details why .NET SDK is needed, refer to %s.",
         "NotSupported": ".NET Core SDK. (%s) is not the officially supported version (%s).",
-        "Success": ".NET Core SDK. version (%s) is installed。"
+        "Success": ".NET Core SDK. version (%s) is installed."
+      },
+      "func" : {
+        "NotFound": "Cannot find Azure Functions Core Tools.",
+        "NotSupported": "Azure Functions Core Tools (%s) is not the officially supported version (%s).",
+        "Success": "Azure Functions Core Tools version (%s) is installed."
+      },
+      "cert" : {
+        "NotFound": "Cannot find local Certificate.",
+        "FoundNotTrust": "Local Certificate is found but not trusted.",
+        "Success": "Local Certificate is found and trusted."
       }
     }
   }

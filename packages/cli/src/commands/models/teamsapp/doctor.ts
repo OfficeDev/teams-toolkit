@@ -33,22 +33,12 @@ export const teamsappDoctorCommand: CLICommand = {
   defaultInteractiveOption: false,
   handler: async (ctx) => {
     getFxCore();
-
-    // const progress = userInteraction.createProgressBar(
-    //   "Teams Toolkit is checking the required prerequisites.",
-    //   5
-    // );
-
-    // await progress.start();
-
-    // await progress.next("(1/4) Checking Microsoft 365 Account ...");
     const res = await checkM365Account();
     if (res.isErr()) {
       logger.error(res.error.message);
     } else {
       logger.info(res.value);
     }
-    // await progress.next("(2/4) Checking Node.js ...");
     const nodeChecker = CheckerFactory.createChecker(
       DepsType.LtsNode,
       new EmptyLogger(),
@@ -74,39 +64,6 @@ export const teamsappDoctorCommand: CLICommand = {
     } else {
       logger.info(WarningText + strings.command.doctor.node.NotFound);
     }
-    // await progress.next("(3/5) Checking .NET Core SDK ...");
-    // const dotnetChecker = CheckerFactory.createChecker(
-    //   DepsType.Dotnet,
-    //   new EmptyLogger(),
-    //   new EmptyTelemetry()
-    // );
-    // const dotnetRes = await dotnetChecker.getInstallationInfo();
-    // if (dotnetRes.isInstalled) {
-    //   if (dotnetRes.error) {
-    //     logger.info(
-    //       WarningText +
-    //         util.format(
-    //           strings.command.doctor.dotnet.NotSupported,
-    //           dotnetRes.details.installVersion!,
-    //           dotnetRes.details.supportedVersions.join(", ")
-    //         )
-    //     );
-    //   } else {
-    //     logger.info(
-    //       DoneText +
-    //         util.format(strings.command.doctor.dotnet.Success, nodeRes.details.installVersion!)
-    //     );
-    //   }
-    // } else {
-    //   logger.info(
-    //     WarningText +
-    //       util.format(
-    //         strings.command.doctor.dotnet.NotFound,
-    //         colorize(dotnetExplanationHelpLink, TextType.Hyperlink)
-    //       )
-    //   );
-    // }
-    // await progress.next("(3/4) Azure Functions Core Tools ...");
     const funcChecker = new FuncToolChecker();
     try {
       const funcRes = await funcChecker.queryFuncVersion(undefined);
@@ -115,11 +72,8 @@ export const teamsappDoctorCommand: CLICommand = {
       logger.info(WarningText + strings.command.doctor.func.NotFound);
     }
 
-    // await progress.next("(4/4) Local Certificate ...");
-
     const certManager = new LocalCertificateManager();
     const certRes = await certManager.setupCertificate(true, true);
-
     if (!certRes.found) {
       logger.info(WarningText + strings.command.doctor.cert.NotFound);
     } else {
@@ -129,9 +83,6 @@ export const teamsappDoctorCommand: CLICommand = {
         logger.info(WarningText + strings.command.doctor.cert.FoundNotTrust);
       }
     }
-
-    // await progress.end(true);
-
     return ok(undefined);
   },
 };

@@ -136,7 +136,6 @@ export class DoctorChecker {
         loginHint = tokenObject.upn as string;
       }
     } catch (err: any) {
-      result = false;
       error = assembleError(err, cliSource);
       return err(error);
     }

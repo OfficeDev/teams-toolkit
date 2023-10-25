@@ -164,6 +164,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         fontSize: 13,
         border: "1px solid var(--vscode-menu-separatorBackground, #3C3C3C)",
         fontFamily: "var(--font-family)",
+        width: 146,
       },
     };
     const caretStyle: IStyle = {

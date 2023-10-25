@@ -2,15 +2,12 @@
 // Licensed under the MIT license.
 
 import { assert, expect } from "chai";
-import os from "os";
-import * as util from "util";
 import "mocha";
 import {
   checkPostBody,
   checkParameters,
   checkServerUrl,
   convertPathToCamelCase,
-  getRelativePath,
   getResponseJson,
   getUrlProtocol,
   isSupportedApi,
@@ -18,11 +15,11 @@ import {
   validateServer,
   resolveServerUrl,
   isWellKnownName,
+  format,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
 import { ErrorType } from "../../../src/common/spec-parser/interfaces";
-import { format } from "util";
 
 describe("utils", () => {
   describe("updateFirstLetter", () => {
@@ -34,31 +31,6 @@ describe("utils", () => {
     it("should return an empty string if the input is empty", () => {
       const result = updateFirstLetter("");
       expect(result).to.equal("");
-    });
-  });
-
-  describe("getRelativePath", () => {
-    it("should return the correct relative path", () => {
-      const from = "/path/to/from";
-      const to = "/path/to/file.txt";
-      const result = getRelativePath(from, to);
-      expect(result).to.equal("file.txt");
-    });
-
-    it("should get relative path with subfolder", () => {
-      const from = "/path/to/from";
-      const to = "/path/to/subfolder/file.txt";
-      const result = getRelativePath(from, to);
-      expect(result).to.equal("subfolder/file.txt");
-    });
-
-    it("should replace backslashes with forward slashes on Windows", () => {
-      if (os.platform() === "win32") {
-        const from = "c:\\path\\to\\from";
-        const to = "c:\\path\\to\\subfolder\\file.txt";
-        const result = getRelativePath(from, to);
-        expect(result).to.equal("subfolder/file.txt");
-      }
     });
   });
 
@@ -1087,7 +1059,7 @@ describe("utils", () => {
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
+          content: format(ConstantString.UrlProtocolNotSupported, "http"),
           data: "http",
         },
       ]);
@@ -1251,12 +1223,12 @@ describe("utils", () => {
         },
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: util.format(ConstantString.UrlProtocolNotSupported, "http"),
+          content: format(ConstantString.UrlProtocolNotSupported, "http"),
           data: "http",
         },
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: util.format(ConstantString.UrlProtocolNotSupported, "ftp"),
+          content: format(ConstantString.UrlProtocolNotSupported, "ftp"),
           data: "ftp",
         },
       ]);
@@ -1510,6 +1482,33 @@ describe("utils", () => {
       expect(isWellKnownName("bar", ConstantString.WellknownResultNames)).to.be.false;
       expect(isWellKnownName("baz", ConstantString.WellknownResultNames)).to.be.false;
       expect(isWellKnownName("qux", ConstantString.WellknownResultNames)).to.be.false;
+    });
+  });
+
+  describe("format", () => {
+    it("should replace %s placeholders with arguments", () => {
+      const result = format("Hello, %s!", "world");
+      expect(result).to.equal("Hello, world!");
+    });
+
+    it("should handle multiple placeholders and arguments", () => {
+      const result = format("The %s is %s.", "answer", "42");
+      expect(result).to.equal("The answer is 42.");
+    });
+
+    it("should handle missing arguments", () => {
+      const result = format("Hello, %s!", "");
+      expect(result).to.equal("Hello, !");
+    });
+
+    it("should handle extra arguments", () => {
+      const result = format("Hello, %s!", "world", "extra");
+      expect(result).to.equal("Hello, world!");
+    });
+
+    it("should handle no placeholders", () => {
+      const result = format("Hello, world!");
+      expect(result).to.equal("Hello, world!");
     });
   });
 });

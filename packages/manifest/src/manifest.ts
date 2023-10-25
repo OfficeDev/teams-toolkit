@@ -118,7 +118,7 @@ export interface ICommand {
 }
 
 export interface ICommandList {
-  scopes: ("team" | "personal" | "groupchat")[];
+  scopes: BotOrMeScopes;
   commands: ICommand[];
 }
 
@@ -150,7 +150,7 @@ export interface IBot {
   /**
    * Specifies whether the bot offers an experience in the context of a channel in a team, in a 1:1 or group chat, or in an experience scoped to an individual user alone. These options are non-exclusive.
    */
-  scopes: ("team" | "personal" | "groupchat")[];
+  scopes: BotOrMeScopes;
   /**
    * The list of commands that the bot supplies, including their usage, description, and the scope for which the commands are valid. A separate command list should be used for each scope.
    */
@@ -184,6 +184,8 @@ export interface IWebApplicationInfo {
   applicationPermissions?: string[];
 }
 
+export type BotOrMeScopes = ("team" | "personal" | "groupchat")[];
+
 export interface IComposeExtension {
   objectId?: string;
 
@@ -196,6 +198,8 @@ export interface IComposeExtension {
    * A value indicating whether the configuration of a compose extension can be updated by the user.
    */
   canUpdateConfiguration?: boolean;
+
+  scopes?: BotOrMeScopes;
 
   commands: IMessagingExtensionCommand[];
   /**

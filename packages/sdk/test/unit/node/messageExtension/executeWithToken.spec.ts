@@ -5,6 +5,7 @@ import { ErrorCode, ErrorWithCode } from "../../../../src/core/errors";
 import {
   handleMessageExtensionQueryWithSSO,
   handleMessageExtensionQueryWithToken,
+  handleMessageExtensionLinkQueryWithSSO,
 } from "../../../../src/messageExtension/executeWithSSO";
 import { MessageExtensionTokenResponse } from "../../../../src/messageExtension/teamsMsgExtTokenResponse";
 import { OnBehalfOfUserCredential } from "../../../../src/credential/onBehalfOfUserCredential";
@@ -351,6 +352,69 @@ describe("Message Extension Query With SSO Tests - Node", () => {
     sinon.assert.calledOnce(spy);
     assert.equal(spy.getCall(0).args[1][0].value.status, 412);
     assert.equal(spy.getCall(0).args[1][0].type, "invokeResponse");
+  });
+
+  it("handleMessageExtensionLinkQueryWithSSO get error response without compose/linkQuery type", async () => {
+    const adapter = new SimpleAdapter();
+    const activityContext = {
+      name: "composeExtension/query",
+      value: { authentication: { token: ssoToken } },
+    };
+    const context: TurnContext = new TurnContext(adapter, activityContext);
+    try {
+      await handleMessageExtensionLinkQueryWithSSO(
+        context,
+        authConfig,
+        loginUrl,
+        "fake_scope1",
+        async (token) => {
+          token;
+        }
+      );
+    } catch (err) {
+      assert.isTrue(err instanceof ErrorWithCode);
+      assert.strictEqual(
+        (err as ErrorWithCode).message,
+        "The handleMessageExtensionLinkQueryWithSSO only support in handleTeamsAppBasedLinkQuery with composeExtension/queryLink type."
+      );
+      assert.strictEqual((err as ErrorWithCode).code, "FailedOperation");
+    }
+  });
+
+  it("handleMessageExtensionLinkQueryWithSSO get AuthCard response in Message Extension link unfurling", async () => {
+    const adapter = new SimpleAdapter();
+    const activityContext = {
+      name: "composeExtension/queryLink",
+      value: { authentication: { token: ssoToken } },
+    };
+    const context: TurnContext = new TurnContext(adapter, activityContext);
+    const spy = sinon.spy(adapter, "sendActivities");
+    sandbox
+      .stub(OnBehalfOfUserCredential.prototype, "getToken")
+      .throws(
+        new ErrorWithCode(
+          "Failed to get access token from authentication server, please login first.",
+          ErrorCode.UiRequiredError
+        )
+      );
+    await handleMessageExtensionLinkQueryWithSSO(
+      context,
+      authConfig,
+      loginUrl,
+      "fake_scope1",
+      async (token) => {
+        token;
+      }
+    );
+    spy.restore();
+    sinon.assert.calledOnce(spy);
+    const signInLink = `${loginUrl}?scope=fake_scope1&clientId=${authConfig.clientId}&tenantId=${authConfig.tenantId}`;
+    assert.equal(spy.getCall(0).args[1][0].value.status, "200");
+    assert.isNotNull(spy.getCall(0).args[1][0].value.body);
+    const resBody = spy.getCall(0).args[1][0].value.body;
+    assert.equal(resBody.composeExtension.type, "auth");
+    assert.equal(resBody.composeExtension.suggestedActions.actions[0].value, signInLink);
+    assert.equal(resBody.composeExtension.suggestedActions.actions[0].type, "openUrl");
   });
 
   it("handleMessageExtensionQueryWithSSO with expected token in message extension query", async () => {

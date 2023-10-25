@@ -22,3 +22,7 @@ Initial release of the SDK for React Hook.
 
 - Update to support [React 18](https://reactjs.org/).
 - Migrate to use [Fluent UI v9](https://react.fluentui.dev/?path=/docs/concepts-introduction--page), which includes breaking changes of `useTeams`, `useTeamsUserCredential` and `useTeamsFx`.
+
+# 3.1.0-alpha
+
+- Add `loading` parameter to the return value of `useTeams` hook.

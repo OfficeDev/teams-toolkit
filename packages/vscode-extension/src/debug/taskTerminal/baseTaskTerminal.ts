@@ -38,12 +38,7 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   open(): void {
     this.startTime = performance.now();
     this.do()
-      .then((res) => {
-        const error = res.isErr() ? res.error : undefined;
-        this.stop(error).catch((error) => {
-          this.writeEmitter.fire(`${error?.message as string}\r\n`);
-        });
-      })
+      .then((res) => this.stop(res.isErr() ? res.error : undefined))
       .catch((error) => this.stop(error));
   }
 
@@ -74,7 +69,9 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
       this.writeEmitter.fire(`${error?.message as string}\r\n`);
       const fxError = assembleError(error);
       if (outputError) {
-        await showError(fxError);
+        showError(fxError).catch(() => {
+          // ignore
+        });
       }
       this.closeEmitter.fire(1);
 

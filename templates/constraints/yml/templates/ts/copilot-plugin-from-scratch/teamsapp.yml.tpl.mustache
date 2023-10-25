@@ -8,6 +8,8 @@ provision:
 
 {{#armDeploy}} deploymentName: Create-resources-for-sme {{/armDeploy}}
 
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
 
 {{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
@@ -26,6 +28,7 @@ deploy:
 
 # Triggered when 'teamsfx publish' is executed
 publish:
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
 {{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}

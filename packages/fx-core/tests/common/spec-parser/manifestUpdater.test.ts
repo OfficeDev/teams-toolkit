@@ -4,12 +4,17 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import fs from "fs-extra";
+import os from "os";
 import "mocha";
-import { updateManifest, generateCommands } from "../../../src/common/spec-parser/manifestUpdater";
+import {
+  updateManifest,
+  generateCommands,
+  getRelativePath,
+} from "../../../src/common/spec-parser/manifestUpdater";
 import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
 import { ErrorType, WarningType } from "../../../src/common/spec-parser/interfaces";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
-import { format } from "util";
+import { format } from "../../../src/common/spec-parser/utils";
 
 describe("manifestUpdater", () => {
   const spec: any = {
@@ -365,6 +370,31 @@ describe("manifestUpdater", () => {
   });
 });
 
+describe("getRelativePath", () => {
+  it("should return the correct relative path", () => {
+    const from = "/path/to/from";
+    const to = "/path/to/file.txt";
+    const result = getRelativePath(from, to);
+    expect(result).to.equal("file.txt");
+  });
+
+  it("should get relative path with subfolder", () => {
+    const from = "/path/to/from";
+    const to = "/path/to/subfolder/file.txt";
+    const result = getRelativePath(from, to);
+    expect(result).to.equal("subfolder/file.txt");
+  });
+
+  it("should replace backslashes with forward slashes on Windows", () => {
+    if (os.platform() === "win32") {
+      const from = "c:\\path\\to\\from";
+      const to = "c:\\path\\to\\subfolder\\file.txt";
+      const result = getRelativePath(from, to);
+      expect(result).to.equal("subfolder/file.txt");
+    }
+  });
+});
+
 describe("generateCommands", () => {
   const adaptiveCardFolder = "/path/to/your/adaptiveCards";
   const manifestPath = "/path/to/your/manifest.json";
@@ -469,6 +499,56 @@ describe("generateCommands", () => {
         id: "getOwnerPets",
         parameters: [{ name: "ownerId", title: "OwnerId", description: "ID of the owner" }],
         apiResponseRenderingTemplateFile: "adaptiveCards/getOwnerPets.json",
+      },
+    ];
+
+    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+
+    expect(result).to.deep.equal(expectedCommands);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should truncate strings in manifest file if exceed the max lens", async () => {
+    const spec: any = {
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary:
+              "Get all pets. Get all pets. Get all pets. Get all pets. Get all pets. Get all pets.",
+            description:
+              "This is the long description of get all pets. This is the long description of get all pets. This is the long description of get all pets",
+            parameters: [
+              {
+                name: "longLimitlongLimitlongLimitlongLimit",
+                description:
+                  "Long maximum number of pets to return. Long maximum number of pets to return. Long maximum number of pets to return. Long maximum number of pets to return.",
+                required: true,
+              },
+            ],
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+
+    const expectedCommands = [
+      {
+        context: ["compose"],
+        type: "query",
+        title: "Get all pets. Get all pets. Get ",
+        id: "getPets",
+        description:
+          "This is the long description of get all pets. This is the long description of get all pets. This is the long description of get ",
+        parameters: [
+          {
+            name: "longLimitlongLimitlongLimitlongLimit",
+            title: "LongLimitlongLimitlongLimitlongL",
+            description:
+              "Long maximum number of pets to return. Long maximum number of pets to return. Long maximum number of pets to return. Long maximu",
+          },
+        ],
+        apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
     ];
 

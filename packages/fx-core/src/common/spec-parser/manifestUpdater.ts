@@ -6,7 +6,7 @@ import { OpenAPIV3 } from "openapi-types";
 import fs from "fs-extra";
 import path from "path";
 import { ErrorType, WarningResult } from "./interfaces";
-import { getRelativePath, parseApiInfo } from "./utils";
+import { parseApiInfo } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
 import {
@@ -33,8 +33,11 @@ export async function updateManifest(
 
     const updatedPart = {
       description: {
-        short: spec.info.title,
-        full: spec.info.description ?? originalManifest.description.full,
+        short: spec.info.title.slice(0, ConstantString.ShortDescriptionMaxLens),
+        full: (spec.info.description ?? originalManifest.description.full)?.slice(
+          0,
+          ConstantString.FullDescriptionMaxLens
+        ),
       },
       composeExtensions: [ComposeExtension],
     };
@@ -86,4 +89,9 @@ export async function generateCommands(
   }
 
   return [commands, warnings];
+}
+
+export function getRelativePath(from: string, to: string): string {
+  const relativePath = path.relative(path.dirname(from), to);
+  return path.normalize(relativePath).replace(/\\/g, "/");
 }

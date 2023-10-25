@@ -1320,7 +1320,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and sideloading permission enabled");
+        assert.include(account, "is logged in and sideloading permission is enabled");
       });
 
       it("checkM365Account - no sideloading permission", async () => {

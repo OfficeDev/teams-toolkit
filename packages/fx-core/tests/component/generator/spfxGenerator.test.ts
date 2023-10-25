@@ -55,7 +55,7 @@ describe("SPFxGenerator", function () {
           manifestVersion: "1.16",
           id: "fakedId",
           name: {
-            short: "appname",
+            short: "thisisaverylongappnametotestifitwillbetruncated",
           },
           icons: {
             color: "color.png",
@@ -533,7 +533,10 @@ describe("SPFxGenerator", function () {
     const generateTemplateStub = sinon
       .stub(Generator, "generateTemplate" as any)
       .resolves(ok(undefined));
-    const fakedManifest = { name: { short: "appname" }, staticTabs: [{ name: "default" }] };
+    const fakedManifest = {
+      name: { short: "thisisaverylongappnametotestifitwillbetruncated" },
+      staticTabs: [{ name: "default" }],
+    };
     const readAppManifestStub = sinon
       .stub(ManifestUtils.prototype, "_readAppManifest")
       .resolves(ok(fakedManifest as any));

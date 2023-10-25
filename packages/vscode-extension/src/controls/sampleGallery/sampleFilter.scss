@@ -70,7 +70,7 @@
     &::part(control) {
       font-size: 13px;
       padding: 1px 8px 3px 8px;
-      background-color: var(--vscode-button-secondaryBackground, #333333);
+      background-color: var(--vscode-diffEditor-unchangedRegionBackground, #3C3C3C);
       color: var(--vscode-peekViewTitleDescription-foreground, #cccccc);
       border: 0;
     }

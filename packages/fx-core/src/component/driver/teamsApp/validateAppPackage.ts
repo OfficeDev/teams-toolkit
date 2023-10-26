@@ -200,7 +200,7 @@ export class ValidateAppPackageDriver implements StepDriver {
           .join(EOL);
         const warnings = validationResult.warnings
           .map((warning) => {
-            let message = `${SummaryConstant.Failed} ${warning.content} \n${getLocalizedString(
+            let message = `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
               "error.teamsApp.validate.details",
               warning.filePath,
               warning.title

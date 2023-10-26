@@ -74,7 +74,7 @@ export class PermissionStatus extends YargsCommand {
         type: "string",
       })
       .options(aadAppManifest, {
-        description: "Manifest of your Azure AD app",
+        description: "Manifest of your Microsoft Entra app",
         name: aadAppManifest,
         type: "string",
       });
@@ -155,7 +155,7 @@ export class PermissionGrant extends YargsCommand {
         type: "string",
       })
       .options(aadAppManifest, {
-        description: "Manifest of your Azure AD app",
+        description: "Manifest of your Microsoft Entra app",
         name: aadAppManifest,
         type: "string",
       });

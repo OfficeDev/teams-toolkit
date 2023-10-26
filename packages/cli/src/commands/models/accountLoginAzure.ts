@@ -17,7 +17,7 @@ export const accountLoginAzureCommand: CLICommand = {
   options: [
     {
       name: "tenant",
-      description: "Authenticate with a specific Azure Active Directory tenant.",
+      description: "Authenticate with a specific Microsoft Entra tenant.",
       type: "string",
       default: "",
     },

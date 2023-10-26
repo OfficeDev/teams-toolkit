@@ -130,7 +130,7 @@ export const AadManifestOptions: OptionsMap = {
     type: "string",
     global: false,
     description:
-      "Enter the AAD app manifest template file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
+      "Enter the Microsoft Entra app manifest template file path, it's a relative path to project root folder, defaults to './aad.manifest.json'",
   },
 };
 

@@ -184,7 +184,7 @@ export class AzureLogin extends YargsCommand {
   public builder(yargs: Argv): Argv<any> {
     return yargs
       .options("tenant", {
-        description: "Authenticate with a specific Azure Active Directory tenant.",
+        description: "Authenticate with a specific Microsoft Entra tenant.",
         type: "string",
         default: "",
       })

@@ -7,7 +7,7 @@ import { AadManifestHelper } from "../../../../src/component/driver/aad/utility/
 import { AadManifestErrorMessage } from "../../../../src/component/driver/aad/error/aadManifestError";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
 
-describe("AAD manifest helper Test", () => {
+describe("Microsoft Entra manifest helper Test", () => {
   it("manifestToApplication", async () => {
     const aadApp = AadManifestHelper.manifestToApplication(fakeAadManifest);
     chai.expect(aadApp).to.deep.equal(fakeAadApp);

@@ -16,7 +16,7 @@ Settings (App Settings ofr Auth Settings) bicep generators for Azure Web App, Az
 
 ### component/resource
 
-Cloud resource components: Teams App, AAD App, and Azure resources (Azure SQL, Azure Function, Azure Web App, Azure storage ...).
+Cloud resource components: Teams App, Microsoft Entra App, and Azure resources (Azure SQL, Azure Function, Azure Web App, Azure storage ...).
 
 Resource components provide the following APIs:
 * generateBicep - bicep for resource provisioning
@@ -81,7 +81,7 @@ When adding some feature, the following types of files could be potentially adde
 * Source code: provided by source code generators
 * Bicep files: provided by resource components or connection components.
 * App manifest file: provided by `app-manifest` component
-* AAD manifest file: provided by `aad-app` component
+* Microsoft Entra manifest file: provided by `aad-app` component
 * Project setting file: updated by feature component
 
 The first 4 types are created or updated by corresponding atomic components, while the last type (Project settings file) can be accessed by multiple components because it is wrapped in Context object. We don't suggest code generators or bicep generators be aware of the Context including project settings. The reason is that we hope the code of scaffold logic would keep unchanged if the Context object change in the future. In other words, the principle is that only feature component can update project settings.

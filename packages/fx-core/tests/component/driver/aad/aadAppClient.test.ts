@@ -20,7 +20,7 @@ const expect = chai.expect;
 
 describe("AadAppClient", async () => {
   const expectedObjectId = "00000000-0000-0000-0000-000000000000";
-  const expectedDisplayName = "AAD app name";
+  const expectedDisplayName = "Microsoft Entra app name";
   const expectedSecretText = "fake secret";
   const mockedNetworkError = {
     message: "network error",
@@ -37,7 +37,7 @@ describe("AadAppClient", async () => {
     });
   });
 
-  // uses create AAD app function to test the default retry logic
+  // uses create Microsoft Entra app function to test the default retry logic
   describe("internal http client", async () => {
     let aadAppClient: AadAppClient;
 
@@ -320,7 +320,7 @@ describe("AadAppClient", async () => {
           expect(err.source).equals("AadAppClient");
           expect(err.name).equals("DeleteOrUpdatePermissionFailed");
           expect(err.message).equals(
-            "Unable to update or delete an existing permission when it's enabled. One possible reason is that the ACCESS_AS_USER_PERMISSION_ID environment variable is changed for selected environment. Ensure your permission id(s) are identical with the actual AAD application and try again.\n"
+            "Unable to update or delete an existing permission when it's enabled. One possible reason is that the ACCESS_AS_USER_PERMISSION_ID environment variable is changed for selected environment. Ensure your permission id(s) are identical with the actual Microsoft Entra application and try again.\n"
           );
         }
       );

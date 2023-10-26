@@ -229,9 +229,9 @@ The following table gives details about the required environment variables used 
 To provision and deploy resources targeting Azure inside CI/CD, you must create an Azure service principal for use.
 
 Briefly, the steps include:
-1. Register an Azure AD application in single tenant, and it requires sufficient permissions in your Azure AD tenant.
-2. Assign a role to your Azure AD application to access your Azure subscription, and `Contributor` role is recommended. 
-3. Create a new Azure AD application secret.
+1. Register an Microsoft Entra application in single tenant, and it requires sufficient permissions in your Microsoft Entra tenant.
+2. Assign a role to your Microsoft Entra application to access your Azure subscription, and `Contributor` role is recommended. 
+3. Create a new Microsoft Entra application secret.
 4. Grab your tenant id, application id(AZURE_SERVICE_PRINCIPAL_NAME), and the secret(AZURE_SERVICE_PRINCIPAL_PASSWORD) for use.
 
 For detailed guidelines, refer to [the official document](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). There're three ways to create service principal, [Azure portal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal), [PowerShell](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-authenticate-service-principal-powershell), [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli), and you can choose the way you like.

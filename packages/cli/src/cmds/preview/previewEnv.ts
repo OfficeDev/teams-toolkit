@@ -8,7 +8,7 @@ import {
   AppStudioScopes,
   assembleError,
   CoreQuestionNames,
-  environmentManager,
+  environmentNameManager,
   envUtil,
   FxCore,
   getSideloadingStatus,
@@ -36,7 +36,6 @@ import { openHubWebClientNew } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import { Task } from "./task";
-import { environmentNameManager } from "@microsoft/teamsfx-core";
 enum Progress {
   M365Account = "Microsoft 365 Account",
 }

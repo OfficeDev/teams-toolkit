@@ -3,11 +3,11 @@
 
 "use strict";
 
-import { Colors, FxError, IProgressHandler } from "@microsoft/teamsfx-api";
+import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
+import * as path from "path";
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import open from "open";
-import * as path from "path";
-import { logger } from "../../commonlib/logger";
+import cliLogger from "../../commonlib/log";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -84,7 +84,7 @@ export function createTaskStartCb(
             color: Colors.BRIGHT_GREEN,
           },
         ];
-        logger.info(getColorizedString(message));
+        cliLogger.necessaryLog(LogLevel.Info, getColorizedString(message));
       }
     }
     await progressBar.next(startMessage);
@@ -132,7 +132,7 @@ export function createTaskStopCb(
     } else {
       const error = TaskFailed(taskTitle);
       if (!background && ifNpmInstall && telemetryProperties !== undefined) {
-        const localEnvManager = new LocalEnvManager(logger, cliTelemetry.reporter);
+        const localEnvManager = new LocalEnvManager(cliLogger, cliTelemetry.reporter);
         const npmInstallLogInfo = await localEnvManager.getNpmInstallLogInfo();
         let validNpmInstallLogInfo = false;
         if (
@@ -158,10 +158,10 @@ export function createTaskStopCb(
       if (telemetryProperties !== undefined) {
         cliTelemetry.sendTelemetryErrorEvent(event, error, properties);
       }
-      logger.error(`${error.source}.${error.name}: ${error.message}`);
+      cliLogger.necessaryLog(LogLevel.Error, `${error.source}.${error.name}: ${error.message}`);
       if (!background) {
         if (result.stderr.length > 0) {
-          logger.info(result.stderr[result.stderr.length - 1]);
+          cliLogger.necessaryLog(LogLevel.Info, result.stderr[result.stderr.length - 1], true);
         }
       }
       await progressBar.end(false);

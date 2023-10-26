@@ -708,6 +708,39 @@ describe("CLI commands", () => {
     beforeEach(() => {
       sandbox.stub(logger, "warning");
     });
+
+    describe("M365Utils - getTokenAndUpn", async () => {
+      it("getAccessToken fail", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(err(new UserCancelError()));
+        try {
+          await m365utils.getTokenAndUpn();
+          assert.fail("should not reach here");
+        } catch (e) {
+          assert.isTrue(e instanceof UserCancelError);
+        }
+      });
+      it("getStatus fail", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+        sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
+        const res = await m365utils.getTokenAndUpn();
+        assert.deepEqual(res, ["token", undefined]);
+      });
+      it("getStatus ok", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+        sandbox
+          .stub(M365TokenProvider, "getStatus")
+          .resolves(ok({ accountInfo: { upn: "test" } } as any));
+        const res = await m365utils.getTokenAndUpn();
+        assert.deepEqual(res, ["token", "test"]);
+      });
+      it("getStatus throw error", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+        sandbox.stub(M365TokenProvider, "getStatus").rejects(new Error());
+        const res = await m365utils.getTokenAndUpn();
+        assert.deepEqual(res, ["token", undefined]);
+      });
+    });
+
     it("should success with zip package", async () => {
       sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "sideLoading").resolves();
@@ -915,6 +948,14 @@ describe("CLI read-only commands", () => {
       return true;
     });
     sandbox.stub(logger, "error").callsFake(async (message: string) => {
+      messages.push(message);
+      return true;
+    });
+    sandbox.stub(logger, "outputInfo").callsFake(async (message: string) => {
+      messages.push(message);
+      return true;
+    });
+    sandbox.stub(logger, "outputError").callsFake(async (message: string) => {
       messages.push(message);
       return true;
     });

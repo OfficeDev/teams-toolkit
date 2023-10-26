@@ -26,11 +26,11 @@ export const m365UnacquireCommand: CLICommand = {
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 unacquire --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 uninstall --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Remove the acquired M365 App by Title ID",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 unacquire --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 uninstall --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Remove the acquired M365 App by Manifest ID",
     },
   ],

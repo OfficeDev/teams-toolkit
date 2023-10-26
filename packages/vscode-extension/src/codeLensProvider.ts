@@ -135,7 +135,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
         new vscode.Position(line.lineNumber, indexOf + match.length)
       );
       const command = {
-        title: "🔑Decrypt secret",
+        title: "🔑" + localize("teamstoolkit.codeLens.decryptSecret"),
         command: "fx-extension.decryptSecret",
         arguments: [match, range],
       };
@@ -424,7 +424,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private computePreviewCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses = [];
     const command = {
-      title: "🖼️Preview",
+      title: "🖼️" + localize("teamstoolkit.codeLens.preview"),
       command: "fx-extension.openPreviewAadFile",
       arguments: [{ fsPath: document.fileName }],
     };
@@ -454,7 +454,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private computeAadManifestCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses: vscode.CodeLens[] = [];
     const updateCmd = {
-      title: "🔄Deploy AAD manifest",
+      title: "🔄" + localize("teamstoolkit.codeLens.deployMicrosoftEntraManifest"),
       command: "fx-extension.updateAadAppManifest",
       arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
@@ -469,7 +469,8 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
 
       if (aadTemplateFileExist) {
         const editTemplateCmd = {
-          title: "⚠️This file is auto-generated, click here to edit the manifest template file",
+          title:
+            "⚠️" + localize("teamstoolkit.codeLens.editDeprecatedMicrosoftEntraManifestTemplate"),
           command: "fx-extension.editAadManifestTemplate",
           arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
         };
@@ -495,8 +496,7 @@ export class PermissionsJsonFileCodeLensProvider implements vscode.CodeLensProvi
       );
       if (aadTemplateFileExist) {
         const editTemplateCmd = {
-          title:
-            "⚠️This file is deprecated and not used anymore. Please click here to use AAD manifest template file instead",
+          title: "⚠️" + localize("teamstoolkit.codeLens.editMicrosoftEntraManifestTemplate"),
           command: "fx-extension.editAadManifestTemplate",
           arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
         };

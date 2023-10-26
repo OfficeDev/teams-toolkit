@@ -91,6 +91,7 @@ export { InvokeResponseFactory } from "./conversation/invokeResponseFactory";
 export {
   handleMessageExtensionQueryWithToken,
   handleMessageExtensionQueryWithSSO,
+  handleMessageExtensionLinkQueryWithSSO,
 } from "./messageExtension/executeWithSSO";
 export { MessageExtensionTokenResponse } from "./messageExtension/teamsMsgExtTokenResponse";
 

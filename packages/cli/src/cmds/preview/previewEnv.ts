@@ -255,7 +255,7 @@ export default class PreviewEnv extends YargsCommand {
     return ok(null);
   }
 
-  protected async checkM365Account(appTenantId?: string): Promise<
+  async checkM365Account(appTenantId?: string): Promise<
     Result<
       {
         tenantId?: string;

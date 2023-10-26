@@ -2,6 +2,72 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch Remote in Teams (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "presentation": {
+                "group": "group 1: Teams",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Teams (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
+            "presentation": {
+                "group": "group 1: Teams",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Outlook (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://outlook.office.com/host/${{M365_APP_ID}}?${account-hint}",
+            "presentation": {
+                "group": "group 2: Outlook",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in Outlook (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://outlook.office.com/host/${{M365_APP_ID}}?${account-hint}",
+            "presentation": {
+                "group": "group 2: Outlook",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in the Microsoft 365 app (Edge)",
+            "type": "msedge",
+            "request": "launch",
+            "url": "https://www.office.com/m365apps/${{M365_APP_ID}}?auth=2&${account-hint}",
+            "presentation": {
+                "group": "group 3: the Microsoft 365 app",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Launch Remote in the Microsoft 365 app (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://www.office.com/m365apps/${{M365_APP_ID}}?auth=2&${account-hint}",
+            "presentation": {
+                "group": "group 3: the Microsoft 365 app",
+                "order": 3
+            },
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
             "name": "SharePoint workbench (Edge)",
             "type": "msedge",
             "request": "launch",
@@ -176,7 +242,7 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "forteams",
+                "group": "group 1: Teams",
                 "order": 1
             },
             "stopAll": true
@@ -188,7 +254,7 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "forteams",
+                "group": "group 1: Teams",
                 "order": 2
             },
             "stopAll": true
@@ -200,8 +266,8 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "group2: Outlook",
-                "order": 3
+                "group": "group 2: Outlook",
+                "order": 1
             },
             "stopAll": true
         },
@@ -212,8 +278,8 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "group2: Outlook",
-                "order": 4
+                "group": "group 2: Outlook",
+                "order": 2
             },
             "stopAll": true
         },
@@ -224,8 +290,8 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "group3: the Microsoft 365 app",
-                "order": 5
+                "group": "group 3: the Microsoft 365 app",
+                "order": 1
             },
             "stopAll": true
         },
@@ -236,8 +302,8 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "group3: the Microsoft 365 app",
-                "order": 6
+                "group": "group 3: the Microsoft 365 app",
+                "order": 2
             },
             "stopAll": true
         }

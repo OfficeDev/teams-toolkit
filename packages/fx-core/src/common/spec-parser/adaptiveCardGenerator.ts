@@ -3,8 +3,7 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import * as util from "util";
-import { getResponseJson, isWellKnownName } from "./utils";
+import { getResponseJson, isWellKnownName, format } from "./utils";
 import {
   AdaptiveCard,
   ArrayElement,
@@ -166,10 +165,10 @@ export function generateCardFromResponse(
   }
 
   if (schema.oneOf || schema.anyOf || schema.not || schema.allOf) {
-    throw new Error(util.format(ConstantString.SchemaNotSupported, JSON.stringify(schema)));
+    throw new Error(format(ConstantString.SchemaNotSupported, JSON.stringify(schema)));
   }
 
-  throw new Error(util.format(ConstantString.UnknownSchema, JSON.stringify(schema)));
+  throw new Error(format(ConstantString.UnknownSchema, JSON.stringify(schema)));
 }
 
 // Find the first array property in the response schema object with the well-known name

@@ -8,6 +8,7 @@ import {
   CopilotPluginCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
+  PermissionsJsonFileCodeLensProvider,
   PlaceholderCodeLens,
   TeamsAppYamlCodeLensProvider,
 } from "../../src/codeLensProvider";
@@ -149,6 +150,24 @@ describe("Manifest codelens", () => {
       res != null &&
         res.length === 1 &&
         res[0].command!.command === "fx-extension.updateAadAppManifest"
+    );
+  });
+
+  it("PermissionsJsonFileCodeLensProvider for Microsoft Entra manifest template", async () => {
+    sinon.stub(envUtil, "readEnv").resolves(ok({}));
+    sinon.stub(fs, "pathExistsSync").returns(true);
+    sinon.stub(vscode.workspace, "workspaceFolders").value([{ uri: { fsPath: "workspacePath" } }]);
+    const document = <vscode.TextDocument>{
+      fileName: "./aad.manifest.json",
+      getText: () => {
+        return "{name: 'test'}";
+      },
+    };
+
+    const permissionsJsonFile = new PermissionsJsonFileCodeLensProvider();
+    const res = await permissionsJsonFile.provideCodeLenses(document);
+    chai.assert.isTrue(
+      res != null && res[0].command!.command === "fx-extension.editAadManifestTemplate"
     );
   });
 });

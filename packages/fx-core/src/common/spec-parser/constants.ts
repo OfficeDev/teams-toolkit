@@ -97,4 +97,11 @@ export class ConstantString {
     "thumbnail",
     "img",
   ];
+
+  static readonly ShortDescriptionMaxLens = 80;
+  static readonly FullDescriptionMaxLens = 4000;
+  static readonly CommandDescriptionMaxLens = 128;
+  static readonly ParameterDescriptionMaxLens = 128;
+  static readonly CommandTitleMaxLens = 32;
+  static readonly ParameterTitleMaxLens = 32;
 }

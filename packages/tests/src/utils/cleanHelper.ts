@@ -484,6 +484,7 @@ export class DevTunnelCleanHelper {
   constructor(token: string) {
     this.tunnelManagementClientImpl = new TunnelManagementHttpClient(
       "Teams-Toolkit-UI-TEST",
+      "2023-09-27-preview",
       () => Promise.resolve(`Bearer ${token}`)
     );
   }
@@ -536,7 +537,7 @@ export class DevTunnelCleanHelper {
   public async deleteAll(tag = "TeamsToolkitCreatedTag"): Promise<void> {
     const tunnels = await this.tunnelManagementClientImpl.listTunnels();
     for (const tunnel of tunnels) {
-      if (tunnel?.tags?.includes(tag)) {
+      if (tunnel?.labels?.includes(tag)) {
         console.log(`clean dev tunnel ${tunnel.tunnelId}`);
         await this.tunnelManagementClientImpl.deleteTunnel(tunnel);
       }

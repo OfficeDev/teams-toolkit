@@ -47,17 +47,17 @@ describe("DotnetChecker E2E Test - first run", async () => {
       DepsType.Dotnet,
       logger,
       new TestTelemetry()
-    );
+    ) as DotnetChecker;
 
     const depsInfo = await dotnetChecker.getInstallationInfo();
     assert.isNotNull(depsInfo);
     assert.isFalse(depsInfo.isInstalled, ".NET is not installed, but isInstalled() return true");
     assert.isFalse(depsInfo.details.isLinuxSupported, "Linux should not support .NET");
 
-    const spyChecker = sandbox.spy(dotnetChecker);
-    const res = await spyChecker.resolve();
+    const spyChecker = sandbox.spy(dotnetChecker, "getInstallationInfo");
+    const res = await dotnetChecker.resolve();
     assert.isTrue(res.isInstalled);
-    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
+    assert.isTrue(spyChecker.calledTwice);
     await verifyPrivateInstallation(dotnetChecker);
   });
 
@@ -146,11 +146,11 @@ describe("DotnetChecker E2E Test - first run", async () => {
       DepsType.Dotnet,
       logger,
       new TestTelemetry()
-    );
+    ) as DotnetChecker;
 
-    const spyChecker = sandbox.spy(dotnetChecker);
-    const res = await spyChecker.resolve();
-    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
+    const spyChecker = sandbox.spy(dotnetChecker, "getInstallationInfo");
+    const res = await dotnetChecker.resolve();
+    assert.isTrue(spyChecker.calledTwice);
 
     assert.isTrue(res.isInstalled);
     await verifyPrivateInstallation(dotnetChecker);
@@ -286,9 +286,9 @@ describe("DotnetChecker E2E Test - second run", () => {
           }
         );
 
-        const spyChecker = sandbox.spy(dotnetChecker);
-        const res = await spyChecker.resolve();
-        assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+        const spyChecker = sandbox.spy(dotnetChecker, "getInstallationInfo");
+        const res = await dotnetChecker.resolve();
+        assert.isTrue(spyChecker.calledOnce);
 
         const dotnetExecPath = await dotnetChecker.command();
 
@@ -324,9 +324,9 @@ describe("DotnetChecker E2E Test - second run", () => {
       logger,
       new TestTelemetry()
     );
-    const spyChecker = sandbox.spy(dotnetChecker);
-    const res = await spyChecker.resolve();
-    assert.isTrue(spyChecker.getInstallationInfo.calledTwice);
+    const spyChecker = sandbox.spy(dotnetChecker, "getInstallationInfo");
+    const res = await dotnetChecker.resolve();
+    assert.isTrue(spyChecker.calledTwice);
 
     assert.isTrue(res.isInstalled);
     await verifyPrivateInstallation(dotnetChecker);
@@ -361,9 +361,9 @@ describe("DotnetChecker E2E Test - second run", () => {
           }
         );
 
-        const spyChecker = sandbox.spy(dotnetChecker);
-        const res = await spyChecker.resolve();
-        assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+        const spyChecker = sandbox.spy(dotnetChecker, "getInstallationInfo");
+        const res = await dotnetChecker.resolve();
+        assert.isTrue(spyChecker.calledOnce);
 
         const dotnetExecPath = await dotnetChecker.command();
         const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(

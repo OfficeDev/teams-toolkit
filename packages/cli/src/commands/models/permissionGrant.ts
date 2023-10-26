@@ -10,7 +10,8 @@ import { ProjectFolderOption } from "../common";
 import { MissingRequiredOptionError } from "../../error";
 
 export const permissionGrantCommand: CLICommand = {
-  name: "grant",
+  name: "add",
+  aliases: ["grant"],
   description: "Grant permission for another account.",
   options: [...PermissionGrantOptions, ProjectFolderOption],
   telemetry: {

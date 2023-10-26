@@ -23,7 +23,7 @@ export const entraAppUpdateCommand: CLICommand = {
 };
 
 export const entraAppCommand: CLICommand = {
-  name: "entraapp",
+  name: "entra-app",
   description: "Manage the Microsoft Entra app in the current application.",
   commands: [entraAppUpdateCommand],
 };

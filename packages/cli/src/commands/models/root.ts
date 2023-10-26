@@ -27,6 +27,7 @@ import { teamsappPackageCommand } from "./teamsapp/package";
 import { teamsappPublishCommand } from "./teamsapp/publish";
 import { isCliV3Enabled } from "@microsoft/teamsfx-core";
 import { teamsappDoctorCommand } from "./teamsapp/doctor";
+import { entraAppCommand } from "./entraAppUpdate";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -63,6 +64,7 @@ export const rootCommand: CLICommand = {
           teamsappPackageCommand,
           teamsappPublishCommand,
           teamsappDoctorCommand,
+          entraAppCommand,
         ]
       : [packageCommand, updateCommand, validateCommand, publishCommand]),
   ],

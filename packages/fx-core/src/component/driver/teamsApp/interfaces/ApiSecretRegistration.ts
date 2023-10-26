@@ -7,25 +7,45 @@ export interface ApiSecretRegistration {
   /**
    * Max 128 characters
    */
-  id: string;
+  id?: string;
   /**
    * Max 128 characters
    */
-  description: string;
+  description?: string;
   clientSecrets: ApiSecretRegistrationClientSecret[];
   tenantId?: string;
   /**
    * Currently max length 1
    */
-  targetUrlsShouldStartWith?: string[];
+  targetUrlsShouldStartWith: string[];
   /**
-   * Teams app Id associated with the ApiSecretRegistration
+   * Teams app Id associated with the ApiSecretRegistration, should be required if applicableToApps === "SpecificType"
    */
   specificAppId?: string;
-  applicableToApps?: ApiSecretRegistrationAppType[];
+  applicableToApps: ApiSecretRegistrationAppType[];
+  /**
+   * Default to be "HomeTenant"
+   */
+  targetAudience?: ApiSecretRegistrationTargetAudience;
+  manageableByUsers?: ApiSecretRegistrationUser[];
 }
 
 export enum ApiSecretRegistrationAppType {
   SpecificApp = "SpecificApp",
   AnyApps = "AnyApp",
+}
+
+export enum ApiSecretRegistrationTargetAudience {
+  HomeTenant = "HomeTenant",
+  AnyTenant = "AnyTenant",
+}
+
+export enum ApiSecretRegistrationUserAccessType {
+  Read = "Read",
+  ReadWrite = "ReadWrite",
+}
+
+export interface ApiSecretRegistrationUser {
+  userId: string;
+  accessType: ApiSecretRegistrationUserAccessType;
 }

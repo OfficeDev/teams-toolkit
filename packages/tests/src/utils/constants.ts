@@ -276,7 +276,7 @@ export class CommandPaletteCommands {
   public static readonly CreateEnvironmentCommand: string =
     "Teams: Create New Environment";
   public static readonly DeployAadAppManifestCommand: string =
-    "Teams: Update Azure Active Directory App";
+    "Teams: Update Microsoft Entra App";
   public static readonly UpgradeProjectCommand: string =
     "Teams: Upgrade Project";
   public static readonly InstallTTK: string =

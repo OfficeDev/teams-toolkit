@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -21,6 +24,7 @@ import { initPage, validateSpfx } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
+import { validateFileExist } from "../../utils/commonUtils";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testCase);
@@ -58,6 +62,7 @@ describe("Remote debug Tests", function () {
     async function () {
       const driver = VSBrowser.instance.driver;
       await createNewProject("spfxmin", appName);
+      validateFileExist(projectPath, "src/src/index.ts");
       await clearNotifications();
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);
       await driver.sleep(Timeout.spfxProvision);

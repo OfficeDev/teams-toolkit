@@ -595,6 +595,7 @@
   "driver.teamsApp.validate.result.display": "Teams Toolkit has completed checking your app package against validation rules. %s. Check [Output panel](command:fx-extension.showOutputChannel) for details.",
   "error.teamsApp.validate.apiFailed": "Teams app package validation failed due to  %s",
   "error.teamsApp.validate.apiFailed.display": "Teams app pacakge validation failed. Check [Output panel](command:fx-extension.showOutputChannel) for details.",
+  "error.teamsApp.validate.details": "File path: %s, title: %s",
   "error.teamsApp.AppIdNotExistError": "Teams app with ID %s does not exist in Teams Developer Portal.",
   "error.teamsApp.InvalidAppIdError": "Teams app ID %s is invalid, must be a GUID.",
   "driver.botFramework.description": "creates or updates the bot registration on dev.botframework.com",

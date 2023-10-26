@@ -187,16 +187,28 @@ export class ValidateAppPackageDriver implements StepDriver {
         // logs in output window
         const errors = validationResult.errors
           .map((error) => {
-            return `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
-              "core.option.learnMore"
-            )}: ${error.helpUrl}`;
+            let message = `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
+              "error.teamsApp.validate.details",
+              error.filePath,
+              error.title
+            )} \n`;
+            if (error.helpUrl) {
+              message += getLocalizedString("core.option.learnMore", error.helpUrl);
+            }
+            return message;
           })
           .join(EOL);
         const warnings = validationResult.warnings
           .map((warning) => {
-            return `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
-              "core.option.learnMore"
-            )}: ${warning.helpUrl}`;
+            let message = `${SummaryConstant.Failed} ${warning.content} \n${getLocalizedString(
+              "error.teamsApp.validate.details",
+              warning.filePath,
+              warning.title
+            )} \n`;
+            if (warning.helpUrl) {
+              message += getLocalizedString("core.option.learnMore", warning.helpUrl);
+            }
+            return message;
           })
           .join(EOL);
         const notes = validationResult.notes

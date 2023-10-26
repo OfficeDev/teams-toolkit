@@ -1,14 +1,45 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, LogLevel, err, ok } from "@microsoft/teamsfx-api";
-import { PackageService, serviceEndpoint } from "@microsoft/teamsfx-core";
-import { getTokenAndUpn } from "../../cmds/m365/m365";
+import { PackageService, serviceEndpoint, serviceScope } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
+import M365TokenProvider from "../../commonlib/m365Login";
 
 export const sideloadingServiceEndpoint =
   process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
+export const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+
+export async function getTokenAndUpn(): Promise<[string, string]> {
+  const tokenRes = await M365TokenProvider.getAccessToken({ scopes: [sideloadingServiceScope] });
+  if (tokenRes.isErr()) {
+    logger.error(
+      `Cannot get token. Use '${process.env.TEAMSFX_CLI_BIN_NAME} account login m365' to log in the correct account.`
+    );
+    throw tokenRes.error;
+  } else {
+    let upn = undefined;
+    try {
+      // workaround to get upn via appstudio scope.
+      const accountRes = await M365TokenProvider.getStatus({
+        scopes: ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"],
+      });
+      if (accountRes.isOk()) {
+        upn = (accountRes.value.accountInfo as any).upn;
+      } else {
+        throw accountRes.error;
+      }
+    } catch (error) {
+      logger.debug(`Failed to get upn. Error: ${JSON.stringify(error)}`);
+    }
+    if (upn !== undefined) {
+      logger.info(`Using account ${upn}`);
+    }
+    const token = tokenRes.value;
+    return [token, upn];
+  }
+}
 
 export const m365SideloadingCommand: CLICommand = {
   name: "install",

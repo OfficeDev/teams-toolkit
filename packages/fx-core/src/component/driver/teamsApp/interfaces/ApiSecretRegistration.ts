@@ -22,7 +22,7 @@ export interface ApiSecretRegistration {
    * Teams app Id associated with the ApiSecretRegistration, should be required if applicableToApps === "SpecificType"
    */
   specificAppId?: string;
-  applicableToApps: ApiSecretRegistrationAppType[];
+  applicableToApps: ApiSecretRegistrationAppType;
   /**
    * Default to be "HomeTenant"
    */

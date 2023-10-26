@@ -516,6 +516,7 @@ export async function createNewProject(
 ): Promise<void> {
   const driver = VSBrowser.instance.driver;
   let scaffoldingTime = 60 * 1000;
+  const scaffoldingSpfxTime = 7 * 60 * 1000;
   if (!testRootFolder) {
     testRootFolder = path.resolve(__dirname, "../../resource/");
   }
@@ -650,7 +651,7 @@ export async function createNewProject(
       break;
     }
     case "spfxreact": {
-      scaffoldingTime = 7 * 60 * 1000;
+      scaffoldingTime = scaffoldingSpfxTime;
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
       await input.selectQuickPick("SPFx");
@@ -673,7 +674,7 @@ export async function createNewProject(
       break;
     }
     case "spfxnone": {
-      scaffoldingTime = 7 * 60 * 1000;
+      scaffoldingTime = scaffoldingSpfxTime;
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
@@ -697,7 +698,7 @@ export async function createNewProject(
       break;
     }
     case "spfxmin": {
-      scaffoldingTime = 5 * 60 * 1000;
+      scaffoldingTime = scaffoldingSpfxTime;
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);

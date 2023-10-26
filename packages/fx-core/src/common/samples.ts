@@ -130,15 +130,6 @@ class SampleProvider {
           } as SampleConfig;
         }) || [];
 
-      // remove video filter sample app if feature flag is disabled.
-      if (!isVideoFilterEnabled()) {
-        const videoFilterSampleId = "teams-videoapp-sample";
-        const index = samples.findIndex((sample) => sample.id === videoFilterSampleId);
-        if (index !== -1) {
-          samples.splice(index, 1);
-        }
-      }
-
       this.sampleCollection = {
         samples,
         filterOptions: {

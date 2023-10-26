@@ -9,9 +9,8 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 
 export const permissionStatusCommand: CLICommand = {
-  name: "list",
-  aliases: ["status"],
-  description: "List user's permission.",
+  name: "status",
+  description: "Check user's permission.",
   options: [
     ...PermissionListOptions,
     {

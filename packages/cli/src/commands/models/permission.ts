@@ -8,6 +8,6 @@ export const permissionCommand: CLICommand = {
   name: "collaborator",
   aliases: ["permission"],
   description:
-    "List and add permissions for who can access and manage Microsoft Teams application and Microsoft Entra application.",
+    "Check, grant and list permissions for who can access and manage Microsoft Teams application and Azure Active Directory application.",
   commands: [permissionStatusCommand, permissionGrantCommand],
 };

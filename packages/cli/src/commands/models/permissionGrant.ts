@@ -10,8 +10,7 @@ import { ProjectFolderOption } from "../common";
 import { MissingRequiredOptionError } from "../../error";
 
 export const permissionGrantCommand: CLICommand = {
-  name: "add",
-  aliases: ["grant"],
+  name: "grant",
   description: "Grant permission for another account.",
   options: [...PermissionGrantOptions, ProjectFolderOption],
   telemetry: {
@@ -19,9 +18,9 @@ export const permissionGrantCommand: CLICommand = {
   },
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} permission add -i false --teams-manifest-file ./appPackage/manifest.json --env dev --email other@email.com`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} permission grant -i false --teams-manifest-file ./appPackage/manifest.json --env dev --email other@email.com`,
       description:
-        "Add permission for another Microsoft 365 account to collaborate on the Microsoft Teams app.",
+        "Grant permission for another Microsoft 365 account to collaborate on the Microsoft Teams app.",
     },
   ],
   handler: async (ctx) => {

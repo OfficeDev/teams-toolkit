@@ -61,6 +61,7 @@ import M365TokenProvider from "../../src/commonlib/m365Login";
 import { MissingRequiredOptionError } from "../../src/error";
 import * as utils from "../../src/utils";
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
+import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -922,7 +923,56 @@ describe("CLI read-only commands", () => {
   afterEach(() => {
     sandbox.restore();
   });
-
+  describe("AccountUtils", async () => {
+    it("outputAccountInfoOffline", async () => {
+      const res = accountUtils.outputAccountInfoOffline("m365", "xxx");
+      assert.isTrue(res);
+    });
+    it("outputM365Info login success", async () => {
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "fakename" }));
+      const res = await accountUtils.outputM365Info("login");
+      assert.isTrue(res);
+    });
+    it("outputM365Info login fail", async () => {
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(err(new UserCancelError()));
+      const res = await accountUtils.outputM365Info("login");
+      assert.isFalse(res);
+    });
+    it("outputM365Info show success", async () => {
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "fakename" }));
+      const res = await accountUtils.outputM365Info("show");
+      assert.isTrue(res);
+    });
+    it("outputM365Info show fail", async () => {
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(err(new UserCancelError()));
+      const res = await accountUtils.outputM365Info("show");
+      assert.isFalse(res);
+    });
+    it("outputAzureInfo login", async () => {
+      sandbox.stub(AzureTokenCIProvider, "load").resolves();
+      sandbox.stub(AzureTokenCIProvider, "init").resolves();
+      sandbox.stub(AzureTokenCIProvider, "getJsonObject").resolves({ upn: "test" });
+      sandbox.stub(AzureTokenCIProvider, "listSubscriptions").resolves([]);
+      const res = await accountUtils.outputAzureInfo("login", undefined, true);
+      assert.isTrue(res);
+    });
+    it("outputAzureInfo login fail", async () => {
+      sandbox.stub(AzureTokenProvider, "getJsonObject").resolves(undefined);
+      const res = await accountUtils.outputAzureInfo("login");
+      assert.isFalse(res);
+    });
+    it("outputAzureInfo show", async () => {
+      sandbox.stub(AzureTokenProvider, "getJsonObject").resolves({ upn: "test" });
+      sandbox.stub(AzureTokenProvider, "listSubscriptions").resolves([]);
+      const res = await accountUtils.outputAzureInfo("show");
+      assert.isTrue(res);
+    });
+    it("outputAzureInfo show fail", async () => {
+      sandbox.stub(AzureTokenProvider, "getJsonObject").resolves(undefined);
+      const res = await accountUtils.outputAzureInfo("show");
+      assert.isFalse(res);
+    });
+  });
   describe("accountShowCommand", async () => {
     it("both signedOut", async () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedOut }));

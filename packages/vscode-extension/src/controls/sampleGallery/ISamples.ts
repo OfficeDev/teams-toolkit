@@ -37,8 +37,15 @@ export type SampleProps = {
   selectSample: (id: string) => void;
 };
 
+export type SampleFilterOptionType = {
+  types: string[];
+  languages: string[];
+  techniques: string[];
+};
+
 export type SampleFilterProps = {
   samples: Array<SampleInfo>;
+  filterOptions: SampleFilterOptionType;
   layout: "grid" | "list";
   query: string;
   filterTags: string[];

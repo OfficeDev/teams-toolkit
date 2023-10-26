@@ -225,7 +225,8 @@ export class WebviewPanel {
     if (this.panel && this.panel.webview) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
-        data: sampleData,
+        samples: sampleData,
+        filterOptions: sampleCollection.filterOptions,
       });
     }
   }

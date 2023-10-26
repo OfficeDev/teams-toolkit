@@ -19,24 +19,23 @@ import { Grid } from "../resources";
 import { SampleFilterProps } from "./ISamples";
 
 export default class SampleFilter extends React.Component<SampleFilterProps, unknown> {
-  private sampleTypes = ["Tab", "Bot", "Message extension"];
-  private sampleLanguages = ["TS", "JS"];
-  private sampleTechniques = ["Azure", "Adaptive Cards", "SSO", "SPFx", "Outlook", "Graph"];
-
   constructor(props: SampleFilterProps) {
     super(props);
   }
 
   render() {
-    const typeOptions: IDropdownOption[] = this.sampleTypes.map((type) => {
+    const sampleTypes = this.props.filterOptions.types;
+    const sampleLanguages = this.props.filterOptions.languages;
+    const sampleTechniques = this.props.filterOptions.techniques;
+    const typeOptions: IDropdownOption[] = sampleTypes.map((type) => {
       const selected = this.props.filterTags.indexOf(type) >= 0;
       return { key: type, text: type, selected };
     });
-    const languageOptions: IDropdownOption[] = this.sampleLanguages.map((type) => {
+    const languageOptions: IDropdownOption[] = sampleLanguages.map((type) => {
       const selected = this.props.filterTags.indexOf(type) >= 0;
       return { key: type, text: type, selected };
     });
-    const techniqueOptions: IDropdownOption[] = this.sampleTechniques.map((type) => {
+    const techniqueOptions: IDropdownOption[] = sampleTechniques.map((type) => {
       const selected = this.props.filterTags.indexOf(type) >= 0;
       return { key: type, text: type, selected };
     });
@@ -58,7 +57,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             options={typeOptions}
             styles={dropdownStyles}
             onChange={this.onFilterTagChanged}
-            selectedKeys={this.sampleTypes.filter((type) => {
+            selectedKeys={sampleTypes.filter((type) => {
               return this.props.filterTags.indexOf(type) >= 0;
             })}
             dropdownWidth="auto"
@@ -69,7 +68,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             options={languageOptions}
             styles={dropdownStyles}
             onChange={this.onFilterTagChanged}
-            selectedKeys={this.sampleLanguages.filter((type) => {
+            selectedKeys={sampleLanguages.filter((type) => {
               return this.props.filterTags.indexOf(type) >= 0;
             })}
             dropdownWidth="auto"
@@ -80,7 +79,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             options={techniqueOptions}
             styles={dropdownStyles}
             onChange={this.onFilterTagChanged}
-            selectedKeys={this.sampleTechniques.filter((type) => {
+            selectedKeys={sampleTechniques.filter((type) => {
               return this.props.filterTags.indexOf(type) >= 0;
             })}
             dropdownWidth="auto"

@@ -15,7 +15,7 @@ import {
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import { SampleGalleryState, SampleInfo } from "./ISamples";
+import { SampleFilterOptionType, SampleGalleryState, SampleInfo } from "./ISamples";
 import OfflinePage from "./offlinePage";
 import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
@@ -24,6 +24,11 @@ import SampleListItem from "./sampleListItem";
 
 export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
   private samples: SampleInfo[] = [];
+  private filterOptions: SampleFilterOptionType = {
+    types: [],
+    languages: [],
+    techniques: [],
+  };
 
   constructor(props: unknown) {
     super(props);
@@ -80,6 +85,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
             <>
               <SampleFilter
                 samples={this.samples}
+                filterOptions={this.filterOptions}
                 layout={this.state.layout}
                 query={this.state.query}
                 filterTags={this.state.filterTags}
@@ -123,7 +129,8 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     switch (message) {
       case Commands.LoadSampleCollection:
         const error = event.data.error;
-        this.samples = event.data.data as SampleInfo[];
+        this.samples = event.data.samples as SampleInfo[];
+        this.filterOptions = event.data.filterOptions as SampleFilterOptionType;
         this.setState({
           loading: false,
           error,

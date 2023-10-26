@@ -11,7 +11,7 @@ import { ProjectFolderOption } from "../common";
 export const permissionStatusCommand: CLICommand = {
   name: "list",
   aliases: ["status"],
-  description: "Check user's permission.",
+  description: "List user's permission.",
   options: [
     ...PermissionListOptions,
     {

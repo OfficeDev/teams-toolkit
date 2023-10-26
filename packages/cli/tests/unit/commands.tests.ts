@@ -67,6 +67,7 @@ import { teamsappPublishCommand } from "../../src/commands/models/teamsapp/publi
 import { DoctorChecker, teamsappDoctorCommand } from "../../src/commands/models/teamsapp/doctor";
 import M365TokenInstance from "../../src/commonlib/m365Login";
 import * as tools from "@microsoft/teamsfx-core/build/common/tools";
+import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -536,6 +537,24 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
       const res = await updateAadAppCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+  describe("entraAppUpdateCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...entraAppUpdateCommand, fullName: "teamsapp entraapp update" },
+        optionValues: {
+          env: "local",
+          projectPath: "./",
+          "manifest-file-path": "./aad.manifest.json",
+        },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await entraAppUpdateCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
   });

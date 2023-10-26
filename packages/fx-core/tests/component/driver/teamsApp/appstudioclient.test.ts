@@ -19,7 +19,10 @@ import { AppStudioResultFactory } from "../../../../src/component/driver/teamsAp
 import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 import { MockedLogProvider } from "../../../plugins/solution/util";
 import { DeveloperPortalAPIFailedError } from "../../../../src/error/teamsApp";
-import { ApiSecretRegistration } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
+import {
+  ApiSecretRegistration,
+  ApiSecretRegistrationAppType,
+} from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 
 function newEnvInfo() {
   return {
@@ -49,6 +52,8 @@ describe("App Studio API Test", () => {
         isValueRedacted: false,
       },
     ],
+    applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+    targetUrlsShouldStartWith: ["https://www.example.com"],
   };
 
   beforeEach(() => {

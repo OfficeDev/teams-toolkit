@@ -32,7 +32,7 @@ export interface ApiSecretRegistration {
 
 export enum ApiSecretRegistrationAppType {
   SpecificApp = "SpecificApp",
-  AnyApps = "AnyApp",
+  AnyApp = "AnyApp",
 }
 
 export enum ApiSecretRegistrationTargetAudience {

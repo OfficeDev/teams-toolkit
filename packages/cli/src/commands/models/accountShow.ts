@@ -13,65 +13,75 @@ import * as constants from "../../constants";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
-export function outputAccountInfoOffline(accountType: string, username: string): boolean {
-  logger.outputInfo(
-    strings["account.show.info"],
-    accountType,
-    colorize(username, TextType.Important)
-  );
-  return true;
-}
-
-export async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
-  const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({ scopes: AppStudioScopes });
-  const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
-  if (result) {
-    const username = (result as any).upn;
-    if (commandType === "login") {
-      logger.outputSuccess(strings["account.login.m365"]);
-    }
-    logger.outputInfo(strings["account.show.m365"], colorize(username, TextType.Important));
-    return Promise.resolve(true);
-  } else {
-    if (commandType === "login") {
-      logger.outputError(`[${constants.cliSource}] Failed to sign in to Microsoft 365.`);
-    }
-  }
-  return Promise.resolve(result !== undefined);
-}
-
-export async function outputAzureInfo(
-  commandType: "login" | "show",
-  tenantId = "",
-  isServicePrincipal = false,
-  userName = "",
-  password = ""
-): Promise<boolean> {
-  let azureProvider = getAzureProvider();
-  if (isServicePrincipal === true || (await AzureTokenCIProvider.load())) {
-    await AzureTokenCIProvider.init(userName, password, tenantId);
-    azureProvider = AzureTokenCIProvider;
-  }
-  const result = await azureProvider.getJsonObject(true);
-  if (result) {
-    const subscriptions = await azureProvider.listSubscriptions();
-    const username = (result as any).upn;
-    if (commandType === "login") {
-      logger.outputSuccess(strings["account.login.azure"]);
-    }
+class AccountUtils {
+  outputAccountInfoOffline(accountType: string, username: string): boolean {
     logger.outputInfo(
-      strings["account.show.azure"],
-      colorize(username, TextType.Important),
-      JSON.stringify(subscriptions, null, 2)
+      strings["account.show.info"],
+      accountType,
+      colorize(username, TextType.Important)
     );
-    return Promise.resolve(true);
-  } else {
-    if (commandType === "login") {
-      logger.outputError(`[${constants.cliSource}] Failed to sign in to Azure.`);
-    }
+    return true;
   }
-  return Promise.resolve(result !== undefined);
+
+  async outputM365Info(commandType: "login" | "show"): Promise<boolean> {
+    const appStudioTokenJsonRes = await M365TokenProvider.getJsonObject({
+      scopes: AppStudioScopes,
+    });
+    const result = appStudioTokenJsonRes.isOk() ? appStudioTokenJsonRes.value : undefined;
+    if (result) {
+      const username = (result as any).upn;
+      if (commandType === "login") {
+        logger.outputSuccess(strings["account.login.m365"]);
+      }
+      logger.outputInfo(strings["account.show.m365"], colorize(username, TextType.Important));
+      return Promise.resolve(true);
+    } else {
+      if (commandType === "login") {
+        logger.outputError(`[${constants.cliSource}] Failed to sign in to Microsoft 365.`);
+      }
+    }
+    return Promise.resolve(result !== undefined);
+  }
+
+  async outputAzureInfo(
+    commandType: "login" | "show",
+    tenantId = "",
+    isServicePrincipal = false,
+    userName = "",
+    password = ""
+  ): Promise<boolean> {
+    let azureProvider = getAzureProvider();
+    if (isServicePrincipal === true || (await AzureTokenCIProvider.load())) {
+      await AzureTokenCIProvider.init(userName, password, tenantId);
+      azureProvider = AzureTokenCIProvider;
+    }
+    const result = await azureProvider.getJsonObject(true);
+    if (result) {
+      const subscriptions = await azureProvider.listSubscriptions();
+      const username = (result as any).upn;
+      if (commandType === "login") {
+        logger.outputSuccess(strings["account.login.azure"]);
+      }
+      logger.outputInfo(
+        strings["account.show.azure"],
+        colorize(username, TextType.Important),
+        JSON.stringify(subscriptions, null, 2)
+      );
+      return Promise.resolve(true);
+    } else {
+      if (commandType === "login") {
+        logger.outputError(`[${constants.cliSource}] Failed to sign in to Azure.`);
+      }
+    }
+    return Promise.resolve(result !== undefined);
+  }
+
+  async checkIsOnline(): Promise<boolean> {
+    return checkIsOnline();
+  }
 }
+
+export const accountUtils = new AccountUtils();
 
 export const accountShowCommand: CLICommand = {
   name: "list",
@@ -87,16 +97,19 @@ export const accountShowCommand: CLICommand = {
     }
     const m365Status = m365StatusRes.value;
     if (m365Status.status === signedIn) {
-      (await checkIsOnline())
-        ? await outputM365Info("show")
-        : outputAccountInfoOffline("Microsoft 365", (m365Status.accountInfo as any).upn);
+      (await accountUtils.checkIsOnline())
+        ? await accountUtils.outputM365Info("show")
+        : accountUtils.outputAccountInfoOffline(
+            "Microsoft 365",
+            (m365Status.accountInfo as any).upn
+          );
     }
 
     const azureStatus = await AzureTokenProvider.getStatus();
     if (azureStatus.status === signedIn) {
-      (await checkIsOnline())
-        ? await outputAzureInfo("show")
-        : outputAccountInfoOffline("Azure", (azureStatus.accountInfo as any).upn);
+      (await accountUtils.checkIsOnline())
+        ? await accountUtils.outputAzureInfo("show")
+        : accountUtils.outputAccountInfoOffline("Azure", (azureStatus.accountInfo as any).upn);
     }
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {

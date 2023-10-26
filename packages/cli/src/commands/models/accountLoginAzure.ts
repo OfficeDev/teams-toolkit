@@ -9,7 +9,7 @@ import {
   usageError,
 } from "../../commonlib/common/constant";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { outputAzureInfo } from "./accountShow";
+import { accountUtils } from "./accountShow";
 
 export const accountLoginAzureCommand: CLICommand = {
   name: "azure",
@@ -72,7 +72,7 @@ export const accountLoginAzureCommand: CLICommand = {
       }
     }
     await AzureTokenProvider.signout();
-    await outputAzureInfo(
+    await accountUtils.outputAzureInfo(
       "login",
       args.tenant as string,
       isSP,

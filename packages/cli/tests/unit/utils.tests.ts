@@ -23,7 +23,6 @@ import {
   getVersion,
   isWorkspaceSupported,
   toLocaleLowerCase,
-  toYargsOptions,
 } from "../../src/utils";
 import { expect } from "./utils";
 
@@ -90,82 +89,6 @@ describe("Utils Tests", function () {
       };
       const answers = getSingleOptionString(question);
       expect(answers).equals("a");
-    });
-  });
-
-  describe("toYargsOptions", () => {
-    it("singleSelect and no default value", async () => {
-      const question: apis.Question = {
-        type: "singleSelect",
-        name: "question",
-        title: "toYargsOptions",
-        returnObject: true,
-        staticOptions: staticOptions1,
-      };
-      const answer = await toYargsOptions(question);
-      expect(answer.choices).deep.equals(["a", "b", "c"]);
-      expect(answer.array).to.be.false;
-      expect("default" in answer).to.be.false;
-    });
-
-    it("singleSelect and default value", async () => {
-      const question: apis.Question = {
-        type: "singleSelect",
-        name: "question",
-        title: "toYargsOptions",
-        returnObject: true,
-        staticOptions: staticOptions1,
-        default: "A",
-      };
-      const answer = await toYargsOptions(question);
-      expect(answer.choices).deep.equals(["a", "b", "c"]);
-      expect(answer.array).to.be.false;
-      expect(answer.default).equals("a");
-    });
-
-    it("multiSelect and default value", async () => {
-      const question: apis.Question = {
-        type: "multiSelect",
-        name: "question",
-        title: "toYargsOptions",
-        returnObject: true,
-        staticOptions: staticOptions2,
-        default: ["AA"],
-      };
-      const answer = await toYargsOptions(question);
-      expect(answer.choices).deep.equals(["aa", "bb", "cc"]);
-      expect(answer.array).to.be.true;
-      expect(answer.default).deep.equals(["aa"]);
-    });
-
-    it("dynamic title and default value", async () => {
-      const question: apis.Question = {
-        type: "multiSelect",
-        name: "question",
-        title: (inputs: apis.Inputs) => "dynamic title",
-        returnObject: true,
-        staticOptions: staticOptions2,
-        default: (inputs: apis.Inputs) => ["AA"],
-      };
-      const answer = await toYargsOptions(question);
-      expect(answer.choices).deep.equals(["aa", "bb", "cc"]);
-      expect(answer.array).to.be.true;
-      expect(answer.default).deep.equals(["aa"]);
-      expect(answer.description).equals("dynamic title");
-    });
-
-    it("for capabilities question", async () => {
-      const question: apis.Question = {
-        type: "singleSelect",
-        name: core.CoreQuestionNames.Capabilities,
-        title: "test",
-        returnObject: true,
-        staticOptions: staticOptions2,
-      };
-      const answer = await toYargsOptions(question);
-      expect(answer.choices).deep.equals(
-        core.CapabilityOptions.all({ platform: apis.Platform.CLI }).map((op) => op.id)
-      );
     });
   });
 

@@ -98,7 +98,7 @@ describe("Preview --env", () => {
     const cmd = new PreviewEnv();
     cmd.builder(yargs);
 
-    await cmd.handler(defaultOptions);
+    await cmd.runCommand(defaultOptions);
 
     expect(logs.length).greaterThanOrEqual(1);
     expect(logs[0]).satisfy((l: string) => l.includes("run-command"));
@@ -116,7 +116,7 @@ describe("Preview --env", () => {
     const cmd = new PreviewEnv();
     cmd.builder(yargs);
 
-    await cmd.handler({
+    await cmd.runCommand({
       ...defaultOptions,
       ["m365-host"]: "outlook",
       ["browser-arg"]: ["--guest"],
@@ -138,7 +138,7 @@ describe("Preview --env", () => {
     const cmd = new PreviewEnv();
     cmd.builder(yargs);
 
-    await cmd.handler({
+    await cmd.runCommand({
       ...defaultOptions,
       env: "dev",
       ["m365-host"]: "office",

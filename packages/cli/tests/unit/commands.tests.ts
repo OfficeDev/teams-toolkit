@@ -24,6 +24,7 @@ import {
   accountLoginM365Command,
   accountLogoutCommand,
   accountShowCommand,
+  accountUtils,
   addSPFxWebpartCommand,
   createSampleCommand,
   deployCommand,
@@ -36,6 +37,7 @@ import {
   m365LaunchInfoCommand,
   m365SideloadingCommand,
   m365UnacquireCommand,
+  m365utils,
   packageCommand,
   permissionGrantCommand,
   permissionStatusCommand,
@@ -47,20 +49,18 @@ import {
   upgradeCommand,
   validateCommand,
 } from "../../src/commands/models";
-import * as accountUtils from "../../src/commands/models/accountShow";
 import { DoctorChecker, teamsappDoctorCommand } from "../../src/commands/models/teamsapp/doctor";
 import { teamsappPackageCommand } from "../../src/commands/models/teamsapp/package";
 import { teamsappPublishCommand } from "../../src/commands/models/teamsapp/publish";
 import { teamsappUpdateCommand } from "../../src/commands/models/teamsapp/update";
 import { teamsappValidateCommand } from "../../src/commands/models/teamsapp/validate";
 import AzureTokenProvider from "../../src/commonlib/azureLogin";
-import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { logger } from "../../src/commonlib/logger";
+import M365TokenProvider from "../../src/commonlib/m365Login";
 import { MissingRequiredOptionError } from "../../src/error";
 import * as utils from "../../src/utils";
-import * as m365 from "../../src/commands/models/m365Sideloading";
-import M365TokenProvider from "../../src/commonlib/m365Login";
+
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
 
@@ -644,7 +644,7 @@ describe("CLI commands", () => {
       sandbox.stub(logger, "warning");
     });
     it("success retrieveTitleId", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("id");
       sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves("id");
       const ctx: CLIContext = {
@@ -658,7 +658,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("success", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves("id");
       const ctx: CLIContext = {
         command: { ...m365LaunchInfoCommand, fullName: "teamsfx" },
@@ -671,7 +671,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("MissingRequiredOptionError", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       const ctx: CLIContext = {
         command: { ...m365LaunchInfoCommand, fullName: "teamsfx" },
         optionValues: {},
@@ -689,7 +689,7 @@ describe("CLI commands", () => {
       sandbox.stub(logger, "warning");
     });
     it("should success with zip package", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "sideLoading").resolves();
       const ctx: CLIContext = {
         command: { ...m365SideloadingCommand, fullName: "teamsfx" },
@@ -702,7 +702,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("should success with xml", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "sideLoadXmlManifest").resolves();
       const ctx: CLIContext = {
         command: { ...m365SideloadingCommand, fullName: "teamsfx" },
@@ -743,7 +743,7 @@ describe("CLI commands", () => {
       sandbox.stub(logger, "warning");
     });
     it("MissingRequiredOptionError", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       const ctx: CLIContext = {
         command: { ...m365UnacquireCommand, fullName: "teamsfx" },
         optionValues: {},
@@ -755,7 +755,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isErr());
     });
     it("success retrieveTitleId", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("id");
       sandbox.stub(PackageService.prototype, "unacquire").resolves();
       const ctx: CLIContext = {
@@ -769,7 +769,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("success", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "unacquire").resolves();
       const ctx: CLIContext = {
         command: { ...m365UnacquireCommand, fullName: "teamsfx" },
@@ -922,7 +922,7 @@ describe("CLI read-only commands", () => {
     it("both signedIn and checkIsOnline = true", async () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedIn }));
       sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedIn });
-      sandbox.stub(codeFlowLogin, "checkIsOnline").resolves(true);
+      sandbox.stub(accountUtils, "checkIsOnline").resolves(true);
       const outputM365Info = sandbox.stub(accountUtils, "outputM365Info").resolves();
       const outputAzureInfo = sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       messages = [];
@@ -945,7 +945,7 @@ describe("CLI read-only commands", () => {
       sandbox
         .stub(AzureTokenProvider, "getStatus")
         .resolves({ status: signedIn, accountInfo: { upn: "xxx" } });
-      sandbox.stub(codeFlowLogin, "checkIsOnline").resolves(false);
+      sandbox.stub(accountUtils, "checkIsOnline").resolves(false);
       const outputAccountInfoOffline = sandbox.stub(accountUtils, "outputAccountInfoOffline");
       messages = [];
       const ctx: CLIContext = {

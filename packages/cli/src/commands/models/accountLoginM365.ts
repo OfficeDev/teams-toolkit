@@ -3,7 +3,7 @@
 import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import M365TokenProvider from "../../commonlib/m365Login";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { outputM365Info } from "./accountShow";
+import { accountUtils } from "./accountShow";
 
 export const accountLoginM365Command: CLICommand = {
   name: "m365",
@@ -13,7 +13,7 @@ export const accountLoginM365Command: CLICommand = {
   },
   handler: async () => {
     await M365TokenProvider.signout();
-    await outputM365Info("login");
+    await accountUtils.outputM365Info("login");
     return ok(undefined);
   },
 };

@@ -34,6 +34,11 @@ describe("New Command Tests", function () {
     sandbox.stub(fs, "pathExistsSync").callsFake((filePath: string) => !filePath.includes("fake"));
     sandbox.stub(sampleProvider, "fetchSampleConfig").callsFake(async () => {
       sampleProvider["samplesConfig"] = {
+        filterOptions: {
+          types: ["Tab"],
+          languages: ["TS"],
+          techniques: ["Azure"],
+        },
         samples: [
           {
             id: "todo-list-SPFx",

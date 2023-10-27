@@ -9,9 +9,9 @@ class ActionApp extends TeamsActivityHandler {
     const template = new ACData.Template(helloWorldCard);
     const card = template.expand({
       $root: {
-        title: action.data.title,
-        subTitle: action.data.subTitle,
-        text: action.data.text,
+        title: action.data.title ?? "",
+        subTitle: action.data.subTitle ?? "",
+        text: action.data.text ?? "",
       },
     });
     const attachment = CardFactory.adaptiveCard(card);

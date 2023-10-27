@@ -98,7 +98,7 @@ export async function executeCommand(
       run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
     }
     logProvider.verbose(
-      `Start to run command: "${command}" with args: ${JSON.stringify({
+      `Start to run command: "${maskSecretValues(command)}" with args: ${JSON.stringify({
         shell: shell,
         cwd: workingDir,
         encoding: "buffer",
@@ -127,7 +127,9 @@ export async function executeCommand(
           const outputString = allOutputStrings.join("");
           const outputObject = parseSetOutputCommand(outputString);
           if (Object.keys(outputObject).length > 0)
-            logProvider.verbose(`script output env variables: ${JSON.stringify(outputObject)}`);
+            logProvider.verbose(
+              `script output env variables: ${maskSecretValues(JSON.stringify(outputObject))}`
+            );
           resolve(ok([outputString, outputObject]));
         }
       }

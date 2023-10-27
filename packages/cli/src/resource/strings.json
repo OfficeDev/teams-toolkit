@@ -28,6 +28,33 @@
         "force": "Force upgrade the project to work with the latest version of Teams Toolkit."
       },
       "success": "Upgrade project successfully."
+    },
+    "doctor": {
+      "account": {
+        "SideLoadingDisabled": "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
+        "NotSignIn": "You have not logged in to your Microsoft 365 account yet. Please use teamsapp auth login command to login to your Microsoft 365 account.",
+        "SignInSuccess": "Microsoft 365 Account (%s) is logged in and sideloading permission is enabled."
+      },
+      "node" : {
+        "NotFound": "Cannot find Node.js. Node.js used for developing Teams apps with JavaScript or TypeScript using Teams Toolkit for Visual Studio Code. Visit https://nodejs.org/about/releases/ to install the LTS version.",
+        "NotSupported": "Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version.",
+        "Success": "Node.js version (%s) is installed."
+      },
+      "dotnet" : {
+        "NotFound": "Cannot find .NET Core SDK. .NET Core SDK is used for developing Teams app in C# using Teams Toolkit for Visual Studio. Visit https://dotnet.microsoft.com/en-us/download to install the LTS version.",
+        "NotSupported": ".NET Core SDK (%s) is not the officially supported version (%s).",
+        "Success": ".NET Core SDK version (%s) is installed."
+      },
+      "func" : {
+        "NotFound": "Cannot find Azure Functions Core Tools.",
+        "NotSupported": "Azure Functions Core Tools (%s) is not the officially supported version (%s).",
+        "Success": "Azure Functions Core Tools version (%s) is installed."
+      },
+      "cert" : {
+        "NotFound": "Cannot find local Certificate.",
+        "FoundNotTrust": "Local Certificate is found but not trusted.",
+        "Success": "Local Certificate is found and is trusted."
+      }
     }
   }
 }

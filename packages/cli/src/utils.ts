@@ -58,50 +58,6 @@ export function getSingleOptionString(
   }
 }
 
-export async function toYargsOptions(data: Question): Promise<Options> {
-  let choices = getChoicesFromQTNodeQuestion(data);
-  if (data.type === "singleSelect" && data.name === CoreQuestionNames.Capabilities) {
-    const options = CapabilityOptions.all({ platform: Platform.CLI });
-    choices = options.map((op) => op.id);
-  }
-  let defaultValue = data.default;
-  if (typeof data.default === "function") {
-    defaultValue = await data.default({ platform: Platform.CLI_HELP });
-  }
-  let title: any = data.title;
-  if (typeof data.title === "function") {
-    title = await data.title({ platform: Platform.CLI_HELP });
-  }
-
-  if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
-    defaultValue = defaultValue.map((item) => item.toLocaleLowerCase());
-  } else if (defaultValue && typeof defaultValue === "string") {
-    defaultValue = defaultValue.toLocaleLowerCase();
-  } else {
-    defaultValue = undefined;
-  }
-
-  if (defaultValue === undefined) {
-    return {
-      array: data.type === "multiSelect",
-      description: title || "",
-      choices: choices,
-      hidden: !!(data as any).hide,
-      global: false,
-      type: "string",
-    };
-  }
-  return {
-    array: data.type === "multiSelect",
-    description: title || "",
-    default: defaultValue,
-    choices: choices,
-    hidden: !!(data as any).hide,
-    global: false,
-    type: "string",
-  };
-}
-
 export function toLocaleLowerCase(arg: any): any {
   if (typeof arg === "string") {
     return arg.toLocaleLowerCase();

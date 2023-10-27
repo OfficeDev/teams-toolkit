@@ -8,7 +8,7 @@ import {
   AppStudioScopes,
   assembleError,
   CoreQuestionNames,
-  environmentManager,
+  environmentNameManager,
   envUtil,
   FxCore,
   getSideloadingStatus,
@@ -29,7 +29,6 @@ import cliTelemetry from "../../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
 import { getColorizedString, getSystemInputs, isWorkspaceSupported } from "../../utils";
-import { YargsCommand } from "../../yargsCommand";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
@@ -37,7 +36,6 @@ import { openHubWebClientNew } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import { Task } from "./task";
-import { environmentNameManager } from "@microsoft/teamsfx-core";
 enum Progress {
   M365Account = "Microsoft 365 Account",
 }
@@ -47,7 +45,7 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
 });
 
 // The new preview cmd `teamsfx preview --env ...`
-export default class PreviewEnv extends YargsCommand {
+export default class PreviewEnv {
   public readonly commandHead = `preview`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Preview the current application.";

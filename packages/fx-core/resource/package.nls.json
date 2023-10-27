@@ -323,6 +323,8 @@
   "core.QuestionNewResourceGroupName.title": "New resource group name",
   "core.QuestionNewResourceGroupName.validation": "The name can only contain alphanumeric characters or the symbols ._-()",
   "core.QuestionNewResourceGroupLocation.title": "Location for the new resource group",
+  "core.QuestionNewResourceGroupLocation.group.recommended": "Recommended",
+  "core.QuestionNewResourceGroupLocation.group.others": "Others",
   "core.question.workspaceFolder.title": "Workspace folder",
   "core.question.workspaceFolder.placeholder": "Select the folder that will contain your project root folder",
   "core.ScratchOptionYes.label": "Create a new app",

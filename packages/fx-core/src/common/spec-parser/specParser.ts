@@ -20,7 +20,12 @@ import {
 import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
 import { specFilter } from "./specFilter";
-import { convertPathToCamelCase, getAPIKeyAuth, listSupportedAPIs, validateSpec } from "./utils";
+import {
+  convertPathToCamelCase,
+  getAPIKeyAuthArray,
+  listSupportedAPIs,
+  validateSpec,
+} from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
@@ -186,28 +191,32 @@ export class SpecParser {
       const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
 
       const operationIdToAPIAuthKey: Map<string, OpenAPIV3.ApiKeySecurityScheme> = new Map();
+      let hasMultipleAPIKeyAuth = false;
+      let firstAuthKey: OpenAPIV3.ApiKeySecurityScheme | undefined;
 
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
           const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
 
-          const apiKeyAuth = getAPIKeyAuth(operation.security, newSpec);
+          const apiKeyAuthArr = getAPIKeyAuthArray(operation.security, newSpec);
 
-          if (apiKeyAuth) {
-            operationIdToAPIAuthKey.set(operation.operationId!, apiKeyAuth);
+          // Currently we don't support multiple apiKey auth
+          if (apiKeyAuthArr.length > 0 && apiKeyAuthArr.every((auths) => auths.length > 1)) {
+            hasMultipleAPIKeyAuth = true;
+            break;
+          }
+
+          if (apiKeyAuthArr && apiKeyAuthArr.length > 0) {
+            if (!firstAuthKey) {
+              firstAuthKey = apiKeyAuthArr[0][0];
+            } else if (firstAuthKey.name !== apiKeyAuthArr[0][0].name) {
+              hasMultipleAPIKeyAuth = true;
+              break;
+            }
+            operationIdToAPIAuthKey.set(operation.operationId!, apiKeyAuthArr[0][0]);
           }
         }
       }
-
-      let hasMultipleAPIKeyAuth = false;
-      let firstAuthKey: OpenAPIV3.ApiKeySecurityScheme | undefined;
-      operationIdToAPIAuthKey.forEach((apiKeyAuth) => {
-        if (!firstAuthKey) {
-          firstAuthKey = apiKeyAuth;
-        } else if (firstAuthKey.name !== apiKeyAuth.name) {
-          hasMultipleAPIKeyAuth = true;
-        }
-      });
 
       if (hasMultipleAPIKeyAuth) {
         throw new SpecParserError(

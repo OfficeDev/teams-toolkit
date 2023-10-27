@@ -140,13 +140,18 @@ export function isSupportedApi(
       pathObj[method]
     ) {
       const securities = pathObj[method]!.security;
-      const apiKeyAuth = getAPIKeyAuth(securities, spec);
+      const apiKeyAuthArr = getAPIKeyAuthArray(securities, spec);
 
       if (!allowAPIKeyAuth && securities) {
         return false;
       }
 
-      if (allowAPIKeyAuth && securities && !apiKeyAuth) {
+      if (allowAPIKeyAuth && securities && apiKeyAuthArr.length === 0) {
+        return false;
+      }
+
+      // Currently we don't support multiple apiKey auth
+      if (apiKeyAuthArr.length > 0 && apiKeyAuthArr.every((auths) => auths.length > 1)) {
         return false;
       }
 
@@ -204,25 +209,34 @@ export function isSupportedApi(
   return false;
 }
 
-export function getAPIKeyAuth(
+export function getAPIKeyAuthArray(
   securities: OpenAPIV3.SecurityRequirementObject[] | undefined,
   spec: OpenAPIV3.Document
-): OpenAPIV3.ApiKeySecurityScheme | undefined {
+): OpenAPIV3.ApiKeySecurityScheme[][] {
+  const result: OpenAPIV3.ApiKeySecurityScheme[][] = [];
   const securitySchemas = spec.components?.securitySchemes;
   if (securities && securitySchemas) {
     for (let i = 0; i < securities.length; i++) {
       const security = securities[i];
-      if (Object.keys(security).length == 1) {
-        for (const name in security) {
-          const auth = securitySchemas[name] as OpenAPIV3.SecuritySchemeObject;
-          if (auth.type === "apiKey") {
-            return auth;
-          }
+
+      let apiKeyAuthArray: OpenAPIV3.ApiKeySecurityScheme[] = [];
+      for (const name in security) {
+        const auth = securitySchemas[name] as OpenAPIV3.SecuritySchemeObject;
+        if (auth.type === "apiKey") {
+          apiKeyAuthArray.push(auth);
+        } else {
+          apiKeyAuthArray = [];
+          break;
         }
+      }
+
+      if (apiKeyAuthArray.length > 0) {
+        result.push(apiKeyAuthArray);
       }
     }
   }
-  return undefined;
+
+  return result;
 }
 
 export function updateFirstLetter(str: string): string {
@@ -466,7 +480,7 @@ export function parseApiInfo(
 
   const parameters = [];
 
-  if (requiredParams.length != 0) {
+  if (requiredParams.length !== 0) {
     parameters.push(...requiredParams);
   } else {
     parameters.push(optionalParams[0]);

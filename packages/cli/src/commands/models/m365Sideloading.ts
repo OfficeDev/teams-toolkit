@@ -46,8 +46,8 @@ class M365Utils {
 export const m365utils = new M365Utils();
 
 export const m365SideloadingCommand: CLICommand = {
-  name: "install",
-  aliases: ["sideloading"],
+  name: "sideloading",
+  aliases: ["install"],
   description:
     "Sideloading an M365 App with corresponding information specified in the given manifest package.",
   options: [

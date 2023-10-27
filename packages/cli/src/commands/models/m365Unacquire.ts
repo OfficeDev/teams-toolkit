@@ -8,8 +8,8 @@ import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { m365utils, sideloadingServiceEndpoint } from "./m365Sideloading";
 
 export const m365UnacquireCommand: CLICommand = {
-  name: "uninstall",
-  aliases: ["unacquire"],
+  name: "unacquire",
+  aliases: ["uninstall"],
   description: "Remove an acquired M365 App.",
   options: [
     {

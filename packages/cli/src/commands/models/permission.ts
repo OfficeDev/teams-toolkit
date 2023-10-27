@@ -5,8 +5,8 @@ import { permissionGrantCommand } from "./permissionGrant";
 import { permissionStatusCommand } from "./permissionStatus";
 
 export const permissionCommand: CLICommand = {
-  name: "collaborator",
-  aliases: ["permission"],
+  name: "permission",
+  aliases: ["collaborator"],
   description:
     "Check, grant and list permissions for who can access and manage Microsoft Teams application and Microsoft Entra application.",
   commands: [permissionStatusCommand, permissionGrantCommand],

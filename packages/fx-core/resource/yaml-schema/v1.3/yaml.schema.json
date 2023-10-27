@@ -1221,10 +1221,7 @@
               "type": "object",
               "description": "Install Teams App Test Tool. This will output environment variables specified by `testToolPath` to current environment's .env file.",
               "additionalProperties": false,
-              "required": [
-                "version",
-                "symlinkDir"
-              ],
+              "required": ["version"],
               "properties": {
                 "version": {
                   "oneOf": [

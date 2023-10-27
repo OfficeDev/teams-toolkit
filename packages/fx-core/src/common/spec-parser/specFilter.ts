@@ -12,7 +12,8 @@ export function specFilter(
   filter: string[],
   unResolveSpec: OpenAPIV3.Document,
   resolvedSpec: OpenAPIV3.Document,
-  allowMissingId: boolean
+  allowMissingId: boolean,
+  allowAPIKeyAuth: boolean
 ): OpenAPIV3.Document {
   try {
     const newSpec = { ...unResolveSpec };
@@ -21,7 +22,7 @@ export function specFilter(
       const [method, path] = filterItem.split(" ");
       const methodName = method.toLowerCase();
 
-      if (!isSupportedApi(methodName, path, resolvedSpec, allowMissingId)) {
+      if (!isSupportedApi(methodName, path, resolvedSpec, allowMissingId, allowAPIKeyAuth)) {
         continue;
       }
 

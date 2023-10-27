@@ -19,7 +19,8 @@ export async function updateManifest(
   manifestPath: string,
   outputSpecPath: string,
   adaptiveCardFolder: string,
-  spec: OpenAPIV3.Document
+  spec: OpenAPIV3.Document,
+  apiKeyAuthName?: string
 ): Promise<[TeamsAppManifest, WarningResult[]]> {
   try {
     const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
@@ -30,6 +31,17 @@ export async function updateManifest(
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
       commands: commands,
     };
+
+    if (apiKeyAuthName) {
+      (ComposeExtension as any).authorization = {
+        authType: "apiSecretServiceAuth",
+        apiSecretServiceAuthConfiguration: {
+          apiSecretRegistrationId: `\${{${apiKeyAuthName.toUpperCase()}_${
+            ConstantString.RegistrationIdPostfix
+          }}}`,
+        },
+      };
+    }
 
     const updatedPart = {
       description: {

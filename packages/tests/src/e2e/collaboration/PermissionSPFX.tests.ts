@@ -64,7 +64,7 @@ describe("Collaboration", function () {
       appId = solutionConfig["solution"]["id"];
 
       const checkPermissionResult = await execAsyncWithRetry(
-        `teamsapp collaborator status --env dev --interactive false --teams-manifest-file ${projectPath}/appPackage/manifest.json`,
+        `teamsfx permission status --env dev --interactive false --teams-manifest-file ${projectPath}/appPackage/manifest.json`,
         {
           cwd: projectPath,
           env: process.env,
@@ -78,7 +78,7 @@ describe("Collaboration", function () {
       console.log("[Successfully] check permission");
 
       const grantCollaboratorResult = await execAsyncWithRetry(
-        `teamsapp collaborator grant --email ${collaborator} --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --interactive false`,
+        `teamsfx permission grant --email ${collaborator} --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,
@@ -93,7 +93,7 @@ describe("Collaboration", function () {
       console.log("[Successfully] grant permission");
 
       const listCollaboratorResult = await execAsync(
-        `teamsapp collaborator status --all --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --interactive false`,
+        `teamsfx permission status --all --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,

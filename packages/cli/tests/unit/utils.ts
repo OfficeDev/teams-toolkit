@@ -8,7 +8,6 @@ import fs from "fs-extra";
 import os from "os";
 import path from "path";
 import { SinonSandbox } from "sinon";
-import yargs, { Options } from "yargs";
 import { replaceTemplateString } from "../../src/colorize";
 import LogProvider from "../../src/commonlib/log";
 import CLITelemetry from "../../src/telemetry/cliTelemetry";
@@ -42,36 +41,6 @@ export function getDirFiles(folder: string): string[] {
     return [];
   }
   return fs.readdirSync(folder);
-}
-
-export function mockYargs(
-  sandbox: SinonSandbox,
-  options: string[] = [],
-  positionals: string[] = []
-) {
-  sandbox
-    .stub<any, any>(yargs, "command")
-    .callsFake((cmd: any, desc: any, builder: any, handler: any) => {
-      return builder(yargs);
-    });
-  sandbox.stub(yargs, "options").callsFake((opts: { [key: string]: Options }) => {
-    if (typeof opts === "string") {
-      options.push(opts);
-    } else {
-      /// cannot use concat to do this.
-      options.push(...Object.keys(opts));
-    }
-    return yargs;
-  });
-  sandbox.stub(yargs, "positional").callsFake((name: string) => {
-    positionals.push(name);
-    return yargs;
-  });
-  sandbox.stub(yargs, "hide").returns(yargs);
-  sandbox.stub(yargs, "version").returns(yargs);
-  sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
-    throw err;
-  });
 }
 
 export function mockTelemetry(

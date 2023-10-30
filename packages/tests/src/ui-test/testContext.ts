@@ -4,7 +4,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { VSBrowser } from "vscode-extension-tester";
 import { Browser, BrowserContext, chromium } from "playwright";
-import { Timeout } from "../utils/constants";
+import { Timeout, TestFilePath } from "../utils/constants";
 import { ensureExtensionActivated } from "../utils/vscodeOperation";
 import {
   cleanAppStudio,
@@ -14,7 +14,6 @@ import {
 } from "../utils/cleanHelper";
 import { getAppName, getScreenshotName } from "../utils/nameUtil";
 import { dotenvUtil } from "../utils/envUtil";
-import { TestFilePath } from "../utils/constants";
 import { Env } from "../utils/env";
 
 export class TestContext {
@@ -28,7 +27,7 @@ export class TestContext {
     this.appName = getAppName(testName.split("-")[0]);
   }
 
-  public async before() {
+  public async before(): Promise<void> {
     await fs.ensureDir(this.testRootFolder);
     await VSBrowser.instance.waitForWorkbench();
     this.browser = await chromium.launch({
@@ -42,16 +41,16 @@ export class TestContext {
     await ensureExtensionActivated();
   }
 
-  public async after() {
+  public async after(): Promise<void> {
     await VSBrowser.instance.takeScreenshot(getScreenshotName("after"));
-    await this.context!.close();
-    await this.browser!.close();
+    await this.context?.close();
+    await this.browser?.close();
   }
 
-  public async getAadObjectId(): Promise<string> {
+  public async getAadObjectId(envName = "local"): Promise<string> {
     const userDataFile = path.join(
       TestFilePath.configurationFolder,
-      `.env.local`
+      `.env.${envName}`
     );
     const configFilePath = path.resolve(
       this.testRootFolder,
@@ -99,7 +98,8 @@ export class TestContext {
 
   public async cleanResource(
     hasAadPlugin = true,
-    hasBotPlugin = false
+    hasBotPlugin = false,
+    envName = "local"
   ): Promise<void> {
     try {
       const cleanService = await GraphApiCleanHelper.create(
@@ -109,7 +109,7 @@ export class TestContext {
         Env.password
       );
       if (hasAadPlugin) {
-        const aadObjectId = await this.getAadObjectId();
+        const aadObjectId = await this.getAadObjectId(envName);
         console.log(`delete AAD ${aadObjectId}`);
         await cleanService.deleteAad(aadObjectId);
       }
@@ -123,7 +123,7 @@ export class TestContext {
         }
       }
       await this.cleanDevTunnel();
-    } catch (e: any) {
+    } catch (e) {
       console.log(`Failed to clean resource, error message: ${e.message}`);
     }
     await cleanTeamsApp(this.appName);
@@ -157,7 +157,7 @@ export class TestContext {
         console.log(`clean tunnel ${state.tunnelId}`);
         await devTunnelCleanHelper.delete(state.tunnelId, state.clusterId);
       }
-    } catch (e: any) {
+    } catch (e) {
       console.log(`Failed to clean dev tunnel, error message: ${e.message}`);
     }
   }

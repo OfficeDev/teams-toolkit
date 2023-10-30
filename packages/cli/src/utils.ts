@@ -181,12 +181,13 @@ export async function getTemplates(): Promise<Sample[]> {
     }
   );
   const samples = availableSamples.map((sample: SampleConfig) => {
+    const info = sample.downloadUrlInfo;
     return {
       tags: sample.tags,
       name: sample.title,
       description: sample.shortDescription,
       id: sample.id,
-      url: sample.downloadUrl,
+      url: `https://github.com/${info.owner}/${info.repository}/tree/${info.ref}/${info.dir}`,
     };
   });
   return samples;

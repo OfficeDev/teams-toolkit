@@ -11,41 +11,41 @@
     },
     "auth": {
       "type": "object",
-      "description": "Existing Microsoft Entra app configuration.",
+      "description": "Existing AAD app configuration.",
       "properties": {
         "clientId": {
           "type": "string",
-          "description": "The client id of existing Microsoft Entra app for Teams app.",
+          "description": "The client id of existing AAD app for Teams app.",
           "minLength": 1
         },
         "clientSecret": {
           "type": "string",
-          "description": "The client secret of existing Microsoft Entra app for Teams app.",
+          "description": "The client secret of existing AAD app for Teams app.",
           "minLength": 1
         },
         "objectId": {
           "type": "string",
-          "description": "The object id of existing Microsoft Entra app for Teams app.",
+          "description": "The object id of existing AAD app for Teams app.",
           "minLength": 1
         },
         "accessAsUserScopeId": {
           "type": "string",
-          "description": "The access_as_user scope id of existing Microsoft Entra app for Teams app.",
+          "description": "The access_as_user scope id of existing AAD app for Teams app.",
           "minLength": 1
         },
         "frontendDomain": {
           "type": "string",
-          "description": "The frontend domain for redirect URLs of existing Microsoft Entra app for Teams app.",
+          "description": "The frontend domain for redirect URLs of existing AAD app for Teams app.",
           "minLength": 1
         },
         "botId": {
           "type": "string",
-          "description": "The bot id for identifier URIs of existing Microsoft Entra app for Teams app.",
+          "description": "The bot id for identifier URIs of existing AAD app for Teams app.",
           "minLength": 1
         },
         "botEndpoint": {
           "type": "string",
-          "description": "The bot endpoint for redirect URLs of existing Microsoft Entra app for Teams app.",
+          "description": "The bot endpoint for redirect URLs of existing AAD app for Teams app.",
           "minLength": 1
         }
       },
@@ -78,16 +78,16 @@
     },
     "bot": {
       "type": "object",
-      "description": "Existing bot Microsoft Entra app configuration.",
+      "description": "Existing bot AAD app configuration.",
       "properties": {
         "appId": {
           "type": "string",
-          "description": "The id of existing bot Microsoft Entra app.",
+          "description": "The id of existing bot AAD app.",
           "minLength": 1
         },
         "appPassword": {
           "type": "string",
-          "description": "The password of existing bot Microsoft Entra app.",
+          "description": "The password of existing bot AAD app.",
           "minLength": 1
         }
       },

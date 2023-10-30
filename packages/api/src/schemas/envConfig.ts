@@ -14,35 +14,35 @@ export interface EnvConfig {
   $schema?: string;
   description?: string;
   /**
-   * Existing Microsoft Entra app configuration.
+   * Existing AAD app configuration.
    */
   auth?: {
     /**
-     * The client id of existing Microsoft Entra app for Teams app.
+     * The client id of existing AAD app for Teams app.
      */
     clientId?: string;
     /**
-     * The client secret of existing Microsoft Entra app for Teams app.
+     * The client secret of existing AAD app for Teams app.
      */
     clientSecret?: string;
     /**
-     * The object id of existing Microsoft Entra app for Teams app.
+     * The object id of existing AAD app for Teams app.
      */
     objectId?: string;
     /**
-     * The access_as_user scope id of existing Microsoft Entra app for Teams app.
+     * The access_as_user scope id of existing AAD app for Teams app.
      */
     accessAsUserScopeId?: string;
     /**
-     * The frontend domain for redirect URLs of existing Microsoft Entra app for Teams app.
+     * The frontend domain for redirect URLs of existing AAD app for Teams app.
      */
     frontendDomain?: string;
     /**
-     * The bot id for identifier URIs of existing Microsoft Entra app for Teams app.
+     * The bot id for identifier URIs of existing AAD app for Teams app.
      */
     botId?: string;
     /**
-     * The bot endpoint for redirect URLs of existing Microsoft Entra app for Teams app.
+     * The bot endpoint for redirect URLs of existing AAD app for Teams app.
      */
     botEndpoint?: string;
     [k: string]: unknown;
@@ -62,15 +62,15 @@ export interface EnvConfig {
     [k: string]: unknown;
   };
   /**
-   * Existing bot Microsoft Entra app configuration.
+   * Existing bot AAD app configuration.
    */
   bot?: {
     /**
-     * The id of existing bot Microsoft Entra app.
+     * The id of existing bot AAD app.
      */
     appId?: string;
     /**
-     * The password of existing bot Microsoft Entra app.
+     * The password of existing bot AAD app.
      */
     appPassword?: string;
     [k: string]: unknown;

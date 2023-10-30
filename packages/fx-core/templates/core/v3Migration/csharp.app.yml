@@ -51,7 +51,7 @@ provision:
       run: echo "::set-teamsfx-env {{placeholderMappings.[state.fx-resource-frontend-hosting.indexPath]}}=/" # Used in appPackage/manifest.json file.
 {{/if}}
 {{#if activePlugins.fx-resource-aad-app-for-teams}}
-  - uses: aadApp/update # Apply the Microsoft Entra manifest to an existing AAD app. Will use the object id in manifest file to determine which Microsoft Entra app to update.
+  - uses: aadApp/update # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in manifest file to determine which Microsoft Entra app to update.
     with:
       manifestPath: ./aad.manifest.json # Relative path to this file. Environment variables in manifest will be replaced before apply to Microsoft Entra app
       outputFilePath : ./build/aad.manifest.$\{{TEAMSFX_ENV}}.json

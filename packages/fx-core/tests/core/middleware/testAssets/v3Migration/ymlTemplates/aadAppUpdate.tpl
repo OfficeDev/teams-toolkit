@@ -1,4 +1,4 @@
-  # Apply the Microsoft Entra manifest to an existing AAD app. Will use the object id in
+  # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
   # manifest file to determine which Microsoft Entra app to update.
   - uses: aadApp/update
     with:

@@ -1,4 +1,4 @@
-  # Creates a new Microsoft Entra (Microsoft Entra) app to authenticate users if
+  # Creates a new Microsoft Entra app to authenticate users if
   # the environment variable that stores clientId is empty
   - uses: aadApp/create
     with:

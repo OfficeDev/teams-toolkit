@@ -9,7 +9,6 @@ import fs from "fs-extra";
 import { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
-import yargs, { Options } from "yargs";
 import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
 import * as constants from "../../../../src/cmds/preview/constants";
 import * as launch from "../../../../src/cmds/preview/launch";
@@ -35,22 +34,10 @@ describe("Preview --env", () => {
   beforeEach(() => {
     mockedEnvRestore = () => {};
     options = [];
-    defaultOptions = {};
+    defaultOptions = { folder: "./", env: "local" };
     logs = [];
     telemetries = [];
     sandbox.stub(process, "exit");
-    sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }, more?: any) => {
-      if (typeof ops === "string") {
-        options.push(ops);
-        defaultOptions[ops as string] = more?.default;
-      } else {
-        for (const key of Object.keys(ops)) {
-          options.push(key);
-          defaultOptions[key] = ops[key].default;
-        }
-      }
-      return yargs;
-    });
     sandbox.stub(cliLogger, "necessaryLog").callsFake((lv, msg, white) => {
       logs.push(msg);
     });
@@ -94,12 +81,8 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
-
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     await cmd.runCommand(defaultOptions);
-
     expect(logs.length).greaterThanOrEqual(1);
     expect(logs[0]).satisfy((l: string) => l.includes("run-command"));
   });
@@ -112,17 +95,13 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
-
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     await cmd.runCommand({
       ...defaultOptions,
       ["m365-host"]: "outlook",
       ["browser-arg"]: ["--guest"],
       ["open-only"]: true,
     });
-
     expect(logs.length).greaterThanOrEqual(0);
   });
 
@@ -136,8 +115,6 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     await cmd.runCommand({
       ...defaultOptions,
       env: "dev",
@@ -152,8 +129,6 @@ describe("Preview --env", () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(false);
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -165,8 +140,6 @@ describe("Preview --env", () => {
     sandbox.stub(envUtil, "readEnv").resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -181,8 +154,6 @@ describe("Preview --env", () => {
       .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -198,8 +169,6 @@ describe("Preview --env", () => {
       .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -216,8 +185,6 @@ describe("Preview --env", () => {
       .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -237,10 +204,7 @@ describe("Preview --env", () => {
       .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
-
     expect(result.isErr()).to.be.true;
     expect((result as any).error).to.deep.equal({ foo: "bar" });
   });
@@ -253,12 +217,8 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(err({ foo: "bar" } as any));
-
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
-
     expect(result.isErr()).to.be.true;
     expect((result as any).error).to.deep.equal({ foo: "bar" });
   });

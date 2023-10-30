@@ -34,5 +34,5 @@ interface FuncArgs {
 
 interface TestToolArgs {
   version: string | number;
-  symlinkDir: string;
+  symlinkDir?: string;
 }

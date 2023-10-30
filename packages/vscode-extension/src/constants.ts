@@ -27,6 +27,7 @@ export enum GlobalKey {
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
   CreateWarnings = "CreateWarnings",
   SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
+  AutoInstallDependency = "teamsToolkit:autoInstallDependency",
 }
 
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;

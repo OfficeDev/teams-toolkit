@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 import { CLICommand, LogLevel, err, ok } from "@microsoft/teamsfx-api";
 import { PackageService } from "@microsoft/teamsfx-core";
-import { getTokenAndUpn } from "../../cmds/m365/m365";
 import { logger } from "../../commonlib/logger";
 import { MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { sideloadingServiceEndpoint } from "./m365Sideloading";
+import { m365utils, sideloadingServiceEndpoint } from "./m365Sideloading";
 
 export const m365LaunchInfoCommand: CLICommand = {
   name: "launchinfo",
@@ -49,7 +48,7 @@ export const m365LaunchInfoCommand: CLICommand = {
         new MissingRequiredOptionError(ctx.command.fullName, `--title-id or --manifest-id`)
       );
     }
-    const tokenAndUpn = await getTokenAndUpn();
+    const tokenAndUpn = await m365utils.getTokenAndUpn();
     if (titleId === undefined) {
       titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestId);
     }

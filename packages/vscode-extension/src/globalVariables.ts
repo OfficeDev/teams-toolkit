@@ -43,7 +43,7 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   }
 }
 
-function checkIsSPFx(directory: string): boolean {
+export function checkIsSPFx(directory: string): boolean {
   const files = fs.readdirSync(directory);
   for (const file of files) {
     if (file === ".yo-rc.json") {

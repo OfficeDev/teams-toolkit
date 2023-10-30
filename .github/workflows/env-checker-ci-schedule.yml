@@ -20,8 +20,8 @@ jobs:
       # macos-latest is 10.15. We need to test 11 as well.
       matrix:
         os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
-        node-version: [14, 16, 18]
-        func-version: [none, "3", "4", "~4.0.4670"]
+        node-version: [16, 18, 20]
+        func-version: [none, "3", "4", "4.0.4670", "~4.0.5174"]
       max-parallel: 30
 
     runs-on: ${{ matrix.os }}
@@ -32,7 +32,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Use node 14 to setup project
+      # Use node 18 to setup project
       - name: Setup Node.js
         uses: actions/setup-node@v2.1.2
         with:
@@ -89,7 +89,7 @@ jobs:
     strategy:
       matrix: # TODO: add more versions and cases where Node.js do not exist
         os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
-        node-version: [14, 16, 18]
+        node-version: [16, 18]
       max-parallel: 30
 
     runs-on: ${{ matrix.os }}
@@ -100,7 +100,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Use node 14 to setup project
+      # Use node 18 to setup project
       - name: Setup Node.js
         uses: actions/setup-node@v2.1.2
         with:
@@ -176,7 +176,7 @@ jobs:
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
-      # Use node 14 to setup project
+      # Use node 18 to setup project
       - name: Setup Node.js
         uses: actions/setup-node@v2.1.2
         with:

@@ -1,6 +1,5 @@
 import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import {
-  CapabilityOptions,
   CollaborationStateResult,
   FuncToolChecker,
   FxCore,
@@ -13,60 +12,56 @@ import {
   UserCancelError,
   envUtil,
 } from "@microsoft/teamsfx-core";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import { assert } from "chai";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import * as activate from "../../src/activate";
-import * as accountUtils from "../../src/cmds/account";
-import * as m365 from "../../src/cmds/m365/m365";
 import { localTelemetryReporter } from "../../src/cmds/preview/localTelemetryReporter";
 import {
   accountLoginAzureCommand,
   accountLoginM365Command,
   accountLogoutCommand,
   accountShowCommand,
+  accountUtils,
   addSPFxWebpartCommand,
-  configGetCommand,
-  configSetCommand,
-  getCreateCommand,
   createSampleCommand,
   deployCommand,
   envAddCommand,
   envListCommand,
-  listTemplatesCommand,
+  getCreateCommand,
+  helpCommand,
   listSamplesCommand,
+  listTemplatesCommand,
   m365LaunchInfoCommand,
   m365SideloadingCommand,
   m365UnacquireCommand,
+  m365utils,
   packageCommand,
   permissionGrantCommand,
   permissionStatusCommand,
   previewCommand,
-  printGlobalConfig,
   provisionCommand,
   publishCommand,
   updateAadAppCommand,
   updateTeamsAppCommand,
   upgradeCommand,
   validateCommand,
-  helpCommand,
 } from "../../src/commands/models";
+import { DoctorChecker, teamsappDoctorCommand } from "../../src/commands/models/teamsapp/doctor";
+import { teamsappPackageCommand } from "../../src/commands/models/teamsapp/package";
+import { teamsappPublishCommand } from "../../src/commands/models/teamsapp/publish";
+import { teamsappUpdateCommand } from "../../src/commands/models/teamsapp/update";
+import { teamsappValidateCommand } from "../../src/commands/models/teamsapp/validate";
 import AzureTokenProvider from "../../src/commonlib/azureLogin";
-import * as codeFlowLogin from "../../src/commonlib/codeFlowLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { logger } from "../../src/commonlib/logger";
 import M365TokenProvider from "../../src/commonlib/m365Login";
-import { UserSettings } from "../../src/userSetttings";
-import * as utils from "../../src/utils";
 import { MissingRequiredOptionError } from "../../src/error";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { teamsappUpdateCommand } from "../../src/commands/models/teamsapp/update";
-import { teamsappPackageCommand } from "../../src/commands/models/teamsapp/package";
-import { teamsappValidateCommand } from "../../src/commands/models/teamsapp/validate";
-import { teamsappPublishCommand } from "../../src/commands/models/teamsapp/publish";
-import { DoctorChecker, teamsappDoctorCommand } from "../../src/commands/models/teamsapp/doctor";
-import M365TokenInstance from "../../src/commonlib/m365Login";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
+import * as utils from "../../src/utils";
+import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
+import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -539,6 +534,24 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
   });
+  describe("entraAppUpdateCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...entraAppUpdateCommand, fullName: "teamsapp entraapp update" },
+        optionValues: {
+          env: "local",
+          projectPath: "./",
+          "manifest-file-path": "./aad.manifest.json",
+        },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await entraAppUpdateCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
   describe("updateTeamsAppCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
@@ -651,7 +664,7 @@ describe("CLI commands", () => {
       sandbox.stub(logger, "warning");
     });
     it("success retrieveTitleId", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("id");
       sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves("id");
       const ctx: CLIContext = {
@@ -665,7 +678,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("success", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "getLaunchInfoByTitleId").resolves("id");
       const ctx: CLIContext = {
         command: { ...m365LaunchInfoCommand, fullName: "teamsfx" },
@@ -678,7 +691,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("MissingRequiredOptionError", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       const ctx: CLIContext = {
         command: { ...m365LaunchInfoCommand, fullName: "teamsfx" },
         optionValues: {},
@@ -695,8 +708,41 @@ describe("CLI commands", () => {
     beforeEach(() => {
       sandbox.stub(logger, "warning");
     });
+
+    describe("M365Utils - getTokenAndUpn", async () => {
+      it("getAccessToken fail", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(err(new UserCancelError()));
+        try {
+          await m365utils.getTokenAndUpn();
+          assert.fail("should not reach here");
+        } catch (e) {
+          assert.isTrue(e instanceof UserCancelError);
+        }
+      });
+      it("getStatus fail", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+        sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
+        const res = await m365utils.getTokenAndUpn();
+        assert.deepEqual(res, ["token", undefined]);
+      });
+      it("getStatus ok", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+        sandbox
+          .stub(M365TokenProvider, "getStatus")
+          .resolves(ok({ accountInfo: { upn: "test" } } as any));
+        const res = await m365utils.getTokenAndUpn();
+        assert.deepEqual(res, ["token", "test"]);
+      });
+      it("getStatus throw error", async () => {
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok("token"));
+        sandbox.stub(M365TokenProvider, "getStatus").rejects(new Error());
+        const res = await m365utils.getTokenAndUpn();
+        assert.deepEqual(res, ["token", undefined]);
+      });
+    });
+
     it("should success with zip package", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "sideLoading").resolves();
       const ctx: CLIContext = {
         command: { ...m365SideloadingCommand, fullName: "teamsfx" },
@@ -709,7 +755,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("should success with xml", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "sideLoadXmlManifest").resolves();
       const ctx: CLIContext = {
         command: { ...m365SideloadingCommand, fullName: "teamsfx" },
@@ -750,7 +796,7 @@ describe("CLI commands", () => {
       sandbox.stub(logger, "warning");
     });
     it("MissingRequiredOptionError", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       const ctx: CLIContext = {
         command: { ...m365UnacquireCommand, fullName: "teamsfx" },
         optionValues: {},
@@ -762,7 +808,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isErr());
     });
     it("success retrieveTitleId", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "retrieveTitleId").resolves("id");
       sandbox.stub(PackageService.prototype, "unacquire").resolves();
       const ctx: CLIContext = {
@@ -776,7 +822,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
     it("success", async () => {
-      sandbox.stub(m365, "getTokenAndUpn").resolves(["token", "upn"]);
+      sandbox.stub(m365utils, "getTokenAndUpn").resolves(["token", "upn"]);
       sandbox.stub(PackageService.prototype, "unacquire").resolves();
       const ctx: CLIContext = {
         command: { ...m365UnacquireCommand, fullName: "teamsfx" },
@@ -905,12 +951,69 @@ describe("CLI read-only commands", () => {
       messages.push(message);
       return true;
     });
+    sandbox.stub(logger, "outputInfo").callsFake(async (message: string) => {
+      messages.push(message);
+      return true;
+    });
+    sandbox.stub(logger, "outputError").callsFake(async (message: string) => {
+      messages.push(message);
+      return true;
+    });
   });
 
   afterEach(() => {
     sandbox.restore();
   });
-
+  describe("AccountUtils", async () => {
+    it("outputAccountInfoOffline", async () => {
+      const res = accountUtils.outputAccountInfoOffline("m365", "xxx");
+      assert.isTrue(res);
+    });
+    it("outputM365Info login success", async () => {
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "fakename" }));
+      const res = await accountUtils.outputM365Info("login");
+      assert.isTrue(res);
+    });
+    it("outputM365Info login fail", async () => {
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(err(new UserCancelError()));
+      const res = await accountUtils.outputM365Info("login");
+      assert.isFalse(res);
+    });
+    it("outputM365Info show success", async () => {
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(ok({ upn: "fakename" }));
+      const res = await accountUtils.outputM365Info("show");
+      assert.isTrue(res);
+    });
+    it("outputM365Info show fail", async () => {
+      sandbox.stub(M365TokenProvider, "getJsonObject").resolves(err(new UserCancelError()));
+      const res = await accountUtils.outputM365Info("show");
+      assert.isFalse(res);
+    });
+    it("outputAzureInfo login", async () => {
+      sandbox.stub(AzureTokenCIProvider, "load").resolves();
+      sandbox.stub(AzureTokenCIProvider, "init").resolves();
+      sandbox.stub(AzureTokenCIProvider, "getJsonObject").resolves({ upn: "test" });
+      sandbox.stub(AzureTokenCIProvider, "listSubscriptions").resolves([]);
+      const res = await accountUtils.outputAzureInfo("login", undefined, true);
+      assert.isTrue(res);
+    });
+    it("outputAzureInfo login fail", async () => {
+      sandbox.stub(AzureTokenProvider, "getJsonObject").resolves(undefined);
+      const res = await accountUtils.outputAzureInfo("login");
+      assert.isFalse(res);
+    });
+    it("outputAzureInfo show", async () => {
+      sandbox.stub(AzureTokenProvider, "getJsonObject").resolves({ upn: "test" });
+      sandbox.stub(AzureTokenProvider, "listSubscriptions").resolves([]);
+      const res = await accountUtils.outputAzureInfo("show");
+      assert.isTrue(res);
+    });
+    it("outputAzureInfo show fail", async () => {
+      sandbox.stub(AzureTokenProvider, "getJsonObject").resolves(undefined);
+      const res = await accountUtils.outputAzureInfo("show");
+      assert.isFalse(res);
+    });
+  });
   describe("accountShowCommand", async () => {
     it("both signedOut", async () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedOut }));
@@ -929,7 +1032,7 @@ describe("CLI read-only commands", () => {
     it("both signedIn and checkIsOnline = true", async () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(ok({ status: signedIn }));
       sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedIn });
-      sandbox.stub(codeFlowLogin, "checkIsOnline").resolves(true);
+      sandbox.stub(accountUtils, "checkIsOnline").resolves(true);
       const outputM365Info = sandbox.stub(accountUtils, "outputM365Info").resolves();
       const outputAzureInfo = sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       messages = [];
@@ -952,7 +1055,7 @@ describe("CLI read-only commands", () => {
       sandbox
         .stub(AzureTokenProvider, "getStatus")
         .resolves({ status: signedIn, accountInfo: { upn: "xxx" } });
-      sandbox.stub(codeFlowLogin, "checkIsOnline").resolves(false);
+      sandbox.stub(accountUtils, "checkIsOnline").resolves(false);
       const outputAccountInfoOffline = sandbox.stub(accountUtils, "outputAccountInfoOffline");
       messages = [];
       const ctx: CLIContext = {
@@ -1034,69 +1137,6 @@ describe("CLI read-only commands", () => {
       assert.isTrue(res.isOk());
     });
   });
-
-  describe("configGetCommand", async () => {
-    it("printGlobalConfig all", async () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(ok({ a: 1, b: 2 }));
-      const res = await printGlobalConfig();
-      assert.isTrue(res.isOk());
-      assert.isTrue(messages.includes(JSON.stringify({ a: 1, b: 2 }, null, 2)));
-    });
-    it("printGlobalConfig some key", async () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(ok({ a: { c: 3 }, b: 2 }));
-      const res = await printGlobalConfig("a");
-      assert.isTrue(res.isOk());
-      assert.isTrue(messages.includes(JSON.stringify({ c: 3 }, null, 2)));
-    });
-    it("printGlobalConfig error", async () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(err(new UserCancelError()));
-      const res = await printGlobalConfig();
-      assert.isTrue(res.isErr());
-    });
-    it("configGetCommand", async () => {
-      sandbox.stub(UserSettings, "getConfigSync").returns(ok({ a: 1, b: 2 }));
-      const ctx: CLIContext = {
-        command: { ...configGetCommand, fullName: "teamsfx ..." },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: ["a"],
-        telemetryProperties: {},
-      };
-      messages = [];
-      const res = await configGetCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-  });
-
-  describe("configSetCommand", async () => {
-    it("configSetCommand", async () => {
-      sandbox.stub(UserSettings, "setConfigSync").returns(ok(undefined));
-      const ctx: CLIContext = {
-        command: { ...configGetCommand, fullName: "teamsfx ..." },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: ["key", "value"],
-        telemetryProperties: {},
-      };
-      const res = await configSetCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-      assert.isTrue(messages.includes(`Successfully set user configuration key.`));
-    });
-    it("configSetCommand error", async () => {
-      sandbox.stub(UserSettings, "setConfigSync").returns(err(new UserCancelError()));
-      const ctx: CLIContext = {
-        command: { ...configGetCommand, fullName: "teamsfx ..." },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: ["key", "value"],
-        telemetryProperties: {},
-      };
-      const res = await configSetCommand.handler!(ctx);
-      assert.isTrue(res.isErr());
-      assert.isTrue(messages.includes("Set user configuration failed."));
-    });
-  });
-
   describe("listTemplatesCommand", async () => {
     let mockedEnvRestore: RestoreFn;
     afterEach(() => {
@@ -1259,7 +1299,7 @@ describe("CLI read-only commands", () => {
         const token = "test-token";
         const tenantId = "test-tenant-id";
         const upn = "test-user";
-        sandbox.stub(M365TokenInstance, "getStatus").returns(
+        sandbox.stub(M365TokenProvider, "getStatus").returns(
           Promise.resolve(
             ok({
               status: signedIn,
@@ -1279,7 +1319,7 @@ describe("CLI read-only commands", () => {
         assert.include(account, "is logged in and sideloading permission is enabled");
       });
       it("checkM365Account - error", async () => {
-        sandbox.stub(M365TokenInstance, "getStatus").resolves(err(new UserCancelError()));
+        sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
         sandbox.stub(tools, "getSideloadingStatus").resolves(true);
         const checker = new DoctorChecker();
         const accountRes = await checker.checkM365Account();
@@ -1288,7 +1328,7 @@ describe("CLI read-only commands", () => {
         assert.include(account, "You have not logged in");
       });
       it("checkM365Account - error2", async () => {
-        sandbox.stub(M365TokenInstance, "getStatus").rejects(new Error("test"));
+        sandbox.stub(M365TokenProvider, "getStatus").rejects(new Error("test"));
         sandbox.stub(tools, "getSideloadingStatus").resolves(true);
         const checker = new DoctorChecker();
         const accountRes = await checker.checkM365Account();
@@ -1298,7 +1338,7 @@ describe("CLI read-only commands", () => {
         const token = "test-token";
         const tenantId = "test-tenant-id";
         const upn = "test-user";
-        const getStatusStub = sandbox.stub(M365TokenInstance, "getStatus");
+        const getStatusStub = sandbox.stub(M365TokenProvider, "getStatus");
         getStatusStub.onCall(0).resolves(
           ok({
             status: signedOut,
@@ -1314,7 +1354,7 @@ describe("CLI read-only commands", () => {
             },
           })
         );
-        sandbox.stub(M365TokenInstance, "getAccessToken").resolves(ok(token));
+        sandbox.stub(M365TokenProvider, "getAccessToken").resolves(ok(token));
         sandbox.stub(tools, "getSideloadingStatus").resolves(true);
         const checker = new DoctorChecker();
         const accountRes = await checker.checkM365Account();
@@ -1327,7 +1367,7 @@ describe("CLI read-only commands", () => {
         const token = "test-token";
         const tenantId = "test-tenant-id";
         const upn = "test-user";
-        sandbox.stub(M365TokenInstance, "getStatus").returns(
+        sandbox.stub(M365TokenProvider, "getStatus").returns(
           Promise.resolve(
             ok({
               status: signedIn,

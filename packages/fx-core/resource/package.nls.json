@@ -476,7 +476,7 @@
   "depChecker.testToolVersionNotMatch": "The version of Teams App Test Tool (%s) is not compatible with the specified version range (%s).",
   "depChecker.failedToValidateTestTool": "Unable to validate Teams App Test Tool after installation. %s",
   "error.driver.outputEnvironmentVariableUndefined": "The output environment variable name(s) are not defined.",
-  "driver.aadApp.description.create": "Create an Microsoft Entra app to authenticate users",
+  "driver.aadApp.description.create": "Create a Microsoft Entra app to authenticate users",
   "driver.aadApp.description.update": "Apply Microsoft Entra app manifest to an existing app",
   "driver.aadApp.error.missingEnv": "Environment variable %s is not set.",
   "driver.aadApp.error.generateSecretFailed": "Cannot generate client secret.",

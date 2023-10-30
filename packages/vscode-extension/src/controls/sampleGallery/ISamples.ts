@@ -18,7 +18,12 @@ export interface SampleInfo {
   time: string;
   configuration: string;
   suggested: boolean;
-  downloadUrl: string;
+  downloadUrlInfo: {
+    owner: string;
+    repository: string;
+    ref: string;
+    dir: string;
+  };
   thumbnailUrl: string;
   gifUrl?: string;
   // -1 means TTK is lower than required.

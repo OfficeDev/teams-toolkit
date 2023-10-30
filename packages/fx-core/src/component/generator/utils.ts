@@ -234,25 +234,24 @@ export function zipFolder(folderPath: string): AdmZip {
 }
 
 export async function downloadDirectory(
-  sampleUrl: string,
+  sampleInfo: SampleUrlInfo,
   dstPath: string,
   concurrencyLimits = sampleConcurrencyLimits,
   retryLimits = sampleDefaultRetryLimits
 ): Promise<string[]> {
-  const urlInfo = parseSampleUrl(sampleUrl);
-  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(urlInfo, retryLimits);
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(sampleInfo, retryLimits);
   await downloadSampleFiles(
     fileUrlPrefix,
     samplePaths,
     dstPath,
-    urlInfo.dir,
+    sampleInfo.dir,
     retryLimits,
     concurrencyLimits
   );
   return samplePaths;
 }
 
-type SampleUrlInfo = {
+export type SampleUrlInfo = {
   owner: string;
   repository: string;
   ref: string;

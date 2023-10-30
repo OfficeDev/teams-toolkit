@@ -65,11 +65,12 @@ describe("Samples", () => {
       await sampleProvider.fetchSampleConfig();
       chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
       const samples = sampleProvider.SampleCollection.samples;
-      chai
-        .expect(samples[0].downloadUrl)
-        .equal(
-          `https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/hello-world-tab-with-backend`
-        );
+      chai.expect(samples[0].downloadUrlInfo).deep.equal({
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: "dev",
+        dir: "hello-world-tab-with-backend",
+      });
       chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
@@ -89,11 +90,12 @@ describe("Samples", () => {
       await sampleProvider.fetchSampleConfig();
       chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
       const samples = sampleProvider.SampleCollection.samples;
-      chai
-        .expect(samples[0].downloadUrl)
-        .equal(
-          `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigBranchForPrerelease}/hello-world-tab-with-backend`
-        );
+      chai.expect(samples[0].downloadUrlInfo).deep.equal({
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: SampleConfigBranchForPrerelease,
+        dir: "hello-world-tab-with-backend",
+      });
       chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
@@ -113,11 +115,12 @@ describe("Samples", () => {
       await sampleProvider.fetchSampleConfig();
       chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
       const samples = sampleProvider.SampleCollection.samples;
-      chai
-        .expect(samples[0].downloadUrl)
-        .equal(
-          `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTagForRc}/hello-world-tab-with-backend`
-        );
+      chai.expect(samples[0].downloadUrlInfo).deep.equal({
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: SampleConfigTagForRc,
+        dir: "hello-world-tab-with-backend",
+      });
       chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
@@ -137,11 +140,12 @@ describe("Samples", () => {
       await sampleProvider.fetchSampleConfig();
       chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
       const samples = sampleProvider.SampleCollection.samples;
-      chai
-        .expect(samples[0].downloadUrl)
-        .equal(
-          `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
-        );
+      chai.expect(samples[0].downloadUrlInfo).deep.equal({
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: SampleConfigTag,
+        dir: "hello-world-tab-with-backend",
+      });
       chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
@@ -162,11 +166,12 @@ describe("Samples", () => {
       await sampleProvider.fetchSampleConfig();
       chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
       const samples = sampleProvider.SampleCollection.samples;
-      chai
-        .expect(samples[0].downloadUrl)
-        .equal(
-          `https://github.com/OfficeDev/TeamsFx-Samples/tree/v2.0.0/hello-world-tab-with-backend`
-        );
+      chai.expect(samples[0].downloadUrlInfo).deep.equal({
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: "v2.0.0",
+        dir: "hello-world-tab-with-backend",
+      });
       chai.expect(samples[0].gifUrl).equal(undefined);
     });
 
@@ -188,11 +193,12 @@ describe("Samples", () => {
         await sampleProvider.fetchSampleConfig();
         chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
         const samples = sampleProvider.SampleCollection.samples;
-        chai
-          .expect(samples[0].downloadUrl)
-          .equal(
-            `https://github.com/OfficeDev/TeamsFx-Samples/tree/${SampleConfigTag}/hello-world-tab-with-backend`
-          );
+        chai.expect(samples[0].downloadUrlInfo).deep.equal({
+          owner: "OfficeDev",
+          repository: "TeamsFx-Samples",
+          ref: SampleConfigTag,
+          dir: "hello-world-tab-with-backend",
+        });
         chai.expect(samples[0].gifUrl).equal(undefined);
       } catch (e) {
         chai.assert.fail("should not reach here");
@@ -235,7 +241,12 @@ describe("Samples", () => {
       time: "5min to run",
       configuration: "Ready for debug",
       suggested: false,
-      downloadUrl: "https://github.com/Test/Test-Samples/tree/main/faked-external-sample",
+      downloadUrlInfo: {
+        owner: "Test",
+        repository: "Test-Samples",
+        ref: "main",
+        dir: "faked-external-sample",
+      },
     };
     sampleConfigV3.samples.push(fakedExternalSample as any);
 
@@ -243,7 +254,7 @@ describe("Samples", () => {
     const samples = sampleProvider.SampleCollection.samples;
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;
-    chai.expect(faked?.downloadUrl).equals(fakedExternalSample.downloadUrl);
+    chai.expect(faked?.downloadUrlInfo).equals(fakedExternalSample.downloadUrlInfo);
     chai.expect(faked?.gifUrl).equals(undefined);
 
     (sampleProvider as any).sampleCollection = undefined;

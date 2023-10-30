@@ -3,12 +3,13 @@
 
 import axios from "axios";
 
-import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/utils";
+import { hooks } from "@feathersjs/hooks";
+
+import { SampleUrlInfo, sendRequestWithTimeout } from "../component/generator/utils";
+import { ErrorContextMW } from "../core/globalVars";
+import { AccessGithubError } from "../error/common";
 import { FeatureFlagName } from "./constants";
 import { isVideoFilterEnabled } from "./featureFlags";
-import { AccessGithubError } from "../error/common";
-import { hooks } from "@feathersjs/hooks";
-import { ErrorContextMW } from "../core/globalVars";
 
 const packageJson = require("../../package.json");
 
@@ -40,7 +41,7 @@ export interface SampleConfig {
   // these 2 fields are used when external sample is upgraded and breaks in old TTK version.
   minimumToolkitVersion?: string;
   minimumCliVersion?: string;
-  downloadUrl?: string;
+  downloadUrlInfo: SampleUrlInfo;
 }
 
 interface SampleCollection {
@@ -85,7 +86,7 @@ class SampleProvider {
   public get SampleCollection(): SampleCollection {
     const samples =
       this.samplesConfig?.samples.map((sample) => {
-        const isExternal = sample["downloadUrl"] ? true : false;
+        const isExternal = sample["downloadUrlInfo"] ? true : false;
         let gifUrl =
           sample["gifPath"] !== undefined
             ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
@@ -96,7 +97,7 @@ class SampleProvider {
           this.branchOrTag
         }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
-          const info = parseSampleUrl(sample["downloadUrl"] as string);
+          const info = sample["downloadUrlInfo"] as SampleUrlInfo;
           gifUrl =
             sample["gifPath"] !== undefined
               ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
@@ -110,11 +111,14 @@ class SampleProvider {
         return {
           ...sample,
           onboardDate: new Date(sample["onboardDate"] as string),
-          downloadUrl: isExternal
-            ? sample["downloadUrl"]
-            : `https://github.com/${SampleConfigOwner}/${SampleConfigRepo}/tree/${
-                this.branchOrTag
-              }/${sample["id"] as string}`,
+          downloadUrlInfo: isExternal
+            ? sample["downloadUrlInfo"]
+            : {
+                owner: SampleConfigOwner,
+                repository: SampleConfigRepo,
+                ref: this.branchOrTag,
+                dir: sample["id"] as string,
+              },
           gifUrl: gifUrl,
           thumbnailUrl: thumbnailUrl,
         } as SampleConfig;

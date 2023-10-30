@@ -151,7 +151,12 @@
             "configuration": "Ready for debug",
             "gifPath": "images/send-proactive-messages.gif",
             "suggested": false,
-            "downloadUrl": "https://github.com/OfficeDev/Microsoft-Teams-Samples/tree/main/samples/bot-proactive-messaging-teamsfx"
+            "downloadUrlInfo": {
+                "owner": "OfficeDev",
+                "repository": "Microsoft-Teams-Samples",
+                "ref": "main",
+                "dir": "samples/bot-proactive-messaging-teamsfx"
+            }
         },
         {
             "id": "adaptive-card-notification",
@@ -362,7 +367,12 @@
             "configuration": "Ready for debug",
             "gifPath": "assets/outlook-set-signature-overview.png",
             "suggested": false,
-            "downloadUrl": "https://github.com/OfficeDev/Office-Add-in-samples/tree/main/Samples/outlook-set-signature"
+            "downloadUrlInfo": {
+                "owner": "OfficeDev",
+                "repository": "Office-Add-in-samples",
+                "ref": "main",
+                "dir": "Samples/outlook-set-signature"
+            }
         },
         {
             "id": "developer-assist-dashboard",

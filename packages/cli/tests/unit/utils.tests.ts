@@ -137,6 +137,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     this.afterEach(() => {
       sandbox.restore();
+      core.sampleProvider["sampleCollection"] = undefined;
     });
 
     it("filters samples have maximum cli verion", async () => {

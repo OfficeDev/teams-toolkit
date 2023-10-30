@@ -3,9 +3,9 @@
 This doc is for using existing Microsoft Entra app or Manually Create Microsoft Entra app for TeamsFx project. Please follow the instruction and make sure all reqirued info is properly set in your TeamsFx project.
 
 
-### Create an Microsoft Entra app
+### Create a Microsoft Entra app
 
-> You may skip this part if you already has an Microsoft Entra app.
+> You may skip this part if you already has a Microsoft Entra app.
 
 1. Go to the [Azure Portal](https://portal.azure.com) and select "Azure Active Directory".
 
@@ -57,7 +57,7 @@ This doc is for using existing Microsoft Entra app or Manually Create Microsoft 
 
 ### Get necessary info from existing Microsoft Entra app
 
-* You may skip this part if you follow the instruction above to create an Microsoft Entra app.
+* You may skip this part if you follow the instruction above to create a Microsoft Entra app.
 
 1. Go to the [Azure Portal](https://portal.azure.com) and select "Azure Active Directory".
 

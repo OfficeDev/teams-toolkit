@@ -56,7 +56,7 @@ As described above, the Teams Toolkit generated some configuration to set up you
 
 <h3 id='2.2'>Update your business logic</h3>
 
-The sample business logic provides a sso command handler `ProfileSsoCommandHandler` that use an Microsoft Entra token to call Microsoft Graph. This token is obtained by using the logged-in Teams user token. The flow is brought together in a dialog that will display a consent dialog if required.
+The sample business logic provides a sso command handler `ProfileSsoCommandHandler` that use a Microsoft Entra token to call Microsoft Graph. This token is obtained by using the logged-in Teams user token. The flow is brought together in a dialog that will display a consent dialog if required.
 
 To make this work in your application:
 

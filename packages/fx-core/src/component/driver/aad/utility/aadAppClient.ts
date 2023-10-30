@@ -80,7 +80,7 @@ export class AadAppClient {
     const requestBody: IAADDefinition = {
       displayName: displayName,
       signInAudience: signInAudience,
-    }; // Create an Microsoft Entra app without setting anything
+    }; // Create a Microsoft Entra app without setting anything
 
     const response = await this.axios.post("applications", requestBody);
 

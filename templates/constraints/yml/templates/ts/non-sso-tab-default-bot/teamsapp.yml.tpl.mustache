@@ -1,4 +1,4 @@
-{{#header}} version: 1.0.0 {{/header}}
+{{#header}} version: v1.3 {{/header}}
 
 environmentFolderPath: ./env
 
@@ -10,7 +10,7 @@ provision:
 
 {{#armDeploy}} deploymentName: Create-resources-for-tab {{/armDeploy}}
 
-{{#azureStorageEnableStaticWebsite}} {{/azureStorageEnableStaticWebsite}}
+{{#azureStaticWebAppGetDeploymentToken}} {{/azureStaticWebAppGetDeploymentToken}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
@@ -21,7 +21,7 @@ provision:
 deploy:
 {{#cliRunNpmCommand}} install, args: install {{/cliRunNpmCommand}}
 {{#cliRunNpmCommand}} workingDirectory: ., args: run build --if-present, build {{/cliRunNpmCommand}}
-{{#azureStorageDeploy}} artifactFolder: tab/build {{/azureStorageDeploy}}
+{{#azureStaticWebAppDeploy}} artifactFolder: tab/build {{/azureStaticWebAppDeploy}}
 {{#azureAppServiceZipDeploy}} workingDirectory: bot, resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}}, ignoreFile: .webappignore {{/azureAppServiceZipDeploy}}
 
 # Triggered when 'teamsapp publish' is executed

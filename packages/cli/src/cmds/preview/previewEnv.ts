@@ -8,7 +8,7 @@ import {
   AppStudioScopes,
   assembleError,
   CoreQuestionNames,
-  environmentManager,
+  environmentNameManager,
   envUtil,
   FxCore,
   getSideloadingStatus,
@@ -19,17 +19,15 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
-import { Argv } from "yargs";
 import activate from "../../activate";
 import { signedOut } from "../../commonlib/common/constant";
 import cliLogger from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
-import { cliSource, RootFolderOptions } from "../../constants";
+import { cliSource } from "../../constants";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
 import { getColorizedString, getSystemInputs, isWorkspaceSupported } from "../../utils";
-import { YargsCommand } from "../../yargsCommand";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
@@ -37,7 +35,6 @@ import { openHubWebClientNew } from "./launch";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import { Task } from "./task";
-import { environmentNameManager } from "@microsoft/teamsfx-core";
 enum Progress {
   M365Account = "Microsoft 365 Account",
 }
@@ -47,69 +44,13 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
 });
 
 // The new preview cmd `teamsfx preview --env ...`
-export default class PreviewEnv extends YargsCommand {
-  public readonly commandHead = `preview`;
-  public readonly command = `${this.commandHead}`;
+export default class PreviewEnv {
   public readonly description = "Preview the current application.";
 
   protected runningTasks: Task[] = [];
 
   private readonly telemetryProperties: { [key: string]: string } = {};
   private readonly telemetryMeasurements: { [key: string]: number } = {};
-
-  public builder(yargs: Argv): Argv<any> {
-    yargs
-      .options(RootFolderOptions)
-      .options("env", {
-        description: "Select an existing env for the project",
-        string: true,
-        default: environmentNameManager.getLocalEnvName(),
-      })
-      .options("manifest-file-path", {
-        description:
-          "Select the Teams app manifest file path, defaults to '${folder}/appPackage/manifest.json'",
-        string: true,
-      })
-      .options("run-command", {
-        description:
-          "The command to start local service. Work for 'local' environment only. If undefined, teamsfx will use the auto detected one from project type (`npm run dev:teamsfx` or `dotnet run` or `func start`). If empty, teamsfx will skip starting local service.",
-        string: true,
-      })
-      .options("running-pattern", {
-        description: `The ready signal output that service is launched. Work for 'local' environment only. If undefined, teamsfx will use the default common pattern ("${constants.defaultRunningPattern.source}"). If empty, teamsfx treats process start as ready signal.`,
-        string: true,
-      })
-      .options("open-only", {
-        description:
-          "Work for 'local' environment only. If true, directly open web client without launching local service.",
-        boolean: true,
-        default: false,
-      })
-      .options("m365-host", {
-        description: "Preview the application in Teams, Outlook or the Microsoft 365 app",
-        string: true,
-        choices: [HubTypes.teams, HubTypes.outlook, HubTypes.office],
-        default: HubTypes.teams,
-      })
-      .options("browser", {
-        description: "Select browser to open Teams web client",
-        string: true,
-        choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
-        default: constants.Browser.default,
-      })
-      .options("browser-arg", {
-        description: 'Argument to pass to the browser (e.g. --browser-args="--guest")',
-        string: true,
-        array: true,
-      })
-      .options("exec-path", {
-        description:
-          'The paths that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func".',
-        string: true,
-        default: constants.defaultExecPath,
-      });
-    return yargs.version(false);
-  }
 
   public async runCommand(args: {
     [argName: string]: boolean | string | string[] | undefined;
@@ -255,7 +196,7 @@ export default class PreviewEnv extends YargsCommand {
     return ok(null);
   }
 
-  protected async checkM365Account(appTenantId?: string): Promise<
+  async checkM365Account(appTenantId?: string): Promise<
     Result<
       {
         tenantId?: string;

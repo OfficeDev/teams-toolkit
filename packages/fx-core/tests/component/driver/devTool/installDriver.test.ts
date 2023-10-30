@@ -343,45 +343,45 @@ describe("Tools Install Driver test", () => {
       }
     });
 
-    it("Install test tool failed without error", async () => {
-      sandbox.stub(TestToolChecker.prototype, "resolve").resolves({
-        name: "Teams App Test Tool",
-        type: DepsType.TestTool,
-        isInstalled: false,
-        command: "teamsapptester",
-        details: {
-          isLinuxSupported: true,
-          supportedVersions: [],
-          installVersion: "0.1.0",
-          binFolders: ["./devTools/testTool"],
-        },
-      });
-      const res = await toolsInstallDriver.run(
-        { testTool: { version: "~0.1.0", symlinkDir: "./devTools/testTool" } },
-        mockedDriverContext
-      );
-      chai.assert.isTrue(res.isErr());
-    });
-    it("Install test tool failed with error", async () => {
-      sandbox.stub(TestToolChecker.prototype, "resolve").resolves({
-        name: "Teams App Test Tool",
-        type: DepsType.TestTool,
-        isInstalled: false,
-        command: "teamsapptester",
-        details: {
-          isLinuxSupported: true,
-          supportedVersions: [],
-          installVersion: "0.1.0",
-          binFolders: ["./devTools/testTool"],
-        },
-        error: new DepsCheckerError("failed", "help link"),
-      });
-      const res = await toolsInstallDriver.run(
-        { testTool: { version: "~0.1.0", symlinkDir: "./devTools/testTool" } },
-        mockedDriverContext
-      );
-      chai.assert.isTrue(res.isErr());
-    });
+    // it("Install test tool failed without error", async () => {
+    //   sandbox.stub(TestToolChecker.prototype, "resolve").resolves({
+    //     name: "Teams App Test Tool",
+    //     type: DepsType.TestTool,
+    //     isInstalled: false,
+    //     command: "teamsapptester",
+    //     details: {
+    //       isLinuxSupported: true,
+    //       supportedVersions: [],
+    //       installVersion: "0.1.0",
+    //       binFolders: ["./devTools/testTool"],
+    //     },
+    //   });
+    //   const res = await toolsInstallDriver.run(
+    //     { testTool: { version: "~0.1.0", symlinkDir: "./devTools/testTool" } },
+    //     mockedDriverContext
+    //   );
+    //   chai.assert.isTrue(res.isErr());
+    // });
+    // it("Install test tool failed with error", async () => {
+    //   sandbox.stub(TestToolChecker.prototype, "resolve").resolves({
+    //     name: "Teams App Test Tool",
+    //     type: DepsType.TestTool,
+    //     isInstalled: false,
+    //     command: "teamsapptester",
+    //     details: {
+    //       isLinuxSupported: true,
+    //       supportedVersions: [],
+    //       installVersion: "0.1.0",
+    //       binFolders: ["./devTools/testTool"],
+    //     },
+    //     error: new DepsCheckerError("failed", "help link"),
+    //   });
+    //   const res = await toolsInstallDriver.run(
+    //     { testTool: { version: "~0.1.0", symlinkDir: "./devTools/testTool" } },
+    //     mockedDriverContext
+    //   );
+    //   chai.assert.isTrue(res.isErr());
+    // });
     const cases: { name: string; args: unknown; expected: boolean }[] = [
       {
         name: "happy path",

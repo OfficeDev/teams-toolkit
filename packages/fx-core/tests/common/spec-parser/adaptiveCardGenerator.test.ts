@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import * as util from "util";
 import "mocha";
 import sinon from "sinon";
 import {
@@ -855,7 +854,7 @@ describe("adaptiveCardGenerator", () => {
       const parentArrayName = "";
 
       expect(() => generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
-        util.format(ConstantString.SchemaNotSupported, JSON.stringify(schema))
+        utils.format(ConstantString.SchemaNotSupported, JSON.stringify(schema))
       );
     });
 
@@ -867,7 +866,7 @@ describe("adaptiveCardGenerator", () => {
       const parentArrayName = "";
 
       expect(() => generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
-        util.format(ConstantString.UnknownSchema, JSON.stringify(schema))
+        utils.format(ConstantString.UnknownSchema, JSON.stringify(schema))
       );
     });
 

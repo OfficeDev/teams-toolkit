@@ -17,6 +17,12 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  # Validate using manifest schema
+  - uses: teamsApp/validateManifest
+    with:
+      # Path to manifest template
+      manifestPath: ./appPackage/manifest.json
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:

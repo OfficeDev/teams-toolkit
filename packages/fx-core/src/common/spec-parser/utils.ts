@@ -4,8 +4,6 @@
 
 import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
-import path from "path";
-import { format } from "util";
 import { ConstantString } from "./constants";
 import {
   CheckParamResult,
@@ -131,16 +129,32 @@ export function isSupportedApi(
   method: string,
   path: string,
   spec: OpenAPIV3.Document,
-  allowMissingId: boolean
+  allowMissingId: boolean,
+  allowAPIKeyAuth: boolean
 ): boolean {
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
   if (pathObj) {
     if (
       (method === ConstantString.PostMethod || method === ConstantString.GetMethod) &&
-      pathObj[method] &&
-      !pathObj[method]?.security
+      pathObj[method]
     ) {
+      const securities = pathObj[method]!.security;
+      const apiKeyAuthArr = getAPIKeyAuthArray(securities, spec);
+
+      if (!allowAPIKeyAuth && securities) {
+        return false;
+      }
+
+      if (allowAPIKeyAuth && securities && apiKeyAuthArr.length === 0) {
+        return false;
+      }
+
+      // Currently we don't support multiple apiKey auth
+      if (apiKeyAuthArr.length > 0 && apiKeyAuthArr.every((auths) => auths.length > 1)) {
+        return false;
+      }
+
       const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
       if (!allowMissingId && !operationObject.operationId) {
         return false;
@@ -195,13 +209,38 @@ export function isSupportedApi(
   return false;
 }
 
-export function updateFirstLetter(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+export function getAPIKeyAuthArray(
+  securities: OpenAPIV3.SecurityRequirementObject[] | undefined,
+  spec: OpenAPIV3.Document
+): OpenAPIV3.ApiKeySecurityScheme[][] {
+  const result: OpenAPIV3.ApiKeySecurityScheme[][] = [];
+  const securitySchemas = spec.components?.securitySchemes;
+  if (securities && securitySchemas) {
+    for (let i = 0; i < securities.length; i++) {
+      const security = securities[i];
+
+      let apiKeyAuthArray: OpenAPIV3.ApiKeySecurityScheme[] = [];
+      for (const name in security) {
+        const auth = securitySchemas[name] as OpenAPIV3.SecuritySchemeObject;
+        if (auth.type === "apiKey") {
+          apiKeyAuthArray.push(auth);
+        } else {
+          apiKeyAuthArray = [];
+          break;
+        }
+      }
+
+      if (apiKeyAuthArray.length > 0) {
+        result.push(apiKeyAuthArray);
+      }
+    }
+  }
+
+  return result;
 }
 
-export function getRelativePath(from: string, to: string): string {
-  const relativePath = path.relative(path.dirname(from), to);
-  return path.normalize(relativePath).replace(/\\/g, "/");
+export function updateFirstLetter(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 export function getResponseJson(
@@ -292,7 +331,11 @@ export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[]
   return errors;
 }
 
-export function validateServer(spec: OpenAPIV3.Document, allowMissingId: boolean): ErrorResult[] {
+export function validateServer(
+  spec: OpenAPIV3.Document,
+  allowMissingId: boolean,
+  allowAPIKeyAuth: boolean
+): ErrorResult[] {
   const errors: ErrorResult[] = [];
 
   let hasTopLevelServers = false;
@@ -319,7 +362,7 @@ export function validateServer(spec: OpenAPIV3.Document, allowMissingId: boolean
 
     for (const method in methods) {
       const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-      if (isSupportedApi(method, path, spec, allowMissingId)) {
+      if (isSupportedApi(method, path, spec, allowMissingId, allowAPIKeyAuth)) {
         if (operationObject?.servers && operationObject.servers.length >= 1) {
           hasOperationLevelServers = true;
           const serverErrors = checkServerUrl(operationObject.servers);
@@ -363,8 +406,8 @@ export function generateParametersFromSchema(
   ) {
     const parameter = {
       name: name,
-      title: updateFirstLetter(name),
-      description: schema.description ?? "",
+      title: updateFirstLetter(name).slice(0, ConstantString.ParameterTitleMaxLens),
+      description: (schema.description ?? "").slice(0, ConstantString.ParameterDescriptionMaxLens),
     };
     if (isRequired && schema.default === undefined) {
       requiredParams.push(parameter);
@@ -403,8 +446,8 @@ export function parseApiInfo(
     paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
       const parameter: Parameter = {
         name: param.name,
-        title: updateFirstLetter(param.name),
-        description: param.description ?? "",
+        title: updateFirstLetter(param.name).slice(0, ConstantString.ParameterTitleMaxLens),
+        description: (param.description ?? "").slice(0, ConstantString.ParameterDescriptionMaxLens),
       };
 
       const schema = param.schema as OpenAPIV3.SchemaObject;
@@ -437,7 +480,7 @@ export function parseApiInfo(
 
   const parameters = [];
 
-  if (requiredParams.length != 0) {
+  if (requiredParams.length !== 0) {
     parameters.push(...requiredParams);
   } else {
     parameters.push(optionalParams[0]);
@@ -446,10 +489,13 @@ export function parseApiInfo(
   const command: IMessagingExtensionCommand = {
     context: ["compose"],
     type: "query",
-    title: operationItem.summary ?? "",
+    title: (operationItem.summary ?? "").slice(0, ConstantString.CommandTitleMaxLens),
     id: operationId,
     parameters: parameters,
-    description: operationItem.description ?? "",
+    description: (operationItem.description ?? "").slice(
+      0,
+      ConstantString.CommandDescriptionMaxLens
+    ),
   };
   let warning: WarningResult | undefined = undefined;
 
@@ -465,7 +511,8 @@ export function parseApiInfo(
 
 export function listSupportedAPIs(
   spec: OpenAPIV3.Document,
-  allowMissingId: boolean
+  allowMissingId: boolean,
+  allowAPIKeyAuth: boolean
 ): {
   [key: string]: OpenAPIV3.OperationObject;
 } {
@@ -475,7 +522,7 @@ export function listSupportedAPIs(
     const methods = paths[path];
     for (const method in methods) {
       // For developer preview, only support GET operation with only 1 parameter without auth
-      if (isSupportedApi(method, path, spec, allowMissingId)) {
+      if (isSupportedApi(method, path, spec, allowMissingId, allowAPIKeyAuth)) {
         const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
         result[`${method.toUpperCase()} ${path}`] = operationObject;
       }
@@ -487,7 +534,9 @@ export function listSupportedAPIs(
 export function validateSpec(
   spec: OpenAPIV3.Document,
   parser: SwaggerParser,
-  isSwaggerFile: boolean
+  isSwaggerFile: boolean,
+  allowMissingId: boolean,
+  allowAPIKeyAuth: boolean
 ): ValidateResult {
   const errors: ErrorResult[] = [];
   const warnings: WarningResult[] = [];
@@ -500,7 +549,7 @@ export function validateSpec(
   }
 
   // Server validation
-  const serverErrors = validateServer(spec, true);
+  const serverErrors = validateServer(spec, allowMissingId, allowAPIKeyAuth);
   errors.push(...serverErrors);
 
   // Remote reference not supported
@@ -516,7 +565,7 @@ export function validateSpec(
   }
 
   // No supported API
-  const apiMap = listSupportedAPIs(spec, true);
+  const apiMap = listSupportedAPIs(spec, allowMissingId, allowAPIKeyAuth);
   if (Object.keys(apiMap).length === 0) {
     errors.push({
       type: ErrorType.NoSupportedApi,
@@ -553,4 +602,12 @@ export function validateSpec(
     warnings,
     errors,
   };
+}
+
+export function format(str: string, ...args: string[]): string {
+  let index = 0;
+  return str.replace(/%s/g, () => {
+    const arg = args[index++];
+    return arg !== undefined ? arg : "";
+  });
 }

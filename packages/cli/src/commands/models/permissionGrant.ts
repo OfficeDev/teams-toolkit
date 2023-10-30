@@ -3,11 +3,21 @@
 import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { PermissionGrantInputs, PermissionGrantOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
-import { azureMessage, spfxMessage } from "../../cmds/permission";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 import { MissingRequiredOptionError } from "../../error";
+
+export const azureMessage =
+  "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
+  "required to grant permission to Azure resources.\n" +
+  "Assign Azure roles using the Azure portal: " +
+  "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current";
+
+export const spfxMessage =
+  "Notice: SPFX deployment permission needs to be handled manually by SharePoint site administrator.\n" +
+  "Manage site admins using SharePoint admin center: " +
+  "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";
 
 export const permissionGrantCommand: CLICommand = {
   name: "grant",

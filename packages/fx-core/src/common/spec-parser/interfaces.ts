@@ -80,9 +80,11 @@ export enum ErrorType {
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
+  MultipleAPIKeyNotSupported = "multiple-api-key-not-supported",
 
   ListFailed = "list-failed",
   ListOperationMapFailed = "list-operation-map-failed",
+  listSupportedAPIInfoFailed = "list-supported-api-info-failed",
   FilterSpecFailed = "filter-spec-failed",
   UpdateManifestFailed = "update-manifest-failed",
   GenerateAdaptiveCardFailed = "generate-adaptive-card-failed",
@@ -172,6 +174,7 @@ export interface CheckParamResult {
 export interface ParseOptions {
   allowMissingId?: boolean;
   allowSwagger?: boolean;
+  allowAPIKeyAuth?: boolean;
 }
 
 export interface APIInfo {
@@ -181,4 +184,5 @@ export interface APIInfo {
   id: string;
   parameters: Parameter[];
   description: string;
+  warning?: WarningResult;
 }

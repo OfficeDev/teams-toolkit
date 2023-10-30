@@ -70,7 +70,8 @@
           { "$ref": "#/definitions/teamsAppExtendToM365" },
           { "$ref": "#/definitions/spfxDeploy" },
           { "$ref": "#/definitions/teamsAppCopyAppPackageToSPFx" },
-          { "$ref": "#/definitions/script" }
+          { "$ref": "#/definitions/script" },
+          { "$ref": "#/definitions/apiKeyCreate"}
         ]
       }
     },
@@ -1492,6 +1493,59 @@
       "type": "string",
       "pattern": "^[A-Z][A-Z0-9_]*$",
       "maxLength": 256
+    },
+    "apiKeyCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Create an API key.",
+      "required": ["uses", "with", "writeToEnvironmentFile"],
+      "properties": {
+        "uses": {
+          "type": "string",
+          "description": "Create API key. Refer to https://aka.ms/teamsfx-actions/apiKey-create for more details.",
+          "const": "apiKey/create"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Parameters for this action",
+          "required": ["name", "appId", "apiSpecPath"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of API key."
+            },
+            "appId": {
+              "type": "string",
+              "description": "The app ID of Teams app."
+            },
+            "clientSecret": {
+              "type": "string",
+              "description": "Client secret of API key. Client secret should follow: 1. Max %d secrets per API key. 2. Use comma to separate secrets. 3. Length of every secret >= 10 and <= 128"
+            },
+            "apiSpecPath": {
+              "type": "string",
+              "description": "The path of API specification file."
+            },
+            "domain": {
+              "type": "string",
+              "description": "The domain of API key. Domain for API key should follow: 1. Max %d domain per API key. 2. Use comma to separate domains."
+            }
+          }
+        },
+        "writeToEnvironmentFile": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Write environment variables to environment file",
+          "required": ["registrationId"],
+          "properties": {
+            "registrationId": {
+              "description": "Required. The registration id of created API key.",
+              "$ref": "#/definitions/envVarName"
+            }
+          }
+        }
+      }
     }
   }
 }

@@ -5,7 +5,7 @@ import { Result } from "neverthrow";
 import { FxError } from "../error";
 
 /**
- * AAD permission request provider
+ * Microsoft Entra permission request provider
  */
 export interface PermissionRequestProvider {
   /**

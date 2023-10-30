@@ -235,7 +235,7 @@ describe("Core basic APIs", () => {
 
   it("deploy aad manifest happy path", async () => {
     const promtionOnVSC =
-      'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
+      'Your Microsoft Entra application has been successfully deployed. Click "Learn more" to check how to view your Microsoft Entra application.';
 
     const core = new FxCore(tools);
     const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
@@ -324,7 +324,7 @@ describe("Core basic APIs", () => {
     assert.equal(showMessage.getCall(0).args[0], "info");
     assert.equal(
       showMessage.getCall(0).args[1],
-      "Your Azure Active Directory application has been successfully updated."
+      "Your Microsoft Entra application has been successfully updated."
     );
     assert.isFalse(showMessage.getCall(0).args[2]);
     assert.isTrue(res.isOk());

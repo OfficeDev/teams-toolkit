@@ -70,7 +70,7 @@ module.exports = async function (context, req, teamsfxContext) {
       body: {
         error:
           "Failed to construct OnBehalfOfUserCredential using your ssoToken. " +
-          "Ensure your function app is configured with the right Azure AD App registration.",
+          "Ensure your function app is configured with the right Microsoft Entra App registration.",
       },
     };
   }

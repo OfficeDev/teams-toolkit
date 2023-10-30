@@ -255,6 +255,8 @@
 /packages/fx-core/tests/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
 /packages/fx-core/src/component/driver/util/utils.ts @blackchoey @xzf0587 @adashen
 /packages/fx-core/tests/component/driver/util/utils.test.ts @blackchoey @xzf0587 @adashen
+/packages/fx-core/src/component/driver/apiKey @KennethBWSong @SLdragon @adashen
+/packages/fx-core/tests/component/driver/apiKey @KennethBWSong @SLdragon @adashen
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/core/middleware/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu

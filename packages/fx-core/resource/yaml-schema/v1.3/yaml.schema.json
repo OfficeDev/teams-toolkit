@@ -1502,7 +1502,7 @@
       "properties": {
         "uses": {
           "type": "string",
-          "description": "Create API key.",
+          "description": "Create API key. Refer to https://aka.ms/teamsfx-actions/apiKey-create for more details.",
           "const": "apiKey/create"
         },
         "with": {

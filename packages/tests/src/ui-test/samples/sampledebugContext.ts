@@ -25,6 +25,13 @@ import { TestContext } from "../testContext";
 import * as dotenv from "dotenv";
 import { CliHelper } from "../cliHelper";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
+import {
+  cleanUpAadApp,
+  cleanTeamsApp,
+  cleanAppStudio,
+  cleanUpLocalProject,
+  cleanUpResourceGroup,
+} from "../../utils/cleanHelper";
 
 export class SampledebugContext extends TestContext {
   public readonly appName: string;
@@ -81,8 +88,14 @@ export class SampledebugContext extends TestContext {
     await stopDebugging();
     await this.context?.close();
     await this.browser?.close();
-    await AzSqlHelper.deleteResourceGroup(rgName);
-    await this.cleanResource(hasAadPlugin, hasBotPlugin, envName);
+    await this.cleanUp(
+      this.appName,
+      this.projectPath,
+      hasAadPlugin,
+      hasBotPlugin,
+      false,
+      envName
+    );
   }
 
   public async after(
@@ -93,10 +106,43 @@ export class SampledebugContext extends TestContext {
     await stopDebugging();
     await this.context?.close();
     await this.browser?.close();
-    if (envName != "local") {
-      await AzSqlHelper.deleteResourceGroup(this.rgName);
-    }
-    await this.cleanResource(hasAadPlugin, hasBotPlugin, envName);
+    await this.cleanUp(
+      this.appName,
+      this.projectPath,
+      hasAadPlugin,
+      hasBotPlugin,
+      false,
+      envName
+    );
+  }
+
+  public async cleanUp(
+    appName: string,
+    projectPath: string,
+    hasAadPlugin = true,
+    hasBotPlugin = false,
+    hasApimPlugin = false,
+    envName = "dev"
+  ): Promise<[boolean[] | undefined, void, void, boolean, boolean]> {
+    const cleanUpAadAppPromise = cleanUpAadApp(
+      projectPath,
+      hasAadPlugin,
+      hasBotPlugin,
+      hasApimPlugin,
+      envName
+    );
+    return Promise.all([
+      // delete aad app
+      cleanUpAadAppPromise,
+      // uninstall Teams app
+      cleanTeamsApp(appName),
+      // delete Teams app in app studio
+      cleanAppStudio(appName),
+      // remove resouce group
+      cleanUpResourceGroup(appName, envName),
+      // remove project
+      cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
+    ]);
   }
 
   public async openResourceFolder(): Promise<void> {

@@ -6,11 +6,15 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { MockedM365Provider, MockedUserInteraction } from "../../../plugins/solution/util";
+import {
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedUserInteraction,
+} from "../../../plugins/solution/util";
 import { CreateApiKeyDriver } from "../../../../src/component/driver/apiKey/create";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
 import { ApiSecretRegistrationAppType } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
-import { SystemError } from "@microsoft/teamsfx-api";
+import { SystemError, err } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -102,7 +106,7 @@ describe("CreateApiKeyDriver", () => {
   it("should throw error when failed to get app studio token", async () => {
     sinon
       .stub(MockedM365Provider.prototype, "getAccessToken")
-      .throws(new SystemError("source", "name", "message"));
+      .resolves(err(new SystemError("source", "name", "message")));
     const args: any = {
       name: "test",
       domain: "https://test",
@@ -243,6 +247,21 @@ describe("CreateApiKeyDriver", () => {
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.name).to.equal("name");
+    }
+  });
+
+  it("should throw unhandled error if error is not SystemError or UserError", async () => {
+    sinon.stub(MockedLogProvider.prototype, "info").throws(new Error("unhandled error"));
+    const args: any = {
+      name: "test",
+      domain: "https://test",
+      appId: "mockedAppId",
+      clientSecret: "mockedClientSecret, mockedClientSecret2",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.source).to.equal("apiKeyCreate");
     }
   });
 });

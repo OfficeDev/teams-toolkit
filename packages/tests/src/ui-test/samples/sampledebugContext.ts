@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
@@ -11,13 +12,13 @@ import {
   TestFilePath,
 } from "../../utils/constants";
 import { dotenvUtil } from "../../utils/envUtil";
-import { clearNotifications } from "../../utils/vscodeOperation";
 import { InputBox, VSBrowser } from "vscode-extension-tester";
 import { getSampleAppName } from "../../utils/nameUtil";
 import {
   execCommandIfExistFromTreeView,
   openExistingProject,
   stopDebugging,
+  clearNotifications,
 } from "../../utils/vscodeOperation";
 import { assert, expect } from "chai";
 import { TestContext } from "../testContext";
@@ -74,30 +75,31 @@ export class SampledebugContext extends TestContext {
   public async sampleAfter(
     rgName: string,
     hasAadPlugin = true,
-    hasBotPlugin = false
-  ) {
+    hasBotPlugin = false,
+    envName = "dev"
+  ): Promise<void> {
     await stopDebugging();
-    await this.context!.close();
-    await this.browser!.close();
+    await this.context?.close();
+    await this.browser?.close();
     await AzSqlHelper.deleteResourceGroup(rgName);
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    await this.cleanResource(hasAadPlugin, hasBotPlugin, envName);
   }
 
   public async after(
     hasAadPlugin = true,
     hasBotPlugin = false,
-    envName = "dev"
-  ) {
+    envName = "local"
+  ): Promise<void> {
     await stopDebugging();
-    await this.context!.close();
-    await this.browser!.close();
+    await this.context?.close();
+    await this.browser?.close();
     if (envName != "local") {
       await AzSqlHelper.deleteResourceGroup(this.rgName);
     }
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    await this.cleanResource(hasAadPlugin, hasBotPlugin, envName);
   }
 
-  public async openResourceFolder() {
+  public async openResourceFolder(): Promise<void> {
     console.log("start to open project: ", this.sampleName);
     // two repos have different sample path
     const oldPath = path.resolve(
@@ -122,7 +124,7 @@ export class SampledebugContext extends TestContext {
     }
   }
 
-  public async createTemplate() {
+  public async createTemplate(): Promise<void> {
     console.log(
       "start to create project: ",
       this.appName,
@@ -177,7 +179,7 @@ export class SampledebugContext extends TestContext {
     );
   }
 
-  public async createTemplateCLI(V3: boolean) {
+  public async createTemplateCLI(V3: boolean): Promise<void> {
     console.log(
       "start to create project: ",
       this.appName,
@@ -212,7 +214,7 @@ export class SampledebugContext extends TestContext {
     );
   }
 
-  public async openExistFolder(path: string) {
+  public async openExistFolder(path: string): Promise<void> {
     await openExistingProject(path);
   }
 

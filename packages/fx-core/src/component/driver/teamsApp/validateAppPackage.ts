@@ -145,10 +145,16 @@ export class ValidateAppPackageDriver implements StepDriver {
         validationResult.errors.map((error) => {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
-            content: `${error.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            content: `${error.content} \nFile path: ${error.filePath}, title: ${error.title}`,
             color: Colors.BRIGHT_WHITE,
           });
-          outputMessage.push({ content: `${error.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          if (error.helpUrl) {
+            outputMessage.push({
+              content: `\n${getLocalizedString("core.option.learnMore")}: `,
+              color: Colors.BRIGHT_WHITE,
+            });
+            outputMessage.push({ content: `${error.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          }
         });
         validationResult.warnings.map((warning) => {
           outputMessage.push({
@@ -156,10 +162,16 @@ export class ValidateAppPackageDriver implements StepDriver {
             color: Colors.BRIGHT_YELLOW,
           });
           outputMessage.push({
-            content: `${warning.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            content: `${warning.content}  \nFile path: ${warning.filePath}, title: ${warning.title}`,
             color: Colors.BRIGHT_WHITE,
           });
-          outputMessage.push({ content: `${warning.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          if (warning.helpUrl) {
+            outputMessage.push({
+              content: `\n${getLocalizedString("core.option.learnMore")}: `,
+              color: Colors.BRIGHT_WHITE,
+            });
+            outputMessage.push({ content: `${warning.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          }
         });
         validationResult.notes.map((note) => {
           outputMessage.push({

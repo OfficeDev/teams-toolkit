@@ -251,7 +251,7 @@ describe("CreateApiKeyDriver", () => {
   });
 
   it("should throw unhandled error if error is not SystemError or UserError", async () => {
-    sinon.stub(MockedLogProvider.prototype, "info").throws(new Error("unhandled error"));
+    sinon.stub(MockedM365Provider.prototype, "getAccessToken").throws(new Error("unhandled error"));
     const args: any = {
       name: "test",
       domain: "https://test",

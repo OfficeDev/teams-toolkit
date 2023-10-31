@@ -19,7 +19,7 @@ Let's start by installing `teamsfx-cli` from `npm` and run `teamsfx -h` to check
 | `teamsfx` Commands  | Descriptions |
 |:----------------  |:-------------|
 | `teamsfx new`       | Create a new Teams application. |
-| `teamsapp auth`   | Manage cloud service accounts. The supported cloud services are 'Azure' and 'Microsoft 365'.          |
+| `teamsfx account`   | Manage cloud service accounts. The supported cloud services are 'Azure' and 'Microsoft 365'.          |
 | `teamsfx env`       | Manage the environments. |
 | `teamsfx capability`| Add new capabilities to the current application.         |
 | `teamsfx resource`  | Manage the resources in the current application.         |
@@ -30,7 +30,7 @@ Let's start by installing `teamsfx-cli` from `npm` and run `teamsfx -h` to check
 | `teamsfx publish`   | Publish the app to Teams.             |
 | `teamsfx preview`   | Preview the current application. |
 | `teamsfx config`    | Manage the configuration data. |
-| `teamsapp collaborator`| Collaborate with other developers in same project.|
+| `teamsfx permission`| Collaborate with other developers in same project.|
 
 ## `teamsfx new`
 
@@ -77,16 +77,16 @@ teamsfx new --interactive false --app-name newtabbotapp --capability tab bot --p
 teamsfx new --interactive false app-name newapp --azure-resources sql function --programming-language typescript
 ```
 
-## `teamsapp auth`
+## `teamsfx account`
 
 Manage cloud service accounts. The supported cloud services are `Azure` and `Microsoft 365`.
 
-| `teamsapp auth` Commands  | Descriptions |
+| `teamsfx account` Commands  | Descriptions |
 |:----------------  |:-------------|
-| `teamsapp auth show`       | Display all connected cloud accounts information. |
-| `teamsapp auth login <service>`      | Log in to the selected cloud service. |
-| `teamsapp auth logout <service>`      | log out of selected cloud service. |
-| `teamsapp auth set --subscription`      | Update account settings to set a subscription ID. |
+| `teamsfx account show`       | Display all connected cloud accounts information. |
+| `teamsfx account login <service>`      | Log in to the selected cloud service. |
+| `teamsfx account logout <service>`      | log out of selected cloud service. |
+| `teamsfx account set --subscription`      | Update account settings to set a subscription ID. |
 
 ## `teamsfx env`
 
@@ -313,57 +313,57 @@ teamsfx config get --env dev
 teamsfx config set fx-resource-aad-app-for-teams.clientSecret xxx --env dev
 ```
 
-## `teamsapp collaborator`
+## `teamsfx permission`
 
-TeamsFx CLI provides `teamsapp collaborator` Commands for collaboration scenario.
+TeamsFx CLI provides `teamsfx permission` Commands for collaboration scenario.
 
-| `teamsapp collaborator` Commands | Descriptions |
+| `teamsfx permission` Commands | Descriptions |
 |:------------------------------|-------------|
-| `teamsapp collaborator grant --env --email` | Grant permission for collaborator's Microsoft 365 account for the project of a specified environment. |
-| `teamsapp collaborator status` | Show permission status for the project |
+| `teamsfx permission grant --env --email` | Grant permission for collaborator's Microsoft 365 account for the project of a specified environment. |
+| `teamsfx permission status` | Show permission status for the project |
 
-### Parameters for `teamsapp collaborator grant`
+### Parameters for `teamsfx permission grant`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
 |`--env`| Yes | Provide env name. |
 |`--email`| Yes | Provide collaborator's Microsoft 365 email address. Note that the collaborator's account should be in the same tenant with creator. |
 
-### Parameters for `teamsapp collaborator status`
+### Parameters for `teamsfx permission status`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
 |`--env`| Yes | Provide env name. |
 |`--list-all-collaborators` | No | With this flag, Teams Toolkit CLI will print out all collaborators for this project. |
 
-### Scenarios for `teamsapp collaborator`
+### Scenarios for `teamsfx permission`
 
 Here are some examples, for better handling permission for `TeamsFx` projects.
 
 #### Grant Permission
 
-Project creator and collaborators can use `teamsapp collaborator grant` command to add a new collaborator to the project:
+Project creator and collaborators can use `teamsfx permission grant` command to add a new collaborator to the project:
 
 ```bash
-teamsapp collaborator grant --env dev --email user-email@user-tenant.com
+teamsfx permission grant --env dev --email user-email@user-tenant.com
 ```
 
 After successfully granted permission, project creator and collaborators can share the project with the new collaborator by Github, and the new collaborator will have all permission for Microsoft 365 account.
 
 #### Show Permission Status
 
-Project creator and collaborators can use `teamsapp collaborator status` command to view his Microsoft 365 account permission for specific env:
+Project creator and collaborators can use `teamsfx permission status` command to view his Microsoft 365 account permission for specific env:
 
 ```bash
-teamsapp collaborator status --env dev
+teamsfx permission status --env dev
 ```
 
 #### List All Collaborators
 
-Project creator and collaborators can use `teamsapp collaborator status` command to view all collaborators for specific env:
+Project creator and collaborators can use `teamsfx permission status` command to view all collaborators for specific env:
 
 ```bash
-teamsapp collaborator status --env dev --list-all-collaborators
+teamsfx permission status --env dev --list-all-collaborators
 ```
 
 #### E2E Collaboration work flow in CLI
@@ -379,8 +379,8 @@ As a project creator:
 - Login Microsoft 365 account and Azure account.
 
   ```bash
-  teamsapp auth login azure
-  teamsapp auth login Microsoft 365
+  teamsfx account login azure
+  teamsfx account login Microsoft 365
   ```
 
 - Provision your project.
@@ -392,14 +392,14 @@ As a project creator:
 - View collaborators. You should see yourself here.
 
   ```bash
-  teamsapp collaborator status --env dev --list-all-collaborators
+  teamsfx permission status --env dev --list-all-collaborators
   ```
 
   ![list-all-collaborators](./images/permission-status-all.png)
 - Add another account as collaborator. Note that the added account must under the same tenant:
 
   ```bash
-  teamsapp collaborator grant --env dev --email user-email@user-tenant.com
+  teamsfx permission grant --env dev --email user-email@user-tenant.com
   ```
 
   ![add-new-collaborator](./images/permission-grant.png)
@@ -411,19 +411,19 @@ As a Project Collaborator:
 - Login Microsoft 365 account. Note that the Microsoft 365 account should be the same as added above:
 
   ```bash
-  teamsapp auth login Microsoft 365
+  teamsfx account login Microsoft 365
   ```
 
 - Login Azure account which has contributor permission for all the Azure resources.
 
   ```bash
-  teamsapp auth login azure
+  teamsfx account login azure
   ```
 
 - Check permission status. You should find yourself have the owner permission of the project:
 
   ```bash
-  teamsapp collaborator status --env dev
+  teamsfx permission status --env dev
   ```
 
   ![permission status](./images/permission-status.png)

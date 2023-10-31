@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes, isCliV3Enabled } from "@microsoft/teamsfx-core";
 import { TextType, colorize } from "../../colorize";
 import AzureTokenProvider, { getAzureProvider } from "../../commonlib/azureLogin";
 import AzureTokenCIProvider from "../../commonlib/azureLoginCI";
@@ -84,8 +84,8 @@ class AccountUtils {
 export const accountUtils = new AccountUtils();
 
 export const accountShowCommand: CLICommand = {
-  name: "list",
-  aliases: ["show"],
+  name: isCliV3Enabled() ? "list" : "show",
+  aliases: isCliV3Enabled() ? ["show"] : ["list"],
   description: "Display all connected Microsoft 365 and Azure accounts.",
   telemetry: {
     event: TelemetryEvent.AccountShow,

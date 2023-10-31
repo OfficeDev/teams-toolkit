@@ -23,6 +23,7 @@ import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { manifestUtils } from "./utils/ManifestUtils";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
+import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -158,7 +159,10 @@ export class CreateAppPackageDriver implements StepDriver {
       manifest.composeExtensions[0].composeExtensionType == "apiBased" &&
       manifest.composeExtensions[0].apiSpecificationFile
     ) {
-      const apiSpecificationFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecificationFile}`;
+      const apiSpecificationFile = path.resolve(
+        appDirectory,
+        manifest.composeExtensions[0].apiSpecificationFile
+      );
       if (!(await fs.pathExists(apiSpecificationFile))) {
         return err(
           new FileNotFoundError(
@@ -167,6 +171,10 @@ export class CreateAppPackageDriver implements StepDriver {
             "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
           )
         );
+      }
+      const relativePath = path.relative(appDirectory, apiSpecificationFile);
+      if (relativePath.startsWith("..\\")) {
+        return err(new InvalidFileOutsideOfTheDirectotryError(apiSpecificationFile));
       }
       const expandedEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
         apiSpecificationFile,
@@ -177,12 +185,7 @@ export class CreateAppPackageDriver implements StepDriver {
       }
       const openAPIContent = expandedEnvVarResult.value;
       const attr = await fs.stat(apiSpecificationFile);
-      zip.addFile(
-        manifest.composeExtensions[0].apiSpecificationFile,
-        Buffer.from(openAPIContent),
-        "",
-        attr.mode
-      );
+      zip.addFile(relativePath, Buffer.from(openAPIContent), "", attr.mode);
       // zip.addLocalFile(apiSpecificationFile, dir === "." ? "" : dir);
 
       if (manifest.composeExtensions[0].commands.length > 0) {

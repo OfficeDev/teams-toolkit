@@ -16,7 +16,7 @@ export interface IAppValidationIssue {
   id: string;
   content: string;
   filePath: string;
-  helpUrl: string;
+  helpUrl?: string;
   shortCodeNumber: number;
   title: string;
   validationCategory: string;

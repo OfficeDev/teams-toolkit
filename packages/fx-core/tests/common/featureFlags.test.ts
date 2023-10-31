@@ -10,6 +10,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import { FeatureFlagName } from "../../src/common/constants";
 import {
   initializePreviewFeatureFlags,
+  isApiKeyEnabled,
   isCliNewUxEnabled,
   isCliV3Enabled,
 } from "../../src/common/featureFlags";
@@ -54,6 +55,23 @@ describe("featureFlags", () => {
     it("is false", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_V3: "false" });
       const res = isCliV3Enabled();
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("isApiKeyEnabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "true" });
+      const res = isApiKeyEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "false" });
+      const res = isApiKeyEnabled();
       chai.assert.isFalse(res);
     });
   });

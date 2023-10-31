@@ -47,15 +47,15 @@ export class UpdateAadAppDriver implements StepDriver {
       );
 
       // MS Graph API does not allow adding new OAuth permissions and pre authorize it within one request
-      // So split update AAD app to two requests:
-      // 1. If there's preAuthorizedApplications, remove it temporary and update AAD app to create possible new permission
+      // So split update Microsoft Entra app to two requests:
+      // 1. If there's preAuthorizedApplications, remove it temporary and update Microsoft Entra app to create possible new permission
       if (manifest.preAuthorizedApplications && manifest.preAuthorizedApplications.length > 0) {
         const preAuthorizedApplications = manifest.preAuthorizedApplications;
         manifest.preAuthorizedApplications = [];
         await aadAppClient.updateAadApp(manifest);
         manifest.preAuthorizedApplications = preAuthorizedApplications;
       }
-      // 2. Update AAD app again with full manifest to set preAuthorizedApplications
+      // 2. Update Microsoft Entra app again with full manifest to set preAuthorizedApplications
       await aadAppClient.updateAadApp(manifest);
       const summary = getLocalizedString(
         logMessageKeys.successUpdateAadAppManifest,

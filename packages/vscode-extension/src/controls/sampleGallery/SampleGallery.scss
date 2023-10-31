@@ -44,7 +44,7 @@
   .sample-stack {
     display: grid;
     max-width: 1164px;
-    margin: 0 auto;
+    margin: 24px auto 0 auto;
     grid-template-columns: repeat(12, 1fr);
     grid-template-rows: auto;
     grid-gap: 20px;
@@ -54,7 +54,7 @@
     display: flex;
     flex-direction: column;
     max-width: 1164px;
-    margin: 0 auto;
+    margin: 24px auto 0 auto;
   }
 }
 

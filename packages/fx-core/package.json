@@ -29,6 +29,7 @@
     "test:botService": "nyc mocha \"tests/component/resource/botService/**/*.test.ts\"",
     "test:hosting": "nyc mocha \"tests/common/hosting/**/*.test.ts\"",
     "test:aadDriver": "nyc mocha \"tests/component/driver/aad/*.test.ts\"",
+    "test:apiKey": "nyc mocha \"tests/component/driver/apiKey/*.test.ts\"",
     "test:botAadAppDriver": "nyc mocha \"tests/component/driver/botAadApp/*.test.ts\"",
     "test:armDriver": "nyc mocha \"tests/component/driver/arm/*.test.ts\"",
     "test:teamsAppDriver": "nyc mocha \"tests/component/driver/teamsApp/*.test.ts\"",

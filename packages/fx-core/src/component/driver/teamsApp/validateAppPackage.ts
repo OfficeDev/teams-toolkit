@@ -145,10 +145,16 @@ export class ValidateAppPackageDriver implements StepDriver {
         validationResult.errors.map((error) => {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
-            content: `${error.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            content: `${error.content} \nFile path: ${error.filePath}, title: ${error.title}`,
             color: Colors.BRIGHT_WHITE,
           });
-          outputMessage.push({ content: `${error.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          if (error.helpUrl) {
+            outputMessage.push({
+              content: `\n${getLocalizedString("core.option.learnMore")}: `,
+              color: Colors.BRIGHT_WHITE,
+            });
+            outputMessage.push({ content: `${error.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          }
         });
         validationResult.warnings.map((warning) => {
           outputMessage.push({
@@ -156,10 +162,16 @@ export class ValidateAppPackageDriver implements StepDriver {
             color: Colors.BRIGHT_YELLOW,
           });
           outputMessage.push({
-            content: `${warning.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            content: `${warning.content}  \nFile path: ${warning.filePath}, title: ${warning.title}`,
             color: Colors.BRIGHT_WHITE,
           });
-          outputMessage.push({ content: `${warning.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          if (warning.helpUrl) {
+            outputMessage.push({
+              content: `\n${getLocalizedString("core.option.learnMore")}: `,
+              color: Colors.BRIGHT_WHITE,
+            });
+            outputMessage.push({ content: `${warning.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          }
         });
         validationResult.notes.map((note) => {
           outputMessage.push({
@@ -187,16 +199,28 @@ export class ValidateAppPackageDriver implements StepDriver {
         // logs in output window
         const errors = validationResult.errors
           .map((error) => {
-            return `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
-              "core.option.learnMore"
-            )}: ${error.helpUrl}`;
+            let message = `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
+              "error.teamsApp.validate.details",
+              error.filePath,
+              error.title
+            )} \n`;
+            if (error.helpUrl) {
+              message += getLocalizedString("core.option.learnMore", error.helpUrl);
+            }
+            return message;
           })
           .join(EOL);
         const warnings = validationResult.warnings
           .map((warning) => {
-            return `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
-              "core.option.learnMore"
-            )}: ${warning.helpUrl}`;
+            let message = `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
+              "error.teamsApp.validate.details",
+              warning.filePath,
+              warning.title
+            )} \n`;
+            if (warning.helpUrl) {
+              message += getLocalizedString("core.option.learnMore", warning.helpUrl);
+            }
+            return message;
           })
           .join(EOL);
         const notes = validationResult.notes

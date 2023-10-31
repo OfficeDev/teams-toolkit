@@ -5,7 +5,7 @@ import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
 
 const errorCode = "InvalidFieldInManifest";
-const messageKey = "driver.aadApp.error.invalidFieldInManifest"; // Field %s is missing or invalid in AAD app manifest.
+const messageKey = "driver.aadApp.error.invalidFieldInManifest"; // Field %s is missing or invalid in Microsoft Entra app manifest.
 
 export class MissingFieldInManifestUserError extends UserError {
   constructor(actionName: string, missingFields: string | string[], helpLink: string) {

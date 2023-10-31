@@ -584,7 +584,7 @@ export function selectAadManifestQuestion(): SingleFileQuestion {
     cliName: "aad-manifest-file",
     cliShortName: "a",
     cliDescription:
-      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder.",
+      "Specifies the Microsoft Entra app manifest file path, can be either absolute path or relative path to project root folder.",
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {

@@ -229,7 +229,7 @@ describe("teamsfx new sample", function () {
 #### setSubscription
 
 ```bash
-teamsapp auth set --subscription ${subscription}
+teamsfx account set --subscription ${subscription}
 ```
 
 #### addEnv

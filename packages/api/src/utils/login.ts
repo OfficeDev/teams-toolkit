@@ -14,7 +14,7 @@ export type AzureCredential =
        */
       username: string;
       /**
-       * The Azure Active Directory tenant (directory) ID.
+       * The Microsoft Entra tenant (directory) ID.
        * This parameter is used for multi-tenant account scenario
        */
       tenantId?: string;
@@ -26,7 +26,7 @@ export type AzureCredential =
   | {
       type: "ClientSecretCredential";
       /**
-       * The Azure Active Directory tenant (directory) ID.
+       * The Microsoft Entra tenant (directory) ID.
        */
       tenantId: string;
       /**
@@ -41,7 +41,7 @@ export type AzureCredential =
   | {
       type: "ClientCertificateCredential";
       /**
-       * The Azure Active Directory tenant (directory) ID.
+       * The Microsoft Entra tenant (directory) ID.
        */
       tenantId: string;
       /**

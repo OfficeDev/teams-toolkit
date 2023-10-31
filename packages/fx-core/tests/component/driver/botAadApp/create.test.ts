@@ -73,7 +73,7 @@ describe("botAadAppCreate", async () => {
     ).to.rejectedWith(InvalidActionInputError);
   });
 
-  it("should throw error if AAD app name exceeds 120 characters", async () => {
+  it("should throw error if Microsoft Entra app name exceeds 120 characters", async () => {
     const invalidAppName = "a".repeat(121);
     const args: any = {
       name: invalidAppName,

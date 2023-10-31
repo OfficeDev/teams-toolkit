@@ -1,12 +1,14 @@
 .sample-filter {
   display: flex;
+  flex-direction: column;
+}
+
+.sample-filter-bar {
+  display: flex;
   flex-direction: row;
-  padding-bottom: 8px;
-  margin-bottom: 24px;
 
   .search-box {
     width: 200px;
-    margin-bottom: 16px;
 
     .codicon-close {
       width: 20px;
@@ -21,25 +23,75 @@
 
   .search-box::part(root) {
     border-radius: 2px;
+    border: 1px solid var(--vscode-menu-separatorBackground, #3C3C3C);
+    height: 24px;
+    color: var(--vscode-peekViewTitleDescription-foreground, #CCCCCC);
+
+    input::placeholder {
+      color: "#A0A0A0";
+    }
+
+    &:focus-within {
+      border: 1px solid var(--vscode-inputValidation-infoBorder, #007ACC);
+    }
   }
 
   .filter-bar {
     flex-grow: 1;
   }
 
-  .view-button {
+  .layout-button {
     height: 24px;
     width: 24px;
     margin-left: 8px;
+
+    &:hover {
+      border-radius: 2px;
+      background: var(--vscode-diffEditor-unchangedRegionBackground, #3C3C3C);
+    }
   }
 
-  .type-dropdown {
-    width: 150px;
-    z-index: 2;
+  .layout-selected {
+    border-radius: 2px;
+    background: var(--vscode-diffEditor-unchangedRegionBackground, #3C3C3C);
+  }
+}
+
+.filter-tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 18px;
+
+  .filter-tag {
+    flex-shrink: 0;
+    margin-right: 16px;
+    margin-bottom: 15px;
+
+    &::part(control) {
+      font-size: 13px;
+      padding: 1px 8px 3px 8px;
+      background-color: var(--vscode-diffEditor-unchangedRegionBackground, #3C3C3C);
+      color: var(--vscode-peekViewTitleDescription-foreground, #cccccc);
+      border: 0;
+    }
+
+    .codicon-close {
+      padding-left: 8px;
+      position: relative;
+      top: 2.5px;
+    }
   }
 
-  .view-selected {
-    border-radius: 4px;
-    background: var(--vscode-checkbox-border, #3c3c3c);
+  button {
+    height: 24px;
+    margin-left: 8px;
+    font-size: 14px;
+    padding: 0;
+    margin: 0;
+    color: var(--vscode-textLink-foreground);
+
+    :active {
+      color: var(--vscode-textLink-foreground);
+    }
   }
 }

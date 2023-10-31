@@ -492,7 +492,7 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
       .to.be.rejectedWith(DeployZipPackageError);
   });
 
-  it("throws Error when no basic auth allowed and AAD request fail", async () => {
+  it("throws Error when no basic auth allowed and Microsoft Entra request fail", async () => {
     const args = {
       workingDirectory: "/",
       artifactFolder: "/",

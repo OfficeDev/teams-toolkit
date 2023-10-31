@@ -1395,7 +1395,7 @@
           "allowedMemberTypes": [
             "Application"
           ],
-          "description": "Allows an app to read all service usage reports without a signed-in user.  Services that provide usage reports include Office 365 and Azure Active Directory.",
+          "description": "Allows an app to read all service usage reports without a signed-in user.  Services that provide usage reports include Office 365 and Microsoft Entra ID.",
           "displayName": "Read all usage reports",
           "id": "230c1aed-a721-4c5d-9cb4-a90514e508ef",
           "isEnabled": true,
@@ -1824,8 +1824,8 @@
           "allowedMemberTypes": [
             "Application"
           ],
-          "description": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD built-in and custom administrative roles in your organization, without a signed-in user.",
-          "displayName": "Read privileged access to Azure AD roles",
+          "description": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra built-in and custom administrative roles in your organization, without a signed-in user.",
+          "displayName": "Read privileged access to Microsoft Entra roles",
           "id": "4cdc2547-9148-4295-8d11-be0db1391d6b",
           "isEnabled": true,
           "origin": "Application",
@@ -1835,8 +1835,8 @@
           "allowedMemberTypes": [
             "Application"
           ],
-          "description": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD groups in your organization, without a signed-in user.",
-          "displayName": "Read privileged access to Azure AD groups",
+          "description": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra groups in your organization, without a signed-in user.",
+          "displayName": "Read privileged access to Microsoft Entra groups",
           "id": "01e37dc9-c035-40bd-b438-b2879c4870a6",
           "isEnabled": true,
           "origin": "Application",
@@ -1857,8 +1857,8 @@
           "allowedMemberTypes": [
             "Application"
           ],
-          "description": "Allows the app to request and manage time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD built-in and custom administrative roles in your organization, without a signed-in user.",
-          "displayName": "Read and write privileged access to Azure AD roles",
+          "description": "Allows the app to request and manage time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra built-in and custom administrative roles in your organization, without a signed-in user.",
+          "displayName": "Read and write privileged access to Microsoft Entra roles",
           "id": "854d9ab1-6657-4ec8-be45-823027bcd009",
           "isEnabled": true,
           "origin": "Application",
@@ -1868,8 +1868,8 @@
           "allowedMemberTypes": [
             "Application"
           ],
-          "description": "Allows the app to request and manage time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD groups in your organization, without a signed-in user.",
-          "displayName": "Read and write privileged access to Azure AD groups",
+          "description": "Allows the app to request and manage time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra groups in your organization, without a signed-in user.",
+          "displayName": "Read and write privileged access to Microsoft Entra groups",
           "id": "2f6817f8-7b12-4f0f-bc18-eeaf60705a9e",
           "isEnabled": true,
           "origin": "Application",
@@ -2891,7 +2891,7 @@
           "allowedMemberTypes": [
             "Application"
           ],
-          "description": "Allows the application to obtain basic tenant information about another target tenant within the Azure AD ecosystem without a signed-in user.",
+          "description": "Allows the application to obtain basic tenant information about another target tenant within the Microsoft Entra ecosystem without a signed-in user.",
           "displayName": "Read cross-tenant basic information",
           "id": "cac88765-0581-4025-9725-5ebc13f729ee",
           "isEnabled": true,
@@ -2979,8 +2979,8 @@
           "allowedMemberTypes": [
             "Application"
           ],
-          "description": "Allows the app to read and update all Azure AD recommendations, without a signed-in user. ",
-          "displayName": "Read and update all Azure AD recommendations",
+          "description": "Allows the app to read and update all Microsoft Entra recommendations, without a signed-in user. ",
+          "displayName": "Read and update all Microsoft Entra recommendations",
           "id": "0e9eea12-4f01-45f6-9b8d-3ea4c8144158",
           "isEnabled": true,
           "origin": "Application",
@@ -3023,8 +3023,8 @@
           "allowedMemberTypes": [
             "Application"
           ],
-          "description": "Allows the app to read all Azure AD recommendations, without a signed-in user. ",
-          "displayName": "Read all Azure AD recommendations",
+          "description": "Allows the app to read all Microsoft Entra recommendations, without a signed-in user. ",
+          "displayName": "Read all Microsoft Entra recommendations",
           "id": "ae73097b-cb2a-4447-b064-5d80f6093921",
           "isEnabled": true,
           "origin": "Application",
@@ -4132,13 +4132,13 @@
           "value": "AppCatalog.ReadWrite.All"
         },
         {
-          "adminConsentDescription": "Allows the app to request and manage just in time elevation (including scheduled elevation) of users to Azure AD built-in administrative roles, on behalf of signed-in users.",
-          "adminConsentDisplayName": "Read and write privileged access to Azure AD",
+          "adminConsentDescription": "Allows the app to request and manage just in time elevation (including scheduled elevation) of users to Microsoft Entra built-in administrative roles, on behalf of signed-in users.",
+          "adminConsentDisplayName": "Read and write privileged access to Microsoft Entra",
           "id": "3c3c74f5-cdaa-4a97-b7e0-4e788bfcfb37",
           "isEnabled": true,
           "type": "Admin",
-          "userConsentDescription": "Allows the app to request and manage just in time elevation (including scheduled elevation) of users to Azure AD built-in administrative roles, on your behalf.",
-          "userConsentDisplayName": "Read and write privileged access to Azure AD",
+          "userConsentDescription": "Allows the app to request and manage just in time elevation (including scheduled elevation) of users to Microsoft Entra built-in administrative roles, on your behalf.",
+          "userConsentDisplayName": "Read and write privileged access to Microsoft Entra",
           "value": "PrivilegedAccess.ReadWrite.AzureAD"
         },
         {
@@ -4582,12 +4582,12 @@
           "value": "Files.ReadWrite.AppFolder"
         },
         {
-          "adminConsentDescription": "Allows an app to read all service usage reports on behalf of the signed-in user.  Services that provide usage reports include Office 365 and Azure Active Directory.",
+          "adminConsentDescription": "Allows an app to read all service usage reports on behalf of the signed-in user.  Services that provide usage reports include Office 365 and Microsoft Entra ID.",
           "adminConsentDisplayName": "Read all usage reports",
           "id": "02e97553-ed7b-43d0-ab3c-f8bace0d040c",
           "isEnabled": true,
           "type": "Admin",
-          "userConsentDescription": "Allows an app to read all service usage reports on your behalf. Services that provide usage reports include Office 365 and Azure Active Directory.",
+          "userConsentDescription": "Allows an app to read all service usage reports on your behalf. Services that provide usage reports include Office 365 and Microsoft Entra ID.",
           "userConsentDisplayName": "Read all usage reports",
           "value": "Reports.Read.All"
         },
@@ -5142,23 +5142,23 @@
           "value": "PrivilegedAccess.ReadWrite.AzureResources"
         },
         {
-          "adminConsentDescription": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD built-in and custom administrative roles, on behalf of the signed-in user.",
-          "adminConsentDisplayName": "Read privileged access to Azure AD",
+          "adminConsentDescription": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra built-in and custom administrative roles, on behalf of the signed-in user.",
+          "adminConsentDisplayName": "Read privileged access to Microsoft Entra",
           "id": "b3a539c9-59cb-4ad5-825a-041ddbdc2bdb",
           "isEnabled": true,
           "type": "Admin",
-          "userConsentDescription": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD built-in and custom administrative roles, on your behalf.",
-          "userConsentDisplayName": "Read privileged access to Azure AD",
+          "userConsentDescription": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra built-in and custom administrative roles, on your behalf.",
+          "userConsentDisplayName": "Read privileged access to Microsoft Entra",
           "value": "PrivilegedAccess.Read.AzureAD"
         },
         {
-          "adminConsentDescription": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD groups, on behalf of the signed-in user.",
-          "adminConsentDisplayName": "Read privileged access to Azure AD groups",
+          "adminConsentDescription": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra groups, on behalf of the signed-in user.",
+          "adminConsentDisplayName": "Read privileged access to Microsoft Entra groups",
           "id": "d329c81c-20ad-4772-abf9-3f6fdb7e5988",
           "isEnabled": true,
           "type": "Admin",
-          "userConsentDescription": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD groups, on your behalf.",
-          "userConsentDisplayName": "Read privileged access to Azure AD groups",
+          "userConsentDescription": "Allows the app to read time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra groups, on your behalf.",
+          "userConsentDisplayName": "Read privileged access to Microsoft Entra groups",
           "value": "PrivilegedAccess.Read.AzureADGroup"
         },
         {
@@ -5172,13 +5172,13 @@
           "value": "PrivilegedAccess.Read.AzureResources"
         },
         {
-          "adminConsentDescription": "Allows the app to request and manage time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD groups, on behalf of the signed-in user.",
-          "adminConsentDisplayName": "Read and write privileged access to Azure AD groups",
+          "adminConsentDescription": "Allows the app to request and manage time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra groups, on behalf of the signed-in user.",
+          "adminConsentDisplayName": "Read and write privileged access to Microsoft Entra groups",
           "id": "32531c59-1f32-461f-b8df-6f8a3b89f73b",
           "isEnabled": true,
           "type": "Admin",
-          "userConsentDescription": "Allows the app to request and manage time-based assignment and just-in-time elevation (including scheduled elevation) of Azure AD groups, on your behalf.",
-          "userConsentDisplayName": "Read and write privileged access to Azure AD groups",
+          "userConsentDescription": "Allows the app to request and manage time-based assignment and just-in-time elevation (including scheduled elevation) of Microsoft Entra groups, on your behalf.",
+          "userConsentDisplayName": "Read and write privileged access to Microsoft Entra groups",
           "value": "PrivilegedAccess.ReadWrite.AzureADGroup"
         },
         {
@@ -6322,13 +6322,13 @@
           "value": "PrintJob.Create"
         },
         {
-          "adminConsentDescription": "Allows the app to read Azure AD recommendations, on behalf of the signed-in user.",
-          "adminConsentDisplayName": "Read Azure AD recommendations",
+          "adminConsentDescription": "Allows the app to read Microsoft Entra recommendations, on behalf of the signed-in user.",
+          "adminConsentDisplayName": "Read Microsoft Entra recommendations",
           "id": "34d3bd24-f6a6-468c-b67c-0c365c1d6410",
           "isEnabled": true,
           "type": "Admin",
-          "userConsentDescription": "Allows the app to read Azure AD recommendations, on your behalf.",
-          "userConsentDisplayName": "Read Azure AD recommendations",
+          "userConsentDescription": "Allows the app to read Microsoft Entra recommendations, on your behalf.",
+          "userConsentDisplayName": "Read Microsoft Entra recommendations",
           "value": "DirectoryRecommendations.Read.All"
         },
         {
@@ -6402,12 +6402,12 @@
           "value": "OnlineMeetingRecording.Read.All"
         },
         {
-          "adminConsentDescription": "Allows the application to obtain basic tenant information about another target tenant within the Azure AD ecosystem on behalf of the signed-in user.",
+          "adminConsentDescription": "Allows the application to obtain basic tenant information about another target tenant within the Microsoft Entra ecosystem on behalf of the signed-in user.",
           "adminConsentDisplayName": "Read cross-tenant basic information",
           "id": "81594d25-e88e-49cf-ac8c-fecbff49f994",
           "isEnabled": true,
           "type": "Admin",
-          "userConsentDescription": "Allows the application to obtain basic tenant information about another target tenant within the Azure AD ecosystem on your behalf.",
+          "userConsentDescription": "Allows the application to obtain basic tenant information about another target tenant within the Microsoft Entra ecosystem on your behalf.",
           "userConsentDisplayName": "Read cross-tenant basic information",
           "value": "CrossTenantInformation.ReadBasic.All"
         },
@@ -6462,13 +6462,13 @@
           "value": "ReportSettings.Read.All"
         },
         {
-          "adminConsentDescription": "Allows the app to read and update Azure AD recommendations, on behalf of the signed-in user. ",
-          "adminConsentDisplayName": "Read and update Azure AD recommendations",
+          "adminConsentDescription": "Allows the app to read and update Microsoft Entra recommendations, on behalf of the signed-in user. ",
+          "adminConsentDisplayName": "Read and update Microsoft Entra recommendations",
           "id": "f37235e8-90a0-4189-93e2-e55b53867ccd",
           "isEnabled": true,
           "type": "Admin",
-          "userConsentDescription": "Allows the app to read and update Azure AD recommendations, on your behalf.",
-          "userConsentDisplayName": "Read and update Azure AD recommendations",
+          "userConsentDescription": "Allows the app to read and update Microsoft Entra recommendations, on your behalf.",
+          "userConsentDisplayName": "Read and update Microsoft Entra recommendations",
           "value": "DirectoryRecommendations.ReadWrite.All"
         },
         {

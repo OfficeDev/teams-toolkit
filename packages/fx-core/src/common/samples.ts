@@ -46,12 +46,23 @@ export interface SampleConfig {
 
 interface SampleCollection {
   samples: SampleConfig[];
+  filterOptions: {
+    types: string[];
+    languages: string[];
+    techniques: string[];
+  };
 }
+
+type SampleConfigType = {
+  samples: Array<Record<string, unknown>>;
+  filterOptions: Record<string, Array<string>>;
+};
 
 class SampleProvider {
   private sampleCollection: SampleCollection | undefined;
-  private samplesConfig: { samples: Array<Record<string, unknown>> } | undefined;
+  private samplesConfig: SampleConfigType | undefined;
   private branchOrTag = SampleConfigTag;
+
   @hooks([ErrorContextMW({ component: "SampleProvider" })])
   public async fetchSampleConfig() {
     const version: string = packageJson.version;
@@ -72,70 +83,66 @@ class SampleProvider {
         try {
           const data = await this.fetchRawFileContent(branch);
           this.branchOrTag = branch;
-          this.samplesConfig = data as { samples: Array<Record<string, unknown>> };
+          this.samplesConfig = data as SampleConfigType;
         } catch (e: unknown) {}
       }
     }
     if (this.samplesConfig === undefined) {
-      this.samplesConfig = (await this.fetchRawFileContent(this.branchOrTag)) as {
-        samples: Array<Record<string, unknown>>;
-      };
+      this.samplesConfig = (await this.fetchRawFileContent(this.branchOrTag)) as SampleConfigType;
     }
   }
 
   public get SampleCollection(): SampleCollection {
-    const samples =
-      this.samplesConfig?.samples.map((sample) => {
-        const isExternal = sample["downloadUrlInfo"] ? true : false;
-        let gifUrl =
-          sample["gifPath"] !== undefined
-            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
-                this.branchOrTag
-              }/${sample["id"] as string}/${sample["gifPath"] as string}`
-            : undefined;
-        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
-          this.branchOrTag
-        }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
-        if (isExternal) {
-          const info = sample["downloadUrlInfo"] as SampleUrlInfo;
-          gifUrl =
+    if (!this.sampleCollection) {
+      const samples =
+        this.samplesConfig?.samples.map((sample) => {
+          const isExternal = sample["downloadUrlInfo"] ? true : false;
+          let gifUrl =
             sample["gifPath"] !== undefined
-              ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
-                  info.dir
-                }/${sample["gifPath"] as string}`
+              ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+                  this.branchOrTag
+                }/${sample["id"] as string}/${sample["gifPath"] as string}`
               : undefined;
-          thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
-            info.ref
-          }/${info.dir}/${sample["thumbnailPath"] as string}`;
-        }
-        return {
-          ...sample,
-          onboardDate: new Date(sample["onboardDate"] as string),
-          downloadUrlInfo: isExternal
-            ? sample["downloadUrlInfo"]
-            : {
-                owner: SampleConfigOwner,
-                repository: SampleConfigRepo,
-                ref: this.branchOrTag,
-                dir: sample["id"] as string,
-              },
-          gifUrl: gifUrl,
-          thumbnailUrl: thumbnailUrl,
-        } as SampleConfig;
-      }) || [];
+          let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+            this.branchOrTag
+          }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
+          if (isExternal) {
+            const info = sample["downloadUrlInfo"] as SampleUrlInfo;
+            gifUrl =
+              sample["gifPath"] !== undefined
+                ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
+                    info.dir
+                  }/${sample["gifPath"] as string}`
+                : undefined;
+            thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
+              info.ref
+            }/${info.dir}/${sample["thumbnailPath"] as string}`;
+          }
+          return {
+            ...sample,
+            onboardDate: new Date(sample["onboardDate"] as string),
+            downloadUrlInfo: isExternal
+              ? sample["downloadUrlInfo"]
+              : {
+                  owner: SampleConfigOwner,
+                  repository: SampleConfigRepo,
+                  ref: this.branchOrTag,
+                  dir: sample["id"] as string,
+                },
+            gifUrl: gifUrl,
+            thumbnailUrl: thumbnailUrl,
+          } as SampleConfig;
+        }) || [];
 
-    // remove video filter sample app if feature flag is disabled.
-    if (!isVideoFilterEnabled()) {
-      const videoFilterSampleId = "teams-videoapp-sample";
-      const index = samples.findIndex((sample) => sample.id === videoFilterSampleId);
-      if (index !== -1) {
-        samples.splice(index, 1);
-      }
+      this.sampleCollection = {
+        samples,
+        filterOptions: {
+          types: this.samplesConfig?.filterOptions["types"] || [],
+          languages: this.samplesConfig?.filterOptions["languages"] || [],
+          techniques: this.samplesConfig?.filterOptions["techniques"] || [],
+        },
+      };
     }
-
-    this.sampleCollection = {
-      samples,
-    };
 
     return this.sampleCollection;
   }

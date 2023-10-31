@@ -5,6 +5,7 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Timeout,
   TemplateProject,
@@ -185,8 +186,9 @@ export abstract class CaseFactory {
       dashboardFlag: boolean;
       type: string;
     }
-  ) {
+  ): Promise<Page> {
     return await initPage(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       sampledebugContext.context!,
       teamsAppId,
       Env.username,
@@ -208,7 +210,7 @@ export abstract class CaseFactory {
     Promise.resolve();
   }
 
-  public test() {
+  public test(): void {
     const {
       sampleName,
       testPlanCaseId,
@@ -217,8 +219,8 @@ export abstract class CaseFactory {
       validate,
       options,
       onBefore,
-      onAfter,
       onAfterCreate,
+      onAfter,
       onBeforeBrowerStart,
       onInitPage,
       onValidate,
@@ -227,7 +229,6 @@ export abstract class CaseFactory {
       this.timeout(Timeout.testAzureCase);
       let sampledebugContext: SampledebugContext;
       let azSqlHelper: AzSqlHelper | undefined;
-      let rgName: string;
 
       beforeEach(async function () {
         // ensure workbench is ready

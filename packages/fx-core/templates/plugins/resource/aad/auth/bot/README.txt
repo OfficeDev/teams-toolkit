@@ -1,13 +1,13 @@
 Enable single sign-on for Teams bot applications
 -------------------------
 
-For Teams bot application, SSO manifests as an Adaptive Card which the user can interact with to invoke the AAD consent flow.
+For Teams bot application, SSO manifests as an Adaptive Card which the user can interact with to invoke the Microsoft Entra consent flow.
 
 Files generated/updated in your project
 -------------------------
 
 1. New file - `aad.template.json` is created in folder `templates/appPackage`
-   - The Azure Active Directory application manifest that is used to register the application with AAD.
+   - The Azure Active Directory application manifest that is used to register the application with Microsoft Entra.
 2.  Update file - 'templates/appPackage/manifest.template.json'
    - An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
 3. New file - `Auth/bot`
@@ -24,7 +24,7 @@ Note: This part is for `command and response bot`.
    Microsoft.Bot.Builder >= 4.17.1
 
 2. Create "Pages" folder and move files in `Auth/bot/Pages` folder to `Pages`
-   `Auth/bot/Pages` folder contains HTML pages that hosted by bot application. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
+   `Auth/bot/Pages` folder contains HTML pages that hosted by bot application. When single sign-on flows are initiated with Microsoft Entra ID, Microsoft Entra ID will redirect the user to these pages.
 
 3. Create "SSO" folder and move files in 'Auth/bot/SSO' folder to 'SSO'
    This folder contains two files as reference for SSO implementation:
@@ -174,15 +174,15 @@ to install the app to
 3. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 4. In the launched browser, select the Add button to load the app in Teams
 
-Teams Toolkit will use the AAD manifest file to register a AAD application registered for SSO.
+Teams Toolkit will use the Microsoft Entra manifest file to register a Microsoft Entra application registered for SSO.
 
 To learn more about Teams Toolkit local debug functionalities, refer to https://docs.microsoft.com/microsoftteams/platform/toolkit/debug-local.
 
-Customize AAD applications
+Customize Microsoft Entra applications
 -------------------------
-The AAD manifest allows you to customize various aspects of your application registration. You can update the manifest as needed.
+The Microsoft Entra manifest allows you to customize various aspects of your application registration. You can update the manifest as needed.
 Related Doc: https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest
 
 Follow https://aka.ms/teamsfx-aad-manifest#how-to-customize-the-aad-manifest-template if you need to include additional API permissions to access your desired APIs.
 
-Follow https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal to view your AAD application in Azure Portal.
+Follow https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal to view your Microsoft Entra application in Azure Portal.

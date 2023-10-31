@@ -70,7 +70,7 @@ export class CreateAadAppDriver implements StepDriver {
             outputEnvVarNames.get(OutputKeys.clientId)
           )
         );
-        // Create new AAD app if no client id exists
+        // Create new Microsoft Entra app if no client id exists
         const signInAudience = args.signInAudience
           ? args.signInAudience
           : SignInAudience.AzureADMyOrg;

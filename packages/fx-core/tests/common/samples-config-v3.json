@@ -1,4 +1,23 @@
 {
+    "filterOptions": {
+        "types": [
+            "Tab",
+            "Bot",
+            "Message extension"
+        ],
+        "languages": [
+            "JS",
+            "TS"
+        ],
+        "techniques": [
+            "Azure",
+            "Adaptive Cards",
+            "SSO",
+            "SPFx",
+            "Outlook",
+            "Graph"
+        ]
+    },
     "samples": [
         {
             "id": "hello-world-tab-with-backend",

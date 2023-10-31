@@ -14,10 +14,8 @@ import AzureAccountManager from "../../src/commonlib/azureLogin";
 import { UserSettings } from "../../src/userSetttings";
 import {
   editDistance,
-  flattenNodes,
   getColorizedString,
   getSettingsVersion,
-  getSingleOptionString,
   getSystemInputs,
   getTemplates,
   getVersion,
@@ -26,13 +24,6 @@ import {
 } from "../../src/utils";
 import { expect } from "./utils";
 
-const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
-const staticOptions2: apis.StaticOptions = [
-  { id: "a", cliName: "aa", label: "aaa" },
-  { id: "b", cliName: "bb", label: "bbb" },
-  { id: "c", cliName: "cc", label: "ccc" },
-];
-
 describe("Utils Tests", function () {
   const sandbox = sinon.createSandbox();
 
@@ -40,85 +31,10 @@ describe("Utils Tests", function () {
     sandbox.restore();
   });
 
-  describe("getSingleOptionString", () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox
-        .stub(core, "getSingleOption")
-        .callsFake((q: apis.SingleSelectQuestion | apis.MultiSelectQuestion) => {
-          if (q.type === "singleSelect") return q.staticOptions[0];
-          else return [q.staticOptions[0]];
-        });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("singleSelect and returnObject", () => {
-      const question: apis.Question = {
-        type: "singleSelect",
-        name: "question",
-        title: "getSingleOptionString",
-        returnObject: true,
-        staticOptions: staticOptions2,
-      };
-      const answers = getSingleOptionString(question);
-      expect(answers).equals("a");
-    });
-
-    it("multiSelect and returnObject", () => {
-      const question: apis.Question = {
-        type: "multiSelect",
-        name: "question",
-        title: "getSingleOptionString",
-        returnObject: true,
-        staticOptions: staticOptions2,
-      };
-      const answers = getSingleOptionString(question);
-      expect(answers).deep.equals(["a"]);
-    });
-
-    it("singleSelect and not returnObject", () => {
-      const question: apis.Question = {
-        type: "singleSelect",
-        name: "question",
-        title: "getSingleOptionString",
-        staticOptions: staticOptions1,
-      };
-      const answers = getSingleOptionString(question);
-      expect(answers).equals("a");
-    });
-  });
-
   it("toLocaleLowerCase", () => {
     expect(toLocaleLowerCase("MiNe")).equals("mine");
     expect(toLocaleLowerCase(["ItS", "HiS"])).deep.equals(["its", "his"]);
     expect(toLocaleLowerCase(undefined)).equals(undefined);
-  });
-
-  it("flattenNodes", () => {
-    const root: apis.IQTreeNode = {
-      data: {
-        type: "group",
-      },
-      children: [
-        {
-          data: { type: "folder", name: "a", title: "aa" },
-        },
-        {
-          data: { type: "folder", name: "b", title: "bb" },
-        },
-      ],
-    };
-    const answers = flattenNodes(root);
-    expect(answers.map((a) => a.data)).deep.equals([
-      { type: "group" },
-      { type: "folder", name: "a", title: "aa" },
-      { type: "folder", name: "b", title: "bb" },
-    ]);
-    expect(root.children).not.equals(undefined);
   });
 
   describe("getSettingsVersion", async () => {
@@ -221,11 +137,17 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     this.afterEach(() => {
       sandbox.restore();
+      core.sampleProvider["sampleCollection"] = undefined;
     });
 
     it("filters samples have maximum cli verion", async () => {
       sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
         core.sampleProvider["samplesConfig"] = {
+          filterOptions: {
+            types: ["Tab"],
+            languages: ["TS"],
+            techniques: ["Azure"],
+          },
           samples: [
             {
               id: "test1",
@@ -264,6 +186,11 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("filters samples have minimum cli verion", async () => {
       sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
         core.sampleProvider["samplesConfig"] = {
+          filterOptions: {
+            types: ["Tab"],
+            languages: ["TS"],
+            techniques: ["Azure"],
+          },
           samples: [
             {
               id: "test1",

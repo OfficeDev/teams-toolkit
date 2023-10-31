@@ -70,13 +70,14 @@
           { "$ref": "#/definitions/teamsAppExtendToM365" },
           { "$ref": "#/definitions/spfxDeploy" },
           { "$ref": "#/definitions/teamsAppCopyAppPackageToSPFx" },
-          { "$ref": "#/definitions/script" }
+          { "$ref": "#/definitions/script" },
+          { "$ref": "#/definitions/apiKeyCreate"}
         ]
       }
     },
     "aadAppCreateBase": {
       "type": "object",
-      "description": "Create Azure Active Directory application and client secret (optional). Refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
+      "description": "Create Microsoft Entra application and client secret (optional). Refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
       "required": ["uses", "writeToEnvironmentFile"],
       "properties": {
         "name": {
@@ -92,7 +93,7 @@
         },
         "uses": {
           "type": "string",
-          "description": "Create Azure Active Directory application when the environment variable that stores clientId is empty. Also create client secret for the application when generateClientSecret parameter is true and the environment variable that stores clientSecret is empty. When creating new Azure Active Directory application, this action generates clientId, objectId, tenantId, authority and authorityHost. When creating new client secret, this action generates clientSecret. Refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
+          "description": "Create Microsoft Entra application when the environment variable that stores clientId is empty. Also create client secret for the application when generateClientSecret parameter is true and the environment variable that stores clientSecret is empty. When creating new Microsoft Entra application, this action generates clientId, objectId, tenantId, authority and authorityHost. When creating new client secret, this action generates clientSecret. Refer to https://aka.ms/teamsfx-actions/aadapp-create for more details.",
           "const": "aadApp/create"
         }
       }
@@ -114,11 +115,11 @@
           "properties": {
             "name": {
               "type": "string",
-              "description": "The name of Azure Active Directory application. Note: when you run aadApp/update, the Azure Active Directory application name will be updated based on the definition in manifest. If you don't want to change the name, ensure the name in Azure Active Directory application manifest is the same with the name defined here."
+              "description": "The name of Microsoft Entra application. Note: when you run aadApp/update, the Microsoft Entra application name will be updated based on the definition in manifest. If you don't want to change the name, ensure the name in Microsoft Entra application manifest is the same with the name defined here."
             },
             "generateClientSecret": {
               "type": "boolean",
-              "description": "Whether to generate client secret for the Azure Active Directory application. When the value is true, you need to specify the name of environment variable that stores the value of client secret in writeToEnvironmentVariable. For example: `clientSecret: SECRET_MY_AAD_APP_CLIENT_SECRET`.",
+              "description": "Whether to generate client secret for the Microsoft Entra application. When the value is true, you need to specify the name of environment variable that stores the value of client secret in writeToEnvironmentVariable. For example: `clientSecret: SECRET_MY_AAD_APP_CLIENT_SECRET`.",
               "const": true
             },
             "signInAudience": {
@@ -135,27 +136,27 @@
           "required": ["clientId", "objectId", "clientSecret"],
           "properties": {
             "clientId": {
-              "description": "Required. The client (application) id of created Azure Active Directory application.",
+              "description": "Required. The client (application) id of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             },
             "objectId": {
-              "description": "Required. The object id of created Azure Active Directory application.",
+              "description": "Required. The object id of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             },
             "clientSecret": {
-              "description": "Required when generateClientSecret is true. The generated client secret of the Azure Active Directory application.",
+              "description": "Required when generateClientSecret is true. The generated client secret of the Microsoft Entra application.",
               "$ref": "#/definitions/secretEnvVarName"
             },
             "tenantId": {
-              "description": "The tenant id of created Azure Active Directory application.",
+              "description": "The tenant id of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             },
             "authority": {
-              "description": "The authority of created Azure Active Directory application.",
+              "description": "The authority of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             },
             "authorityHost": {
-              "description": "The authority host name of created Azure Active Directory application.",
+              "description": "The authority host name of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             }
           }
@@ -179,11 +180,11 @@
           "properties": {
             "name": {
               "type": "string",
-              "description": "The name of Azure Active Directory application. Note: when you run aadApp/update, the Azure Active Directory application name will be updated based on the definition in manifest. If you don't want to change the name, ensure the name in Azure Active Directory application manifest is the same with the name defined here."
+              "description": "The name of Microsoft Entra application. Note: when you run aadApp/update, the Microsoft Entra application name will be updated based on the definition in manifest. If you don't want to change the name, ensure the name in Microsoft Entra application manifest is the same with the name defined here."
             },
             "generateClientSecret": {
               "type": "boolean",
-              "description": "Whether to generate client secret for the Azure Active Directory application. When the value is true, you need to specify the name of environment variable that stores the value of client secret in writeToEnvironmentVariable. For example: `clientSecret: SECRET_MY_AAD_APP_CLIENT_SECRET`.",
+              "description": "Whether to generate client secret for the Microsoft Entra application. When the value is true, you need to specify the name of environment variable that stores the value of client secret in writeToEnvironmentVariable. For example: `clientSecret: SECRET_MY_AAD_APP_CLIENT_SECRET`.",
               "const": false
             },
             "signInAudience": {
@@ -200,23 +201,23 @@
           "required": ["clientId", "objectId"],
           "properties": {
             "clientId": {
-              "description": "Required. The client (application) id of created Azure Active Directory application.",
+              "description": "Required. The client (application) id of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             },
             "objectId": {
-              "description": "Required. The object id of created Azure Active Directory application.",
+              "description": "Required. The object id of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             },
             "tenantId": {
-              "description": "The tenant id of created Azure Active Directory application.",
+              "description": "The tenant id of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             },
             "authority": {
-              "description": "The authority of created Azure Active Directory application.",
+              "description": "The authority of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             },
             "authorityHost": {
-              "description": "The authority host name of created Azure Active Directory application.",
+              "description": "The authority host name of created Microsoft Entra application.",
               "$ref": "#/definitions/envVarName"
             }
           }
@@ -233,7 +234,7 @@
     "aadAppUpdate": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Update Azure Active Directory application. Refer to https://aka.ms/teamsfx-actions/aadapp-update for more details.",
+      "description": "Update Microsoft Entra application. Refer to https://aka.ms/teamsfx-actions/aadapp-update for more details.",
       "required": ["uses", "with"],
       "properties": {
         "name": {
@@ -249,7 +250,7 @@
         },
         "uses": {
           "type": "string",
-          "description": "Update Azure Active Directory application based on the given Azure Active Directory application manifest. If the manifest uses AAD_APP_ACCESS_AS_USER_PERMISSION_ID and the environment variable is empty, this action will generate a random id and output it. Refer to https://aka.ms/teamsfx-actions/aadapp-update for more details.",
+          "description": "Update Microsoft Entra application based on the given Microsoft Entra application manifest. If the manifest uses AAD_APP_ACCESS_AS_USER_PERMISSION_ID and the environment variable is empty, this action will generate a random id and output it. Refer to https://aka.ms/teamsfx-actions/aadapp-update for more details.",
           "const": "aadApp/update"
         },
         "with": {
@@ -260,11 +261,11 @@
           "properties": {
             "manifestPath": {
               "type": "string",
-              "description": "Path of Azure Active Directory application manifest. Environment variables in the manifest will be replaced before applying the manifest to Azure Active Directory application."
+              "description": "Path of Microsoft Entra application manifest. Environment variables in the manifest will be replaced before applying the manifest to Microsoft Entra application."
             },
             "outputFilePath": {
               "type": "string",
-              "description": "Generate the final Azure Active Directory application manifest used to update Azure Active Directory application to this path."
+              "description": "Generate the final Microsoft Entra application manifest used to update Microsoft Entra application to this path."
             }
           }
         }
@@ -914,7 +915,7 @@
     "botAadAppCreate": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Create a new or reuse an existing Azure Active Directory application for bot. Refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
+      "description": "Create a new or reuse an existing Microsoft Entra application for bot. Refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
       "required": ["uses", "with", "writeToEnvironmentFile"],
       "properties": {
         "name": {
@@ -930,7 +931,7 @@
         },
         "uses": {
           "type": "string",
-          "description": "Create a new or reuse an existing Azure Active Directory application for bot. Refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
+          "description": "Create a new or reuse an existing Microsoft Entra application for bot. Refer to https://aka.ms/teamsfx-actions/botaadapp-create for more details.",
           "const": "botAadApp/create"
         },
         "with": {
@@ -941,7 +942,7 @@
           "properties": {
             "name": {
               "type": "string",
-              "description": "The user-facing display name for this Azure Active Directory application"
+              "description": "The user-facing display name for this Microsoft Entra application"
             }
           }
         },
@@ -952,11 +953,11 @@
           "required": ["botId", "botPassword"],
           "properties": {
             "botId": {
-              "description": "Required. Client (application) id of the Azure Active Directory application created for bot.",
+              "description": "Required. Client (application) id of the Microsoft Entra application created for bot.",
               "$ref": "#/definitions/envVarName"
             },
             "botPassword": {
-              "description": "Required. Client secret of the Azure Active Directory application created for bot.",
+              "description": "Required. Client secret of the Microsoft Entra application created for bot.",
               "$ref": "#/definitions/secretEnvVarName"
             }
           }
@@ -993,7 +994,7 @@
           "properties": {
             "botId": {
               "type": "string",
-              "description": "the AAD app client id of the bot"
+              "description": "the Microsoft Entra app client id of the bot"
             },
             "name": {
               "type": "string",
@@ -1492,6 +1493,59 @@
       "type": "string",
       "pattern": "^[A-Z][A-Z0-9_]*$",
       "maxLength": 256
+    },
+    "apiKeyCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Create an API key.",
+      "required": ["uses", "with", "writeToEnvironmentFile"],
+      "properties": {
+        "uses": {
+          "type": "string",
+          "description": "Create API key. Refer to https://aka.ms/teamsfx-actions/apiKey-create for more details.",
+          "const": "apiKey/create"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Parameters for this action",
+          "required": ["name", "appId", "apiSpecPath"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of API key."
+            },
+            "appId": {
+              "type": "string",
+              "description": "The app ID of Teams app."
+            },
+            "clientSecret": {
+              "type": "string",
+              "description": "Client secret of API key. Client secret should follow: 1. Max %d secrets per API key. 2. Use comma to separate secrets. 3. Length of every secret >= 10 and <= 128"
+            },
+            "apiSpecPath": {
+              "type": "string",
+              "description": "The path of API specification file."
+            },
+            "domain": {
+              "type": "string",
+              "description": "The domain of API key. Domain for API key should follow: 1. Max %d domain per API key. 2. Use comma to separate domains."
+            }
+          }
+        },
+        "writeToEnvironmentFile": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Write environment variables to environment file",
+          "required": ["registrationId"],
+          "properties": {
+            "registrationId": {
+              "description": "Required. The registration id of created API key.",
+              "$ref": "#/definitions/envVarName"
+            }
+          }
+        }
+      }
     }
   }
 }

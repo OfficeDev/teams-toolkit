@@ -21,7 +21,7 @@ export const descriptionMessageKeys = {
 };
 
 export const permissionsKeys = {
-  name: "Azure AD App",
+  name: "Microsoft Entra App",
   owner: "Owner",
   noPermission: "No Permission",
   type: "M365",

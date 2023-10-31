@@ -1570,41 +1570,29 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         }
         const operations: ApiOperation[] = inputs?.supportedApisFromApiSpec as ApiOperation[];
 
-        const authNames: string[] = [];
-        const serverUrls: string[] = [];
-        let firstAuthName;
-        let firstServerUrl;
+        const authNames: Set<string> = new Set();
+        const serverUrls: Set<string> = new Set();
         for (const inputItem of input) {
           const operation = operations.find((op) => op.id === inputItem);
           if (operation) {
             if (operation.authName) {
-              if (!firstAuthName) {
-                firstAuthName = operation.authName;
-                authNames.push(firstAuthName);
-              } else if (operation.authName !== firstAuthName) {
-                authNames.push(operation.authName);
-              }
+              authNames.add(operation.authName);
             }
-            if (!firstServerUrl) {
-              firstServerUrl = operation.serverUrl;
-              serverUrls.push(firstServerUrl);
-            } else if (operation.serverUrl !== firstServerUrl) {
-              serverUrls.push(operation.serverUrl);
-            }
+            serverUrls.add(operation.serverUrl);
           }
         }
 
-        if (authNames.length > 1) {
+        if (authNames.size > 1) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.multipleAuth",
-            authNames.join(", ")
+            Array.from(authNames).join(", ")
           );
         }
 
-        if (serverUrls.length > 1) {
+        if (serverUrls.size > 1) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.multipleServer",
-            serverUrls.join(", ")
+            Array.from(serverUrls).join(", ")
           );
         }
       },

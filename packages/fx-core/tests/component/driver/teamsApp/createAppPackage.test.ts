@@ -18,6 +18,7 @@ import { FeatureFlagName } from "../../../../src/common/constants";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
+import { InvalidFileOutsideOfTheDirectotryError } from "../../../../src/error/teamsApp";
 
 describe("teamsApp/createAppPackage", async () => {
   const teamsAppDriver = new CreateAppPackageDriver();
@@ -204,6 +205,140 @@ describe("teamsApp/createAppPackage", async () => {
     }
   });
 
+  it("invalid color file", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.icons = {
+      color: "../color.png",
+      outline: "resources/outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sinon.stub(fs, "pathExists").callsFake((filePath) => {
+      return true;
+    });
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof InvalidFileOutsideOfTheDirectotryError);
+    }
+  });
+
+  it("invalid outline file", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "../outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sinon.stub(fs, "pathExists").callsFake((filePath) => {
+      return true;
+    });
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof InvalidFileOutsideOfTheDirectotryError);
+    }
+  });
+
+  it("invalid api spec file", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "../openai.yml",
+        commands: [
+          {
+            id: "GET /repairs",
+            apiResponseRenderingTemplateFile: "resources/repairs.json",
+            title: "fake",
+          },
+        ],
+        botId: "",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sinon.stub(fs, "pathExists").callsFake((filePath) => {
+      return true;
+    });
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof InvalidFileOutsideOfTheDirectotryError);
+    }
+  });
+
+  it("invalid response template file", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "resources/openai.yml",
+        commands: [
+          {
+            id: "GET /repairs",
+            apiResponseRenderingTemplateFile: "../repairs.json",
+            title: "fake",
+          },
+        ],
+        botId: "",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sinon.stub(fs, "pathExists").callsFake((filePath) => {
+      return true;
+    });
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof InvalidFileOutsideOfTheDirectotryError);
+    }
+  });
+
   it("happy path", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath:
@@ -251,7 +386,7 @@ describe("teamsApp/createAppPackage", async () => {
     chai.assert(result.isOk());
     if (await fs.pathExists(args.outputZipPath)) {
       const zip = new AdmZip(args.outputZipPath);
-      const openapiContent = zip.getEntry("resources/openai.yml")?.getData().toString("utf8");
+      const openapiContent = zip.getEntry("resources\\openai.yml")?.getData().toString("utf8");
       chai.assert(
         openapiContent != undefined &&
           openapiContent.length > 0 &&

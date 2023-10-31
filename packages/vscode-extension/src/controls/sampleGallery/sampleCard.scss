@@ -94,7 +94,7 @@
       left: -16px;
       right: 0;
       bottom: 0;
-      z-index: 3;
+      z-index: 2;
       color: #CCCCCC;
     }
 
@@ -104,13 +104,17 @@
 
     .tag {
       margin: 4px 8px 0px 0px;
+
+      &::part(control) {
+        border: 0;
+      }
     }
 
     h3 {
       font-size: 13px;
       text-align: center;
       color: var(--vscode-debugConsole-sourceForeground);
-      font-weight: 800;
+      font-weight: 600;
       text-align: left;
       margin: 8px 10px 4px 10px;
       line-height: 16px;

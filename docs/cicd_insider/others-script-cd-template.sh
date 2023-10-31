@@ -46,7 +46,7 @@ cd tabs && npm run test && cd -
 npx teamsfx config set -g interactive false
 
 # Login Azure by service principal
-npx teamsapp auth login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}
+npx teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}
 
 # We suggest to do the provision steps by case manually or in a separated workflow, so just comment the following steps for references.
 # After provisioning, you should commit necessary files under .fx into the repository.

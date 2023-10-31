@@ -14,7 +14,6 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
 import { SampleProps } from "./ISamples";
-import { Setting } from "../resources";
 
 export default class SampleListItem extends React.Component<SampleProps, unknown> {
   constructor(props: SampleProps) {
@@ -42,22 +41,24 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
           }
         }}
       >
-        <label className="hidden-label" id="titleLabel">
-          sample app title:
-        </label>
-        <h3 onClick={this.onSampleTitleClicked}>{sample.title}</h3>
-        <label className="hidden-label" id="tagLabel">
-          sample app tags:
-        </label>
-        <div className="tagSection" aria-labelledby="tagLabel">
-          {sample.tags &&
-            sample.tags.map((value: string) => {
-              return (
-                <VSCodeTag className="tag" key={value}>
-                  {value}
-                </VSCodeTag>
-              );
-            })}
+        <div className="title-tag" onClick={this.onSampleTitleClicked}>
+          <label className="hidden-label" id="titleLabel">
+            sample app title:
+          </label>
+          <h3>{sample.title}</h3>
+          <label className="hidden-label" id="tagLabel">
+            sample app tags:
+          </label>
+          <div className="tagSection" aria-labelledby="tagLabel">
+            {sample.tags &&
+              sample.tags.map((value: string) => {
+                return (
+                  <VSCodeTag className="tag" key={value}>
+                    {value}
+                  </VSCodeTag>
+                );
+              })}
+          </div>
         </div>
         <div className="padding" />
         {sample.versionComparisonResult != 0 && (

@@ -18,6 +18,11 @@ const packageJson = require("../../package.json");
 describe("Samples", () => {
   const sandbox = sinon.createSandbox();
   const fakedSampleConfig = {
+    filterOptions: {
+      types: ["Tab"],
+      languages: ["TS"],
+      techniques: ["Azure"],
+    },
     samples: [
       {
         id: "hello-world-tab-with-backend",
@@ -71,6 +76,8 @@ describe("Samples", () => {
           `https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/hello-world-tab-with-backend`
         );
       chai.expect(samples[0].gifUrl).equal(undefined);
+      const filterOptions = sampleProvider.SampleCollection.filterOptions;
+      chai.expect(filterOptions.types).to.deep.equal(["Tab"]);
     });
 
     it("download sample config of prerelease branch in prerelease(beta) version", async () => {
@@ -290,5 +297,13 @@ describe("Samples", () => {
     await sampleProvider.fetchSampleConfig();
 
     chai.expect(sampleProvider["samplesConfig"]).equals(fakedSampleConfig);
+  });
+
+  it("returns empty sample collection when sample config is undefined", () => {
+    (sampleProvider as any).sampleCollection = undefined;
+    const sampleCollection = sampleProvider.SampleCollection;
+
+    chai.expect(sampleCollection.filterOptions.types).to.deep.equal([]);
+    chai.expect(sampleCollection.samples).to.deep.equal([]);
   });
 });

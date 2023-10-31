@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, LogLevel, err, ok } from "@microsoft/teamsfx-api";
-import { PackageService, serviceEndpoint, serviceScope } from "@microsoft/teamsfx-core";
+import {
+  PackageService,
+  isCliV3Enabled,
+  serviceEndpoint,
+  serviceScope,
+} from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
@@ -46,8 +51,8 @@ class M365Utils {
 export const m365utils = new M365Utils();
 
 export const m365SideloadingCommand: CLICommand = {
-  name: "sideloading",
-  aliases: ["install"],
+  name: isCliV3Enabled() ? "install" : "sideloading",
+  aliases: isCliV3Enabled() ? ["sideloading"] : ["install"],
   description:
     "Sideloading an M365 App with corresponding information specified in the given manifest package.",
   options: [
@@ -64,11 +69,15 @@ export const m365SideloadingCommand: CLICommand = {
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 install --file-path appPackage.zip`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 ${
+        isCliV3Enabled() ? "install" : "sideloading"
+      } --file-path appPackage.zip`,
       description: "Sideloading the m365 app package",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 sideloading --xml-path manifest.xml`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 ${
+        isCliV3Enabled() ? "install" : "sideloading"
+      } --xml-path manifest.xml`,
       description: "Sideloading the m365 app based on the XML manifest file",
     },
   ],

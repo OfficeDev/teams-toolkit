@@ -12,6 +12,7 @@ import {
   ValidateResult,
   ValidationStatus,
   Parameter,
+  ListAPIResult,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { listSupportedAPIs, parseApiInfo, validateSpec } from "./utils";
@@ -135,7 +136,7 @@ export class SpecParser {
    * according to copilot plugin spec, only list get and post method without auth
    */
   // eslint-disable-next-line @typescript-eslint/require-await
-  async list(): Promise<string[]> {
+  async list(): Promise<ListAPIResult[]> {
     throw new Error("Method not implemented.");
   }
 

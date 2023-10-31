@@ -236,6 +236,8 @@ export function getAPIKeyAuthArray(
     }
   }
 
+  result.sort((a, b) => a[0].name.localeCompare(b[0].name));
+
   return result;
 }
 

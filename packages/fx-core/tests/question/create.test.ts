@@ -1030,6 +1030,139 @@ describe("scaffold question", () => {
           assert.isTrue(options[1].id === "operation2");
         });
 
+        it(" validate operations successfully", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                serverUrl: "https://server1",
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                serverUrl: "https://server1",
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.isUndefined(res);
+        });
+
+        it(" validate operations with auth successfully", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                authName: "auth1",
+                serverUrl: "https://server1",
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                authName: "auth1",
+                serverUrl: "https://server1",
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.isUndefined(res);
+        });
+
+        it(" validate operations should return error message when selected APIs with multiple server url", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                authName: "auth1",
+                serverUrl: "https://server1",
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                authName: "auth1",
+                serverUrl: "https://server2",
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.equal(
+            res,
+            getLocalizedString(
+              "core.createProjectQuestion.apiSpec.operation.multipleServer",
+              ["https://server1", "https://server2"].join(", ")
+            )
+          );
+        });
+
+        it(" validate operations should return error message when select APIs with multiple auth", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                authName: "auth1",
+                serverUrl: "https://server1",
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                authName: "auth2",
+                serverUrl: "https://server1",
+              },
+              {
+                id: "operation3",
+                label: "operation1",
+                groupName: "1",
+                authName: "auth3",
+                serverUrl: "https://server1",
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.equal(
+            res,
+            getLocalizedString(
+              "core.createProjectQuestion.apiSpec.operation.multipleAuth",
+              ["auth1", "auth2"].join(", ")
+            )
+          );
+        });
+
         it(" list operations error", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -1073,14 +1206,36 @@ describe("scaffold question", () => {
             errors: [],
             warnings: [{ content: "warn", type: WarningType.Unknown }],
           });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "get operation1",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+            },
+            { api: "get operation2", server: "https://server2" },
+          ]);
           sandbox.stub(fs, "pathExists").resolves(true);
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
-            { id: "get operation1", label: "get operation1", groupName: "GET" },
-            { id: "get operation2", label: "get operation2", groupName: "GET" },
+            {
+              id: "get operation1",
+              label: "get operation1",
+              groupName: "GET",
+              authName: "api_key",
+              serverUrl: "https://server",
+            },
+            {
+              id: "get operation2",
+              label: "get operation2",
+              groupName: "GET",
+              serverUrl: "https://server2",
+            },
           ]);
           assert.isUndefined(res);
         });
@@ -1094,13 +1249,36 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "get operation1",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+            },
+
+            { api: "get operation2", server: "https://server2" },
+          ]);
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("https://www.test.com", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
-            { id: "get operation1", label: "get operation1", groupName: "GET" },
-            { id: "get operation2", label: "get operation2", groupName: "GET" },
+            {
+              id: "get operation1",
+              label: "get operation1",
+              groupName: "GET",
+              authName: "api_key",
+              serverUrl: "https://server",
+            },
+            {
+              id: "get operation2",
+              label: "get operation2",
+              groupName: "GET",
+              serverUrl: "https://server2",
+            },
           ]);
           assert.isUndefined(res);
         });
@@ -1111,7 +1289,18 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "get operation1",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+            },
+            { api: "get operation2", server: "https://server2" },
+          ]);
 
           let err: Error | undefined = undefined;
           try {
@@ -1227,9 +1416,18 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox
-            .stub(SpecParser.prototype, "list")
-            .resolves(["GET /user/{userId}", "GET /store/order"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+            },
+            { api: "GET /store/order", server: "https://server2" },
+          ]);
           sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById"]);
@@ -1238,7 +1436,12 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
-            { id: "GET /store/order", label: "GET /store/order", groupName: "GET" },
+            {
+              id: "GET /store/order",
+              label: "GET /store/order",
+              groupName: "GET",
+              serverUrl: "https://server2",
+            },
           ]);
           assert.isUndefined(res);
         });
@@ -1257,9 +1460,18 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox
-            .stub(SpecParser.prototype, "list")
-            .resolves(["GET /user/{userId}", "GET /store/order"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+            },
+            { api: "GET /store/order", server: "https://server2" },
+          ]);
           sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById", "getStoreOrder"]);
@@ -1289,7 +1501,18 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+            },
+            { api: "GET /store/order", server: "https://server2" },
+          ]);
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
@@ -1318,7 +1541,18 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+            },
+            { api: "GET /store/order", server: "https://server2" },
+          ]);
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
@@ -1347,7 +1581,18 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+            },
+            { api: "GET /store/order", server: "https://server2" },
+          ]);
 
           const res = await (question.additionalValidationOnAccept as any).validFunc(
             "https://test.com/",

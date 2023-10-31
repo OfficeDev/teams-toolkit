@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   CLIPlatforms,
   FolderQuestion,
   IQTreeNode,
@@ -1559,12 +1560,51 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     forgetLastValue: true,
     staticOptions: [],
     validation: {
-      validFunc: (input: string[]): string | undefined => {
+      validFunc: (input: string[], inputs?: Inputs): string | undefined => {
         if (input.length < 1 || input.length > 10) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
             input.length,
             10
+          );
+        }
+        const operations: ApiOperation[] = inputs?.supportedApisFromApiSpec as ApiOperation[];
+
+        const authNames: string[] = [];
+        const serverUrls: string[] = [];
+        let firstAuthName;
+        let firstServerUrl;
+        for (const inputItem of input) {
+          const operation = operations.find((op) => op.label === inputItem);
+          if (operation) {
+            if (operation.authName) {
+              if (!firstAuthName) {
+                firstAuthName = operation.authName;
+                authNames.push(firstAuthName);
+              } else if (operation.authName !== firstAuthName) {
+                authNames.push(operation.authName);
+              }
+            }
+            if (!firstServerUrl) {
+              firstServerUrl = operation.serverUrl;
+              serverUrls.push(firstServerUrl);
+            } else if (operation.serverUrl !== firstServerUrl) {
+              serverUrls.push(operation.serverUrl);
+            }
+          }
+        }
+
+        if (authNames.length > 1) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.multipleAuth",
+            authNames.join(", ")
+          );
+        }
+
+        if (serverUrls.length > 1) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.multipleServer",
+            serverUrls.join(", ")
           );
         }
       },
@@ -1574,7 +1614,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         throw new EmptyOptionError(QuestionNames.ApiOperation, "question");
       }
 
-      const operations = inputs.supportedApisFromApiSpec;
+      const operations = inputs.supportedApisFromApiSpec as ApiOperation[];
 
       return operations;
     },

@@ -137,11 +137,17 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
     this.afterEach(() => {
       sandbox.restore();
+      core.sampleProvider["sampleCollection"] = undefined;
     });
 
     it("filters samples have maximum cli verion", async () => {
       sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
         core.sampleProvider["samplesConfig"] = {
+          filterOptions: {
+            types: ["Tab"],
+            languages: ["TS"],
+            techniques: ["Azure"],
+          },
           samples: [
             {
               id: "test1",
@@ -180,6 +186,11 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     it("filters samples have minimum cli verion", async () => {
       sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
         core.sampleProvider["samplesConfig"] = {
+          filterOptions: {
+            types: ["Tab"],
+            languages: ["TS"],
+            techniques: ["Azure"],
+          },
           samples: [
             {
               id: "test1",

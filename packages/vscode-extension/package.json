@@ -1271,7 +1271,7 @@
     "@azure/arm-subscriptions": "^5.0.0",
     "@azure/core-auth": "^1.4.0",
     "@azure/ms-rest-azure-env": "^2.0.0",
-    "@fluentui/react": "^8.5.1",
+    "@fluentui/react": "^8.106.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@svgr/webpack": "^8.1.0",
     "@types/chai": "^4.2.14",

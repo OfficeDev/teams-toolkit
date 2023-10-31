@@ -55,7 +55,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
 
   public render() {
     const titleSection = (
-      <div className="section" id="title">
+      <div id="title">
         <div className="logo">
           <Icon iconName="Library" className="logo" />
         </div>
@@ -76,6 +76,12 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       )[0];
       return <SampleDetailPage sample={selectedSample} selectSample={this.selectSample} />;
     } else {
+      const featuredSamples = (this.state.filteredSamples ?? this.samples).filter(
+        (sample) => sample.suggested
+      );
+      const normalSamples = (this.state.filteredSamples ?? this.samples).filter(
+        (sample) => !sample.suggested
+      );
       return (
         <div className="sample-gallery">
           {titleSection}
@@ -92,31 +98,54 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                 onLayoutChanged={this.onLayoutChanged}
                 onFilterConditionChanged={this.onFilterConditionChanged}
               ></SampleFilter>
-              {this.state.layout === "grid" ? (
-                <div className="sample-stack">
-                  {(this.state.filteredSamples ?? this.samples).map((sample: SampleInfo) => {
-                    return (
-                      <SampleCard
-                        key={sample.id}
-                        sample={sample}
-                        selectSample={this.selectSample}
-                      />
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="sample-list">
-                  {(this.state.filteredSamples ?? this.samples).map((sample: SampleInfo) => {
-                    return (
-                      <SampleListItem
-                        key={sample.id}
-                        sample={sample}
-                        selectSample={this.selectSample}
-                      />
-                    );
-                  })}
+              {featuredSamples.length > 0 && (
+                <div className={`featured-sample-section ${this.state.layout}`}>
+                  <div id="featured-sample-title">
+                    <span className="codicon codicon-star-full"></span>
+                    <h4>Featured samples</h4>
+                  </div>
+                  {this.state.layout === "grid"
+                    ? featuredSamples.map((sample: SampleInfo) => {
+                        return (
+                          <SampleCard
+                            key={sample.id}
+                            sample={sample}
+                            selectSample={this.selectSample}
+                          />
+                        );
+                      })
+                    : featuredSamples.map((sample: SampleInfo) => {
+                        return (
+                          <SampleListItem
+                            key={sample.id}
+                            sample={sample}
+                            selectSample={this.selectSample}
+                          />
+                        );
+                      })}
                 </div>
               )}
+              <div className={`sample-section ${this.state.layout}`}>
+                {this.state.layout === "grid"
+                  ? normalSamples.map((sample: SampleInfo) => {
+                      return (
+                        <SampleCard
+                          key={sample.id}
+                          sample={sample}
+                          selectSample={this.selectSample}
+                        />
+                      );
+                    })
+                  : normalSamples.map((sample: SampleInfo) => {
+                      return (
+                        <SampleListItem
+                          key={sample.id}
+                          sample={sample}
+                          selectSample={this.selectSample}
+                        />
+                      );
+                    })}
+              </div>
             </>
           )}
         </div>

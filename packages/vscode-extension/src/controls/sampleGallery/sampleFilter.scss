@@ -1,6 +1,8 @@
 .sample-filter {
   display: flex;
   flex-direction: column;
+  width: calc(100% - 48px);
+  margin: 0 24px;
 }
 
 .sample-filter-bar {
@@ -60,12 +62,13 @@
 .filter-tag-bar {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 18px;
+  align-items: flex-end;
 
   .filter-tag {
     flex-shrink: 0;
     margin-right: 16px;
-    margin-bottom: 15px;
+    margin-top: 16px;
+    height: 20px;
 
     &::part(control) {
       font-size: 13px;
@@ -78,16 +81,17 @@
     .codicon-close {
       padding-left: 8px;
       position: relative;
-      top: 2.5px;
+      top: 2px;
+      line-height: 12px;
+      font-size: 12px;
     }
   }
 
   button {
-    height: 24px;
-    margin-left: 8px;
+    height: 20px;
+    margin: 16px 0 0 0;
     font-size: 14px;
     padding: 0;
-    margin: 0;
     color: var(--vscode-textLink-foreground);
 
     :active {

@@ -1129,21 +1129,21 @@ describe("scaffold question", () => {
             supportedApisFromApiSpec: [
               {
                 id: "operation1",
-                label: "operation1",
+                label: "operation1-label",
                 groupName: "1",
                 authName: "auth1",
                 serverUrl: "https://server1",
               },
               {
                 id: "operation2",
-                label: "operation2",
+                label: "operation2-label",
                 groupName: "2",
                 authName: "auth2",
                 serverUrl: "https://server1",
               },
               {
                 id: "operation3",
-                label: "operation1",
+                label: "operation3-label",
                 groupName: "1",
                 authName: "auth3",
                 serverUrl: "https://server1",

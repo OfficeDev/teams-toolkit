@@ -1575,7 +1575,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         let firstAuthName;
         let firstServerUrl;
         for (const inputItem of input) {
-          const operation = operations.find((op) => op.label === inputItem);
+          const operation = operations.find((op) => op.id === inputItem);
           if (operation) {
             if (operation.authName) {
               if (!firstAuthName) {

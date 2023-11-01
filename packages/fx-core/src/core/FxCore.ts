@@ -113,6 +113,7 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { isApiKeyEnabled } from "../common/featureFlags";
 import "../component/feature/sso";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
@@ -1162,7 +1163,7 @@ export class FxCore {
     const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
 
     // Merge exisiting operations in manifest.json
-    const specParser = new SpecParser(url);
+    const specParser = new SpecParser(url, { allowAPIKeyAuth: isApiKeyEnabled() });
     const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
     const operationMaps = await specParser.listOperationMap();
 

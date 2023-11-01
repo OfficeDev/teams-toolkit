@@ -15,15 +15,16 @@ import { TokenCredential } from '@azure/core-auth';
 // @public (undocumented)
 export interface ApiOperation {
     // (undocumented)
-    authName?: string;
+    data: {
+        serverUrl: string;
+        authName?: string;
+    };
     // (undocumented)
     groupName: string;
     // (undocumented)
     id: string;
     // (undocumented)
     label: string;
-    // (undocumented)
-    serverUrl: string;
 }
 
 // @public (undocumented)

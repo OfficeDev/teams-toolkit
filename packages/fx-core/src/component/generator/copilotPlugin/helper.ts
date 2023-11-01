@@ -44,6 +44,7 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
+import { isApiKeyEnabled } from "../../../common/featureFlags";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -152,7 +153,8 @@ export async function listOperations(
   }
 
   try {
-    const specParser = new SpecParser(apiSpecUrl!);
+    const allowAPIKeyAuth = isApiKeyEnabled();
+    const specParser = new SpecParser(apiSpecUrl as string, { allowAPIKeyAuth });
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors);
 
@@ -219,11 +221,13 @@ function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
       id: operation.api,
       label: operation.api,
       groupName: arr[0],
-      serverUrl: operation.server,
+      data: {
+        serverUrl: operation.server,
+      },
     };
 
     if (operation.auth) {
-      result.authName = operation.auth.name;
+      result.data.authName = operation.auth.name;
     }
     operationsWithSeparator.push(result);
   }
@@ -576,13 +580,13 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {
-        let content = error.content;
+        let content: string = error.content;
         if (error.content.startsWith("ResolverError: Error downloading")) {
           content = error.content
             .split("\n")
             .map((o) => o.trim())
             .join(". ");
-          content = content + ". " + getLocalizedString("core.common.ErrorFetchApiSpec");
+          content = `${content}. ${getLocalizedString("core.common.ErrorFetchApiSpec")}`;
         }
         return content;
       }

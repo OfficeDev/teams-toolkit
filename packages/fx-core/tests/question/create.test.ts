@@ -1018,8 +1018,22 @@ describe("scaffold question", () => {
             platform: Platform.VSCode,
             [QuestionNames.ApiSpecLocation]: "apispec",
             supportedApisFromApiSpec: [
-              { id: "operation1", label: "operation1", groupName: "1" },
-              { id: "operation2", label: "operation2", groupName: "2" },
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
             ],
           };
 
@@ -1040,13 +1054,17 @@ describe("scaffold question", () => {
                 id: "operation1",
                 label: "operation1",
                 groupName: "1",
-                serverUrl: "https://server1",
+                data: {
+                  serverUrl: "https://server1",
+                },
               },
               {
                 id: "operation2",
                 label: "operation2",
                 groupName: "2",
-                serverUrl: "https://server1",
+                data: {
+                  serverUrl: "https://server1",
+                },
               },
             ],
           };
@@ -1067,15 +1085,19 @@ describe("scaffold question", () => {
                 id: "operation1",
                 label: "operation1",
                 groupName: "1",
-                authName: "auth1",
-                serverUrl: "https://server1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
               },
               {
                 id: "operation2",
                 label: "operation2",
                 groupName: "2",
-                authName: "auth1",
-                serverUrl: "https://server1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
               },
             ],
           };
@@ -1096,15 +1118,19 @@ describe("scaffold question", () => {
                 id: "operation1",
                 label: "operation1",
                 groupName: "1",
-                authName: "auth1",
-                serverUrl: "https://server1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
               },
               {
                 id: "operation2",
                 label: "operation2",
                 groupName: "2",
-                authName: "auth1",
-                serverUrl: "https://server2",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server2",
+                },
               },
             ],
           };
@@ -1131,22 +1157,28 @@ describe("scaffold question", () => {
                 id: "operation1",
                 label: "operation1-label",
                 groupName: "1",
-                authName: "auth1",
-                serverUrl: "https://server1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
               },
               {
                 id: "operation2",
                 label: "operation2-label",
                 groupName: "2",
-                authName: "auth2",
-                serverUrl: "https://server1",
+                data: {
+                  authName: "auth2",
+                  serverUrl: "https://server1",
+                },
               },
               {
                 id: "operation3",
                 label: "operation3-label",
                 groupName: "1",
-                authName: "auth3",
-                serverUrl: "https://server1",
+                data: {
+                  authName: "auth3",
+                  serverUrl: "https://server1",
+                },
               },
             ],
           };
@@ -1227,14 +1259,18 @@ describe("scaffold question", () => {
               id: "get operation1",
               label: "get operation1",
               groupName: "GET",
-              authName: "api_key",
-              serverUrl: "https://server",
+              data: {
+                authName: "api_key",
+                serverUrl: "https://server",
+              },
             },
             {
               id: "get operation2",
               label: "get operation2",
               groupName: "GET",
-              serverUrl: "https://server2",
+              data: {
+                serverUrl: "https://server2",
+              },
             },
           ]);
           assert.isUndefined(res);
@@ -1270,14 +1306,18 @@ describe("scaffold question", () => {
               id: "get operation1",
               label: "get operation1",
               groupName: "GET",
-              authName: "api_key",
-              serverUrl: "https://server",
+              data: {
+                authName: "api_key",
+                serverUrl: "https://server",
+              },
             },
             {
               id: "get operation2",
               label: "get operation2",
               groupName: "GET",
-              serverUrl: "https://server2",
+              data: {
+                serverUrl: "https://server2",
+              },
             },
           ]);
           assert.isUndefined(res);
@@ -1440,7 +1480,9 @@ describe("scaffold question", () => {
               id: "GET /store/order",
               label: "GET /store/order",
               groupName: "GET",
-              serverUrl: "https://server2",
+              data: {
+                serverUrl: "https://server2",
+              },
             },
           ]);
           assert.isUndefined(res);

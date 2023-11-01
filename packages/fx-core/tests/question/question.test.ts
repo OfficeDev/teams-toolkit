@@ -867,7 +867,19 @@ describe("copilotPluginQuestions", async () => {
           result: ["https://example.json"],
         });
       } else if (question.name == QuestionNames.ApiOperation) {
-        return ok({ type: "success", result: ["testOperation1"] });
+        return ok({
+          type: "success",
+          result: [
+            {
+              id: "testOperation1",
+              label: "operation1",
+              groupName: "1",
+              data: {
+                serverUrl: "https://server1",
+              },
+            },
+          ],
+        });
       }
       return ok({ type: "success", result: undefined });
     };

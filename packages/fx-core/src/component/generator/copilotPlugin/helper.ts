@@ -33,6 +33,9 @@ import {
   WarningResult,
   WarningType,
   SpecParserError,
+  ErrorType,
+  ErrorResult as ApiSpecErrorResult,
+  ListAPIResult,
 } from "../../../common/spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -41,10 +44,6 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
-import {
-  ErrorType,
-  ErrorResult as ApiSpecErrorResult,
-} from "../../../common/spec-parser/interfaces";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -170,7 +169,7 @@ export async function listOperations(
       return err(validationRes.errors);
     }
 
-    let operations = await specParser.list();
+    let operations: ListAPIResult[] = await specParser.list();
 
     // Filter out exsiting APIs
     if (!includeExistingAPIs) {
@@ -183,7 +182,7 @@ export async function listOperations(
         const operationMaps = await specParser.listOperationMap();
         const existingOperations = existingOperationIds.map((key) => operationMaps.get(key));
         operations = operations.filter(
-          (operation: string) => !existingOperations.includes(operation)
+          (operation: ListAPIResult) => !existingOperations.includes(operation.api)
         );
         // No extra API can be added
         if (operations.length == 0) {
@@ -212,11 +211,21 @@ export async function listOperations(
   }
 }
 
-function sortOperations(operations: string[]): ApiOperation[] {
+function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
   const operationsWithSeparator: ApiOperation[] = [];
   for (const operation of operations) {
-    const arr = operation.toUpperCase().split(" ");
-    operationsWithSeparator.push({ id: operation, label: operation, groupName: arr[0] });
+    const arr = operation.api.toUpperCase().split(" ");
+    const result: ApiOperation = {
+      id: operation.api,
+      label: operation.api,
+      groupName: arr[0],
+      serverUrl: operation.server,
+    };
+
+    if (operation.auth) {
+      result.authName = operation.auth.name;
+    }
+    operationsWithSeparator.push(result);
   }
 
   return operationsWithSeparator.sort((operation1: ApiOperation, operation2: ApiOperation) => {

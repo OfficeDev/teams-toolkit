@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   CLIPlatforms,
   FolderQuestion,
   IQTreeNode,
@@ -1559,12 +1560,39 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     forgetLastValue: true,
     staticOptions: [],
     validation: {
-      validFunc: (input: string[]): string | undefined => {
+      validFunc: (input: string[], inputs?: Inputs): string | undefined => {
         if (input.length < 1 || input.length > 10) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
             input.length,
             10
+          );
+        }
+        const operations: ApiOperation[] = inputs?.supportedApisFromApiSpec as ApiOperation[];
+
+        const authNames: Set<string> = new Set();
+        const serverUrls: Set<string> = new Set();
+        for (const inputItem of input) {
+          const operation = operations.find((op) => op.id === inputItem);
+          if (operation) {
+            if (operation.authName) {
+              authNames.add(operation.authName);
+            }
+            serverUrls.add(operation.serverUrl);
+          }
+        }
+
+        if (authNames.size > 1) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.multipleAuth",
+            Array.from(authNames).join(", ")
+          );
+        }
+
+        if (serverUrls.size > 1) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.multipleServer",
+            Array.from(serverUrls).join(", ")
           );
         }
       },
@@ -1574,7 +1602,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         throw new EmptyOptionError(QuestionNames.ApiOperation, "question");
       }
 
-      const operations = inputs.supportedApisFromApiSpec;
+      const operations = inputs.supportedApisFromApiSpec as ApiOperation[];
 
       return operations;
     },

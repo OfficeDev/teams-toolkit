@@ -145,6 +145,8 @@ export interface ApiOperation {
   id: string;
   label: string;
   groupName: string;
+  serverUrl: string;
+  authName?: string;
 }
 
 export interface Warning {

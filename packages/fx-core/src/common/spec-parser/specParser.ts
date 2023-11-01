@@ -12,6 +12,7 @@ import {
   APIInfo,
   ErrorType,
   GenerateResult,
+  ListAPIResult,
   ParseOptions,
   ValidateResult,
   ValidationStatus,
@@ -113,12 +114,51 @@ export class SpecParser {
    * @returns A string array that represents the HTTP method and path of each operation, such as ['GET /pets/{petId}', 'GET /user/{userId}']
    * according to copilot plugin spec, only list get and post method without auth
    */
-  async list(): Promise<string[]> {
+  async list(): Promise<ListAPIResult[]> {
     try {
       await this.loadSpec();
-      const apiMap = this.getAllSupportedAPIs(this.spec!);
-      return Array.from(Object.keys(apiMap));
+      const spec = this.spec!;
+      const apiMap = this.getAllSupportedAPIs(spec);
+      const result: ListAPIResult[] = [];
+      for (const apiKey in apiMap) {
+        const apiResult: ListAPIResult = {
+          api: "",
+          server: "",
+        };
+        const [method, path] = apiKey.split(" ");
+        const operation = apiMap[apiKey];
+        const rootServer = spec.servers && spec.servers[0];
+        const methodServer = spec.paths[path]!.servers && spec.paths[path]?.servers![0];
+        const operationServer = operation.servers && operation.servers[0];
+
+        const serverUrl = operationServer || methodServer || rootServer;
+        if (!serverUrl) {
+          throw new SpecParserError(
+            ConstantString.NoServerInformation,
+            ErrorType.NoServerInformation
+          );
+        }
+
+        apiResult.server = serverUrl.url;
+
+        const apiKeyAuthArray = getAPIKeyAuthArray(operation.security, spec);
+
+        for (const apiKeyAuth of apiKeyAuthArray) {
+          if (apiKeyAuth.length === 1) {
+            apiResult.auth = apiKeyAuth[0];
+            break;
+          }
+        }
+
+        apiResult.api = `${method} ${path}`;
+        result.push(apiResult);
+      }
+
+      return result;
     } catch (err) {
+      if (err instanceof SpecParserError) {
+        throw err;
+      }
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
     }
   }

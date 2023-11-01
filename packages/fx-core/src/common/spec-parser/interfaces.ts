@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { OpenAPIV3 } from "openapi-types";
+
 /**
  * An interface that represents the result of validating an OpenAPI specification file.
  */
@@ -185,4 +187,10 @@ export interface APIInfo {
   parameters: Parameter[];
   description: string;
   warning?: WarningResult;
+}
+
+export interface ListAPIResult {
+  api: string;
+  server: string;
+  auth?: OpenAPIV3.ApiKeySecurityScheme;
 }

@@ -20,7 +20,7 @@ import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { AppStudioScopes } from "../common/tools";
-import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
+import { recommendedLocations, resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
 import { environmentManager } from "../core/environment";
@@ -868,7 +868,30 @@ function selectResourceGroupLocationQuestion(
       if (getLocationsRes.isErr()) {
         throw getLocationsRes.error;
       }
-      return getLocationsRes.value;
+      const recommended = getLocationsRes.value.filter((location) => {
+        return recommendedLocations.indexOf(location) >= 0;
+      });
+      const others = getLocationsRes.value.filter((location) => {
+        return recommendedLocations.indexOf(location) < 0;
+      });
+      return [
+        ...recommended.map((location) => {
+          return {
+            id: location,
+            label: location,
+            groupName: getLocalizedString(
+              "core.QuestionNewResourceGroupLocation.group.recommended"
+            ),
+          } as OptionItem;
+        }),
+        ...others.map((location) => {
+          return {
+            id: location,
+            label: location,
+            groupName: getLocalizedString("core.QuestionNewResourceGroupLocation.group.others"),
+          } as OptionItem;
+        }),
+      ];
     },
     default: "Central US",
   };

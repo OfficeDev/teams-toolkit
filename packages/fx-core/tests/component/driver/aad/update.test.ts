@@ -25,6 +25,7 @@ import {
   InvalidActionInputError,
   JSONSyntaxError,
   MissingEnvironmentVariablesError,
+  UnhandledError,
 } from "../../../../src/error/common";
 import { Platform, ok, err } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
@@ -475,6 +476,31 @@ describe("aadAppUpdate", async () => {
       .and.property("message")
       .equals(
         'A http server error happened while performing the aadApp/update task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+      );
+  });
+
+  it("should throw unhandled error when axios error contains no response", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").rejects({
+      isAxiosError: true,
+    });
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
+    };
+
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(UnhandledError)
+      .and.property("message")
+      .equals(
+        'An unexpected error has occurred while performing the aadApp/update task. {"isAxiosError":true}'
       );
   });
 

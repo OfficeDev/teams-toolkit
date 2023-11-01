@@ -36,6 +36,37 @@ export type ResourceGroupInfo = {
   location: string;
 };
 
+export const recommendedLocations = [
+  "South Africa North",
+  "Australia East",
+  "Central India",
+  "East Asia",
+  "Japan East",
+  "Korea Central",
+  "Southeast Asia",
+  "Canada Central",
+  "France Central",
+  "Germany West Central",
+  "Italy North",
+  "North Europe",
+  "Norway East",
+  "Poland Central",
+  "Sweden Central",
+  "Switzerland North",
+  "UK South",
+  "West Europe",
+  "Israel Central",
+  "Qatar Central",
+  "UAE North",
+  "Brazil South",
+  "Central US",
+  "East US",
+  "East US 2",
+  "South Central US",
+  "West US 2",
+  "West US 3",
+];
+
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
 

@@ -11,6 +11,7 @@ import {
   LocalFileStorage,
 } from "../../../../src/conversation/storage";
 import { TestStorage } from "./testUtils";
+import * as path from "path";
 
 chaiUse(chaiPromises);
 
@@ -19,10 +20,12 @@ describe("Notification.Storage Tests - Node", () => {
     const sandbox = sinon.createSandbox();
     let fileContent = "";
     let fileExists = true;
+    let filePath = "";
     let localFileStorage: LocalFileStorage;
 
     beforeEach(() => {
       sandbox.stub(fs, "access").callsFake((path, cb) => {
+        filePath = path.toString();
         if (fileExists) {
           cb(null);
         } else {
@@ -64,6 +67,19 @@ describe("Notification.Storage Tests - Node", () => {
       fileExists = false;
       const data = await localFileStorage.read("key");
       assert.isUndefined(data);
+      assert.strictEqual(path.basename(filePath), ".notification.localstore.json");
+    });
+
+    it("read should load file name from env", async () => {
+      const oldEnv = process.env.TEAMSFX_NOTIFICATION_STORE_FILENAME;
+      process.env.TEAMSFX_NOTIFICATION_STORE_FILENAME = ".notification.testtool.json";
+      fileExists = false;
+
+      const data = await localFileStorage.read("key");
+      assert.isUndefined(data);
+      assert.strictEqual(path.basename(filePath), ".notification.testtool.json");
+
+      process.env.TEAMSFX_NOTIFICATION_STORE_FILENAME = oldEnv;
     });
 
     it("read should return correct data", async () => {

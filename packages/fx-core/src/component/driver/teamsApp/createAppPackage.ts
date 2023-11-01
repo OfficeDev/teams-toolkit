@@ -23,6 +23,7 @@ import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
 import { manifestUtils } from "./utils/ManifestUtils";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
+import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -87,7 +88,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
     const appDirectory = path.dirname(manifestPath);
 
-    const colorFile = path.join(appDirectory, manifest.icons.color);
+    const colorFile = path.resolve(appDirectory, manifest.icons.color);
     if (!(await fs.pathExists(colorFile))) {
       const error = new FileNotFoundError(
         actionName,
@@ -96,8 +97,12 @@ export class CreateAppPackageDriver implements StepDriver {
       );
       return err(error);
     }
+    const colorFileRelativePath = path.relative(appDirectory, colorFile);
+    if (colorFileRelativePath.startsWith("..\\")) {
+      return err(new InvalidFileOutsideOfTheDirectotryError(colorFile));
+    }
 
-    const outlineFile = path.join(appDirectory, manifest.icons.outline);
+    const outlineFile = path.resolve(appDirectory, manifest.icons.outline);
     if (!(await fs.pathExists(outlineFile))) {
       const error = new FileNotFoundError(
         actionName,
@@ -105,6 +110,10 @@ export class CreateAppPackageDriver implements StepDriver {
         "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
       );
       return err(error);
+    }
+    const outlineFileRelativePath = path.relative(appDirectory, outlineFile);
+    if (outlineFileRelativePath.startsWith("..\\")) {
+      return err(new InvalidFileOutsideOfTheDirectotryError(outlineFile));
     }
 
     // pre-check existence
@@ -132,10 +141,8 @@ export class CreateAppPackageDriver implements StepDriver {
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest, null, 4)));
 
     // outline.png & color.png, relative path
-    let dir = path.dirname(manifest.icons.color);
-    zip.addLocalFile(colorFile, dir === "." ? "" : dir);
-    dir = path.dirname(manifest.icons.outline);
-    zip.addLocalFile(outlineFile, dir === "." ? "" : dir);
+    zip.addFile(colorFileRelativePath, Buffer.from(colorFile));
+    zip.addFile(outlineFileRelativePath, Buffer.from(outlineFile));
 
     // localization file
     if (
@@ -145,9 +152,12 @@ export class CreateAppPackageDriver implements StepDriver {
     ) {
       for (const language of manifest.localizationInfo.additionalLanguages) {
         const file = language.file;
-        const fileName = `${appDirectory}/${file}`;
-        const dir = path.dirname(file);
-        zip.addLocalFile(fileName, dir === "." ? "" : dir);
+        const fileName = path.resolve(appDirectory, file);
+        const relativePath = path.relative(appDirectory, fileName);
+        if (relativePath.startsWith("..\\")) {
+          return err(new InvalidFileOutsideOfTheDirectotryError(fileName));
+        }
+        zip.addFile(relativePath, Buffer.from(fileName));
       }
     }
 
@@ -158,7 +168,10 @@ export class CreateAppPackageDriver implements StepDriver {
       manifest.composeExtensions[0].composeExtensionType == "apiBased" &&
       manifest.composeExtensions[0].apiSpecificationFile
     ) {
-      const apiSpecificationFile = `${appDirectory}/${manifest.composeExtensions[0].apiSpecificationFile}`;
+      const apiSpecificationFile = path.resolve(
+        appDirectory,
+        manifest.composeExtensions[0].apiSpecificationFile
+      );
       if (!(await fs.pathExists(apiSpecificationFile))) {
         return err(
           new FileNotFoundError(
@@ -167,6 +180,10 @@ export class CreateAppPackageDriver implements StepDriver {
             "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
           )
         );
+      }
+      const relativePath = path.relative(appDirectory, apiSpecificationFile);
+      if (relativePath.startsWith("..\\")) {
+        return err(new InvalidFileOutsideOfTheDirectotryError(apiSpecificationFile));
       }
       const expandedEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
         apiSpecificationFile,
@@ -177,18 +194,15 @@ export class CreateAppPackageDriver implements StepDriver {
       }
       const openAPIContent = expandedEnvVarResult.value;
       const attr = await fs.stat(apiSpecificationFile);
-      zip.addFile(
-        manifest.composeExtensions[0].apiSpecificationFile,
-        Buffer.from(openAPIContent),
-        "",
-        attr.mode
-      );
-      // zip.addLocalFile(apiSpecificationFile, dir === "." ? "" : dir);
+      zip.addFile(relativePath, Buffer.from(openAPIContent), "", attr.mode);
 
       if (manifest.composeExtensions[0].commands.length > 0) {
         for (const command of manifest.composeExtensions[0].commands) {
           if (command.apiResponseRenderingTemplateFile) {
-            const adaptiveCardFile = `${appDirectory}/${command.apiResponseRenderingTemplateFile}`;
+            const adaptiveCardFile = path.resolve(
+              appDirectory,
+              command.apiResponseRenderingTemplateFile
+            );
             if (!(await fs.pathExists(adaptiveCardFile))) {
               return err(
                 new FileNotFoundError(
@@ -198,8 +212,11 @@ export class CreateAppPackageDriver implements StepDriver {
                 )
               );
             }
-            const dir = path.dirname(command.apiResponseRenderingTemplateFile);
-            zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
+            const relativePath = path.relative(appDirectory, adaptiveCardFile);
+            if (relativePath.startsWith("..\\")) {
+              return err(new InvalidFileOutsideOfTheDirectotryError(adaptiveCardFile));
+            }
+            zip.addFile(relativePath, Buffer.from(openAPIContent), "");
           }
         }
       }

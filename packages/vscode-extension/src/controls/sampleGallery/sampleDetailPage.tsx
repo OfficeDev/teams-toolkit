@@ -8,12 +8,7 @@ import * as React from "react";
 import { ActionButton, Image } from "@fluentui/react";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { Setting, Watch } from "../resources";
 import { SampleProps } from "./ISamples";
 
@@ -43,8 +38,19 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
             </div>
           </div>
           <div className="buttons">
-            <VSCodeButton onClick={this.onCreate}>Create</VSCodeButton>
-            <VSCodeButton appearance="secondary" onClick={this.onViewGithub}>
+            <VSCodeButton
+              onClick={() =>
+                this.props.createSample(this.props.sample, TelemetryTriggerFrom.SampleDetailPage)
+              }
+            >
+              Create
+            </VSCodeButton>
+            <VSCodeButton
+              appearance="secondary"
+              onClick={() =>
+                this.props.viewGitHub(this.props.sample, TelemetryTriggerFrom.SampleDetailPage)
+              }
+            >
               View on GitHub
             </VSCodeButton>
           </div>
@@ -68,33 +74,6 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
   }
 
   onBack = () => {
-    this.props.selectSample("");
-  };
-
-  onCreate = () => {
-    vscode.postMessage({
-      command: Commands.CloneSampleApp,
-      data: {
-        appName: this.props.sample.title,
-        appFolder: this.props.sample.id,
-      },
-    });
-  };
-
-  onViewGithub = () => {
-    vscode.postMessage({
-      command: Commands.SendTelemetryEvent,
-      data: {
-        eventName: TelemetryEvent.ViewSampleInGitHub,
-        properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sample.id,
-        },
-      },
-    });
-    vscode.postMessage({
-      command: Commands.OpenExternalLink,
-      data: this.props.sample.downloadUrl,
-    });
+    this.props.selectSample("", TelemetryTriggerFrom.SampleDetailPage);
   };
 }

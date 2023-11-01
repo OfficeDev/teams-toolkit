@@ -79,14 +79,16 @@ export enum TelemetryEvent {
 
   OpenAzurePortal = "open-azure-portal",
 
-  ClickSampleCard = "click-sample-card",
-
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
 
+  CloneSample = "clone-sample",
   ViewSampleInGitHub = "view-sample-in-github",
   UpgradeToolkitForSample = "upgrade-toolkit-for-sample",
   SearchSample = "search-sample",
+  SelectSample = "select-sample",
+  FilterSampleAdd = "filter-sample-add",
+  FilterSampleRemove = "filter-sample-remove",
 
   WatchVideo = "watch-video",
   PauseVideo = "pause-video",
@@ -348,6 +350,7 @@ export enum TelemetryProperty {
   ValidateMethod = "validate-method",
   // Used in Sample Gallery
   SearchText = "search-text",
+  SampleFilters = "sample-filters",
   Layout = "layout",
 }
 
@@ -376,6 +379,8 @@ export enum TelemetryTriggerFrom {
   InProductDoc = "InProductDoc",
   AccountHelp = "AccountHelp",
   SideloadingDisabled = "SideloadingDisabled",
+  SampleGallery = "SampleGallery",
+  SampleDetailPage = "SampleDetailPage",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

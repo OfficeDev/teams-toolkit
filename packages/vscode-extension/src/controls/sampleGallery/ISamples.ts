@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
+
 export type SampleGalleryState = {
   loading: boolean;
   filteredSamples?: Array<SampleInfo>;
@@ -34,7 +36,9 @@ export interface SampleInfo {
 
 export type SampleProps = {
   sample: SampleInfo;
-  selectSample: (id: string) => void;
+  selectSample: (id: string, triggerFrom: TelemetryTriggerFrom) => void;
+  createSample: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
+  viewGitHub: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
 };
 
 export type SampleFilterOptionType = {

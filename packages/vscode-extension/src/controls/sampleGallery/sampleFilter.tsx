@@ -124,7 +124,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         data: {
           eventName: TelemetryEvent.SearchSample,
           properties: {
-            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
             [TelemetryProperty.SearchText]: e.target.value,
           },
         },
@@ -138,6 +138,16 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
     option?: IDropdownOption
   ) => {
     const choice = option?.key as string;
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.FilterSampleAdd,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
+          [TelemetryProperty.SampleFilters]: choice,
+        },
+      },
+    });
     const newTags = option?.selected
       ? [...this.props.filterTags, choice]
       : this.props.filterTags.filter((tag) => tag !== choice);
@@ -145,11 +155,31 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
   };
 
   private onTagRemoved = (removedTag: string) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.FilterSampleRemove,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
+          [TelemetryProperty.SampleFilters]: removedTag,
+        },
+      },
+    });
     const newTags = this.props.filterTags.filter((tag) => tag !== removedTag);
     this.props.onFilterConditionChanged(this.props.query, newTags);
   };
 
   private onAllTagsRemoved = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.FilterSampleRemove,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
+          [TelemetryProperty.SampleFilters]: this.props.filterTags.join(","),
+        },
+      },
+    });
     this.props.onFilterConditionChanged(this.props.query, []);
   };
 

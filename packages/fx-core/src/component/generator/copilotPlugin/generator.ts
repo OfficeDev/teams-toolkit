@@ -133,12 +133,13 @@ export class CopilotPluginGenerator {
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
 
-      context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
       if (apiKeyAuthData?.authName) {
         context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS, {
           authName: apiKeyAuthData?.authName,
           domains: JSON.stringify([apiKeyAuthData.serverUrl]),
         });
+      } else {
+        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
       }
       const apiOperations = inputs[QuestionNames.ApiOperation] as ApiOperation[];
       const filters = apiOperations.map((api) => api.id);

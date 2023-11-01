@@ -51,6 +51,7 @@ import {
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { isApiKeyEnabled } from "../../../common/featureFlags";
+import { getRelativePath } from "../../../common/spec-parser/manifestUpdater";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
@@ -65,6 +66,10 @@ const apiSpecJsonFileName = "openapi.json";
 const invalidApiSpecErrorName = "invalid-api-spec";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 const isRemoteUrlTelemetryProperty = "remote-url";
+
+function normalizePath(path: string): string {
+  return "./" + path.normalize(path).replace(/\\/g, "/");
+}
 
 export interface CopilotPluginGeneratorResult {
   warnings?: Warning[];
@@ -133,10 +138,32 @@ export class CopilotPluginGenerator {
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
 
+      const manifestPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
+
+      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
+
+      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      url = url.trim();
+
+      let isYaml: boolean;
+      try {
+        isYaml = await isYamlSpecFile(url);
+      } catch (e) {
+        isYaml = false;
+      }
+
+      const openapiSpecFileName = isYaml ? apiSpecYamlFileName : apiSpecJsonFileName;
+      const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
+
       if (apiKeyAuthData?.authName) {
         context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS, {
           authName: apiKeyAuthData?.authName,
           domains: JSON.stringify([apiKeyAuthData.serverUrl]),
+          openapiSpecPath: normalizePath(path.join(apiSpecFolderName, openapiSpecFileName)),
         });
       } else {
         context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
@@ -152,8 +179,6 @@ export class CopilotPluginGenerator {
       );
       if (templateRes.isErr()) return err(templateRes.error);
 
-      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
-      url = url.trim();
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
       });
@@ -202,25 +227,7 @@ export class CopilotPluginGenerator {
       }
 
       // generate files
-      const manifestPath = path.join(
-        destinationPath,
-        AppPackageFolderName,
-        ManifestTemplateFileName
-      );
-
-      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);
-
-      let isYaml: boolean;
-      try {
-        isYaml = await isYamlSpecFile(url);
-      } catch (e) {
-        isYaml = false;
-      }
-      const openapiSpecPath = path.join(
-        apiSpecFolderPath,
-        isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
-      );
 
       const adaptiveCardFolder = path.join(
         destinationPath,

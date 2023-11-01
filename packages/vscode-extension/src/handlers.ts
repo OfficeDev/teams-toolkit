@@ -1969,7 +1969,9 @@ export async function installAdaptiveCardExt(
         TelemetryEvent.AdaptiveCardPreviewerInstallConfirm,
         getTriggerFromProperty(args)
       );
-      await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
+      await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId, {
+        installPreReleaseVersion: true,
+      });
     } else {
       ExtTelemetry.sendTelemetryEvent(
         TelemetryEvent.AdaptiveCardPreviewerInstallCancel,

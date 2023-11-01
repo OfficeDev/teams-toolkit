@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { ApiKeyAuthInfo, Context, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
@@ -39,15 +39,29 @@ import { sampleProvider } from "../../common/samples";
 export class Generator {
   public static getDefaultVariables(
     appName: string,
-    safeProjectNameFromVS?: string
+    safeProjectNameFromVS?: string,
+    apiKeyAuthData?: { authName: string; domains: string }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
-    return {
-      appName: appName,
-      ProjectName: appName,
-      SafeProjectName: safeProjectName,
-      SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-    };
+
+    if (apiKeyAuthData?.authName) {
+      return {
+        appName: appName,
+        ProjectName: appName,
+        SafeProjectName: safeProjectName,
+        SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
+        ApiSpecAuthName: apiKeyAuthData.authName,
+        ApiSpecServerUrl: apiKeyAuthData.domains,
+        ApiSpecAuthRegistrationIdPrefix: apiKeyAuthData.authName.toUpperCase(),
+      };
+    } else {
+      return {
+        appName: appName,
+        ProjectName: appName,
+        SafeProjectName: safeProjectName,
+        SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
+      };
+    }
   }
   @hooks([
     ActionExecutionMW({

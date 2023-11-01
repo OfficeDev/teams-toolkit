@@ -7,6 +7,16 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsfx provision' is executed
 provision:
+  # Register API KEY
+  - uses: apiKey/create
+    with:
+      name: {{ApiSpecAuthName}}
+      appId: ${{TEAMS_APP_ID}}
+      apiSpecPath: ./apiSpecificationFiles/openapi.yaml
+      domain: {{{ApiSpecServerUrl}}}
+    writeToEnvironmentFile:
+      registrationId: {{ApiSpecAuthRegistrationIdPrefix}}_REGISTRATION_ID
+
   # Creates a Teams app
   - uses: teamsApp/create
     with:

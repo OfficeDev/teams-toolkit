@@ -57,5 +57,5 @@ export function isTestToolEnabled(): boolean {
 }
 
 export function isApiKeyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
+  return isFeatureFlagEnabled(FeatureFlagName.ApiKey, true);
 }

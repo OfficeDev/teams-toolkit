@@ -20,6 +20,7 @@ import {
   AppPackageFolderName,
   Warning,
   ApiOperation,
+  ApiKeyAuthInfo,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -83,15 +84,16 @@ export class CopilotPluginGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    const hasAuth = (inputs[QuestionNames.ApiOperation] as ApiOperation[]).find(
+    const authApi = (inputs[QuestionNames.ApiOperation] as ApiOperation[]).find(
       (api) => !!api.data.authName
     );
     return await this.generateForME(
       context,
       inputs,
       destinationPath,
-      hasAuth ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName,
-      hasAuth ? fromApiSpecWithApiKeyComponentName : fromApiSpecComponentName
+      authApi ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName,
+      authApi ? fromApiSpecWithApiKeyComponentName : fromApiSpecComponentName,
+      authApi?.data
     );
   }
 
@@ -122,14 +124,22 @@ export class CopilotPluginGenerator {
     inputs: Inputs,
     destinationPath: string,
     templateName: string,
-    componentName: string
+    componentName: string,
+    apiKeyAuthData?: ApiKeyAuthInfo
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
       const language = inputs[QuestionNames.ProgrammingLanguage];
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+
       context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
+      if (apiKeyAuthData?.authName) {
+        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS, {
+          authName: apiKeyAuthData?.authName,
+          domains: JSON.stringify([apiKeyAuthData.serverUrl]),
+        });
+      }
       const apiOperations = inputs[QuestionNames.ApiOperation] as ApiOperation[];
       const filters = apiOperations.map((api) => api.id);
       // download template

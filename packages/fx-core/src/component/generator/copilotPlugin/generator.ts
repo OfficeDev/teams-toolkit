@@ -19,6 +19,7 @@ import {
   ResponseTemplatesFolderName,
   AppPackageFolderName,
   Warning,
+  ApiOperation,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -41,7 +42,6 @@ import { ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import {
-  ConstantString,
   SpecParserError,
   SpecParser,
   ValidationStatus,
@@ -49,9 +49,12 @@ import {
 } from "../../../common/spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
+import { isApiKeyEnabled } from "../../../common/featureFlags";
 
-const fromApiSpeccomponentName = "copilot-plugin-existing-api";
+const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
+const fromApiSpecWithApiKeyComponentName = "copilot-plugin-existing-api-api-key";
+const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
 const apiSpecFolderName = "apiSpecificationFiles";
@@ -70,9 +73,9 @@ export class CopilotPluginGenerator {
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
-      telemetryComponentName: fromApiSpeccomponentName,
+      telemetryComponentName: fromApiSpecComponentName,
       telemetryEventName: TelemetryEvents.Generate,
-      errorSource: fromApiSpeccomponentName,
+      errorSource: fromApiSpecComponentName,
     }),
   ])
   public static async generateFromApiSpec(
@@ -80,12 +83,15 @@ export class CopilotPluginGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    const hasAuth = (inputs[QuestionNames.ApiOperation] as ApiOperation[]).find(
+      (api) => !!api.data.authName
+    );
     return await this.generateForME(
       context,
       inputs,
       destinationPath,
-      fromApiSpecTemplateName,
-      fromApiSpeccomponentName
+      hasAuth ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName,
+      hasAuth ? fromApiSpecWithApiKeyComponentName : fromApiSpecComponentName
     );
   }
 
@@ -124,7 +130,8 @@ export class CopilotPluginGenerator {
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
       context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
-      const filters = inputs[QuestionNames.ApiOperation] as string[];
+      const apiOperations = inputs[QuestionNames.ApiOperation] as ApiOperation[];
+      const filters = apiOperations.map((api) => api.id);
       // download template
       const templateRes = await Generator.generateTemplate(
         context,
@@ -141,7 +148,8 @@ export class CopilotPluginGenerator {
       });
 
       // validate API spec
-      const specParser = new SpecParser(url);
+      const allowAPIKeyAuth = isApiKeyEnabled();
+      const specParser = new SpecParser(url, { allowAPIKeyAuth });
       const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
       const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);

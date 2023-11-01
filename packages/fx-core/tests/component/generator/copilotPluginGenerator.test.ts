@@ -103,6 +103,16 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox
@@ -131,7 +141,16 @@ describe("copilotPluginGenerator", function () {
       projectPath: "path",
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: ["operation1"],
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -183,7 +202,16 @@ describe("copilotPluginGenerator", function () {
       projectPath: "path",
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: ["operation1"],
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -214,6 +242,16 @@ describe("copilotPluginGenerator", function () {
       projectPath: "path",
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -240,6 +278,16 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       openAIPluginManifest: openAIPluginManifest,
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox
@@ -274,6 +322,16 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       openAIPluginManifest: openAIPluginManifest,
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox
@@ -308,6 +366,16 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "generate").resolves();
@@ -325,6 +393,16 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -350,6 +428,16 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox
@@ -377,6 +465,16 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox.stub(Generator, "generateTemplate").throws(new Error("test"));
@@ -391,6 +489,16 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "operation1",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
     };
     const context = createContextV3();
     sandbox

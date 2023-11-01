@@ -51,7 +51,6 @@ import {
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { isApiKeyEnabled } from "../../../common/featureFlags";
-import { getRelativePath } from "../../../common/spec-parser/manifestUpdater";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
@@ -68,7 +67,7 @@ const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-a
 const isRemoteUrlTelemetryProperty = "remote-url";
 
 function normalizePath(path: string): string {
-  return "./" + path.normalize(path).replace(/\\/g, "/");
+  return "./" + path.replace(/\\/g, "/");
 }
 
 export interface CopilotPluginGeneratorResult {

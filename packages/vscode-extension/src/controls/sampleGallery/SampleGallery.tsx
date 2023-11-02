@@ -256,13 +256,11 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       }
       return true;
     });
-    if (this.state.query !== "") {
+    if (query !== "") {
       const fuse = new Fuse(filteredSamples, {
         keys: ["title", "shortDescription", "fullDescription", "tags"],
       });
-      filteredSamples = fuse
-        .search(this.state.query)
-        .map((result: { item: SampleInfo }) => result.item);
+      filteredSamples = fuse.search(query).map((result: { item: SampleInfo }) => result.item);
     }
     this.setState({ query, filterTags, filteredSamples });
   };

@@ -217,13 +217,21 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
   };
 
   private onLayoutChanged = (newLayout: "grid" | "list") => {
+    if (newLayout === this.state.layout) {
+      return;
+    }
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {
-        eventName: TelemetryEvent.SearchSample,
+        eventName: TelemetryEvent.ChangeLayout,
         properties: {
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
           [TelemetryProperty.Layout]: newLayout,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.types
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.techniques)
+            .join(","),
         },
       },
     });

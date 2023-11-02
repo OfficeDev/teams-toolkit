@@ -86,6 +86,7 @@ export enum TelemetryEvent {
   ViewSampleInGitHub = "view-sample-in-github",
   UpgradeToolkitForSample = "upgrade-toolkit-for-sample",
   SearchSample = "search-sample",
+  ChangeLayout = "change-layout",
   SelectSample = "select-sample",
   FilterSampleAdd = "filter-sample-add",
   FilterSampleRemove = "filter-sample-remove",

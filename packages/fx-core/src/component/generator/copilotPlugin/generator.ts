@@ -88,8 +88,9 @@ export class CopilotPluginGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    const authApi = (inputs[QuestionNames.ApiOperation] as ApiOperation[]).find(
-      (api) => !!api.data.authName
+    const apiOperations = inputs[QuestionNames.ApiOperation] as string[];
+    const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
+      (api) => !!api.data.authName && apiOperations.includes(api.id)
     );
     return await this.generateForME(
       context,
@@ -166,8 +167,8 @@ export class CopilotPluginGenerator {
       } else {
         context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
       }
-      const apiOperations = inputs[QuestionNames.ApiOperation] as ApiOperation[];
-      const filters = apiOperations.map((api) => api.id);
+      const filters = inputs[QuestionNames.ApiOperation] as string[];
+
       // download template
       const templateRes = await Generator.generateTemplate(
         context,

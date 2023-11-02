@@ -6,6 +6,7 @@
  */
 
 import {
+  ApiOperation,
   err,
   IComposeExtension,
   Inputs,
@@ -94,6 +95,26 @@ describe("copilotPluginGenerator", function () {
   setTools(tools);
   const sandbox = sinon.createSandbox();
 
+  const apiOperations: ApiOperation[] = [
+    {
+      id: "operation1",
+      label: "operation1",
+      groupName: "1",
+      data: {
+        serverUrl: "https://server1",
+      },
+    },
+    {
+      id: "operation2",
+      label: "operation2",
+      groupName: "1",
+      data: {
+        serverUrl: "https://server1",
+        authName: "auth",
+      },
+    },
+  ];
+
   afterEach(async () => {
     sandbox.restore();
   });
@@ -103,16 +124,8 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -140,19 +153,9 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.AppName]: "test",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-            authName: "api_key",
-            openapiSpecPath: "path",
-          },
-        },
-      ],
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["operation2"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -179,17 +182,9 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -241,16 +236,8 @@ describe("copilotPluginGenerator", function () {
       projectPath: "path",
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -280,17 +267,9 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VS,
       projectPath: "path",
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -317,16 +296,8 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       openAIPluginManifest: openAIPluginManifest,
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -361,16 +332,8 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       openAIPluginManifest: openAIPluginManifest,
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -404,17 +367,9 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiSpecLocation]: "test.yml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "generate").resolves();
@@ -431,17 +386,9 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -466,17 +413,9 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -504,16 +443,7 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["operation1"],
     };
     const context = createContextV3();
     sandbox.stub(Generator, "generateTemplate").throws(new Error("test"));
@@ -528,16 +458,8 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "operation1",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox

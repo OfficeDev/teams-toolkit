@@ -428,7 +428,7 @@ describe("Test Tool Checker Test", () => {
       const versionRange = "~1.2.3";
       const mockProjectPath = "./projectPath";
       mockfs({
-        [path.join(mockProjectPath, "microsoft-teams-app-test-tool-cli-1.2.3.tgz")]: "",
+        [path.join(mockProjectPath, "microsoft-teams-app-test-tool-1.2.3.tgz")]: "",
       });
       const envStatus = mockEnvironment(sandbox, {
         nodeVersion: "v18.16.1",
@@ -444,7 +444,7 @@ describe("Test Tool Checker Test", () => {
       // Assert
       expect(envStatus.npmInstallArgs).not.undefined;
       const fileArg = envStatus.npmInstallArgs?.filter((arg) =>
-        arg.includes("microsoft-teams-app-test-tool-cli")
+        arg.includes("microsoft-teams-app-test-tool")
       )?.[0];
       expect(fileArg).not.empty;
       let parsed: url.URL | undefined;

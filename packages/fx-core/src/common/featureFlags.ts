@@ -52,8 +52,8 @@ export function isCliV3Enabled(): boolean {
   return isFeatureFlagEnabled("TEAMSFX_CLI_V3", false);
 }
 
-export function isTestToolEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TestTool, false);
+export function enableTestToolByDefault(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
 }
 
 export function isApiKeyEnabled(): boolean {

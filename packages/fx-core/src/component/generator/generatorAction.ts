@@ -2,13 +2,22 @@
 // Licensed under the MIT license.
 
 import AdmZip from "adm-zip";
-import path from "path";
-import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, zipFolder, downloadDirectory } from "./utils";
 import fs from "fs-extra";
+import path from "path";
+
+import { LogProvider } from "@microsoft/teamsfx-api";
+
+import { FeatureFlagName } from "../../common/constants";
 import { getTemplatesFolder } from "../../folder";
 import { MissKeyError } from "./error";
-import { FeatureFlagName } from "../../common/constants";
-import { LogProvider } from "@microsoft/teamsfx-api";
+import {
+  downloadDirectory,
+  fetchTemplateZipUrl,
+  fetchZipFromUrl,
+  SampleUrlInfo,
+  unzip,
+  zipFolder,
+} from "./utils";
 
 export interface GeneratorContext {
   name: string;
@@ -17,6 +26,7 @@ export interface GeneratorContext {
   tryLimits?: number;
   timeoutInMs?: number;
   url?: string;
+  sampleInfo?: SampleUrlInfo;
   zip?: AdmZip;
   fallback?: boolean;
   cancelDownloading?: boolean;
@@ -84,11 +94,11 @@ export const downloadDirectoryAction: GeneratorAction = {
   name: GeneratorActionName.DownloadDirectory,
   run: async (context: GeneratorContext) => {
     context.logProvider.debug(`Downloading sample by directory: ${JSON.stringify(context)}`);
-    if (!context.url) {
-      throw new MissKeyError("url");
+    if (!context.sampleInfo) {
+      throw new MissKeyError("sampleInfo");
     }
 
-    context.outputs = await downloadDirectory(context.url, context.destination);
+    context.outputs = await downloadDirectory(context.sampleInfo, context.destination);
   },
 };
 

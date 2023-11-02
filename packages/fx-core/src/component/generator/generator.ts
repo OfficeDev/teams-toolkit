@@ -132,7 +132,7 @@ export class Generator {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      url: sample.downloadUrl,
+      sampleInfo: sample.downloadUrlInfo,
       timeoutInMs: sampleDefaultTimeoutInMs,
       onActionError: sampleDefaultOnActionError,
     };

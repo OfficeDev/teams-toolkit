@@ -138,9 +138,10 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
         },
       },
     });
+    const sampleInfo = this.props.sample.downloadUrlInfo;
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: this.props.sample.downloadUrl,
+      data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
     });
   };
 }

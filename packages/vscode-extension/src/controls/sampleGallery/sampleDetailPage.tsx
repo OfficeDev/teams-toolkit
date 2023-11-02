@@ -92,9 +92,10 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
         },
       },
     });
+    const sampleInfo = this.props.sample.downloadUrlInfo;
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: this.props.sample.downloadUrl,
+      data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
     });
   };
 }

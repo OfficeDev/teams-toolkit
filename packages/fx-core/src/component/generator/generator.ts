@@ -44,24 +44,15 @@ export class Generator {
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
-    if (apiKeyAuthData) {
-      return {
-        appName: appName,
-        ProjectName: appName,
-        SafeProjectName: safeProjectName,
-        SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-        ApiSpecAuthName: apiKeyAuthData.authName,
-        ApiSpecAuthRegistrationIdEnvName: apiKeyAuthData.registrationIdEnvName,
-        ApiSpecPath: apiKeyAuthData.openapiSpecPath,
-      };
-    } else {
-      return {
-        appName: appName,
-        ProjectName: appName,
-        SafeProjectName: safeProjectName,
-        SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-      };
-    }
+    return {
+      appName: appName,
+      ProjectName: appName,
+      SafeProjectName: safeProjectName,
+      SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
+      ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
+      ApiSpecAuthRegistrationIdEnvName: apiKeyAuthData?.registrationIdEnvName ?? "",
+      ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
+    };
   }
   @hooks([
     ActionExecutionMW({

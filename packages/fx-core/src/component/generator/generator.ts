@@ -40,7 +40,7 @@ export class Generator {
   public static getDefaultVariables(
     appName: string,
     safeProjectNameFromVS?: string,
-    apiKeyAuthData?: { authName: string; openapiSpecPath: string }
+    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
@@ -51,7 +51,7 @@ export class Generator {
         SafeProjectName: safeProjectName,
         SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
         ApiSpecAuthName: apiKeyAuthData.authName,
-        ApiSpecAuthRegistrationIdPrefix: apiKeyAuthData.authName.toUpperCase(),
+        ApiSpecAuthRegistrationIdEnvName: apiKeyAuthData.registrationIdEnvName,
         ApiSpecPath: apiKeyAuthData.openapiSpecPath,
       };
     } else {

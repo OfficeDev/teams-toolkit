@@ -24,7 +24,7 @@ provision:
       appId: ${{TEAMS_APP_ID}}
       apiSpecPath: {{{ApiSpecPath}}}
     writeToEnvironmentFile:
-      registrationId: {{ApiSpecAuthRegistrationIdPrefix}}_REGISTRATION_ID
+      registrationId: {{ApiSpecAuthRegistrationIdEnvName}}
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

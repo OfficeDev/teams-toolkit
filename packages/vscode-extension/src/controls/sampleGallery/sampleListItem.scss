@@ -68,9 +68,18 @@
       .tag {
         margin-left: 8px;
         flex-shrink: 0;
+        height: 16px;
+        font-size: 13px;
+        padding: 2px 8px;
+        background-color: var(--vscode-button-secondaryBackground);
+        color: var(--vscode-peekViewTitleDescription-foreground, #cccccc);
+        border: 0;
 
-        &::part(control) {
-          border: 0;
+        span {
+          display: inline-block;
+          height: 16px;
+          top: -1.5px;
+          position: relative;
         }
       }
     }

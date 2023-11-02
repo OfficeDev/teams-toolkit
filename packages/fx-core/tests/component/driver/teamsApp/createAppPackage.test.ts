@@ -18,6 +18,7 @@ import { FeatureFlagName } from "../../../../src/common/constants";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
+import { InvalidFileOutsideOfTheDirectotryError } from "../../../../src/error/teamsApp";
 
 describe("teamsApp/createAppPackage", async () => {
   const teamsAppDriver = new CreateAppPackageDriver();
@@ -471,5 +472,31 @@ describe("teamsApp/createAppPackage", async () => {
 
     const executeResult = await teamsAppDriver.execute(args, mockedDriverContext);
     chai.assert.isTrue(executeResult.result.isOk());
+  });
+
+  it("invalid color file", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.icons = {
+      color: "../color.png",
+      outline: "resources/outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    sinon.stub(fs, "pathExists").callsFake(() => {
+      return true;
+    });
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof InvalidFileOutsideOfTheDirectotryError);
+    }
   });
 });

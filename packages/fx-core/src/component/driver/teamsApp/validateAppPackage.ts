@@ -142,6 +142,17 @@ export class ValidateAppPackageDriver implements StepDriver {
           content: `${validationResult.notes.length} passed.\n`,
           color: Colors.BRIGHT_GREEN,
         });
+
+        if (validationResult.errors.length > 0 || validationResult.warnings.length > 0) {
+          outputMessage.push({
+            content: getDefaultString(
+              "driver.teamsApp.summary.validate.checkPath",
+              args.appPackagePath
+            ),
+            color: Colors.BRIGHT_WHITE,
+          });
+        }
+
         validationResult.errors.map((error) => {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
@@ -261,6 +272,12 @@ export class ValidateAppPackageDriver implements StepDriver {
           getLocalizedString(
             "driver.teamsApp.summary.validate",
             summaryStr.join(", "),
+            errors.length > 0 || warnings.length > 0
+              ? getLocalizedString(
+                  "driver.teamsApp.summary.validate.checkPath",
+                  args.appPackagePath
+                )
+              : "",
             errors,
             warnings,
             path.resolve(context.logProvider?.getLogFilePath())

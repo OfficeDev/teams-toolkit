@@ -1059,150 +1059,16 @@ describe("SpecParser", () => {
     });
   });
 
-  describe("listOperationMap", () => {
-    it("should return a map of operation IDs to paths", async () => {
-      const specPath = "valid-spec.yaml";
-      const specParser = new SpecParser(specPath);
-      const spec = {
-        paths: {
-          "/pets": {
-            get: {
-              operationId: "getPetById",
-              security: [{ api_key: [] }],
-            },
-            post: {
-              operationId: "createPet",
-              requestBody: {
-                content: {
-                  "application/json": {
-                    schema: {
-                      type: "object",
-                      required: ["name"],
-                      properties: {
-                        name: {
-                          type: "string",
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          "/user/{userId}": {
-            get: {
-              operationId: "getUserById",
-              parameters: [
-                {
-                  name: "userId",
-                  in: "path",
-                  schema: {
-                    type: "string",
-                  },
-                },
-              ],
-              responses: {
-                200: {
-                  content: {
-                    "application/json": {
-                      schema: {
-                        type: "object",
-                        properties: {
-                          name: {
-                            type: "string",
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            get: {
-              parameters: [
-                {
-                  name: "orderId",
-                  in: "query",
-                  schema: {
-                    type: "string",
-                  },
-                },
-              ],
-              responses: {
-                201: {
-                  content: {
-                    "application/json": {
-                      schema: {},
-                    },
-                  },
-                },
-              },
-            },
-            post: {
-              operationId: "placeOrder",
-            },
-          },
-        },
-      };
-
-      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
-      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-
-      const expected = new Map<string, string>([
-        ["createPet", "POST /pets"],
-        ["getUserById", "GET /user/{userId}"],
-        ["getStoreOrder", "GET /store/order"],
-      ]);
-      const result = await specParser.listOperationMap();
-      expect(result).to.deep.equal(expected);
-    });
-
-    it("should throw an error if loading the spec fails", async () => {
-      const specPath = "valid-spec.yaml";
-      const specParser = new SpecParser(specPath);
-      const expectedError = new SpecParserError(
-        "Failed to load spec",
-        ErrorType.ListOperationMapFailed
-      );
-
-      sinon.stub(specParser as any, "loadSpec").rejects(expectedError);
-      try {
-        await specParser.listOperationMap();
-        expect.fail("Expected an error to be thrown");
-      } catch (err) {
-        expect((err as SpecParserError).message).contain("Failed to load spec");
-        expect((err as SpecParserError).errorType).to.equal(ErrorType.ListOperationMapFailed);
-      }
-    });
-  });
-
   describe("list", () => {
     it("should return a list of HTTP methods and paths for all GET with 1 parameter and without security", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath);
       const spec = {
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
         paths: {
           "/pets": {
             get: {
@@ -1257,7 +1123,352 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal(["GET /user/{userId}"]);
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          operationId: "getUserById",
+        },
+      ]);
+    });
+
+    it("should generate an operationId if not exist", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath);
+      const spec = {
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "createUser",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/store/order": {
+            post: {
+              operationId: "placeOrder",
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          operationId: "getUserUserId",
+        },
+      ]);
+    });
+
+    it("should return correct server information", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowAPIKeyAuth: true });
+      const spec = {
+        servers: [
+          {
+            url: "https://server1",
+          },
+          {
+            url: "https://server2",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            servers: [
+              {
+                url: "https://server3",
+              },
+              {
+                url: "https://server4",
+              },
+            ],
+            get: {
+              servers: [
+                {
+                  url: "https://server5",
+                },
+                {
+                  url: "https://server6",
+                },
+              ],
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server5",
+          operationId: "getUserById",
+        },
+      ]);
+    });
+
+    it("should return a list of HTTP methods and paths for all GET with 1 parameter and api key auth security", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowAPIKeyAuth: true });
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+          },
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              security: [{ api_key: [] }],
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          auth: { type: "apiKey", name: "api_key", in: "header" },
+          operationId: "getUserById",
+        },
+      ]);
+    });
+
+    it("should return correct auth information", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowAPIKeyAuth: true });
+      const spec = {
+        components: {
+          securitySchemes: {
+            aad_auth: {
+              type: "oauth2",
+              flows: {
+                implicit: {
+                  authorizationUrl: "https://authorize",
+                  scopes: {
+                    "write:pets": "modify pets in your account",
+                    "read:pets": "read your pets",
+                  },
+                },
+              },
+            },
+            api_key1: {
+              type: "apiKey",
+              name: "api_key1",
+              in: "header",
+            },
+            api_key2: {
+              type: "apiKey",
+              name: "api_key2",
+              in: "header",
+            },
+          },
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              security: [
+                { api_key1: [], api_key2: [], aad_auth: ["write:pets"] },
+                { api_key2: [], api_key1: [], aad_auth: ["write:pets"] },
+                { api_key1: [] },
+                { api_key2: [] },
+              ],
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              security: [
+                { api_key1: [], api_key2: [], aad_auth: ["write:pets"] },
+                { api_key2: [], api_key1: [], aad_auth: ["write:pets"] },
+                { api_key2: [] },
+                { api_key1: [] },
+              ],
+              operationId: "postUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          auth: { type: "apiKey", name: "api_key1", in: "header" },
+          operationId: "getUserById",
+        },
+        {
+          api: "POST /user/{userId}",
+          server: "https://server1",
+          auth: { type: "apiKey", name: "api_key1", in: "header" },
+          operationId: "postUserById",
+        },
+      ]);
     });
 
     it("should not list api without operationId with allowMissingId is false", async () => {
@@ -1333,6 +1544,69 @@ describe("SpecParser", () => {
       } catch (err) {
         expect((err as SpecParserError).message).contain("Invalid specification");
         expect((err as SpecParserError).errorType).to.equal(ErrorType.ListFailed);
+      }
+    });
+
+    it("should throw an error when the spec doesn't contain server information", async () => {
+      const specPath = "valid-spec.yaml";
+      const spec = {
+        paths: {
+          "/pets": {
+            get: {
+              operationId: "getPetById",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/user/{userId}": {
+            get: {
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "createUser",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/store/order": {
+            post: {
+              operationId: "placeOrder",
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      try {
+        await specParser.list();
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.NoServerInformation);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.NoServerInformation);
       }
     });
   });

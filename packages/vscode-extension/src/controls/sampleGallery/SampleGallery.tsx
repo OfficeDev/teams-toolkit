@@ -55,7 +55,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
 
   public render() {
     const titleSection = (
-      <div className="section" id="title">
+      <div id="title">
         <div className="logo">
           <Icon iconName="Library" className="logo" />
         </div>
@@ -83,6 +83,12 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         />
       );
     } else {
+      const featuredSamples = (this.state.filteredSamples ?? this.samples).filter(
+        (sample) => sample.suggested
+      );
+      const normalSamples = (this.state.filteredSamples ?? this.samples).filter(
+        (sample) => !sample.suggested
+      );
       return (
         <div className="sample-gallery">
           {titleSection}
@@ -99,35 +105,62 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                 onLayoutChanged={this.onLayoutChanged}
                 onFilterConditionChanged={this.onFilterConditionChanged}
               ></SampleFilter>
-              {this.state.layout === "grid" ? (
-                <div className="sample-stack">
-                  {(this.state.filteredSamples ?? this.samples).map((sample: SampleInfo) => {
-                    return (
-                      <SampleCard
-                        key={sample.id}
-                        sample={sample}
-                        selectSample={this.onSampleSelected}
-                        createSample={this.onCreateSample}
-                        viewGitHub={this.onViewGithub}
-                      />
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="sample-list">
-                  {(this.state.filteredSamples ?? this.samples).map((sample: SampleInfo) => {
-                    return (
-                      <SampleListItem
-                        key={sample.id}
-                        sample={sample}
-                        selectSample={this.onSampleSelected}
-                        createSample={this.onCreateSample}
-                        viewGitHub={this.onViewGithub}
-                      />
-                    );
-                  })}
+              {featuredSamples.length > 0 && (
+                <div className={`featured-sample-section ${this.state.layout}`}>
+                  <div id="featured-sample-title">
+                    <span className="codicon codicon-star-full"></span>
+                    <h4>Featured samples</h4>
+                  </div>
+                  {this.state.layout === "grid"
+                    ? featuredSamples.map((sample: SampleInfo) => {
+                        return (
+                          <SampleCard
+                            key={sample.id}
+                            sample={sample}
+                            selectSample={this.onSampleSelected}
+                            createSample={this.onCreateSample}
+                            viewGitHub={this.onViewGithub}
+                          />
+                        );
+                      })
+                    : featuredSamples.map((sample: SampleInfo) => {
+                        return (
+                          <SampleListItem
+                            key={sample.id}
+                            sample={sample}
+                            selectSample={this.onSampleSelected}
+                            createSample={this.onCreateSample}
+                            viewGitHub={this.onViewGithub}
+                          />
+                        );
+                      })}
                 </div>
               )}
+              <div className={`sample-section ${this.state.layout}`}>
+                {this.state.layout === "grid"
+                  ? normalSamples.map((sample: SampleInfo) => {
+                      return (
+                        <SampleCard
+                          key={sample.id}
+                          sample={sample}
+                          selectSample={this.onSampleSelected}
+                          createSample={this.onCreateSample}
+                          viewGitHub={this.onViewGithub}
+                        />
+                      );
+                    })
+                  : normalSamples.map((sample: SampleInfo) => {
+                      return (
+                        <SampleListItem
+                          key={sample.id}
+                          sample={sample}
+                          selectSample={this.onSampleSelected}
+                          createSample={this.onCreateSample}
+                          viewGitHub={this.onViewGithub}
+                        />
+                      );
+                    })}
+              </div>
             </>
           )}
         </div>
@@ -277,9 +310,10 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         },
       },
     });
+    const sampleInfo = sample.downloadUrlInfo;
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: sample.downloadUrl,
+      data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
     });
   };
 }

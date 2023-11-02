@@ -5,7 +5,7 @@ import "./sampleListItem.scss";
 
 import * as React from "react";
 
-import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 
 import {
   TelemetryEvent,
@@ -53,9 +53,9 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
             {sample.tags &&
               sample.tags.map((value: string) => {
                 return (
-                  <VSCodeTag className="tag" key={value}>
-                    {value}
-                  </VSCodeTag>
+                  <div className="tag" key={value}>
+                    <span>{value}</span>
+                  </div>
                 );
               })}
           </div>

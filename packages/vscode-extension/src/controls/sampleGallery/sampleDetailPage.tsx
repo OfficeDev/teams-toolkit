@@ -8,7 +8,12 @@ import * as React from "react";
 import { ActionButton, Image } from "@fluentui/react";
 import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 
-import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../../telemetry/extTelemetryEvents";
+import { Commands } from "../Commands";
 import { Setting, Watch } from "../resources";
 import { SampleProps } from "./ISamples";
 
@@ -75,5 +80,33 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
 
   onBack = () => {
     this.props.selectSample("", TelemetryTriggerFrom.SampleDetailPage);
+  };
+
+  onCreate = () => {
+    vscode.postMessage({
+      command: Commands.CloneSampleApp,
+      data: {
+        appName: this.props.sample.title,
+        appFolder: this.props.sample.id,
+      },
+    });
+  };
+
+  onViewGithub = () => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.ViewSampleInGitHub,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+          [TelemetryProperty.SampleAppName]: this.props.sample.id,
+        },
+      },
+    });
+    const sampleInfo = this.props.sample.downloadUrlInfo;
+    vscode.postMessage({
+      command: Commands.OpenExternalLink,
+      data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
+    });
   };
 }

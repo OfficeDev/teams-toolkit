@@ -12,7 +12,6 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
 import { CollaborationConstants, QuestionTreeVisitor, envUtil, traverse } from "../../src";
@@ -38,6 +37,7 @@ import { callFuncs } from "./create.test";
 import { MockedAzureTokenProvider } from "../core/other.test";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 const ui = new MockUserInteraction();
 
@@ -867,7 +867,19 @@ describe("copilotPluginQuestions", async () => {
           result: ["https://example.json"],
         });
       } else if (question.name == QuestionNames.ApiOperation) {
-        return ok({ type: "success", result: ["testOperation1"] });
+        return ok({
+          type: "success",
+          result: [
+            {
+              id: "testOperation1",
+              label: "operation1",
+              groupName: "1",
+              data: {
+                serverUrl: "https://server1",
+              },
+            },
+          ],
+        });
       }
       return ok({ type: "success", result: undefined });
     };
@@ -910,8 +922,10 @@ describe("selectLocalTeamsAppManifestQuestion", async () => {
 });
 describe("selectAadManifestQuestion", async () => {
   const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn = () => {};
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
   it("default for CLI_HELP", async () => {
     const question = selectAadManifestQuestion();
@@ -927,5 +941,12 @@ describe("selectAadManifestQuestion", async () => {
       const res = await question.default({ platform: Platform.VSCode, projectPath: "./" });
       assert.isUndefined(res);
     }
+  });
+  it("CLI V3", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_CLI_V3: "true",
+    });
+    const question = selectAadManifestQuestion();
+    assert.equal(question.cliName, "entra-app-manifest-file");
   });
 });

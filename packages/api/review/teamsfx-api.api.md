@@ -13,7 +13,17 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
+export interface ApiKeyAuthInfo {
+    // (undocumented)
+    authName?: string;
+    // (undocumented)
+    serverUrl: string;
+}
+
+// @public (undocumented)
 export interface ApiOperation {
+    // (undocumented)
+    data: ApiKeyAuthInfo;
     // (undocumented)
     groupName: string;
     // (undocumented)

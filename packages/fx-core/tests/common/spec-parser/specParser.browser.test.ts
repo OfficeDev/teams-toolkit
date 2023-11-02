@@ -777,19 +777,6 @@ describe("SpecParser in Browser", () => {
     });
   });
 
-  describe("listOperationMap", async () => {
-    it("should throw an error if loading the spec fails", async () => {
-      try {
-        const specPath = "valid-spec.yaml";
-        const specParser = new SpecParser(specPath);
-        await specParser.listOperationMap();
-        expect.fail("Should throw not implemented error");
-      } catch (error) {
-        expect(error.message).to.equal("Method not implemented.");
-      }
-    });
-  });
-
   describe("list", () => {
     it("should throw an error when the SwaggerParser library throws an error", async () => {
       try {

@@ -1498,16 +1498,16 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const operationMap = new Map<string, string>([
-      ["getUserById", "GET /user/{userId}"],
-      ["getStoreOrder", "GET /store/order"],
-    ]);
+    const listResult = [
+      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+    ];
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
       allSuccess: true,
     });
-    sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
@@ -1542,16 +1542,18 @@ describe("copilotPlugin", async () => {
         ],
       },
     ];
-    const operationMap = new Map<string, string>([
-      ["getUserById", "GET /user/{userId}"],
-      ["getStoreOrder", "GET /store/order"],
-    ]);
+
+    const listResult = [
+      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+    ];
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "fakeMessage" }],
       allSuccess: false,
     });
-    sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);

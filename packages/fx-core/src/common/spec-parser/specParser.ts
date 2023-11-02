@@ -124,6 +124,7 @@ export class SpecParser {
         const apiResult: ListAPIResult = {
           api: "",
           server: "",
+          operationId: "",
         };
         const [method, path] = apiKey.split(" ");
         const operation = apiMap[apiKey];
@@ -141,6 +142,12 @@ export class SpecParser {
 
         apiResult.server = serverUrl.url;
 
+        let operationId = operation.operationId;
+        if (!operationId) {
+          operationId = `${method.toLowerCase()}${convertPathToCamelCase(path)}`;
+        }
+        apiResult.operationId = operationId;
+
         const apiKeyAuthArray = getAPIKeyAuthArray(operation.security, spec);
 
         for (const apiKeyAuth of apiKeyAuthArray) {
@@ -150,7 +157,7 @@ export class SpecParser {
           }
         }
 
-        apiResult.api = `${method} ${path}`;
+        apiResult.api = apiKey;
         result.push(apiResult);
       }
 
@@ -160,31 +167,6 @@ export class SpecParser {
         throw err;
       }
       throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
-    }
-  }
-
-  /**
-   * List all the OpenAPI operations in the specification file and return a map of operationId and operation path.
-   * @returns A map of operationId and operation path, such as [{'getPetById': 'GET /pets/{petId}'}, {'getUser': 'GET /user/{userId}'}]
-   */
-  async listOperationMap(): Promise<Map<string, string>> {
-    try {
-      await this.loadSpec();
-      const apiMap = this.getAllSupportedAPIs(this.spec!);
-      const operationMap = new Map<string, string>();
-      for (const key in apiMap) {
-        const pathObjectItem = apiMap[key];
-        let operationId = pathObjectItem.operationId;
-        if (!operationId) {
-          const [method, path] = key.split(" ");
-          const methodName = method.toLowerCase();
-          operationId = `${methodName}${convertPathToCamelCase(path)}`;
-        }
-        operationMap.set(operationId, key);
-      }
-      return operationMap;
-    } catch (err) {
-      throw new SpecParserError((err as Error).toString(), ErrorType.ListOperationMapFailed);
     }
   }
 
@@ -301,7 +283,8 @@ export class SpecParser {
         manifestPath,
         outputSpecPath,
         adaptiveCardFolder,
-        newSpec
+        newSpec,
+        firstAuthKey?.name
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });

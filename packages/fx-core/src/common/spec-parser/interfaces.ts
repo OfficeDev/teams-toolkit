@@ -85,7 +85,6 @@ export enum ErrorType {
   MultipleAPIKeyNotSupported = "multiple-api-key-not-supported",
 
   ListFailed = "list-failed",
-  ListOperationMapFailed = "list-operation-map-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",
   FilterSpecFailed = "filter-spec-failed",
   UpdateManifestFailed = "update-manifest-failed",
@@ -192,5 +191,6 @@ export interface APIInfo {
 export interface ListAPIResult {
   api: string;
   server: string;
+  operationId: string;
   auth?: OpenAPIV3.ApiKeySecurityScheme;
 }

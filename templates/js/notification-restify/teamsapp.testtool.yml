@@ -10,13 +10,6 @@ deploy:
       testTool:
         version: ~0.1.0-beta
         symlinkDir: ./devTools/teamsapptester
-      func:
-        version: ~4.0.5174
-        symlinkDir: ./devTools/func
-    # Write the information of installed development tool(s) into environment
-    # file for the specified environment variable(s).
-    writeToEnvironmentFile:
-      funcPath: FUNC_PATH
 
   # Run npm command
   - uses: cli/runNpmCommand

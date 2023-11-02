@@ -141,15 +141,6 @@ export class SpecParser {
   }
 
   /**
-   * List all the OpenAPI operations in the specification file and return a map of operationId and operation path.
-   * @returns A map of operationId and operation path, such as [{'getPetById': 'GET /pets/{petId}'}, {'getUser': 'GET /user/{userId}'}]
-   */
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async listOperationMap(): Promise<Map<string, string>> {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
    * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
    * @param manifestPath A file path of the Teams app manifest file to update.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.

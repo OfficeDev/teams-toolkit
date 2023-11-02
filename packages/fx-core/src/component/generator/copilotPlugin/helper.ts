@@ -181,8 +181,11 @@ export async function listOperations(
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
       if (manifest.isOk()) {
         const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-        const operationMaps = await specParser.listOperationMap();
-        const existingOperations = existingOperationIds.map((key) => operationMaps.get(key));
+
+        const existingOperations = existingOperationIds.map(
+          (key) => operations.find((item) => item.operationId === key)?.api
+        );
+
         operations = operations.filter(
           (operation: ListAPIResult) => !existingOperations.includes(operation.api)
         );

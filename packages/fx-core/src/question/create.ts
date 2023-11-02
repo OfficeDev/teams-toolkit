@@ -1578,8 +1578,8 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
           if (operation) {
             if (operation.data.authName) {
               authNames.add(operation.data.authName);
+              serverUrls.add(operation.data.serverUrl);
             }
-            serverUrls.add(operation.data.serverUrl);
           }
         }
 

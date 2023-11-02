@@ -1147,6 +1147,38 @@ describe("scaffold question", () => {
           );
         });
 
+        it(" validate operations should success when selected APIs with multiple server url but only one contains auth", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server2",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.isUndefined(res);
+        });
+
         it(" validate operations should return error message when select APIs with multiple auth", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -1247,8 +1279,9 @@ describe("scaffold question", () => {
                 in: "header",
                 type: "apiKey",
               },
+              operationId: "getOperation1",
             },
-            { api: "get operation2", server: "https://server2" },
+            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
           ]);
           sandbox.stub(fs, "pathExists").resolves(true);
 
@@ -1294,9 +1327,10 @@ describe("scaffold question", () => {
                 in: "header",
                 type: "apiKey",
               },
+              operationId: "getOperation1",
             },
 
-            { api: "get operation2", server: "https://server2" },
+            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
           ]);
 
           const validationSchema = question.validation as FuncValidation<string>;
@@ -1338,8 +1372,9 @@ describe("scaffold question", () => {
                 in: "header",
                 type: "apiKey",
               },
+              operationId: "getOperation1",
             },
-            { api: "get operation2", server: "https://server2" },
+            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
           ]);
 
           let err: Error | undefined = undefined;
@@ -1448,10 +1483,6 @@ describe("scaffold question", () => {
             platform: Platform.VSCode,
             "manifest-path": "fakePath",
           };
-          const operationMap = new Map<string, string>([
-            ["getUserById", "GET /user/{userId}"],
-            ["getStoreOrder", "GET /store/order"],
-          ]);
 
           sandbox
             .stub(SpecParser.prototype, "validate")
@@ -1465,10 +1496,10 @@ describe("scaffold question", () => {
                 in: "header",
                 type: "apiKey",
               },
+              operationId: "getUserById",
             },
-            { api: "GET /store/order", server: "https://server2" },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
           ]);
-          sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById"]);
           sandbox.stub(fs, "pathExists").resolves(true);
@@ -1494,10 +1525,6 @@ describe("scaffold question", () => {
             platform: Platform.VSCode,
             "manifest-path": "fakePath",
           };
-          const operationMap = new Map<string, string>([
-            ["getUserById", "GET /user/{userId}"],
-            ["getStoreOrder", "GET /store/order"],
-          ]);
 
           sandbox
             .stub(SpecParser.prototype, "validate")
@@ -1511,10 +1538,10 @@ describe("scaffold question", () => {
                 in: "header",
                 type: "apiKey",
               },
+              operationId: "getUserById",
             },
-            { api: "GET /store/order", server: "https://server2" },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
           ]);
-          sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById", "getStoreOrder"]);
           sandbox.stub(fs, "pathExists").resolves(true);
@@ -1552,8 +1579,9 @@ describe("scaffold question", () => {
                 in: "header",
                 type: "apiKey",
               },
+              operationId: "getUserById",
             },
-            { api: "GET /store/order", server: "https://server2" },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
           ]);
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
@@ -1592,8 +1620,9 @@ describe("scaffold question", () => {
                 in: "header",
                 type: "apiKey",
               },
+              operationId: "getUserById",
             },
-            { api: "GET /store/order", server: "https://server2" },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
           ]);
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
@@ -1632,8 +1661,9 @@ describe("scaffold question", () => {
                 in: "header",
                 type: "apiKey",
               },
+              operationId: "getUserById",
             },
-            { api: "GET /store/order", server: "https://server2" },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
           ]);
 
           const res = await (question.additionalValidationOnAccept as any).validFunc(

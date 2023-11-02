@@ -8,7 +8,7 @@ deploy:
   - uses: devTool/install
     with:
       testTool:
-        version: ~0.1.0
+        version: ~0.1.0-beta
         symlinkDir: ./devTools/teamsapptester
 
   # Run npm command

@@ -1132,6 +1132,71 @@ describe("SpecParser", () => {
       ]);
     });
 
+    it("should generate an operationId if not exist", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath);
+      const spec = {
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              operationId: "createUser",
+              security: [{ api_key: [] }],
+            },
+          },
+          "/store/order": {
+            post: {
+              operationId: "placeOrder",
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          operationId: "getUserUserId",
+        },
+      ]);
+    });
+
     it("should return correct server information", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowAPIKeyAuth: true });

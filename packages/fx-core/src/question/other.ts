@@ -918,3 +918,44 @@ export function resourceGroupQuestionNode(
     ],
   };
 }
+
+export function apiSpecApiKeyQuestion(): IQTreeNode {
+  return {
+    data: {
+      type: "text",
+      name: QuestionNames.ApiSpecApiKey,
+      cliShortName: "k",
+      title: getLocalizedString("core.createaProjectQuestion.ApiKey"),
+      cliDescription: "Api key for OpenAPI spec.",
+      forgetLastValue: true,
+      validation: {
+        validFunc: (input: string): Promise<string | undefined> => {
+          const pattern = /^(\w){10,128}/g;
+          const match = pattern.test(input);
+
+          const result = match
+            ? undefined
+            : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+          return Promise.resolve(result);
+        },
+      },
+      additionalValidationOnAccept: {
+        validFunc: (input: string, inputs?: Inputs): string | undefined => {
+          if (!inputs) {
+            throw new Error("inputs is undefined"); // should never happen
+          }
+
+          process.env[QuestionNames.ApiSpecApiKey] = input;
+          return;
+        },
+      },
+    },
+    condition: (inputs: Inputs) => {
+      return (
+        inputs.outputEnvVarNames &&
+        !process.env[inputs.outputEnvVarNames.get("registrationId")] &&
+        !inputs.clientSecret
+      );
+    },
+  };
+}

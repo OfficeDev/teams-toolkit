@@ -293,6 +293,8 @@
   "core.createProjectQuestion.apiSpecInputUrl.label": "Enter OpenAPI Description Document Location",
   "core.createProjectQuestion.OpenAIPluginDomain": "OpenAI Plugin Manifest",
   "core.createProjectQuestion.OpenAIPluginDomain.placeholder": "Enter your website domain or manifest URL",
+  "core.createaProjectQuestion.ApiKey": "Client secret for Api key in OpenAPI spec",
+  "core.createProjectQuestion.invalidApiKey.message": "Client secret is invalid. Length of secret should >= 10 and <= 128",
   "core.createProjectQuestion.invalidUrl.message": "Enter a valid HTTP URL without authentication to access your OpenAPI description document.",
   "core.createProjectQuestion.apiSpec.operation.title": "Select Operation(s) Teams Can Interact with",
   "core.createProjectQuestion.apiSpec.operation.placeholder": "GET/POST methods with at most one required parameter and no auth are listed",

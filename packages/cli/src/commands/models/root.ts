@@ -27,6 +27,10 @@ import { teamsappPackageCommand } from "./teamsapp/package";
 import { teamsappPublishCommand } from "./teamsapp/publish";
 import { isCliV3Enabled } from "@microsoft/teamsfx-core";
 import { teamsappDoctorCommand } from "./teamsapp/doctor";
+import { entraAppCommand } from "./entraAppUpdate";
+import { m365SideloadingCommand } from "./m365Sideloading";
+import { m365UnacquireCommand } from "./m365Unacquire";
+import { m365LaunchInfoCommand } from "./m365LaunchInfo";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -53,7 +57,6 @@ export const rootCommand: CLICommand = {
     envCommand,
     permissionCommand,
     upgradeCommand,
-    m365Command,
     listCommand,
     helpCommand,
     ...(isCliV3Enabled()
@@ -63,8 +66,12 @@ export const rootCommand: CLICommand = {
           teamsappPackageCommand,
           teamsappPublishCommand,
           teamsappDoctorCommand,
+          entraAppCommand,
+          m365SideloadingCommand,
+          m365UnacquireCommand,
+          m365LaunchInfoCommand,
         ]
-      : [packageCommand, updateCommand, validateCommand, publishCommand]),
+      : [packageCommand, updateCommand, validateCommand, publishCommand, m365Command]),
   ],
   sortCommands: true,
   options: [

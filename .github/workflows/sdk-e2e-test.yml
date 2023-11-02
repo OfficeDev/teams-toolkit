@@ -137,6 +137,7 @@ jobs:
            -d '{"ref":"${{ github.ref_name }}","inputs":{"run_id":"${{ github.run_id }}", "max_attempts":"5"}}'
 
       - name: Report result
+        if: ${{ github.event_name == 'schedule' && (success() || (failure() && github.run_attempt >= 5)) }}
         uses: ./.github/actions/send-email-report
         env:
           TO: ${{ steps.list-jobs.outputs.to }}

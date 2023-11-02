@@ -9,7 +9,7 @@ import * as path from "path";
 
 export const updateAadAppCommand: CLICommand = {
   name: "aad-app",
-  description: "Update the AAD App in the current application.",
+  description: "Update the Microsoft Entra App in the current application.",
   options: [...DeployAadManifestOptions, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.UpdateAadApp,

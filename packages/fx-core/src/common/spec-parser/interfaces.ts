@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { OpenAPIV3 } from "openapi-types";
+
 /**
  * An interface that represents the result of validating an OpenAPI specification file.
  */
@@ -80,6 +82,7 @@ export enum ErrorType {
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
+  MultipleAPIKeyNotSupported = "multiple-api-key-not-supported",
 
   ListFailed = "list-failed",
   ListOperationMapFailed = "list-operation-map-failed",
@@ -173,6 +176,7 @@ export interface CheckParamResult {
 export interface ParseOptions {
   allowMissingId?: boolean;
   allowSwagger?: boolean;
+  allowAPIKeyAuth?: boolean;
 }
 
 export interface APIInfo {
@@ -183,4 +187,10 @@ export interface APIInfo {
   parameters: Parameter[];
   description: string;
   warning?: WarningResult;
+}
+
+export interface ListAPIResult {
+  api: string;
+  server: string;
+  auth?: OpenAPIV3.ApiKeySecurityScheme;
 }

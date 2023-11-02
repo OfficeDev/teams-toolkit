@@ -628,7 +628,7 @@ describe("SpecParser in Browser", () => {
         },
       };
 
-      const specParser = new SpecParser(specPath);
+      const specParser = new SpecParser(specPath, { allowMissingId: true });
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);

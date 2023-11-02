@@ -3,6 +3,7 @@
 
 import "./SampleGallery.scss";
 
+import Fuse from "fuse.js";
 import * as React from "react";
 
 import { Icon } from "@fluentui/react";
@@ -14,7 +15,7 @@ import {
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import { SampleGalleryState, SampleInfo } from "./ISamples";
+import { SampleFilterOptionType, SampleGalleryState, SampleInfo } from "./ISamples";
 import OfflinePage from "./offlinePage";
 import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
@@ -23,12 +24,19 @@ import SampleListItem from "./sampleListItem";
 
 export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
   private samples: SampleInfo[] = [];
+  private filterOptions: SampleFilterOptionType = {
+    types: [],
+    languages: [],
+    techniques: [],
+  };
 
   constructor(props: unknown) {
     super(props);
     this.state = {
       loading: true,
       layout: "grid",
+      query: "",
+      filterTags: [],
     };
   }
 
@@ -76,12 +84,13 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           ) : (
             <>
               <SampleFilter
-                layout={this.state.layout}
                 samples={this.samples}
-                onFilteredSamplesChange={(filteredSamples: SampleInfo[]) => {
-                  this.setState({ filteredSamples });
-                }}
-                onLayoutChange={this.onLayoutChanged}
+                filterOptions={this.filterOptions}
+                layout={this.state.layout}
+                query={this.state.query}
+                filterTags={this.state.filterTags}
+                onLayoutChanged={this.onLayoutChanged}
+                onFilterConditionChanged={this.onFilterConditionChanged}
               ></SampleFilter>
               {this.state.layout === "grid" ? (
                 <div className="sample-stack">
@@ -120,7 +129,8 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     switch (message) {
       case Commands.LoadSampleCollection:
         const error = event.data.error;
-        this.samples = event.data.data as SampleInfo[];
+        this.samples = event.data.samples as SampleInfo[];
+        this.filterOptions = event.data.filterOptions as SampleFilterOptionType;
         this.setState({
           loading: false,
           error,
@@ -165,5 +175,28 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       },
     });
     this.setState({ layout: newLayout });
+  };
+
+  private onFilterConditionChanged = (query: string, filterTags: string[]) => {
+    let filteredSamples = this.samples.filter((sample: SampleInfo) => {
+      if (filterTags.length === 0) {
+        return true;
+      }
+      for (const tag of filterTags) {
+        if (sample.tags.findIndex((value) => value.includes(tag)) >= 0) {
+          return true;
+        }
+      }
+      return false;
+    });
+    if (this.state.query !== "") {
+      const fuse = new Fuse(filteredSamples, {
+        keys: ["title", "shortDescription", "fullDescription", "tags"],
+      });
+      filteredSamples = fuse
+        .search(this.state.query)
+        .map((result: { item: SampleInfo }) => result.item);
+    }
+    this.setState({ query, filterTags, filteredSamples });
   };
 }

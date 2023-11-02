@@ -34,6 +34,7 @@ import {
   CheckSideloadingPermissionFailedError,
   DeveloperPortalAPIFailedError,
 } from "../../../../error/teamsApp";
+import { ApiSecretRegistration } from "../interfaces/ApiSecretRegistration";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -706,6 +707,52 @@ export namespace AppStudioClient {
     } while (++retry < 3);
 
     return undefined;
+  }
+
+  /**
+   * Create the Api Key registration.
+   * @param appStudioToken
+   * @param apiKeyRegistration
+   */
+  export async function createApiKeyRegistration(
+    appStudioToken: string,
+    apiKeyRegistration: ApiSecretRegistration
+  ): Promise<ApiSecretRegistration> {
+    sendStartEvent(APP_STUDIO_API_NAMES.CREATE_API_KEY);
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/v1.0/apiSecretRegistrations", apiKeyRegistration)
+      );
+      sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_API_KEY);
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_API_KEY);
+      throw error;
+    }
+  }
+
+  /**
+   * Get the Api Key registration by Id.
+   * @param appStudioToken
+   * @param apiSecretRegistrationId
+   */
+  export async function getApiKeyRegistrationById(
+    appStudioToken: string,
+    apiSecretRegistrationId: string
+  ): Promise<ApiSecretRegistration> {
+    sendStartEvent(APP_STUDIO_API_NAMES.GET_API_KEY);
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/apiSecretRegistrations/${apiSecretRegistrationId}`)
+      );
+      sendSuccessEvent(APP_STUDIO_API_NAMES.GET_API_KEY);
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_API_KEY);
+      throw error;
+    }
   }
 
   function extractRegionFromBaseUrl(url: string | undefined): string | undefined {

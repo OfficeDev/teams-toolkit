@@ -235,7 +235,7 @@ describe("Core basic APIs", () => {
 
   it("deploy aad manifest happy path", async () => {
     const promtionOnVSC =
-      'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
+      'Your Microsoft Entra application has been successfully deployed. Click "Learn more" to check how to view your Microsoft Entra application.';
 
     const core = new FxCore(tools);
     const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
@@ -324,7 +324,7 @@ describe("Core basic APIs", () => {
     assert.equal(showMessage.getCall(0).args[0], "info");
     assert.equal(
       showMessage.getCall(0).args[1],
-      "Your Azure Active Directory application has been successfully updated."
+      "Your Microsoft Entra application has been successfully updated."
     );
     assert.isFalse(showMessage.getCall(0).args[2]);
     assert.isTrue(res.isOk());
@@ -1486,7 +1486,16 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "GET /user/{userId}",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1521,7 +1530,16 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "GET /user/{userId}",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1565,7 +1583,16 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "testOperation",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
       projectPath: path.join(os.tmpdir(), appName),
     };
     const core = new FxCore(tools);
@@ -1590,7 +1617,16 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "testOperation",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1617,7 +1653,16 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ApiOperation]: [
+        {
+          id: "testOperation",
+          label: "operation1",
+          groupName: "1",
+          data: {
+            serverUrl: "https://server1",
+          },
+        },
+      ],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1660,8 +1705,18 @@ describe("copilotPlugin", async () => {
       shouldLogWarning: true,
     };
     const expectedResult = [
-      { id: "operation1", label: "operation1", groupName: "1" },
-      { id: "operation2", label: "operation2", groupName: "2" },
+      {
+        id: "operation1",
+        label: "operation1",
+        groupName: "1",
+        data: { serverUrl: "https://server1" },
+      },
+      {
+        id: "operation2",
+        label: "operation2",
+        groupName: "2",
+        data: { serverUrl: "https://server2" },
+      },
     ];
     sinon.stub(CopilotPluginHelper, "listOperations").returns(Promise.resolve(ok(expectedResult)));
     const result = await core.copilotPluginListOperations(inputs as any);

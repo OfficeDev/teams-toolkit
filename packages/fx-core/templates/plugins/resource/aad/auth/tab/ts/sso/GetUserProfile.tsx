@@ -28,7 +28,7 @@ export function GetUserProfile(props: { teamsfx?: TeamsFx }) {
       // }
       return { profile };
     },
-    // Add scope for your Azure AD app. For example: Mail.Read, etc.
+    // Add scope for your Microsoft Entra app. For example: Mail.Read, etc.
     // Use teamsfx instance from `InitTeamsFx`
     { scope: ["User.Read"], teamsfx: teamsfx }
   );

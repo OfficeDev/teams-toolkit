@@ -19,6 +19,10 @@ import { AppStudioResultFactory } from "../../../../src/component/driver/teamsAp
 import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 import { MockedLogProvider } from "../../../plugins/solution/util";
 import { DeveloperPortalAPIFailedError } from "../../../../src/error/teamsApp";
+import {
+  ApiSecretRegistration,
+  ApiSecretRegistrationAppType,
+} from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 
 function newEnvInfo() {
   return {
@@ -36,6 +40,20 @@ describe("App Studio API Test", () => {
     appName: "fake",
     teamsAppId: uuid(),
     userList: [],
+  };
+
+  const appApiRegistration: ApiSecretRegistration = {
+    id: "fakeId",
+    description: "An Api Key registration for auth",
+    clientSecrets: [
+      {
+        id: uuid(),
+        value: "fakeValue",
+        isValueRedacted: false,
+      },
+    ],
+    applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+    targetUrlsShouldStartWith: ["https://www.example.com"],
   };
 
   beforeEach(() => {
@@ -744,6 +762,96 @@ describe("App Studio API Test", () => {
         logProvider
       );
       chai.assert.equal(res, Constants.PERMISSIONS.noPermission);
+    });
+  });
+
+  describe("getApiKeyRegistration", () => {
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.getApiKeyRegistrationById(appStudioToken, "fakeId");
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appApiRegistration,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.getApiKeyRegistrationById(appStudioToken, "fakeId");
+      chai.assert.equal(res, appApiRegistration);
+    });
+  });
+
+  describe("createApiKeyRegistration", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appApiRegistration,
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+
+      const res = await AppStudioClient.createApiKeyRegistration(
+        appStudioToken,
+        appApiRegistration
+      );
+      chai.assert.equal(res, appApiRegistration);
+    });
+
+    it("Graph API failure", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        response: {
+          staus: 400,
+          data: {
+            statusCode: 400,
+            errorMessage:
+              "Unsuccessful response received from Teams Graph Service. Error Message: System.Net.Http.HttpConnectionResponseContent",
+          },
+          headers: {
+            "x-correlation-id": uuid(),
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.createApiKeyRegistration(appStudioToken, appApiRegistration);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
     });
   });
 });

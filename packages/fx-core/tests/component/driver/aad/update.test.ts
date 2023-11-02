@@ -25,6 +25,7 @@ import {
   InvalidActionInputError,
   JSONSyntaxError,
   MissingEnvironmentVariablesError,
+  UnhandledError,
 } from "../../../../src/error/common";
 import { Platform, ok, err } from "@microsoft/teamsfx-api";
 chai.use(chaiAsPromised);
@@ -37,7 +38,7 @@ const outputKeys = {
 const testAssetsRoot = "./tests/component/driver/aad/testAssets";
 const outputRoot = path.join(testAssetsRoot, "output");
 const promtionOnVSC =
-  'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
+  'Your Microsoft Entra application has been successfully deployed. Click "Learn more" to check how to view your Microsoft Entra application.';
 
 describe("aadAppUpdate", async () => {
   const expectedObjectId = "00000000-0000-0000-0000-000000000000";
@@ -161,11 +162,11 @@ describe("aadAppUpdate", async () => {
     const manifestPath = path.join(testAssetsRoot, "manifest.json");
     chai.assert.equal(
       informationSpy.getCall(1).args[0],
-      `Build Azure Active Directory app manifest completed, and app manifest content is written to ${manifestOutputFilePath}`
+      `Build Microsoft Entra app manifest completed, and app manifest content is written to ${manifestOutputFilePath}`
     );
     chai.assert.equal(
       informationSpy.getCall(2).args[0],
-      `Applied manifest ${manifestPath} to Azure Active Directory application with object id 00000000-0000-0000-0000-000000000000`
+      `Applied manifest ${manifestPath} to Microsoft Entra application with object id 00000000-0000-0000-0000-000000000000`
     );
     chai.assert.equal(
       informationSpy.getCall(3).args[0],
@@ -191,7 +192,7 @@ describe("aadAppUpdate", async () => {
     expect(result.summaries.length).to.equal(1);
     console.log(result.summaries[0]);
     expect(result.summaries).includes(
-      `Applied manifest ${args.manifestPath} to Azure Active Directory application with object id ${expectedObjectId}`
+      `Applied manifest ${args.manifestPath} to Microsoft Entra application with object id ${expectedObjectId}`
     );
   });
   it("should success with valid manifest on cli", async () => {
@@ -301,7 +302,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(MissingFieldInManifestUserError)
       .and.include({
-        message: "Field id is missing or invalid in Azure Active Directory app manifest.", // The manifest does not has an id property
+        message: "Field id is missing or invalid in Microsoft Entra app manifest.", // The manifest does not has an id property
         source: "aadApp/update",
       });
   });
@@ -475,6 +476,31 @@ describe("aadAppUpdate", async () => {
       .and.property("message")
       .equals(
         'A http server error happened while performing the aadApp/update task. Please try again later. The error response is: {"error":{"code":"InternalServerError","message":"Internal server error"}}'
+      );
+  });
+
+  it("should throw unhandled error when axios error contains no response", async () => {
+    sinon.stub(AadAppClient.prototype, "updateAadApp").rejects({
+      isAxiosError: true,
+    });
+    envRestore = mockedEnv({
+      AAD_APP_OBJECT_ID: expectedObjectId,
+      AAD_APP_CLIENT_ID: expectedClientId,
+    });
+
+    const args = {
+      manifestPath: path.join(testAssetsRoot, "manifest.json"),
+      outputFilePath: path.join(outputRoot, "manifest.output.json"),
+    };
+
+    const result = await updateAadAppDriver.execute(args, mockedDriverContext);
+
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr())
+      .is.instanceOf(UnhandledError)
+      .and.property("message")
+      .equals(
+        'An unexpected error has occurred while performing the aadApp/update task. {"isAxiosError":true}'
       );
   });
 

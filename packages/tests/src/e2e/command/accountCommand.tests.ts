@@ -18,7 +18,7 @@ describe("account command", function () {
     `account show `,
     { testPlanCaseId: 15232246, author: "zhiyou@microsoft.com" },
     async function () {
-      stdlog = await execAsync(`teamsapp auth show`, {
+      stdlog = await execAsync(`teamsfx account show`, {
         env: process.env,
         timeout: 0,
       });
@@ -31,7 +31,7 @@ describe("account command", function () {
     `account logout`,
     { testPlanCaseId: 15232255, author: "zhiyou@microsoft.com" },
     async function () {
-      stdlog = await execAsync(`teamsapp auth logout azure`, {
+      stdlog = await execAsync(`teamsfx account logout azure`, {
         env: process.env,
         timeout: 0,
       });

@@ -17,7 +17,7 @@ public class ActionApp : TeamsActivityHandler
         var actionData = ((JObject)action.Data).ToObject<CardResponse>();
         var templateJson = await System.IO.File.ReadAllTextAsync(_adaptiveCardFilePath, cancellationToken);
         var template = new AdaptiveCards.Templating.AdaptiveCardTemplate(templateJson);
-        var adaptiveCardJson = template.Expand(new {title=actionData.Title, subTitle=actionData.SubTitle, text=actionData.Text});
+        var adaptiveCardJson = template.Expand(new {title=actionData.Title ?? "", subTitle=actionData.SubTitle ?? "", text=actionData.Text ?? ""});
         var adaptiveCard = AdaptiveCard.FromJson(adaptiveCardJson).Card;
         var attachments = new MessagingExtensionAttachment() 
         { 

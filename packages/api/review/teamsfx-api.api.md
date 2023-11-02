@@ -15,6 +15,11 @@ import { TokenCredential } from '@azure/core-auth';
 // @public (undocumented)
 export interface ApiOperation {
     // (undocumented)
+    data: {
+        serverUrl: string;
+        authName?: string;
+    };
+    // (undocumented)
     groupName: string;
     // (undocumented)
     id: string;
@@ -1082,6 +1087,8 @@ export interface UserInteraction {
         env?: {
             [k: string]: string;
         };
+        shellName?: string;
+        iconPath?: string;
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFileOrInput?(config: SingleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;

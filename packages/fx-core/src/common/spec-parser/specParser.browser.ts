@@ -12,6 +12,7 @@ import {
   ValidateResult,
   ValidationStatus,
   Parameter,
+  ListAPIResult,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { listSupportedAPIs, parseApiInfo, validateSpec } from "./utils";
@@ -23,7 +24,7 @@ import { ConstantString } from "./constants";
 export class SpecParser {
   public readonly pathOrSpec: string | OpenAPIV3.Document;
   public readonly parser: SwaggerParser;
-  public readonly options: ParseOptions;
+  public readonly options: Required<ParseOptions>;
 
   private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
   private spec: OpenAPIV3.Document | undefined;
@@ -33,6 +34,7 @@ export class SpecParser {
   private defaultOptions: ParseOptions = {
     allowMissingId: false,
     allowSwagger: false,
+    allowAPIKeyAuth: false,
   };
 
   /**
@@ -46,7 +48,7 @@ export class SpecParser {
     this.options = {
       ...this.defaultOptions,
       ...(options ?? {}),
-    };
+    } as Required<ParseOptions>;
   }
 
   /**
@@ -77,7 +79,13 @@ export class SpecParser {
         };
       }
 
-      return validateSpec(this.spec!, this.parser, !!this.isSwaggerFile);
+      return validateSpec(
+        this.spec!,
+        this.parser,
+        !!this.isSwaggerFile,
+        this.options.allowMissingId,
+        this.options.allowAPIKeyAuth
+      );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -128,7 +136,7 @@ export class SpecParser {
    * according to copilot plugin spec, only list get and post method without auth
    */
   // eslint-disable-next-line @typescript-eslint/require-await
-  async list(): Promise<string[]> {
+  async list(): Promise<ListAPIResult[]> {
     throw new Error("Method not implemented.");
   }
 
@@ -177,7 +185,11 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = listSupportedAPIs(spec, this.options.allowMissingId!);
+    const result = listSupportedAPIs(
+      spec,
+      this.options.allowMissingId,
+      this.options.allowAPIKeyAuth
+    );
     this.apiMap = result;
     return result;
   }

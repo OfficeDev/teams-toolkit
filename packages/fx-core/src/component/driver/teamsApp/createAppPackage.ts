@@ -98,7 +98,6 @@ export class CreateAppPackageDriver implements StepDriver {
       return err(error);
     }
     const colorFileRelativePath = path.relative(appDirectory, colorFile);
-    console.log(`My test: ${colorFileRelativePath}`);
     if (colorFileRelativePath.startsWith("..")) {
       return err(new InvalidFileOutsideOfTheDirectotryError(colorFile));
     }

@@ -446,7 +446,62 @@ describe("teamsApp/validateAppPackage", async () => {
     chai.assert(result.isErr());
   });
 
-  it("happy path - cli", async () => {
+  it("validation with only errors - cli", async () => {
+    sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
+      errors: [
+        {
+          id: "fakeId",
+          content: "Reserved Tab Name property should not be specified.",
+          filePath: "",
+          helpUrl: "https://docs.microsoft.com",
+          shortCodeNumber: 123,
+          validationCategory: "tab",
+          title: "tab name",
+        },
+      ],
+      status: "Rejected",
+      warnings: [],
+      notes: [
+        {
+          id: "fakeId",
+          content: "Schema URL is present.",
+          title: "schema",
+        },
+      ],
+      addInDetails: {
+        displayName: "fake name",
+        developerName: "fake name",
+        version: "1.14.1",
+        manifestVersion: "1.14.1",
+      },
+    });
+    sinon.stub(fs, "pathExists").resolves(true);
+    // sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    const args: ValidateAppPackageArgs = {
+      appPackagePath: "fakePath",
+    };
+
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
+    chai.assert(result.isErr());
+  });
+
+  it("validation with warnings - cli", async () => {
     sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
       errors: [],
       status: "Rejected",
@@ -461,6 +516,51 @@ describe("teamsApp/validateAppPackage", async () => {
           title: "valid domain",
         },
       ],
+      notes: [
+        {
+          id: "fakeId",
+          content: "Schema URL is present.",
+          title: "schema",
+        },
+      ],
+      addInDetails: {
+        displayName: "fake name",
+        developerName: "fake name",
+        version: "1.14.1",
+        manifestVersion: "1.14.1",
+      },
+    });
+    sinon.stub(fs, "pathExists").resolves(true);
+    // sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      zip.addFile("color.png", new Buffer(""));
+      zip.addFile("outlie.png", new Buffer(""));
+
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    const args: ValidateAppPackageArgs = {
+      appPackagePath: "fakePath",
+    };
+
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
+    chai.assert(result.isOk());
+  });
+
+  it("happy path - cli", async () => {
+    sinon.stub(AppStudioClient, "partnerCenterAppPackageValidation").resolves({
+      errors: [],
+      status: "Rejected",
+      warnings: [],
       notes: [
         {
           id: "fakeId",

@@ -35,6 +35,7 @@ import {
 import { QuestionNames } from "./questionNames";
 import { environmentNameManager } from "../core/environmentName";
 import { Constants } from "../component/driver/add/utility/constants";
+import { isCliV3Enabled } from "../common/featureFlags";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -581,8 +582,8 @@ export async function isAadMainifestContainsPlaceholder(inputs: Inputs): Promise
 export function selectAadManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.AadAppManifestFilePath,
-    cliName: "aad-manifest-file",
-    cliShortName: "a",
+    cliName: isCliV3Enabled() ? "entra-app-manifest-file" : "aad-manifest-file",
+    cliShortName: isCliV3Enabled() ? "e" : "a",
     cliDescription:
       "Specifies the Microsoft Entra app manifest file path, can be either absolute path or relative path to project root folder.",
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),

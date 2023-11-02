@@ -99,7 +99,7 @@ export class CreateAppPackageDriver implements StepDriver {
     }
     const colorFileRelativePath = path.relative(appDirectory, colorFile);
     console.log(`My test: ${colorFileRelativePath}`);
-    if (colorFileRelativePath.startsWith("..\\")) {
+    if (colorFileRelativePath.startsWith("..")) {
       return err(new InvalidFileOutsideOfTheDirectotryError(colorFile));
     }
 
@@ -113,7 +113,7 @@ export class CreateAppPackageDriver implements StepDriver {
       return err(error);
     }
     const outlineFileRelativePath = path.relative(appDirectory, outlineFile);
-    if (outlineFileRelativePath.startsWith("..\\")) {
+    if (outlineFileRelativePath.startsWith("..")) {
       return err(new InvalidFileOutsideOfTheDirectotryError(outlineFile));
     }
 
@@ -155,7 +155,7 @@ export class CreateAppPackageDriver implements StepDriver {
         const file = language.file;
         const fileName = path.resolve(appDirectory, file);
         const relativePath = path.relative(appDirectory, fileName);
-        if (relativePath.startsWith("..\\")) {
+        if (relativePath.startsWith("..")) {
           return err(new InvalidFileOutsideOfTheDirectotryError(fileName));
         }
         zip.addFile(relativePath, Buffer.from(fileName));
@@ -183,7 +183,7 @@ export class CreateAppPackageDriver implements StepDriver {
         );
       }
       const relativePath = path.relative(appDirectory, apiSpecificationFile);
-      if (relativePath.startsWith("..\\")) {
+      if (relativePath.startsWith("..")) {
         return err(new InvalidFileOutsideOfTheDirectotryError(apiSpecificationFile));
       }
       const expandedEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
@@ -214,7 +214,7 @@ export class CreateAppPackageDriver implements StepDriver {
               );
             }
             const relativePath = path.relative(appDirectory, adaptiveCardFile);
-            if (relativePath.startsWith("..\\")) {
+            if (relativePath.startsWith("..")) {
               return err(new InvalidFileOutsideOfTheDirectotryError(adaptiveCardFile));
             }
             zip.addFile(relativePath, Buffer.from(openAPIContent), "");

@@ -33,7 +33,7 @@ interface InstallationInfoFile {
 export class TestToolChecker implements DepsChecker {
   private telemetryProperties: { [key: string]: string };
   private readonly name = "Teams App Test Tool";
-  private readonly npmPackageName = "@microsoft/teams-app-test-tool-cli";
+  private readonly npmPackageName = "@microsoft/teams-app-test-tool";
   private readonly timeout = 5 * 60 * 1000;
   private readonly checkUpdateTimeout = 10 * 1000;
   private readonly commandName = isWindows() ? "teamsapptester.cmd" : "teamsapptester";
@@ -401,7 +401,7 @@ export class TestToolChecker implements DepsChecker {
       const files = await fs.readdir(dir);
       for (const fileName of files) {
         const fullPath = path.join(dir, fileName);
-        if (fileName.match(/microsoft-teams-app-test-tool-cli.*\.tgz/i)) {
+        if (fileName.match(/microsoft-teams-app-test-tool.*\.tgz/i)) {
           try {
             const st = await fs.stat(fullPath);
             if (st.isFile()) {

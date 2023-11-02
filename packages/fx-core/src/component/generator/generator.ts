@@ -35,6 +35,7 @@ import {
 } from "./generatorAction";
 import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
 import { sampleProvider } from "../../common/samples";
+import { enableTestToolByDefault } from "../../common/featureFlags";
 
 export class Generator {
   public static getDefaultVariables(
@@ -52,6 +53,7 @@ export class Generator {
       ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: apiKeyAuthData?.registrationIdEnvName ?? "",
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
+      enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
     };
   }
   @hooks([

@@ -7,7 +7,7 @@ import { debounce } from "lodash";
 import * as React from "react";
 
 import { ActionButton, Dropdown, IDropdownOption, IDropdownStyles, IStyle } from "@fluentui/react";
-import { VSCodeButton, VSCodeTag, VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton, VSCodeTextField } from "@vscode/webview-ui-toolkit/react";
 
 import {
   TelemetryEvent,
@@ -104,10 +104,10 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         </div>
         <div className="filter-tag-bar">
           {this.props.filterTags.map((tag) => (
-            <VSCodeTag className="filter-tag">
+            <div className="filter-tag">
               <span>{tag}</span>
               <span className="codicon codicon-close" onClick={() => this.onTagRemoved(tag)}></span>
-            </VSCodeTag>
+            </div>
           ))}
           {this.props.filterTags.length > 0 && (
             <ActionButton onClick={this.onAllTagsRemoved}>Clear all</ActionButton>
@@ -158,7 +158,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       "span:first-child": {
         height: 24,
         lineHeight: 21,
-        backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
+        backgroundColor: "var(--vscode-diffEditor-unchangedRegionBackground)",
         color: "var(--vscode-peekViewTitleDescription-foreground, #CCCCCC)",
         fontSize: 13,
         border: "1px solid var(--vscode-menu-separatorBackground, #3C3C3C)",
@@ -167,7 +167,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       },
     };
     const caretStyle: IStyle = {
-      backgroundColor: "var(--vscode-dropdown-background, #3C3C3C)",
+      backgroundColor: "var(--vscode-diffEditor-unchangedRegionBackground)",
       color: "var(--vscode-dropdown-foreground, #CCCCCC)",
       fontSize: 11,
       lineHeight: 16,

@@ -350,6 +350,7 @@ export enum TelemetryProperty {
   ValidateMethod = "validate-method",
   // Used in Sample Gallery
   SearchText = "search-text",
+  ChangedFilter = "changed-filter",
   SampleFilters = "sample-filters",
   Layout = "layout",
 }

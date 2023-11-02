@@ -36,7 +36,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       loading: true,
       layout: "grid",
       query: "",
-      filterTags: [],
+      filterTags: { types: [], languages: [], techniques: [] },
     };
   }
 
@@ -170,7 +170,10 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           [TelemetryProperty.TriggerFrom]: triggerFrom,
           [TelemetryProperty.SampleAppName]: id,
           [TelemetryProperty.SearchText]: this.state.query,
-          [TelemetryProperty.SampleFilters]: this.state.filterTags.join(","),
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.types
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.techniques)
+            .join(","),
           [TelemetryProperty.Layout]: this.state.layout,
         },
       },
@@ -201,17 +204,24 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     this.setState({ layout: newLayout });
   };
 
-  private onFilterConditionChanged = (query: string, filterTags: string[]) => {
+  private onFilterConditionChanged = (query: string, filterTags: Record<string, string[]>) => {
     let filteredSamples = this.samples.filter((sample: SampleInfo) => {
-      if (filterTags.length === 0) {
-        return true;
-      }
-      for (const tag of filterTags) {
-        if (sample.tags.findIndex((value) => value.includes(tag)) >= 0) {
-          return true;
+      for (const key in filterTags) {
+        if (filterTags[key].length === 0) {
+          continue;
+        }
+        let isMatch = false;
+        for (const tag of filterTags[key]) {
+          if (sample.tags.findIndex((value) => value.includes(tag)) >= 0) {
+            isMatch = true;
+            break;
+          }
+        }
+        if (!isMatch) {
+          return false;
         }
       }
-      return false;
+      return true;
     });
     if (this.state.query !== "") {
       const fuse = new Fuse(filteredSamples, {
@@ -233,7 +243,10 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           [TelemetryProperty.TriggerFrom]: triggerFrom,
           [TelemetryProperty.SampleAppName]: sample.id,
           [TelemetryProperty.SearchText]: this.state.query,
-          [TelemetryProperty.SampleFilters]: this.state.filterTags.join(","),
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.types
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.techniques)
+            .join(","),
           [TelemetryProperty.Layout]: this.state.layout,
         },
       },
@@ -256,7 +269,10 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           [TelemetryProperty.TriggerFrom]: triggerFrom,
           [TelemetryProperty.SampleAppName]: sample.id,
           [TelemetryProperty.SearchText]: this.state.query,
-          [TelemetryProperty.SampleFilters]: this.state.filterTags.join(","),
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.types
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.techniques)
+            .join(","),
           [TelemetryProperty.Layout]: this.state.layout,
         },
       },

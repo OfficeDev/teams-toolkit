@@ -12,7 +12,7 @@ export type SampleGalleryState = {
   // keep filtering state here to recover after navigating back from detail page
   layout: "grid" | "list";
   query: string;
-  filterTags: string[];
+  filterTags: Record<string, string[]>;
 };
 
 export interface SampleInfo {
@@ -52,8 +52,8 @@ export type SampleFilterProps = {
   filterOptions: SampleFilterOptionType;
   layout: "grid" | "list";
   query: string;
-  filterTags: string[];
+  filterTags: Record<string, string[]>;
 
   onLayoutChanged: (layout: "grid" | "list") => void;
-  onFilterConditionChanged: (query: string, filterTags: string[]) => void;
+  onFilterConditionChanged: (query: string, filterTags: Record<string, string[]>) => void;
 };

@@ -108,6 +108,13 @@ export class ValidateManifestDriver implements StepDriver {
             content: `${validationResult.length} failed.\n`,
             color: Colors.BRIGHT_RED,
           },
+          {
+            content: getDefaultString(
+              "driver.teamsApp.summary.validateManifest.checkPath",
+              args.manifestPath
+            ),
+            color: Colors.BRIGHT_WHITE,
+          },
         ];
         validationResult.map((error: string) => {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
@@ -125,7 +132,16 @@ export class ValidateManifestDriver implements StepDriver {
           })
           .join(EOL);
         const outputMessage =
-          EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr, errors);
+          EOL +
+          getLocalizedString(
+            "driver.teamsApp.summary.validateManifest",
+            summaryStr,
+            getLocalizedString(
+              "driver.teamsApp.summary.validateManifest.checkPath",
+              args.manifestPath
+            ),
+            errors
+          );
 
         context.logProvider?.info(outputMessage);
       }
@@ -149,7 +165,7 @@ export class ValidateManifestDriver implements StepDriver {
         getLocalizedString("driver.teamsApp.summary.validate.all")
       );
       const outputMessage =
-        EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr, "");
+        EOL + getLocalizedString("driver.teamsApp.summary.validateManifest", summaryStr, "", "");
       context.logProvider?.info(outputMessage);
 
       const validationSuccess = getLocalizedString(

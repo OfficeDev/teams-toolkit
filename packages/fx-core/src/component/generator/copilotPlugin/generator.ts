@@ -161,7 +161,6 @@ export class CopilotPluginGenerator {
       if (apiKeyAuthData?.authName) {
         context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS, {
           authName: apiKeyAuthData?.authName,
-          domains: JSON.stringify([apiKeyAuthData.serverUrl]),
           openapiSpecPath: normalizePath(path.join(apiSpecFolderName, openapiSpecFileName)),
         });
       } else {

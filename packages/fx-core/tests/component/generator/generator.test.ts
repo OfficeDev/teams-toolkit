@@ -558,6 +558,18 @@ describe("Generator happy path", async () => {
     assert.isTrue(result.isOk());
   });
 
+  it("template variables when test tool enabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "true" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.enableTestToolByDefault, "true");
+  });
+
+  it("template variables when test tool disabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.enableTestToolByDefault, "");
+  });
+
   it("template from source code", async () => {
     const templateName = "test";
     const language = "ts";

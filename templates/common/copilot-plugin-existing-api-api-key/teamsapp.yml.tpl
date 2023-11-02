@@ -23,7 +23,6 @@ provision:
       name: {{ApiSpecAuthName}}
       appId: ${{TEAMS_APP_ID}}
       apiSpecPath: {{{ApiSpecPath}}}
-      domain: {{{ApiSpecServerUrl}}}
     writeToEnvironmentFile:
       registrationId: {{ApiSpecAuthRegistrationIdPrefix}}_REGISTRATION_ID
 

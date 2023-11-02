@@ -929,14 +929,14 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       cliDescription: "Api key for OpenAPI spec.",
       forgetLastValue: true,
       validation: {
-        validFunc: (input: string): Promise<string | undefined> => {
+        validFunc: (input: string): string | undefined => {
           const pattern = /^(\w){10,128}/g;
           const match = pattern.test(input);
 
           const result = match
             ? undefined
             : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
-          return Promise.resolve(result);
+          return result;
         },
       },
       additionalValidationOnAccept: {

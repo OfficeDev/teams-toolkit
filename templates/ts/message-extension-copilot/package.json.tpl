@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit message extension search sample",
     "engines": {
-        "node": "16 || 18"
+        "node": "16 || 18 || 20"
     },
     "author": "Microsoft",
     "license": "MIT",

@@ -566,8 +566,8 @@ importers:
         specifier: ^4.2.0
         version: 4.2.0
       adm-zip:
-        specifier: ^0.5.5
-        version: 0.5.9
+        specifier: ^0.5.10
+        version: 0.5.10
       ajv:
         specifier: ^8.5.0
         version: 8.5.0
@@ -687,7 +687,7 @@ importers:
         specifier: ^4.2.14
         version: 4.2.22
       '@types/chai-as-promised':
-        specifier: ^7.1.3
+        specifier: ^7.1.4
         version: 7.1.4
       '@types/chai-spies':
         specifier: ^1.0.3
@@ -10393,7 +10393,6 @@ packages:
   /adm-zip@0.5.10:
     resolution: {integrity: sha512-x0HvcHqVJNTPk/Bw8JbLWlWoo6Wwnsug0fnYYro1HBrjxZ3G7/AZk7Ahv8JwDe1uIcz8eBqvu86FuF1POiG7vQ==}
     engines: {node: '>=6.0'}
-    dev: true
 
   /adm-zip@0.5.9:
     resolution: {integrity: sha512-s+3fXLkeeLjZ2kLjCBwQufpI5fuN+kIGBxu6530nVQZGVol0d7Y/M88/xw9HGGUcJjKf8LutN3VPRUBq6N7Ajg==}
@@ -21132,7 +21131,7 @@ packages:
     hasBin: true
     dependencies:
       '@microsoft/teams-manifest': 0.0.9
-      adm-zip: 0.5.9
+      adm-zip: 0.5.10
       chalk: 2.4.2
       commander: 6.2.1
       fs-extra: 7.0.1
@@ -21150,7 +21149,7 @@ packages:
     resolution: {integrity: sha512-3ITHBlu2MwBPmrXE/yukb3+zeHgXmYwZOybvP26BwJDHOpbqK5eo8lZsk4/ld1LVyy94zdv0u9pd7n7mFHxb1g==}
     hasBin: true
     dependencies:
-      adm-zip: 0.5.9
+      adm-zip: 0.5.10
       commander: 6.2.1
       fs-extra: 7.0.1
       inquirer: 7.3.3

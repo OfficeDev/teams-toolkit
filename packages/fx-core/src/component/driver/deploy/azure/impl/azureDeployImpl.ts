@@ -34,6 +34,7 @@ import {
 } from "../../../../../error";
 import { hooks } from "@feathersjs/hooks";
 import { ErrorContextMW } from "../../../../../core/globalVars";
+import path from "path";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -74,6 +75,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);
+    this.cleanup();
     return true;
   }
 
@@ -88,6 +90,27 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void>;
+
+  /**
+   * cleanup function after deployment is finished
+   * @protected
+   */
+  protected cleanup(): void {
+    if (this.zipFilePath && !this.dryRun) {
+      try {
+        fs.removeSync(this.zipFilePath);
+        // if upper folder is empty, remove it
+        const parentFolder = path.dirname(this.zipFilePath);
+        if (fs.readdirSync(parentFolder).length === 0) {
+          fs.removeSync(parentFolder);
+        }
+      } catch (e) {
+        this.logger.warning(
+          `Failed to remove zip package. ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`
+        );
+      }
+    }
+  }
 
   /**
    * check if resource id is legal and parse it

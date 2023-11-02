@@ -6,8 +6,6 @@ import klaw from "klaw";
 import AdmZip, { EntryHeader } from "adm-zip";
 import ignore, { Ignore } from "ignore";
 import path from "path";
-import glob from "glob";
-import { DeployConstant } from "../constant/deployConstant";
 import { DeployEmptyFolderError } from "../../error/deploy";
 
 /**
@@ -20,14 +18,14 @@ export async function zipFolderAsync(
   sourceDir: string,
   cache: string,
   notIncluded: Ignore
-): Promise<Buffer> {
-  const normalizeTime = (t: number) => Math.floor(t / DeployConstant.ZIP_TIME_MS_GRANULARITY);
-
+): Promise<fs.ReadStream> {
   const tasks: Promise<void>[] = [];
-  const zipFiles = new Set<string>();
   const ig = notIncluded ?? ignore();
-  const cacheFile = await readZip(cache);
-  const zip = cacheFile ?? new AdmZip();
+  // always delete cache if exists
+  if (fs.existsSync(cache)) {
+    await fs.remove(cache);
+  }
+  const zip = new AdmZip();
 
   const addFileIntoZip = async (
     zp: AdmZip,
@@ -48,29 +46,6 @@ export async function zipFolderAsync(
       const relativePath: string = path.relative(sourceDir, itemPath);
       const zipPath = path.normalize(relativePath).split("\\").join("/");
       if (relativePath && !stats.isDirectory()) {
-        zipFiles.add(zipPath);
-
-        const entry = zip.getEntry(zipPath);
-        if (entry) {
-          // The header is an object, the ts declare of adm-zip is wrong.
-          const header = entry.header;
-          const mtime = header ? header.time : new Date(0);
-          // Some files' mtime in node_modules are too old, which may be invalid,
-          // so we arbitrarily add a limitation to update this kind of files.
-          // If mtime is valid and the two mtime is same in two-seconds, we think the two are same file.
-          if (
-            mtime >= DeployConstant.LATEST_TRUST_MS_TIME &&
-            normalizeTime(mtime.getTime()) === normalizeTime(stats.mtime.getTime())
-          ) {
-            return;
-          }
-
-          // Delete the entry because the file has been updated.
-          zip.deleteFile(zipPath);
-        }
-
-        // If fail to reuse cached entry, load it from disk.
-        // path doesn't work properly under windows
         const fullPath = path.join(sourceDir, relativePath);
         const task = addFileIntoZip(zip, fullPath, zipPath, stats);
         tasks.push(task);
@@ -81,20 +56,25 @@ export async function zipFolderAsync(
     }
   );
 
-  if (tasks.length === 0 && !cacheFile) {
+  if (tasks.length === 0) {
     throw new DeployEmptyFolderError(sourceDir);
   }
 
   await Promise.all(tasks);
-  removeLegacyFileInZip(zip, zipFiles);
   // save to cache if exists
-  const buffer = zip.toBuffer();
   if (cache && tasks) {
     await fs.mkdirs(path.dirname(cache));
-    await fs.writeFile(cache, buffer);
+    await new Promise((resolve, reject) => {
+      zip.writeZip(cache, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({});
+        }
+      });
+    });
   }
-
-  return buffer;
+  return fs.createReadStream(cache);
 }
 
 export async function forEachFileAndDir(
@@ -114,23 +94,4 @@ export async function forEachFileAndDir(
       .on("error", (err) => reject(err))
       .on("close", () => resolve({}));
   });
-}
-
-function removeLegacyFileInZip(zip: AdmZip, existenceFiles: Set<string>): void {
-  zip
-    .getEntries()
-    .filter((entry) => !existenceFiles.has(entry.name))
-    .forEach((entry) => {
-      zip.deleteFile(entry.name);
-    });
-}
-
-async function readZip(cache: string): Promise<AdmZip | undefined> {
-  try {
-    const content = await fs.readFile(cache);
-    return new AdmZip(content);
-  } catch {
-    // Failed to load cache, it doesn't block deployment.
-  }
-  return undefined;
 }

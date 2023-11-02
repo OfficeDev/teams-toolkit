@@ -1486,16 +1486,7 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "GET /user/{userId}",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1530,16 +1521,7 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "GET /user/{userId}",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1583,16 +1565,7 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "testOperation",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["testOperation"],
       projectPath: path.join(os.tmpdir(), appName),
     };
     const core = new FxCore(tools);
@@ -1617,16 +1590,7 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "testOperation",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["testOperation"],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };
@@ -1653,16 +1617,7 @@ describe("copilotPlugin", async () => {
       platform: Platform.VSCode,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
-      [QuestionNames.ApiOperation]: [
-        {
-          id: "testOperation",
-          label: "operation1",
-          groupName: "1",
-          data: {
-            serverUrl: "https://server1",
-          },
-        },
-      ],
+      [QuestionNames.ApiOperation]: ["testOperation"],
       [QuestionNames.ManifestPath]: "manifest.json",
       projectPath: path.join(os.tmpdir(), appName),
     };

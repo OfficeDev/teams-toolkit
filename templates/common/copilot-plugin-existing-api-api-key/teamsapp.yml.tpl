@@ -17,6 +17,15 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
+  # Register API KEY
+  - uses: apiKey/create
+    with:
+      name: {{ApiSpecAuthName}}
+      appId: ${{TEAMS_APP_ID}}
+      apiSpecPath: {{{ApiSpecPath}}}
+    writeToEnvironmentFile:
+      registrationId: {{ApiSpecAuthRegistrationIdEnvName}}
+
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:

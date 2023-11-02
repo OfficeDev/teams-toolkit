@@ -87,7 +87,7 @@ export class Generator {
     });
 
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
-    ctx.logProvider.verbose(`Downloading app template "${templateName}" to ${destinationPath}`);
+    ctx.logProvider.debug(`Downloading app template "${templateName}" to ${destinationPath}`);
     await this.generate(generatorContext, TemplateActionSeq);
 
     merge(actionContext?.telemetryProps, {
@@ -132,7 +132,7 @@ export class Generator {
       onActionError: sampleDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
-    ctx.logProvider.verbose(`Downloading sample "${sampleName}" to ${destinationPath}`);
+    ctx.logProvider.debug(`Downloading sample "${sampleName}" to ${destinationPath}`);
     await this.generate(generatorContext, DownloadDirectoryActionSeq);
     if (!generatorContext.outputs?.length) {
       return err(new SampleNotFoundError(sampleName).toFxError());

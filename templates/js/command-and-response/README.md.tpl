@@ -11,7 +11,9 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > To run the command bot template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
+{{^enableTestToolByDefault}}
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+{{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 >
 > **Note**
@@ -19,14 +21,26 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-new#customize-installation).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableTestToolByDefault}}
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+3. The browser will pop up to open Teams App Test Tool.
+4. Type or select `helloWorld` in the chat to send it to your bot - this is the default command provided by the template.
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 5. Type or select `helloWorld` in the chat to send it to your bot - this is the default command provided by the template.
+{{/enableTestToolByDefault}}
 
 The bot will respond to the `helloWorld` command with an Adaptive Card:
 
+{{#enableTestToolByDefault}}
+![Command and Response in Test Tool](https://github.com/OfficeDev/TeamsFx/assets/9698542/2636fd91-ec7f-4740-a5ea-b272575b0b7c)
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 ![Command and Response in Teams](https://user-images.githubusercontent.com/11220663/165891754-16916b68-c1b5-499d-b6a8-bdfb195f1fd0.png)
+{{#enableTestToolByDefault}}
 
 ## What's included in the template
 
@@ -44,11 +58,10 @@ The following files can be customized and demonstrate an example implementation 
 
 | File | Contents |
 | - | - |
-| `src/index.ts` | Application entry point and `restify` handlers for command and response |
-| `src/teamsBot.ts`  | An empty teams activity handler for bot customization |
+| `src/index.js` | Application entry point and `restify` handlers for command and response |
+| `src/teamsBot.js` | An empty teams activity handler for bot customization |
 | `src/adaptiveCards/helloworldCommand.json` | A generated Adaptive Card that is sent to Teams |
-| `src/helloworldCommandHandler.ts` | The business logic to handle a command |
-| `src/cardModels.ts` | The default Adaptive Card data model |
+| `src/helloworldCommandHandler.js` | The business logic to handle a command  |
 
 ## Extend the command bot template with more commands and responses
 
@@ -114,31 +127,21 @@ You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to 
 
 ### Step 3: Handle the command
 
-The TeamsFx SDK provides a convenient class, `TeamsFxBotCommandHandler`, to handle when an command is triggered from Teams conversation message. Create a new file, `src/doSomethingCommandHandler.ts`:
+The TeamsFx SDK provides a convenient class, `TeamsFxBotCommandHandler`, to handle when an command is triggered from Teams conversation message. Create a new file, `src/doSomethingCommandHandler.js`:
 
-```typescript
-import { Activity, CardFactory, MessageFactory, TurnContext } from "botbuilder";
-import {
-  CommandMessage,
-  TeamsFxBotCommandHandler,
-  TriggerPatterns,
-  MessageBuilder,
-} from "@microsoft/teamsfx";
-import doSomethingCard from "./adaptiveCards/doSomethingCommandResponse.json";
-import { AdaptiveCards } from "@microsoft/adaptivecards-tools";
-import { CardData } from "./cardModels";
+```javascript
+const doSomethingCard = require("./adaptiveCards/doSomethingCommandResponse.json");
+const { AdaptiveCards } = require("@microsoft/adaptivecards-tools");
+const { CardFactory, MessageFactory } = require("botbuilder");
 
-export class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
-  triggerPatterns: TriggerPatterns = "doSomething";
+class DoSomethingCommandHandler {
+  triggerPatterns = "doSomething";
 
-  async handleCommandReceived(
-    context: TurnContext,
-    message: CommandMessage
-  ): Promise<string | Partial<Activity>> {
+  async handleCommandReceived(context, message) {
     // verify the command arguments which are received from the client if needed.
     console.log(`App received message: ${message.text}`);
 
-    const cardData: CardData = {
+    const cardData = {
       title: "doSomething command is added",
       body: "Congratulations! You have responded to doSomething command",
     };
@@ -147,19 +150,23 @@ export class DoSomethingCommandHandler implements TeamsFxBotCommandHandler {
     return MessageFactory.attachment(CardFactory.adaptiveCard(cardJson));
   }
 }
+
+module.exports = {
+  DoSomethingCommandHandler,
+};
 ```
 
 You can customize what the command does here, including calling an API, process data, etc.
 
 ### Step 4: Register the new command
 
-Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `src/internal/initialize.ts` file and update the `commands` array of the `command` property:
+Each new command needs to be configured in the `ConversationBot`, which powers the conversational flow of the command bot template. Navigate to the `src/internal/initialize.js` file and update the `commands` array of the `command` property:
 
-```typescript
-import { HelloWorldCommandHandler } from "../helloworldCommandHandler";
-import { DoSomethingCommandHandler } from "../doSomethingCommandHandler";
-import { BotBuilderCloudAdapter } from "@microsoft/teamsfx";
-import ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+```javascript
+const { BotBuilderCloudAdapter } = require("@microsoft/teamsfx");
+const ConversationBot = BotBuilderCloudAdapter.ConversationBot;
+const { HelloWorldCommandHandler } = require("../helloworldCommandHandler");
+const { DoSomethingCommandHandler } = require("../doSomethingCommandHandler");
 
 const commandApp = new ConversationBot({
   //...
@@ -168,6 +175,10 @@ const commandApp = new ConversationBot({
     commands: [new HelloWorldCommandHandler(), new DoSomethingCommandHandler()],
   },
 });
+
+module.exports = {
+  commandApp,
+};
 ```
 
 Congratulations, you've just created your own command! To learn more about the command bot template, [visit the documentation on GitHub](https://aka.ms/teamsfx-command-new). You can find more scenarios like:

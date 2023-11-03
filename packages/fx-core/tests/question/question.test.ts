@@ -1012,6 +1012,9 @@ describe("resourceGroupQuestionNode", async () => {
     const question = apiSpecApiKeyQuestion();
     const validation = (question.data as TextInputQuestion).validation;
     const result = (validation as FuncValidation<string>).validFunc("abc");
-    assert.equal(result, "Client secret is invalid. Length of secret should >= 10 and <= 128");
+    assert.equal(
+      result,
+      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
+    );
   });
 });

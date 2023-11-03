@@ -12,7 +12,7 @@ export type SampleGalleryState = {
   // keep filtering state here to recover after navigating back from detail page
   layout: "grid" | "list";
   query: string;
-  filterTags: Record<string, string[]>;
+  filterTags: SampleFilterOptionType;
 };
 
 export interface SampleInfo {
@@ -47,9 +47,9 @@ export type SampleProps = {
 };
 
 export type SampleFilterOptionType = {
-  types: string[];
+  capabilities: string[];
   languages: string[];
-  techniques: string[];
+  technologies: string[];
 };
 
 export type SampleFilterProps = {
@@ -57,8 +57,8 @@ export type SampleFilterProps = {
   filterOptions: SampleFilterOptionType;
   layout: "grid" | "list";
   query: string;
-  filterTags: Record<string, string[]>;
+  filterTags: SampleFilterOptionType;
 
   onLayoutChanged: (layout: "grid" | "list") => void;
-  onFilterConditionChanged: (query: string, filterTags: Record<string, string[]>) => void;
+  onFilterConditionChanged: (query: string, filterTags: SampleFilterOptionType) => void;
 };

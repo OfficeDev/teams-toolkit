@@ -60,7 +60,7 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
               })}
           </div>
         </div>
-        <div className="padding" />
+        <div className="padding" onClick={this.onSampleTitleClicked} />
         {sample.versionComparisonResult != 0 && (
           <div className="info">
             <span className="codicon codicon-info"></span>

@@ -2,23 +2,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Remote in Teams (Edge)",
+            "name": "Launch Remote (Edge)",
             "type": "msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
-                "group": "remote",
+                "group": "3-remote",
                 "order": 1
             },
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Launch Remote in Teams (Chrome)",
+            "name": "Launch Remote (Chrome)",
             "type": "chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
-                "group": "remote",
+                "group": "3-remote",
                 "order": 2
             },
             "internalConsoleOptions": "neverOpen"
@@ -66,30 +66,57 @@
     ],
     "compounds": [
         {
-            "name": "Debug in Teams (Edge)",
+            "name": "Debug (Edge)",
             "configurations": [
                 "Launch App (Edge)",
                 "Attach to Local Service"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+{{#enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
                 "order": 1
             },
             "stopAll": true
         },
         {
-            "name": "Debug in Teams (Chrome)",
+            "name": "Debug (Chrome)",
             "configurations": [
                 "Launch App (Chrome)",
                 "Attach to Local Service"
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+{{#enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
                 "order": 2
             },
             "stopAll": true
-        }
+        },
+        {
+            "name": "Debug in Test Tool",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App (Test Tool)",
+            "presentation": {
+{{#enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+                "order": 1
+            },
+            "stopAll": true
+        },
     ]
 }

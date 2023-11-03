@@ -51,7 +51,6 @@ describe("Samples", () => {
       sandbox.restore();
       sampleProvider["samplesConfig"] = undefined;
       process.env["TEAMSFX_SAMPLE_CONFIG_BRANCH"] = undefined;
-      (sampleProvider as any).sampleCollection = undefined;
     });
 
     it("download sample config on 'dev' branch in alpha version", async () => {
@@ -235,7 +234,6 @@ describe("Samples", () => {
       chai.expect(sampleConfigV3.samples.find((sampleInConfig) => sampleInConfig.id === sample.id))
         .exist;
     }
-    (sampleProvider as any).sampleCollection = undefined;
   });
 
   it("External sample url can be retrieved correctly in v3", () => {
@@ -264,7 +262,6 @@ describe("Samples", () => {
     chai.expect(faked?.downloadUrlInfo).equals(fakedExternalSample.downloadUrlInfo);
     chai.expect(faked?.gifUrl).equals(undefined);
 
-    (sampleProvider as any).sampleCollection = undefined;
     sampleConfigV3.samples.splice(sampleConfigV3.samples.length - 1, 1);
   });
 
@@ -311,7 +308,6 @@ describe("Samples", () => {
   });
 
   it("returns empty sample collection when sample config is undefined", () => {
-    (sampleProvider as any).sampleCollection = undefined;
     const sampleCollection = sampleProvider.SampleCollection;
 
     chai.expect(sampleCollection.filterOptions.capabilities).to.deep.equal([]);

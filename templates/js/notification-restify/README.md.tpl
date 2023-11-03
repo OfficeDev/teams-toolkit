@@ -54,6 +54,7 @@ The bot will send an Adaptive Card to Teams:
 | - | - |
 | `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
 | `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
+| `teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool |
 | `env/`| Name / value pairs are stored in environment files and used by `teamsapp.yml` to customize the provisioning and deployment rules |
 | `.vscode/` | VSCode files for debugging |
 | `src/` | The source code for the notification Teams application |

@@ -48,6 +48,7 @@ The bot will respond to the `helloWorld` command with an Adaptive Card:
 | - | - |
 | `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
 | `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
+| `teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool |
 | `env/`| Name / value pairs are stored in environment files and used by `teamsapp.yml` to customize the provisioning and deployment rules |
 | `.vscode/` | VSCode files for debugging |
 | `appPackage/` | Templates for the Teams application manifest |

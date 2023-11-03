@@ -26,6 +26,7 @@ import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
 import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvalid";
 import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
 import { SpecParser } from "../../../common/spec-parser";
+import { getAbsolutePath } from "../../utils/common";
 
 const actionName = "apiKey/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-create";
@@ -78,7 +79,7 @@ export class CreateApiKeyDriver implements StepDriver {
           );
         }
       } else {
-        await this.validateArgs(args);
+        await this.validateArgs(args, context);
 
         const apiKey = await this.mapArgsToApiSecretRegistration(context.m365TokenProvider, args);
         const apiRegistrationRes = await AppStudioClient.createApiKeyRegistration(
@@ -158,7 +159,7 @@ export class CreateApiKeyDriver implements StepDriver {
     return true;
   }
 
-  private async getDomain(args: CreateApiKeyArgs): Promise<void> {
+  private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<void> {
     if (args.domain) {
       return;
     }
@@ -168,7 +169,8 @@ export class CreateApiKeyDriver implements StepDriver {
       return;
     }
 
-    const parser = new SpecParser(args.apiSpecPath, {
+    const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
+    const parser = new SpecParser(absolutePath, {
       allowAPIKeyAuth: true,
     });
     const operations = await parser.list();
@@ -179,7 +181,11 @@ export class CreateApiKeyDriver implements StepDriver {
     const results = operations.filter((value, index, object) => {
       return value.auth?.name === args.name;
     });
-    if (!results || results.length > 1) {
+    if (!results || results.length === 0) {
+      // should throw error
+      return;
+    }
+    if (results.length > 1) {
       // should throw error
       return;
     }
@@ -210,7 +216,7 @@ export class CreateApiKeyDriver implements StepDriver {
     return true;
   }
 
-  private async validateArgs(args: CreateApiKeyArgs): Promise<void> {
+  private async validateArgs(args: CreateApiKeyArgs, context: DriverContext): Promise<void> {
     const invalidParameters: string[] = [];
     if (typeof args.name !== "string" || !args.name) {
       invalidParameters.push("name");
@@ -232,7 +238,7 @@ export class CreateApiKeyDriver implements StepDriver {
       invalidParameters.push("apiSpecPath");
     }
 
-    await this.getDomain(args);
+    await this.getDomain(args, context);
     if (args.domain && !this.validateDomain(args.domain)) {
       throw new ApiKeyDomainInvalidError(actionName);
     }

@@ -11,7 +11,9 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > To run the workflow bot template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
+{{#enableTestToolByDefault}}
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+{{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 >
 > **Note**
@@ -19,21 +21,38 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-command-response#customize-installation).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableTestToolByDefault}}
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+3. The browser will pop up to open Teams App Test Tool.
+4. Type or select `helloWorld` in the chat to send it to your bot - this is the default command provided by the template.
+5. In the response from the bot, select the **DoStuff** button.
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 5. Type or select `helloWorld` in the chat to send it to your bot - this is the default command provided by the template.
 6. In the response from the bot, select the **DoStuff** button.
+{{/enableTestToolByDefault}}
 
 The bot will respond by updating the existing Adaptive Card to show the workflow is now complete! Continue reading to learn more about what's included in the template and how to customize it.
 
 Here is a screen shot of the application running:
 
+{{#enableTestToolByDefault}}
+![Responds to command](https://github.com/OfficeDev/TeamsFx/assets/9698542/94173beb-2fff-44fa-87dc-f686677da631)
+
+When you click the `DoStuff` button, the above adaptive card will be updated to a new card as shown below:
+
+![Responds to card action](https://github.com/OfficeDev/TeamsFx/assets/9698542/521ff12d-726c-4087-825a-112547cad836)
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 ![Responds to command](https://user-images.githubusercontent.com/10163840/192477792-dc447b3a-e304-4cd8-b4df-b1eb9d226292.png)
 
 When you click the `DoStuff` button, the above adaptive card will be updated to a new card as shown below:
 
 ![Responds to card action](https://user-images.githubusercontent.com/10163840/192477148-29d9edfc-085b-4d02-b3de-b47b9a456108.png)
+{{/enableTestToolByDefault}}
 
 ## What's included in the template
 
@@ -43,6 +62,7 @@ When you click the `DoStuff` button, the above adaptive card will be updated to 
 | - | - |
 | `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
 | `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
+| `teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool |
 | `env/`| Name / value pairs are stored in environment files and used by `teamsapp.yml` to customize the provisioning and deployment rules |
 | `.vscode/` | VSCode files for debugging |
 | `appPackage/` | Templates for the Teams application manifest |

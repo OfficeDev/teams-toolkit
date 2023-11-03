@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  ConditionFunc,
+  FuncValidation,
   Inputs,
   Platform,
   Question,
+  TextInputQuestion,
   UserError,
   UserInteraction,
   err,
@@ -12,6 +15,7 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
 import { CollaborationConstants, QuestionTreeVisitor, envUtil, traverse } from "../../src";
@@ -20,6 +24,7 @@ import { setTools } from "../../src/core/globalVars";
 import { QuestionNames, SPFxImportFolderQuestion, questionNodes } from "../../src/question";
 import {
   TeamsAppValidationOptions,
+  apiSpecApiKeyQuestion,
   createNewEnvQuestionNode,
   envQuestionCondition,
   isAadMainifestContainsPlaceholder,
@@ -37,7 +42,6 @@ import { callFuncs } from "./create.test";
 import { MockedAzureTokenProvider } from "../core/other.test";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { resourceGroupHelper } from "../../src/component/utils/ResourceGroupHelper";
-import mockedEnv, { RestoreFn } from "mocked-env";
 
 const ui = new MockUserInteraction();
 
@@ -948,5 +952,69 @@ describe("selectAadManifestQuestion", async () => {
     });
     const question = selectAadManifestQuestion();
     assert.equal(question.cliName, "entra-app-manifest-file");
+  });
+});
+
+describe("resourceGroupQuestionNode", async () => {
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn = () => {};
+  afterEach(() => {
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("will pop up question", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = apiSpecApiKeyQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, true);
+  });
+
+  it("will not pop up question due to api key exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    inputs.outputEnvVarNames.set("registrationId", "registrationId");
+    mockedEnvRestore = mockedEnv({
+      registrationId: "fake-id",
+    });
+    const question = apiSpecApiKeyQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, false);
+  });
+
+  it("will not pop up question due to secret exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientSecret: "fakeClientSecret",
+    };
+    const question = apiSpecApiKeyQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, false);
+  });
+
+  it("validation passed", async () => {
+    const question = apiSpecApiKeyQuestion();
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("mockedApiKey");
+    assert.equal(result, undefined);
+  });
+
+  it("validation failed due to length", async () => {
+    const question = apiSpecApiKeyQuestion();
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("abc");
+    assert.equal(
+      result,
+      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
+    );
   });
 });

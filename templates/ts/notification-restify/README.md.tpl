@@ -40,7 +40,7 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 {{#enableTestToolByDefault}}
 The bot will send an Adaptive Card to Teams App Test Tool:
 
-![Notification Message in Test Tool](https://github.com/OfficeDev/TeamsFx/assets/9698542/43ee64f4-5554-4e0b-854f-f7e20672cb25)
+![Notification Message in Test Tool](https://github.com/OfficeDev/TeamsFx/assets/9698542/52aa4826-e8b3-4341-b9e1-bcba50470861)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 The bot will send an Adaptive Card to Teams:

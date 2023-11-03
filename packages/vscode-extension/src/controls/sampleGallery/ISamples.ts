@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
+
 export type SampleGalleryState = {
   loading: boolean;
   filteredSamples?: Array<SampleInfo>;
@@ -10,7 +12,7 @@ export type SampleGalleryState = {
   // keep filtering state here to recover after navigating back from detail page
   layout: "grid" | "list";
   query: string;
-  filterTags: string[];
+  filterTags: Record<string, string[]>;
 };
 
 export interface SampleInfo {
@@ -39,7 +41,9 @@ export interface SampleInfo {
 
 export type SampleProps = {
   sample: SampleInfo;
-  selectSample: (id: string) => void;
+  selectSample: (id: string, triggerFrom: TelemetryTriggerFrom) => void;
+  createSample: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
+  viewGitHub: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
 };
 
 export type SampleFilterOptionType = {
@@ -53,8 +57,8 @@ export type SampleFilterProps = {
   filterOptions: SampleFilterOptionType;
   layout: "grid" | "list";
   query: string;
-  filterTags: string[];
+  filterTags: Record<string, string[]>;
 
   onLayoutChanged: (layout: "grid" | "list") => void;
-  onFilterConditionChanged: (query: string, filterTags: string[]) => void;
+  onFilterConditionChanged: (query: string, filterTags: Record<string, string[]>) => void;
 };

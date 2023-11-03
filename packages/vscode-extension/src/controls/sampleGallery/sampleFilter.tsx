@@ -28,15 +28,15 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
     const sampleLanguages = this.props.filterOptions.languages;
     const sampleTechniques = this.props.filterOptions.techniques;
     const typeOptions: IDropdownOption[] = sampleTypes.map((type) => {
-      const selected = this.props.filterTags.indexOf(type) >= 0;
+      const selected = this.props.filterTags.types.indexOf(type) >= 0;
       return { key: type, text: type, selected };
     });
     const languageOptions: IDropdownOption[] = sampleLanguages.map((type) => {
-      const selected = this.props.filterTags.indexOf(type) >= 0;
+      const selected = this.props.filterTags.languages.indexOf(type) >= 0;
       return { key: type, text: type, selected };
     });
     const techniqueOptions: IDropdownOption[] = sampleTechniques.map((type) => {
-      const selected = this.props.filterTags.indexOf(type) >= 0;
+      const selected = this.props.filterTags.techniques.indexOf(type) >= 0;
       return { key: type, text: type, selected };
     });
     const dropdownStyles = this.getDropdownStyles();
@@ -56,9 +56,9 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             multiSelect
             options={typeOptions}
             styles={dropdownStyles}
-            onChange={this.onFilterTagChanged}
+            onChange={this.onFilterTagChanged("types")}
             selectedKeys={sampleTypes.filter((type) => {
-              return this.props.filterTags.indexOf(type) >= 0;
+              return this.props.filterTags["types"].indexOf(type) >= 0;
             })}
             dropdownWidth="auto"
           />
@@ -67,9 +67,9 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             multiSelect
             options={languageOptions}
             styles={dropdownStyles}
-            onChange={this.onFilterTagChanged}
+            onChange={this.onFilterTagChanged("languages")}
             selectedKeys={sampleLanguages.filter((type) => {
-              return this.props.filterTags.indexOf(type) >= 0;
+              return this.props.filterTags["languages"].indexOf(type) >= 0;
             })}
             dropdownWidth="auto"
           />
@@ -78,9 +78,9 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
             multiSelect
             options={techniqueOptions}
             styles={dropdownStyles}
-            onChange={this.onFilterTagChanged}
+            onChange={this.onFilterTagChanged("techniques")}
             selectedKeys={sampleTechniques.filter((type) => {
-              return this.props.filterTags.indexOf(type) >= 0;
+              return this.props.filterTags["techniques"].indexOf(type) >= 0;
             })}
             dropdownWidth="auto"
           />
@@ -103,13 +103,13 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
           </VSCodeButton>
         </div>
         <div className="filter-tag-bar">
-          {this.props.filterTags.map((tag) => (
+          {this.getAllFilterTags().map((tag) => (
             <div className="filter-tag">
               <span>{tag}</span>
               <span className="codicon codicon-close" onClick={() => this.onTagRemoved(tag)}></span>
             </div>
           ))}
-          {this.props.filterTags.length > 0 && (
+          {this.getAllFilterTags().length > 0 && (
             <ActionButton onClick={this.onAllTagsRemoved}>Clear all</ActionButton>
           )}
         </div>
@@ -124,8 +124,9 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
         data: {
           eventName: TelemetryEvent.SearchSample,
           properties: {
-            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
             [TelemetryProperty.SearchText]: e.target.value,
+            [TelemetryProperty.SampleFilters]: this.getAllFilterTags().join(","),
           },
         },
       });
@@ -133,24 +134,71 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
     }, 500)();
   };
 
-  private onFilterTagChanged = (
-    _event: React.FormEvent<HTMLDivElement>,
-    option?: IDropdownOption
+  private onFilterTagChanged: (
+    filterType: string
+  ) => (_event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => void = (
+    filterType: string
   ) => {
-    const choice = option?.key as string;
-    const newTags = option?.selected
-      ? [...this.props.filterTags, choice]
-      : this.props.filterTags.filter((tag) => tag !== choice);
-    this.props.onFilterConditionChanged(this.props.query, newTags);
+    return (_event: React.FormEvent<HTMLDivElement>, option?: IDropdownOption) => {
+      const choice = option?.key as string;
+      const event = option?.selected
+        ? TelemetryEvent.FilterSampleAdd
+        : TelemetryEvent.FilterSampleRemove;
+      vscode.postMessage({
+        command: Commands.SendTelemetryEvent,
+        data: {
+          eventName: event,
+          properties: {
+            [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
+            [TelemetryProperty.ChangedFilter]: choice,
+            [TelemetryProperty.SampleFilters]: this.getAllFilterTags().join(","),
+          },
+        },
+      });
+      const newTags = option?.selected
+        ? [...this.props.filterTags[filterType], choice]
+        : this.props.filterTags[filterType].filter((tag) => tag !== choice);
+      const newFilterTags = { ...this.props.filterTags, [filterType]: newTags };
+      this.props.onFilterConditionChanged(this.props.query, newFilterTags);
+    };
   };
 
   private onTagRemoved = (removedTag: string) => {
-    const newTags = this.props.filterTags.filter((tag) => tag !== removedTag);
-    this.props.onFilterConditionChanged(this.props.query, newTags);
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.FilterSampleRemove,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
+          [TelemetryProperty.ChangedFilter]: removedTag,
+          [TelemetryProperty.SampleFilters]: this.getAllFilterTags().join(","),
+        },
+      },
+    });
+    const newFilterTags = { ...this.props.filterTags };
+    for (const filterType of Object.keys(this.props.filterTags)) {
+      newFilterTags[filterType] = newFilterTags[filterType].filter((tag) => tag !== removedTag);
+    }
+    this.props.onFilterConditionChanged(this.props.query, newFilterTags);
   };
 
   private onAllTagsRemoved = () => {
-    this.props.onFilterConditionChanged(this.props.query, []);
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.FilterSampleRemove,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
+          [TelemetryProperty.ChangedFilter]: this.getAllFilterTags().join(","),
+          [TelemetryProperty.SampleFilters]: this.getAllFilterTags().join(","),
+        },
+      },
+    });
+    const newFilterTags = { ...this.props.filterTags };
+    for (const filterType of Object.keys(this.props.filterTags)) {
+      newFilterTags[filterType] = [];
+    }
+    this.props.onFilterConditionChanged(this.props.query, newFilterTags);
   };
 
   private getDropdownStyles = (): Partial<IDropdownStyles> => {
@@ -284,5 +332,11 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       },
     };
     return dropdownStyles;
+  };
+
+  private getAllFilterTags = (): string[] => {
+    return this.props.filterTags.types
+      .concat(this.props.filterTags.languages)
+      .concat(this.props.filterTags.techniques);
   };
 }

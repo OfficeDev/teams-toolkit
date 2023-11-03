@@ -36,12 +36,12 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       loading: true,
       layout: "grid",
       query: "",
-      filterTags: [],
+      filterTags: { types: [], languages: [], techniques: [] },
     };
   }
 
   public componentDidMount() {
-    window.addEventListener("message", this.receiveMessage, false);
+    window.addEventListener("message", this.messageHandler, false);
     vscode.postMessage({
       command: Commands.LoadSampleCollection,
     });
@@ -74,7 +74,14 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       const selectedSample = this.samples.filter(
         (sample: SampleInfo) => sample.id == this.state.selectedSampleId
       )[0];
-      return <SampleDetailPage sample={selectedSample} selectSample={this.selectSample} />;
+      return (
+        <SampleDetailPage
+          sample={selectedSample}
+          selectSample={this.onSampleSelected}
+          createSample={this.onCreateSample}
+          viewGitHub={this.onViewGithub}
+        />
+      );
     } else {
       const featuredSamples = (this.state.filteredSamples ?? this.samples).filter(
         (sample) => sample.suggested
@@ -110,7 +117,9 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                           <SampleCard
                             key={sample.id}
                             sample={sample}
-                            selectSample={this.selectSample}
+                            selectSample={this.onSampleSelected}
+                            createSample={this.onCreateSample}
+                            viewGitHub={this.onViewGithub}
                           />
                         );
                       })
@@ -119,7 +128,9 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                           <SampleListItem
                             key={sample.id}
                             sample={sample}
-                            selectSample={this.selectSample}
+                            selectSample={this.onSampleSelected}
+                            createSample={this.onCreateSample}
+                            viewGitHub={this.onViewGithub}
                           />
                         );
                       })}
@@ -132,7 +143,9 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                         <SampleCard
                           key={sample.id}
                           sample={sample}
-                          selectSample={this.selectSample}
+                          selectSample={this.onSampleSelected}
+                          createSample={this.onCreateSample}
+                          viewGitHub={this.onViewGithub}
                         />
                       );
                     })
@@ -141,7 +154,9 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                         <SampleListItem
                           key={sample.id}
                           sample={sample}
-                          selectSample={this.selectSample}
+                          selectSample={this.onSampleSelected}
+                          createSample={this.onCreateSample}
+                          viewGitHub={this.onViewGithub}
                         />
                       );
                     })}
@@ -153,7 +168,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     }
   }
 
-  private receiveMessage = (event: any) => {
+  private messageHandler = (event: any) => {
     const message = event.data.message;
     switch (message) {
       case Commands.LoadSampleCollection:
@@ -179,20 +194,44 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     }
   };
 
-  private selectSample = (id: string) => {
+  private onSampleSelected = (id: string, triggerFrom: TelemetryTriggerFrom) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.SelectSample,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+          [TelemetryProperty.SampleAppName]: id,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.types
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.techniques)
+            .join(","),
+          [TelemetryProperty.Layout]: this.state.layout,
+        },
+      },
+    });
     this.setState({
       selectedSampleId: id,
     });
   };
 
   private onLayoutChanged = (newLayout: "grid" | "list") => {
+    if (newLayout === this.state.layout) {
+      return;
+    }
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {
-        eventName: TelemetryEvent.SearchSample,
+        eventName: TelemetryEvent.ChangeLayout,
         properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
           [TelemetryProperty.Layout]: newLayout,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.types
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.techniques)
+            .join(","),
         },
       },
     });
@@ -206,26 +245,81 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     this.setState({ layout: newLayout });
   };
 
-  private onFilterConditionChanged = (query: string, filterTags: string[]) => {
+  private onFilterConditionChanged = (query: string, filterTags: Record<string, string[]>) => {
     let filteredSamples = this.samples.filter((sample: SampleInfo) => {
-      if (filterTags.length === 0) {
-        return true;
-      }
-      for (const tag of filterTags) {
-        if (sample.tags.findIndex((value) => value.includes(tag)) >= 0) {
-          return true;
+      for (const key in filterTags) {
+        if (filterTags[key].length === 0) {
+          continue;
+        }
+        let isMatch = false;
+        for (const tag of filterTags[key]) {
+          if (sample.tags.findIndex((value) => value.includes(tag)) >= 0) {
+            isMatch = true;
+            break;
+          }
+        }
+        if (!isMatch) {
+          return false;
         }
       }
-      return false;
+      return true;
     });
-    if (this.state.query !== "") {
+    if (query !== "") {
       const fuse = new Fuse(filteredSamples, {
         keys: ["title", "shortDescription", "fullDescription", "tags"],
       });
-      filteredSamples = fuse
-        .search(this.state.query)
-        .map((result: { item: SampleInfo }) => result.item);
+      filteredSamples = fuse.search(query).map((result: { item: SampleInfo }) => result.item);
     }
     this.setState({ query, filterTags, filteredSamples });
+  };
+
+  private onCreateSample = (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.CloneSample,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+          [TelemetryProperty.SampleAppName]: sample.id,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.types
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.techniques)
+            .join(","),
+          [TelemetryProperty.Layout]: this.state.layout,
+        },
+      },
+    });
+    vscode.postMessage({
+      command: Commands.CloneSampleApp,
+      data: {
+        appName: sample.title,
+        appFolder: sample.id,
+      },
+    });
+  };
+
+  private onViewGithub = (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.ViewSampleInGitHub,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+          [TelemetryProperty.SampleAppName]: sample.id,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.types
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.techniques)
+            .join(","),
+          [TelemetryProperty.Layout]: this.state.layout,
+        },
+      },
+    });
+    const sampleInfo = sample.downloadUrlInfo;
+    vscode.postMessage({
+      command: Commands.OpenExternalLink,
+      data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
+    });
   };
 }

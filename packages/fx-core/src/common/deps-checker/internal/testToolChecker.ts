@@ -172,8 +172,14 @@ export class TestToolChecker implements DepsChecker {
         "version",
         "--json"
       );
-      const versionList: string[] = JSON.parse(result);
+      // when there are one result, it will return string
+      // when there are multiple results, it will return array of strings
+      let versionList: string[] | string = JSON.parse(result);
+      if (typeof versionList === "string") {
+        versionList = [versionList];
+      }
       if (!Array.isArray(versionList)) {
+        // do update if npm returned invalid result
         return true;
       }
       return versionList.filter((v) => semver.gt(v, latestInstalledVersion)).length > 0;

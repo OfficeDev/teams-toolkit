@@ -44,6 +44,7 @@ interface EnvironmentInfo {
   testToolVersionBeforeInstall?: string;
   testToolVersionAfterInstall?: string;
   installSuccess?: boolean;
+  npmViewResult?: string;
 }
 
 // output
@@ -99,6 +100,11 @@ function mockEnvironment(sandbox: sinon.SinonSandbox, info: EnvironmentInfo): En
         } else {
           throw new Error("failed to npm install");
         }
+      } else if (command === "npm" && args.includes("view")) {
+        if (info.npmViewResult === undefined) {
+          throw new Error("fail to npm view");
+        }
+        return info.npmViewResult;
       }
       throw new Error("Command not mocked");
     });
@@ -576,6 +582,88 @@ describe("Test Tool Checker Test", () => {
       expect(status.details.binFolders).not.empty;
       expect(status.error).to.be.undefined;
       expect(status.details.installVersion).to.eq("1.2.4");
+      expect(npmInstalled).to.be.true;
+      expect(checkedUpdate).to.be.true;
+    });
+    it("Already installed, symlink created, needs to check update but has multiple recent versions, should use latest", async () => {
+      const checker = new TestToolChecker();
+      const symlinkDir = "symlinkDir";
+      const versionRange = "~1.2.3";
+      let npmInstalled = false;
+      let checkedUpdate = false;
+      const homePortableDir = path.join(homePortablesDir, "1.2.3");
+      const homePortableExec = path.join(homePortableDir, "node_modules", ".bin", "teamsapptester");
+      sandbox.stub(fileHelper, "rename").resolves();
+      sandbox.stub(fileHelper, "createSymlink").resolves();
+      mockfs({
+        [path.join(projectPath, "devTools", ".testTool.installInfo.json")]: "",
+        [homePortableExec]: "",
+      });
+      let installedVersion = "1.2.3";
+      sandbox
+        .stub(cpUtils, "executeCommand")
+        .callsFake(async (_cwd, _logger, _options, command, ...args) => {
+          if (args.includes("--version")) {
+            if (command === "node") return "v18.16.1";
+            if (command === "npm") return "9.7.0";
+            return installedVersion;
+          } else if (args.includes("install")) {
+            installedVersion = "1.2.4";
+            npmInstalled = true;
+          } else if (args.includes("view")) {
+            checkedUpdate = true;
+            return '"1.2.3"';
+          }
+          return "";
+        });
+      // Act
+      const status = await checker.resolve({ projectPath, symlinkDir, versionRange });
+      // Assert
+      expect(status.isInstalled).to.be.true;
+      expect(status.details.binFolders).not.empty;
+      expect(status.error).to.be.undefined;
+      expect(status.details.installVersion).to.eq("1.2.3");
+      expect(npmInstalled).to.be.false;
+      expect(checkedUpdate).to.be.true;
+    });
+    it("Already installed, symlink created, needs to check update but has multiple recent versions, should use latest", async () => {
+      const checker = new TestToolChecker();
+      const symlinkDir = "symlinkDir";
+      const versionRange = "~1.2.3";
+      let npmInstalled = false;
+      let checkedUpdate = false;
+      const homePortableDir = path.join(homePortablesDir, "1.2.3");
+      const homePortableExec = path.join(homePortableDir, "node_modules", ".bin", "teamsapptester");
+      sandbox.stub(fileHelper, "rename").resolves();
+      sandbox.stub(fileHelper, "createSymlink").resolves();
+      mockfs({
+        [path.join(projectPath, "devTools", ".testTool.installInfo.json")]: "",
+        [homePortableExec]: "",
+      });
+      let installedVersion = "1.2.3";
+      sandbox
+        .stub(cpUtils, "executeCommand")
+        .callsFake(async (_cwd, _logger, _options, command, ...args) => {
+          if (args.includes("--version")) {
+            if (command === "node") return "v18.16.1";
+            if (command === "npm") return "9.7.0";
+            return installedVersion;
+          } else if (args.includes("install")) {
+            installedVersion = "1.2.5";
+            npmInstalled = true;
+          } else if (args.includes("view")) {
+            checkedUpdate = true;
+            return '["1.2.4", "1.2.5"]';
+          }
+          return "";
+        });
+      // Act
+      const status = await checker.resolve({ projectPath, symlinkDir, versionRange });
+      // Assert
+      expect(status.isInstalled).to.be.true;
+      expect(status.details.binFolders).not.empty;
+      expect(status.error).to.be.undefined;
+      expect(status.details.installVersion).to.eq("1.2.5");
       expect(npmInstalled).to.be.true;
       expect(checkedUpdate).to.be.true;
     });

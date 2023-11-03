@@ -9,7 +9,6 @@ import { SampleUrlInfo, sendRequestWithTimeout } from "../component/generator/ut
 import { ErrorContextMW } from "../core/globalVars";
 import { AccessGithubError } from "../error/common";
 import { FeatureFlagName } from "./constants";
-import { isVideoFilterEnabled } from "./featureFlags";
 
 const packageJson = require("../../package.json");
 
@@ -47,9 +46,9 @@ export interface SampleConfig {
 interface SampleCollection {
   samples: SampleConfig[];
   filterOptions: {
-    types: string[];
+    capabilities: string[];
     languages: string[];
-    techniques: string[];
+    technologies: string[];
   };
 }
 
@@ -137,9 +136,9 @@ class SampleProvider {
       this.sampleCollection = {
         samples,
         filterOptions: {
-          types: this.samplesConfig?.filterOptions["types"] || [],
+          capabilities: this.samplesConfig?.filterOptions["capabilities"] || [],
           languages: this.samplesConfig?.filterOptions["languages"] || [],
-          techniques: this.samplesConfig?.filterOptions["techniques"] || [],
+          technologies: this.samplesConfig?.filterOptions["technologies"] || [],
         },
       };
     }

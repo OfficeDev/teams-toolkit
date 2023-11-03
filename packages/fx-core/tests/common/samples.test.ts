@@ -19,9 +19,9 @@ describe("Samples", () => {
   const sandbox = sinon.createSandbox();
   const fakedSampleConfig = {
     filterOptions: {
-      types: ["Tab"],
+      capabilities: ["Tab"],
       languages: ["TS"],
-      techniques: ["Azure"],
+      technologies: ["Azure"],
     },
     samples: [
       {
@@ -78,7 +78,7 @@ describe("Samples", () => {
       });
       chai.expect(samples[0].gifUrl).equal(undefined);
       const filterOptions = sampleProvider.SampleCollection.filterOptions;
-      chai.expect(filterOptions.types).to.deep.equal(["Tab"]);
+      chai.expect(filterOptions.capabilities).to.deep.equal(["Tab"]);
     });
 
     it("download sample config of prerelease branch in prerelease(beta) version", async () => {
@@ -314,7 +314,7 @@ describe("Samples", () => {
     (sampleProvider as any).sampleCollection = undefined;
     const sampleCollection = sampleProvider.SampleCollection;
 
-    chai.expect(sampleCollection.filterOptions.types).to.deep.equal([]);
+    chai.expect(sampleCollection.filterOptions.capabilities).to.deep.equal([]);
     chai.expect(sampleCollection.samples).to.deep.equal([]);
   });
 });

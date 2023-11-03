@@ -1,15 +1,16 @@
 {
     "filterOptions": {
-        "types": [
+        "capabilities": [
             "Tab",
             "Bot",
-            "Message extension"
+            "Message Extension",
+            "Meeting"
         ],
         "languages": [
-            "JS",
-            "TS"
+            "JavaScript",
+            "TypeScript"
         ],
-        "techniques": [
+        "technologies": [
             "Azure",
             "Adaptive Cards",
             "SSO",

@@ -144,9 +144,9 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
         core.sampleProvider["samplesConfig"] = {
           filterOptions: {
-            types: ["Tab"],
+            capabilities: ["Tab"],
             languages: ["TS"],
-            techniques: ["Azure"],
+            technologies: ["Azure"],
           },
           samples: [
             {
@@ -187,9 +187,9 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
         core.sampleProvider["samplesConfig"] = {
           filterOptions: {
-            types: ["Tab"],
+            capabilities: ["Tab"],
             languages: ["TS"],
-            techniques: ["Azure"],
+            technologies: ["Azure"],
           },
           samples: [
             {

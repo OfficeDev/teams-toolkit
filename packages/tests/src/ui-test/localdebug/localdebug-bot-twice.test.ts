@@ -52,7 +52,7 @@ describe("Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "index.js");
       const driver = VSBrowser.instance.driver;
-      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+      await startDebugging(DebugItemSelect.DebugUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
@@ -68,7 +68,7 @@ describe("Local Debug Tests", function () {
         } catch (error) {
           console.log(`close port 3978 failed`);
         }
-        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+        await startDebugging(DebugItemSelect.DebugUsingChrome);
         await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
         await waitForTerminal(
           LocalDebugTaskLabel.StartBotApp,
@@ -97,7 +97,7 @@ describe("Local Debug Tests", function () {
         } catch (error) {
           console.log(`close port 3978 failed`);
         }
-        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+        await startDebugging(DebugItemSelect.DebugUsingChrome);
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,

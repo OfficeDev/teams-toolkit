@@ -141,8 +141,10 @@ export class CreateAppPackageDriver implements StepDriver {
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(manifest, null, 4)));
 
     // outline.png & color.png, relative path
-    zip.addFile(colorFileRelativePath, Buffer.from(colorFile));
-    zip.addFile(outlineFileRelativePath, Buffer.from(outlineFile));
+    let dir = path.dirname(manifest.icons.color);
+    zip.addLocalFile(colorFile, dir === "." ? "" : dir);
+    dir = path.dirname(manifest.icons.outline);
+    zip.addLocalFile(outlineFile, dir === "." ? "" : dir);
 
     // localization file
     if (
@@ -157,7 +159,8 @@ export class CreateAppPackageDriver implements StepDriver {
         if (relativePath.startsWith("..")) {
           return err(new InvalidFileOutsideOfTheDirectotryError(fileName));
         }
-        zip.addFile(relativePath, Buffer.from(fileName));
+        const dir = path.dirname(file);
+        zip.addLocalFile(fileName, dir === "." ? "" : dir);
       }
     }
 
@@ -194,7 +197,12 @@ export class CreateAppPackageDriver implements StepDriver {
       }
       const openAPIContent = expandedEnvVarResult.value;
       const attr = await fs.stat(apiSpecificationFile);
-      zip.addFile(relativePath, Buffer.from(openAPIContent), "", attr.mode);
+      zip.addFile(
+        manifest.composeExtensions[0].apiSpecificationFile,
+        Buffer.from(openAPIContent),
+        "",
+        attr.mode
+      );
 
       if (manifest.composeExtensions[0].commands.length > 0) {
         for (const command of manifest.composeExtensions[0].commands) {
@@ -216,7 +224,8 @@ export class CreateAppPackageDriver implements StepDriver {
             if (relativePath.startsWith("..")) {
               return err(new InvalidFileOutsideOfTheDirectotryError(adaptiveCardFile));
             }
-            zip.addFile(relativePath, Buffer.from(openAPIContent), "");
+            const dir = path.dirname(command.apiResponseRenderingTemplateFile);
+            zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
           }
         }
       }

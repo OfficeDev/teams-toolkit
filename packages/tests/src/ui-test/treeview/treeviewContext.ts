@@ -64,9 +64,7 @@ export async function createSampleProject(
   let foundSample = false;
   console.log("finding sample...");
   const elements = await webView.findWebElements(
-    By.xpath(
-      '//div[@class="sample-gallery"]/div[@class="sample-list"]/div[@class="sample-list-item"]'
-    )
+    By.xpath('//div[@class="sample-gallery"]//div[@class="sample-list-item"]')
   );
   for (const element of elements) {
     const sampleItem = await element.findElement(By.css("h3"));

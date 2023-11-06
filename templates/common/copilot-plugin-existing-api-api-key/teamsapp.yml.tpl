@@ -20,9 +20,14 @@ provision:
   # Register API KEY
   - uses: apiKey/create
     with:
+      # Name of the API Key
       name: {{ApiSpecAuthName}}
+      # Teams app ID
       appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
       apiSpecPath: {{{ApiSpecPath}}}
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
     writeToEnvironmentFile:
       registrationId: {{ApiSpecAuthRegistrationIdEnvName}}
 

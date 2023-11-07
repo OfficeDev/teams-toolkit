@@ -12,6 +12,7 @@ import {
   ValidateResult,
   ValidationStatus,
   Parameter,
+  ListAPIResult,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { listSupportedAPIs, parseApiInfo, validateSpec } from "./utils";
@@ -135,16 +136,7 @@ export class SpecParser {
    * according to copilot plugin spec, only list get and post method without auth
    */
   // eslint-disable-next-line @typescript-eslint/require-await
-  async list(): Promise<string[]> {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
-   * List all the OpenAPI operations in the specification file and return a map of operationId and operation path.
-   * @returns A map of operationId and operation path, such as [{'getPetById': 'GET /pets/{petId}'}, {'getUser': 'GET /user/{userId}'}]
-   */
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async listOperationMap(): Promise<Map<string, string>> {
+  async list(): Promise<ListAPIResult[]> {
     throw new Error("Method not implemented.");
   }
 

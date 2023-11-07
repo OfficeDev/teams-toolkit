@@ -141,10 +141,16 @@ export interface OpenAIPluginManifest {
   legal_info_url: string;
 }
 
+export interface ApiKeyAuthInfo {
+  serverUrl: string;
+  authName?: string;
+}
+
 export interface ApiOperation {
   id: string;
   label: string;
   groupName: string;
+  data: ApiKeyAuthInfo;
 }
 
 export interface Warning {

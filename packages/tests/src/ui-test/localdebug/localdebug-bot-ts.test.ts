@@ -46,7 +46,7 @@ describe("Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "index.ts");
 
-      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+      await startDebugging(DebugItemSelect.DebugUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");

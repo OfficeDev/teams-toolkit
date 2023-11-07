@@ -128,8 +128,7 @@ export class ToolsInstallDriverImpl {
     }
 
     if (args.testTool) {
-      // Disable test tool until test tool npm package is published to prevent blocking users who accidentally add this action by intellisense.
-      // await this.resolveTestTool(`${args.testTool.version}`, args.testTool.symlinkDir);
+      await this.resolveTestTool(`${args.testTool.version}`, args.testTool.symlinkDir);
     }
 
     return res;

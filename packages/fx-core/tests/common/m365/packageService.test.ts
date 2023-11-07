@@ -793,7 +793,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = {
+    axiosGetResponses["/catalog/v1/users/uitypes"] = {
       data: {
         activeExperiences: ["foo", "bar"],
       },
@@ -829,7 +829,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = new Error("test-get");
+    axiosGetResponses["/catalog/v1/users/uitypes"] = new Error("test-get");
 
     const packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
@@ -853,7 +853,7 @@ describe("Package Service", () => {
     expectedError.response = {
       data: {},
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = expectedError;
+    axiosGetResponses["/catalog/v1/users/uitypes"] = expectedError;
 
     let packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
@@ -884,7 +884,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = {
+    axiosGetResponses["/catalog/v1/users/uitypes"] = {
       data: {
         activeExperiences: ["foo", "bar"],
       },
@@ -909,7 +909,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = {
+    axiosGetResponses["/catalog/v1/users/uitypes"] = {
       foo: "bar",
     };
 
@@ -932,7 +932,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = new Error("test-get");
+    axiosGetResponses["/catalog/v1/users/uitypes"] = new Error("test-get");
 
     let packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;

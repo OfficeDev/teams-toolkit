@@ -6,6 +6,7 @@
  */
 
 import {
+  ApiOperation,
   err,
   IComposeExtension,
   Inputs,
@@ -94,6 +95,26 @@ describe("copilotPluginGenerator", function () {
   setTools(tools);
   const sandbox = sinon.createSandbox();
 
+  const apiOperations: ApiOperation[] = [
+    {
+      id: "operation1",
+      label: "operation1",
+      groupName: "1",
+      data: {
+        serverUrl: "https://server1",
+      },
+    },
+    {
+      id: "operation2",
+      label: "operation2",
+      groupName: "1",
+      data: {
+        serverUrl: "https://server1",
+        authName: "auth",
+      },
+    },
+  ];
+
   afterEach(async () => {
     sandbox.restore();
   });
@@ -103,6 +124,8 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -125,13 +148,43 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });
 
+  it("success with api key auth", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.AppName]: "test",
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["operation2"],
+      supportedApisFromApiSpec: apiOperations,
+    };
+    const context = createContextV3();
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generate")
+      .resolves({ allSuccess: true, warnings: [] });
+    const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
+
+    assert.isTrue(result.isOk());
+    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api-api-key");
+    assert.isTrue(downloadTemplate.calledOnce);
+    assert.isTrue(generateBasedOnSpec.calledOnce);
+  });
+
   it("success with api spec warning and generate warnings", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -184,6 +237,7 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.ApiSpecLocation]: "https://test.com",
       [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -213,7 +267,9 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VS,
       projectPath: "path",
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -240,6 +296,8 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       openAIPluginManifest: openAIPluginManifest,
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -274,6 +332,8 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       openAIPluginManifest: openAIPluginManifest,
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -307,7 +367,9 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiSpecLocation]: "test.yml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "generate").resolves();
@@ -324,7 +386,9 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox.stub(SpecParser.prototype, "validate").resolves({
@@ -349,7 +413,9 @@ describe("copilotPluginGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: "path",
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiSpecLocation]: "test.yaml",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox
@@ -377,6 +443,7 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: ["operation1"],
     };
     const context = createContextV3();
     sandbox.stub(Generator, "generateTemplate").throws(new Error("test"));
@@ -391,6 +458,8 @@ describe("copilotPluginGenerator", function () {
       platform: Platform.VSCode,
       projectPath: "path",
       [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
     };
     const context = createContextV3();
     sandbox

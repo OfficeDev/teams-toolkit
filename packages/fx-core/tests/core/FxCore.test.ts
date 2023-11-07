@@ -235,7 +235,7 @@ describe("Core basic APIs", () => {
 
   it("deploy aad manifest happy path", async () => {
     const promtionOnVSC =
-      'Your Azure Active Directory application has been successfully deployed. Click "Learn more" to check how to view your Azure Active Directory application.';
+      'Your Microsoft Entra application has been successfully deployed. Click "Learn more" to check how to view your Microsoft Entra application.';
 
     const core = new FxCore(tools);
     const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
@@ -324,7 +324,7 @@ describe("Core basic APIs", () => {
     assert.equal(showMessage.getCall(0).args[0], "info");
     assert.equal(
       showMessage.getCall(0).args[1],
-      "Your Azure Active Directory application has been successfully updated."
+      "Your Microsoft Entra application has been successfully updated."
     );
     assert.isFalse(showMessage.getCall(0).args[2]);
     assert.isTrue(res.isOk());
@@ -1498,16 +1498,16 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const operationMap = new Map<string, string>([
-      ["getUserById", "GET /user/{userId}"],
-      ["getStoreOrder", "GET /store/order"],
-    ]);
+    const listResult = [
+      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+    ];
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
       allSuccess: true,
     });
-    sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
@@ -1542,16 +1542,18 @@ describe("copilotPlugin", async () => {
         ],
       },
     ];
-    const operationMap = new Map<string, string>([
-      ["getUserById", "GET /user/{userId}"],
-      ["getStoreOrder", "GET /store/order"],
-    ]);
+
+    const listResult = [
+      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+    ];
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [{ type: WarningType.OperationOnlyContainsOptionalParam, content: "fakeMessage" }],
       allSuccess: false,
     });
-    sinon.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
@@ -1660,8 +1662,18 @@ describe("copilotPlugin", async () => {
       shouldLogWarning: true,
     };
     const expectedResult = [
-      { id: "operation1", label: "operation1", groupName: "1" },
-      { id: "operation2", label: "operation2", groupName: "2" },
+      {
+        id: "operation1",
+        label: "operation1",
+        groupName: "1",
+        data: { serverUrl: "https://server1" },
+      },
+      {
+        id: "operation2",
+        label: "operation2",
+        groupName: "2",
+        data: { serverUrl: "https://server2" },
+      },
     ];
     sinon.stub(CopilotPluginHelper, "listOperations").returns(Promise.resolve(ok(expectedResult)));
     const result = await core.copilotPluginListOperations(inputs as any);

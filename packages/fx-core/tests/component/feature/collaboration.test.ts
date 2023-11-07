@@ -57,7 +57,7 @@ describe("AadCollaboration", async () => {
     expect(result.isOk() && result.value[0].resourceId == expectedObjectId).to.be.true;
   });
 
-  it("check permission: should return owner if user is aad owner", async () => {
+  it("check permission: should return owner if user is Microsoft Entra owner", async () => {
     sandbox.stub(AadAppClient.prototype, "getOwners").resolves([
       {
         resourceId: expectedUserId,
@@ -75,7 +75,7 @@ describe("AadCollaboration", async () => {
     expect(result.isOk() && result.value[0].roles![0] == "Owner").to.be.true;
   });
 
-  it("check permission: should return no permission if user is not aad owner", async () => {
+  it("check permission: should return no permission if user is not Microsoft Entra owner", async () => {
     sandbox.stub(AadAppClient.prototype, "getOwners").resolves([
       {
         resourceId: expectedUserId,
@@ -338,7 +338,7 @@ describe("TeamsCollaboration", async () => {
     expect(result.isOk() && result.value[0].roles![0] == "Administrator").to.be.true;
   });
 
-  it("check permission: should return no permission if user is not aad owner", async () => {
+  it("check permission: should return no permission if user is not Microsoft Entra owner", async () => {
     sandbox.stub(AppStudioClient, "checkPermission").resolves("No permission");
 
     const result = await teamsCollaboration.checkPermission(

@@ -1,7 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { SystemError, SystemErrorOptions } from "@microsoft/teamsfx-api";
+import {
+  SystemError,
+  SystemErrorOptions,
+  UserError,
+  UserErrorOptions,
+} from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { ErrorCategory } from "./types";
 import { Constants } from "../component/driver/teamsApp/constants";
@@ -39,6 +44,18 @@ export class CheckSideloadingPermissionFailedError extends SystemError {
         correlationId,
         extraData
       ),
+      categories: [ErrorCategory.External],
+    };
+    super(errorOptions);
+  }
+}
+
+export class InvalidFileOutsideOfTheDirectotryError extends UserError {
+  constructor(filePath: string) {
+    const errorOptions: UserErrorOptions = {
+      source: Constants.PLUGIN_NAME,
+      message: getDefaultString("error.teamsApp.createAppPackage.invalidFile", filePath),
+      displayMessage: getLocalizedString("error.teamsApp.createAppPackage.invalidFile", filePath),
       categories: [ErrorCategory.External],
     };
     super(errorOptions);

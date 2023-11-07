@@ -13,7 +13,17 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
+export interface ApiKeyAuthInfo {
+    // (undocumented)
+    authName?: string;
+    // (undocumented)
+    serverUrl: string;
+}
+
+// @public (undocumented)
 export interface ApiOperation {
+    // (undocumented)
+    data: ApiKeyAuthInfo;
     // (undocumented)
     groupName: string;
     // (undocumented)
@@ -1082,6 +1092,8 @@ export interface UserInteraction {
         env?: {
             [k: string]: string;
         };
+        shellName?: string;
+        iconPath?: string;
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFileOrInput?(config: SingleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;

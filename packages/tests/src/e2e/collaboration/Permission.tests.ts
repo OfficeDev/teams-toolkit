@@ -66,7 +66,7 @@ describe("Collaboration", function () {
 
       // Check Permission
       const checkPermissionResult = await execAsyncWithRetry(
-        `teamsapp collaborator status --env dev --interactive false --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json`,
+        `teamsfx permission status --env dev --interactive false --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json`,
         {
           cwd: projectPath,
           env: process.env,
@@ -82,7 +82,7 @@ describe("Collaboration", function () {
 
       // Grant Permission
       const grantCollaboratorResult = await execAsyncWithRetry(
-        `teamsapp collaborator grant --email ${collaborator} --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
+        `teamsfx permission grant --email ${collaborator} --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,
@@ -91,7 +91,7 @@ describe("Collaboration", function () {
       );
 
       expect(grantCollaboratorResult.stdout).to.contains(
-        "Owner permission has been granted to Azure AD App"
+        "Owner permission has been granted to Microsoft Entra App"
       );
       expect(grantCollaboratorResult.stdout).to.contains(
         "Administrator permission has been granted to Teams App"
@@ -99,7 +99,7 @@ describe("Collaboration", function () {
       console.log("[Successfully] grant permission");
 
       const listCollaboratorResult = await execAsync(
-        `teamsapp collaborator status --all --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
+        `teamsfx permission status --all --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,

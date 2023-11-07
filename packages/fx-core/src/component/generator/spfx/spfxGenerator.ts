@@ -562,6 +562,21 @@ export class SPFxGenerator {
 
         remoteManifest = existingManifest;
       }
+
+      // Truncate manifest app name if exceed limitation
+      if (localManifest.name.short.length > Constants.TEAMS_APP_NAME_MAX_LENGTH) {
+        localManifest.name.short = localManifest.name.short.substring(
+          0,
+          Constants.TEAMS_APP_NAME_MAX_LENGTH
+        );
+      }
+      if (remoteManifest.name.short.length > Constants.TEAMS_APP_NAME_MAX_LENGTH) {
+        remoteManifest.name.short = remoteManifest.name.short.substring(
+          0,
+          Constants.TEAMS_APP_NAME_MAX_LENGTH
+        );
+      }
+
       importDetails.push(`(.) Processing: Writing to save changes to manifest.local.json...`);
       await manifestUtils._writeAppManifest(
         localManifest,

@@ -2,20 +2,20 @@
 
 > Note: This document includes single sign-on instructions applicable for both bot and message extension. Make sure to add the corresponding Teams capability first and then follow the documentation.
 
-Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit facilitates this interaction by abstracting some of the Azure Active Directory (AAD) flows and integrations behind some simple, high level APIs. This enables you to add single sign-on (SSO) features easily to your Teams application.
+Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit facilitates this interaction by abstracting some of the Microsoft Entra ID flows and integrations behind some simple, high level APIs. This enables you to add single sign-on (SSO) features easily to your Teams application.
 
-For a bot application, user can invoke the AAD consent flow to obtain sso token to call Graph and other APIs.
+For a bot application, user can invoke the Microsoft Entra consent flow to obtain sso token to call Graph and other APIs.
 
 <h2>Contents </h2>
 
 - [Changes to your project](#1)
 - [Update code to Use SSO for Bot](#2)
-  - [Set up the AAD redirects](#2.1)
+  - [Set up the Microsoft Entra redirects](#2.1)
   - [Update your business logic](#2.2)
   - [(Optional) Add a new sso command to the bot](#2.3)
 - [Update code to Use SSO for Message Extension](#3)
 - [Debug your application](#4)
-- [Customize AAD applications](#5)
+- [Customize Microsoft Entra applications](#5)
 - [Trouble Shooting](#6)
 
 <h2 id='1'>Changes to your project</h2>
@@ -29,7 +29,7 @@ After you successfully added SSO into your project, Teams Toolkit will create an
 | Modify | `azureWebAppBotConfig.bicep` under `templates/azure/teamsFx` and `azure.parameters.dev.json` under `.fx/configs` | Insert environment variables used for bot web app to enable SSO feature                                                                |
 | Modify | `manifest.template.json` under `templates/appPackage`                                                            | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
 | Modify | `projectSettings.json` under `.fx/configs`                                                                       | Add bot sso capability, which will be used internally by Teams Toolkit.                                                                |
-| Create | `aad.template.json` under `templates/appPackage`                                                                 | The Azure Active Directory application manifest that is used to register the application with AAD.                                     |
+| Create | `aad.template.json` under `templates/appPackage`                                                                 | The Microsoft Entra application manifest that is used to register the application with Microsoft Entra.                                     |
 | Create | `auth/bot`                                                                                                       | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information.         |
 
 <h2 id='2'>Update your code to Use SSO for Bot</h2>
@@ -38,9 +38,9 @@ As described above, the Teams Toolkit generated some configuration to set up you
 
 > Note: The following part is for `command and response bot`. For `basic bot`, please refer to the [bot-sso sample](https://aka.ms/bot-sso-sample).
 
-<h3 id='2.1'>Set up the AAD redirects</h3>
+<h3 id='2.1'>Set up the Microsoft Entra redirects</h3>
 
-1. Move the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
+1. Move the `auth/bot/public` folder to `bot/src`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with Microsoft Entra, Microsoft Entra will redirect the user to these pages.
 1. Modify your `bot/src/index` to add the appropriate `restify` routes to these pages.
 
    ```ts
@@ -56,7 +56,7 @@ As described above, the Teams Toolkit generated some configuration to set up you
 
 <h3 id='2.2'>Update your business logic</h3>
 
-The sample business logic provides a sso command handler `ProfileSsoCommandHandler` that use an AAD token to call Microsoft Graph. This token is obtained by using the logged-in Teams user token. The flow is brought together in a dialog that will display a consent dialog if required.
+The sample business logic provides a sso command handler `ProfileSsoCommandHandler` that use a Microsoft Entra token to call Microsoft Graph. This token is obtained by using the logged-in Teams user token. The flow is brought together in a dialog that will display a consent dialog if required.
 
 To make this work in your application:
 
@@ -336,7 +336,7 @@ You can update the query logic in the `handleMessageExtensionQueryWithSSO` with 
 
 To make this work in your application:
 
-1. Move the `auth/bot/public` folder to `bot`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with AAD, AAD will redirect the user to these pages.
+1. Move the `auth/bot/public` folder to `bot`. This folder contains HTML pages that the bot application hosts. When single sign-on flows are initiated with Microsoft Entra, Microsoft Entra will redirect the user to these pages.
 1. Modify your `bot/index` to add the appropriate `restify` routes to these pages.
 
    ```ts
@@ -394,17 +394,17 @@ To make this work in your application:
 
 You can debug your application by pressing F5.
 
-Teams Toolkit will use the AAD manifest file to register a AAD application registered for SSO.
+Teams Toolkit will use the Microsoft Entra manifest file to register a Microsoft Entra application registered for SSO.
 
 To learn more about Teams Toolkit local debug functionalities, refer to this [document](https://docs.microsoft.com/microsoftteams/platform/toolkit/debug-local).
 
-<h2 id='5'>Customize AAD applications</h2>
+<h2 id='5'>Customize Microsoft Entra applications</h2>
 
-The AAD [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) allows you to customize various aspects of your application registration. You can update the manifest as needed.
+The Microsoft Entra [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) allows you to customize various aspects of your application registration. You can update the manifest as needed.
 
 Follow this [document](https://aka.ms/teamsfx-aad-manifest#customize-aad-manifest-template) if you need to include additional API permissions to access your desired APIs.
 
-Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your AAD application in Azure Portal.
+Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your Microsoft Entra application in Azure Portal.
 
 <h2 id='6'>Trouble Shooting </h2>
 

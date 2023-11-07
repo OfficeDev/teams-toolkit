@@ -15,8 +15,8 @@ export interface PermissionGrantInputs extends Inputs {
   "manifest-path"?: string;
   /** @description Select an environment */
   env?: string;
-  /** @description Select Azure Active Directory manifest.json file */
+  /** @description Select Microsoft Entra manifest.json file */
   "manifest-file-path"?: string;
-  /** @description Add owner to Teams/AAD app for the account under the same Microsoft 365 tenant (email) */
+  /** @description Add owner to Teams/Microsoft Entra app for the account under the same Microsoft 365 tenant (email) */
   email?: string;
 }

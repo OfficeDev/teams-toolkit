@@ -53,7 +53,12 @@ const mockedSampleInfo: SampleConfig = {
   suggested: false,
   thumbnailUrl: "",
   gifUrl: "",
-  downloadUrl: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
+  downloadUrlInfo: {
+    owner: "OfficeDev",
+    repository: "TeamsFx-Samples",
+    ref: "dev",
+    dir: "test",
+  },
 };
 
 // The sample prefix is present in the downloadurl of the external sample
@@ -71,7 +76,12 @@ const mockedExternalSampleConfig = {
       configuration: "test-configuration",
       suggested: false,
       gifUrl: "",
-      downloadUrl: "https://github.com/Org/Repo/tree/main/sample/test",
+      downloadUrlInfo: {
+        owner: "Org",
+        repository: "Repo",
+        ref: "main",
+        dir: "sample/test",
+      },
     },
   ],
 };
@@ -294,7 +304,15 @@ describe("Generator utils", () => {
     const axiosStub = sandbox.stub(axios, "get");
     axiosStub.onFirstCall().resolves({ status: 403 });
     try {
-      await downloadDirectory("https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test", tmpDir);
+      await downloadDirectory(
+        {
+          owner: "OfficeDev",
+          repository: "TeamsFx-Samples",
+          ref: "dev",
+          dir: "test",
+        },
+        tmpDir
+      );
     } catch (e) {
       assert.exists(e);
       assert.isTrue(e.message.includes("HTTP Request failed"));
@@ -312,7 +330,15 @@ describe("Generator utils", () => {
     axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
     axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     await fs.ensureDir(tmpDir);
-    await downloadDirectory("https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test", tmpDir);
+    await downloadDirectory(
+      {
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: "dev",
+        dir: "test",
+      },
+      tmpDir
+    );
     const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
     assert.equal(data, mockFileData);
   });
@@ -530,6 +556,18 @@ describe("Generator happy path", async () => {
     context.templateVariables = Generator.getDefaultVariables("test");
     const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(result.isOk());
+  });
+
+  it("template variables when test tool enabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "true" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.enableTestToolByDefault, "true");
+  });
+
+  it("template variables when test tool disabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.enableTestToolByDefault, "");
   });
 
   it("template from source code", async () => {

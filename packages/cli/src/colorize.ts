@@ -30,7 +30,7 @@ export function colorize(message: string, type: TextType): string {
     case TextType.Info:
       return message;
     case TextType.Hyperlink:
-      return chalk.cyanBright(message);
+      return chalk.cyanBright.underline(message);
     case TextType.Email:
     case TextType.Important:
       return chalk.magentaBright(message);
@@ -41,8 +41,9 @@ export function colorize(message: string, type: TextType): string {
   }
 }
 
+export const DoneText = colorize(`(${figures.tick}) Done: `, TextType.Success);
 export const SuccessText = colorize(`(${figures.tick}) Success: `, TextType.Success);
-export const WarningText = colorize(`(${figures.warning}) Warning: `, TextType.Success);
+export const WarningText = colorize(`(${figures.warning}) Warning: `, TextType.Warning);
 export const ErrorPrefix = `(${figures.cross}) Error: `;
 
 export function replaceTemplateString(template: string, ...args: string[]): string {

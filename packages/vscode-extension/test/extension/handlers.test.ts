@@ -268,13 +268,14 @@ describe("handlers", () => {
 
   it("updateAutoOpenGlobalKey", async () => {
     sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
+    sandbox.stub(globalVariables, "checkIsSPFx").returns(true);
     const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
     await handlers.updateAutoOpenGlobalKey(false, vscode.Uri.file("test"), [
       { type: "type", content: "content" },
     ]);
 
-    chai.assert.isTrue(globalStateUpdateStub.calledThrice);
+    chai.assert.isTrue(globalStateUpdateStub.callCount === 4);
   });
 
   describe("command handlers", function () {
@@ -288,6 +289,7 @@ describe("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(globalVariables, "checkIsSPFx").returns(false);
       const createProject = sinon.spy(handlers.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
 
@@ -1441,6 +1443,7 @@ describe("handlers", () => {
     beforeEach(() => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
+      sinon.stub(globalVariables, "checkIsSPFx").returns(false);
     });
     afterEach(() => {
       sinon.restore();
@@ -2403,6 +2406,24 @@ describe("autoOpenProjectHandler", () => {
     await handlers.autoOpenProjectHandler();
 
     chai.assert.isTrue(sendErrorTelemetryStub.called);
+  });
+
+  it("auto install dependency", async () => {
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "teamsToolkit:autoInstallDependency") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    const globalStateStub = sandbox.stub(globalState, "globalStateUpdate");
+    const runCommandStub = sandbox.stub(extension.VS_CODE_UI, "runCommand");
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(globalStateStub.calledWith("teamsToolkit:autoInstallDependency", false));
+    chai.assert.isTrue(runCommandStub.calledOnce);
   });
 
   it("openFolderHandler()", async () => {

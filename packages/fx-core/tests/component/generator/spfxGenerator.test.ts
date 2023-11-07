@@ -54,6 +54,9 @@ describe("SPFxGenerator", function () {
             "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
           manifestVersion: "1.16",
           id: "fakedId",
+          name: {
+            short: "thisisaverylongappnametotestifitwillbetruncated",
+          },
           icons: {
             color: "color.png",
             outline: "outline.png",
@@ -530,7 +533,10 @@ describe("SPFxGenerator", function () {
     const generateTemplateStub = sinon
       .stub(Generator, "generateTemplate" as any)
       .resolves(ok(undefined));
-    const fakedManifest = { staticTabs: [{ name: "default" }] };
+    const fakedManifest = {
+      name: { short: "thisisaverylongappnametotestifitwillbetruncated" },
+      staticTabs: [{ name: "default" }],
+    };
     const readAppManifestStub = sinon
       .stub(ManifestUtils.prototype, "_readAppManifest")
       .resolves(ok(fakedManifest as any));

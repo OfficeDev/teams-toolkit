@@ -3,12 +3,12 @@
 
 import axios from "axios";
 
-import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/utils";
-import { FeatureFlagName } from "./constants";
-import { isVideoFilterEnabled } from "./featureFlags";
-import { AccessGithubError } from "../error/common";
 import { hooks } from "@feathersjs/hooks";
+
+import { SampleUrlInfo, sendRequestWithTimeout } from "../component/generator/utils";
 import { ErrorContextMW } from "../core/globalVars";
+import { AccessGithubError } from "../error/common";
+import { FeatureFlagName } from "./constants";
 
 const packageJson = require("../../package.json");
 
@@ -40,17 +40,27 @@ export interface SampleConfig {
   // these 2 fields are used when external sample is upgraded and breaks in old TTK version.
   minimumToolkitVersion?: string;
   minimumCliVersion?: string;
-  downloadUrl?: string;
+  downloadUrlInfo: SampleUrlInfo;
 }
 
 interface SampleCollection {
   samples: SampleConfig[];
+  filterOptions: {
+    capabilities: string[];
+    languages: string[];
+    technologies: string[];
+  };
 }
 
+type SampleConfigType = {
+  samples: Array<Record<string, unknown>>;
+  filterOptions: Record<string, Array<string>>;
+};
+
 class SampleProvider {
-  private sampleCollection: SampleCollection | undefined;
-  private samplesConfig: { samples: Array<Record<string, unknown>> } | undefined;
+  private samplesConfig: SampleConfigType | undefined;
   private branchOrTag = SampleConfigTag;
+
   @hooks([ErrorContextMW({ component: "SampleProvider" })])
   public async fetchSampleConfig() {
     const version: string = packageJson.version;
@@ -71,21 +81,19 @@ class SampleProvider {
         try {
           const data = await this.fetchRawFileContent(branch);
           this.branchOrTag = branch;
-          this.samplesConfig = data as { samples: Array<Record<string, unknown>> };
+          this.samplesConfig = data as SampleConfigType;
         } catch (e: unknown) {}
       }
     }
     if (this.samplesConfig === undefined) {
-      this.samplesConfig = (await this.fetchRawFileContent(this.branchOrTag)) as {
-        samples: Array<Record<string, unknown>>;
-      };
+      this.samplesConfig = (await this.fetchRawFileContent(this.branchOrTag)) as SampleConfigType;
     }
   }
 
   public get SampleCollection(): SampleCollection {
     const samples =
       this.samplesConfig?.samples.map((sample) => {
-        const isExternal = sample["downloadUrl"] ? true : false;
+        const isExternal = sample["downloadUrlInfo"] ? true : false;
         let gifUrl =
           sample["gifPath"] !== undefined
             ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
@@ -96,7 +104,7 @@ class SampleProvider {
           this.branchOrTag
         }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
-          const info = parseSampleUrl(sample["downloadUrl"] as string);
+          const info = sample["downloadUrlInfo"] as SampleUrlInfo;
           gifUrl =
             sample["gifPath"] !== undefined
               ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
@@ -110,30 +118,27 @@ class SampleProvider {
         return {
           ...sample,
           onboardDate: new Date(sample["onboardDate"] as string),
-          downloadUrl: isExternal
-            ? sample["downloadUrl"]
-            : `https://github.com/${SampleConfigOwner}/${SampleConfigRepo}/tree/${
-                this.branchOrTag
-              }/${sample["id"] as string}`,
+          downloadUrlInfo: isExternal
+            ? sample["downloadUrlInfo"]
+            : {
+                owner: SampleConfigOwner,
+                repository: SampleConfigRepo,
+                ref: this.branchOrTag,
+                dir: sample["id"] as string,
+              },
           gifUrl: gifUrl,
           thumbnailUrl: thumbnailUrl,
         } as SampleConfig;
       }) || [];
 
-    // remove video filter sample app if feature flag is disabled.
-    if (!isVideoFilterEnabled()) {
-      const videoFilterSampleId = "teams-videoapp-sample";
-      const index = samples.findIndex((sample) => sample.id === videoFilterSampleId);
-      if (index !== -1) {
-        samples.splice(index, 1);
-      }
-    }
-
-    this.sampleCollection = {
+    return {
       samples,
+      filterOptions: {
+        capabilities: this.samplesConfig?.filterOptions["capabilities"] || [],
+        languages: this.samplesConfig?.filterOptions["languages"] || [],
+        technologies: this.samplesConfig?.filterOptions["technologies"] || [],
+      },
     };
-
-    return this.sampleCollection;
   }
 
   private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {

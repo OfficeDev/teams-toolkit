@@ -9,12 +9,7 @@ import { FontIcon, Image } from "@fluentui/react";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 
 import Turtle from "../../../img/webview/sample/turtle.svg";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { SampleProps } from "./ISamples";
 
 export default class SampleCard extends React.Component<SampleProps, unknown> {
@@ -104,16 +99,6 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
     if (this.props.sample.versionComparisonResult != 0) {
       return;
     }
-    vscode.postMessage({
-      command: Commands.SendTelemetryEvent,
-      data: {
-        eventName: TelemetryEvent.ClickSampleCard,
-        properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sample.id,
-        },
-      },
-    });
-    this.props.selectSample(this.props.sample.id);
+    this.props.selectSample(this.props.sample.id, TelemetryTriggerFrom.SampleGallery);
   };
 }

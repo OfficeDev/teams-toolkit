@@ -113,6 +113,8 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { isApiKeyEnabled } from "../common/featureFlags";
+import "../component/feature/sso";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1148,7 +1150,9 @@ export class FxCore {
     ConcurrentLockerMW,
   ])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const newOperations = inputs[QuestionNames.ApiOperation] as string[];
+    const newOperations = (inputs[QuestionNames.ApiOperation] as ApiOperation[])?.map(
+      (item) => item.id
+    );
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
 
@@ -1160,15 +1164,16 @@ export class FxCore {
     const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
     const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
 
-    // Merge exisiting operations in manifest.json
-    const specParser = new SpecParser(url);
+    // Merge existing operations in manifest.json
+    const specParser = new SpecParser(url, { allowAPIKeyAuth: isApiKeyEnabled() });
     const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
-    const operationMaps = await specParser.listOperationMap();
+    const apiResultList = await specParser.list();
 
     const existingOperations: string[] = [];
     for (const id of existingOperationIds) {
-      if (operationMaps.get(id)) {
-        existingOperations.push(operationMaps.get(id)!);
+      const operation = apiResultList.find((item) => item.operationId === id);
+      if (operation) {
+        existingOperations.push(operation.api);
       }
     }
 

@@ -33,7 +33,7 @@ interface InstallationInfoFile {
 export class TestToolChecker implements DepsChecker {
   private telemetryProperties: { [key: string]: string };
   private readonly name = "Teams App Test Tool";
-  private readonly npmPackageName = "@microsoft/teams-app-test-tool-cli";
+  private readonly npmPackageName = "@microsoft/teams-app-test-tool";
   private readonly timeout = 5 * 60 * 1000;
   private readonly checkUpdateTimeout = 10 * 1000;
   private readonly commandName = isWindows() ? "teamsapptester.cmd" : "teamsapptester";
@@ -172,8 +172,14 @@ export class TestToolChecker implements DepsChecker {
         "version",
         "--json"
       );
-      const versionList: string[] = JSON.parse(result);
+      // when there are one result, it will return string
+      // when there are multiple results, it will return array of strings
+      let versionList: string[] | string = JSON.parse(result);
+      if (typeof versionList === "string") {
+        versionList = [versionList];
+      }
       if (!Array.isArray(versionList)) {
+        // do update if npm returned invalid result
         return true;
       }
       return versionList.filter((v) => semver.gt(v, latestInstalledVersion)).length > 0;
@@ -401,7 +407,7 @@ export class TestToolChecker implements DepsChecker {
       const files = await fs.readdir(dir);
       for (const fileName of files) {
         const fullPath = path.join(dir, fileName);
-        if (fileName.match(/microsoft-teams-app-test-tool-cli.*\.tgz/i)) {
+        if (fileName.match(/microsoft-teams-app-test-tool.*\.tgz/i)) {
           try {
             const st = await fs.stat(fullPath);
             if (st.isFile()) {

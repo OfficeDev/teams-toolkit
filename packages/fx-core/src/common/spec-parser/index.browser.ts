@@ -4,5 +4,6 @@
 
 export { SpecParser } from "./specParser.browser";
 export { SpecParserError } from "./specParserError";
-export { ValidationStatus, WarningType, ErrorType, WarningResult } from "./interfaces";
+export { ValidationStatus, WarningType, ErrorType, ListAPIResult } from "./interfaces";
+export type { ErrorResult, APIInfo, ValidateResult, WarningResult } from "./interfaces";
 export { ConstantString } from "./constants";

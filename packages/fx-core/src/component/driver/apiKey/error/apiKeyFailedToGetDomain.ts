@@ -3,7 +3,6 @@
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { maxDomainPerApiKey } from "../utility/constants";
 
 const errorCode = "ApiKeyFailedToGetDomain";
 const messageKey = "driver.apiKey.error.failedToGetDomain";

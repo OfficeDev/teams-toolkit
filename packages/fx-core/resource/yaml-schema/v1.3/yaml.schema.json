@@ -1526,10 +1526,6 @@
             "apiSpecPath": {
               "type": "string",
               "description": "The path of API specification file."
-            },
-            "domain": {
-              "type": "string",
-              "description": "The domain of API key. Domain for API key should follow: 1. Max %d domain per API key. 2. Use comma to separate domains."
             }
           }
         },

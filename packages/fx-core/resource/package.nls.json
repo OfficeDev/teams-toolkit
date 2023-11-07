@@ -687,6 +687,7 @@
   "driver.apiKey.error.nameTooLong": "The name for API key is too long. The maximum length is 128.",
   "driver.apiKey.error.clientSecretInvalid": "Client secret is invalid. Client secret should follow: 1. Max %d secrets per API key. 2. Use comma to separate secrets. 3. Length of every secret >= 10 and <= 128",
   "driver.apiKey.error.domainInvalid": "Domain is invalid. Domain for API key should follow: 1. Max %d domain per API key. 2. Use comma to separate domains",
+  "driver.apiKey.error.failedToGetDomain": "Failed to get domain from API specification. Please make sure your API specification is valid.",
   "driver.apiKey.log.successCreateApiKey": "Created API key with id %s",
   "driver.apiKey.log.failedExecuteDriver": "Unable to execute action %s. Error message: %s"
 }

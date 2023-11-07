@@ -14,7 +14,7 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Teams Toolkit: select runtime for your app */
   runtime?: "node" | "dotnet";
   /** @description New Project */
-  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type";
+  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type" | "office-addin-type";
   /** @description Capabilities */
   capabilities?:
     | "bot"
@@ -62,4 +62,6 @@ export interface CreateProjectInputs extends Inputs {
   "programming-language"?: "javascript" | "typescript" | "csharp";
   /** @description Application name */
   "app-name"?: string;
+  /** @description Framework for Office Add-in*/
+  "office-addin-framework"?: "default" | "react";
 }

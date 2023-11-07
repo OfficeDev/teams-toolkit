@@ -3,6 +3,7 @@
 
 import _ from "lodash";
 import { projectProperties } from "./projectProperties";
+import { isWXPExtensionEnabled } from "../../../../common/featureFlags";
 
 export default class projectsJsonData {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,7 +121,11 @@ export default class projectsJsonData {
     scriptType: string,
     prerelease: boolean
   ): { repo: string | undefined; branch: string | undefined } {
-    scriptType = scriptType === "TypeScript" ? "typescript" : "javascript";
+    if (isWXPExtensionEnabled()) {
+      scriptType = scriptType === "typescript" ? "typescript" : "javascript";
+    } else {
+      scriptType = scriptType === "TypeScript" ? "typescript" : "javascript";
+    }
     const repoBranchInfo: { repo: string | undefined; branch: string | undefined } = {
       repo: <string>(<unknown>null),
       branch: <string>(<unknown>null),
@@ -132,5 +137,78 @@ export default class projectsJsonData {
       : undefined;
 
     return repoBranchInfo;
+  }
+
+  getProjectRepoAndBranchNew(
+    projectTypeKey: string,
+    scriptType: string,
+    frameworkType: string,
+    prerelease: boolean
+  ): { repo: string | undefined; branch: string | undefined } {
+    if (isWXPExtensionEnabled()) {
+      scriptType = scriptType === "typescript" ? "typescript" : "javascript";
+    } else {
+      scriptType = scriptType === "TypeScript" ? "typescript" : "javascript";
+    }
+    const repoBranchInfo: { repo: string | undefined; branch: string | undefined } = {
+      repo: <string>(<unknown>null),
+      branch: <string>(<unknown>null),
+    };
+
+    repoBranchInfo.repo = this.getProjectTemplateRepositoryNew(
+      projectTypeKey,
+      scriptType,
+      frameworkType
+    );
+    repoBranchInfo.branch = repoBranchInfo.repo
+      ? this.getProjectTemplateBranchNameNew(projectTypeKey, scriptType, frameworkType, prerelease)
+      : undefined;
+
+    return repoBranchInfo;
+  }
+
+  getProjectTemplateRepositoryNew(
+    projectTypeKey: string,
+    scriptType: string,
+    frameworkType: string
+  ): string | undefined {
+    for (const key in this.projectJsonData.projectTypes) {
+      if (_.toLower(projectTypeKey) == key) {
+        if (projectTypeKey == "manifest") {
+          return this.projectJsonData.projectTypes[key].templates.manifestonly.repository;
+        } else {
+          return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+            frameworkType
+          ].repository;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  getProjectTemplateBranchNameNew(
+    projectTypeKey: string,
+    scriptType: string,
+    frameworkType: string,
+    prerelease: boolean
+  ): string | undefined {
+    for (const key in this.projectJsonData.projectTypes) {
+      if (_.toLower(projectTypeKey) == key) {
+        if (projectTypeKey == "manifest") {
+          return this.projectJsonData.projectTypes.manifest.templates.branch;
+        } else {
+          if (prerelease) {
+            return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+              frameworkType
+            ].prerelease;
+          } else {
+            return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+              frameworkType
+            ].branch;
+          }
+        }
+      }
+    }
+    return undefined;
   }
 }

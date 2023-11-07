@@ -224,7 +224,7 @@ class Coordinator {
       if (capability === CapabilityOptions.SPFxTab().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
-      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id) {
+      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
         const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);

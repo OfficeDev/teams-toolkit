@@ -12,9 +12,41 @@ export const projectProperties = {
           repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
           branch: "json-preview-yo-office",
           prerelease: "json-preview-yo-office-prerelease",
+
+          frameworks: {
+            default: {
+              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
+              branch: "json-preview-yo-office",
+              prerelease: "json-preview-yo-office-prerelease",
+            },
+            react: {
+              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
+              branch: "json-preview-yo-office",
+              prerelease: "json-preview-yo-office-prerelease",
+            },
+          },
+        },
+        // TODO add javascript template
+        javascript: {
+          repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
+          branch: "json-preview-yo-office",
+          prerelease: "json-preview-yo-office-prerelease",
+
+          frameworks: {
+            default: {
+              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
+              branch: "json-preview-yo-office",
+              prerelease: "json-preview-yo-office-prerelease",
+            },
+            react: {
+              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
+              branch: "json-preview-yo-office",
+              prerelease: "json-preview-yo-office-prerelease",
+            },
+          },
         },
       },
-      supportedHosts: ["Outlook"],
+      supportedHosts: ["Outlook", "Word", "Excel", "PowerPoint"],
     },
   },
   hostTypes: {

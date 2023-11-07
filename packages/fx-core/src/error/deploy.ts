@@ -29,6 +29,30 @@ export class CheckDeploymentStatusTimeoutError extends UserError {
   }
 }
 
+export class ZipFileError extends UserError {
+  constructor(error: Error) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString("error.deploy.ZipFileError"),
+      displayMessage: getLocalizedString("error.deploy.ZipFileError"),
+      error: error,
+      categories: [ErrorCategory.External],
+    });
+  }
+}
+
+export class CacheFileInUse extends UserError {
+  constructor(error: Error) {
+    super({
+      source: "azureDeploy",
+      message: getDefaultString("error.deploy.ZipFileTargetInUse"),
+      displayMessage: getLocalizedString("error.deploy.ZipFileTargetInUse"),
+      error: error,
+      categories: [ErrorCategory.External],
+    });
+  }
+}
+
 export class GetPublishingCredentialsError extends UserError {
   constructor(appName: string, resourceGroup: string, error: Error, helpLink?: string) {
     super({

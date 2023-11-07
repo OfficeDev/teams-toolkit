@@ -234,6 +234,8 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           logger.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
           throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
+      } finally {
+        zipBuffer.destroy();
       }
     }
 

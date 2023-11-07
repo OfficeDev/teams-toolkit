@@ -6,7 +6,7 @@ import klaw from "klaw";
 import AdmZip, { EntryHeader } from "adm-zip";
 import ignore, { Ignore } from "ignore";
 import path from "path";
-import { DeployEmptyFolderError } from "../../error/deploy";
+import { CacheFileInUse, DeployEmptyFolderError, ZipFileError } from "../../error/deploy";
 
 /**
  * Asynchronously zip a folder and return buffer
@@ -23,7 +23,13 @@ export async function zipFolderAsync(
   const ig = notIncluded ?? ignore();
   // always delete cache if exists
   if (fs.existsSync(cache)) {
-    await fs.remove(cache);
+    try {
+      await fs.remove(cache);
+    } catch (e) {
+      if (e instanceof Error && (e as any)?.code === "EBUSY") {
+        throw new CacheFileInUse(e);
+      }
+    }
   }
   const zip = new AdmZip();
 
@@ -64,15 +70,21 @@ export async function zipFolderAsync(
   // save to cache if exists
   if (cache && tasks) {
     await fs.mkdirs(path.dirname(cache));
-    await new Promise((resolve, reject) => {
-      zip.writeZip(cache, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve({});
-        }
+    try {
+      await new Promise((resolve, reject) => {
+        zip.writeZip(cache, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve({});
+          }
+        });
       });
-    });
+    } catch (e) {
+      if (e instanceof Error && (e as any)?.code === "ERR_OUT_OF_RANGE") {
+        throw new ZipFileError(e);
+      }
+    }
   }
   return fs.createReadStream(cache);
 }

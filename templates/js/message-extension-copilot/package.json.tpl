@@ -6,7 +6,7 @@
   },
   "description": "Microsoft Teams Toolkit message extension search sample",
   "engines": {
-    "node": "16 || 18"
+    "node": "16 || 18 || 20"
   },
   "author": "Microsoft",
   "license": "MIT",
@@ -22,10 +22,10 @@
     "adaptivecards-templating": "^2.3.1",
     "adaptivecards": "^3.0.1",
     "botbuilder": "^4.20.0",
-    "restify": "^10.0.0"
+    "restify": "^11.1.0"
   },
   "devDependencies": {
     "env-cmd": "^10.1.0",
-    "nodemon": "^2.0.7"
+    "nodemon": "^3.0.1"
   }
 }

@@ -35,18 +35,25 @@ import {
 } from "./generatorAction";
 import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
 import { sampleProvider } from "../../common/samples";
+import { enableTestToolByDefault } from "../../common/featureFlags";
 
 export class Generator {
   public static getDefaultVariables(
     appName: string,
-    safeProjectNameFromVS?: string
+    safeProjectNameFromVS?: string,
+    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
+
     return {
       appName: appName,
       ProjectName: appName,
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
+      ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
+      ApiSpecAuthRegistrationIdEnvName: apiKeyAuthData?.registrationIdEnvName ?? "",
+      ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
+      enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
     };
   }
   @hooks([
@@ -127,7 +134,7 @@ export class Generator {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      url: sample.downloadUrl,
+      sampleInfo: sample.downloadUrlInfo,
       timeoutInMs: sampleDefaultTimeoutInMs,
       onActionError: sampleDefaultOnActionError,
     };

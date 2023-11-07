@@ -7,9 +7,12 @@ import { TOOLS } from "../../core/globalVars";
 import { QuestionNodes, questionNodes } from "../../question";
 import { traverse } from "../../ui/visitor";
 
-export function QuestionMW(key: keyof QuestionNodes): Middleware {
+export function QuestionMW(key: keyof QuestionNodes, fromAction = false): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const inputs = ctx.arguments[0] as Inputs;
+    if (fromAction) {
+      inputs.outputEnvVarNames = ctx.arguments[2];
+    }
     const node = questionNodes[key]();
     const askQuestionRes = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
     if (askQuestionRes.isErr()) {

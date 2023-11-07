@@ -43,8 +43,19 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
             </div>
           </div>
           <div className="buttons">
-            <VSCodeButton onClick={this.onCreate}>Create</VSCodeButton>
-            <VSCodeButton appearance="secondary" onClick={this.onViewGithub}>
+            <VSCodeButton
+              onClick={() =>
+                this.props.createSample(this.props.sample, TelemetryTriggerFrom.SampleDetailPage)
+              }
+            >
+              Create
+            </VSCodeButton>
+            <VSCodeButton
+              appearance="secondary"
+              onClick={() =>
+                this.props.viewGitHub(this.props.sample, TelemetryTriggerFrom.SampleDetailPage)
+              }
+            >
               View on GitHub
             </VSCodeButton>
           </div>
@@ -68,7 +79,7 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
   }
 
   onBack = () => {
-    this.props.selectSample("");
+    this.props.selectSample("", TelemetryTriggerFrom.SampleDetailPage);
   };
 
   onCreate = () => {
@@ -92,9 +103,10 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
         },
       },
     });
+    const sampleInfo = this.props.sample.downloadUrlInfo;
     vscode.postMessage({
       command: Commands.OpenExternalLink,
-      data: this.props.sample.downloadUrl,
+      data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
     });
   };
 }

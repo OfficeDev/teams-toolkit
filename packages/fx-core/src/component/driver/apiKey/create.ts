@@ -25,6 +25,8 @@ import { InvalidActionInputError, UnhandledError } from "../../../error";
 import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
 import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvalid";
 import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
+import { QuestionMW } from "../../middleware/questionMW";
+import { QuestionNames } from "../../../question";
 
 const actionName = "apiKey/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-create";
@@ -34,7 +36,7 @@ export class CreateApiKeyDriver implements StepDriver {
   description = getLocalizedString("driver.apiKey.description.create");
   readonly progressTitle = getLocalizedString("driver.aadApp.apiKey.title.create");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([QuestionMW("apiKey", true), addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateApiKeyArgs,
     context: DriverContext,
@@ -77,6 +79,10 @@ export class CreateApiKeyDriver implements StepDriver {
           );
         }
       } else {
+        const clientSecret = this.loadClientSecret();
+        if (clientSecret) {
+          args.clientSecret = clientSecret;
+        }
         this.validateArgs(args);
 
         const apiKey = await this.mapArgsToApiSecretRegistration(context.m365TokenProvider, args);
@@ -129,6 +135,11 @@ export class CreateApiKeyDriver implements StepDriver {
       result[propertyName] = process.env[envVarName];
     }
     return result;
+  }
+
+  private loadClientSecret(): string | undefined {
+    const clientSecret = process.env[QuestionNames.ApiSpecApiKey];
+    return clientSecret;
   }
 
   // Allowed secrets: secret or secret1, secret2

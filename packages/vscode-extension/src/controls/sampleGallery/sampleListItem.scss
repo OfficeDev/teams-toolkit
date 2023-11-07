@@ -6,6 +6,7 @@
 
   .sample-list-item {
     height: 44px;
+    width: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -16,6 +17,7 @@
       display: flex;
       align-items: center;
       cursor: pointer;
+      min-width: 100px;
     }
 
     .hidden-label {
@@ -29,8 +31,8 @@
 
     h3 {
       font-size: 15px;
-      color: var(--vscode-peekViewTitleDescription-foreground, #cccccc);
-      font-weight: 500;
+      color: var(--vscode-editor-foreground);
+      font-weight: 400;
       text-align: left;
       line-height: 18px;
       margin: 0;
@@ -54,6 +56,8 @@
       flex-grow: 1;
       flex-shrink: 2;
       min-width: 4.5px;
+      height: 20px;
+      cursor:pointer;
     }
 
     .tagSection {
@@ -66,9 +70,18 @@
       .tag {
         margin-left: 8px;
         flex-shrink: 0;
+        height: 16px;
+        font-size: 13px;
+        padding: 2px 8px;
+        background-color: var(--vscode-button-secondaryBackground);
+        color: var(--vscode-peekViewTitleDescription-foreground, #cccccc);
+        border: 0;
 
-        &::part(control) {
-          border: 0;
+        span {
+          display: inline-block;
+          height: 16px;
+          top: -1.5px;
+          position: relative;
         }
       }
     }

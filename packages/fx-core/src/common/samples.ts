@@ -3,12 +3,12 @@
 
 import axios from "axios";
 
-import { parseSampleUrl, sendRequestWithTimeout } from "../component/generator/utils";
-import { FeatureFlagName } from "./constants";
-import { isVideoFilterEnabled } from "./featureFlags";
-import { AccessGithubError } from "../error/common";
 import { hooks } from "@feathersjs/hooks";
+
+import { SampleUrlInfo, sendRequestWithTimeout } from "../component/generator/utils";
 import { ErrorContextMW } from "../core/globalVars";
+import { AccessGithubError } from "../error/common";
+import { FeatureFlagName } from "./constants";
 
 const packageJson = require("../../package.json");
 
@@ -40,15 +40,15 @@ export interface SampleConfig {
   // these 2 fields are used when external sample is upgraded and breaks in old TTK version.
   minimumToolkitVersion?: string;
   minimumCliVersion?: string;
-  downloadUrl?: string;
+  downloadUrlInfo: SampleUrlInfo;
 }
 
 interface SampleCollection {
   samples: SampleConfig[];
   filterOptions: {
-    types: string[];
+    capabilities: string[];
     languages: string[];
-    techniques: string[];
+    technologies: string[];
   };
 }
 
@@ -58,7 +58,6 @@ type SampleConfigType = {
 };
 
 class SampleProvider {
-  private sampleCollection: SampleCollection | undefined;
   private samplesConfig: SampleConfigType | undefined;
   private branchOrTag = SampleConfigTag;
 
@@ -92,55 +91,54 @@ class SampleProvider {
   }
 
   public get SampleCollection(): SampleCollection {
-    if (!this.sampleCollection) {
-      const samples =
-        this.samplesConfig?.samples.map((sample) => {
-          const isExternal = sample["downloadUrl"] ? true : false;
-          let gifUrl =
+    const samples =
+      this.samplesConfig?.samples.map((sample) => {
+        const isExternal = sample["downloadUrlInfo"] ? true : false;
+        let gifUrl =
+          sample["gifPath"] !== undefined
+            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+                this.branchOrTag
+              }/${sample["id"] as string}/${sample["gifPath"] as string}`
+            : undefined;
+        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
+          this.branchOrTag
+        }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
+        if (isExternal) {
+          const info = sample["downloadUrlInfo"] as SampleUrlInfo;
+          gifUrl =
             sample["gifPath"] !== undefined
-              ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
-                  this.branchOrTag
-                }/${sample["id"] as string}/${sample["gifPath"] as string}`
+              ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
+                  info.dir
+                }/${sample["gifPath"] as string}`
               : undefined;
-          let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
-            this.branchOrTag
-          }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
-          if (isExternal) {
-            const info = parseSampleUrl(sample["downloadUrl"] as string);
-            gifUrl =
-              sample["gifPath"] !== undefined
-                ? `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${info.ref}/${
-                    info.dir
-                  }/${sample["gifPath"] as string}`
-                : undefined;
-            thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
-              info.ref
-            }/${info.dir}/${sample["thumbnailPath"] as string}`;
-          }
-          return {
-            ...sample,
-            onboardDate: new Date(sample["onboardDate"] as string),
-            downloadUrl: isExternal
-              ? sample["downloadUrl"]
-              : `https://github.com/${SampleConfigOwner}/${SampleConfigRepo}/tree/${
-                  this.branchOrTag
-                }/${sample["id"] as string}`,
-            gifUrl: gifUrl,
-            thumbnailUrl: thumbnailUrl,
-          } as SampleConfig;
-        }) || [];
+          thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
+            info.ref
+          }/${info.dir}/${sample["thumbnailPath"] as string}`;
+        }
+        return {
+          ...sample,
+          onboardDate: new Date(sample["onboardDate"] as string),
+          downloadUrlInfo: isExternal
+            ? sample["downloadUrlInfo"]
+            : {
+                owner: SampleConfigOwner,
+                repository: SampleConfigRepo,
+                ref: this.branchOrTag,
+                dir: sample["id"] as string,
+              },
+          gifUrl: gifUrl,
+          thumbnailUrl: thumbnailUrl,
+        } as SampleConfig;
+      }) || [];
 
-      this.sampleCollection = {
-        samples,
-        filterOptions: {
-          types: this.samplesConfig?.filterOptions["types"] || [],
-          languages: this.samplesConfig?.filterOptions["languages"] || [],
-          techniques: this.samplesConfig?.filterOptions["techniques"] || [],
-        },
-      };
-    }
-
-    return this.sampleCollection;
+    return {
+      samples,
+      filterOptions: {
+        capabilities: this.samplesConfig?.filterOptions["capabilities"] || [],
+        languages: this.samplesConfig?.filterOptions["languages"] || [],
+        technologies: this.samplesConfig?.filterOptions["technologies"] || [],
+      },
+    };
   }
 
   private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {

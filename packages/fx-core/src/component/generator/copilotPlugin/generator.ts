@@ -20,6 +20,7 @@ import {
   AppPackageFolderName,
   Warning,
   ApiOperation,
+  ApiKeyAuthInfo,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -65,6 +66,10 @@ const invalidApiSpecErrorName = "invalid-api-spec";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 const isRemoteUrlTelemetryProperty = "remote-url";
 
+function normalizePath(path: string): string {
+  return "./" + path.replace(/\\/g, "/");
+}
+
 export interface CopilotPluginGeneratorResult {
   warnings?: Warning[];
 }
@@ -83,15 +88,17 @@ export class CopilotPluginGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    const hasAuth = (inputs[QuestionNames.ApiOperation] as ApiOperation[]).find(
-      (api) => !!api.data.authName
+    const apiOperations = inputs[QuestionNames.ApiOperation] as string[];
+    const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
+      (api) => !!api.data.authName && apiOperations.includes(api.id)
     );
     return await this.generateForME(
       context,
       inputs,
       destinationPath,
-      hasAuth ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName,
-      hasAuth ? fromApiSpecWithApiKeyComponentName : fromApiSpecComponentName
+      authApi ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName,
+      authApi ? fromApiSpecWithApiKeyComponentName : fromApiSpecComponentName,
+      authApi?.data
     );
   }
 
@@ -122,16 +129,47 @@ export class CopilotPluginGenerator {
     inputs: Inputs,
     destinationPath: string,
     templateName: string,
-    componentName: string
+    componentName: string,
+    apiKeyAuthData?: ApiKeyAuthInfo
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
       const language = inputs[QuestionNames.ProgrammingLanguage];
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-      context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
-      const apiOperations = inputs[QuestionNames.ApiOperation] as ApiOperation[];
-      const filters = apiOperations.map((api) => api.id);
+
+      const manifestPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
+
+      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
+
+      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      url = url.trim();
+
+      let isYaml: boolean;
+      try {
+        isYaml = await isYamlSpecFile(url);
+      } catch (e) {
+        isYaml = false;
+      }
+
+      const openapiSpecFileName = isYaml ? apiSpecYamlFileName : apiSpecJsonFileName;
+      const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
+
+      if (apiKeyAuthData?.authName) {
+        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS, {
+          authName: apiKeyAuthData.authName,
+          openapiSpecPath: normalizePath(path.join(apiSpecFolderName, openapiSpecFileName)),
+          registrationIdEnvName: `${apiKeyAuthData.authName.toUpperCase()}_REGISTRATION_ID`,
+        });
+      } else {
+        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
+      }
+      const filters = inputs[QuestionNames.ApiOperation] as string[];
+
       // download template
       const templateRes = await Generator.generateTemplate(
         context,
@@ -141,8 +179,6 @@ export class CopilotPluginGenerator {
       );
       if (templateRes.isErr()) return err(templateRes.error);
 
-      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
-      url = url.trim();
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
       });
@@ -191,25 +227,7 @@ export class CopilotPluginGenerator {
       }
 
       // generate files
-      const manifestPath = path.join(
-        destinationPath,
-        AppPackageFolderName,
-        ManifestTemplateFileName
-      );
-
-      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);
-
-      let isYaml: boolean;
-      try {
-        isYaml = await isYamlSpecFile(url);
-      } catch (e) {
-        isYaml = false;
-      }
-      const openapiSpecPath = path.join(
-        apiSpecFolderPath,
-        isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
-      );
 
       const adaptiveCardFolder = path.join(
         destinationPath,

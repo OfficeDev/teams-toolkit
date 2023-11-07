@@ -342,7 +342,8 @@ export class PackageService {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
       this.logger?.debug(`Get active experiences from service URL ${serviceUrl} ...`);
-      const response = await this.axiosInstance.get("/catalog/v1/users/experiences", {
+      // users/experiences is deprecating, using users/uitypes instead
+      const response = await this.axiosInstance.get("/catalog/v1/users/uitypes", {
         baseURL: serviceUrl,
         headers: {
           Authorization: `Bearer ${token}`,

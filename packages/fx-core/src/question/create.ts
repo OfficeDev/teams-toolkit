@@ -1551,7 +1551,6 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
-    returnObject: true,
     title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
     cliDescription: "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
@@ -1578,8 +1577,8 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
           if (operation) {
             if (operation.data.authName) {
               authNames.add(operation.data.authName);
+              serverUrls.add(operation.data.serverUrl);
             }
-            serverUrls.add(operation.data.serverUrl);
           }
         }
 

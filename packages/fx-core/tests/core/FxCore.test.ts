@@ -1515,7 +1515,6 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
-    console.log(result);
     assert.isTrue(result.isOk());
   });
 
@@ -1870,7 +1869,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}", "GET /store/order"],
-      [QuestionNames.ManifestPath]: "manifest.json",
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
@@ -1959,7 +1958,7 @@ describe("copilotPlugin", async () => {
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",
-              apiSpecPath: "./apiSpecificationFiles/openapi.yaml",
+              apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
               registrationId: "API_KEY1_REGISTRATION_ID",
@@ -1993,7 +1992,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}", "GET /store/order"],
-      [QuestionNames.ManifestPath]: "manifest.json",
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
@@ -2079,7 +2078,7 @@ describe("copilotPlugin", async () => {
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",
-              apiSpecPath: "./apiSpecificationFiles/openapi.yaml",
+              apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
               registrationId: "API_KEY1_REGISTRATION_ID",
@@ -2114,7 +2113,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}", "GET /store/order"],
-      [QuestionNames.ManifestPath]: "manifest.json",
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
@@ -2171,10 +2170,10 @@ describe("copilotPlugin", async () => {
           with: {
             name: "api_key_unknown",
             appId: "${{TEAMS_APP_ID}}",
-            apiSpecPath: "./apiSpecificationFiles/openapi.yaml",
+            apiSpecPath: ".appPackage/apiSpecificationFiles/openapi.json",
           },
           writeToEnvironmentFile: {
-            registrationId: "API_KEY1_REGISTRATION_ID",
+            registrationId: "API_KEY_UNKNOWN_REGISTRATION_ID",
           },
         },
         {
@@ -2211,7 +2210,7 @@ describe("copilotPlugin", async () => {
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",
-              apiSpecPath: "./apiSpecificationFiles/openapi.yaml",
+              apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
               registrationId: "API_KEY1_REGISTRATION_ID",
@@ -2230,7 +2229,6 @@ describe("copilotPlugin", async () => {
     });
 
     const result = await core.copilotPluginAddAPI(inputs);
-
     assert.isTrue(result.isOk());
     assert.isTrue(writeYamlObjectTriggeredTimes === 2);
   });
@@ -2242,7 +2240,7 @@ describe("copilotPlugin", async () => {
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
-      [QuestionNames.ManifestPath]: "manifest.json",
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
@@ -2277,7 +2275,6 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
-    console.log(result);
     assert.isTrue(result.isOk());
   });
 

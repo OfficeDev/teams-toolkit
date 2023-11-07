@@ -1151,7 +1151,11 @@ export class FxCore {
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
   }
 
-  async injectCreateAPIKeyAction(ymlPath: string, authName: string): Promise<void> {
+  async injectCreateAPIKeyAction(
+    ymlPath: string,
+    authName: string,
+    specRelativePath: string
+  ): Promise<void> {
     const ymlContent = await fs.readFile(ymlPath, "utf-8");
 
     const document = parseDocument(ymlContent);
@@ -1178,7 +1182,7 @@ export class FxCore {
                 with: {
                   name: `${authName}`,
                   appId: `\${{${teamsAppId}}}`,
-                  apiSpecPath: "./apiSpecificationFiles/openapi.yaml",
+                  apiSpecPath: specRelativePath,
                 },
                 writeToEnvironmentFile: {
                   registrationId: `${authName.toUpperCase()}_REGISTRATION_ID`,
@@ -1270,10 +1274,13 @@ export class FxCore {
           const localYamlPath = path.join(inputs.projectPath!, MetadataV3.localConfigFile);
           const authName = [...authNames][0];
 
-          await this.injectCreateAPIKeyAction(ymlPath, authName);
+          const relativeSpecPath =
+            "./" + path.relative(inputs.projectPath!, outputAPISpecPath).replace(/\\/g, "/");
+
+          await this.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
 
           if (await fs.pathExists(localYamlPath)) {
-            await this.injectCreateAPIKeyAction(localYamlPath, authName);
+            await this.injectCreateAPIKeyAction(localYamlPath, authName, relativeSpecPath);
           }
         }
       }

@@ -90,9 +90,9 @@ export class LocalCertificateManager {
         }
       }
 
+      localCert.found = !!certThumbprint;
       if (!certThumbprint) {
         if (failIfNotFound) {
-          localCert.found = false;
           return localCert;
         }
         // generate cert and key
@@ -100,12 +100,15 @@ export class LocalCertificateManager {
       }
 
       if (needTrust) {
-        if (certThumbprint && (await this.verifyCertificateInStore(certThumbprint))) {
+        if (await this.verifyCertificateInStore(certThumbprint)) {
           // already trusted
           localCert.isTrusted = true;
           localCert.alreadyTrusted = true;
         } else {
           localCert.alreadyTrusted = false;
+          if (failIfNotFound) {
+            return localCert;
+          }
           await this.trustCertificate(
             localCert,
             certThumbprint,

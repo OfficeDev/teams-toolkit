@@ -52,7 +52,7 @@ class TeamsAppMgr {
       inputs["package-file"] = packageRes.value.outputZipPath;
     }
     if (!(await fs.pathExists(inputs["package-file"]))) {
-      return err(new FileNotFoundError("updateTeamsApp", inputs["package-file"]));
+      return err(new FileNotFoundError("TeamsAppMgr", inputs["package-file"]));
     }
     return ok(undefined);
   }
@@ -67,7 +67,7 @@ class TeamsAppMgr {
       return ok(manifest);
     }
     return err(
-      new FileNotFoundError("readManifestFromZip", appPackagePath + ":" + Constants.MANIFEST_FILE)
+      new FileNotFoundError("TeamsAppMgr", appPackagePath + ":" + Constants.MANIFEST_FILE)
     );
   }
 
@@ -101,14 +101,14 @@ class TeamsAppMgr {
           } else {
             // env provided but not found
             return err(
-              new FileNotFoundError("updateTeamsApp", path.join(envFolder, `.env.${inputs.env}`))
+              new FileNotFoundError("TeamsAppMgr", path.join(envFolder, `.env.${inputs.env}`))
             );
           }
         } else {
           //env not provided
           if (envs.length > 1) {
             //need provide
-            return err(new MissingRequiredInputError("env", "updateTeamsApp"));
+            return err(new MissingRequiredInputError("env", "TeamsAppMgr"));
           } else if (envs.length === 1) {
             // no need provide
             env = envs[0];
@@ -132,12 +132,12 @@ class TeamsAppMgr {
     if (!inputs["manifest-file"]) {
       const defaultManifestPath = manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
       if (!(await fs.pathExists(defaultManifestPath))) {
-        return err(new MissingRequiredInputError("package-file/manifest-file", "updateTeamsApp"));
+        return err(new MissingRequiredInputError("package-file/manifest-file", "TeamsAppMgr"));
       }
       inputs["manifest-file"] = defaultManifestPath;
     } else {
       if (!(await fs.pathExists(inputs["manifest-file"]))) {
-        return err(new FileNotFoundError("updateTeamsApp", inputs["manifest-file"]));
+        return err(new FileNotFoundError("TeamsAppMgr", inputs["manifest-file"]));
       }
     }
 
@@ -187,7 +187,7 @@ class TeamsAppMgr {
       // neither manifest-file nor package-file provided, use default manifest file
       const defaultManifestPath = manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
       if (!(await fs.pathExists(defaultManifestPath))) {
-        return err(new MissingRequiredInputError("package-file/manifest-file", "validateTeamsApp"));
+        return err(new MissingRequiredInputError("package-file/manifest-file", "TeamsAppMgr"));
       }
       inputs["manifest-file"] = defaultManifestPath;
     }

@@ -27,6 +27,7 @@ import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvali
 import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
 import { SpecParser } from "../../../common/spec-parser";
 import { getAbsolutePath } from "../../utils/common";
+import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
 
 const actionName = "apiKey/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-create";
@@ -79,9 +80,16 @@ export class CreateApiKeyDriver implements StepDriver {
           );
         }
       } else {
-        await this.validateArgs(args, context);
+        this.validateArgs(args);
 
-        const apiKey = await this.mapArgsToApiSecretRegistration(context.m365TokenProvider, args);
+        const domains = await this.getDomain(args, context);
+        this.validateDomain(domains);
+
+        const apiKey = await this.mapArgsToApiSecretRegistration(
+          context.m365TokenProvider,
+          args,
+          domains
+        );
         const apiRegistrationRes = await AppStudioClient.createApiKeyRegistration(
           appStudioToken,
           apiKey
@@ -159,64 +167,37 @@ export class CreateApiKeyDriver implements StepDriver {
     return true;
   }
 
-  private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<void> {
-    if (args.domain) {
-      return;
-    }
-
-    if (!args.apiSpecPath) {
-      // should throw error
-      return;
-    }
-
+  // TODO: need to add logic to read domain from env if need to support non-lifecycle commands
+  private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<string[]> {
     const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
     const parser = new SpecParser(absolutePath, {
       allowAPIKeyAuth: true,
     });
     const operations = await parser.list();
-    if (!operations) {
-      // should throw error
-      return;
-    }
-    const results = operations.filter((value, index, object) => {
-      return value.auth?.name === args.name;
-    });
-    if (!results || results.length === 0) {
-      // should throw error
-      return;
-    }
-    if (results.length > 1) {
-      // should throw error
-      return;
-    }
-    args.domain = results[0].server;
+    const domains = operations
+      .filter((value) => {
+        return value.auth?.name === args.name;
+      })
+      .map((value) => {
+        return value.server;
+      })
+      .filter((value, index, self) => {
+        return self.indexOf(value) === index;
+      });
+    return domains;
   }
 
-  private parseDomain(domain: string): string[] {
-    const domains = domain.trim().split(",");
-    return domains.map((domain) => domain.trim());
+  private validateDomain(domain: string[]): void {
+    if (domain.length > maxDomainPerApiKey) {
+      throw new ApiKeyDomainInvalidError(actionName);
+    }
+
+    if (domain.length === 0) {
+      throw new ApiKeyFailedToGetDomainError(actionName);
+    }
   }
 
-  private validateDomain(domain: string): boolean {
-    if (typeof domain !== "string") {
-      return false;
-    }
-
-    const regExp = /^\w+(,\s*\w+)*/g;
-    const regResult = regExp.exec(domain);
-    if (!regResult) {
-      return false;
-    }
-
-    const domains = this.parseDomain(domain);
-    if (domains.length > maxDomainPerApiKey) {
-      return false;
-    }
-
-    return true;
-  }
-
-  private async validateArgs(args: CreateApiKeyArgs, context: DriverContext): Promise<void> {
+  private validateArgs(args: CreateApiKeyArgs): void {
     const invalidParameters: string[] = [];
     if (typeof args.name !== "string" || !args.name) {
       invalidParameters.push("name");
@@ -238,11 +219,6 @@ export class CreateApiKeyDriver implements StepDriver {
       invalidParameters.push("apiSpecPath");
     }
 
-    await this.getDomain(args, context);
-    if (args.domain && !this.validateDomain(args.domain)) {
-      throw new ApiKeyDomainInvalidError(actionName);
-    }
-
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
@@ -250,7 +226,8 @@ export class CreateApiKeyDriver implements StepDriver {
 
   private async mapArgsToApiSecretRegistration(
     tokenProvider: M365TokenProvider,
-    args: CreateApiKeyArgs
+    args: CreateApiKeyArgs,
+    domain: string[]
   ): Promise<ApiSecretRegistration> {
     const currentUserRes = await tokenProvider.getJsonObject({ scopes: GraphScopes });
     if (currentUserRes.isErr()) {
@@ -271,14 +248,6 @@ export class CreateApiKeyDriver implements StepDriver {
       isPrimary = false;
       return clientSecret;
     });
-
-    let domain: string[];
-    if (args.domain) {
-      domain = this.parseDomain(args.domain);
-    } else {
-      // TODO: get domain from api spec
-      domain = [];
-    }
 
     const apiKey: ApiSecretRegistration = {
       description: args.name,

@@ -26,6 +26,7 @@ import {
   isCLIDotNetEnabled,
   isCopilotPluginEnabled,
   isApiCopilotPluginEnabled,
+  isApiKeyEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -1555,7 +1556,9 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     cliDescription: "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
     placeholder: includeExistingAPIs
-      ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+      ? isApiKeyEnabled()
+        ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.apikey.placeholder")
+        : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
       : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
     forgetLastValue: true,
     staticOptions: [],

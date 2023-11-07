@@ -1012,6 +1012,11 @@ describe("scaffold question", () => {
       });
 
       describe("list operations", async () => {
+        let mockedEnvRestore: RestoreFn = () => {};
+
+        afterEach(() => {
+          mockedEnvRestore();
+        });
         it(" list operations successfully", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -1076,6 +1081,9 @@ describe("scaffold question", () => {
         });
 
         it(" validate operations with auth successfully", async () => {
+          mockedEnvRestore = mockedEnv({
+            [FeatureFlagName.ApiKey]: "true",
+          });
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -1103,8 +1111,10 @@ describe("scaffold question", () => {
           };
 
           const validationSchema = question.validation as FuncValidation<string[]>;
+          const placeholder = question.placeholder as string;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
+          assert.isTrue(placeholder.includes("API key"));
           assert.isUndefined(res);
         });
 

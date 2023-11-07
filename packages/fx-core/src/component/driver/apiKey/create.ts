@@ -228,7 +228,7 @@ export class CreateApiKeyDriver implements StepDriver {
       throw new ApiKeyClientSecretInvalidError(actionName);
     }
 
-    if (args.apiSpecPath && typeof args.apiSpecPath !== "string") {
+    if (typeof args.apiSpecPath !== "string" || !args.apiSpecPath) {
       invalidParameters.push("apiSpecPath");
     }
 

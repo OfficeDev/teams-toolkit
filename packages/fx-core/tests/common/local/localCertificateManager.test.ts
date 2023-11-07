@@ -336,21 +336,19 @@ describe("setupCertificate check only", () => {
     const res = await certManager.setupCertificate(true, true);
     chai.assert.isFalse(res.found);
   });
-  it("not trusted", async () => {
-    it("not found", async () => {
-      sandbox.stub(fs, "ensureDir").resolves();
-      sandbox.stub(fs, "pathExists").resolves(true);
-      sandbox.stub(fs, "readFile").resolves("aaa" as any);
-      const certManager = new LocalCertificateManager();
-      sandbox
-        .stub(LocalCertificateManager.prototype, "verifyCertificateContent")
-        .returns(["test", true]);
-      sandbox.stub(LocalCertificateManager.prototype, "generateCertificate").resolves("test");
-      sandbox.stub(LocalCertificateManager.prototype, "verifyCertificateInStore").resolves(false);
-      const res = await certManager.setupCertificate(true, true);
-      chai.assert.isTrue(res.found);
-      chai.assert.isFalse(res.alreadyTrusted);
-    });
+  it("found but not trusted", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves("aaa" as any);
+    const certManager = new LocalCertificateManager();
+    sandbox
+      .stub(LocalCertificateManager.prototype, "verifyCertificateContent")
+      .returns(["test", true]);
+    sandbox.stub(LocalCertificateManager.prototype, "generateCertificate").resolves("test");
+    sandbox.stub(LocalCertificateManager.prototype, "verifyCertificateInStore").resolves(false);
+    const res = await certManager.setupCertificate(true, true);
+    chai.assert.isTrue(res.found);
+    chai.assert.isFalse(res.alreadyTrusted);
   });
 });
 

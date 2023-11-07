@@ -37,6 +37,9 @@ class MetadataGraphPermissionUtil {
       const manifest = JSON.parse(manifestString);
       const graphPermissionSummary = this.getPermissionSummary(manifest);
       if (graphPermissionSummary) {
+        props[TelemetryProperty.GraphPermission] = graphPermissionSummary.hasGraphPermission
+          ? "true"
+          : "false";
         props[TelemetryProperty.GraphPermissionHasRole] = graphPermissionSummary.hasRole
           ? "true"
           : "false";
@@ -51,6 +54,10 @@ class MetadataGraphPermissionUtil {
   }
 
   getPermissionSummary(manifest: AADManifest) {
+    let hasGraphPermission = false;
+    let hasRole = false;
+    let hasAdminScope = false;
+    const scopes: string[] = [];
     const graphPermissionMap = getDetailedGraphPermissionMap();
     if (!graphPermissionMap) {
       return undefined;
@@ -59,12 +66,14 @@ class MetadataGraphPermissionUtil {
       (item) => item.resourceAppId === graphAppId || item.resourceAppId === graphAppName
     );
     if (!graphPermission) {
-      return undefined;
+      return {
+        hasGraphPermission,
+        hasRole,
+        hasAdminScope,
+        scopes,
+      };
     }
-
-    let hasRole = false;
-    let hasAdminScope = false;
-    const scopes: string[] = [];
+    hasGraphPermission = true;
     graphPermission.resourceAccess?.forEach((access) => {
       if (access.type === "Role") {
         hasRole = true;
@@ -79,6 +88,7 @@ class MetadataGraphPermissionUtil {
       }
     });
     return {
+      hasGraphPermission,
       hasRole,
       hasAdminScope,
       scopes,

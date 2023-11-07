@@ -90,6 +90,7 @@ describe("metadata graph permission util", () => {
     sandbox.stub(fs, "readFile").resolves(Buffer.from(manifestContent));
     let props: any = {};
     await metadataGraphPermissionUtil.parseAadManifest(ymlPath, mockProjectModel, props);
+    assert(props[TelemetryProperty.GraphPermission] === "true");
     assert(props[TelemetryProperty.GraphPermissionHasRole] === "false");
     assert(props[TelemetryProperty.GraphPermissionHasAdminScope] === "false");
     assert(props[TelemetryProperty.GraphPermissionScopes] === "User.Read");
@@ -100,6 +101,7 @@ describe("metadata graph permission util", () => {
     model.provision!.driverDefs[0].with = undefined;
     props = {};
     await metadataGraphPermissionUtil.parseAadManifest(ymlPath, model, props);
+    assert(props[TelemetryProperty.GraphPermission] === "true");
     assert(props[TelemetryProperty.GraphPermissionHasRole] === "false");
     assert(props[TelemetryProperty.GraphPermissionHasAdminScope] === "false");
     assert(props[TelemetryProperty.GraphPermissionScopes] === "User.Read");
@@ -113,6 +115,7 @@ describe("metadata graph permission util", () => {
     assert(props[TelemetryProperty.GraphPermissionHasRole] === undefined);
     assert(props[TelemetryProperty.GraphPermissionHasAdminScope] === undefined);
     assert(props[TelemetryProperty.GraphPermissionScopes] === undefined);
+    assert(props[TelemetryProperty.GraphPermission] === undefined);
     assert(props[TelemetryProperty.AadManifest] === "false");
   });
 
@@ -126,8 +129,8 @@ describe("metadata graph permission util", () => {
   it("getPermissionSummary no graph permission", async () => {
     const manifest = JSON.parse(manifestContent);
     manifest.requiredResourceAccess = [];
-    const res = metadataGraphPermissionUtil.getPermissionSummary(manifest);
-    assert(res === undefined);
+    const res: any = metadataGraphPermissionUtil.getPermissionSummary(manifest);
+    assert(res["hasGraphPermission"] === false);
   });
 
   it("getPermissionSummary graph permission is uuid", async () => {
@@ -152,5 +155,6 @@ describe("metadata graph permission util", () => {
     const res: any = metadataGraphPermissionUtil.getPermissionSummary(manifest);
     assert(res["hasRole"] === true);
     assert(res["hasAdminScope"] === true);
+    assert(res["hasGraphPermission"] === true);
   });
 });

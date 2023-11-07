@@ -29,7 +29,6 @@ describe("certificate", () => {
     expectedWorkspaceFolder,
     `.home/.${ConfigFolderName}/certificate/localhost.key`
   );
-
   describe("setupCertificate", () => {
     const fakeHomeDir = path.resolve(workspaceFolder, ".home/");
     let files: Record<string, any> = {};
@@ -321,6 +320,36 @@ describe("certificate", () => {
       await (certManager as any).trustCertificate(cert, "thumbprint", "friendlyname");
       chai.assert.isFalse(cert.isTrusted);
       chai.assert.isDefined(cert.error);
+    });
+  });
+});
+
+describe("setupCertificate check only", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("not found", async () => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const certManager = new LocalCertificateManager();
+    const res = await certManager.setupCertificate(true, true);
+    chai.assert.isFalse(res.found);
+  });
+  it("not trusted", async () => {
+    it("not found", async () => {
+      sandbox.stub(fs, "ensureDir").resolves();
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readFile").resolves("aaa" as any);
+      const certManager = new LocalCertificateManager();
+      sandbox
+        .stub(LocalCertificateManager.prototype, "verifyCertificateContent")
+        .returns(["test", true]);
+      sandbox.stub(LocalCertificateManager.prototype, "generateCertificate").resolves("test");
+      sandbox.stub(LocalCertificateManager.prototype, "verifyCertificateInStore").resolves(false);
+      const res = await certManager.setupCertificate(true, true);
+      chai.assert.isTrue(res.found);
+      chai.assert.isFalse(res.alreadyTrusted);
     });
   });
 });

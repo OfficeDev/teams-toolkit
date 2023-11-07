@@ -27,6 +27,9 @@ import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvali
 import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
 import { QuestionMW } from "../../middleware/questionMW";
 import { QuestionNames } from "../../../question";
+import { SpecParser } from "../../../common/spec-parser";
+import { getAbsolutePath } from "../../utils/common";
+import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
 
 const actionName = "apiKey/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-create";
@@ -83,9 +86,18 @@ export class CreateApiKeyDriver implements StepDriver {
         if (clientSecret) {
           args.clientSecret = clientSecret;
         }
+
         this.validateArgs(args);
 
-        const apiKey = await this.mapArgsToApiSecretRegistration(context.m365TokenProvider, args);
+        const domains = await this.getDomain(args, context);
+        this.validateDomain(domains);
+
+        const apiKey = await this.mapArgsToApiSecretRegistration(
+          context.m365TokenProvider,
+          args,
+          domains
+        );
+
         const apiRegistrationRes = await AppStudioClient.createApiKeyRegistration(
           appStudioToken,
           apiKey
@@ -168,28 +180,34 @@ export class CreateApiKeyDriver implements StepDriver {
     return true;
   }
 
-  private parseDomain(domain: string): string[] {
-    const domains = domain.trim().split(",");
-    return domains.map((domain) => domain.trim());
+  // TODO: need to add logic to read domain from env if need to support non-lifecycle commands
+  private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<string[]> {
+    const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
+    const parser = new SpecParser(absolutePath, {
+      allowAPIKeyAuth: true,
+    });
+    const operations = await parser.list();
+    const domains = operations
+      .filter((value) => {
+        return value.auth?.name === args.name;
+      })
+      .map((value) => {
+        return value.server;
+      })
+      .filter((value, index, self) => {
+        return self.indexOf(value) === index;
+      });
+    return domains;
   }
 
-  private validateDomain(domain: string): boolean {
-    if (typeof domain !== "string") {
-      return false;
+  private validateDomain(domain: string[]): void {
+    if (domain.length > maxDomainPerApiKey) {
+      throw new ApiKeyDomainInvalidError(actionName);
     }
 
-    const regExp = /^\w+(,\s*\w+)*/g;
-    const regResult = regExp.exec(domain);
-    if (!regResult) {
-      return false;
+    if (domain.length === 0) {
+      throw new ApiKeyFailedToGetDomainError(actionName);
     }
-
-    const domains = this.parseDomain(domain);
-    if (domains.length > maxDomainPerApiKey) {
-      return false;
-    }
-
-    return true;
   }
 
   private validateArgs(args: CreateApiKeyArgs): void {
@@ -210,12 +228,8 @@ export class CreateApiKeyDriver implements StepDriver {
       throw new ApiKeyClientSecretInvalidError(actionName);
     }
 
-    if (args.apiSpecPath && typeof args.apiSpecPath !== "string") {
+    if (typeof args.apiSpecPath !== "string" || !args.apiSpecPath) {
       invalidParameters.push("apiSpecPath");
-    }
-
-    if (args.domain && !this.validateDomain(args.domain)) {
-      throw new ApiKeyDomainInvalidError(actionName);
     }
 
     if (invalidParameters.length > 0) {
@@ -225,7 +239,8 @@ export class CreateApiKeyDriver implements StepDriver {
 
   private async mapArgsToApiSecretRegistration(
     tokenProvider: M365TokenProvider,
-    args: CreateApiKeyArgs
+    args: CreateApiKeyArgs,
+    domain: string[]
   ): Promise<ApiSecretRegistration> {
     const currentUserRes = await tokenProvider.getJsonObject({ scopes: GraphScopes });
     if (currentUserRes.isErr()) {
@@ -246,14 +261,6 @@ export class CreateApiKeyDriver implements StepDriver {
       isPrimary = false;
       return clientSecret;
     });
-
-    let domain: string[];
-    if (args.domain) {
-      domain = this.parseDomain(args.domain);
-    } else {
-      // TODO: get domain from api spec
-      domain = [];
-    }
 
     const apiKey: ApiSecretRegistration = {
       description: args.name,

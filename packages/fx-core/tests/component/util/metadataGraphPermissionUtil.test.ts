@@ -99,7 +99,7 @@ describe("metadata graph permission util", () => {
     const model = Object.assign({}, mockProjectModel);
     model.provision!.driverDefs[0].with = undefined;
     props = {};
-    await metadataGraphPermissionUtil.parseAadManifest(ymlPath, mockProjectModel, props);
+    await metadataGraphPermissionUtil.parseAadManifest(ymlPath, model, props);
     assert(props[TelemetryProperty.GraphPermissionHasRole] === "false");
     assert(props[TelemetryProperty.GraphPermissionHasAdminScope] === "false");
     assert(props[TelemetryProperty.GraphPermissionScopes] === "User.Read");

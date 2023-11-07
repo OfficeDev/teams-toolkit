@@ -8,8 +8,8 @@ import { MetadataV3 } from "../../common/versionMetadata";
 import { ProjectModel } from "../configManager/interface";
 import { AADManifest } from "../driver/aad/interface/AADManifest";
 import { getDetailedGraphPermissionMap, graphAppId, graphAppName } from "../driver/aad/permissions";
-import { actionName } from "../driver/teamsApp/configure";
 import { TelemetryProperty } from "../../common/telemetry";
+import { actionName } from "../driver/aad/update";
 class MetadataGraphPermissionUtil {
   async parseAadManifest(
     ymlPath: string,

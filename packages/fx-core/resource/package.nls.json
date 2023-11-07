@@ -423,6 +423,7 @@
   "core.summary.actionSucceeded": "%s was executed successfully.",
   "core.summary.createdEnvFile": "Environment file was created at",
   "core.copilot.addAPI.success": "%s have(has) been successfully added to %s",
+  "core.copilot.addAPI.InjectAPIKeyActionFailed": "Inject API key action to teamsapp.yaml file failed, please make sure that file contains teamsApp/create action in provision section.",
   "ui.select.LoadingOptionsPlaceholder": "Loading options ...",
   "ui.select.LoadingDefaultPlaceholder": "Loading default value ...",
   "error.aad.manifest.NameIsMissing": "name is missing\n",

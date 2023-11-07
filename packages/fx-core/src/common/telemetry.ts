@@ -50,6 +50,9 @@ export enum TelemetryProperty {
   ToolkitVersion = "toolkit-version",
   YmlName = "yml-name",
   YmlSchemaVersion = "yml-schema-version",
+  GraphPermissionHasRole = "graph-permission-has-role",
+  GraphPermissionHasAdminScope = "graph-permission-has-admin-scope",
+  GraphPermissionScopes = "graph-permission-scopes",
 }
 
 export enum TelemetryEvent {

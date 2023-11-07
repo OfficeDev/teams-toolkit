@@ -18,7 +18,9 @@ The app template is built using the Teams AI library, which provides the capabil
 > To run the AI Chat Bot template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
+{{^enableTestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+{{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
 > - An account with [OpenAI](https://platform.openai.com/).
 >
@@ -27,6 +29,16 @@ The app template is built using the Teams AI library, which provides the capabil
 > Teams AI Library is currently in preview version.
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableTestToolByDefault}}
+1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+1. You will receive a welcome message from the bot, or send any message to get a response.
+
+**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
+
+![ai chat bot](https://github.com/OfficeDev/TeamsFx/assets/9698542/9bd22201-8fda-4252-a0b3-79531c963e5e)
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
@@ -36,6 +48,7 @@ The app template is built using the Teams AI library, which provides the capabil
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
 ![ai chat bot](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
+{{/enableTestToolByDefault}}
 
 ### Use Azure OpenAI
 
@@ -46,15 +59,15 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
-1. In `src/app.ts`, comment out *"Use OpenAI"* part and uncomment *"use Azure OpenAI"* part, e.g.
-    ```typescript
+1. In `src/app.js`, comment out *"Use OpenAI"* part and uncomment *"use Azure OpenAI"* part, e.g.
+    ```javascript
     // Use OpenAI
     /**
     const planner = new OpenAIPlanner({
       apiKey: config.openAIKey,
       defaultModel: "gpt-3.5-turbo",
       useSystemMessage: true,
-      logRequests: true
+      logRequests: true,
     });
     */
     // Uncomment the following lines to use Azure OpenAI
@@ -63,10 +76,10 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
       endpoint: config.azureOpenAIEndpoint,
       defaultModel: "gpt-35-turbo",
       useSystemMessage: true,
-      logRequests: true,
+      logRequests: true
     });
     ```
-1. In `src/app.ts`, update `defaultModel` to your own model deployment name.
+1. In `src/app.js`, update `defaultModel` to your own model deployment name.
 
 ## What's included in the template
 
@@ -82,9 +95,9 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`src/index.ts`| Sets up and configures the AI Chat Bot.|
-|`src/app.ts`| Handles business logics for the AI Chat Bot.|
-|`src/config.ts`| Defines the environment variables.|
+|`src/index.js`| Sets up and configures the AI Chat Bot.|
+|`src/app.js`| Handles business logics for the AI Chat Bot.|
+|`src/config.js`| Defines the environment variables.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
 
@@ -94,6 +107,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | - | - |
 |`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+|`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
 ## Extend the AI Chat Bot template with more AI capabilities
 

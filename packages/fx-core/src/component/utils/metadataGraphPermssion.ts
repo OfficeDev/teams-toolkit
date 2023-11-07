@@ -27,8 +27,11 @@ class MetadataGraphPermissionUtil {
     }
     const aadManifestPath = path.join(path.dirname(ymlPath), aadManifestName);
     if (!(await fs.pathExists(aadManifestPath))) {
+      props[TelemetryProperty.AadManifest] = "false";
       return;
     }
+    props[TelemetryProperty.AadManifest] = "true";
+
     try {
       const manifestString = await fs.readFile(aadManifestPath, "utf8");
       const manifest = JSON.parse(manifestString);

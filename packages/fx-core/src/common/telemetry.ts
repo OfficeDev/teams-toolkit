@@ -53,6 +53,7 @@ export enum TelemetryProperty {
   GraphPermissionHasRole = "graph-permission-has-role",
   GraphPermissionHasAdminScope = "graph-permission-has-admin-scope",
   GraphPermissionScopes = "graph-permission-scopes",
+  AadManifest = "aad-manifest",
 }
 
 export enum TelemetryEvent {

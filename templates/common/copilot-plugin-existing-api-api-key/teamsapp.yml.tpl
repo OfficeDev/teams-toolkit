@@ -26,7 +26,7 @@ provision:
       appId: ${{TEAMS_APP_ID}}
       # Path to OpenAPI description document
       apiSpecPath: {{{ApiSpecPath}}}
-    # Write the information of created resources into environment file for
+    # Write the registration information of API Key into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
       registrationId: {{ApiSpecAuthRegistrationIdEnvName}}

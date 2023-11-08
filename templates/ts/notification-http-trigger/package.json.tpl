@@ -26,7 +26,7 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^2.3.0-rc-hotfix.0",
+        "@microsoft/teamsfx": "^2.3.0",
         "botbuilder": "^4.20.0"
     },
     "devDependencies": {

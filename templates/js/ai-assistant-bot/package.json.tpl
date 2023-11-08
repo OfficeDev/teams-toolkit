@@ -18,7 +18,8 @@
         "dev": "nodemon --inspect=9239 --signal SIGINT ./src/index.js",
         "start": "node ./src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "watch": "nodemon --exec \"npm run start\""
+        "watch": "nodemon --exec \"npm run start\"",
+        "assistant:create": "node ./src/creator.js"
     },
     "repository": {
         "type": "git",

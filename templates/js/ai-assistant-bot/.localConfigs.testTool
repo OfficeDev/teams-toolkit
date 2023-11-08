@@ -1,0 +1,5 @@
+# A gitignored place holder file for local runtime configurations when debug in test tool
+BOT_ID=
+BOT_PASSWORD=
+OPENAI_API_KEY=
+OPENAI_ASSISTANT_ID=

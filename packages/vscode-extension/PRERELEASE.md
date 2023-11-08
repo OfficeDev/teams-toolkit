@@ -2,6 +2,47 @@
 
 ## Changelog
 
+### November 14, 2023
+
+#### New Features
+
+- **AI Assistant Bot App Template**: We have introduced a new AI Assistant Bot app templat built on top of [Teams AI library](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/teams-conversation-ai-overview) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview/agents). It showcases how to build an intelligent chat bot in Teams capable of helping users accomplish a specific task using natural language right in the Teams conversations, such as solving a math problem.
+![Assistant Bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/22d6fc16-12b5-4024-8b52-2b0e69f89dfa)
+
+- **Debug Teams Bot Applictaion in Teams App Test Tool**: Teams App Test Tool is a component integrated in Teams Toolkit that helps developers to debug, test and iterate on the app design of a Teams bot application in a web-based chat environment that emulates the behavior, look and feel of Microsoft Teams without using tunnels or Microsoft 365 account.
+    ![Test Tool](https://github.com/OfficeDev/TeamsFx/assets/11220663/3cce5284-4432-4266-89c5-de8bf9462baf)
+  
+- **Integrated Adaptive Card Previewer**: We have integrated the [Adaptive Card Previewer](https://aka.ms/acp-docs) into Teams Toolkit to help you preview and edit Adaptive Cards in a more intuitive way.
+    ![ACP Integration](https://github.com/OfficeDev/TeamsFx/assets/11220663/07eaee1b-2f68-45f7-bf2c-249853ddfb5c)
+  
+- **Refreshed Look for Sample App Gallery**: The sample app gallery in Teams Toolkit now has a refreshed look and feel to help you find the right sample app for your needs more easily. You can now:
+  - Filter sample apps by app type, app capability, and programming language.
+  - Checkout the `Featured Samples` on top.
+  - Swicth to a `List View` that fits more sample apps in one screen.
+    ![Sample Gallery](https://github.com/OfficeDev/TeamsFx/assets/11220663/5cfb778e-75e8-4217-a44f-a9a0b8069415)
+
+- **License Check for Copilot**: We have added a helpful license check UI that detects if your account has been assigned Microsoft Copilot licenses before you started developing Copilot Plugins. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings).
+    ![Copilot License](https://github.com/OfficeDev/TeamsFx/assets/11220663/fdbdb391-7cb7-461d-9923-ceec8b890a95)
+
+- **Automatic `npm install` for SPFx Tab App**: We have added enhancement for SPFx Tab App to auto-execute `npm install` in the background after the project is scaffolded. Now developers can get code intellisense when developing after the project is created.
+    ![SPFx Auto NPM](https://github.com/OfficeDev/TeamsFx/assets/11220663/641e74f1-1e37-446e-9ec9-5209ef84386e)
+
+#### New Additions to the Sample App Gallery
+
+- **Large Scale Notification Bot**: This sample app demonstrates the architecture of a Teams notfication bot app created by Teams Toolkit to send individual chat messages to a large number of users in a tenant.
+- **Graph Connector Bot**: This sample app showcases how to build a Teams command bot that queries custom data ingested into Microsoft Graph using Graph connector.
+
+#### Develop Bots and Message Extensions using Python
+
+We have added support for Python in Teams Toolkit. You can now create Teams bots and messages extensions using Python starting from the following samples:
+
+- Teams Conversation Bot using Python
+- Teams Messaging Extensions Search using Python
+
+![Python Samples](https://github.com/OfficeDev/TeamsFx/assets/11220663/17358f09-8ec8-475a-896c-3faf7422ecff)
+
+#### Bug Fixes
+
 ### October 10, 2023
 
 #### New Features

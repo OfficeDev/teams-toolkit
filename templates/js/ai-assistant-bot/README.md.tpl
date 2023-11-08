@@ -60,7 +60,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
 
-![ai assistant bot in Teams App Test Tool](TBD)
+![ai assistant bot in Teams App Test Tool](https://github.com/OfficeDev/TeamsFx/assets/7642967/64010f23-6fd5-4577-8757-495923c900c0)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
@@ -71,7 +71,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![ai assistant bot in Teams](TBD)
+![ai assistant bot in Teams](https://github.com/OfficeDev/TeamsFx/assets/7642967/21480d90-307d-4074-84e0-c68a20e38134)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template

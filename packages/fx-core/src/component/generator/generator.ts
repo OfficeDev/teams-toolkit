@@ -45,13 +45,22 @@ export class Generator {
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
+    let safeRegistrationIdEnvName = (apiKeyAuthData?.registrationIdEnvName ?? "").replace(
+      /[^A-Z0-9_]/g,
+      "_"
+    );
+
+    if (!safeRegistrationIdEnvName.match(/^[A-Z]/)) {
+      safeRegistrationIdEnvName = "PREFIX_" + safeRegistrationIdEnvName;
+    }
+
     return {
       appName: appName,
       ProjectName: appName,
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
       ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
-      ApiSpecAuthRegistrationIdEnvName: apiKeyAuthData?.registrationIdEnvName ?? "",
+      ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
     };

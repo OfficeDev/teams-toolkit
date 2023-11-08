@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@azure/functions": "^1.2.2",
-    "@microsoft/teamsfx": "2.3.1-rc-hotfix.0",
+    "@microsoft/teamsfx": "^2.3.1",
     "@microsoft/microsoft-graph-client": "^3.0.1",
     "isomorphic-fetch": "^3.0.0"
   },

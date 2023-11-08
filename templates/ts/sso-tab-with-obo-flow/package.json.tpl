@@ -8,8 +8,8 @@
   "dependencies": {
     "@fluentui/react-components": "^9.18.0",
     "@microsoft/teams-js": "^2.13.0",
-    "@microsoft/teamsfx": "2.3.1-rc-hotfix.0",
-    "@microsoft/teamsfx-react": "3.1.0-rc-hotfix.0",
+    "@microsoft/teamsfx": "^2.3.1",
+    "@microsoft/teamsfx-react": "^3.1.0",
     "axios": "^0.21.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

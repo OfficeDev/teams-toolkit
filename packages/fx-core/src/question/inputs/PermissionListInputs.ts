@@ -15,6 +15,6 @@ export interface PermissionListInputs extends Inputs {
   "manifest-path"?: string;
   /** @description Select an environment */
   env?: string;
-  /** @description Select Azure Active Directory manifest.json file */
+  /** @description Select Microsoft Entra manifest.json file */
   "manifest-file-path"?: string;
 }

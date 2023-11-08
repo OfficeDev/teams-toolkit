@@ -3,10 +3,10 @@
 import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
 import { PermissionListInputs, PermissionListOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
-import { azureMessage, spfxMessage } from "../../cmds/permission";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
+import { azureMessage, spfxMessage } from "./permissionGrant";
 
 export const permissionStatusCommand: CLICommand = {
   name: "status",

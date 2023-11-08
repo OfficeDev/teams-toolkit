@@ -19,6 +19,8 @@ import {
   ResponseTemplatesFolderName,
   AppPackageFolderName,
   Warning,
+  ApiOperation,
+  ApiKeyAuthInfo,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -41,7 +43,6 @@ import { ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import {
-  ConstantString,
   SpecParserError,
   SpecParser,
   ValidationStatus,
@@ -49,9 +50,12 @@ import {
 } from "../../../common/spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
+import { isApiKeyEnabled } from "../../../common/featureFlags";
 
-const fromApiSpeccomponentName = "copilot-plugin-existing-api";
+const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
+const fromApiSpecWithApiKeyComponentName = "copilot-plugin-existing-api-api-key";
+const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
 const apiSpecFolderName = "apiSpecificationFiles";
@@ -62,6 +66,10 @@ const invalidApiSpecErrorName = "invalid-api-spec";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 const isRemoteUrlTelemetryProperty = "remote-url";
 
+function normalizePath(path: string): string {
+  return "./" + path.replace(/\\/g, "/");
+}
+
 export interface CopilotPluginGeneratorResult {
   warnings?: Warning[];
 }
@@ -70,9 +78,9 @@ export class CopilotPluginGenerator {
   @hooks([
     ActionExecutionMW({
       enableTelemetry: true,
-      telemetryComponentName: fromApiSpeccomponentName,
+      telemetryComponentName: fromApiSpecComponentName,
       telemetryEventName: TelemetryEvents.Generate,
-      errorSource: fromApiSpeccomponentName,
+      errorSource: fromApiSpecComponentName,
     }),
   ])
   public static async generateFromApiSpec(
@@ -80,12 +88,17 @@ export class CopilotPluginGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    const apiOperations = inputs[QuestionNames.ApiOperation] as string[];
+    const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
+      (api) => !!api.data.authName && apiOperations.includes(api.id)
+    );
     return await this.generateForME(
       context,
       inputs,
       destinationPath,
-      fromApiSpecTemplateName,
-      fromApiSpeccomponentName
+      authApi ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName,
+      authApi ? fromApiSpecWithApiKeyComponentName : fromApiSpecComponentName,
+      authApi?.data
     );
   }
 
@@ -116,15 +129,49 @@ export class CopilotPluginGenerator {
     inputs: Inputs,
     destinationPath: string,
     templateName: string,
-    componentName: string
+    componentName: string,
+    apiKeyAuthData?: ApiKeyAuthInfo
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
       const language = inputs[QuestionNames.ProgrammingLanguage];
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-      context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
+
+      const manifestPath = path.join(
+        destinationPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
+
+      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
+
+      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      url = url.trim();
+
+      let isYaml: boolean;
+      try {
+        isYaml = await isYamlSpecFile(url);
+      } catch (e) {
+        isYaml = false;
+      }
+
+      const openapiSpecFileName = isYaml ? apiSpecYamlFileName : apiSpecJsonFileName;
+      const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
+
+      if (apiKeyAuthData?.authName) {
+        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS, {
+          authName: apiKeyAuthData.authName,
+          openapiSpecPath: normalizePath(
+            path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
+          ),
+          registrationIdEnvName: `${apiKeyAuthData.authName.toUpperCase()}_REGISTRATION_ID`,
+        });
+      } else {
+        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
+      }
       const filters = inputs[QuestionNames.ApiOperation] as string[];
+
       // download template
       const templateRes = await Generator.generateTemplate(
         context,
@@ -134,14 +181,13 @@ export class CopilotPluginGenerator {
       );
       if (templateRes.isErr()) return err(templateRes.error);
 
-      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
-      url = url.trim();
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
       });
 
       // validate API spec
-      const specParser = new SpecParser(url);
+      const allowAPIKeyAuth = isApiKeyEnabled();
+      const specParser = new SpecParser(url, { allowAPIKeyAuth });
       const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
       const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
@@ -183,25 +229,7 @@ export class CopilotPluginGenerator {
       }
 
       // generate files
-      const manifestPath = path.join(
-        destinationPath,
-        AppPackageFolderName,
-        ManifestTemplateFileName
-      );
-
-      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
       await fs.ensureDir(apiSpecFolderPath);
-
-      let isYaml: boolean;
-      try {
-        isYaml = await isYamlSpecFile(url);
-      } catch (e) {
-        isYaml = false;
-      }
-      const openapiSpecPath = path.join(
-        apiSpecFolderPath,
-        isYaml ? apiSpecYamlFileName : apiSpecJsonFileName
-      );
 
       const adaptiveCardFolder = path.join(
         destinationPath,

@@ -2,5 +2,5 @@
 // Licensed under the MIT license.
 
 export interface CreateBotAadAppArgs {
-  name: string; // The name of AAD app
+  name: string; // The name of Microsoft Entra app
 }

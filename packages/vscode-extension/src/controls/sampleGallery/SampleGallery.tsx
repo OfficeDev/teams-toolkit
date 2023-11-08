@@ -3,6 +3,7 @@
 
 import "./SampleGallery.scss";
 
+import Fuse from "fuse.js";
 import * as React from "react";
 
 import { Icon } from "@fluentui/react";
@@ -14,7 +15,7 @@ import {
   TelemetryTriggerFrom,
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import { SampleGalleryState, SampleInfo } from "./ISamples";
+import { SampleFilterOptionType, SampleGalleryState, SampleInfo } from "./ISamples";
 import OfflinePage from "./offlinePage";
 import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
@@ -23,17 +24,24 @@ import SampleListItem from "./sampleListItem";
 
 export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
   private samples: SampleInfo[] = [];
+  private filterOptions: SampleFilterOptionType = {
+    capabilities: [],
+    languages: [],
+    technologies: [],
+  };
 
   constructor(props: unknown) {
     super(props);
     this.state = {
       loading: true,
       layout: "grid",
+      query: "",
+      filterTags: { capabilities: [], languages: [], technologies: [] },
     };
   }
 
   public componentDidMount() {
-    window.addEventListener("message", this.receiveMessage, false);
+    window.addEventListener("message", this.messageHandler, false);
     vscode.postMessage({
       command: Commands.LoadSampleCollection,
     });
@@ -47,7 +55,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
 
   public render() {
     const titleSection = (
-      <div className="section" id="title">
+      <div id="title">
         <div className="logo">
           <Icon iconName="Library" className="logo" />
         </div>
@@ -66,8 +74,21 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       const selectedSample = this.samples.filter(
         (sample: SampleInfo) => sample.id == this.state.selectedSampleId
       )[0];
-      return <SampleDetailPage sample={selectedSample} selectSample={this.selectSample} />;
+      return (
+        <SampleDetailPage
+          sample={selectedSample}
+          selectSample={this.onSampleSelected}
+          createSample={this.onCreateSample}
+          viewGitHub={this.onViewGithub}
+        />
+      );
     } else {
+      const featuredSamples = (this.state.filteredSamples ?? this.samples).filter(
+        (sample) => sample.suggested
+      );
+      const normalSamples = (this.state.filteredSamples ?? this.samples).filter(
+        (sample) => !sample.suggested
+      );
       return (
         <div className="sample-gallery">
           {titleSection}
@@ -76,38 +97,70 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           ) : (
             <>
               <SampleFilter
-                layout={this.state.layout}
                 samples={this.samples}
-                onFilteredSamplesChange={(filteredSamples: SampleInfo[]) => {
-                  this.setState({ filteredSamples });
-                }}
-                onLayoutChange={this.onLayoutChanged}
+                filterOptions={this.filterOptions}
+                layout={this.state.layout}
+                query={this.state.query}
+                filterTags={this.state.filterTags}
+                onLayoutChanged={this.onLayoutChanged}
+                onFilterConditionChanged={this.onFilterConditionChanged}
               ></SampleFilter>
-              {this.state.layout === "grid" ? (
-                <div className="sample-stack">
-                  {(this.state.filteredSamples ?? this.samples).map((sample: SampleInfo) => {
-                    return (
-                      <SampleCard
-                        key={sample.id}
-                        sample={sample}
-                        selectSample={this.selectSample}
-                      />
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="sample-list">
-                  {(this.state.filteredSamples ?? this.samples).map((sample: SampleInfo) => {
-                    return (
-                      <SampleListItem
-                        key={sample.id}
-                        sample={sample}
-                        selectSample={this.selectSample}
-                      />
-                    );
-                  })}
+              {featuredSamples.length > 0 && (
+                <div className={`featured-sample-section ${this.state.layout}`}>
+                  <div id="featured-sample-title">
+                    <span className="codicon codicon-star-full"></span>
+                    <h4>Featured samples</h4>
+                  </div>
+                  {this.state.layout === "grid"
+                    ? featuredSamples.map((sample: SampleInfo) => {
+                        return (
+                          <SampleCard
+                            key={sample.id}
+                            sample={sample}
+                            selectSample={this.onSampleSelected}
+                            createSample={this.onCreateSample}
+                            viewGitHub={this.onViewGithub}
+                          />
+                        );
+                      })
+                    : featuredSamples.map((sample: SampleInfo) => {
+                        return (
+                          <SampleListItem
+                            key={sample.id}
+                            sample={sample}
+                            selectSample={this.onSampleSelected}
+                            createSample={this.onCreateSample}
+                            viewGitHub={this.onViewGithub}
+                          />
+                        );
+                      })}
                 </div>
               )}
+              <div className={`sample-section ${this.state.layout}`}>
+                {this.state.layout === "grid"
+                  ? normalSamples.map((sample: SampleInfo) => {
+                      return (
+                        <SampleCard
+                          key={sample.id}
+                          sample={sample}
+                          selectSample={this.onSampleSelected}
+                          createSample={this.onCreateSample}
+                          viewGitHub={this.onViewGithub}
+                        />
+                      );
+                    })
+                  : normalSamples.map((sample: SampleInfo) => {
+                      return (
+                        <SampleListItem
+                          key={sample.id}
+                          sample={sample}
+                          selectSample={this.onSampleSelected}
+                          createSample={this.onCreateSample}
+                          viewGitHub={this.onViewGithub}
+                        />
+                      );
+                    })}
+              </div>
             </>
           )}
         </div>
@@ -115,12 +168,13 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     }
   }
 
-  private receiveMessage = (event: any) => {
+  private messageHandler = (event: any) => {
     const message = event.data.message;
     switch (message) {
       case Commands.LoadSampleCollection:
         const error = event.data.error;
-        this.samples = event.data.data as SampleInfo[];
+        this.samples = event.data.samples as SampleInfo[];
+        this.filterOptions = event.data.filterOptions as SampleFilterOptionType;
         this.setState({
           loading: false,
           error,
@@ -140,20 +194,44 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     }
   };
 
-  private selectSample = (id: string) => {
+  private onSampleSelected = (id: string, triggerFrom: TelemetryTriggerFrom) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.SelectSample,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+          [TelemetryProperty.SampleAppName]: id,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.capabilities
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.technologies)
+            .join(","),
+          [TelemetryProperty.Layout]: this.state.layout,
+        },
+      },
+    });
     this.setState({
       selectedSampleId: id,
     });
   };
 
   private onLayoutChanged = (newLayout: "grid" | "list") => {
+    if (newLayout === this.state.layout) {
+      return;
+    }
     vscode.postMessage({
       command: Commands.SendTelemetryEvent,
       data: {
-        eventName: TelemetryEvent.SearchSample,
+        eventName: TelemetryEvent.ChangeLayout,
         properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
           [TelemetryProperty.Layout]: newLayout,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.capabilities
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.technologies)
+            .join(","),
         },
       },
     });
@@ -165,5 +243,83 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       },
     });
     this.setState({ layout: newLayout });
+  };
+
+  private onFilterConditionChanged = (query: string, filterTags: SampleFilterOptionType) => {
+    const containsTag = (targets: string[], tags: string[]) => {
+      if (targets.length === 0) {
+        return true;
+      }
+      for (const target of targets) {
+        if (tags.findIndex((value) => value.toLowerCase().includes(target.toLowerCase())) >= 0) {
+          return true;
+        }
+      }
+      return false;
+    };
+    let filteredSamples = this.samples.filter((sample: SampleInfo) => {
+      return (
+        containsTag(filterTags.capabilities, sample.tags) &&
+        containsTag(filterTags.languages, sample.tags) &&
+        containsTag(filterTags.technologies, sample.tags)
+      );
+    });
+    if (query !== "") {
+      const fuse = new Fuse(filteredSamples, {
+        keys: ["title", "shortDescription", "fullDescription", "tags"],
+      });
+      filteredSamples = fuse.search(query).map((result: { item: SampleInfo }) => result.item);
+    }
+    this.setState({ query, filterTags, filteredSamples });
+  };
+
+  private onCreateSample = (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.CloneSample,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+          [TelemetryProperty.SampleAppName]: sample.id,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.capabilities
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.technologies)
+            .join(","),
+          [TelemetryProperty.Layout]: this.state.layout,
+        },
+      },
+    });
+    vscode.postMessage({
+      command: Commands.CloneSampleApp,
+      data: {
+        appName: sample.title,
+        appFolder: sample.id,
+      },
+    });
+  };
+
+  private onViewGithub = (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.ViewSampleInGitHub,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+          [TelemetryProperty.SampleAppName]: sample.id,
+          [TelemetryProperty.SearchText]: this.state.query,
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.capabilities
+            .concat(this.state.filterTags.languages)
+            .concat(this.state.filterTags.technologies)
+            .join(","),
+          [TelemetryProperty.Layout]: this.state.layout,
+        },
+      },
+    });
+    const sampleInfo = sample.downloadUrlInfo;
+    vscode.postMessage({
+      command: Commands.OpenExternalLink,
+      data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
+    });
   };
 }

@@ -68,7 +68,7 @@
             "type": "teamsfx",
             "command": "debug-set-up-sso",
             "args": {
-                //// Enter your own AAD app information if using the existing AAD app. ////
+                //// Enter your own Microsoft Entra app information if using the existing Microsoft Entra app. ////
                 // "objectId": "",
                 // "clientId": "",
                 // "clientSecret": "", // use plain text or environment variable reference like ${env:CLIENT_SECRET}

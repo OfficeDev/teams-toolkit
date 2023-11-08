@@ -30,6 +30,9 @@ export class ConstantString {
   static readonly SwaggerNotSupported =
     "Swagger 2.0 is not supported. Please convert to OpenAPI 3.0 manually before proceeding.";
 
+  static readonly MultipleAPIKeyNotSupported =
+    "Multiple API keys are not supported. Please make sure that all selected APIs use the same API key.";
+
   static readonly WrappedCardVersion = "devPreview";
   static readonly WrappedCardSchema =
     "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.ResponseRenderingTemplate.schema.json";
@@ -42,6 +45,7 @@ export class ConstantString {
   static readonly AdaptiveCardType = "AdaptiveCard";
   static readonly TextBlockType = "TextBlock";
   static readonly ContainerType = "Container";
+  static readonly RegistrationIdPostfix = "REGISTRATION_ID";
   static readonly ResponseCodeFor20X = [
     "200",
     "201",
@@ -97,4 +101,11 @@ export class ConstantString {
     "thumbnail",
     "img",
   ];
+
+  static readonly ShortDescriptionMaxLens = 80;
+  static readonly FullDescriptionMaxLens = 4000;
+  static readonly CommandDescriptionMaxLens = 128;
+  static readonly ParameterDescriptionMaxLens = 128;
+  static readonly CommandTitleMaxLens = 32;
+  static readonly ParameterTitleMaxLens = 32;
 }

@@ -5,7 +5,7 @@ import "./sampleListItem.scss";
 
 import * as React from "react";
 
-import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 
 import {
   TelemetryEvent,
@@ -14,7 +14,6 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
 import { SampleProps } from "./ISamples";
-import { Setting } from "../resources";
 
 export default class SampleListItem extends React.Component<SampleProps, unknown> {
   constructor(props: SampleProps) {
@@ -42,24 +41,26 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
           }
         }}
       >
-        <label className="hidden-label" id="titleLabel">
-          sample app title:
-        </label>
-        <h3 onClick={this.onSampleTitleClicked}>{sample.title}</h3>
-        <label className="hidden-label" id="tagLabel">
-          sample app tags:
-        </label>
-        <div className="tagSection" aria-labelledby="tagLabel">
-          {sample.tags &&
-            sample.tags.map((value: string) => {
-              return (
-                <VSCodeTag className="tag" key={value}>
-                  {value}
-                </VSCodeTag>
-              );
-            })}
+        <div className="title-tag" onClick={this.onSampleTitleClicked}>
+          <label className="hidden-label" id="titleLabel">
+            sample app title:
+          </label>
+          <h3>{sample.title}</h3>
+          <label className="hidden-label" id="tagLabel">
+            sample app tags:
+          </label>
+          <div className="tagSection" aria-labelledby="tagLabel">
+            {sample.tags &&
+              sample.tags.map((value: string) => {
+                return (
+                  <div className="tag" key={value}>
+                    <span>{value}</span>
+                  </div>
+                );
+              })}
+          </div>
         </div>
-        <div className="padding" />
+        <div className="padding" onClick={this.onSampleTitleClicked} />
         {sample.versionComparisonResult != 0 && (
           <div className="info">
             <span className="codicon codicon-info"></span>
@@ -67,13 +68,24 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
           </div>
         )}
         {sample.versionComparisonResult == 0 ? (
-          <VSCodeButton onClick={this.onCreate}>Create</VSCodeButton>
+          <VSCodeButton
+            onClick={() =>
+              this.props.createSample(this.props.sample, TelemetryTriggerFrom.SampleGallery)
+            }
+          >
+            Create
+          </VSCodeButton>
         ) : needUpgrade ? (
           <VSCodeButton onClick={this.onUpgradeToolkit}>Upgrade Teams Toolkit</VSCodeButton>
         ) : (
           <VSCodeButton disabled>Create</VSCodeButton>
         )}
-        <VSCodeButton appearance="secondary" onClick={this.onViewGithub}>
+        <VSCodeButton
+          appearance="secondary"
+          onClick={() =>
+            this.props.viewGitHub(this.props.sample, TelemetryTriggerFrom.SampleGallery)
+          }
+        >
           View on GitHub
         </VSCodeButton>
       </div>
@@ -84,27 +96,7 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
     if (this.props.sample.versionComparisonResult != 0) {
       return;
     }
-    vscode.postMessage({
-      command: Commands.SendTelemetryEvent,
-      data: {
-        eventName: TelemetryEvent.ClickSampleCard,
-        properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sample.id,
-        },
-      },
-    });
-    this.props.selectSample(this.props.sample.id);
-  };
-
-  private onCreate = () => {
-    vscode.postMessage({
-      command: Commands.CloneSampleApp,
-      data: {
-        appName: this.props.sample.title,
-        appFolder: this.props.sample.id,
-      },
-    });
+    this.props.selectSample(this.props.sample.id, TelemetryTriggerFrom.SampleGallery);
   };
 
   private onUpgradeToolkit = () => {
@@ -113,7 +105,7 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
       data: {
         eventName: TelemetryEvent.UpgradeToolkitForSample,
         properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
           [TelemetryProperty.SampleAppName]: this.props.sample.id,
         },
       },
@@ -123,23 +115,6 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
       data: {
         version: this.props.sample.minimumToolkitVersion,
       },
-    });
-  };
-
-  private onViewGithub = () => {
-    vscode.postMessage({
-      command: Commands.SendTelemetryEvent,
-      data: {
-        eventName: TelemetryEvent.ViewSampleInGitHub,
-        properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sample.id,
-        },
-      },
-    });
-    vscode.postMessage({
-      command: Commands.OpenExternalLink,
-      data: this.props.sample.downloadUrl,
     });
   };
 }

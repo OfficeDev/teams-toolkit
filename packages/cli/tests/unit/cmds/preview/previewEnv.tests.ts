@@ -2,28 +2,26 @@
 // Licensed under the MIT license.
 
 import { err, FxError, IProgressHandler, ok, Result } from "@microsoft/teamsfx-api";
-import { FxCore, envUtil, VersionCheckRes, VersionState, HubTypes } from "@microsoft/teamsfx-core";
+import { envUtil, FxCore, HubTypes, VersionCheckRes, VersionState } from "@microsoft/teamsfx-core";
 import * as packageJson from "@microsoft/teamsfx-core/build/common/local/packageJsonHelper";
-import { Hub } from "@microsoft/teamsfx-core/build/common/m365/constants";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import fs from "fs-extra";
-import * as path from "path";
 import { RestoreFn } from "mocked-env";
+import * as path from "path";
 import sinon from "sinon";
-import yargs, { Options } from "yargs";
+import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
 import * as constants from "../../../../src/cmds/preview/constants";
+import * as launch from "../../../../src/cmds/preview/launch";
 import PreviewEnv from "../../../../src/cmds/preview/previewEnv";
+import { ServiceLogWriter } from "../../../../src/cmds/preview/serviceLogWriter";
+import { Task } from "../../../../src/cmds/preview/task";
+import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
 import cliLogger from "../../../../src/commonlib/log";
+import M365TokenInstance from "../../../../src/commonlib/m365Login";
 import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
 import { expect } from "../../utils";
-import * as commonUtils from "../../../../src/cmds/preview/commonUtils";
-import * as launch from "../../../../src/cmds/preview/launch";
-import { ServiceLogWriter } from "../../../../src/cmds/preview/serviceLogWriter";
-import { Task } from "../../../../src/cmds/preview/task";
-import M365TokenInstance from "../../../../src/commonlib/m365Login";
-import { signedIn, signedOut } from "../../../../src/commonlib/common/constant";
-import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();
@@ -36,22 +34,10 @@ describe("Preview --env", () => {
   beforeEach(() => {
     mockedEnvRestore = () => {};
     options = [];
-    defaultOptions = {};
+    defaultOptions = { folder: "./", env: "local" };
     logs = [];
     telemetries = [];
     sandbox.stub(process, "exit");
-    sandbox.stub(yargs, "options").callsFake((ops: { [key: string]: Options }, more?: any) => {
-      if (typeof ops === "string") {
-        options.push(ops);
-        defaultOptions[ops as string] = more?.default;
-      } else {
-        for (const key of Object.keys(ops)) {
-          options.push(key);
-          defaultOptions[key] = ops[key].default;
-        }
-      }
-      return yargs;
-    });
     sandbox.stub(cliLogger, "necessaryLog").callsFake((lv, msg, white) => {
       logs.push(msg);
     });
@@ -87,20 +73,6 @@ describe("Preview --env", () => {
     mockedEnvRestore();
   });
 
-  it("Builder Check", () => {
-    const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
-    expect(options).includes("folder", JSON.stringify(options));
-    expect(options).includes("env", JSON.stringify(options));
-    expect(options).includes("manifest-file-path", JSON.stringify(options));
-    expect(options).includes("run-command", JSON.stringify(options));
-    expect(options).includes("running-pattern", JSON.stringify(options));
-    expect(options).includes("m365-host", JSON.stringify(options));
-    expect(options).includes("browser", JSON.stringify(options));
-    expect(options).includes("browser-arg", JSON.stringify(options));
-  });
-
   it("Preview Command Running - Default", async () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
@@ -109,12 +81,8 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
-
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
-    await cmd.handler(defaultOptions);
-
+    await cmd.runCommand(defaultOptions);
     expect(logs.length).greaterThanOrEqual(1);
     expect(logs[0]).satisfy((l: string) => l.includes("run-command"));
   });
@@ -127,17 +95,13 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
-
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
-    await cmd.handler({
+    await cmd.runCommand({
       ...defaultOptions,
       ["m365-host"]: "outlook",
       ["browser-arg"]: ["--guest"],
       ["open-only"]: true,
     });
-
     expect(logs.length).greaterThanOrEqual(0);
   });
 
@@ -151,9 +115,7 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(ok(null));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
-    await cmd.handler({
+    await cmd.runCommand({
       ...defaultOptions,
       env: "dev",
       ["m365-host"]: "office",
@@ -167,8 +129,6 @@ describe("Preview --env", () => {
     sandbox.stub(Utils, "isWorkspaceSupported").returns(false);
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -180,8 +140,6 @@ describe("Preview --env", () => {
     sandbox.stub(envUtil, "readEnv").resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -196,8 +154,6 @@ describe("Preview --env", () => {
       .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -213,8 +169,6 @@ describe("Preview --env", () => {
       .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -231,8 +185,6 @@ describe("Preview --env", () => {
       .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
 
     expect(result.isErr()).to.be.true;
@@ -252,10 +204,7 @@ describe("Preview --env", () => {
       .resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
-
     expect(result.isErr()).to.be.true;
     expect((result as any).error).to.deep.equal({ foo: "bar" });
   });
@@ -268,12 +217,8 @@ describe("Preview --env", () => {
     sandbox.stub(PreviewEnv.prototype, <any>"detectRunCommand").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"runCommandAsTask").resolves(ok(null));
     sandbox.stub(PreviewEnv.prototype, <any>"launchBrowser").resolves(err({ foo: "bar" } as any));
-
     const cmd = new PreviewEnv();
-    cmd.builder(yargs);
-
     const result = await cmd.runCommand(defaultOptions);
-
     expect(result.isErr()).to.be.true;
     expect((result as any).error).to.deep.equal({ foo: "bar" });
   });

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { UserError, err, ok, CLICommand } from "@microsoft/teamsfx-api";
-import { outputAzureInfo } from "../../cmds/account";
 import AzureTokenProvider from "../../commonlib/azureLogin";
 import {
   codeFlowLoginFormat,
@@ -10,6 +9,7 @@ import {
   usageError,
 } from "../../commonlib/common/constant";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { accountUtils } from "./accountShow";
 
 export const accountLoginAzureCommand: CLICommand = {
   name: "azure",
@@ -17,7 +17,7 @@ export const accountLoginAzureCommand: CLICommand = {
   options: [
     {
       name: "tenant",
-      description: "Authenticate with a specific Azure Active Directory tenant.",
+      description: "Authenticate with a specific Microsoft Entra tenant.",
       type: "string",
       default: "",
     },
@@ -72,7 +72,7 @@ export const accountLoginAzureCommand: CLICommand = {
       }
     }
     await AzureTokenProvider.signout();
-    await outputAzureInfo(
+    await accountUtils.outputAzureInfo(
       "login",
       args.tenant as string,
       isSP,

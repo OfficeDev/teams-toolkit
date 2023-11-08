@@ -91,7 +91,7 @@ describe("Collaboration", function () {
       );
 
       expect(grantCollaboratorResult.stdout).to.contains(
-        "Owner permission has been granted to Azure AD App"
+        "Owner permission has been granted to Microsoft Entra App"
       );
       expect(grantCollaboratorResult.stdout).to.contains(
         "Administrator permission has been granted to Teams App"

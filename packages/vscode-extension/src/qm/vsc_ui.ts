@@ -1060,6 +1060,8 @@ export class VsCodeUI implements UserInteraction {
     shell?: string | undefined;
     timeout?: number | undefined;
     env?: { [k: string]: string } | undefined;
+    shellName?: string;
+    iconPath?: string;
   }): Promise<Result<string, FxError>> {
     const cmd = args.cmd;
     const workingDirectory = args.workingDirectory;
@@ -1075,7 +1077,7 @@ export class VsCodeUI implements UserInteraction {
 
     try {
       let terminal: Terminal | undefined;
-      const name = shell ? `${TerminalName}-${shell}` : TerminalName;
+      const name = args.shellName ?? (shell ? `${TerminalName}-${shell}` : TerminalName);
       if (
         window.terminals.length === 0 ||
         (terminal = find(window.terminals, (value) => value.name === name)) === undefined
@@ -1085,6 +1087,7 @@ export class VsCodeUI implements UserInteraction {
           shellPath: shell,
           cwd: workingDirectory,
           env,
+          iconPath: args.iconPath ? new ThemeIcon(args.iconPath) : undefined,
         });
       }
       terminal.show();
@@ -1092,7 +1095,6 @@ export class VsCodeUI implements UserInteraction {
 
       const processId = await Promise.race([terminal.processId, timeoutPromise]);
       await sleep(500);
-      showOutputChannel();
       return ok(processId?.toString() ?? "");
     } catch (error) {
       return err(assembleError(error));

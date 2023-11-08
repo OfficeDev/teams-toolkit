@@ -322,6 +322,7 @@ export async function listDevTunnels(token: string): Promise<Result<Tunnel[], Fx
   try {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient(
       TunnelManagementUserAgent,
+      "2023-09-27-preview",
       () => {
         const res = `Bearer ${token}`;
         return Promise.resolve(res);

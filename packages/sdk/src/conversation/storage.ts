@@ -15,7 +15,8 @@ import {
  * @internal
  */
 export class LocalFileStorage implements NotificationTargetStorage {
-  private readonly localFileName = ".notification.localstore.json";
+  private readonly localFileName =
+    process.env.TEAMSFX_NOTIFICATION_STORE_FILENAME ?? ".notification.localstore.json";
   private readonly filePath: string;
 
   constructor(fileDir: string) {

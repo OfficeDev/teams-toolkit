@@ -54,9 +54,13 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
   }
 
   static create(taskDefinition: vscode.TaskDefinition): TestDevTunnelTaskTerminal {
-    const tunnelManagementClientImpl = new TunnelManagementHttpClient("teamsfx-ut", async () => {
-      return "mock-token";
-    });
+    const tunnelManagementClientImpl = new TunnelManagementHttpClient(
+      "teamsfx-ut",
+      "2023-09-27-preview",
+      async () => {
+        return "mock-token";
+      }
+    );
     const devTunnelManager = new DevTunnelManager(tunnelManagementClientImpl);
     const devTunnelStateManager = DevTunnelStateManager.create();
     return new TestDevTunnelTaskTerminal(taskDefinition, devTunnelManager, devTunnelStateManager);
@@ -203,7 +207,7 @@ describe("devTunnelTaskTerminal", () => {
       const existingTTKTunnel = {
         tunnelId: uuid.v4().substring(0, 8),
         clusterId: "test",
-        tags: ["TeamsToolkitCreatedTag"],
+        labels: ["TeamsToolkitCreatedTag"],
       };
       const devTunnelStateManager = DevTunnelStateManager.create();
       const mockResource = mock([existingTunnel, existingTTKTunnel]);
@@ -462,6 +466,20 @@ describe("devTunnelTaskTerminal", () => {
           env: 123,
         },
         errorPropertyName: "args.env",
+      },
+      {
+        message: "property env - error expiration",
+        args: {
+          type: "dev-tunnel",
+          ports: [
+            {
+              portNumber: 53000,
+              protocol: "https",
+            },
+          ],
+          expiration: "error",
+        },
+        errorPropertyName: "args.expiration",
       },
       {
         message: "happy path",

@@ -35,18 +35,30 @@ import {
 } from "./generatorAction";
 import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
 import { sampleProvider } from "../../common/samples";
+import { enableTestToolByDefault } from "../../common/featureFlags";
+import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
 
 export class Generator {
   public static getDefaultVariables(
     appName: string,
-    safeProjectNameFromVS?: string
+    safeProjectNameFromVS?: string,
+    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
+
+    const safeRegistrationIdEnvName = getSafeRegistrationIdEnvName(
+      apiKeyAuthData?.registrationIdEnvName ?? ""
+    );
+
     return {
       appName: appName,
       ProjectName: appName,
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
+      ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
+      ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
+      ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
+      enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
     };
   }
   @hooks([
@@ -87,7 +99,7 @@ export class Generator {
     });
 
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
-    ctx.logProvider.verbose(`Downloading app template "${templateName}" to ${destinationPath}`);
+    ctx.logProvider.debug(`Downloading app template "${templateName}" to ${destinationPath}`);
     await this.generate(generatorContext, TemplateActionSeq);
 
     merge(actionContext?.telemetryProps, {
@@ -127,12 +139,12 @@ export class Generator {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      url: sample.downloadUrl,
+      sampleInfo: sample.downloadUrlInfo,
       timeoutInMs: sampleDefaultTimeoutInMs,
       onActionError: sampleDefaultOnActionError,
     };
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
-    ctx.logProvider.verbose(`Downloading sample "${sampleName}" to ${destinationPath}`);
+    ctx.logProvider.debug(`Downloading sample "${sampleName}" to ${destinationPath}`);
     await this.generate(generatorContext, DownloadDirectoryActionSeq);
     if (!generatorContext.outputs?.length) {
       return err(new SampleNotFoundError(sampleName).toFxError());

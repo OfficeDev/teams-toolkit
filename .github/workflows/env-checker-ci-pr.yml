@@ -52,7 +52,11 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: 14
+          node-version: 18
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       # https://github.com/marketplace/actions/retry-step
       - name: Setup project with Retry

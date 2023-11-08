@@ -18,6 +18,13 @@ export const TeamsAppManifestFileOption: CLICommandOption = {
   description: "Specifies the Microsoft Teams app manifest file path.",
   default: "./appPackage/manifest.json",
 };
+export const EntraAppManifestFileOption: CLICommandOption = {
+  name: "manifest-file",
+  questionName: "manifest-file-path",
+  type: "string",
+  description: "Specifies the Microsoft Entra app manifest file path.",
+  default: "./aad.manifest.json",
+};
 export const TeamsAppPackageOption: CLICommandOption = {
   name: "package-file",
   type: "string",

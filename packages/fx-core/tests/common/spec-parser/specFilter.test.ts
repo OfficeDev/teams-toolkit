@@ -148,7 +148,7 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true);
+    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true, false);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -189,7 +189,7 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true);
+    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true, false);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -233,7 +233,7 @@ describe("specFilter", () => {
       paths: {},
     };
 
-    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, false);
+    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, false, false);
 
     expect(result).to.deep.equal(expectedSpec);
   });
@@ -308,7 +308,7 @@ describe("specFilter", () => {
       },
     };
 
-    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, true);
+    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, true, false);
 
     expect(result).to.deep.equal(expectedSpec);
   });
@@ -316,7 +316,7 @@ describe("specFilter", () => {
   it("should not filter anything if filter item not exist", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    specFilter(filter, unResolveSpec, unResolveSpec, true);
+    specFilter(filter, unResolveSpec, unResolveSpec, true, false);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -342,7 +342,7 @@ describe("specFilter", () => {
       paths: {},
     };
 
-    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, true);
+    const result = specFilter(filter, unResolvedSpec as any, unResolvedSpec as any, true, false);
 
     expect(result).to.deep.equal(expectedSpec);
   });
@@ -350,7 +350,7 @@ describe("specFilter", () => {
   it("should not modify the original OpenAPI spec", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    specFilter(filter, unResolveSpec, unResolveSpec, true);
+    specFilter(filter, unResolveSpec, unResolveSpec, true, false);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -362,7 +362,7 @@ describe("specFilter", () => {
       .throws(new Error("isSupportedApi error"));
 
     try {
-      specFilter(filter, unResolveSpec, unResolveSpec, true);
+      specFilter(filter, unResolveSpec, unResolveSpec, true, false);
       expect.fail("Expected specFilter to throw a SpecParserError");
     } catch (err) {
       expect(err).to.be.instanceOf(SpecParserError);

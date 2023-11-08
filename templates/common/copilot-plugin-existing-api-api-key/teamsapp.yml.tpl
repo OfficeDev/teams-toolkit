@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.3/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.0.0
+version: v1.3
 
 environmentFolderPath: ./env
 
@@ -18,11 +18,16 @@ provision:
       teamsAppId: TEAMS_APP_ID
 
   # Register API KEY
-  - uses: apiKey/create
+  - uses: apiKey/register
     with:
+      # Name of the API Key
       name: {{ApiSpecAuthName}}
+      # Teams app ID
       appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
       apiSpecPath: {{{ApiSpecPath}}}
+    # Write the registration information of API Key into environment file for
+    # the specified environment variable(s).
     writeToEnvironmentFile:
       registrationId: {{ApiSpecAuthRegistrationIdEnvName}}
 

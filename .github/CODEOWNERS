@@ -75,7 +75,7 @@
 /packages/cli/tests/unit/cmds/m365 @swatDong @kuojianlu @kimizhu
 
 
-/packages/api @jayzhang @jayzhang @LongOddCode @nliu-ms
+/packages/api @jayzhang @LongOddCode @nliu-ms
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu
 
 /packages/sdk @tecton @blackchoey @SLdragon @wenytang-ms @yiqing-zhao
@@ -117,7 +117,7 @@
 /templates/**/non-sso-tab-default-bot @hund030 @yuqizhou77
 /templates/**/default-bot-message-extension @yuqizhou77 @MSFT-yiz
 /templates/**/message-extension @yuqizhou77 @MSFT-yiz
-/templates/**/office-addin @jayzhang @jayzhang
+/templates/**/office-addin @jayzhang @nliu-ms
 /templates/**/copilot-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/copilot-plugin-existing-api-api-key @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/spfx-tab @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
@@ -301,8 +301,8 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 
-/packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @jayzhang @HuihuiWu-Microsoft
-/packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @jayzhang @HuihuiWu-Microsoft
+/packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
+/packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
 
 /packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
 /packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
@@ -311,8 +311,8 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
-/packages/fx-core/src/component/generator/officeAddin @jayzhang @jayzhang @LongOddCode
-/packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @jayzhang @jayzhang @LongOddCode
+/packages/fx-core/src/component/generator/officeAddin @jayzhang @LongOddCode
+/packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @jayzhang @LongOddCode
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/driver/deploy/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/src/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang

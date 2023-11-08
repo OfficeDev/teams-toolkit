@@ -29,6 +29,7 @@ export async function zipFolderAsync(
       if (e instanceof Error && (e as any)?.code === "EBUSY") {
         throw new CacheFileInUse(e);
       }
+      throw e;
     }
   }
   const zip = new AdmZip();

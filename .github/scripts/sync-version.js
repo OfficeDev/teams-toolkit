@@ -50,12 +50,9 @@ function updateFileDeps(file, deps) {
     const dep_ = pkg_.dependencies;
     let fileChange = false;
     for (let [key, value] of Object.entries(deps)) {
-        if (dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
-            if (!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc") || semver.prerelease(semver.minVersion(dep_[key])).includes("beta"))) {
-                continue;
-            }
+        if (dep_[key]) {
             fileChange = true;
-            if (semver.prerelease(value) && semver.prerelease(value)[0] === "alpha") {
+            if (semver.prerelease(value)) {
                 dep_[key] = value;
             } else {
                 dep_[key] = `^${value}`;
@@ -64,7 +61,7 @@ function updateFileDeps(file, deps) {
     }
     if (fileChange) {
         pkg_.dependencies = dep_;
-        fse.writeFileSync(file, JSON.stringify(pkg_, null, 4));
+        fse.writeFileSync(file, JSON.stringify(pkg_, null, 2));
     }
 }
 

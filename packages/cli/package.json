@@ -18,6 +18,8 @@
     "package": "rimraf lib && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --mode production --config ./webpack.config.js",
     "prepack": "npm run package",
     "test:unit": "nyc --no-clean mocha \"tests/unit/**/*.tests.ts\" ",
+    "test:ui": "nyc --no-clean mocha \"tests/unit/ui.tests.ts\" ",
+    "test:ui2": "nyc --no-clean mocha \"tests/unit/ui2.tests.ts\" ",
     "test:helper": "nyc --no-clean mocha \"tests/unit/helper.tests.ts\" ",
     "test:engine": "nyc --no-clean mocha \"tests/unit/engine.tests.ts\" ",
     "test:cmds": "nyc --no-clean mocha \"tests/unit/cmds/**/*.tests.ts\" ",

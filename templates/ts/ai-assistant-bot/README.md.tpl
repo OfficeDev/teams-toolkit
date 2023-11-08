@@ -28,10 +28,51 @@ The app template is built using the Teams AI library and OpenAI Assistants API, 
 > Teams AI Library is currently in preview version.
 
 ### Create your own OpenAI Assistant
-TBD
+
+Before running or debugging your bot, please follow these steps to setup your own OpenAI Assistant.
+
+**If you haven't setup any Assistant yet**
+1. Fill your OpenAI API Key into `.localConfigs` file:
+   ```
+   OPENAI_API_KEY=<your-openai-api-key>
+   ```
+1. Open terminal and run command `npm install` to install all dependency packages.
+1. After `npm install` completed, run command `npm run assistant:create`.
+1. The `npm run assistant:create` will output something like "*Created a new assistant with an ID of: **asst_xxx...***"
+1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
+   ```
+   SECRET_OPENAI_API_KEY=<your-openai-api-key>
+   SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
+   ```
+
+**If you already have an Assistant created**
+1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
+   ```
+   SECRET_OPENAI_API_KEY=<your-openai-api-key>
+   SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
+   ```
 
 ### Run Teams Bot locally
-TBD
+
+{{#enableTestToolByDefault}}
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+1. You will receive a welcome message from the bot, or send any message to get a response.
+
+**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
+
+![ai assistant bot in Teams App Test Tool](https://github.com/OfficeDev/TeamsFx/assets/7642967/64010f23-6fd5-4577-8757-495923c900c0)
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
+1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
+1. You will receive a welcome message from the bot, or send any message to get a response.
+
+**Congratulations**! You are running an application that can now interact with users in Teams:
+
+![ai assistant bot in Teams](https://github.com/OfficeDev/TeamsFx/assets/7642967/21480d90-307d-4074-84e0-c68a20e38134)
+{{/enableTestToolByDefault}}
 
 ## What's included in the template
 

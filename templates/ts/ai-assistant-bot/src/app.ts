@@ -1,23 +1,15 @@
 import { MemoryStorage } from "botbuilder";
-import * as path from "path";
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-import {
-  Application,
-  AzureOpenAIPlanner,
-  DefaultPromptManager,
-  OpenAIPlanner,
-} from "@microsoft/teams-ai";
+import { Application, AssistantsPlanner, AI } from "@microsoft/teams-ai";
 
 import config from "./config";
 
 // Create AI components
 // Use OpenAI
-const planner = new OpenAIPlanner({
+const planner = new AssistantsPlanner({
   apiKey: config.openAIKey,
-  defaultModel: "gpt-3.5-turbo",
-  useSystemMessage: true,
-  logRequests: true,
+  assistant_id: config.openAIAssistantId,
 });
 
 // Define storage and application
@@ -31,6 +23,16 @@ const app = new Application({
 
 app.conversationUpdate("membersAdded", async (context) => {
   await context.sendActivity("I'm an assistant bot. How can I help you today?");
+});
+
+app.message("/reset", async (context, state) => {
+  state.deleteConversationState();
+  await context.sendActivity("Ok lets start this over.");
+});
+
+app.ai.action(AI.HttpErrorActionName, async (context, state, data) => {
+  await context.sendActivity("An AI request failed. Please try again later.");
+  return AI.StopCommandName;
 });
 
 export default app;

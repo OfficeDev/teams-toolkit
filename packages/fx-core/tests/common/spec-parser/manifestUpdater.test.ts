@@ -184,6 +184,68 @@ describe("manifestUpdater", () => {
     expect(warnings).to.deep.equal([]);
   });
 
+  it("should contain auth property in manifest if pass the api key name with special characters", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          authorization: {
+            authType: "apiSecretServiceAuth",
+            apiSecretServiceAuthConfiguration: {
+              apiSecretRegistrationId: "${{PREFIX__API_KEY_NAME_REGISTRATION_ID}}",
+            },
+          },
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              id: "getPets",
+              parameters: [
+                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Create a pet",
+              description: "Create a new pet in the store",
+              id: "createPet",
+              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec,
+      "*api-key_name"
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
   it("should return warnings if api only contain optional parameters", async () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";

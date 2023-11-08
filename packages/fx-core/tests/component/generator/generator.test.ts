@@ -573,6 +573,54 @@ describe("Generator happy path", async () => {
     assert.equal(vars.enableTestToolByDefault, "");
   });
 
+  it("template variables when contains auth", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("Test", "Test", {
+      authName: "authName",
+      openapiSpecPath: "path/to/spec.yaml",
+      registrationIdEnvName: "AUTHNAME_REGISTRATION_ID",
+    });
+    assert.equal(vars.enableTestToolByDefault, "");
+    assert.equal(vars.appName, "Test");
+    assert.equal(vars.ApiSpecAuthName, "authName");
+    assert.equal(vars.ApiSpecPath, "path/to/spec.yaml");
+    assert.equal(vars.ApiSpecAuthRegistrationIdEnvName, "AUTHNAME_REGISTRATION_ID");
+    assert.equal(vars.SafeProjectName, "Test");
+    assert.equal(vars.SafeProjectNameLowerCase, "test");
+  });
+
+  it("template variables when contains auth with special characters", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("Test", "Test", {
+      authName: "authName",
+      openapiSpecPath: "path/to/spec.yaml",
+      registrationIdEnvName: "AUTH-NAME_REGISTRATION*ID",
+    });
+    assert.equal(vars.enableTestToolByDefault, "");
+    assert.equal(vars.appName, "Test");
+    assert.equal(vars.ApiSpecAuthName, "authName");
+    assert.equal(vars.ApiSpecPath, "path/to/spec.yaml");
+    assert.equal(vars.ApiSpecAuthRegistrationIdEnvName, "AUTH_NAME_REGISTRATION_ID");
+    assert.equal(vars.SafeProjectName, "Test");
+    assert.equal(vars.SafeProjectNameLowerCase, "test");
+  });
+
+  it("template variables when contains auth with name not start with [A-Z]", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("Test", "Test", {
+      authName: "authName",
+      openapiSpecPath: "path/to/spec.yaml",
+      registrationIdEnvName: "*AUTH-NAME_REGISTRATION*ID",
+    });
+    assert.equal(vars.enableTestToolByDefault, "");
+    assert.equal(vars.appName, "Test");
+    assert.equal(vars.ApiSpecAuthName, "authName");
+    assert.equal(vars.ApiSpecPath, "path/to/spec.yaml");
+    assert.equal(vars.ApiSpecAuthRegistrationIdEnvName, "PREFIX__AUTH_NAME_REGISTRATION_ID");
+    assert.equal(vars.SafeProjectName, "Test");
+    assert.equal(vars.SafeProjectNameLowerCase, "test");
+  });
+
   it("template from source code", async () => {
     const templateName = "test";
     const language = "ts";

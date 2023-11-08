@@ -19,7 +19,8 @@
         "build": "tsc --build && shx cp -r ./src/prompts ./lib/src",
         "start": "node ./lib/src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "watch": "nodemon --exec \"npm run start\""
+        "watch": "nodemon --exec \"npm run start\"",
+        "assistant:create": "node -r ts-node/register ./src/creator.ts"
     },
     "repository": {
         "type": "git",

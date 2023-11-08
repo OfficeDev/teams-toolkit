@@ -66,10 +66,7 @@ export class LocalCertificateManager {
    * - Check cert store if trusted (thumbprint, expiration)
    * - Add to cert store if not trusted (friendly name as well)
    */
-  public async setupCertificate(
-    needTrust: boolean,
-    failIfNotFound = false
-  ): Promise<LocalCertificate> {
+  public async setupCertificate(needTrust: boolean, checkOnly = false): Promise<LocalCertificate> {
     const certFilePath = `${this.certFolder}/${LocalDebugCertificate.CertFileName}`;
     const keyFilePath = `${this.certFolder}/${LocalDebugCertificate.KeyFileName}`;
     const localCert: LocalCertificate = {
@@ -90,9 +87,9 @@ export class LocalCertificateManager {
         }
       }
 
+      localCert.found = !!certThumbprint;
       if (!certThumbprint) {
-        if (failIfNotFound) {
-          localCert.found = false;
+        if (checkOnly) {
           return localCert;
         }
         // generate cert and key
@@ -100,12 +97,15 @@ export class LocalCertificateManager {
       }
 
       if (needTrust) {
-        if (certThumbprint && (await this.verifyCertificateInStore(certThumbprint))) {
+        if (await this.verifyCertificateInStore(certThumbprint)) {
           // already trusted
           localCert.isTrusted = true;
           localCert.alreadyTrusted = true;
         } else {
           localCert.alreadyTrusted = false;
+          if (checkOnly) {
+            return localCert;
+          }
           await this.trustCertificate(
             localCert,
             certThumbprint,
@@ -128,7 +128,7 @@ export class LocalCertificateManager {
     }
   }
 
-  private async generateCertificate(certFile: string, keyFile: string): Promise<string> {
+  async generateCertificate(certFile: string, keyFile: string): Promise<string> {
     // prepare attributes and extensions
     const now = new Date();
     const expiry = new Date();
@@ -274,7 +274,7 @@ export class LocalCertificateManager {
     }
   }
 
-  private async verifyCertificateInStore(thumbprint: string): Promise<boolean | undefined> {
+  async verifyCertificateInStore(thumbprint: string): Promise<boolean | undefined> {
     try {
       if (os.type() === "Windows_NT") {
         return await this.checkCertificateWindows(thumbprint);

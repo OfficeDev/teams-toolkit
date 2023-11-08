@@ -1164,12 +1164,12 @@ export class FxCore {
     if (provisionNode) {
       const hasApiKeyAction = provisionNode.items.some(
         (item: any) =>
-          item.get("uses") === "apiKey/create" && item.get("with")?.get("name") === authName
+          item.get("uses") === "apiKey/register" && item.get("with")?.get("name") === authName
       );
 
       if (!hasApiKeyAction) {
         provisionNode.items = provisionNode.items.filter(
-          (item: any) => item.get("uses") !== "apiKey/create"
+          (item: any) => item.get("uses") !== "apiKey/register"
         );
         let added = false;
         for (let i = 0; i < provisionNode.items.length; i++) {
@@ -1178,7 +1178,7 @@ export class FxCore {
             const teamsAppId = item.get("writeToEnvironmentFile")?.get("teamsAppId") as string;
             if (teamsAppId) {
               provisionNode.items.splice(i + 1, 0, {
-                uses: "apiKey/create",
+                uses: "apiKey/register",
                 with: {
                   name: `${authName}`,
                   appId: `\${{${teamsAppId}}}`,

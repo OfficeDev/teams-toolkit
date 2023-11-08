@@ -1,0 +1,19 @@
+{{#header}} version: v1.3 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsfx provision' is executed
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#apiKeyRegister}} apiSpecPath: {{{ApiSpecPath}}} {{/apiKeyRegister}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}

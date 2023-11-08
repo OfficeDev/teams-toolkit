@@ -615,7 +615,11 @@ export function format(str: string, ...args: string[]): string {
 }
 
 export function getSafeRegistrationIdEnvName(authName: string): string {
-  let safeRegistrationIdEnvName = authName.replace(/[^A-Z0-9_]/g, "_");
+  if (!authName) {
+    return "";
+  }
+
+  let safeRegistrationIdEnvName = authName.toUpperCase().replace(/[^A-Z0-9_]/g, "_");
 
   if (!safeRegistrationIdEnvName.match(/^[A-Z]/)) {
     safeRegistrationIdEnvName = "PREFIX_" + safeRegistrationIdEnvName;

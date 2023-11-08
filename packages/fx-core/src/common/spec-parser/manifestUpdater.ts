@@ -34,7 +34,7 @@ export async function updateManifest(
 
     if (apiKeyAuthName) {
       const safeApiSecretRegistrationId = getSafeRegistrationIdEnvName(
-        `${apiKeyAuthName.toUpperCase()}_${ConstantString.RegistrationIdPostfix}`
+        `${apiKeyAuthName}_${ConstantString.RegistrationIdPostfix}`
       );
 
       (ComposeExtension as any).authorization = {

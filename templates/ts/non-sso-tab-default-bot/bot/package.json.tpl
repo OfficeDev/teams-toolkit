@@ -21,7 +21,7 @@
     "url": "https://github.com"
   },
   "dependencies": {
-    "@microsoft/adaptivecards-tools": "^1.0.0",
+    "@microsoft/adaptivecards-tools": "^1.3.2",
     "botbuilder": "^4.20.0",
     "restify": "^10.0.0"
   },

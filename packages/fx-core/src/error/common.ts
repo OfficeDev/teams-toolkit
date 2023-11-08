@@ -76,6 +76,51 @@ export class InvalidProjectError extends UserError {
   }
 }
 
+export class MultipleAuthError extends UserError {
+  constructor(authNames: Set<string>) {
+    super({
+      message: getDefaultString(
+        "core.createProjectQuestion.apiSpec.operation.multipleAuth",
+        Array.from(authNames).join(", ")
+      ),
+      displayMessage: getLocalizedString(
+        "core.createProjectQuestion.apiSpec.operation.multipleAuth",
+        Array.from(authNames).join(", ")
+      ),
+      source: "coordinator",
+      categories: [ErrorCategory.Internal],
+    });
+  }
+}
+
+export class MultipleServerError extends UserError {
+  constructor(serverUrls: Set<string>) {
+    super({
+      message: getDefaultString(
+        "core.createProjectQuestion.apiSpec.operation.multipleServer",
+        Array.from(serverUrls).join(", ")
+      ),
+      displayMessage: getLocalizedString(
+        "core.createProjectQuestion.apiSpec.operation.multipleServer",
+        Array.from(serverUrls).join(", ")
+      ),
+      source: "coordinator",
+      categories: [ErrorCategory.Internal],
+    });
+  }
+}
+
+export class InjectAPIKeyActionFailedError extends UserError {
+  constructor() {
+    super({
+      message: getDefaultString("core.copilot.addAPI.InjectAPIKeyActionFailed"),
+      displayMessage: getLocalizedString("core.copilot.addAPI.InjectAPIKeyActionFailed"),
+      source: "coordinator",
+      categories: [ErrorCategory.Internal],
+    });
+  }
+}
+
 export class JSONSyntaxError extends UserError {
   constructor(filePathOrContent: string, error: any, source?: string) {
     super({

@@ -6,7 +6,7 @@ import { OpenAPIV3 } from "openapi-types";
 import fs from "fs-extra";
 import path from "path";
 import { ErrorType, WarningResult } from "./interfaces";
-import { parseApiInfo } from "./utils";
+import { getSafeRegistrationIdEnvName, parseApiInfo } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
 import {
@@ -33,12 +33,14 @@ export async function updateManifest(
     };
 
     if (apiKeyAuthName) {
+      const safeApiSecretRegistrationId = getSafeRegistrationIdEnvName(
+        `${apiKeyAuthName.toUpperCase()}_${ConstantString.RegistrationIdPostfix}`
+      );
+
       (ComposeExtension as any).authorization = {
         authType: "apiSecretServiceAuth",
         apiSecretServiceAuthConfiguration: {
-          apiSecretRegistrationId: `\${{${apiKeyAuthName.toUpperCase()}_${
-            ConstantString.RegistrationIdPostfix
-          }}}`,
+          apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
         },
       };
     }

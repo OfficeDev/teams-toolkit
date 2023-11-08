@@ -36,6 +36,7 @@ import {
 import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
 import { sampleProvider } from "../../common/samples";
 import { enableTestToolByDefault } from "../../common/featureFlags";
+import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
 
 export class Generator {
   public static getDefaultVariables(
@@ -45,14 +46,9 @@ export class Generator {
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
-    let safeRegistrationIdEnvName = (apiKeyAuthData?.registrationIdEnvName ?? "").replace(
-      /[^A-Z0-9_]/g,
-      "_"
+    const safeRegistrationIdEnvName = getSafeRegistrationIdEnvName(
+      apiKeyAuthData?.registrationIdEnvName ?? ""
     );
-
-    if (!safeRegistrationIdEnvName.match(/^[A-Z]/)) {
-      safeRegistrationIdEnvName = "PREFIX_" + safeRegistrationIdEnvName;
-    }
 
     return {
       appName: appName,

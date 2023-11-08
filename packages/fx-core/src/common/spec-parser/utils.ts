@@ -613,3 +613,13 @@ export function format(str: string, ...args: string[]): string {
     return arg !== undefined ? arg : "";
   });
 }
+
+export function getSafeRegistrationIdEnvName(authName: string): string {
+  let safeRegistrationIdEnvName = authName.replace(/[^A-Z0-9_]/g, "_");
+
+  if (!safeRegistrationIdEnvName.match(/^[A-Z]/)) {
+    safeRegistrationIdEnvName = "PREFIX_" + safeRegistrationIdEnvName;
+  }
+
+  return safeRegistrationIdEnvName;
+}

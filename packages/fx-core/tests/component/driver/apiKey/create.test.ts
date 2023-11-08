@@ -373,7 +373,7 @@ describe("CreateApiKeyDriver", () => {
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
-      expect(result.result.error.source).to.equal("apiKeyCreate");
+      expect(result.result.error.source).to.equal("apiKeyRegister");
     }
   });
 });

@@ -1954,7 +1954,497 @@ describe("copilotPlugin", async () => {
             },
           },
           {
-            uses: "apiKey/create",
+            uses: "apiKey/register",
+            with: {
+              name: "api_key1",
+              appId: "${{TEAMS_APP_ID}}",
+              apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
+            },
+            writeToEnvironmentFile: {
+              registrationId: "API_KEY1_REGISTRATION_ID",
+            },
+          },
+          {
+            uses: "teamsApp/zipAppPackage",
+            with: {
+              manifestPath: "./appPackage/manifest.json",
+              outputZipPath: "./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip",
+              outputJsonPath: "./appPackage/build/manifest.${{TEAMSFX_ENV}}.json",
+            },
+          },
+        ],
+      });
+    });
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isOk());
+    assert.isTrue(writeYamlObjectTriggeredTimes === 1);
+  });
+
+  it("add API - should not inject api key action to teamsapp yaml file when already exists", async () => {
+    const appName = await mockV3Project();
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_CLI_DOTNET: "false",
+      [FeatureFlagName.ApiKey]: "true",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}", "GET /store/order"],
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const listResult = [
+      {
+        operationId: "getUserById",
+        server: "https://server1",
+        api: "GET /user/{userId}",
+        auth: {
+          type: "apiKey" as const,
+          name: "api_key1",
+          in: "header",
+        },
+      },
+      {
+        operationId: "getStoreOrder",
+        server: "https://server1",
+        api: "GET /store/order",
+        auth: {
+          type: "apiKey" as const,
+          name: "api_key1",
+          in: "header",
+        },
+      },
+    ];
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [],
+      allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    const teamsappObject = {
+      provision: [
+        {
+          uses: "teamsApp/create",
+          with: {
+            name: "dfefeef-${{TEAMSFX_ENV}}",
+          },
+          writeToEnvironmentFile: {
+            teamsAppId: "TEAMS_APP_ID",
+          },
+        },
+        {
+          uses: "apiKey/register",
+          with: {
+            name: "api_key1",
+            appId: "${{TEAMS_APP_ID}}",
+            apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
+          },
+          writeToEnvironmentFile: {
+            registrationId: "API_KEY1_REGISTRATION_ID",
+          },
+        },
+        {
+          uses: "teamsApp/zipAppPackage",
+          with: {
+            manifestPath: "./appPackage/manifest.json",
+            outputZipPath: "./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip",
+            outputJsonPath: "./appPackage/build/manifest.${{TEAMSFX_ENV}}.json",
+          },
+        },
+      ],
+    };
+    const yamlString = jsyaml.dump(teamsappObject);
+    sinon.stub(fs, "pathExists").callsFake(async (path: string) => {
+      return !path.endsWith("yml");
+    });
+    sinon.stub(fs, "readFile").resolves(yamlString as any);
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isOk());
+  });
+
+  it("add API - should inject api key action to teamsapp yaml file when name does not match", async () => {
+    const appName = await mockV3Project();
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_CLI_DOTNET: "false",
+      [FeatureFlagName.ApiKey]: "true",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}", "GET /store/order"],
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const listResult = [
+      {
+        operationId: "getUserById",
+        server: "https://server1",
+        api: "GET /user/{userId}",
+        auth: {
+          type: "apiKey" as const,
+          name: "api_key1",
+          in: "header",
+        },
+      },
+      {
+        operationId: "getStoreOrder",
+        server: "https://server1",
+        api: "GET /store/order",
+        auth: {
+          type: "apiKey" as const,
+          name: "api_key1",
+          in: "header",
+        },
+      },
+    ];
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [],
+      allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    const teamsappObject = {
+      provision: [
+        {
+          uses: "teamsApp/create",
+          with: {
+            name: "dfefeef-${{TEAMSFX_ENV}}",
+          },
+          writeToEnvironmentFile: {
+            teamsAppId: "TEAMS_APP_ID",
+          },
+        },
+        {
+          uses: "apiKey/register",
+          with: {
+            name: "api_key2",
+            appId: "${{TEAMS_APP_ID}}",
+            apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
+          },
+          writeToEnvironmentFile: {
+            registrationId: "API_KEY1_REGISTRATION_ID",
+          },
+        },
+        {
+          uses: "teamsApp/zipAppPackage",
+          with: {
+            manifestPath: "./appPackage/manifest.json",
+            outputZipPath: "./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip",
+            outputJsonPath: "./appPackage/build/manifest.${{TEAMSFX_ENV}}.json",
+          },
+        },
+      ],
+    };
+    const yamlString = jsyaml.dump(teamsappObject);
+    sinon.stub(fs, "pathExists").callsFake(async (path: string) => {
+      return !path.endsWith("yml");
+    });
+    sinon.stub(fs, "readFile").resolves(yamlString as any);
+
+    let writeYamlObjectTriggeredTimes = 0;
+    sinon.stub(fs, "writeFile").callsFake((_, yamlString) => {
+      writeYamlObjectTriggeredTimes++;
+      const yamlObject = jsyaml.load(yamlString);
+
+      assert.deepEqual(yamlObject, {
+        provision: [
+          {
+            uses: "teamsApp/create",
+            with: {
+              name: "dfefeef-${{TEAMSFX_ENV}}",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+          {
+            uses: "apiKey/register",
+            with: {
+              name: "api_key1",
+              appId: "${{TEAMS_APP_ID}}",
+              apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
+            },
+            writeToEnvironmentFile: {
+              registrationId: "API_KEY1_REGISTRATION_ID",
+            },
+          },
+          {
+            uses: "teamsApp/zipAppPackage",
+            with: {
+              manifestPath: "./appPackage/manifest.json",
+              outputZipPath: "./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip",
+              outputJsonPath: "./appPackage/build/manifest.${{TEAMSFX_ENV}}.json",
+            },
+          },
+        ],
+      });
+    });
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isOk());
+    assert.isTrue(writeYamlObjectTriggeredTimes === 1);
+  });
+
+  it("add API - should inject api key action to teamsapp yaml file when missing with in yaml", async () => {
+    const appName = await mockV3Project();
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_CLI_DOTNET: "false",
+      [FeatureFlagName.ApiKey]: "true",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}", "GET /store/order"],
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const listResult = [
+      {
+        operationId: "getUserById",
+        server: "https://server1",
+        api: "GET /user/{userId}",
+        auth: {
+          type: "apiKey" as const,
+          name: "api_key1",
+          in: "header",
+        },
+      },
+      {
+        operationId: "getStoreOrder",
+        server: "https://server1",
+        api: "GET /store/order",
+        auth: {
+          type: "apiKey" as const,
+          name: "api_key1",
+          in: "header",
+        },
+      },
+    ];
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [],
+      allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    const teamsappObject = {
+      provision: [
+        {
+          uses: "teamsApp/create",
+          with: {
+            name: "dfefeef-${{TEAMSFX_ENV}}",
+          },
+          writeToEnvironmentFile: {
+            teamsAppId: "TEAMS_APP_ID",
+          },
+        },
+        {
+          uses: "apiKey/register",
+          writeToEnvironmentFile: {
+            registrationId: "API_KEY1_REGISTRATION_ID",
+          },
+        },
+        {
+          uses: "teamsApp/zipAppPackage",
+          with: {
+            manifestPath: "./appPackage/manifest.json",
+            outputZipPath: "./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip",
+            outputJsonPath: "./appPackage/build/manifest.${{TEAMSFX_ENV}}.json",
+          },
+        },
+      ],
+    };
+    const yamlString = jsyaml.dump(teamsappObject);
+    sinon.stub(fs, "pathExists").callsFake(async (path: string) => {
+      return !path.endsWith("yml");
+    });
+    sinon.stub(fs, "readFile").resolves(yamlString as any);
+
+    let writeYamlObjectTriggeredTimes = 0;
+    sinon.stub(fs, "writeFile").callsFake((_, yamlString) => {
+      writeYamlObjectTriggeredTimes++;
+      const yamlObject = jsyaml.load(yamlString);
+
+      assert.deepEqual(yamlObject, {
+        provision: [
+          {
+            uses: "teamsApp/create",
+            with: {
+              name: "dfefeef-${{TEAMSFX_ENV}}",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+          {
+            uses: "apiKey/register",
+            with: {
+              name: "api_key1",
+              appId: "${{TEAMS_APP_ID}}",
+              apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
+            },
+            writeToEnvironmentFile: {
+              registrationId: "API_KEY1_REGISTRATION_ID",
+            },
+          },
+          {
+            uses: "teamsApp/zipAppPackage",
+            with: {
+              manifestPath: "./appPackage/manifest.json",
+              outputZipPath: "./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip",
+              outputJsonPath: "./appPackage/build/manifest.${{TEAMSFX_ENV}}.json",
+            },
+          },
+        ],
+      });
+    });
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isOk());
+    assert.isTrue(writeYamlObjectTriggeredTimes === 1);
+  });
+
+  it("add API - should inject api key action to teamsapp yaml file when missing name in yaml", async () => {
+    const appName = await mockV3Project();
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_CLI_DOTNET: "false",
+      [FeatureFlagName.ApiKey]: "true",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}", "GET /store/order"],
+      [QuestionNames.ManifestPath]: path.join(os.tmpdir(), appName, "appPackage/manifest.json"),
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const listResult = [
+      {
+        operationId: "getUserById",
+        server: "https://server1",
+        api: "GET /user/{userId}",
+        auth: {
+          type: "apiKey" as const,
+          name: "api_key1",
+          in: "header",
+        },
+      },
+      {
+        operationId: "getStoreOrder",
+        server: "https://server1",
+        api: "GET /store/order",
+        auth: {
+          type: "apiKey" as const,
+          name: "api_key1",
+          in: "header",
+        },
+      },
+    ];
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [],
+      allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    const teamsappObject = {
+      provision: [
+        {
+          uses: "teamsApp/create",
+          with: {
+            name: "dfefeef-${{TEAMSFX_ENV}}",
+          },
+          writeToEnvironmentFile: {
+            teamsAppId: "TEAMS_APP_ID",
+          },
+        },
+        {
+          uses: "apiKey/register",
+          with: {
+            appId: "${{TEAMS_APP_ID}}",
+            apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
+          },
+          writeToEnvironmentFile: {
+            registrationId: "API_KEY1_REGISTRATION_ID",
+          },
+        },
+        {
+          uses: "teamsApp/zipAppPackage",
+          with: {
+            manifestPath: "./appPackage/manifest.json",
+            outputZipPath: "./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip",
+            outputJsonPath: "./appPackage/build/manifest.${{TEAMSFX_ENV}}.json",
+          },
+        },
+      ],
+    };
+    const yamlString = jsyaml.dump(teamsappObject);
+    sinon.stub(fs, "pathExists").callsFake(async (path: string) => {
+      return !path.endsWith("yml");
+    });
+    sinon.stub(fs, "readFile").resolves(yamlString as any);
+
+    let writeYamlObjectTriggeredTimes = 0;
+    sinon.stub(fs, "writeFile").callsFake((_, yamlString) => {
+      writeYamlObjectTriggeredTimes++;
+      const yamlObject = jsyaml.load(yamlString);
+
+      assert.deepEqual(yamlObject, {
+        provision: [
+          {
+            uses: "teamsApp/create",
+            with: {
+              name: "dfefeef-${{TEAMSFX_ENV}}",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+          {
+            uses: "apiKey/register",
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",
@@ -2074,7 +2564,7 @@ describe("copilotPlugin", async () => {
             },
           },
           {
-            uses: "apiKey/create",
+            uses: "apiKey/register",
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",
@@ -2166,7 +2656,7 @@ describe("copilotPlugin", async () => {
           },
         },
         {
-          uses: "apiKey/create",
+          uses: "apiKey/register",
           with: {
             name: "api_key_unknown",
             appId: "${{TEAMS_APP_ID}}",
@@ -2206,7 +2696,7 @@ describe("copilotPlugin", async () => {
             },
           },
           {
-            uses: "apiKey/create",
+            uses: "apiKey/register",
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",

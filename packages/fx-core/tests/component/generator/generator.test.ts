@@ -421,6 +421,9 @@ describe("Generator error", async () => {
   it("sample not found error", async () => {
     sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
     sandbox.stub(generatorUtils, "downloadDirectory").resolves([] as string[]);
+    sandbox
+      .stub(generatorUtils, "sendRequestWithTimeout")
+      .resolves({ data: sampleConfigV3 } as AxiosResponse);
 
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     if (result.isErr()) {

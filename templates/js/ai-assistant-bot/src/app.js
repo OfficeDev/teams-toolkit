@@ -1,22 +1,21 @@
 const { MemoryStorage } = require("botbuilder");
-const path = require("path");
 const config = require("./config");
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-const {
-  Application,
-  DefaultPromptManager,
-  OpenAIPlanner,
-  AzureOpenAIPlanner,
-} = require("@microsoft/teams-ai");
+const { Application, AssistantsPlanner, AI } = require("@microsoft/teams-ai");
+
+// See README.md to prepare your own OpenAI Assistant
+if (!config.openAIKey || !config.openAIAssistantId) {
+  throw new Error(
+    "Missing OPENAI_API_KEY or OPENAI_ASSISTANT_ID. See README.md to prepare your own OpenAI Assistant."
+  );
+}
 
 // Create AI components
 // Use OpenAI
-const planner = new OpenAIPlanner({
+const planner = new AssistantsPlanner({
   apiKey: config.openAIKey,
-  defaultModel: "gpt-3.5-turbo",
-  useSystemMessage: true,
-  logRequests: true,
+  assistant_id: config.openAIAssistantId,
 });
 
 // Define storage and application
@@ -30,6 +29,16 @@ const app = new Application({
 
 app.conversationUpdate("membersAdded", async (context) => {
   await context.sendActivity("I'm an assistant bot. How can I help you today?");
+});
+
+app.message("/reset", async (context, state) => {
+  state.deleteConversationState();
+  await context.sendActivity("Ok lets start this over.");
+});
+
+app.ai.action(AI.HttpErrorActionName, async (context, state, data) => {
+  await context.sendActivity("An AI request failed. Please try again later.");
+  return AI.StopCommandName;
 });
 
 module.exports = app;

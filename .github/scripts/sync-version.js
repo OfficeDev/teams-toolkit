@@ -50,8 +50,9 @@ function updateFileDeps(file, deps) {
     const dep_ = pkg_.dependencies;
     let fileChange = false;
     for (let [key, value] of Object.entries(deps)) {
-        if (dep_[key] && semver.prerelease(semver.minVersion(dep_[key]))) {
-            if (!(semver.prerelease(semver.minVersion(dep_[key])).includes("alpha") || semver.prerelease(semver.minVersion(dep_[key])).includes("rc") || semver.prerelease(semver.minVersion(dep_[key])).includes("beta"))) {
+        if (dep_[key]) {
+            const preid = semver.prerelease(semver.minVersion(dep_[key]))?.[0];
+            if (!["alpha", "beta", "rc", "rc-hotfix"].includes(preid)) {
                 continue;
             }
             fileChange = true;

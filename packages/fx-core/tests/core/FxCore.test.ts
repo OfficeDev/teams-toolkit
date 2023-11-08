@@ -1954,7 +1954,7 @@ describe("copilotPlugin", async () => {
             },
           },
           {
-            uses: "apiKey/create",
+            uses: "apiKey/register",
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",
@@ -2074,7 +2074,7 @@ describe("copilotPlugin", async () => {
             },
           },
           {
-            uses: "apiKey/create",
+            uses: "apiKey/register",
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",
@@ -2166,7 +2166,7 @@ describe("copilotPlugin", async () => {
           },
         },
         {
-          uses: "apiKey/create",
+          uses: "apiKey/register",
           with: {
             name: "api_key_unknown",
             appId: "${{TEAMS_APP_ID}}",
@@ -2206,7 +2206,7 @@ describe("copilotPlugin", async () => {
             },
           },
           {
-            uses: "apiKey/create",
+            uses: "apiKey/register",
             with: {
               name: "api_key1",
               appId: "${{TEAMS_APP_ID}}",

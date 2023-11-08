@@ -71,7 +71,7 @@
           { "$ref": "#/definitions/spfxDeploy" },
           { "$ref": "#/definitions/teamsAppCopyAppPackageToSPFx" },
           { "$ref": "#/definitions/script" },
-          { "$ref": "#/definitions/apiKeyCreate"}
+          { "$ref": "#/definitions/apiKeyRegister"}
         ]
       }
     },
@@ -1494,7 +1494,7 @@
       "pattern": "^[A-Z][A-Z0-9_]*$",
       "maxLength": 256
     },
-    "apiKeyCreate": {
+    "apiKeyRegister": {
       "type": "object",
       "additionalProperties": false,
       "description": "Create an API key.",
@@ -1502,8 +1502,8 @@
       "properties": {
         "uses": {
           "type": "string",
-          "description": "Create API key. Refer to https://aka.ms/teamsfx-actions/apiKey-create for more details.",
-          "const": "apiKey/create"
+          "description": "Register API key. Refer to https://aka.ms/teamsfx-actions/apiKey-register for more details.",
+          "const": "apiKey/register"
         },
         "with": {
           "type": "object",

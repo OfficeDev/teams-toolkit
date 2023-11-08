@@ -18,7 +18,7 @@ provision:
       teamsAppId: TEAMS_APP_ID
 
   # Register API KEY
-  - uses: apiKey/create
+  - uses: apiKey/register
     with:
       name: {{ApiSpecAuthName}}
       appId: ${{TEAMS_APP_ID}}

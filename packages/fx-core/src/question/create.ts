@@ -114,24 +114,24 @@ export class ProjectTypeOptions {
     };
   }
 
+  static outlookAddin(platform?: Platform): OptionItem {
+    return {
+      id: "outlook-addin-type",
+      label: `${platform === Platform.VSCode ? "$(mail) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.outlookAddin.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
+    };
+  }
+
   static officeAddin(platform?: Platform): OptionItem {
-    if (isWXPExtensionEnabled()) {
-      return {
-        id: "office-addin-type",
-        label: `${platform === Platform.VSCode ? "$(mail) " : ""}${getLocalizedString(
-          "core.createProjectQuestion.projectType.officeAddin.label"
-        )}`,
-        detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
-      };
-    } else {
-      return {
-        id: "outlook-addin-type",
-        label: `${platform === Platform.VSCode ? "$(mail) " : ""}${getLocalizedString(
-          "core.createProjectQuestion.projectType.outlookAddin.label"
-        )}`,
-        detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
-      };
-    }
+    return {
+      id: "office-addin-type",
+      label: `${platform === Platform.VSCode ? "$(mail) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.officeAddin.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
+    };
   }
 
   static copilotPlugin(platform?: Platform): OptionItem {
@@ -150,7 +150,9 @@ function projectTypeQuestion(): SingleSelectQuestion {
     ProjectTypeOptions.bot(Platform.CLI),
     ProjectTypeOptions.tab(Platform.CLI),
     ProjectTypeOptions.me(Platform.CLI),
-    ProjectTypeOptions.officeAddin(Platform.CLI),
+    isWXPExtensionEnabled()
+      ? ProjectTypeOptions.officeAddin(Platform.CLI)
+      : ProjectTypeOptions.outlookAddin(Platform.CLI),
   ];
   return {
     name: QuestionNames.ProjectType,
@@ -181,7 +183,11 @@ function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else {
-        staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
+        staticOptions.push(
+          isWXPExtensionEnabled()
+            ? ProjectTypeOptions.officeAddin(inputs.platform)
+            : ProjectTypeOptions.outlookAddin(inputs.platform)
+        );
       }
       return staticOptions;
     },
@@ -561,12 +567,10 @@ export function capabilityQuestion(): SingleSelectQuestion {
           return getLocalizedString(
             "core.createProjectQuestion.projectType.messageExtension.title"
           );
+        case ProjectTypeOptions.outlookAddin().id:
+          return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
         case ProjectTypeOptions.officeAddin().id:
-          if (isWXPExtensionEnabled()) {
-            return getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title");
-          } else {
-            return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
-          }
+          return getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title");
         case ProjectTypeOptions.copilotPlugin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title");
         default:
@@ -605,6 +609,8 @@ export function capabilityQuestion(): SingleSelectQuestion {
         return CapabilityOptions.tabs();
       } else if (projectType === ProjectTypeOptions.me().id) {
         return CapabilityOptions.mes();
+      } else if (projectType === ProjectTypeOptions.outlookAddin().id) {
+        return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
       } else if (projectType === ProjectTypeOptions.officeAddin().id) {
         return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
       } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
@@ -1080,14 +1086,11 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   }
   // office addin supports language defined in officeAddinJsonData
   const projectType = inputs[QuestionNames.ProjectType];
-  if (!isWXPExtensionEnabled()) {
-    const projectType = inputs[QuestionNames.ProjectType];
-    if (projectType === ProjectTypeOptions.officeAddin().id) {
-      const template = getTemplate(inputs);
-      const supportedTypes = officeAddinJsonData.getSupportedScriptTypes(template);
-      const options = supportedTypes.map((language) => ({ label: language, id: language }));
-      return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
-    }
+  if (projectType === ProjectTypeOptions.outlookAddin().id) {
+    const template = getTemplate(inputs);
+    const supportedTypes = officeAddinJsonData.getSupportedScriptTypes(template);
+    const options = supportedTypes.map((language) => ({ label: language, id: language }));
+    return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
   }
   const capabilities = inputs[QuestionNames.Capabilities] as string;
   // SPFx only supports typescript
@@ -1129,13 +1132,11 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
         return "";
       }
       // office addin
-      if (!isWXPExtensionEnabled()) {
-        const projectType = inputs[QuestionNames.ProjectType];
-        if (projectType === ProjectTypeOptions.officeAddin().id) {
-          const template = getTemplate(inputs);
-          const options = officeAddinJsonData.getSupportedScriptTypes(template);
-          return options[0] || "No Options";
-        }
+      const projectType = inputs[QuestionNames.ProjectType];
+      if (projectType === ProjectTypeOptions.outlookAddin().id) {
+        const template = getTemplate(inputs);
+        const options = officeAddinJsonData.getSupportedScriptTypes(template);
+        return options[0] || "No Options";
       }
       const capabilities = inputs[QuestionNames.Capabilities] as string;
       // SPFx

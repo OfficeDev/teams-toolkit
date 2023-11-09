@@ -34,7 +34,7 @@
   "core.migrationV3.manifestInvalid": "templates/appPackage/manifest.template.json is invalid.",
   "core.migrationV3.abandonedProject": "This project is only for previewing and will not be supported by Teams Toolkit. Please try Teams Toolkit by creating a new project",
   "core.migrationV3.notAllowedMigration": "Teams Toolkit's Pre-Release version supports new project configuration and is incompatible with previous versions. Try it by creating a new project or run \"teamsfx upgrade\" to upgrade your project first.",
-  "core.projectVersionChecker.cliUseNewVersion": "Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:\nnpm install -g @microsoft/teamsfx-cli@latest",
+  "core.projectVersionChecker.cliUseNewVersion": "Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:\nnpm install -g @microsoft/teamsapp-cli@latest",
   "core.projectVersionChecker.incompatibleProject": "The current project is incompatible with the installed version of Teams Toolkit.",
   "core.projectVersionChecker.vs.incompatibleProject": "The project in the solution is created with Teams Toolkit preview feature - Teams App Configuration Improvements. You can turn on the preview feature to continue.",
   "core.deployArmTemplates.ActionSuccess": "Successfully deployed ARM templates. Resource group name: %s. Deployment name: %s",

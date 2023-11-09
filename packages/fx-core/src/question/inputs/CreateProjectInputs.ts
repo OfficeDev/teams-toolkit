@@ -19,6 +19,7 @@ export interface CreateProjectInputs extends Inputs {
   capabilities?:
     | "bot"
     | "ai-bot"
+    | "ai-assistant-bot"
     | "notification"
     | "command-bot"
     | "workflow-bot"

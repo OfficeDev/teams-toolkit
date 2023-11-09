@@ -55,9 +55,9 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
           {sample.tags &&
             sample.tags.map((value: string) => {
               return (
-                <VSCodeTag className="tag" key={value}>
-                  {value}
-                </VSCodeTag>
+                <div className="tag" key={value}>
+                  <span>{value}</span>
+                </div>
               );
             })}
         </div>

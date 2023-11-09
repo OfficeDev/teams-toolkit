@@ -73,8 +73,6 @@
         height: 16px;
         font-size: 13px;
         padding: 2px 8px;
-        background-color: var(--vscode-button-secondaryBackground);
-        color: var(--vscode-peekViewTitleDescription-foreground, #cccccc);
         border: 0;
 
         span {
@@ -119,5 +117,19 @@
       margin-left: 7.5px;
       height: 28px;
     }
+  }
+}
+
+body.vscode-light {
+  .tag {
+    background-color: #E5E5E5;
+    color: #606060;
+  }
+}
+
+body.vscode-dark {
+  .tag {
+    background-color: #333333;
+    color: #CCCCCC;
   }
 }

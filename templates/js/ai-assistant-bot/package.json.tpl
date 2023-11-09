@@ -17,7 +17,7 @@
         "start": "node ./src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "watch": "nodemon --exec \"npm run start\"",
-        "assistant:create": "env-cmd --silent -f .localConfigs node ./src/creator.js"
+        "assistant:create": "node ./src/creator.js"
     },
     "repository": {
         "type": "git",

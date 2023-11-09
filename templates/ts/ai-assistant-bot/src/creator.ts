@@ -1,22 +1,18 @@
 import { AssistantsPlanner } from "@microsoft/teams-ai";
-import config from "./config";
 
-if (!config.openAIKey) {
-  throw new Error("Missing OPENAI_API_KEY");
+const openAIKey = process.argv[2];
+if (!openAIKey) {
+  throw new Error("Missing input OpenAI Key");
 }
 
-if (!config.openAIAssistantId) {
-  // Create new Assistant
-  (async () => {
-    const assistant = await AssistantsPlanner.createAssistant(config.openAIKey, {
-      name: "Math Tutor",
-      instructions: "You are a personal math tutor. Write and run code to answer math questions.",
-      tools: [{ type: "code_interpreter" }],
-      model: "gpt-3.5-turbo",
-    });
+// Create new Assistant
+(async () => {
+  const assistant = await AssistantsPlanner.createAssistant(openAIKey, {
+    name: "Math Tutor",
+    instructions: "You are a personal math tutor. Write and run code to answer math questions.",
+    tools: [{ type: "code_interpreter" }],
+    model: "gpt-3.5-turbo",
+  });
 
-    console.log(`Created a new assistant with an ID of: ${assistant.id}`);
-  })();
-} else {
-  console.log(`Assistant ${config.openAIAssistantId} already configured.`);
-}
+  console.log(`Created a new assistant with an ID of: ${assistant.id}`);
+})();

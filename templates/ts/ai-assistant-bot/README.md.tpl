@@ -26,19 +26,24 @@ It showcases how to build an intelligent chat bot in Teams capable of helping us
 
 ### Create your own OpenAI Assistant
 
-Before running or debugging your bot, please follow these steps to setup your own OpenAI Assistant.
+Before running or debugging your bot, please follow these steps to setup your own [OpenAI Assistant](https://platform.openai.com/docs/assistants/overview).
 
 **If you haven't setup any Assistant yet**
 
 > This app template provides script `src/creator.ts` to help create assistant. You can customize the instructions and settings there.
+> 
+> You can also create and manage your assistants on [OpenAI](https://platform.openai.com/assistants).
 
-1. Fill your OpenAI API Key into `.localConfigs` file:
-   ```
-   OPENAI_API_KEY=<your-openai-api-key>
-   ```
 1. Open terminal and run command `npm install` to install all dependency packages
-1. After `npm install` completed, run command `npm run assistant:create`
-1. The `npm run assistant:create` will output something like "*Created a new assistant with an ID of: **asst_xxx...***"
+
+   ```
+   > npm install
+   ```
+1. After `npm install` completed, run command `npm run assistant:create -- <your-openai-api-key>`
+   ```
+   > npm run assistant:create -- xxxxxx
+   ```
+1. The above command will output something like "*Created a new assistant with an ID of: **asst_xxx...***"
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
@@ -46,6 +51,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
    ```
 
 **If you already have an Assistant created**
+
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>

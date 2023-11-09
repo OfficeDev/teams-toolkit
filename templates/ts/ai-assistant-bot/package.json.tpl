@@ -18,7 +18,7 @@
         "start": "node ./lib/src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "watch": "nodemon --exec \"npm run start\"",
-        "assistant:create": "env-cmd --silent -f .localConfigs node -r ts-node/register ./src/creator.ts"
+        "assistant:create": "node -r ts-node/register ./src/creator.ts"
     },
     "repository": {
         "type": "git",

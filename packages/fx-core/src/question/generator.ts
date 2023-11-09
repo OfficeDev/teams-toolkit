@@ -425,7 +425,6 @@ async function batchGenerate() {
   await generateCliOptions(questionNodes.createProject(), "CreateProject");
   await generateInputs(questionNodes.createProject(), "CreateProject");
 
-  await sampleProvider.fetchSampleConfig();
   await generateCliOptions(questionNodes.createSampleProject(), "CreateSampleProject");
   await generateInputs(questionNodes.createSampleProject(), "CreateSampleProject");
 

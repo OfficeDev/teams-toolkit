@@ -6,7 +6,7 @@ import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
+import { SystemError, UserError, ok, err } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -20,7 +20,7 @@ import {
   UnhandledError,
 } from "../../../error/common";
 
-const actionName = "aadApp/update"; // DO NOT MODIFY the name
+export const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name

@@ -31,8 +31,8 @@ import { SpecParser } from "../../../common/spec-parser";
 import { getAbsolutePath } from "../../utils/common";
 import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
 
-const actionName = "apiKey/create"; // DO NOT MODIFY the name
-const helpLink = "https://aka.ms/teamsfx-actions/apiKey-create";
+const actionName = "apiKey/register"; // DO NOT MODIFY the name
+const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
 
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateApiKeyDriver implements StepDriver {

@@ -40,7 +40,7 @@ The bot will respond to the `helloWorld` command with an Adaptive Card:
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 ![Command and Response in Teams](https://user-images.githubusercontent.com/11220663/165891754-16916b68-c1b5-499d-b6a8-bdfb195f1fd0.png)
-{{#enableTestToolByDefault}}
+{{/enableTestToolByDefault}}
 
 ## What's included in the template
 

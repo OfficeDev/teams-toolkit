@@ -16,6 +16,7 @@ import {
   resolveServerUrl,
   isWellKnownName,
   format,
+  getSafeRegistrationIdEnvName,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
@@ -1732,6 +1733,28 @@ describe("utils", () => {
     it("should handle no placeholders", () => {
       const result = format("Hello, world!");
       expect(result).to.equal("Hello, world!");
+    });
+  });
+
+  describe("getSafeRegistrationIdEnvName", () => {
+    it("should return an empty string if authName is not provided", () => {
+      expect(getSafeRegistrationIdEnvName("")).to.equal("");
+    });
+
+    it("should replace non-alphanumeric characters with underscores and convert to uppercase", () => {
+      expect(getSafeRegistrationIdEnvName("auth@name")).to.equal("AUTH_NAME");
+    });
+
+    it('should prefix the result with "PREFIX_" if it does not start with an uppercase letter', () => {
+      expect(getSafeRegistrationIdEnvName("1authname")).to.equal("PREFIX_1AUTHNAME");
+    });
+
+    it('should not prefix the result with "PREFIX_" if it starts with an uppercase letter', () => {
+      expect(getSafeRegistrationIdEnvName("Authname")).to.equal("AUTHNAME");
+    });
+
+    it("should convert all lowercase letters to uppercase", () => {
+      expect(getSafeRegistrationIdEnvName("authname")).to.equal("AUTHNAME");
     });
   });
 });

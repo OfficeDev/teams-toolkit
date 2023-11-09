@@ -1,4 +1,4 @@
-# 2.3.0-rc
+# 2.3.0
 
 - Fix `NotificationMiddleware` reference key generation when bot is added to a Team.
 - Update `botbuilder` dependencies

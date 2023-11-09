@@ -235,7 +235,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     {
         try
         {
-            await jsRuntime.InvokeVoidAsync("import", "https://res.cdn.office.net/teams-js/2.7.1/js/MicrosoftTeams.min.js").ConfigureAwait(false);
+            await jsRuntime.InvokeVoidAsync("import", "https://res.cdn.office.net/teams-js/2.17.0/js/MicrosoftTeams.min.js").ConfigureAwait(false);
             return await jsRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Microsoft.TeamsFx/jsInterop.js").AsTask().ConfigureAwait(false);
         }
         catch (JSException e)

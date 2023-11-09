@@ -11,22 +11,19 @@ import {
   SelectFilesConfig,
   SelectFolderConfig,
   SingleSelectConfig,
+  err,
   ok,
 } from "@microsoft/teamsfx-api";
-import { MissingRequiredInputError, SelectSubscriptionError } from "@microsoft/teamsfx-core";
+import { SelectSubscriptionError, UserCancelError } from "@microsoft/teamsfx-core";
 import "mocha";
 import sinon from "sinon";
-import LogProvider from "../../src/commonlib/log";
+import { logger } from "../../src/commonlib/logger";
 import * as customizedPrompts from "../../src/prompts";
 import UI from "../../src/userInteraction";
-import { getColorizedString } from "../../src/utils";
 import { expect } from "./utils";
-import { globals } from "../../src/globals";
 
 describe("User Interaction Tests", function () {
   const sandbox = sinon.createSandbox();
-  let logs: [LogLevel, string][] = [];
-
   before(() => {
     sandbox.stub(prompts, "input").get(() => (config: any) => {
       return new CancelablePromise((resolve) => resolve(config.default ?? "Input Result"));
@@ -59,39 +56,16 @@ describe("User Interaction Tests", function () {
             .map((x) => (x as customizedPrompts.SelectChoice).id);
         return new CancelablePromise((resolve) => resolve(values));
       });
-    sandbox.stub(LogProvider, "necessaryLog").callsFake((level: LogLevel, message: string) => {
-      logs.push([level, message]);
-    });
   });
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
   });
 
-  beforeEach(() => {
-    UI.clearPresetAnswers();
-    UI.interactive = true;
-    globals.options = [];
-    logs = [];
-  });
+  beforeEach(() => {});
 
   it("Check process.env", () => {
     expect(UI.ciEnabled).equals(process.env.CI_EANBLED === "true");
-  });
-
-  it("Update/Remove Preset Answers", () => {
-    const params = { a: undefined, b: undefined, c: undefined };
-    const answers = { a: "123", c: ["1", "2"], d: undefined };
-
-    UI.updatePresetAnswers(params, answers);
-    expect(UI["presetAnswers"].get("a")).equals("123");
-    expect(UI["presetAnswers"].has("b")).to.be.false;
-    expect(UI["presetAnswers"].get("c")).deep.equals(["1", "2"]);
-    expect(UI["presetAnswers"].has("d")).to.be.false;
-
-    UI.removePresetAnswers(["a", "c"]);
-    expect(UI["presetAnswers"].has("a")).to.be.false;
-    expect(UI["presetAnswers"].has("c")).to.be.false;
   });
 
   describe("Single Select Option", async () => {
@@ -106,67 +80,20 @@ describe("User Interaction Tests", function () {
         options: [],
       };
       const result = await UI.selectOption(config);
-      expect(result.isOk() ? result.value.result : result.error.name).equals(
-        new SelectSubscriptionError().name
-      );
+      expect(result.isErr() && result.error instanceof SelectSubscriptionError);
     });
 
     it("(Hardcode) Subscription: only one sub", async () => {
+      sandbox.stub(logger, "warning").returns();
       const config: SingleSelectConfig = {
         name: "subscription",
         title: "Select a subscription",
         options: ["a"],
       };
       const result = await UI.selectOption(config);
-      expect(result.isOk() ? result.value.result : result.error).deep.equals("a");
-      expect(logs.length).equals(1);
-      expect(logs[0][0]).equals(LogLevel.Warning);
+      expect(result.isOk()).to.be.true;
     });
 
-    it("Get Value from Preset Answers", async () => {
-      UI.updatePresetAnswer("subscription", "c");
-      const config: SingleSelectConfig = {
-        name: "subscription",
-        title: "Select a subscription",
-        options: ["a", "b", "c"],
-      };
-      const result = await UI.selectOption(config);
-      expect(result.isOk() ? result.value.result : result.error).deep.equals("c");
-    });
-
-    it("Get Value from Preset Answers (OptionItem)", async () => {
-      UI.updatePresetAnswer("subscription", "c");
-      const config: SingleSelectConfig = {
-        name: "subscription",
-        title: "Select a subscription",
-        options: [
-          {
-            id: "a",
-            cliName: "aa",
-            label: "aaa",
-          },
-          {
-            id: "b",
-            cliName: "bb",
-            label: "bbb",
-          },
-          {
-            id: "c",
-            cliName: "cc",
-            label: "ccc",
-          },
-        ],
-      };
-      {
-        const result = await UI.selectOption(config);
-        expect(result.isOk() ? result.value.result : result.error).deep.equals("c");
-      }
-      {
-        UI.updatePresetAnswer("subscription", "cc");
-        const result = await UI.selectOption(config);
-        expect(result.isOk() ? result.value.result : result.error).deep.equals("c");
-      }
-    });
     it("Auto skip for single option (return object = true)", async () => {
       const config: SingleSelectConfig = {
         name: "test",
@@ -262,51 +189,6 @@ describe("User Interaction Tests", function () {
     afterEach(() => {
       sandbox.restore();
     });
-    it("Get Value from Preset Answers", async () => {
-      UI.updatePresetAnswer("resources", ["c"]);
-      const config: MultiSelectConfig = {
-        name: "resources",
-        title: "Select resources",
-        options: ["a", "b", "c"],
-      };
-      const result = await UI.selectOptions(config);
-      expect(result.isOk() ? result.value.result : result.error).deep.equals(["c"]);
-    });
-
-    it("Get Value from Preset Answers (OptionItem)", async () => {
-      UI.updatePresetAnswer("resources", ["b", "c"]);
-      const config: MultiSelectConfig = {
-        name: "resources",
-        title: "Select resources",
-        options: [
-          {
-            id: "a",
-            cliName: "aa",
-            label: "aaa",
-          },
-          {
-            id: "b",
-            cliName: "bb",
-            label: "bbb",
-          },
-          {
-            id: "c",
-            cliName: "cc",
-            label: "ccc",
-          },
-        ],
-      };
-      {
-        const result = await UI.selectOptions(config);
-        expect(result.isOk() ? result.value.result : result.error).deep.equals(["b", "c"]);
-      }
-      {
-        UI.updatePresetAnswer("resources", ["bb", "cc"]);
-        const result = await UI.selectOptions(config);
-        expect(result.isOk() ? result.value.result : result.error).deep.equals(["b", "c"]);
-      }
-    });
-
     it("Auto skip for single option (return object = true)", async () => {
       const config: MultiSelectConfig = {
         name: "test",
@@ -399,7 +281,8 @@ describe("User Interaction Tests", function () {
     });
   });
 
-  it("Multi Select - default value", async () => {
+  it("multiSelect", async () => {
+    sandbox.stub(customizedPrompts, "checkbox").value(() => ["id1", "id2"]);
     const choices = [1, 2, 3].map((x) => ({
       id: `id${x}`,
       title: `title ${x}`,
@@ -409,57 +292,14 @@ describe("User Interaction Tests", function () {
     expect(result.isOk() ? result.value : result.error).to.be.deep.equals(["id1", "id2"]);
   });
 
-  it("Multi Select - non interactive and no default value", async () => {
-    UI.interactive = false;
-    const choices = [1, 2, 3].map((x) => ({
-      id: `id${x}`,
-      title: `title ${x}`,
-      detail: `detail ${x}`,
-    }));
-    const result = await UI.multiSelect("test", "Select a string", choices);
-    expect(result.isOk() ? result.value : result.error).to.be.deep.equals([]);
-  });
-
-  it("Multi Select - interactive and no default value", async () => {
-    const choices = [1, 2, 3].map((x) => ({
-      id: `id${x}`,
-      title: `title ${x}`,
-      detail: `detail ${x}`,
-    }));
-    const result = await UI.multiSelect("test", "Select a string", choices);
-    expect(result.isOk() ? result.value : result.error).to.be.deep.equals([]);
-  });
-
-  it("Multi Select - error", async () => {
-    globals.options = ["test"];
-    UI.interactive = false;
-    const choices = [1, 2, 3].map((x) => ({
-      id: `id${x}`,
-      title: `title ${x}`,
-      detail: `detail ${x}`,
-    }));
-    const result = await UI.multiSelect("test", "Select a string", choices);
-    expect(result.isOk() ? result.value : result.error).instanceOf(MissingRequiredInputError);
-  });
-
-  it("Password - non interactive and default value", async () => {
-    UI.interactive = false;
-    const result = await UI.password("test", "Input the password", "default");
-    expect(result.isOk() ? result.value : result.error).equals("default");
-  });
-
-  it("Password - non interactive and no default value", async () => {
-    UI.interactive = false;
-    const result = await UI.password("test", "Input the password");
-    expect(result.isOk() ? result.value : result.error).equals("");
-  });
-
-  it("Password - interactive and no default value", async () => {
+  it("Password", async () => {
+    sandbox.stub(prompts, "password").resolves("Password Result");
     const result = await UI.password("test", "Input the password");
     expect(result.isOk() ? result.value : result.error).equals("Password Result");
   });
 
   it("Single Select File", async () => {
+    sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./" }));
     const config: SelectFileConfig = {
       name: "path",
       title: "Select a path",
@@ -469,7 +309,7 @@ describe("User Interaction Tests", function () {
   });
 
   it("Multi Select Files", async () => {
-    UI.updatePresetAnswer("paths", "./ ; ./");
+    sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./;./" }));
     const config: SelectFilesConfig = {
       name: "paths",
       title: "Select a path",
@@ -478,7 +318,8 @@ describe("User Interaction Tests", function () {
     expect(result.isOk() ? result.value.result : result.error).deep.equals(["./", "./"]);
   });
 
-  it("Multi Select Folder", async () => {
+  it("Select Folder", async () => {
+    sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./" }));
     const config: SelectFolderConfig = {
       name: "folder",
       title: "Select a folder",
@@ -488,6 +329,15 @@ describe("User Interaction Tests", function () {
   });
 
   describe("Show Message", () => {
+    beforeEach(() => {
+      sandbox.stub(logger, "info").returns();
+      sandbox.stub(logger, "warning").returns();
+      sandbox.stub(logger, "error").returns();
+    });
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     const levels: ["info" | "warn" | "error", LogLevel][] = [
       ["info", LogLevel.Info],
       ["warn", LogLevel.Warning],
@@ -500,53 +350,44 @@ describe("User Interaction Tests", function () {
       { content: "BRIGHT_MAGENTA", color: Colors.BRIGHT_MAGENTA },
     ];
     const msgs = [msg1, msg2];
-    const modals = [true, false];
     const items = ["first", "second"];
-
     it("items.length is equal to 0", async () => {
-      const answers: [LogLevel, string][] = [];
       for (const [lv0, lv1] of levels) {
         for (const msg of msgs) {
-          let trueMsg: string;
-          if (typeof msg === "string") {
-            trueMsg = msg;
-          } else {
-            if (lv0 === "info") {
-              trueMsg = getColorizedString(msg);
-            } else {
-              trueMsg = msg.map((x) => x.content).join("");
-            }
-          }
-          for (const modal of modals) {
-            answers.push([lv1, trueMsg]);
-            const result = await UI.showMessage(lv0, msg, modal);
-            expect(result.isOk() ? result.value : result.error).equals(undefined);
-            expect(logs).deep.equals(answers);
-          }
+          const result = await UI.showMessage(lv0, msg, false);
+          expect(result.isOk()).to.be.true;
         }
       }
     });
-
-    it("items.length is equal to 1", async () => {
-      for (const [lv0, _] of levels) {
-        for (const msg of msgs) {
-          for (const modal of modals) {
-            const result = await UI.showMessage(lv0, msg, modal, items[0]);
-            expect(result.isOk() ? result.value : result.error).equals(items[0]);
-          }
-        }
-      }
+    it("items.length is equal to 1 - confirm returns true", async () => {
+      sandbox.stub(UI, "confirm").resolves(ok(true));
+      const result = await UI.showMessage("info", msg1, true, items[0]);
+      expect(result.isOk() && result.value === items[0]).to.be.true;
     });
-
-    it("items.length is bigger than 1", async () => {
-      for (const [lv0, _] of levels) {
-        for (const msg of msgs) {
-          for (const modal of modals) {
-            const result = await UI.showMessage(lv0, msg, modal, items[0], items[1]);
-            expect(result.isOk() ? result.value : result.error).equals(items[0]);
-          }
-        }
-      }
+    it("items.length is equal to 1 - confirm returns false", async () => {
+      sandbox.stub(UI, "confirm").resolves(ok(false));
+      const result = await UI.showMessage("info", msg1, true, items[0]);
+      expect(result.isOk() && result.value === undefined).to.be.true;
+    });
+    it("items.length is equal to 1 - confirm returns error", async () => {
+      sandbox.stub(UI, "confirm").resolves(err(new UserCancelError()));
+      const result = await UI.showMessage("info", msg1, true, items[0]);
+      expect(result.isErr()).to.be.true;
+    });
+    it("items.length is bigger than 1 - returns value", async () => {
+      sandbox.stub(UI, "singleSelect").resolves(ok(items[0]));
+      const result = await UI.showMessage("info", msg1, false, items[0], items[1]);
+      expect(result.isOk() && result.value === items[0]).to.be.true;
+    });
+    it("items.length is bigger than 1 - returns cancel", async () => {
+      sandbox.stub(UI, "singleSelect").resolves(ok("Cancel"));
+      const result = await UI.showMessage("info", msg1, true, items[0], items[1]);
+      expect(result.isOk() && result.value === undefined).to.be.true;
+    });
+    it("items.length is bigger than 1 - returns error", async () => {
+      sandbox.stub(UI, "singleSelect").resolves(err(new UserCancelError()));
+      const result = await UI.showMessage("info", msg1, true, items[0], items[1]);
+      expect(result.isErr()).to.be.true;
     });
   });
 

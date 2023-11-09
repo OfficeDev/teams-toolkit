@@ -8,7 +8,6 @@ import {
   IProgressHandler,
   InputTextConfig,
   InputTextResult,
-  LogLevel,
   MultiSelectConfig,
   MultiSelectResult,
   OptionItem,
@@ -29,155 +28,27 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   InputValidationError,
-  MissingRequiredInputError,
   SelectSubscriptionError,
   assembleError,
-  loadingOptionsPlaceholder,
 } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import open from "open";
 import path from "path";
 import * as util from "util";
-import CLILogProvider from "./commonlib/log";
+import { logger } from "./commonlib/logger";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
 import { cliSource } from "./constants";
-import { globals } from "./globals";
 import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
 import { strings } from "./resource";
-import { UserSettings } from "./userSetttings";
-import { getColorizedString, toLocaleLowerCase } from "./utils";
+import { getColorizedString } from "./utils";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
 class CLIUserInteraction implements UserInteraction {
-  private static instance: CLIUserInteraction;
-  private presetAnswers: Map<string, any> = new Map();
-
-  private _interactive = true;
-
   get ciEnabled(): boolean {
     return process.env.CI_ENABLED === "true";
-  }
-
-  get interactive(): boolean {
-    if (this.ciEnabled) {
-      return false;
-    } else {
-      return this._interactive;
-    }
-  }
-
-  set interactive(value: boolean) {
-    this._interactive = value;
-  }
-
-  public static getInstance(): CLIUserInteraction {
-    if (!CLIUserInteraction.instance) {
-      CLIUserInteraction.instance = new CLIUserInteraction();
-
-      // get global setting `interactive`
-      const result = UserSettings.getInteractiveSetting();
-      if (result.isErr()) {
-        throw result;
-      }
-      CLIUserInteraction.instance._interactive = result.value;
-    }
-    return CLIUserInteraction.instance;
-  }
-
-  public updatePresetAnswer(key: string, value: any) {
-    this.presetAnswers.set(key, value);
-  }
-
-  public updatePresetAnswers(question: { [_: string]: any }, answers: { [key: string]: any }) {
-    for (const key in answers) {
-      if (key in question) {
-        this.updatePresetAnswer(key, answers[key]);
-      }
-    }
-  }
-
-  public updatePresetAnswerFromConfig(config: SingleSelectConfig | MultiSelectConfig) {
-    if (!this.presetAnswers.has(config.name)) {
-      return;
-    }
-
-    if (typeof (config.options as StaticOptions)[0] === "string") {
-      return;
-    }
-    const options = config.options as OptionItem[];
-    const ids = options.map((op) => op.id);
-    const cliNames = options.map((op) => op.cliName || toLocaleLowerCase(op.id));
-
-    const presetAnwser = this.presetAnswers.get(config.name);
-    if (presetAnwser instanceof Array) {
-      if (presetAnwser.length === 0) {
-        return;
-      }
-
-      const idIndexes = this.findIndexes(ids, presetAnwser);
-      const cliNameIndexes = this.findIndexes(cliNames, presetAnwser);
-
-      const idSubArray1 = this.getSubArray(ids, idIndexes);
-      const idSubArray2 = this.getSubArray(ids, cliNameIndexes);
-
-      if (idSubArray1[0] !== undefined) {
-        this.updatePresetAnswer(config.name, idSubArray1);
-      } else if (idSubArray2[0] !== undefined) {
-        this.updatePresetAnswer(config.name, idSubArray2);
-      }
-    } else {
-      const idIndex = this.findIndex(ids, presetAnwser);
-      const cliNameIndex = this.findIndex(cliNames, presetAnwser);
-
-      if (idIndex >= 0) {
-        this.updatePresetAnswer(config.name, ids[idIndex]);
-      } else if (cliNameIndex >= 0) {
-        this.updatePresetAnswer(config.name, ids[cliNameIndex]);
-      }
-    }
-  }
-
-  public removePresetAnswer(key: string) {
-    this.presetAnswers.delete(key);
-  }
-
-  public removePresetAnswers(keys: string[]) {
-    keys.forEach((key) => this.removePresetAnswer(key));
-  }
-
-  public clearPresetAnswers() {
-    this.presetAnswers = new Map();
-  }
-
-  private async checkIfSkip<T>(
-    name: string,
-    defaultValue?: T,
-    validate?: (value: string) => boolean | string | Promise<string | boolean>
-  ): Promise<Result<T | undefined, FxError>> {
-    if (this.presetAnswers.has(name)) {
-      const answer = this.presetAnswers.get(name);
-      const result = await validate?.(answer);
-      if (typeof result === "string") {
-        return err(new InputValidationError(name, result));
-      }
-      return ok(answer);
-    }
-
-    /// non-interactive.
-    if (!this.interactive) {
-      if (defaultValue !== undefined) {
-        // if it has a defualt value, return it at first.
-        return ok(defaultValue);
-      }
-      if (globals.options.includes(name)) {
-        // if the question is the required option, return error if value is missing
-        return err(new MissingRequiredInputError(name, cliSource));
-      }
-    }
-    return ok(undefined);
   }
 
   async singleSelect(
@@ -186,16 +57,6 @@ class CLIUserInteraction implements UserInteraction {
     choices: SelectChoice[],
     defaultValue?: string
   ): Promise<Result<string, FxError>> {
-    const check = await this.checkIfSkip(name, defaultValue);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok(choices[0].id);
-    }
     ScreenManager.pause();
     const answer = await select({
       message,
@@ -213,16 +74,6 @@ class CLIUserInteraction implements UserInteraction {
     defaultValues?: string[],
     validateValues?: (value: string[]) => string | Promise<string | undefined> | undefined
   ): Promise<Result<string[], FxError>> {
-    const check = await this.checkIfSkip(name, defaultValues);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok([]);
-    }
     ScreenManager.pause();
     const answer = await checkbox({
       message,
@@ -240,16 +91,6 @@ class CLIUserInteraction implements UserInteraction {
     defaultValue?: string,
     validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
-    const check = await this.checkIfSkip(name, defaultValue, validate);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok("");
-    }
     ScreenManager.pause();
     const answer = await input({
       message,
@@ -266,16 +107,6 @@ class CLIUserInteraction implements UserInteraction {
     defaultValue?: string,
     validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
-    const check = await this.checkIfSkip(name, defaultValue, validate);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok("");
-    }
     ScreenManager.pause();
     const answer = await password({
       message,
@@ -291,16 +122,6 @@ class CLIUserInteraction implements UserInteraction {
     message: string,
     defaultValue?: boolean
   ): Promise<Result<boolean, FxError>> {
-    const check = await this.checkIfSkip(name, defaultValue);
-    if (check.isErr()) {
-      return err(check.error);
-    }
-    if (typeof check.value !== "undefined") {
-      return ok(check.value);
-    }
-    if (!this.interactive) {
-      return ok(true);
-    }
     ScreenManager.pause();
     const answer = await confirm({
       message,
@@ -383,10 +204,7 @@ class CLIUserInteraction implements UserInteraction {
         return err(new SelectSubscriptionError(cliSource));
       } else if (subscriptions.length === 1) {
         const sub = subscriptions[0];
-        CLILogProvider.necessaryLog(
-          LogLevel.Warning,
-          `Your Azure account only has one subscription (${sub}). Use it as default.`
-        );
+        logger.warning(`Your Azure account only has one subscription (${sub}). Use it as default.`);
         return ok({ type: "skip", result: sub });
       }
     }
@@ -406,7 +224,6 @@ class CLIUserInteraction implements UserInteraction {
         }
       }
     }
-    this.updatePresetAnswerFromConfig(config);
     const [choices, defaultValue] = this.toChoices(
       config.options as StaticOptions,
       config.default as string
@@ -509,7 +326,6 @@ class CLIUserInteraction implements UserInteraction {
         }
       }
     }
-    this.updatePresetAnswerFromConfig(config);
     const [choices, defaultValue] = this.toChoices(
       config.options as StaticOptions,
       config.default as string[]
@@ -693,16 +509,16 @@ class CLIUserInteraction implements UserInteraction {
         switch (level) {
           case "info":
             if (message instanceof Array) {
-              CLILogProvider.necessaryLog(LogLevel.Info, getColorizedString(message));
+              logger.info(getColorizedString(message));
             } else {
-              CLILogProvider.necessaryLog(LogLevel.Info, message);
+              logger.info(message);
             }
             break;
           case "warn":
-            CLILogProvider.necessaryLog(LogLevel.Warning, plainText);
+            logger.warning(plainText);
             break;
           case "error":
-            CLILogProvider.necessaryLog(LogLevel.Error, plainText);
+            logger.error(plainText);
             break;
         }
         return ok(undefined);
@@ -753,5 +569,5 @@ async function pathValidation(p: string): Promise<string | undefined> {
     return `${path.resolve(p)} does not exist.`;
   }
 }
-
-export default CLIUserInteraction.getInstance();
+const CLIUIInstance = new CLIUserInteraction();
+export default CLIUIInstance;

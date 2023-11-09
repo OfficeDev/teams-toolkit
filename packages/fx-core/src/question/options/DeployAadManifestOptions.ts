@@ -12,10 +12,10 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
 export const DeployAadManifestOptions: CLICommandOption[] = [
   {
-    name: "entra-app-manifest-file",
+    name: "aad-manifest-file",
     questionName: "manifest-file-path",
     type: "string",
-    shortName: "e",
+    shortName: "a",
     description:
       "Specifies the Microsoft Entra app manifest file path, can be either absolute path or relative path to project root folder.",
     default: "./aad.manifest.json",

@@ -5,6 +5,13 @@ import { Application, AssistantsPlanner, AI } from "@microsoft/teams-ai";
 
 import config from "./config";
 
+// See README.md to prepare your own OpenAI Assistant
+if (!config.openAIKey || !config.openAIAssistantId) {
+  throw new Error(
+    "Missing OPENAI_API_KEY or OPENAI_ASSISTANT_ID. See README.md to prepare your own OpenAI Assistant."
+  );
+}
+
 // Create AI components
 // Use OpenAI
 const planner = new AssistantsPlanner({

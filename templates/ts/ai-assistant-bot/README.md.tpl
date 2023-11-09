@@ -1,8 +1,7 @@
 # Overview of the AI Assistant Bot template
 
-This template showcases an AI assistant bot app that users can talk in Teams to find information.
-
-The app template is built using the Teams AI library and OpenAI Assistants API, which provides the capabilities to build AI-based Teams applications.
+This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview).
+It showcases how to build an intelligent chat bot in Teams capable of helping users accomplish a specific task using natural language right in the Teams conversations, such as solving a math problem.
 
 - [Overview of the AI Assistant Bot template](#overview-of-the-ai-assistant-bot-template)
   - [Get started with the AI Assistant Bot template](#get-started-with-the-ai-assistant-bot-template)

@@ -51,7 +51,7 @@ We have added support for Python in Teams Toolkit. You can now create Teams bots
 #### Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.3@beta`
 
 - Updated `AAD` to `Microsoft Entra` in command descriptions, logs, and error messages. See more on [Azure Active Directory rebranding](https://devblogs.microsoft.com/identity/aad-rebrand/).
-- Updated `teamsfx m365 sideloading` command with support to sideolad a xml-based Outlook add-in project, example command: `teamsfx m365 sideloading --xml-path manifest.xml`.
+- Updated `teamsfx m365 sideloading` command with support to sideload a xml-based Outlook add-in project, example command: `teamsfx m365 sideloading --xml-path manifest.xml`.
 - Added an alias `teamsapp` as root command signature. Now you can use both `teamsfx` and `teamsapp` as command prefix. We recommend you to start changing your scripts to use `teamsapp` as the command prefix.
 
 #### TeamsFx React SDK ([`@microsoft/teamsfx-react`](https://www.npmjs.com/package/@microsoft/teamsfx-react)) `v3.1.0@beta`

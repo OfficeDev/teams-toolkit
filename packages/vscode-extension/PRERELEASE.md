@@ -6,10 +6,10 @@
 
 #### New Features
 
-- **AI Assistant Bot App Template**: We have introduced a new AI Assistant Bot app templat built on top of [Teams AI library](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/teams-conversation-ai-overview) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview/agents). It showcases how to build an intelligent chat bot in Teams capable of helping users accomplish a specific task using natural language right in the Teams conversations, such as solving a math problem.
+- **AI Assistant Bot App Template**: We have introduced a new AI Assistant Bot app template built on top of [Teams AI library](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/teams-conversation-ai-overview) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview/agents). It showcases how to build an intelligent chat bot in Teams capable of helping users accomplish a specific task using natural language right in the Teams conversations, such as solving a math problem.
     ![Assistant Bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/c4167b93-6ca6-4f59-ade1-23a6342fcfc9)
 
-- **Debug Teams Bot Applictaion in Teams App Test Tool**: Teams App Test Tool is a component integrated in Teams Toolkit that helps developers to debug, test and iterate on the app design of a Teams bot application in a web-based chat environment that emulates the behavior, look and feel of Microsoft Teams without using tunnels or Microsoft 365 account.
+- **Debug Teams Bot Application in Teams App Test Tool**: Teams App Test Tool is a component integrated in Teams Toolkit that helps developers to debug, test and iterate on the app design of a Teams bot application in a web-based chat environment that emulates the behavior, look and feel of Microsoft Teams without using tunnels or Microsoft 365 account.
     ![Test Tool](https://github.com/OfficeDev/TeamsFx/assets/11220663/83b7bf29-019d-4512-86dc-67246c77453e)
   
 - **Integrated Adaptive Card Previewer**: We have integrated the [Adaptive Card Previewer](https://aka.ms/acp-docs) into Teams Toolkit to help you preview and edit Adaptive Cards in a more intuitive way.
@@ -18,7 +18,7 @@
 - **Refreshed Look for Sample App Gallery**: The sample app gallery in Teams Toolkit now has a refreshed look and feel to help you find the right sample app for your needs more easily. You can now:
   - Filter sample apps by app type, app capability, and programming language.
   - Checkout the `Featured Samples` on top.
-  - Swicth to a `List View` that fits more sample apps in one screen.
+  - Switch to a `List View` that fits more sample apps in one screen.
     ![Sample Gallery](https://github.com/OfficeDev/TeamsFx/assets/11220663/5cfb778e-75e8-4217-a44f-a9a0b8069415)
 
 - **License Check for Copilot**: We have added a helpful license check UI that detects if your account has been assigned Microsoft Copilot licenses before you started developing Copilot Plugins. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings).
@@ -34,7 +34,7 @@
 
 #### New Additions to the Sample App Gallery
 
-- **Large Scale Notification Bot**: This sample app demonstrates the architecture of a Teams notfication bot app created by Teams Toolkit to send individual chat messages to a large number of users in a tenant.
+- **Large Scale Notification Bot**: This sample app demonstrates the architecture of a Teams notification bot app created by Teams Toolkit to send individual chat messages to a large number of users in a tenant.
     ![Large Scale](https://github.com/OfficeDev/TeamsFx-Samples/raw/v3/large-scale-notification/assets/architecture.jpg)
 
 - **Graph Connector Bot**: This sample app showcases how to build a Teams command bot that queries custom data ingested into Microsoft Graph using Graph connector.
@@ -62,7 +62,7 @@ We have added support for Python in Teams Toolkit. You can now create Teams bots
 
 - Fixed an issue where you would see `No localized strings file found` error in Visual Studio Code output. ([#10090](https://github.com/OfficeDev/TeamsFx/pull/10090))
 - Fixed an issue where you would see a falsh when selecting an option in quick pick. ([#10100](https://github.com/OfficeDev/TeamsFx/pull/10100))
-- Fixed a string typo in `Create a New App` wizzard. ([#10197](https://github.com/OfficeDev/TeamsFx/pull/10197))
+- Fixed a string typo in `Create a New App` dialog. ([#10197](https://github.com/OfficeDev/TeamsFx/pull/10197))
 
 ### October 10, 2023
 

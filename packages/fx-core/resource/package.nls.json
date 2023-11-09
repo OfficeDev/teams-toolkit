@@ -403,7 +403,7 @@
   "core.common.NoServerInformation":  "No server information is found in the OpenAPI description document.",
   "core.common.RemoteRefNotSupported": "Remote reference is not supported: %s.",
   "core.common.MissingOperationId": "Missing operationIds: %s.",
-  "core.common.NoSupportedApi": "No supported API is found in the OpenAPI description document: only GET and POST methods are supported, additionally, there can be at most one required parameter, and no auth is allowed. \nFor more information \"https://aka.ms/build-api-based-message-extension\".",
+  "core.common.NoSupportedApi": "No supported API is found in the OpenAPI description document: only GET and POST methods are supported, additionally, there can be at most one required parameter, and no auth is allowed. \nFor more information visit: \"https://aka.ms/build-api-based-message-extension\".",
   "core.common.UrlProtocolNotSupported": "Server url is not correct: protocol %s is not supported, you should use https protocol instead.",
   "core.common.RelativeServerUrlNotSupported": "Server url is not correct: relative server url is not supported.",
   "core.common.ErrorFetchApiSpec": "Your OpenAPI description document should be accessible without authentication, otherwise download and start from a local copy.",

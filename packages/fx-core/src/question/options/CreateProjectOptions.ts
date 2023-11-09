@@ -29,6 +29,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: [
       "bot",
       "ai-bot",
+      "ai-assistant-bot",
       "notification",
       "command-bot",
       "workflow-bot",

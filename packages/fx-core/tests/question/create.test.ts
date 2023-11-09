@@ -143,7 +143,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 5);
+          assert.isTrue(options.length === 6);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(

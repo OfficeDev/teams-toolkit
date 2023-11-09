@@ -30,9 +30,9 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 **If you haven't setup any Assistant yet**
 
-> This app template provides script `src/creator.ts` to help create assistant. You can customize the instructions and settings there.
+> This app template provides script `src/creator.ts` to help create assistant. You can change the instructions and settings in the script to customize the assistant.
 > 
-> You can also create and manage your assistants on [OpenAI](https://platform.openai.com/assistants).
+> After creation, you can change and manage your assistants on [OpenAI](https://platform.openai.com/assistants).
 
 1. Open terminal and run command `npm install` to install all dependency packages
 

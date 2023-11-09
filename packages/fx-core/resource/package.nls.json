@@ -312,7 +312,7 @@
   "core.aiAssistantBotOption.label": "AI Assistant Bot",
   "core.aiAssistantBotOption.detail": "A custom AI assistant bot in Teams using Teams AI library and OpenAI Assistants API",
   "core.aiBotOption.label": "AI Chat Bot",
-  "core.aiBotOption.detail": "A basic AI bot in Teams using Teams AI library",
+  "core.aiBotOption.detail": "A basic AI chat bot in Teams using Teams AI library",
   "core.spfxFolder.title": "SPFx solution folder",
   "core.spfxFolder.placeholder": "Select the folder that contains your SPFx solution",
   "core.QuestionSelectTargetEnvironment.title": "Select an environment",

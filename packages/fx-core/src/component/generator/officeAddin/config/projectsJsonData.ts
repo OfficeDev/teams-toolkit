@@ -3,7 +3,6 @@
 
 import _ from "lodash";
 import { projectProperties } from "./projectProperties";
-import { isWXPExtensionEnabled } from "../../../../common/featureFlags";
 
 export default class projectsJsonData {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,9 +61,9 @@ export default class projectsJsonData {
       for (const template in this.projectJsonData.projectTypes[projectType].templates) {
         let scriptType = "";
         if (template === "javascript") {
-          scriptType = "JavaScript";
+          scriptType = "javascript";
         } else if (template === "typescript") {
-          scriptType = "TypeScript";
+          scriptType = "typescript";
         }
 
         scriptTypes.push(scriptType);
@@ -121,11 +120,6 @@ export default class projectsJsonData {
     scriptType: string,
     prerelease: boolean
   ): { repo: string | undefined; branch: string | undefined } {
-    if (isWXPExtensionEnabled()) {
-      scriptType = scriptType === "typescript" ? "typescript" : "javascript";
-    } else {
-      scriptType = scriptType === "TypeScript" ? "typescript" : "javascript";
-    }
     const repoBranchInfo: { repo: string | undefined; branch: string | undefined } = {
       repo: <string>(<unknown>null),
       branch: <string>(<unknown>null),
@@ -145,11 +139,6 @@ export default class projectsJsonData {
     frameworkType: string,
     prerelease: boolean
   ): { repo: string | undefined; branch: string | undefined } {
-    if (isWXPExtensionEnabled()) {
-      scriptType = scriptType === "typescript" ? "typescript" : "javascript";
-    } else {
-      scriptType = scriptType === "TypeScript" ? "typescript" : "javascript";
-    }
     const repoBranchInfo: { repo: string | undefined; branch: string | undefined } = {
       repo: <string>(<unknown>null),
       branch: <string>(<unknown>null),

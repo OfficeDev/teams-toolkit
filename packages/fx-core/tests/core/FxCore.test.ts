@@ -1368,6 +1368,7 @@ describe("isEnvFile", async () => {
           "spfx-folder",
           "me-architecture",
           "programming-language",
+          "addin-type",
           "folder",
           "app-name",
         ]);

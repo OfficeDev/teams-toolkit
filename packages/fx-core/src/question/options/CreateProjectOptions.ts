@@ -95,6 +95,12 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Directory or Path that contains the existing SharePoint Framework solution.",
   },
   {
+    name: "addin-host",
+    type: "string",
+    description: "Add-in Host",
+    default: "No Options",
+  },
+  {
     name: "me-architecture",
     type: "string",
     shortName: "m",
@@ -127,6 +133,14 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Programming Language",
     default: "javascript",
     choices: ["javascript", "typescript", "csharp"],
+  },
+  {
+    name: "office-addin-framework-type",
+    type: "string",
+    shortName: "f",
+    description: "Framework for WXP extension.",
+    default: "default",
+    choices: ["default", "react"],
   },
   {
     name: "folder",

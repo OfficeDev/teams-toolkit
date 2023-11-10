@@ -28,9 +28,8 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
-import { getTemplate } from "../../../question/create";
+import { ProjectTypeOptions, getTemplate } from "../../../question/create";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { isWXPExtensionEnabled } from "../../../common/featureFlags";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -58,22 +57,13 @@ export class OfficeAddinGenerator {
     // If lang is undefined, it means the project is created from a folder.
     const lang = inputs[QuestionNames.ProgrammingLanguage];
 
-    let templateRes;
-    if (isWXPExtensionEnabled()) {
-      templateRes = await Generator.generateTemplate(
-        context,
-        destinationPath,
-        templateName,
-        lang != "No Options" ? (lang === "typescript" ? "ts" : "js") : undefined
-      );
-    } else {
-      templateRes = await Generator.generateTemplate(
-        context,
-        destinationPath,
-        templateName,
-        lang != "No Options" ? (lang === "TypeScript" ? "ts" : "js") : undefined
-      );
-    }
+    const templateRes = await Generator.generateTemplate(
+      context,
+      destinationPath,
+      templateName,
+      lang != "No Options" ? (lang === "typescript" ? "ts" : "js") : undefined
+    );
+
     if (templateRes.isErr()) return err(templateRes.error);
 
     return ok(undefined);
@@ -105,7 +95,7 @@ export class OfficeAddinGenerator {
         // from template
         const jsonData = new projectsJsonData();
         let projectRepoBranchInfo;
-        if (isWXPExtensionEnabled()) {
+        if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
           const framework = inputs[QuestionNames.OfficeAddinFramework];
           projectRepoBranchInfo = jsonData.getProjectRepoAndBranchNew(
             template,
@@ -125,20 +115,21 @@ export class OfficeAddinGenerator {
             projectRepoBranchInfo.branch
           );
 
-          // // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          // const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
-          // await OfficeAddinGenerator.childProcessExec(cmdLine);
-
           let host;
-          if (isWXPExtensionEnabled()) {
+          if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
             host = jsonData.getHostTemplateNames(template);
+            for (let i = 0; i < host.length; i++) {
+              const hostName = host[i];
+              // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+              const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(
+                hostName
+              )}`;
+              await OfficeAddinGenerator.childProcessExec(cmdLine);
+            }
           } else {
             host = inputs[QuestionNames.OfficeAddinHost];
-          }
-          for (let i = 0; i < host.length; i++) {
-            const hostName = host[i];
             // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(hostName)}`;
+            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
             await OfficeAddinGenerator.childProcessExec(cmdLine);
           }
 

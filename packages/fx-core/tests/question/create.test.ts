@@ -410,6 +410,8 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: "./" });
         } else if (question.name === QuestionNames.AppName) {
           return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.OfficeAddinFramework) {
+          return ok({ type: "success", result: "default" });
         }
         return ok({ type: "success", result: undefined });
       };
@@ -422,6 +424,8 @@ describe("scaffold question", () => {
         QuestionNames.ProgrammingLanguage,
         QuestionNames.Folder,
         QuestionNames.AppName,
+        QuestionNames.OfficeAddinFramework,
+        QuestionNames.OfficeAddinHost,
       ]);
     });
     it("traverse in vscode SPFx new", async () => {
@@ -1919,7 +1923,7 @@ describe("scaffold question", () => {
         [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
         [QuestionNames.Capabilities]: "taskpane",
       });
-      assert.isTrue(options.length === 1 && options[0].id === "TypeScript");
+      assert.isTrue(options.length === 1 && options[0].id === "typescript");
     });
     it("SPFx", async () => {
       const options = getLanguageOptions({
@@ -2182,7 +2186,7 @@ describe("scaffold question", () => {
       assert.isDefined(question.dynamicOptions);
       if (question.dynamicOptions) {
         const options = await question.dynamicOptions(inputs);
-        assert.deepEqual(options, [{ label: "TypeScript", id: "TypeScript" }]);
+        assert.deepEqual(options, [{ label: "TypeScript", id: "typescript" }]);
       }
     });
 
@@ -2192,7 +2196,7 @@ describe("scaffold question", () => {
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
       assert.isDefined(question.default);
       const lang = await (question.default as LocalFunc<string | undefined>)(inputs);
-      assert.equal(lang, "TypeScript");
+      assert.equal(lang, "typescript");
     });
 
     it("SPFxTab", async () => {

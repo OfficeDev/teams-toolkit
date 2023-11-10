@@ -297,11 +297,15 @@ describe("User Interaction Tests", function () {
   });
 
   describe("other", async () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("Check process.env", () => {
       expect(UI.ciEnabled).equals(process.env.CI_EANBLED === "true");
     });
     it("interactive = true", async () => {
       sandbox.stub(UI, "ciEnabled").value(false);
+      UI.interactive = true;
       expect(UI.interactive).equals(true);
     });
     it("interactive = false when ciEnabled", async () => {

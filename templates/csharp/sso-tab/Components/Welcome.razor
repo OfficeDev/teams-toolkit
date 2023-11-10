@@ -66,12 +66,9 @@ else
             }
         }
         catch (Exception e) { 
-            errorMessage = e.Message;
         }
-        finally{
-            isLoading = false;
-            StateHasChanged();
-        }
+        isLoading = false;
+        StateHasChanged();
     }
 
     private string GetEnvironmentName()

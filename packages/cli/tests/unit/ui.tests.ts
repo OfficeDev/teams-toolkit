@@ -254,9 +254,30 @@ describe("User Interaction Tests", function () {
       const result = await UI.multiSelect("test", "Select a string", choices, ["id1", "id2"]);
       expect(result.isOk() ? result.value : result.error).to.be.deep.equals(["id1", "id2"]);
     });
+
+    it("multiSelect - non-interactive - no default value", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const choices = [1, 2, 3].map((x) => ({
+        id: `id${x}`,
+        title: `title ${x}`,
+        detail: `detail ${x}`,
+      }));
+      const result = await UI.multiSelect("test", "Select a string", choices);
+      expect(result.isOk() ? result.value : result.error).to.be.deep.equals([]);
+    });
   });
 
   describe("singleSelect", async () => {
+    it("singleSelect - interactive", async () => {
+      sandbox.stub(customizedPrompts, "select").value(() => "id1");
+      const choices = [1, 2, 3].map((x) => ({
+        id: `id${x}`,
+        title: `title ${x}`,
+        detail: `detail ${x}`,
+      }));
+      const result = await UI.singleSelect("test", "Select a string", choices, "id1");
+      expect(result.isOk() ? result.value : result.error).to.be.deep.equals("id1");
+    });
     it("singleSelect - non-interactive", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const choices = [1, 2, 3].map((x) => ({
@@ -267,32 +288,67 @@ describe("User Interaction Tests", function () {
       const result = await UI.singleSelect("test", "Select a string", choices, "id1");
       expect(result.isOk() ? result.value : result.error).to.be.deep.equals("id1");
     });
+    it("singleSelect - non-interactive - no default value", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const choices = [1, 2, 3].map((x) => ({
+        id: `id${x}`,
+        title: `title ${x}`,
+        detail: `detail ${x}`,
+      }));
+      const result = await UI.singleSelect("test", "Select a string", choices);
+      expect(result.isOk() ? result.value : result.error).to.be.deep.equals("id1");
+    });
   });
   describe("confirm", async () => {
+    it("confirm - interactive", async () => {
+      sandbox.stub(prompts, "confirm").resolves(false);
+      const result = await UI.confirm("test", "Select a string", false);
+      expect(result.isOk() ? result.value : result.error).to.be.equals(false);
+    });
     it("confirm - non-interactive", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const result = await UI.confirm("test", "Select a string", false);
       expect(result.isOk() ? result.value : result.error).to.be.equals(false);
     });
+    it("confirm - non-interactive - no default value", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const result = await UI.confirm("test", "Select a string");
+      expect(result.isOk() ? result.value : result.error).to.be.equals(true);
+    });
   });
   describe("input", async () => {
+    it("interactive", async () => {
+      sandbox.stub(prompts, "input").resolves("abc");
+      const result = await UI.input("test", "Input the password", "default string");
+      expect(result.isOk() ? result.value : result.error).equals("abc");
+    });
     it("non-interactive", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const result = await UI.input("test", "Input the password", "default string");
       expect(result.isOk() ? result.value : result.error).equals("default string");
     });
+    it("non-interactive - no default value", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const result = await UI.input("test", "Input the password");
+      expect(result.isOk() ? result.value : result.error).equals("");
+    });
   });
   describe("password", async () => {
-    it("password", async () => {
+    it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(prompts, "password").resolves("Password Result");
       const result = await UI.password("test", "Input the password");
       expect(result.isOk() ? result.value : result.error).equals("Password Result");
     });
-    it("password - non-interactive", async () => {
+    it("non-interactive", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const result = await UI.password("test", "Input the password", "default string");
       expect(result.isOk() ? result.value : result.error).equals("default string");
+    });
+    it("non-interactive - no default value", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const result = await UI.password("test", "Input the password");
+      expect(result.isOk() ? result.value : result.error).equals("");
     });
   });
 

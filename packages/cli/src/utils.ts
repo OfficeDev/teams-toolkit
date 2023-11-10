@@ -63,7 +63,7 @@ export function getSystemInputs(projectPath?: string, env?: string): Inputs {
     projectPath: projectPath,
     correlationId: uuid.v4(),
     env: env,
-    nonInteractive: !CLIUIInstance.interactive,
+    nonInteractive: false,
   };
   return systemInputs;
 }

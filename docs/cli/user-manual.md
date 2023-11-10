@@ -46,8 +46,8 @@ Let's start by installing `teamsfx-cli` from `npm` and run `teamsfx -h` to check
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
 |`--app-name` | Yes| Name of your Teams application.|
+|`--capabilities`| Yes| Choose Teams application capabilities, multiple Options are: `bot`, `ai-bot`, `notification`, `command-bot`, `workflow-bot`, `tab-non-sso`, `sso-launch-page`, `dashboard-tab`, `tab-spfx`, `link-unfurling`, `search-app` and `collect-form-message-extension`.|
 |`--interactive`| No | Select the options interactively. Options are `true` and `false`. The default value is `true`.|
-|`--capability`| No| Choose Teams application capabilities, multiple Options are: `tab`, `bot`, `messaging-extension` and `tab-spfx`. The default value is: `tab`.|
 |`--programming-language`| No| Programming Language for the project. Options are `javascrip` or `typescript` and default value is: `javascript`.|
 |`--folder`| No | Project directory. A sub folder with the your app name will be created under this directory. The default value is: `./`.|
 |`--spfx-framework-type`| No| Applicable if `Tab(SPfx)` capability is selected. Frontend Framework. Options are `none` and `react`, the default value is: `none`.|

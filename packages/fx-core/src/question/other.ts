@@ -506,7 +506,8 @@ export function selectTargetEnvQuestion(
         if (throwErrorIfNoEnv) throw res.error;
         return [defaultValueIfNoEnv];
       }
-      return res.value;
+      // "testtool" env is a pure local env and doesn't have manifest
+      return res.value.filter((env) => env !== environmentNameManager.getTestToolEnvName());
     },
     skipSingleOption: true,
     forgetLastValue: true,

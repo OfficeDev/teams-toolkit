@@ -300,6 +300,14 @@ describe("User Interaction Tests", function () {
     it("Check process.env", () => {
       expect(UI.ciEnabled).equals(process.env.CI_EANBLED === "true");
     });
+    it("interactive = true", async () => {
+      sandbox.stub(UI, "ciEnabled").value(false);
+      expect(UI.interactive).equals(true);
+    });
+    it("interactive = false when ciEnabled", async () => {
+      sandbox.stub(UI, "ciEnabled").value(true);
+      expect(UI.interactive).equals(false);
+    });
 
     it("Create Progress Bar", async () => {
       UI.createProgressBar("title", 3);

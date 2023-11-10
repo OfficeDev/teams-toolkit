@@ -35,13 +35,6 @@ describe("featureFlags", () => {
     });
   });
 
-  describe("isCliNewUxEnabled()", () => {
-    it("is true", async () => {
-      const res = isCliNewUxEnabled();
-      chai.assert.isTrue(res);
-    });
-  });
-
   describe("isCliV3Enabled()", () => {
     let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {

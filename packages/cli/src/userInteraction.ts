@@ -50,6 +50,18 @@ class CLIUserInteraction implements UserInteraction {
   get ciEnabled(): boolean {
     return process.env.CI_ENABLED === "true";
   }
+  private _interactive = true;
+  get interactive(): boolean {
+    if (this.ciEnabled) {
+      return false;
+    } else {
+      return this._interactive;
+    }
+  }
+
+  set interactive(value: boolean) {
+    this._interactive = value;
+  }
 
   async singleSelect(
     name: string,
@@ -57,6 +69,9 @@ class CLIUserInteraction implements UserInteraction {
     choices: SelectChoice[],
     defaultValue?: string
   ): Promise<Result<string, FxError>> {
+    if (!this.interactive) {
+      return ok(defaultValue || choices[0].id);
+    }
     ScreenManager.pause();
     const answer = await select({
       message,
@@ -74,6 +89,9 @@ class CLIUserInteraction implements UserInteraction {
     defaultValues?: string[],
     validateValues?: (value: string[]) => string | Promise<string | undefined> | undefined
   ): Promise<Result<string[], FxError>> {
+    if (!this.interactive) {
+      return ok(defaultValues || []);
+    }
     ScreenManager.pause();
     const answer = await checkbox({
       message,
@@ -91,6 +109,9 @@ class CLIUserInteraction implements UserInteraction {
     defaultValue?: string,
     validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
+    if (!this.interactive) {
+      return ok(defaultValue || "");
+    }
     ScreenManager.pause();
     const answer = await input({
       message,
@@ -107,6 +128,9 @@ class CLIUserInteraction implements UserInteraction {
     defaultValue?: string,
     validate?: ValidationType<string>
   ): Promise<Result<string, FxError>> {
+    if (!this.interactive) {
+      return ok(defaultValue || "");
+    }
     ScreenManager.pause();
     const answer = await password({
       message,
@@ -122,6 +146,9 @@ class CLIUserInteraction implements UserInteraction {
     message: string,
     defaultValue?: boolean
   ): Promise<Result<boolean, FxError>> {
+    if (!this.interactive) {
+      return ok(defaultValue !== undefined ? defaultValue : true);
+    }
     ScreenManager.pause();
     const answer = await confirm({
       message,

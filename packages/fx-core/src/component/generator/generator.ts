@@ -20,7 +20,6 @@ import {
   CancelDownloading,
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
-  FetchZipFromUrlError,
   SampleNotFoundError,
   TemplateNotFoundError,
   TemplateZipFallbackError,
@@ -214,10 +213,6 @@ export async function sampleDefaultOnActionError(
       } else {
         throw new DownloadSampleNetworkError(context.url!).toFxError();
       }
-    case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.url!, error).toFxError();
-    case GeneratorActionName.Unzip:
-      throw new UnzipError().toFxError();
     default:
       throw new Error(error.message);
   }

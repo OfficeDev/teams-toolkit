@@ -11,7 +11,6 @@ import { FeatureFlagName } from "../../src/common/constants";
 import {
   initializePreviewFeatureFlags,
   isApiKeyEnabled,
-  isCliNewUxEnabled,
   isCliV3Enabled,
 } from "../../src/common/featureFlags";
 

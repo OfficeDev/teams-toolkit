@@ -10,6 +10,7 @@ provision:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:44302";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:44302";
+
   # Creates a Teams app
   - uses: teamsApp/create
     with:
@@ -25,6 +26,7 @@ provision:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -32,11 +34,13 @@ provision:
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.
   # Will use the app id in manifest file to determine which Teams app to update.
@@ -71,7 +75,6 @@ provision:
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"
-            
           Microsoft 365 app (browser):
             commandName: "Project"
             dotnetRunMessages: true
@@ -81,7 +84,6 @@ provision:
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"
-            
           Outlook (browser):
             commandName: "Project"
             dotnetRunMessages: true

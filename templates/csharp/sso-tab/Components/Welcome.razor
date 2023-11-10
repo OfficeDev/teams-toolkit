@@ -27,10 +27,7 @@ else
                     <Content>
                         <div style="display:block; width:100%;">
                             <EditCode />
-                            @if (isInTeams)
-                            {
                                 <CurrentUser UserName="@userName" />
-                            }
                             <Graph ErrorMessage="@errorMessage" />
                         </div>
                     </Content>
@@ -55,27 +52,23 @@ else
 @code {
     string userName;
     string errorMessage;
-    bool isInTeams;
     bool isLoading = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (firstRender)
+        try
         {
-            isInTeams = await MicrosoftTeams.IsInTeams();
-
-            if (isInTeams)
+            await base.OnAfterRenderAsync(firstRender);
+            if (firstRender)
             {
                 var user = await teamsUserCredential.GetUserInfoAsync();
                 userName = user.DisplayName;
             }
-            else
-            {
-                errorMessage = "Not running in Microsoft Teams.";
-            }
-
+        }
+        catch (Exception e) { 
+            errorMessage = e.Message;
+        }
+        finally{
             isLoading = false;
             StateHasChanged();
         }

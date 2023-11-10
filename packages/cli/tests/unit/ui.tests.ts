@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import * as prompts from "@inquirer/prompts";
-import { CancelablePromise } from "@inquirer/type";
 import {
   Colors,
   LogLevel,
@@ -24,55 +23,11 @@ import { expect } from "./utils";
 
 describe("User Interaction Tests", function () {
   const sandbox = sinon.createSandbox();
-  before(() => {
-    sandbox.stub(prompts, "input").get(() => (config: any) => {
-      return new CancelablePromise((resolve) => resolve(config.default ?? "Input Result"));
-    });
-    sandbox.stub(prompts, "password").get(() => (config: any) => {
-      return new CancelablePromise((resolve) => resolve("Password Result"));
-    });
-    sandbox.stub(prompts, "confirm").get(() => (config: any) => {
-      return new CancelablePromise((resolve) => resolve(config.default ?? true));
-    });
-    sandbox
-      .stub(customizedPrompts, "select")
-      .get(() => (config: customizedPrompts.SelectConfig) => {
-        const value =
-          config.defaultValue ??
-          (
-            config.choices.filter(
-              (x) => !prompts.Separator.isSeparator(x)
-            )[0] as customizedPrompts.SelectChoice
-          ).id;
-        return new CancelablePromise<string>((resolve) => resolve(value));
-      });
-    sandbox
-      .stub(customizedPrompts, "checkbox")
-      .get(() => (config: customizedPrompts.CheckboxConfig) => {
-        const values: any =
-          config.defaultValues ??
-          config.choices
-            .filter((x) => !prompts.Separator.isSeparator(x) && x.checked)
-            .map((x) => (x as customizedPrompts.SelectChoice).id);
-        return new CancelablePromise((resolve) => resolve(values));
-      });
-  });
-
   afterEach(() => {
     sandbox.restore();
   });
 
-  beforeEach(() => {});
-
-  it("Check process.env", () => {
-    expect(UI.ciEnabled).equals(process.env.CI_EANBLED === "true");
-  });
-
-  describe("Single Select Option", async () => {
-    const sandbox = sinon.createSandbox();
-    afterEach(() => {
-      sandbox.restore();
-    });
+  describe("selectOption", async () => {
     it("(Hardcode) Subscription: EmptySubConfigOptions Error", async () => {
       const config: SingleSelectConfig = {
         name: "subscription",
@@ -184,11 +139,7 @@ describe("User Interaction Tests", function () {
     });
   });
 
-  describe("Multi Select Options", () => {
-    const sandbox = sinon.createSandbox();
-    afterEach(() => {
-      sandbox.restore();
-    });
+  describe("selectOptions", () => {
     it("Auto skip for single option (return object = true)", async () => {
       const config: MultiSelectConfig = {
         name: "test",
@@ -281,51 +232,107 @@ describe("User Interaction Tests", function () {
     });
   });
 
-  it("multiSelect", async () => {
-    sandbox.stub(customizedPrompts, "checkbox").value(() => ["id1", "id2"]);
-    const choices = [1, 2, 3].map((x) => ({
-      id: `id${x}`,
-      title: `title ${x}`,
-      detail: `detail ${x}`,
-    }));
-    const result = await UI.multiSelect("test", "Select a string", choices, ["id1", "id2"]);
-    expect(result.isOk() ? result.value : result.error).to.be.deep.equals(["id1", "id2"]);
+  describe("multiSelect", async () => {
+    it("multiSelect", async () => {
+      sandbox.stub(customizedPrompts, "checkbox").value(() => ["id1", "id2"]);
+      const choices = [1, 2, 3].map((x) => ({
+        id: `id${x}`,
+        title: `title ${x}`,
+        detail: `detail ${x}`,
+      }));
+      const result = await UI.multiSelect("test", "Select a string", choices, ["id1", "id2"]);
+      expect(result.isOk() ? result.value : result.error).to.be.deep.equals(["id1", "id2"]);
+    });
+
+    it("multiSelect - non-interactive", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const choices = [1, 2, 3].map((x) => ({
+        id: `id${x}`,
+        title: `title ${x}`,
+        detail: `detail ${x}`,
+      }));
+      const result = await UI.multiSelect("test", "Select a string", choices, ["id1", "id2"]);
+      expect(result.isOk() ? result.value : result.error).to.be.deep.equals(["id1", "id2"]);
+    });
   });
 
-  it("Password", async () => {
-    sandbox.stub(prompts, "password").resolves("Password Result");
-    const result = await UI.password("test", "Input the password");
-    expect(result.isOk() ? result.value : result.error).equals("Password Result");
+  describe("singleSelect", async () => {
+    it("singleSelect - non-interactive", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const choices = [1, 2, 3].map((x) => ({
+        id: `id${x}`,
+        title: `title ${x}`,
+        detail: `detail ${x}`,
+      }));
+      const result = await UI.singleSelect("test", "Select a string", choices, "id1");
+      expect(result.isOk() ? result.value : result.error).to.be.deep.equals("id1");
+    });
+  });
+  describe("confirm", async () => {
+    it("confirm - non-interactive", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const result = await UI.confirm("test", "Select a string", false);
+      expect(result.isOk() ? result.value : result.error).to.be.equals(false);
+    });
+  });
+  describe("input", async () => {
+    it("non-interactive", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const result = await UI.input("test", "Input the password", "default string");
+      expect(result.isOk() ? result.value : result.error).equals("default string");
+    });
+  });
+  describe("password", async () => {
+    it("password", async () => {
+      sandbox.stub(prompts, "password").resolves("Password Result");
+      const result = await UI.password("test", "Input the password");
+      expect(result.isOk() ? result.value : result.error).equals("Password Result");
+    });
+    it("password - non-interactive", async () => {
+      sandbox.stub(UI, "interactive").value(false);
+      const result = await UI.password("test", "Input the password", "default string");
+      expect(result.isOk() ? result.value : result.error).equals("default string");
+    });
   });
 
-  it("Single Select File", async () => {
-    sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./" }));
-    const config: SelectFileConfig = {
-      name: "path",
-      title: "Select a path",
-    };
-    const result = await UI.selectFile(config);
-    expect(result.isOk() ? result.value.result : result.error).deep.equals("./");
-  });
+  describe("other", async () => {
+    it("Check process.env", () => {
+      expect(UI.ciEnabled).equals(process.env.CI_EANBLED === "true");
+    });
 
-  it("Multi Select Files", async () => {
-    sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./;./" }));
-    const config: SelectFilesConfig = {
-      name: "paths",
-      title: "Select a path",
-    };
-    const result = await UI.selectFiles(config);
-    expect(result.isOk() ? result.value.result : result.error).deep.equals(["./", "./"]);
-  });
+    it("Create Progress Bar", async () => {
+      UI.createProgressBar("title", 3);
+    });
 
-  it("Select Folder", async () => {
-    sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./" }));
-    const config: SelectFolderConfig = {
-      name: "folder",
-      title: "Select a folder",
-    };
-    const result = await UI.selectFolder(config);
-    expect(result.isOk() ? result.value.result : result.error).deep.equals("./");
+    it("Single Select File", async () => {
+      sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./" }));
+      const config: SelectFileConfig = {
+        name: "path",
+        title: "Select a path",
+      };
+      const result = await UI.selectFile(config);
+      expect(result.isOk() ? result.value.result : result.error).deep.equals("./");
+    });
+
+    it("Multi Select Files", async () => {
+      sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./;./" }));
+      const config: SelectFilesConfig = {
+        name: "paths",
+        title: "Select a path",
+      };
+      const result = await UI.selectFiles(config);
+      expect(result.isOk() ? result.value.result : result.error).deep.equals(["./", "./"]);
+    });
+
+    it("Select Folder", async () => {
+      sandbox.stub(UI, "inputText").resolves(ok({ type: "success", result: "./" }));
+      const config: SelectFolderConfig = {
+        name: "folder",
+        title: "Select a folder",
+      };
+      const result = await UI.selectFolder(config);
+      expect(result.isOk() ? result.value.result : result.error).deep.equals("./");
+    });
   });
 
   describe("Show Message", () => {
@@ -334,10 +341,6 @@ describe("User Interaction Tests", function () {
       sandbox.stub(logger, "warning").returns();
       sandbox.stub(logger, "error").returns();
     });
-    afterEach(() => {
-      sandbox.restore();
-    });
-
     const levels: ["info" | "warn" | "error", LogLevel][] = [
       ["info", LogLevel.Info],
       ["warn", LogLevel.Warning],
@@ -389,9 +392,5 @@ describe("User Interaction Tests", function () {
       const result = await UI.showMessage("info", msg1, true, items[0], items[1]);
       expect(result.isErr()).to.be.true;
     });
-  });
-
-  it("Create Progress Bar", async () => {
-    UI.createProgressBar("title", 3);
   });
 });

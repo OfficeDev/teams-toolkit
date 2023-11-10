@@ -233,6 +233,9 @@ describe("User Interaction Tests", function () {
   });
 
   describe("multiSelect", async () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(customizedPrompts, "checkbox").value(() => ["id1", "id2"]);
@@ -269,6 +272,9 @@ describe("User Interaction Tests", function () {
   });
 
   describe("singleSelect", async () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(customizedPrompts, "select").value(() => "id1");
@@ -302,6 +308,9 @@ describe("User Interaction Tests", function () {
     });
   });
   describe("confirm", async () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(prompts, "confirm").resolves(false);
@@ -320,6 +329,9 @@ describe("User Interaction Tests", function () {
     });
   });
   describe("input", async () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(prompts, "input").resolves("abc");
@@ -338,6 +350,9 @@ describe("User Interaction Tests", function () {
     });
   });
   describe("password", async () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(prompts, "password").resolves("Password Result");

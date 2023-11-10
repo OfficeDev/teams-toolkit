@@ -6,6 +6,7 @@
       "remotedebug-spfxreact-none",
       "remotedebug-spfxreact-minimal",
       "remotedebug-spfxreact",
+      "remotedebug-spfxreact-globalpkg",
       "localdebug-tab-nosso",
       "localdebug-bot",
       "localdebug-bot-twice",

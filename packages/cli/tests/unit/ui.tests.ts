@@ -284,6 +284,7 @@ describe("User Interaction Tests", function () {
   });
   describe("password", async () => {
     it("password", async () => {
+      sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(prompts, "password").resolves("Password Result");
       const result = await UI.password("test", "Input the password");
       expect(result.isOk() ? result.value : result.error).equals("Password Result");

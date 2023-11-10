@@ -233,7 +233,8 @@ describe("User Interaction Tests", function () {
   });
 
   describe("multiSelect", async () => {
-    it("multiSelect", async () => {
+    it("interactive", async () => {
+      sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(customizedPrompts, "checkbox").value(() => ["id1", "id2"]);
       const choices = [1, 2, 3].map((x) => ({
         id: `id${x}`,
@@ -244,7 +245,7 @@ describe("User Interaction Tests", function () {
       expect(result.isOk() ? result.value : result.error).to.be.deep.equals(["id1", "id2"]);
     });
 
-    it("multiSelect - non-interactive", async () => {
+    it("non-interactive", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const choices = [1, 2, 3].map((x) => ({
         id: `id${x}`,
@@ -255,7 +256,7 @@ describe("User Interaction Tests", function () {
       expect(result.isOk() ? result.value : result.error).to.be.deep.equals(["id1", "id2"]);
     });
 
-    it("multiSelect - non-interactive - no default value", async () => {
+    it("non-interactive - no default value", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const choices = [1, 2, 3].map((x) => ({
         id: `id${x}`,
@@ -268,7 +269,8 @@ describe("User Interaction Tests", function () {
   });
 
   describe("singleSelect", async () => {
-    it("singleSelect - interactive", async () => {
+    it("interactive", async () => {
+      sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(customizedPrompts, "select").value(() => "id1");
       const choices = [1, 2, 3].map((x) => ({
         id: `id${x}`,
@@ -278,7 +280,7 @@ describe("User Interaction Tests", function () {
       const result = await UI.singleSelect("test", "Select a string", choices, "id1");
       expect(result.isOk() ? result.value : result.error).to.be.deep.equals("id1");
     });
-    it("singleSelect - non-interactive", async () => {
+    it("non-interactive", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const choices = [1, 2, 3].map((x) => ({
         id: `id${x}`,
@@ -288,7 +290,7 @@ describe("User Interaction Tests", function () {
       const result = await UI.singleSelect("test", "Select a string", choices, "id1");
       expect(result.isOk() ? result.value : result.error).to.be.deep.equals("id1");
     });
-    it("singleSelect - non-interactive - no default value", async () => {
+    it("non-interactive - no default value", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const choices = [1, 2, 3].map((x) => ({
         id: `id${x}`,
@@ -300,17 +302,18 @@ describe("User Interaction Tests", function () {
     });
   });
   describe("confirm", async () => {
-    it("confirm - interactive", async () => {
+    it("interactive", async () => {
+      sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(prompts, "confirm").resolves(false);
       const result = await UI.confirm("test", "Select a string", false);
       expect(result.isOk() ? result.value : result.error).to.be.equals(false);
     });
-    it("confirm - non-interactive", async () => {
+    it("non-interactive", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const result = await UI.confirm("test", "Select a string", false);
       expect(result.isOk() ? result.value : result.error).to.be.equals(false);
     });
-    it("confirm - non-interactive - no default value", async () => {
+    it("non-interactive - no default value", async () => {
       sandbox.stub(UI, "interactive").value(false);
       const result = await UI.confirm("test", "Select a string");
       expect(result.isOk() ? result.value : result.error).to.be.equals(true);
@@ -318,6 +321,7 @@ describe("User Interaction Tests", function () {
   });
   describe("input", async () => {
     it("interactive", async () => {
+      sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(prompts, "input").resolves("abc");
       const result = await UI.input("test", "Input the password", "default string");
       expect(result.isOk() ? result.value : result.error).equals("abc");

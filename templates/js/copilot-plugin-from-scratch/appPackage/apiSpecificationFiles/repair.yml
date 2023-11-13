@@ -29,7 +29,7 @@ paths:
                 items:
                   properties:
                     id:
-                      type: integer
+                      type: string
                       description: The unique identifier of the repair
                     title:
                       type: string

@@ -33,14 +33,14 @@ import * as path from "path";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { pathToFileURL } from "url";
-import { parse } from "yaml";
+import { parse, parseDocument } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { SpecParser, SpecParserError } from "../common/spec-parser";
-import { VersionSource, VersionState } from "../common/versionMetadata";
+import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
 import {
@@ -89,7 +89,14 @@ import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
-import { FileNotFoundError, InvalidProjectError, assembleError } from "../error/common";
+import {
+  FileNotFoundError,
+  InvalidProjectError,
+  assembleError,
+  MultipleAuthError,
+  MultipleServerError,
+  InjectAPIKeyActionFailedError,
+} from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ValidateTeamsAppInputs } from "../question";
@@ -1143,6 +1150,61 @@ export class FxCore {
     const context = createContextV3();
     return await coordinator.publishInDeveloperPortal(context, inputs as InputsWithProjectPath);
   }
+
+  async injectCreateAPIKeyAction(
+    ymlPath: string,
+    authName: string,
+    specRelativePath: string
+  ): Promise<void> {
+    const ymlContent = await fs.readFile(ymlPath, "utf-8");
+
+    const document = parseDocument(ymlContent);
+    const provisionNode = document.get("provision") as any;
+
+    if (provisionNode) {
+      const hasApiKeyAction = provisionNode.items.some(
+        (item: any) =>
+          item.get("uses") === "apiKey/register" && item.get("with")?.get("name") === authName
+      );
+
+      if (!hasApiKeyAction) {
+        provisionNode.items = provisionNode.items.filter(
+          (item: any) => item.get("uses") !== "apiKey/register"
+        );
+        let added = false;
+        for (let i = 0; i < provisionNode.items.length; i++) {
+          const item = provisionNode.items[i];
+          if (item.get("uses") === "teamsApp/create") {
+            const teamsAppId = item.get("writeToEnvironmentFile")?.get("teamsAppId") as string;
+            if (teamsAppId) {
+              provisionNode.items.splice(i + 1, 0, {
+                uses: "apiKey/register",
+                with: {
+                  name: `${authName}`,
+                  appId: `\${{${teamsAppId}}}`,
+                  apiSpecPath: specRelativePath,
+                },
+                writeToEnvironmentFile: {
+                  registrationId: `${authName.toUpperCase()}_REGISTRATION_ID`,
+                },
+              });
+              added = true;
+              break;
+            }
+          }
+        }
+
+        if (!added) {
+          throw new InjectAPIKeyActionFailedError();
+        }
+
+        await fs.writeFile(ymlPath, document.toString(), "utf8");
+      }
+    } else {
+      throw new InjectAPIKeyActionFailedError();
+    }
+  }
+
   @hooks([
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginAddAPI" }),
     ErrorHandlerMW,
@@ -1150,9 +1212,7 @@ export class FxCore {
     ConcurrentLockerMW,
   ])
   async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
-    const newOperations = (inputs[QuestionNames.ApiOperation] as ApiOperation[])?.map(
-      (item) => item.id
-    );
+    const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
 
@@ -1188,6 +1248,43 @@ export class FxCore {
     const context = createContextV3();
 
     try {
+      if (isApiKeyEnabled()) {
+        const authNames: Set<string> = new Set();
+        const serverUrls: Set<string> = new Set();
+        for (const api of operations) {
+          const operation = apiResultList.find((op) => op.api === api);
+          if (operation) {
+            if (operation.auth) {
+              authNames.add(operation.auth.name);
+              serverUrls.add(operation.server);
+            }
+          }
+        }
+
+        if (authNames.size > 1) {
+          throw new MultipleAuthError(authNames);
+        }
+
+        if (serverUrls.size > 1) {
+          throw new MultipleServerError(serverUrls);
+        }
+
+        if (authNames.size === 1) {
+          const ymlPath = path.join(inputs.projectPath!, MetadataV3.configFile);
+          const localYamlPath = path.join(inputs.projectPath!, MetadataV3.localConfigFile);
+          const authName = [...authNames][0];
+
+          const relativeSpecPath =
+            "./" + path.relative(inputs.projectPath!, outputAPISpecPath).replace(/\\/g, "/");
+
+          await this.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
+
+          if (await fs.pathExists(localYamlPath)) {
+            await this.injectCreateAPIKeyAction(localYamlPath, authName, relativeSpecPath);
+          }
+        }
+      }
+
       const generateResult = await specParser.generate(
         manifestPath,
         operations,

@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit message extension search sample",
     "engines": {
-        "node": "16 || 18"
+        "node": "16 || 18 || 20"
     },
     "author": "Microsoft",
     "license": "MIT",
@@ -25,15 +25,15 @@
         "adaptivecards-templating": "^2.3.1",
         "adaptivecards": "^3.0.1",
         "botbuilder": "^4.20.0",
-        "restify": "^10.0.0"
+        "restify": "^11.1.0"
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-        "@types/node": "^16.0.0",
+        "@types/node": "^20.8.9",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
-        "typescript": "^4.4.4",
-        "nodemon": "^2.0.7",
+        "typescript": "^5.2.2",
+        "nodemon": "^3.0.1",
         "shx": "^0.3.3"
     }
 }

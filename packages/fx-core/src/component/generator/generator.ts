@@ -20,7 +20,6 @@ import {
   CancelDownloading,
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
-  FetchZipFromUrlError,
   SampleNotFoundError,
   TemplateNotFoundError,
   TemplateZipFallbackError,
@@ -36,6 +35,7 @@ import {
 import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
 import { sampleProvider } from "../../common/samples";
 import { enableTestToolByDefault } from "../../common/featureFlags";
+import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
 
 export class Generator {
   public static getDefaultVariables(
@@ -45,13 +45,17 @@ export class Generator {
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
+    const safeRegistrationIdEnvName = getSafeRegistrationIdEnvName(
+      apiKeyAuthData?.registrationIdEnvName ?? ""
+    );
+
     return {
       appName: appName,
       ProjectName: appName,
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
       ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
-      ApiSpecAuthRegistrationIdEnvName: apiKeyAuthData?.registrationIdEnvName ?? "",
+      ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
     };
@@ -209,10 +213,6 @@ export async function sampleDefaultOnActionError(
       } else {
         throw new DownloadSampleNetworkError(context.url!).toFxError();
       }
-    case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.url!, error).toFxError();
-    case GeneratorActionName.Unzip:
-      throw new UnzipError().toFxError();
     default:
       throw new Error(error.message);
   }

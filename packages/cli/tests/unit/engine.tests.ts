@@ -572,12 +572,6 @@ describe("CLI Engine", () => {
       sandbox.restore();
     });
     it("new logger", async () => {
-      sandbox.stub(common, "isCliNewUxEnabled").returns(true);
-      resetFxCore();
-      getFxCore();
-    });
-    it("old logger", async () => {
-      sandbox.stub(common, "isCliNewUxEnabled").returns(false);
       resetFxCore();
       getFxCore();
     });

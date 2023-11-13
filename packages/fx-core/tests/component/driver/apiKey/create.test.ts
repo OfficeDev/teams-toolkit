@@ -17,6 +17,7 @@ import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clien
 import { ApiSecretRegistrationAppType } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { setTools } from "../../../../src/core/globalVars";
+import { SpecParser } from "../../../../src/common/spec-parser";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -55,19 +56,31 @@ describe("CreateApiKeyDriver", () => {
     }
   });
 
-  it("happy path: create registraionid and read domain, clientSecret from input", async () => {
+  it("happy path: create registraionid, read domain from api spec, clientSecret from input", async () => {
     sinon.stub(AppStudioClient, "createApiKeyRegistration").resolves({
       id: "mockedRegistrationId",
       clientSecrets: [],
       targetUrlsShouldStartWith: [],
       applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
     });
+    sinon.stub(SpecParser.prototype, "list").resolves([
+      {
+        api: "api",
+        server: "https://test",
+        operationId: "get",
+        auth: {
+          type: "apiKey",
+          name: "test",
+          in: "header",
+        },
+      },
+    ]);
 
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret, mockedClientSecret2",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isOk()).to.be.true;
@@ -84,14 +97,26 @@ describe("CreateApiKeyDriver", () => {
       targetUrlsShouldStartWith: [],
       applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
     });
+    sinon.stub(SpecParser.prototype, "list").resolves([
+      {
+        api: "api",
+        server: "https://test",
+        operationId: "get",
+        auth: {
+          type: "apiKey",
+          name: "test",
+          in: "header",
+        },
+      },
+    ]);
 
     envRestore = mockedEnv({
       ["api-key"]: "existingvalue",
     });
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isOk()).to.be.true;
@@ -111,9 +136,9 @@ describe("CreateApiKeyDriver", () => {
 
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
     };
     envRestore = mockedEnv({
       [outputKeys.registrationId]: "existing value",
@@ -129,9 +154,9 @@ describe("CreateApiKeyDriver", () => {
   it("should throw error when empty outputEnvVarNames", async () => {
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, undefined);
     expect(result.result.isErr()).to.be.true;
@@ -146,9 +171,9 @@ describe("CreateApiKeyDriver", () => {
       .resolves(err(new SystemError("source", "name", "message")));
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
@@ -164,9 +189,9 @@ describe("CreateApiKeyDriver", () => {
 
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
     };
     envRestore = mockedEnv({
       [outputKeys.registrationId]: "existing value",
@@ -178,9 +203,9 @@ describe("CreateApiKeyDriver", () => {
   it("should throw error if missing name", async () => {
     const args: any = {
       name: "",
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
@@ -192,9 +217,9 @@ describe("CreateApiKeyDriver", () => {
   it("should throw error if name is too long", async () => {
     const args: any = {
       name: "a".repeat(129),
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
@@ -206,9 +231,9 @@ describe("CreateApiKeyDriver", () => {
   it("should throw error if missing appId", async () => {
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "",
       clientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
@@ -220,9 +245,9 @@ describe("CreateApiKeyDriver", () => {
   it("should throw error if invalid clientSecret", async () => {
     let args: any = {
       name: "test",
-      domain: "https://test",
       appId: "",
       clientSecret: "secret",
+      apiSpecPath: "mockedPath",
     };
     let result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
@@ -232,7 +257,6 @@ describe("CreateApiKeyDriver", () => {
 
     args = {
       name: "test",
-      domain: "https://test",
       appId: "",
       clientSecret: "mockedSecret, mockedSecret2, mockedSecret3",
     };
@@ -243,29 +267,68 @@ describe("CreateApiKeyDriver", () => {
     }
   });
 
-  it("should throw error if invalid domain", async () => {
-    let args: any = {
+  it("should throw error if missing apiSpecPath", async () => {
+    const args: any = {
       name: "test",
-      domain: "https://test, https://test2",
-      appId: "",
-      clientSecret: "mockedSecret",
+      appId: "mockedAppId",
+      clientSecret: "mockedClientSecret",
+      apiSpecPath: "",
     };
-    let result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("InvalidActionInputError");
+    }
+  });
+
+  it("should throw error if domain > 1", async () => {
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      clientSecret: "mockedSecret",
+      apiSpecPath: "mockedPath",
+    };
+    sinon.stub(SpecParser.prototype, "list").resolves([
+      {
+        api: "api",
+        server: "https://test",
+        operationId: "get",
+        auth: {
+          type: "apiKey",
+          name: "test",
+          in: "header",
+        },
+      },
+      {
+        api: "api",
+        server: "https://test2",
+        operationId: "get",
+        auth: {
+          type: "apiKey",
+          name: "test",
+          in: "header",
+        },
+      },
+    ]);
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.name).to.equal("ApiKeyDomainInvalid");
     }
+  });
 
-    args = {
+  it("should throw error if domain = 0", async () => {
+    const args: any = {
       name: "test",
-      domain: ", https://test",
-      appId: "",
-      clientSecret: "mockedSecret, mockedSecret2, mockedSecret3",
+      appId: "mockedAppId",
+      clientSecret: "mockedSecret",
+      apiSpecPath: "mockedPath",
     };
-    result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    sinon.stub(SpecParser.prototype, "list").resolves([]);
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
-      expect(result.result.error.name).to.equal("ApiKeyClientSecretInvalid");
+      expect(result.result.error.name).to.equal("ApiKeyFailedToGetDomain");
     }
   });
 
@@ -273,12 +336,24 @@ describe("CreateApiKeyDriver", () => {
     sinon
       .stub(AppStudioClient, "createApiKeyRegistration")
       .throws(new SystemError("source", "name", "message"));
+    sinon.stub(SpecParser.prototype, "list").resolves([
+      {
+        api: "api",
+        server: "https://test",
+        operationId: "get",
+        auth: {
+          type: "apiKey",
+          name: "test",
+          in: "header",
+        },
+      },
+    ]);
 
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret, mockedClientSecret2",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
@@ -291,14 +366,14 @@ describe("CreateApiKeyDriver", () => {
     sinon.stub(MockedM365Provider.prototype, "getAccessToken").throws(new Error("unhandled error"));
     const args: any = {
       name: "test",
-      domain: "https://test",
       appId: "mockedAppId",
       clientSecret: "mockedClientSecret, mockedClientSecret2",
+      apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
-      expect(result.result.error.source).to.equal("apiKeyCreate");
+      expect(result.result.error.source).to.equal("apiKeyRegister");
     }
   });
 });

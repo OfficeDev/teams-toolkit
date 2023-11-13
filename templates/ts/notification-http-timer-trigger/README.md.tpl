@@ -1,6 +1,6 @@
 # Overview of the Notification bot template
 
-This template showcases an app that send a message to Teams with Adaptive Cards triggered by a HTTP post request. You can further extend the template to consume, transform and post events to individual, chat or channel in Teams.
+This template showcases an app that send a message to Teams with Adaptive Cards triggered by a HTTP post request or timer schedule. You can further extend the template to consume, transform and post events to individual, chat or channel in Teams.
 
 The app template is built using the TeamsFx SDK, which provides a simple set of functions over the Microsoft Bot Framework to implement this scenario.
 
@@ -12,7 +12,9 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > To run the notification bot template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
+{{^enableTestToolByDefault}}
 > - An [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+{{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-cli)
 >
 > **Note**
@@ -20,26 +22,40 @@ The app template is built using the TeamsFx SDK, which provides a simple set of 
 > Your app can be installed into a team, or a group chat, or as personal app. See [Installation and Uninstallation](https://aka.ms/teamsfx-notification-new#customize-installation).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableTestToolByDefault}}
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+3. The browser will pop up to open Teams App Test Tool.
+4. If you select `Timer Trigger`, wait for 30 seconds. If you select `HTTP Trigger`, send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-5. Send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
+5. If you select `Timer Trigger`, wait for 30 seconds. If you select `HTTP Trigger`, send a POST request to `http://<endpoint>/api/notification` with your favorite tool (like `Postman`)
+{{/enableTestToolByDefault}}
 
    - When your project is running locally, replace `<endpoint>` with `localhost:3978`
    - When your project is deployed to Azure App Service, replace `<endpoint>` with the url from Azure App Service
 
+{{#enableTestToolByDefault}}
+The bot will send an Adaptive Card to Teams App Test Tool:
+
+![Notification Message in Test Tool](https://github.com/OfficeDev/TeamsFx/assets/9698542/43ee64f4-5554-4e0b-854f-f7e20672cb25)
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 The bot will send an Adaptive Card to Teams:
 
 ![Notification Message in Teams](https://user-images.githubusercontent.com/7642967/223006044-5003574e-2aee-4a41-9b71-c103d0439012.png)
+{{/enableTestToolByDefault}}
 
 ## What's included in the template
 
-| Folder / File| Contents |
+| Folder / File | Contents |
 | - | - |
 | `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
 | `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
-| `env/`| Name / value pairs are stored in environment files and used by `teamsapp.yml` to customize the provisioning and deployment rules |
-| `.vscode/` | VSCode files for debugging |
+| `teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool |
+| `.vscode/` | VSCode files for local debug |
 | `src/` | The source code for the notification Teams application |
 | `appPackage/` | Templates for the Teams application manifest |
 | `infra/` | Templates for provisioning Azure resources |
@@ -48,9 +64,29 @@ The following files can be customized and demonstrate an example implementation 
 
 | File | Contents |
 | - | - |
-| `src/index.js` | Application entry point and `restify` handlers for notifications |
-| `src/teamsBot.js`| An empty teams activity handler for bot customization |
+| `*Trigger/function.json` | Azure Function bindings for the notification trigger |
+| `src/*Trigger.ts` | Notification trigger implementation |
+| `src/teamsBot.ts`| An empty teams activity handler for bot customization |
 | `src/adaptiveCards/notification-default.json` | A generated Adaptive Card that is sent to Teams |
+| `src/cardModels.ts` | The default Adaptive Card data model |
+
+The following files implement the core notification on the Bot Framework. You generally will not need to customize these files.
+
+| File / Folder | Contents |
+| - | - |
+| `src/internal/initialize.ts` | Application initialization |
+| `messageHandler/` | Azure Function bindings to implement Bot protocol |
+| `src/internal/messageHandler.ts`<br/>`src/internal/responseWrapper.ts` | Bot protocol implementation |
+
+The following files are project-related files. You generally will not need to customize these files.
+
+| File / Folder | Contents |
+| - | - |
+| `.funcignore` | Azure Functions ignore file to exclude local files |
+| `.gitignore` | Git ignore file |
+| `host.json` | Azure Functions host file |
+| `local.settings.json` | Azure Functions settings for local debugging |
+| `package.json` | NPM package file |
 
 ## Extend the notification bot template
 
@@ -62,16 +98,22 @@ There are few customizations you can make to extend the template to fit your bus
 
 ### Step 1: Customize the trigger point from event source
 
-By default Teams Toolkit scaffolds a single `restify` entry point in `src/index.js`. When a HTTP request is sent to this entry point, the default implementation sends a hard-coded Adaptive Card to Teams. You can customize this behavior by customizing `src/index.js`. A typical implementation might make an API call to retrieve some events and/or data, and then send an Adaptive Card as appropriate.
+If you selected `timer` trigger, the default Azure Function timer trigger (`src/timerTrigger.ts`) implementation simply sends a hard-coded Adaptive Card every 30 seconds. You can edit the file `*Trigger/function.json` to customize the `schedule` property. Refer to the [Azure Function documentation](https://docs.microsoft.com/azure/azure-functions/functions-bindings-timer?tabs=in-process&pivots=programming-language-javascript#ncrontab-expressions) for more details.
 
-You can also add additional triggers by:
+If you selected `http` trigger, when this trigger is hit (via a HTTP request), the default implementation sends a hard-coded Adaptive Card to Teams. You can change this behavior by customizing `src/*Trigger.ts`. A typical implementation might make an API call to retrieve some events and/or data, and then send an Adaptive Card as appropriate.
 
-- Creating new routing: `server.post("/api/new-trigger", ...);`
-- Add Timer trigger(s) via widely-used npm packages such as [cron](https://www.npmjs.com/package/cron), [node-schedule](https://www.npmjs.com/package/node-schedule), etc. Or add other trigger(s) via other packages.
+You can also add any Azure Function trigger. For example:
 
-### Step 2: Customize the notification content
+- You can use an `Event Hub` trigger to send notifications when an event is pushed to Azure Event Hub.
+- You can use a `Cosmos DB` trigger to send notifications when a Cosmos document has been created or updated.
 
-`src/adaptiveCards/notification-default.json` defines the default Adaptive Card. You can add, edit, or remove properties and their bindings (e.g., `${title}`) to customize the Adaptive Card to your needs. You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to help visually design your Adaptive Card UI.
+See Azure Functions [supported triggers](https://docs.microsoft.com/azure/azure-functions/functions-triggers-bindings?tabs=javascript#supported-bindings).
+
+## Step 2: Customize the notification content
+
+`src/adaptiveCards/notification-default.json` defines the default Adaptive Card. You can use the [Adaptive Card Designer](https://adaptivecards.io/designer/) to help visually design your Adaptive Card UI.
+
+`src/cardModels.ts` defines a data structure that is used to fill data for the Adaptive Card. The binding between the model and the Adaptive Card is done by name matching (for example,`CardData.title` maps to `${title}` in the Adaptive Card). You can add, edit, or remove properties and their bindings to customize the Adaptive Card to your needs.
 
 You can also add new cards if needed. Follow this [sample](https://aka.ms/teamsfx-adaptive-card-sample-new) to see how to build different types of adaptive cards with a list or a table of dynamic contents using `ColumnSet` and `FactSet`.
 

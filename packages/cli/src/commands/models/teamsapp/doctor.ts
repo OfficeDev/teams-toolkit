@@ -97,7 +97,7 @@ export class DoctorChecker {
       logger.info(WarningText + strings.command.doctor.cert.NotFound);
     } else {
       if (certRes.alreadyTrusted) {
-        logger.info(DoneText + strings.command.doctor.cert.NotFound);
+        logger.info(DoneText + strings.command.doctor.cert.Success);
       } else {
         logger.info(WarningText + strings.command.doctor.cert.FoundNotTrust);
       }

@@ -15,9 +15,8 @@ const packageJson = require("../../package.json");
 const SampleConfigOwner = "OfficeDev";
 const SampleConfigRepo = "TeamsFx-Samples";
 const SampleConfigFile = ".config/samples-config-v3.json";
-export const SampleConfigTag = "v2.3.0";
-// rc and prerelease tag is only different with stable tag when there will a breaking change.
-export const SampleConfigTagForRc = "v2.3.0";
+export const SampleConfigTag = "v2.4.0";
+// prerelease tag is always using a branch.
 export const SampleConfigBranchForPrerelease = "v3";
 
 export interface SampleConfig {
@@ -71,8 +70,8 @@ class SampleProvider {
       // prerelease build version always use branch head for prerelease.
       this.branchOrTag = SampleConfigBranchForPrerelease;
     } else if (version.includes("rc")) {
-      // rc version(before next stable TTK) always use prerelease tag
-      this.branchOrTag = SampleConfigTagForRc;
+      // if there is a breaking change, the tag is not used by any stable version.
+      this.branchOrTag = SampleConfigTag;
     } else {
       // stable version uses the head of branch defined by feature flag when available
       this.branchOrTag = SampleConfigTag;

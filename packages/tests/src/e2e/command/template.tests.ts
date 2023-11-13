@@ -20,9 +20,11 @@ describe("teamsfx new sample", function () {
     `${sampleName}`,
     { testPlanCaseId: 24137474, author: "zhiyou@microsoft.com" },
     async function () {
+      const env = Object.assign({}, process.env);
+      env.TEAMSFX_SAMPLE_CONFIG_BRANCH = "dev";
       await execAsync(`teamsfx new sample ${sampleName} -i false`, {
         cwd: testFolder,
-        env: process.env,
+        env: env,
         timeout: 0,
       });
 

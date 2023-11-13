@@ -11,7 +11,6 @@ import { FeatureFlagName } from "../../src/common/constants";
 import {
   initializePreviewFeatureFlags,
   isApiKeyEnabled,
-  isCliNewUxEnabled,
   isCliV3Enabled,
 } from "../../src/common/featureFlags";
 
@@ -32,13 +31,6 @@ describe("featureFlags", () => {
     it("successfully open all feature flags", async () => {
       initializePreviewFeatureFlags();
       chai.assert.isTrue(process.env[FeatureFlagName.BotNotification] === "true");
-    });
-  });
-
-  describe("isCliNewUxEnabled()", () => {
-    it("is true", async () => {
-      const res = isCliNewUxEnabled();
-      chai.assert.isTrue(res);
     });
   });
 

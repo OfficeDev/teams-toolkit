@@ -28,7 +28,7 @@
 In addition to these two new sample projects, we have set up a self-service process for any contributor to submit request to onboard new samples. You can now submit your sample app to the gallery by following the [Teams Toolkit Sample App Contribution Guidelines](https://github.com/OfficeDev/TeamsFx-Samples/blob/dev/CONTRIBUTING.md). We are excited to see more sample apps from the community! 🥳
     ![Sample Contribution Process](https://github.com/OfficeDev/TeamsFx/assets/11220663/9babc3b6-f89f-489a-9988-4ef9cc315e75)
 
-#### Teams Toolkit CLI ([`@microsoft/teamsapp-cli`](https://www.npmjs.com/package/@microsoft/teamsapp-cli)) `v2.0.3@beta`
+#### Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.3@beta`
 
 In this beta release of Teams Toolkit CLI, we have implemented a number of usability improvements based on your valuable feedback.
 
@@ -83,7 +83,7 @@ Enhancements:
     > Note that the project created starting from this version of Teams Toolkit can operate in older versions.
 - Added progress bar when importing an existing xml-based Outlook add-in project.
 
-Teams Toolkit CLI ([`@microsoft/teamsapp-cli`](https://www.npmjs.com/package/@microsoft/teamsapp-cli)) `v2.0.2@beta`:
+Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.2@beta`:
 
 - Updated `teamsfx new` command to start from choosing app templates. You can use `teamsfx new template sample-app-name` to directly create a project from sample apps.
 
@@ -123,7 +123,7 @@ TeamsFx SDK ([`@microsoft/teamsfx`](https://www.npmjs.com/package/@microsoft/tea
 - Added `ConversationReferenceStore` that has support for pagination.
 - Added a new option to set a custom `ConversationReferenceStore` and deprecated the existing option for `NotificationStorage`.
 
-Teams Toolkit CLI ([`@microsoft/teamsapp-cli`](https://www.npmjs.com/package/@microsoft/teamsapp-cli)) `v2.0.2@beta`:
+Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.2@beta`:
 
 - (Feature parity with Visual Studio Code) Import an existing SPFx solution and continue development with Teams Toolkit.
 - (Feature parity with Visual Studio Code) Create a new link unfurling app with Teams Toolkit.
@@ -171,7 +171,7 @@ Teams Toolkit generated project file change:
 - Added `.env.{envName}.user` files to store sensitive information like password and are added to `.gitignore`.
   ![project](https://user-images.githubusercontent.com/11220663/230363542-c0e8db66-8b6f-4c0e-92d0-b184c34e4824.png)
 
-Teams Toolkit CLI ([`@microsoft/teamsapp-cli`](https://www.npmjs.com/package/@microsoft/teamsapp-cli)) `v2.0.0@beta`:
+Teams Toolkit CLI ([`@microsoft/teamsfx-cli`](https://www.npmjs.com/package/@microsoft/teamsfx-cli)) `v2.0.0@beta`:
 
 - Updated `teamsfx validate` command to validate your app package against validation rules.
 - Updated `teamsfx new` command to include a new parameter `--spfx-install-latest-package`  to specify whether to use the latest SPFx package or not.

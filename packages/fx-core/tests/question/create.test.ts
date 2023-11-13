@@ -421,11 +421,10 @@ describe("scaffold question", () => {
         QuestionNames.Capabilities,
         QuestionNames.OfficeAddinFolder,
         QuestionNames.OfficeAddinManifest,
+        QuestionNames.OfficeAddinHost,
         QuestionNames.ProgrammingLanguage,
         QuestionNames.Folder,
         QuestionNames.AppName,
-        QuestionNames.OfficeAddinFramework,
-        QuestionNames.OfficeAddinHost,
       ]);
     });
     it("traverse in vscode SPFx new", async () => {

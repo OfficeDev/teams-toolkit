@@ -604,6 +604,6 @@ describe("projectsJsonData", () => {
     });
 
     chai.assert.isDefined(data.getParsedProjectJsonData());
-    chai.assert.isFalse(data.projectBothScriptTypes("taskpane"));
+    chai.assert.isTrue(data.projectBothScriptTypes("taskpane"));
   });
 });

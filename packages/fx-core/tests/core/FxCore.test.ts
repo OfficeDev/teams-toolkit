@@ -1368,7 +1368,7 @@ describe("isEnvFile", async () => {
           "spfx-folder",
           "me-architecture",
           "programming-language",
-          "addin-type",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1397,6 +1397,7 @@ describe("isEnvFile", async () => {
           "spfx-folder",
           "me-architecture",
           "programming-language",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1428,6 +1429,7 @@ describe("isEnvFile", async () => {
           "openai-plugin-manifest",
           "api-operation",
           "programming-language",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1457,6 +1459,7 @@ describe("isEnvFile", async () => {
           "spfx-folder",
           "me-architecture",
           "programming-language",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);

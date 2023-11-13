@@ -23,6 +23,17 @@
     //    "ASPNETCORE_ENVIRONMENT": "Development"
     //  },
     //  "hotReloadProfile": "aspnetcore"
-    //}
+    //},
+    "Outlook (browser)": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "https://outlook.office.com/mail?login_hint=yukundong@s71lz.onmicrosoft.com",
+      "applicationUrl": "http://localhost:5130",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "hotReloadProfile": "aspnetcore"
+    }
   }
 }

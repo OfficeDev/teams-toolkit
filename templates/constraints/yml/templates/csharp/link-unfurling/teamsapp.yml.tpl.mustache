@@ -11,9 +11,14 @@ provision:
 {{#armDeploy}} deploymentName: Create-resources-for-bot {{/armDeploy}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+
 {{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 # Triggered when 'teamsfx deploy' is executed
 deploy:

@@ -62,9 +62,8 @@
 
     .tagSection {
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       align-items: center;
-      flex-shrink: 0;
       margin-left: 4px;
 
       .tag {
@@ -100,6 +99,7 @@
 
     .info {
       flex-shrink: 0;
+      margin-top: 2px;
 
       .codicon {
         margin-left: 7.5px;
@@ -117,6 +117,15 @@
       margin-left: 7.5px;
       height: 28px;
     }
+
+    .buttonSection {
+      z-index: 1;
+      display: flex;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      align-items: center;
+      background-color: var(--background);
+    }
   }
 }
 
@@ -125,11 +134,19 @@ body.vscode-light {
     background-color: #E5E5E5;
     color: #606060;
   }
+
+  .featured-sample-section .buttonSection {
+    background-color: #F8F8F8;
+  }
 }
 
 body.vscode-dark {
   .tag {
     background-color: #333333;
     color: #CCCCCC;
+  }
+
+  .featured-sample-section .buttonSection {
+    background-color: #252526;
   }
 }

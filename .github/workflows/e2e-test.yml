@@ -177,7 +177,7 @@ jobs:
       - name: Update CLI and legacy-peer-deps for PR cases
         if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
         run: |
-          npm install -g @microsoft/teamsfx-cli@latest
+          npm install -g @microsoft/teamsapp-cli@latest
           npm config set legacy-peer-deps false
 
       - name: print system info

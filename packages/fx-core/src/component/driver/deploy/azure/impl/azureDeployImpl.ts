@@ -75,7 +75,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);
-    this.cleanup();
+    await this.cleanup();
     return true;
   }
 
@@ -95,14 +95,14 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
    * cleanup function after deployment is finished
    * @protected
    */
-  protected cleanup(): void {
-    if (this.zipFilePath && !this.dryRun) {
+  protected async cleanup(): Promise<void> {
+    if (this.zipFilePath && !this.dryRun && fs.existsSync(this.zipFilePath)) {
       try {
-        fs.removeSync(this.zipFilePath);
+        await fs.remove(this.zipFilePath);
         // if upper folder is empty, remove it
         const parentFolder = path.dirname(this.zipFilePath);
-        if (fs.readdirSync(parentFolder).length === 0) {
-          fs.removeSync(parentFolder);
+        if ((await fs.readdir(parentFolder)).length === 0) {
+          await fs.remove(parentFolder);
         }
       } catch (e) {
         this.logger.warning(

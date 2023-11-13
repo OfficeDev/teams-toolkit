@@ -42,6 +42,7 @@ provision:
       description: ""
       channels:
         - name: msteams
+        - name: m365extensions
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

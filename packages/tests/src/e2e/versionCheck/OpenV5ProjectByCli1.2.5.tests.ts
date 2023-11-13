@@ -41,7 +41,7 @@ describe("version check", () => {
       const env = Object.assign({}, process.env);
       await Executor.installCLI(testFolder, "1.2.5", false);
       const errorMessage =
-        "Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version using command below:\nnpm install -g @microsoft/teamsapp-cli@latest";
+        "Your TeamFx CLI version is old and it doesn't support current project, please upgrade to the latest version";
 
       {
         // provision

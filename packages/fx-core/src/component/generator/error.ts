@@ -73,28 +73,6 @@ export class DownloadSampleApiLimitError extends BaseComponentInnerError {
   }
 }
 
-export class ParseUrlError extends BaseComponentInnerError {
-  constructor(url: string) {
-    super(errorSource, "SystemError", "ParseUrlError", "error.generator.ParseUrlError", [url]);
-  }
-}
-
-export class FetchZipFromUrlError extends BaseComponentInnerError {
-  constructor(url: string, error?: Error) {
-    super(
-      errorSource,
-      "SystemError",
-      "FetchZipFromUrlError",
-      "error.generator.FetchZipFromUrlError",
-      [url],
-      ["plugins.frontend.checkNetworkTip"],
-      undefined,
-      undefined,
-      error
-    );
-  }
-}
-
 export class MissKeyError extends BaseComponentInnerError {
   constructor(keyName: string) {
     super(errorSource, "SystemError", "MissKeyError", "error.generator.MissKeyError", [keyName]);

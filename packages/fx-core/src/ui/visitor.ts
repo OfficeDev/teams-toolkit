@@ -22,7 +22,6 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep } from "lodash";
-import { isCliNewUxEnabled } from "../common/featureFlags";
 import {
   EmptyOptionError,
   InputValidationError,
@@ -106,7 +105,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
   }
 
   // non-interactive mode
-  if (inputs.nonInteractive && isCliNewUxEnabled()) {
+  if (inputs.nonInteractive) {
     // first priority: use single option as value
     if (question.type === "singleSelect" || question.type === "multiSelect") {
       if (question.skipSingleOption) {

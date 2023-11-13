@@ -721,6 +721,28 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
+    case "gspfxreact": {
+      await input.selectQuickPick(CreateProjectQuestion.Tab);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
+      // Wait for Node version check
+      await driver.sleep(Timeout.longTimeWait);
+      await input.selectQuickPick(
+        CreateProjectQuestion.SpfxSharepointFrameworkGlobalEnvInTtk
+      );
+      await driver.sleep(Timeout.input);
+      // Choose React or None
+      await input.selectQuickPick("React");
+      // Input Web Part Name
+      await input.setText(appName);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      // Input Web Part Description
+      await driver.sleep(Timeout.input);
+      break;
+    }
     case "dashboard": {
       // Choose Dashboard Tab
       // A/B test

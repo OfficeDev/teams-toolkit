@@ -26,6 +26,7 @@ import {
 } from "../../utils/vscodeOperation";
 import { ModalDialog, InputBox, VSBrowser } from "vscode-extension-tester";
 import { dotenvUtil } from "../../utils/envUtil";
+import { execAsync } from "../../utils/commonUtils";
 
 export class RemoteDebugTestContext extends TestContext {
   public testName: string;
@@ -375,4 +376,18 @@ export async function setSkipAddingSqlUser(
   const parameters = await fs.readJSON(parametersFilePath);
   parameters["skipAddingSqlUser"] = true;
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+}
+
+export async function configSpfxGlobalEnv() {
+  try {
+    console.log(`Start to set up global environment:`);
+    const result = await execAsync(
+      "npm install gulp-cli yo @microsoft/generator-sharepoint --global"
+    );
+    console.log(`[Successfully] set up global environment.`);
+    console.log(`${result.stdout}`);
+  } catch (error) {
+    console.log(error);
+    throw new Error(`Failed to set up global environment: ${error}`);
+  }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as inquirer from "@inquirer/prompts";
 import {
   InputTextConfig,
   MultiSelectConfig,
@@ -8,17 +9,11 @@ import {
   UserError,
   err,
 } from "@microsoft/teamsfx-api";
-import {
-  InputValidationError,
-  SelectSubscriptionError,
-  UnhandledError,
-} from "@microsoft/teamsfx-core";
+import { SelectSubscriptionError, UnhandledError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
-import fs from "fs-extra";
 import "mocha";
 import * as sinon from "sinon";
 import UI from "../../src/userInteraction";
-import * as inquirer from "@inquirer/prompts";
 
 describe("UserInteraction(CLI) 2", () => {
   const sandbox = sinon.createSandbox();

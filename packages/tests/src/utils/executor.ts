@@ -3,8 +3,7 @@
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "./commonUtils";
-import { TemplateProjectFolder } from "./constants";
-import { Capability } from "../utils/constants";
+import { TemplateProjectFolder, Capability } from "./constants";
 import path from "path";
 
 export class Executor {
@@ -174,11 +173,14 @@ export class Executor {
   }
 
   static async installCLI(workspace: string, version: string, global: boolean) {
+    const packageName = version.startsWith("3.")
+      ? "@microsoft/teamsapp-cli"
+      : "@microsoft/teamsfx-cli";
     if (global) {
-      const command = `npm install -g @microsoft/teamsapp-cli@${version}`;
+      const command = `npm install -g ${packageName}@${version}`;
       return this.execute(command, workspace);
     } else {
-      const command = `npm install @microsoft/teamsapp-cli@${version}`;
+      const command = `npm install ${packageName}@${version}`;
       return this.execute(command, workspace);
     }
   }

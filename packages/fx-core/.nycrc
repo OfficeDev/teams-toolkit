@@ -2,9 +2,9 @@
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
   "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
+    "build/"
   ],
+  "extension": [".js",".ts"],
   "exclude": [
     "src/common/deps-checker/**/*",
     "src/question/generator.ts"
@@ -17,5 +17,6 @@
     "lcov"
   ],
   "check-coverage": true,
+  "excludeAfterRemap": false,
   "lines": 72.7
 }

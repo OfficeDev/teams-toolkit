@@ -1,12 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, LogLevel, err, ok } from "@microsoft/teamsfx-api";
-import {
-  PackageService,
-  isCliV3Enabled,
-  serviceEndpoint,
-  serviceScope,
-} from "@microsoft/teamsfx-core";
+import { PackageService, serviceEndpoint, serviceScope } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ArgumentConflictError, MissingRequiredOptionError } from "../../error";
@@ -51,8 +46,8 @@ class M365Utils {
 export const m365utils = new M365Utils();
 
 export const m365SideloadingCommand: CLICommand = {
-  name: isCliV3Enabled() ? "install" : "sideloading",
-  aliases: isCliV3Enabled() ? ["sideloading"] : ["install"],
+  name: "install",
+  aliases: ["sideloading"],
   description: "Sideload a given application package across Microsoft 365.",
   options: [
     {
@@ -68,16 +63,12 @@ export const m365SideloadingCommand: CLICommand = {
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} ${
-        isCliV3Enabled() ? "install" : "m365 sideloading"
-      } --file-path appPackage.zip`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} install --file-path appPackage.zip`,
       description:
         "Sideload the application package with JSON-based manifest to Teams, Outlook, and the Microsoft 365 app.",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} ${
-        isCliV3Enabled() ? "install" : "m365 sideloading"
-      } --xml-path manifest.xml`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} install --xml-path manifest.xml`,
       description:
         "Sideload the Outlook add-in application package with XML-based manifest to Outlook.",
     },

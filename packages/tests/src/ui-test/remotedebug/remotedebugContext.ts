@@ -110,14 +110,7 @@ export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   context[simpleAuthPluginName]["skuName"] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
-export async function setBotSkuNameToB1(projectPath: string) {
-  const botPluginName = "fx-resource-bot";
-  const envFilePathSuffix = path.join(".fx", "env.default.json");
-  const envFilePath = path.resolve(projectPath, envFilePathSuffix);
-  const context = await fs.readJSON(envFilePath);
-  context[botPluginName]["skuName"] = "B1";
-  return fs.writeJSON(envFilePath, context, { spaces: 4 });
-}
+
 
 export async function setSkuNameToB1(projectPath: string) {
   const parameters = "parameters";
@@ -158,21 +151,20 @@ export async function setSimpleAuthSkuNameToB1Bicep(
 }
 
 export async function setBotSkuNameToB1Bicep(
-  projectPath: string,
-  envName: string
+  projectPath: string
 ) {
-  const ConfigFolderName = "fx";
-  const InputConfigsFolderName = "configs";
-  const bicepParameterFile = path.join(
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    `azure.parameters.${envName}.json`
+  const azureParametersFilePathSuffix = path.join(
+    "infra",
+    "azure.parameters.json"
   );
-  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
-  const parameters = await fs.readJSON(parametersFilePath);
-  parameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] =
+  const azureParametersFilePath = path.resolve(
+    projectPath,
+    azureParametersFilePathSuffix
+  );
+  const ProvisionParameters = await fs.readJSON(azureParametersFilePath);
+  ProvisionParameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] =
     "B1";
-  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+  return fs.writeJSON(azureParametersFilePath, ProvisionParameters, { spaces: 4 });
 }
 
 export async function inputSqlUserName(

@@ -156,9 +156,9 @@ export async function setProvisionParameterValue(
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
-export async function setSkuNameToB1(projectPath: string) {
-  const parameters = "parameters";
-  const webAppSku = "webAppSku";
+export async function setBotSkuNameToB1Bicep(
+  projectPath: string
+) {
   const azureParametersFilePathSuffix = path.join(
     "infra",
     "azure.parameters.json"
@@ -167,13 +167,10 @@ export async function setSkuNameToB1(projectPath: string) {
     projectPath,
     azureParametersFilePathSuffix
   );
-  const context = await fs.readJSON(azureParametersFilePath);
-  try {
-    context[parameters][webAppSku]["value"] = "B1";
-  } catch {
-    console.log("Cannot set the propertie.");
-  }
-  return fs.writeJSON(azureParametersFilePath, context, { spaces: 4 });
+  const ProvisionParameters = await fs.readJSON(azureParametersFilePath);
+  ProvisionParameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] =
+    "B1";
+  return fs.writeJSON(azureParametersFilePath, ProvisionParameters, { spaces: 4 });
 }
 
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
@@ -219,16 +216,6 @@ export async function setBotSkuNameToB1(projectPath: string) {
   const context = await fs.readJSON(envFilePath);
   context[PluginId.Bot][StateConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
-}
-
-export async function setBotSkuNameToB1Bicep(
-  projectPath: string,
-  envName: string
-): Promise<void> {
-  return setProvisionParameterValue(projectPath, envName, {
-    key: "webAppSKU",
-    value: "B1",
-  });
 }
 
 export async function setSkipAddingSqlUser(projectPath: string) {

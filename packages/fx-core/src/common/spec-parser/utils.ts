@@ -130,7 +130,8 @@ export function isSupportedApi(
   path: string,
   spec: OpenAPIV3.Document,
   allowMissingId: boolean,
-  allowAPIKeyAuth: boolean
+  allowAPIKeyAuth: boolean,
+  allowMultipleParameters: boolean
 ): boolean {
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
@@ -191,6 +192,12 @@ export function isSupportedApi(
       }
 
       if (requestBodyParamResult.requiredNum + paramResult.requiredNum > 1) {
+        if (
+          allowMultipleParameters &&
+          requestBodyParamResult.requiredNum + paramResult.requiredNum <= 5
+        ) {
+          return true;
+        }
         return false;
       } else if (
         requestBodyParamResult.requiredNum +
@@ -336,7 +343,8 @@ export function checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[]
 export function validateServer(
   spec: OpenAPIV3.Document,
   allowMissingId: boolean,
-  allowAPIKeyAuth: boolean
+  allowAPIKeyAuth: boolean,
+  allowMultipleParameters: boolean
 ): ErrorResult[] {
   const errors: ErrorResult[] = [];
 
@@ -364,7 +372,9 @@ export function validateServer(
 
     for (const method in methods) {
       const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-      if (isSupportedApi(method, path, spec, allowMissingId, allowAPIKeyAuth)) {
+      if (
+        isSupportedApi(method, path, spec, allowMissingId, allowAPIKeyAuth, allowMultipleParameters)
+      ) {
         if (operationObject?.servers && operationObject.servers.length >= 1) {
           hasOperationLevelServers = true;
           const serverErrors = checkServerUrl(operationObject.servers);
@@ -514,7 +524,8 @@ export function parseApiInfo(
 export function listSupportedAPIs(
   spec: OpenAPIV3.Document,
   allowMissingId: boolean,
-  allowAPIKeyAuth: boolean
+  allowAPIKeyAuth: boolean,
+  allowMultipleParameters: boolean
 ): {
   [key: string]: OpenAPIV3.OperationObject;
 } {
@@ -524,7 +535,9 @@ export function listSupportedAPIs(
     const methods = paths[path];
     for (const method in methods) {
       // For developer preview, only support GET operation with only 1 parameter without auth
-      if (isSupportedApi(method, path, spec, allowMissingId, allowAPIKeyAuth)) {
+      if (
+        isSupportedApi(method, path, spec, allowMissingId, allowAPIKeyAuth, allowMultipleParameters)
+      ) {
         const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
         result[`${method.toUpperCase()} ${path}`] = operationObject;
       }
@@ -538,7 +551,8 @@ export function validateSpec(
   parser: SwaggerParser,
   isSwaggerFile: boolean,
   allowMissingId: boolean,
-  allowAPIKeyAuth: boolean
+  allowAPIKeyAuth: boolean,
+  allowMultipleParameters: boolean
 ): ValidateResult {
   const errors: ErrorResult[] = [];
   const warnings: WarningResult[] = [];
@@ -551,7 +565,12 @@ export function validateSpec(
   }
 
   // Server validation
-  const serverErrors = validateServer(spec, allowMissingId, allowAPIKeyAuth);
+  const serverErrors = validateServer(
+    spec,
+    allowMissingId,
+    allowAPIKeyAuth,
+    allowMultipleParameters
+  );
   errors.push(...serverErrors);
 
   // Remote reference not supported
@@ -567,7 +586,7 @@ export function validateSpec(
   }
 
   // No supported API
-  const apiMap = listSupportedAPIs(spec, allowMissingId, allowAPIKeyAuth);
+  const apiMap = listSupportedAPIs(spec, allowMissingId, allowAPIKeyAuth, allowMultipleParameters);
   if (Object.keys(apiMap).length === 0) {
     errors.push({
       type: ErrorType.NoSupportedApi,

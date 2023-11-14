@@ -122,6 +122,80 @@ describe("manifestUpdater", () => {
     expect(warnings).to.deep.equal([]);
   });
 
+  it("should support multiple parameters", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              { name: "limit", description: "Maximum number of pets to return", required: true },
+              { name: "id", description: "Pet Id", required: true },
+              { name: "name", description: "Pet Name", required: true },
+            ],
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              id: "getPets",
+              parameters: [
+                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+                { name: "id", title: "Id", description: "Pet Id" },
+                { name: "name", title: "Name", description: "Pet Name" },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
   it("should contain auth property in manifest if pass the api key name", async () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";

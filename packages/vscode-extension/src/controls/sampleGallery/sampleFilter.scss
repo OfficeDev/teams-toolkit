@@ -72,8 +72,6 @@
     height: 16px;
     font-size: 13px;
     padding: 2px 8px;
-    background-color: var(--vscode-button-secondaryBackground, #313131);
-    color: var(--vscode-peekViewTitleDescription-foreground, #cccccc);
     border: 0;
 
     span {
@@ -104,5 +102,19 @@
     :active {
       color: var(--vscode-textLink-foreground);
     }
+  }
+}
+
+body.vscode-light {
+  .filter-tag {
+    background-color: #E5E5E5;
+    color: #606060;
+  }
+}
+
+body.vscode-dark {
+  .filter-tag {
+    background-color: #333333;
+    color: #CCCCCC;
   }
 }

@@ -15,7 +15,7 @@ import * as uuid from "uuid";
 import * as fs from "fs";
 import * as path from "path";
 import { editDotEnvFile } from "../../utils/commonUtils";
-import { setBotSkuNameToB1, setBotSkuNameToB1Bicep } from "../remotedebug/remotedebugContext";
+import { setSkuNameToB1 } from "../remotedebug/remotedebugContext";
 
 class ShareNowTestCase extends CaseFactory {
   public sqlUserName: string;
@@ -55,8 +55,7 @@ class ShareNowTestCase extends CaseFactory {
     editDotEnvFile(envFilePath, "SQL_PASSWORD", password);
 
     // fix quota issue
-    await setBotSkuNameToB1(sampledebugContext.projectPath);
-    await setBotSkuNameToB1Bicep(sampledebugContext.projectPath, 'dev');
+    await setSkuNameToB1(sampledebugContext.projectPath);
   };
 
   public override onBeforeBrowerStart = async (

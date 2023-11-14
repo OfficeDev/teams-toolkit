@@ -156,6 +156,26 @@ export async function setProvisionParameterValue(
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
+export async function setSkuNameToB1(projectPath: string) {
+  const parameters = "parameters";
+  const webAppSku = "webAppSku";
+  const azureParametersFilePathSuffix = path.join(
+    "infra",
+    "azure.parameters.json"
+  );
+  const azureParametersFilePath = path.resolve(
+    projectPath,
+    azureParametersFilePathSuffix
+  );
+  const context = await fs.readJSON(azureParametersFilePath);
+  try {
+    context[parameters][webAppSku]["value"] = "B1";
+  } catch {
+    console.log("Cannot set the propertie.");
+  }
+  return fs.writeJSON(azureParametersFilePath, context, { spaces: 4 });
+}
+
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);

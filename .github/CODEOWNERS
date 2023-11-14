@@ -40,7 +40,7 @@
 /packages/cli/src/commands/models/accountShow.ts @swatDong @xiaolang124 @kimizhu
 
 /packages/cli/src/commands/models/add.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang @MSFT-yiz
-/packages/cli/src/commands/models/addSPFxWebpart.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang @MSFT-yiz
+/packages/cli/src/commands/models/addSPFxWebpart.ts @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang @MSFT-yiz
 
 /packages/cli/src/commands/models/m365.ts @swatDong @kuojianlu @kimizhu
 /packages/cli/src/commands/models/m365LaunchInfo.ts @swatDong @kuojianlu @kimizhu
@@ -96,7 +96,7 @@
 /.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
 /packages/server @chagong @Alive-Fish @jayzhang
 
-/Localize @HuihuiWu-Microsoft @tecton
+/Localize @HuihuiWu-Microsoft @tecton @chagong
 
 /packages/sdk-react @tecton @yiqing-zhao
 
@@ -170,7 +170,7 @@
 /packages/fx-core/tests/common/globalState.test.ts @tecton @jayzhang @LongOddCode
 
 /packages/fx-core/src/common/jsonUtils.ts @jayzhang @xzf0587 @LongOddCode
-/packages/fx-core/src/common/localizeUtils.ts @jayzhang @HuihuiWu-Microsoft
+/packages/fx-core/src/common/localizeUtils.ts @jayzhang @HuihuiWu-Microsoft @chagong
 /packages/fx-core/src/common/permissionInterface.ts @SLdragon @KennethBWSong
 /packages/fx-core/src/common/projectSettingsHelper.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/projectSettingsHelperV3.ts @jayzhang @xzf0587 @LongOddCode
@@ -305,9 +305,8 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
 /packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
 
-/packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
-/packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
-/packages/fx-core/src/common/samples-config-v3.json @HuihuiWu-Microsoft @wenytang-ms @jayzhang
+/packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
+/packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan

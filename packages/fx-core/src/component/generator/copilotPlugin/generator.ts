@@ -160,15 +160,24 @@ export class CopilotPluginGenerator {
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
       if (apiKeyAuthData?.authName) {
-        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS, {
-          authName: apiKeyAuthData.authName,
-          openapiSpecPath: normalizePath(
-            path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
-          ),
-          registrationIdEnvName: `${apiKeyAuthData.authName.toUpperCase()}_REGISTRATION_ID`,
-        });
+        context.templateVariables = Generator.getDefaultVariables(
+          appName,
+          safeProjectNameFromVS,
+          inputs.targetFramework,
+          {
+            authName: apiKeyAuthData.authName,
+            openapiSpecPath: normalizePath(
+              path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
+            ),
+            registrationIdEnvName: `${apiKeyAuthData.authName.toUpperCase()}_REGISTRATION_ID`,
+          }
+        );
       } else {
-        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
+        context.templateVariables = Generator.getDefaultVariables(
+          appName,
+          safeProjectNameFromVS,
+          inputs.targetFramework
+        );
       }
       const filters = inputs[QuestionNames.ApiOperation] as string[];
 

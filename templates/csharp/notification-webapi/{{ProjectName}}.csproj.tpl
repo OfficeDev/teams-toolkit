@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{{TargetFramework}}</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RuntimeFrameworkVersion>6.0.10</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>

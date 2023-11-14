@@ -158,20 +158,22 @@ export async function setProvisionParameterValue(
 
 export async function setBotSkuNameToB1Bicep(
   projectPath: string,
-  filePath = "",
+  filePath = ""
 ) {
-  const azureParametersFilePathSuffix = filePath? path.join(filePath) : path.join(
-    "infra",
-    "azure.parameters.json"
-  );
+  const azureParametersFilePathSuffix = filePath
+    ? path.join(filePath)
+    : path.join("infra", "azure.parameters.json");
   const azureParametersFilePath = path.resolve(
     projectPath,
     azureParametersFilePathSuffix
   );
   const ProvisionParameters = await fs.readJSON(azureParametersFilePath);
-  ProvisionParameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] =
-    "B1";
-  return fs.writeJSON(azureParametersFilePath, ProvisionParameters, { spaces: 4 });
+  ProvisionParameters["parameters"]["provisionParameters"]["value"][
+    "botWebAppSKU"
+  ] = "B1";
+  return fs.writeJSON(azureParametersFilePath, ProvisionParameters, {
+    spaces: 4,
+  });
 }
 
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {

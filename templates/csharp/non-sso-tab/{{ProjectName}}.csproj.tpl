@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.6.0" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.2.0" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="2.2.*" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="2.3.*" />
   </ItemGroup>
 
 </Project>

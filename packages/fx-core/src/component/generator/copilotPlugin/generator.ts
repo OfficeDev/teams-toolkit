@@ -58,7 +58,7 @@ const fromApiSpecWithApiKeyComponentName = "copilot-plugin-existing-api-api-key"
 const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
-const apiSpecFolderName = "apiSpecificationFiles";
+const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 

@@ -156,6 +156,26 @@ export async function setProvisionParameterValue(
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
+export async function setBotSkuNameToB1Bicep(
+  projectPath: string,
+  filePath = ""
+) {
+  const azureParametersFilePathSuffix = filePath
+    ? path.join(filePath)
+    : path.join("infra", "azure.parameters.json");
+  const azureParametersFilePath = path.resolve(
+    projectPath,
+    azureParametersFilePathSuffix
+  );
+  const ProvisionParameters = await fs.readJSON(azureParametersFilePath);
+  ProvisionParameters["parameters"]["provisionParameters"]["value"][
+    "botWebAppSKU"
+  ] = "B1";
+  return fs.writeJSON(azureParametersFilePath, ProvisionParameters, {
+    spaces: 4,
+  });
+}
+
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
@@ -199,16 +219,6 @@ export async function setBotSkuNameToB1(projectPath: string) {
   const context = await fs.readJSON(envFilePath);
   context[PluginId.Bot][StateConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
-}
-
-export async function setBotSkuNameToB1Bicep(
-  projectPath: string,
-  envName: string
-): Promise<void> {
-  return setProvisionParameterValue(projectPath, envName, {
-    key: "webAppSKU",
-    value: "B1",
-  });
 }
 
 export async function setSkipAddingSqlUser(projectPath: string) {

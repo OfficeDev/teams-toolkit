@@ -11,7 +11,6 @@ import { validateShareNow } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { SampledebugContext } from "./sampledebugContext";
-import * as uuid from "uuid";
 import { expect } from "chai";
 import * as path from "path";
 import { editDotEnvFile } from "../../utils/commonUtils";

@@ -11,7 +11,7 @@ import { validateProactiveMessaging } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { SampledebugContext } from "./sampledebugContext";
-import { setSkuNameToB1 } from "../remotedebug/remotedebugContext";
+import { setBotSkuNameToB1, setBotSkuNameToB1Bicep } from "../remotedebug/remotedebugContext";
 
 class ProactiveMessagingTestCase extends CaseFactory {
   override async onValidate(page: Page): Promise<void> {
@@ -20,7 +20,8 @@ class ProactiveMessagingTestCase extends CaseFactory {
 
   override async onAfterCreate(sampledebugContext: SampledebugContext, env: "local" | "dev", azSqlHelper?: AzSqlHelper | undefined): Promise<void> {
         // fix quota issue
-        await setSkuNameToB1(sampledebugContext.projectPath);
+        await setBotSkuNameToB1(sampledebugContext.projectPath);
+        await setBotSkuNameToB1Bicep(sampledebugContext.projectPath, 'dev');
   }
 }
 

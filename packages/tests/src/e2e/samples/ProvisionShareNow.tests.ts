@@ -8,14 +8,15 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import * as path from "path";
-import { editDotEnvFile, setBotSkuNameToB1 } from "../commonUtils";
+import { editDotEnvFile, setBotSkuNameToB1, setBotSkuNameToB1Bicep } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
 
 class ShareNowTestCase extends CaseFactory {
   override async onBeforeProvision(projectPath: string): Promise<void> {
     // fix quota issue
     await setBotSkuNameToB1(projectPath);
-    
+    await await setBotSkuNameToB1Bicep(projectPath, 'dev');
+
     const envFilePath = path.resolve(projectPath, "env", ".env.dev.user");
     editDotEnvFile(envFilePath, "SQL_USER_NAME", "Abc123321");
     editDotEnvFile(

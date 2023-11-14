@@ -3,7 +3,7 @@
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
-import MockM365TokenProvider from "@microsoft/teamsfx-cli/src/commonlib/m365LoginUserPassword";
+import MockM365TokenProvider from "@microsoft/teamsapp-cli/src/commonlib/m365LoginUserPassword";
 
 const sideloadingServiceEndpoint =
   process.env.SIDELOADING_SERVICE_ENDPOINT ??

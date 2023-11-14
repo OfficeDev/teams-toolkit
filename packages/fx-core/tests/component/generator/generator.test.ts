@@ -575,7 +575,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", {
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "AUTHNAME_REGISTRATION_ID",
@@ -591,7 +591,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth with special characters", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", {
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "AUTH-NAME_REGISTRATION*ID",
@@ -607,7 +607,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth with name not start with [A-Z]", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", {
+    const vars = Generator.getDefaultVariables("Test", "Test", undefined, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "*AUTH-NAME_REGISTRATION*ID",

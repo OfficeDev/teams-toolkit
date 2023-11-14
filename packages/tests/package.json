@@ -70,7 +70,7 @@
     "@azure/identity": "^3.1.3",
     "@azure/msal-node": "1.17.3",
     "@microsoft/teamsfx-api": "^0.22.5",
-    "@microsoft/teamsfx-cli": "^2.0.2",
+    "@microsoft/teamsapp-cli": "^3.0.0-alpha",
     "@types/semver": "^7.3.8",
     "axios": "^0.21.1",
     "azure-arm-resource": "^7.4.0",

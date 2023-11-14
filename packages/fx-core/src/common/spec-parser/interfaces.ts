@@ -176,6 +176,7 @@ export interface ParseOptions {
   allowMissingId?: boolean;
   allowSwagger?: boolean;
   allowAPIKeyAuth?: boolean;
+  allowMultipleParameters?: boolean;
 }
 
 export interface APIInfo {

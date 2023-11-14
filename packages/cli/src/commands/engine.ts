@@ -509,6 +509,8 @@ class CLIEngine {
       }
     }
 
+    UI.interactive = context.globalOptionValues.interactive as boolean;
+
     // set global option telemetry property
     context.telemetryProperties[TelemetryProperty.CommandDebug] =
       context.globalOptionValues.debug + "";

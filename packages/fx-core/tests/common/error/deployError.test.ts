@@ -7,6 +7,8 @@ import {
   CheckDeploymentStatusTimeoutError,
   GetPublishingCredentialsError,
   DeployZipPackageError,
+  ZipFileError,
+  CacheFileInUse,
 } from "../../../src";
 import { UserError } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
@@ -61,7 +63,6 @@ describe("GetPublishingCredentialsError", () => {
     const appName = "my-app";
     const resourceGroup = "my-resource-group";
     const error = new Error("Something went wrong.");
-    const expectedDisplayMessage = `Failed to get publishing credentials for app ${appName} in resource group ${resourceGroup}.`;
     const userError = new GetPublishingCredentialsError(appName, resourceGroup, error);
     expect(userError).to.be.instanceOf(UserError);
     expect(userError.source).to.equal("azureDeploy");
@@ -82,5 +83,21 @@ describe("DeployZipPackageError", () => {
     expect(error.displayMessage).to.equal(
       "Unable to deploy zip package to endpoint: 'endpoint'. Refer to the [Output panel](command:fx-extension.showOutputChannel) for more details and try again."
     );
+  });
+});
+
+describe("ZipFileError", () => {
+  it("should create a new ZipFileError with the correct message", () => {
+    const error = new ZipFileError(new Error("zipPath error"));
+    expect(error).to.be.instanceOf(UserError);
+    expect(error.source).to.equal("azureDeploy");
+  });
+});
+
+describe("CacheFileInUse", () => {
+  it("should create a new CacheFileInUse with the correct message", () => {
+    const error = new CacheFileInUse(new Error("zipPath error"));
+    expect(error).to.be.instanceOf(UserError);
+    expect(error.source).to.equal("azureDeploy");
   });
 });

@@ -151,9 +151,10 @@ export async function setSimpleAuthSkuNameToB1Bicep(
 }
 
 export async function setBotSkuNameToB1Bicep(
-  projectPath: string
+  projectPath: string,
+  filePath = "",
 ) {
-  const azureParametersFilePathSuffix = path.join(
+  const azureParametersFilePathSuffix = filePath? path.join(filePath) : path.join(
     "infra",
     "azure.parameters.json"
   );

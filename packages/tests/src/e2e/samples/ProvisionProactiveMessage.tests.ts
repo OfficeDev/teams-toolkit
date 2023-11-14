@@ -26,7 +26,7 @@ class ProactiveMessagingTestCase extends CaseFactory {
   }
 
   override async onBeforeProvision(projectPath: string): Promise<void> {
-    await setSkuNameToB1(projectPath);
+    await setSkuNameToB1(projectPath, "templates/azure/azure.parameters.dev.json");
   }
 }
 

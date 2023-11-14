@@ -214,7 +214,7 @@ export async function CLIVersionCheck(
   console.log(cliVersionOutputs![0]);
   let versionRegex;
   if (version === "V2") versionRegex = /^1\.\d+\.\d+.*$/;
-  else if (version === "V3") versionRegex = /^2\.\d+\.\d+.*$/;
+  else if (version === "V3") versionRegex = /^[23]\.\d+\.\d+.*$/;
   else throw new Error(`Invalid version specified: ${version}`);
   chai.expect(cliVersionOutputs![0]).to.match(versionRegex);
   console.log(`CLI Version: ${cliVersion}`);

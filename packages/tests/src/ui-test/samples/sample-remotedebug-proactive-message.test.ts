@@ -18,9 +18,16 @@ class ProactiveMessagingTestCase extends CaseFactory {
     return await validateProactiveMessaging(page);
   }
 
-  override async onAfterCreate(sampledebugContext: SampledebugContext, env: "local" | "dev", azSqlHelper?: AzSqlHelper | undefined): Promise<void> {
-        // fix quota issue
-        await setBotSkuNameToB1Bicep(sampledebugContext.projectPath, "templates/azure/azure.parameters.dev.json");
+  override async onAfterCreate(
+    sampledebugContext: SampledebugContext,
+    env: "local" | "dev",
+    azSqlHelper?: AzSqlHelper | undefined
+  ): Promise<void> {
+    // fix quota issue
+    await setBotSkuNameToB1Bicep(
+      sampledebugContext.projectPath,
+      "templates/azure/azure.parameters.dev.json"
+    );
   }
 }
 

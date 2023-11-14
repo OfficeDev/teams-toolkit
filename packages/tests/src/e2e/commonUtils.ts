@@ -160,7 +160,7 @@ export async function setBotSkuNameToB1Bicep(
   projectPath: string,
   filePath = "",
 ) {
-  const azureParametersFilePathSuffix = filePath? path.join(filePath) : path.join(
+  const azureParametersFilePathSuffix = filePath ? path.join(filePath) : path.join(
     "infra",
     "azure.parameters.json"
   );

@@ -15,6 +15,7 @@ import * as uuid from "uuid";
 import * as fs from "fs";
 import * as path from "path";
 import { editDotEnvFile } from "../../utils/commonUtils";
+import { setSkuNameToB1 } from "../remotedebug/remotedebugContext";
 
 class ShareNowTestCase extends CaseFactory {
   public sqlUserName: string;
@@ -52,7 +53,11 @@ class ShareNowTestCase extends CaseFactory {
     const password = this.sqlPassword;
     editDotEnvFile(envFilePath, "SQL_USER_NAME", user);
     editDotEnvFile(envFilePath, "SQL_PASSWORD", password);
+
+    // fix quota issue
+    await setSkuNameToB1(sampledebugContext.projectPath);
   };
+
   public override onBeforeBrowerStart = async (
     sampledebugContext: SampledebugContext
   ): Promise<void> => {

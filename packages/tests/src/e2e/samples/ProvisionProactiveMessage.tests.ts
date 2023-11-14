@@ -8,6 +8,7 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Executor } from "../../utils/executor";
+import { setBotSkuNameToB1 } from "../commonUtils";
 
 class ProactiveMessagingTestCase extends CaseFactory {
   public override async onCreate(
@@ -24,8 +25,8 @@ class ProactiveMessagingTestCase extends CaseFactory {
     );
   }
 
-  override async onAfterCreate(projectPath: string): Promise<void> {
-    return Promise.resolve();
+  override async onBeforeProvision(projectPath: string): Promise<void> {
+    await setBotSkuNameToB1(projectPath);
   }
 }
 

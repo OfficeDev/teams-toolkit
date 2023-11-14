@@ -243,11 +243,13 @@ export class CliHelper {
     template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv,
     npx = false,
-    oldNewCommand = false
+    oldNewCommand = false,
+    isV3 = true
   ) {
     const npxCommand = npx ? "npx" : "";
     const newCommand = oldNewCommand ? "template" : "sample";
-    const command = `${npxCommand} teamsapp new ${newCommand} ${template} --interactive false `;
+    const cliPrefix = isV3 ? "teamsapp" : "teamsfx";
+    const command = `${npxCommand} ${cliPrefix} new ${newCommand} ${template} --interactive false `;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {

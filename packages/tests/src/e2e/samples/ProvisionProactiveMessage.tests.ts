@@ -8,7 +8,7 @@
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Executor } from "../../utils/executor";
-import { setSkuNameToB1 } from "../commonUtils";
+import { setBotSkuNameToB1Bicep } from "../commonUtils";
 
 class ProactiveMessagingTestCase extends CaseFactory {
   public override async onCreate(
@@ -26,7 +26,7 @@ class ProactiveMessagingTestCase extends CaseFactory {
   }
 
   override async onBeforeProvision(projectPath: string): Promise<void> {
-    await setSkuNameToB1(projectPath, "templates/azure/azure.parameters.dev.json");
+    await setBotSkuNameToB1Bicep(projectPath, "templates/azure/azure.parameters.dev.json");
   }
 }
 

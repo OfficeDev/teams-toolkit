@@ -346,7 +346,7 @@ class DotenvUtil {
           if (line.quote) {
             value = `${line.quote}${value}${line.quote}`;
           }
-          array.push(`${line.key}=${value}${line.comment ? line.comment : ""}`);
+          array.push(`${line.key}=${value}${line.comment ? " " + line.comment : ""}`);
         }
       });
     }

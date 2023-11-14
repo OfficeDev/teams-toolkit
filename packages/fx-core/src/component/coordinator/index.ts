@@ -93,6 +93,7 @@ export enum TemplateNames {
   LinkUnfurling = "link-unfurling",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
   AIBot = "ai-bot",
+  AIAssistantBot = "ai-assistant-bot",
 }
 
 const Feature2TemplateName: any = {
@@ -131,6 +132,7 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}`]:
     TemplateNames.CopilotPluginFromScratch,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
+  [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
 };
 
 const M365Actions = [

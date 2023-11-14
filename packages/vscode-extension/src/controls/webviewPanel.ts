@@ -196,7 +196,7 @@ export class WebviewPanel {
     } catch (e: unknown) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
-        data: [],
+        samples: [],
         error: e,
       });
       return;

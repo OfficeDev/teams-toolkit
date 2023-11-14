@@ -44,8 +44,8 @@ export function happyPathTest(runtime: Runtime): void {
     it("Provision Resource: command and response", async function () {
       const cmd =
         runtime === Runtime.Node
-          ? `teamsfx new --interactive false --app-name ${appName} --capability command-bot --programming-language typescript`
-          : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capability command-bot`;
+          ? `teamsapp new --interactive false --app-name ${appName} --capability command-bot --programming-language typescript`
+          : `teamsapp new --interactive false --runtime ${runtime} --app-name ${appName} --capability command-bot`;
       await execAsync(cmd, {
         cwd: testFolder,
         env: env,
@@ -74,7 +74,7 @@ export function happyPathTest(runtime: Runtime): void {
       }
 
       // deploy
-      const cmdStr = "teamsfx deploy";
+      const cmdStr = "teamsapp deploy";
       await execAsyncWithRetry(cmdStr, {
         cwd: projectPath,
         env: env,
@@ -94,14 +94,14 @@ export function happyPathTest(runtime: Runtime): void {
       }
 
       // test (validate)
-      await execAsyncWithRetry(`teamsfx validate --env ${envName}`, {
+      await execAsyncWithRetry(`teamsapp validate --env ${envName}`, {
         cwd: projectPath,
         env: env,
         timeout: 0,
       });
 
       // package
-      await execAsyncWithRetry(`teamsfx package --env ${envName}`, {
+      await execAsyncWithRetry(`teamsapp package --env ${envName}`, {
         cwd: projectPath,
         env: env,
         timeout: 0,
@@ -109,7 +109,7 @@ export function happyPathTest(runtime: Runtime): void {
 
       // publish only run on node
       if (runtime !== Runtime.Dotnet) {
-        await execAsyncWithRetry(`teamsfx publish`, {
+        await execAsyncWithRetry(`teamsapp publish`, {
           cwd: projectPath,
           env: process.env,
           timeout: 0,

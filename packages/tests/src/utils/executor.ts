@@ -60,7 +60,7 @@ export class Executor {
     customized: Record<string, string> = {}
   ) {
     const command =
-      `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
+      `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
       Object.entries(customized)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");
@@ -68,7 +68,7 @@ export class Executor {
   }
 
   static async addEnv(workspace: string, newEnv: string, env = "dev") {
-    const command = `teamsfx env add ${newEnv} --env ${env}`;
+    const command = `teamsapp env add ${newEnv} --env ${env}`;
     return this.execute(command, workspace);
   }
 
@@ -80,14 +80,14 @@ export class Executor {
     localManifestPath: string
   ) {
     const command =
-      `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
+      `teamsapp add spfx-web-part --spfx-webpart-name ${webpartName}` +
       ` --spfx-folder ${spfxFolder} --teams-manifest-file ${manifestPath}` +
       ` --local-teams-manifest-file ${localManifestPath} --interactive false `;
     return this.execute(command, workspace);
   }
 
   static async upgrade(workspace: string) {
-    const command = `teamsfx upgrade --force`;
+    const command = `teamsapp upgrade --force`;
     return this.execute(command, workspace);
   }
 
@@ -99,7 +99,7 @@ export class Executor {
     npx = false
   ) {
     const npxCommand = npx ? "npx " : "";
-    const command = `${npxCommand} teamsfx ${cmd} --env ${env}`;
+    const command = `${npxCommand} teamsapp ${cmd} --env ${env}`;
     return this.execute(command, workspace, processEnv);
   }
 
@@ -191,7 +191,7 @@ export class Executor {
     template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx new sample ${template} --interactive false `;
+    const command = `teamsapp new sample ${template} --interactive false `;
     const timeout = 100000;
     try {
       await this.execute(command, testFolder, processEnv, timeout);
@@ -265,15 +265,6 @@ export class Executor {
     editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
     editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
     console.log(`successfully open project: ${newPath}`);
-  }
-
-  static async setSubscription(
-    subscription: string,
-    projectPath: string,
-    processEnv?: NodeJS.ProcessEnv
-  ) {
-    const command = `teamsfx account set --subscription ${subscription}`;
-    return this.execute(command, projectPath, processEnv);
   }
 
   static async package(workspace: string, env = "dev") {

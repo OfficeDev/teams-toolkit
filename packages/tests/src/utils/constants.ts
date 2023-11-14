@@ -297,6 +297,9 @@ export type OptionType =
   | "spfxreact"
   | "spfxnone"
   | "spfxmin"
+  | "gspfxreact"
+  | "gspfxnone"
+  | "gspfxmin"
   | "dashboard"
   | "workflow"
   | "timenoti"
@@ -386,6 +389,8 @@ export class CreateProjectQuestion {
   static readonly OfficeAddin = "Outlook Add-in";
   static readonly NewTeamsApp = "Start with a Teams capability";
   static readonly SpfxSharepointFrameworkInTtk = "Install the latest SPFx";
+  static readonly SpfxSharepointFrameworkGlobalEnvInTtk =
+    "Use globally installed SPFx";
   static readonly NewAddinApp = "Start with an Outlook add-in";
   static readonly CreateNewSpfxSolution = "Create a New SPFx Solution";
 }

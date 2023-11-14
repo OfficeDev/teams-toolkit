@@ -7,13 +7,17 @@
   </head>
 
   <body>
-  <script src="https://res.cdn.office.net/teams-js/2.7.1/js/MicrosoftTeams.min.js" integrity="sha384-4Gy2G+qxzDVdrdemcVqKVQvaSK1Ghg3x6xcsaMLPc/pw7KPtiogHGM97LTWF2PWg" crossorigin="anonymous"></script>
+    <script
+      src="https://res.cdn.office.net/teams-js/2.17.0/js/MicrosoftTeams.min.js"
+      integrity="sha384-xp55t/129OsN192JZYLP0rGhzjCF9aYtjY0LVtXvolkDrBe4Jchylp56NrUYJ4S2"
+      crossorigin="anonymous"
+    ></script>
     <script
       type="text/javascript"
       src="https://alcdn.msauth.net/browser/2.21.0/js/msal-browser.min.js"
       integrity="sha384-s/NxjjAgw1QgpDhOlVjTceLl4axrp5nqpUbCPOEQy1PqbFit9On6uw2XmEF1eq0s"
-      crossorigin="anonymous">
-    </script>
+      crossorigin="anonymous"
+    ></script>
     <script type="text/javascript">
       microsoftTeams.app.initialize().then(() => {
         microsoftTeams.app.getContext().then(async (context) => {
@@ -27,23 +31,23 @@
             auth: {
               clientId: clientId,
               authority: `https://login.microsoftonline.com/${context.user.tenant.id}`,
-              navigateToLoginRequestUrl: false
+              navigateToLoginRequestUrl: false,
             },
             cache: {
               cacheLocation: "sessionStorage",
             },
-          }
+          };
 
           const msalInstance = new msal.PublicClientApplication(msalConfig);
           const scopesArray = scope.split(" ");
           const scopesRequest = {
             scopes: scopesArray,
             redirectUri: window.location.origin + `/auth-end.html?clientId=${clientId}`,
-            loginHint: loginHint
+            loginHint: loginHint,
           };
           await msalInstance.loginRedirect(scopesRequest);
         });
       });
-      </script>
+    </script>
   </body>
 </html>

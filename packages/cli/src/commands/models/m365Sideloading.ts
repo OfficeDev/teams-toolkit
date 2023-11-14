@@ -53,8 +53,7 @@ export const m365utils = new M365Utils();
 export const m365SideloadingCommand: CLICommand = {
   name: isCliV3Enabled() ? "install" : "sideloading",
   aliases: isCliV3Enabled() ? ["sideloading"] : ["install"],
-  description:
-    "Sideloading an M365 App with corresponding information specified in the given manifest package.",
+  description: "Sideload a given application package across Microsoft 365.",
   options: [
     {
       name: "file-path",
@@ -69,16 +68,18 @@ export const m365SideloadingCommand: CLICommand = {
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 ${
-        isCliV3Enabled() ? "install" : "sideloading"
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} ${
+        isCliV3Enabled() ? "install" : "m365 sideloading"
       } --file-path appPackage.zip`,
-      description: "Sideloading the m365 app package",
+      description:
+        "Sideload the application package with JSON-based manifest to Teams, Outlook, and the Microsoft 365 app.",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 ${
-        isCliV3Enabled() ? "install" : "sideloading"
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} ${
+        isCliV3Enabled() ? "install" : "m365 sideloading"
       } --xml-path manifest.xml`,
-      description: "Sideloading the m365 app based on the XML manifest file",
+      description:
+        "Sideload the Outlook add-in application package with XML-based manifest to Outlook.",
     },
   ],
   telemetry: {

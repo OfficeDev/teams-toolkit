@@ -20,22 +20,20 @@ import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { AppStudioScopes } from "../common/tools";
+import { Constants } from "../component/driver/add/utility/constants";
 import { recommendedLocations, resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
-import { environmentManager } from "../core/environment";
+import { environmentNameManager } from "../core/environmentName";
 import { TOOLS } from "../core/globalVars";
 import {
+  SPFxFrameworkQuestion,
   SPFxImportFolderQuestion,
   SPFxWebpartNameQuestion,
   apiOperationQuestion,
   apiSpecLocationQuestion,
-  SPFxFrameworkQuestion,
 } from "./create";
 import { QuestionNames } from "./questionNames";
-import { environmentNameManager } from "../core/environmentName";
-import { Constants } from "../component/driver/add/utility/constants";
-import { isCliV3Enabled } from "../common/featureFlags";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -508,7 +506,8 @@ export function selectTargetEnvQuestion(
         if (throwErrorIfNoEnv) throw res.error;
         return [defaultValueIfNoEnv];
       }
-      return res.value;
+      // "testtool" env is a pure local env and doesn't have manifest
+      return res.value.filter((env) => env !== environmentNameManager.getTestToolEnvName());
     },
     skipSingleOption: true,
     forgetLastValue: true,
@@ -582,8 +581,8 @@ export async function isAadMainifestContainsPlaceholder(inputs: Inputs): Promise
 export function selectAadManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.AadAppManifestFilePath,
-    cliName: isCliV3Enabled() ? "entra-app-manifest-file" : "aad-manifest-file",
-    cliShortName: isCliV3Enabled() ? "e" : "a",
+    cliName: "entra-app-manifest-file",
+    cliShortName: "a",
     cliDescription:
       "Specifies the Microsoft Entra app manifest file path, can be either absolute path or relative path to project root folder.",
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),

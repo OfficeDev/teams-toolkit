@@ -7,7 +7,7 @@ TeamsFx CLI a text-based command line interface that can help scaffold, validate
 Let's start by installing `teamsfx-cli` from NPM and run `teamsfx -h` to check all available commands:
 
 ```powershell
-$ npm install -g @microsoft/teamsfx-cli
+$ npm install -g @microsoft/teamsapp-cli
 $ teamsfx -h
 ```
 

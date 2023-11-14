@@ -44,10 +44,6 @@ export function isApiCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
 }
 
-export function isCliNewUxEnabled(): boolean {
-  return true;
-}
-
 export function isCliV3Enabled(): boolean {
   return isFeatureFlagEnabled("TEAMSFX_CLI_V3", false);
 }

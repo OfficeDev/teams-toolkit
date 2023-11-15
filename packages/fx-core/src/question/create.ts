@@ -570,7 +570,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
     cliDescription: "Specifies the Microsoft Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
-    cliChoiceListCommand: "teamsfx list templates",
+    cliChoiceListCommand: "teamsapp list templates",
     type: "singleSelect",
     staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {

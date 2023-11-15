@@ -5,7 +5,7 @@ version: 1.1.0
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
   # Creates a new Microsoft Entra app to authenticate users if
   # the environment variable that stores clientId is empty
@@ -102,7 +102,7 @@ provision:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
   - uses: cli/runDotnetCommand
     with:

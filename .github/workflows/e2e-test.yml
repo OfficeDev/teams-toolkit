@@ -483,11 +483,9 @@ jobs:
             field: excludeAfterRemap
             value: false
 
-      - uses: jossef/action-set-json-field@v1
-        with:
-            file: ./packages/fx-core/.nycrc
-            field: include
-            value: '["build"]'
+      - name: Update config.json
+        working-directory: packages/fx-core
+        run: echo "`jq '.include=["build"]' .nycrc`" > .nycrc
 
       - name: less nycrc
         working-directory: packages/fx-core
@@ -517,7 +515,3 @@ jobs:
           path: |
             packages/fx-core/out1.zip
             packages/fx-core/out2.zip
-
-          
-      
-

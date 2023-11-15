@@ -160,10 +160,18 @@ export interface WrappedAdaptiveCard {
   previewCardTemplate: PreviewCardTemplate;
 }
 
+export interface ChoicesItem {
+  title: string;
+  value: string;
+}
+
 export interface Parameter {
   name: string;
   title: string;
   description: string;
+  inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
+  value?: string;
+  choices?: ChoicesItem[];
 }
 
 export interface CheckParamResult {

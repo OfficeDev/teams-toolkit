@@ -287,6 +287,7 @@ export class SpecParser {
         outputSpecPath,
         adaptiveCardFolder,
         newSpec,
+        this.options.allowMultipleParameters,
         firstAuthKey?.name
       );
 

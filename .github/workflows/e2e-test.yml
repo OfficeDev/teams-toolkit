@@ -499,7 +499,7 @@ jobs:
       - name: run test for coverage
         working-directory: packages/fx-core
         run: |
-          npx nyc mocha ../tests/e2e/**/*.tests.ts
+          npx nyc mocha ../tests/src/e2e/**/*.tests.ts
       
       - name: pack zip
         if: ${{always()}}

@@ -4,7 +4,7 @@
 import * as fs from "fs-extra";
 import klaw from "klaw";
 import AdmZip, { EntryHeader } from "adm-zip";
-import ignore, { Ignore } from "ignore";
+import { Ignore } from "ignore";
 import path from "path";
 import { CacheFileInUse, DeployEmptyFolderError, ZipFileError } from "../../error/deploy";
 
@@ -20,7 +20,7 @@ export async function zipFolderAsync(
   notIncluded: Ignore
 ): Promise<fs.ReadStream> {
   const tasks: Promise<void>[] = [];
-  const ig = notIncluded ?? ignore();
+  const ig = notIncluded;
   // always delete cache if exists
   if (fs.existsSync(cache)) {
     try {

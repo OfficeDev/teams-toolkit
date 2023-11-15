@@ -1,13 +1,13 @@
-# TeamsFx Command Line Interface
+# teamsapp Command Line Interface
 
-TeamsFx CLI is a text-based command line interface that accelerates Teams application development. It aims you to provide keyboard-centric experience when building Teams applications. It also enables CI/CD scenario where CLI can be easily integrated in scripts for automation.
+teamsapp CLI is a text-based command line interface that accelerates Teams application development. It aims you to provide keyboard-centric experience when building Teams applications. It also enables CI/CD scenario where CLI can be easily integrated in scripts for automation.
 
-* [Source code](https://github.com/OfficeDev/TeamsFx/tree/dev/packages/cli) 
+* [Source code](https://github.com/OfficeDev/teamsapp/tree/dev/packages/cli) 
 * [Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsapp-cli)
 
 ## Get Started
 
-Let's start by installing `teamsfx-cli` from `npm` and run `teamsfx -h` to check all available commands:
+Let's start by installing `teamsapp-cli` from `npm` and run `teamsapp -h` to check all available commands:
 
 ```bash
   npm install -g @microsoft/teamsapp-cli
@@ -16,216 +16,189 @@ Let's start by installing `teamsfx-cli` from `npm` and run `teamsfx -h` to check
 
 ## Supported Commands
 
-| `teamsfx` Commands  | Descriptions |
+| `teamsapp` Commands  | Descriptions |
 |:----------------  |:-------------|
-| `teamsfx new`       | Create a new Teams application. |
-| `teamsfx account`   | Manage cloud service accounts. The supported cloud services are 'Azure' and 'Microsoft 365'.          |
-| `teamsfx env`       | Manage the environments. |
-| `teamsfx capability`| Add new capabilities to the current application.         |
-| `teamsfx resource`  | Manage the resources in the current application.         |
-| `teamsfx provision` | Provision the cloud resources in the current application.             |
-| `teamsfx deploy`    | Deploy the current application.  |
-| `teamsfx package`   | Build your Teams app into a package for publishing.         |
-| `teamsfx validate`  | Validate the current application.             |
-| `teamsfx publish`   | Publish the app to Teams.             |
-| `teamsfx preview`   | Preview the current application. |
-| `teamsfx config`    | Manage the configuration data. |
-| `teamsfx permission`| Collaborate with other developers in same project.|
+|`teamsapp add` | Add feature to your Microsoft Teams application. |
+|`teamsapp auth` | Manage Microsoft 365 and Azure accounts. |
+|`teamsapp collaborator` | Check, grant and list permissions for who can access and manage Microsoft Teams application and Microsoft Entra application. |
+|`teamsapp deploy [options]` | Run the deploy stage in teamsapp.yml or teamsapp.local.yml.|
+|`teamsapp doctor [options]` | Prerequiste checker for building Microsoft Teams apps. |
+|`teamsapp entra-app` | Manage the Microsoft Entra app in the current application.|
+|`teamsapp env` | Manage environments.|
+|`teamsapp help` | Show Microsoft Teams Toolkit CLI help.|
+|`teamsapp install` | Sideload a given application package across Microsoft 365.|
+|`teamsapp launchinfo` | Get launch information of an acquired M365 App.|
+|`teamsapp list` | List available Microsoft Teams application templates and samples.|
+|`teamsapp new` | Create a new Microsoft Teams application.|
+|`teamsapp package` | Build your Microsoft Teams app into a package for publishing.|
+|`teamsapp preview` | Preview the current application.|
+|`teamsapp provision` | Run the provision stage in teamsapp.yml or teamsapp.local.yml.|
+|`teamsapp publish` | Run the publish stage in teamsapp.yml.|
+|`teamsapp uninstall` | Remove an acquired M365 App.|
+|`teamsapp update` | Update the Microsoft Teams App manifest to Teams Developer Portal.|
+|`teamsapp upgrade` | Upgrade the project to work with the latest version of Teams Toolkit.|
+|`teamsapp validate` | Validate the Microsoft Teams app using manifest schema or validation rules.|
 
-## `teamsfx new`
+## `teamsapp new`
 
-`teamsfx new` will by default go into interactive mode and guide you through the process of creating a new Teams application by asking few questions. You can also do it in non-interactive mode by setting `--interactive` flag to `false`.
+`teamsapp new` will by default go into interactive mode and guide you through the process of creating a new Teams application by asking few questions. You can also do it in non-interactive mode by setting `--interactive` flag to `false`.
 
-| `teamsFx new` Commands  | Descriptions |
+| `teamsapp new` Commands  | Descriptions |
 |:----------------  |:-------------|
-| `teamsfx new template <template-name>`     | Create an app from an existing template |
-| `teamsfx new template list`     | List all the available templates |
+| `teamsapp new sample <sample-id>`     | Create an app from an existing sample |
+| `teamsapp list samples`     | List all the available samples|
 
-### Parameters for `teamsfx new`
+### Parameters for `teamsapp new`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
-|`--app-name` | Yes| Name of your Teams application.|
-|`--interactive`| No | Select the options interactively. Options are `true` and `false`. The default value is `true`.|
-|`--capability`| No| Choose Teams application capabilities, multiple Options are: `tab`, `bot`, `messaging-extension` and `tab-spfx`. The default value is: `tab`.|
-|`--programming-language`| No| Programming Language for the project. Options are `javascrip` or `typescript` and default value is: `javascript`.|
-|`--folder`| No | Project directory. A sub folder with the your app name will be created under this directory. The default value is: `./`.|
-|`--spfx-framework-type`| No| Applicable if `Tab(SPfx)` capability is selected. Frontend Framework. Options are `none` and `react`, the default value is: `none`.|
-|`--spfx-webpart-name`| No | Applicable if `Tab(SPfx)` capability is selected. Web part Name. The default value is: "helloworld". |
-|`--spfx-webpart-desp`| No | Applicable if `Tab(SPfx)` capability is selected. Web part Description. The default value is: "helloworld description". |
-|`--azure-resources`| No| Applicable if contains `tab` capability. Add Azure resources to your project. Options(Multiple) are `sql` (Azure SQL Database) and `function` (Azure Functions). |
+| `capability` | Yes | Specifies the Microsoft Teams App capability. Allowed value: ["bot", "ai-bot", "ai-assistant-bot", etc.]. Use 'teamsfx list templates' to see all available options. |
+| `bot-host-type-trigger` | No | Specifies the trigger for `Chat Notification Message` app template. Allowed value: ["http-restify", "http-webapi", "http-and-timer-functions", etc.]. Default value: "http-restify". |
+| `spfx-solution` | No | Create a new or import an existing SharePoint Framework solution. Allowed value: ["new", "import"]. Default value: "new". |
+| `spfx-install-latest-package` | No | Install the latest version of SharePoint Framework. Default value: true. |
+| `spfx-framework-type` | No | Framework. Allowed value: ["react", "minimal", "none"]. Default value: "react". |
+| `spfx-webpart-name` | No | Name for SharePoint Framework Web Part. Default value: "helloworld". |
+| `spfx-folder` | No | Directory or Path that contains the existing SharePoint Framework solution. |
+| `me-architecture` | No | Architecture of Search Based Message Extension. Allowed value: ["new-api", "api-spec", "bot-plugin"]. Default value: "new-api". |
+| `openapi-spec-location` | No | OpenAPI description document location. |
+| `api-operation` | No | Select Operation(s) Teams Can Interact with. |
+| `programming-language` | No | Programming Language Allowed value: ["javascript", "typescript", "csharp"]. Default value: "javascript". |
+| `folder` | No | Directory where the project folder will be created in. Default value: "./". |
+| `app-name | Yes | Application name. |
 
-### Scenarios for `teamsfx new`
+### Scenarios for `teamsapp new`
 
-Using interactive mode to create a Teams app is super intuitive, please try it by starting with `teamsfx new`. The following are the few scenerios on controlling all the parameters:
+Using interactive mode to create a Teams app is super intuitive, please try it by starting with `teamsapp new`. The following are the few scenerios on controlling all the parameters:
 
-#### A tab app hosted on SPFx using React
-
-```bash
-teamsfx new --interactive false --app-name newspfxapp --capability tab-spfx --spfx-framework-type react
-```
-
-#### A Teams app in JavaScript contains tab, bot capabilities and Azure Functions
+#### Create a new timer triggered notification bot
 
 ```bash
-teamsfx new --interactive false --app-name newtabbotapp --capability tab bot --programming-language javascript --azure-resources function
+teamsapp new -c notification -t timer-functions -l typescript -n myapp -i false
 ```
 
-#### A Teams tab app with Azure Functions and Azure SQL
+#### Import an existing SharePoint Framework solution
 
 ```bash
-teamsfx new --interactive false app-name newapp --azure-resources sql function --programming-language typescript
+teamsapp new -c tab-spfx -s import --spfx-folder <folder-path> -n myapp -i false
 ```
 
-## `teamsfx account`
+## `teamsapp auth`
 
 Manage cloud service accounts. The supported cloud services are `Azure` and `Microsoft 365`.
 
-| `teamsfx account` Commands  | Descriptions |
+| `teamsapp auth` Commands  | Descriptions |
 |:----------------  |:-------------|
-| `teamsfx account show`       | Display all connected cloud accounts information. |
-| `teamsfx account login <service>`      | Log in to the selected cloud service. |
-| `teamsfx account logout <service>`      | log out of selected cloud service. |
-| `teamsfx account set --subscription`      | Update account settings to set a subscription ID. |
+| `teamsapp auth list`       | Display all connected cloud accounts information. |
+| `teamsapp auth login <service>`      | Log in to the selected cloud service. |
+| `teamsapp auth logout <service>`      | log out of selected cloud service. |
 
-## `teamsfx env`
+## `teamsapp env`
 
 Manage the environments.
 
-| `teamsfx env` Commands  | Descriptions |
+| `teamsapp env` Commands  | Descriptions |
 |:----------------  |:-------------|
-| `teamsfx env add <new_env_name> --env <existing_env_name>` | Add a new environment by copying from the specified environment. |
-| `teamsfx env list` | List all environments. |
+| `teamsapp env add <new_env_name> --env <existing_env_name>` | Add a new environment by copying from the specified environment. |
+| `teamsapp env list` | List all environments. |
 
-### Scenarios for `teamsfx env`
+### Scenarios for `teamsapp env`
 
 #### Create a new environment
 
 Add a new environment by copying from the existing dev environment:
 
 ```bash
-teamsfx env add staging --env dev
+teamsapp env add staging --env dev
 ```
 
-## `teamsfx capability`
-
-Add new capabilities to the current application.
-
-| `teamsFx capability` Commands  | Descriptions |
-|:----------------  |:-------------|
-| `teamsfx capability add tab`      | Add a tab. |
-| `teamsfx capability add bot`      | Add a bot. |
-| `teamsfx capability add messaging-extension`      | Add a Messaging Extension. |
-
-> [!NOTE]
-> Once your project include a bot, messaging extension cannot be added any more and it applies vice versa. You can include both bot and messaging extensions in your project when creating a new Teams app project.
-
-## `teamsfx resource`
-
-Manage the resources in the current application. Supported `<resource-type>` are: `azure-sql`, `azure-function` and `azure-apim` .
-
-| `teamsFx resource` Commands  | Descriptions |
-|:----------------  |:-------------|
-| `teamsfx resource add <resource-type>`      | Add a resource into current application.|
-| `teamsfx resource show <resource-type>`      | Show configuration details of the resource. |
-| `teamsfx resource list`      | List all the resources in the current application. |
-
-### Parameters for `teamsfx resource add azure-function`
-
-| Parameters  | Required | Descriptions |
-|:----------------  |:-------------|:-------------|
-|`--function-name`| Yes | Provide a function name. The default value is: `getuserprofile`. |
-
-### Parameters for `teamsfx resource add azure-sql`
-
-#### `--function-name`
-
-| Parameters  | Required | Descriptions |
-|:----------------  |:-------------|:-------------|
-|`--function-name`| Yes | Provide a function name. The default value is: `getuserprofile`. |
-
-> [!NOTE]
-> Function name is verified as SQL needs to be accessed from server workload. If your project doesn't contain `Azure Functions`, it will created one for you.
-
-### Parameters for `teamsfx resource add azure-apim`
-
-> [!TIP]
-> Below options will take effect when you try to use an existing `APIM` instance. By default, you don't have to specify any options and it will create a new instance during `teamsfx provision` step.
-
-| Parameters  | Required | Descriptions |
-|:----------------  |:-------------|:-------------|
-|`--subscription`| Yes | Select an Azure subscription|
-|`--apim-resource-group`| Yes| The name of resource group. |
-|`--apim-service-name`| Yes | The name of the API Management service instance. |
-|`--function-name`| Yes | Provide a function name. The default value is: `getuserprofile`. |
-
-> [!NOTE]
-> We ask for function name because `Azure API Management` needs to work with `Azure Functions`. If your project doesn't contain `Azure Functions` we will create one for you.
-
-## `teamsfx provision`
+## `teamsapp provision`
 
 Provision the cloud resources in the current application.
 
-### Parameters for `teamsfx provision`
+### Parameters for `teamsapp provision`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
-|`--env`| Yes| Select an environment for the project. |
-|`--subscription`| No | Specify an Azure Subscription ID. |
-|`--resource-group`| No | Set the name of an existing resource group. |
-|`--sql-admin-name`| No | Applicable when there is SQL resource in the project. Admin name of SQL.|
-|`--sql-password`| No| Applicable when there is SQL resource in the project. Admin password of SQL.|
+|`--env`| Yes| Specifies the environment name for the project scaffolded by Microsoft Teams Toolkit. |
+|`--folder`| No | Project folder. Default value: "./". |
 
-## `teamsfx deploy`
+## `teamsapp deploy`
 
 This command is used to deploy the current application. By default it will deploy entire project but it's also possible to deploy partially. Options(Multiple) are: `frontend-hosting`, `function`, `apim`, `teamsbot`, `spfx`.
 
-### Parameters for `teamsfx deploy`
+### Parameters for `teamsapp deploy`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
-|`--env`| Yes| Select an existing environment for the project. |
-|`--open-api-document`| No | Applicable when there is APIM resource in the project. The Open API document file path. |
-|`--api-prefix`| No | Applicable when there is APIM resource in the project. The API name prefix. The default unique name of the API will be `{api-prefix}-{resource-suffix}-{api-version}`. |
-|`--api-version`| No | Applicable when there is APIM resource in the project. The API version. |
+|`--env`| Yes| Specifies the environment name for the project scaffolded by Microsoft Teams Toolkit. |
+|`--folder`| No | Project folder. Default value: "./". |
 
-## `teamsfx validate`
+## `teamsapp validate`
 
 Validate current application. This command will validate your application's manifest file.
 
-### Parameters for `teamsfx validate`
-
-`--env`: (Required) Select an existing environment for the project.
-
-## `teamsfx publish`
-
-Publish the app to Teams.
-
-### Parameters for `teamsfx publish`
-
-`--env`: (Required) Select an existing environment for the project.
-
-## `teamsfx package`
-
-Build your Teams app into a package for publishing.
-
-## `teamsfx preview`
-
-Preview the current application from local or remote.
-
-### Parameters for `teamsfx preview`
+### Parameters for `teamsapp validate`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
-|`--local`| No | Preview the application from local. `--local` is exclusive with `--remote`. |
-|`--remote`| No | Preview the application from remote. `--remote` is exclusive with `--local`. |
-|`--env`| No | Select an existing environment for the project when parameter `--remote` appended. |
-|`--folder`| No | Project root directory. The default value is `./`. |
-|`--browser`| No | The browser to open Teams web client. Options are `chrome`, `edge` and `default` (system default browser). The default value is `default`. |
-|`--browser-arg`| No | Argument to pass to the browser, requires --browser, can be used multiple times (e.g. --browser-args="--guest") |
-|`--sharepoint-site`| No | SharePoint site URL, like `{your-tenant-name}.sharepoint.com` (only for SPFx project remote preview). |
+|`manifest-file`| No | Specifies the Microsoft Teams app manifest file path. Default value: "./appPackage/manifest.json".|
+|`package-file`| No | Specifies the zipped Microsoft Teams app package file path.|
+|`output-package-file`| No | Specifies the output zipped Microsoft Teams app package file path. Default value: "./appPackage/build/appPackage.${env}.zip".|
+|`output-manifest-file`| No | Specifies the output Microsoft Teams app manifest file path. Default value: "./appPackage/build/manifest.${env}.json".|
+|`env`| No | Specifies the environment name for the project scaffolded by Microsoft Teams Toolkit.|
+|`env-file`| No | Specifies the .env file that defines the variables to replace in the Teams app manifest template file.|
+|`folder`| No | Project folder. Default value: "./". |
 
-### Scenarios for `teamsfx preview`
+## `teamsapp publish`
+
+Publish the app to Teams.
+
+### Parameters for `teamsapp publish`
+
+| Parameters  | Required | Descriptions |
+|:----------------  |:-------------|:-------------|
+|`manifest-file`| No | Specifies the Microsoft Teams app manifest file path. Default value: "./appPackage/manifest.json".|
+|`package-file`| No | Specifies the zipped Microsoft Teams app package file path.|
+|`output-package-file`| No | Specifies the output zipped Microsoft Teams app package file path. Default value: "./appPackage/build/appPackage.${env}.zip".|
+|`output-manifest-file`| No | Specifies the output Microsoft Teams app manifest file path. Default value: "./appPackage/build/manifest.${env}.json".|
+|`env`| No | Specifies the environment name for the project scaffolded by Microsoft Teams Toolkit.|
+|`env-file`| No | Specifies the .env file that defines the variables to replace in the Teams app manifest template file.|
+|`folder`| No | Project folder. Default value: "./". |
+
+## `teamsapp package`
+
+Build your Teams app into a package for publishing.
+### Parameters for `teamsapp publish`
+
+| Parameters  | Required | Descriptions |
+|:----------------  |:-------------|:-------------|
+|`manifest-file`| No | Specifies the Microsoft Teams app manifest file path. Default value: "./appPackage/manifest.json".|
+|`output-package-file`| No | Specifies the output zipped Microsoft Teams app package file path. Default value: "./appPackage/build/appPackage.${env}.zip".|
+|`output-manifest-file`| No | Specifies the output Microsoft Teams app manifest file path. Default value: "./appPackage/build/manifest.${env}.json".|
+|`env`| No | Specifies the environment name for the project scaffolded by Microsoft Teams Toolkit.|
+|`env-file`| No | Specifies the .env file that defines the variables to replace in the Teams app manifest template file.|
+|`folder`| No | Project folder. Default value: "./". |
+
+## `teamsapp preview`
+
+Preview the current application from local or remote.
+
+### Parameters for `teamsapp preview`
+
+| Parameters  | Required | Descriptions |
+|:----------------  |:-------------|:-------------|
+|`m365-host` | No | Preview the application in Teams, Outlook or the Microsoft 365 app. Allowed value: ["teams", "outlook", "office"]. Default value: "teams".| 
+|`teams-manifest-file` | No | Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json' Default value: "./appPackage/manifest.json".| 
+|`run-command` | No | The command to start local service. Work for 'local' environment only. If undefined, teamsfx will use the auto detected one from project type (`npm run dev:teamsfx` or `dotnet run` or `func start`). If empty, teamsfx will skip starting local service. | 
+|`running-pattern` | No | The ready signal output that service is launched. Work for 'local' environment only. If undefined, teamsfx will use the default common pattern ("started|successfully|finished|crashed|failed|listening"). If empty, teamsfx treats process start as ready signal.  | 
+|`open-only` | No | Work for 'local' environment only. If true, directly open web client without launching local service. Default value: false. |
+|`browser` | No | Select browser to open Microsoft Teams web client. Allowed value: ["chrome", "edge", "default"]. Default value: "default".|
+|`browser-arg` | No | Argument to pass to the browser (e.g. --browser-args="--guest") |
+|`exec-path` | No | The paths that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func". Default value: "devTools/func". |
+|`env` | No | Specifies the environment name for the project. Default value: "local".|
+|`folder` | No | Project folder. Default value: "./".|
+
+### Scenarios for `teamsapp preview`
 
 #### Local Preview
 
@@ -236,173 +209,110 @@ Dependencies:
 - Azure Functions Core Tools
 
 ```bash
-teamsfx preview --local
-teamsfx preview --local --browser chrome
+teamsapp preview --env local
+teamsapp preview --env local --browser chrome
 ```
 
 #### Remote Preview
 
 ```bash
-teamsfx preview --remote
-teamsfx preview --remote --browser edge
+teamsapp preview --env dev
+teamsapp preview --env dev --browser edge
 ```
 
 > [!Note]
 > The logs of the background services like React will be saved in `~/.fx/cli-log/local-preview/`.
 
-## `teamsfx config`
+## `teamsapp collaborator`
 
-Manage the configuration data either in user scope or project scope.
+teamsapp CLI provides `teamsapp collaborator` Commands for collaboration scenario.
 
-| `teamsfx config` Commands  | Descriptions |
-|:----------------  |:-------------|
-| `teamsfx config get [option]` | View the configuration value of option |
-| `teamsfx config set <option> <value>` | Update the configuration value of option |
-
-### Parameters for `teamsfx config`
-
-| Parameters  | Required | Descriptions |
-|:----------------  |:-------------|:-------------|
-|`--env`| Yes | Select an existing environment for the project. |
-|`--folder`| No | Project directory. This is used when get/set project configuration. The default value is: `./`. |
-|`--global`| No | Cope of configuration. If this is true, the scope is limited to user scope instead of project scope. The default value is: `false`. Currently supported global configurations including: `telemetry`, `validate-dotnet-sdk`, `validate-func-core-tools`, `validate-node`, `validate-ngrok`, `trust-development-certificate`. |
-
-### Scenerios for `teamsfx config`
-
-Secrets in `.userdata` file are encrypted, `teamsfx config` could help you view / update these values.
-
-#### Stop sending telemetry data
-
-```bash
-teamsfx config set telemetry off
-```
-
-#### Disable environment checker
-
-There are three configs to turn on/off Node.js, .NET SDK and Azure Functions Core Tools validation, and all of them are enabled by default. You are able to set the config to "off" if you do not need the dependencies validation and would like to install the dependencies by yourself. Check the [Node.js installation guide](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/envchecker-help.md#how-to-install-nodejs), [.NET SDK installation guide](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/envchecker-help.md#how-to-install-net-sdk) and [Azure Functions Core Tools installation guide](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/vscode-extension/envchecker-help.md#how-to-install-azure-functions-core-tools).
-
-For example, to disable .NET SDK validation, you can use the following command.
-
-```bash
-teamsfx config set validate-dotnet-sdk off
-```
-
-To enable .NET SDK validation, you can use the following command.
-
-```bash
-teamsfx config set validate-dotnet-sdk on
-```
-
-#### View all the user scope configuration
-
-```bash
-teamsfx config get -g
-```
-
-#### View all the configuration in project
-
-The secret will automatically decrypted:
-
-```bash
-teamsfx config get --env dev
-```
-
-#### Update the secret configuration in project
-
-```bash
-teamsfx config set fx-resource-aad-app-for-teams.clientSecret xxx --env dev
-```
-
-## `teamsfx permission`
-
-TeamsFx CLI provides `teamsfx permission` Commands for collaboration scenario.
-
-| `teamsfx permission` Commands | Descriptions |
+| `teamsapp collaborator` Commands | Descriptions |
 |:------------------------------|-------------|
-| `teamsfx permission grant --env --email` | Grant permission for collaborator's Microsoft 365 account for the project of a specified environment. |
-| `teamsfx permission status` | Show permission status for the project |
+| `teamsapp collaborator grant --env --email` | Grant permission for collaborator's Microsoft 365 account for the project of a specified environment. |
+| `teamsapp collaborator status` | Show permission status for the project |
 
-### Parameters for `teamsfx permission grant`
+### Parameters for `teamsapp collaborator grant`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
 |`--env`| Yes | Provide env name. |
 |`--email`| Yes | Provide collaborator's Microsoft 365 email address. Note that the collaborator's account should be in the same tenant with creator. |
 
-### Parameters for `teamsfx permission status`
+### Parameters for `teamsapp collaborator status`
 
 | Parameters  | Required | Descriptions |
 |:----------------  |:-------------|:-------------|
 |`--env`| Yes | Provide env name. |
 |`--list-all-collaborators` | No | With this flag, Teams Toolkit CLI will print out all collaborators for this project. |
 
-### Scenarios for `teamsfx permission`
+### Scenarios for `teamsapp collaborator`
 
-Here are some examples, for better handling permission for `TeamsFx` projects.
+Here are some examples, for better handling permission for `teamsapp` projects.
 
 #### Grant Permission
 
-Project creator and collaborators can use `teamsfx permission grant` command to add a new collaborator to the project:
+Project creator and collaborators can use `teamsapp collaborator grant` command to add a new collaborator to the project:
 
 ```bash
-teamsfx permission grant --env dev --email user-email@user-tenant.com
+teamsapp collaborator grant --env dev --email user-email@user-tenant.com
 ```
 
 After successfully granted permission, project creator and collaborators can share the project with the new collaborator by Github, and the new collaborator will have all permission for Microsoft 365 account.
 
 #### Show Permission Status
 
-Project creator and collaborators can use `teamsfx permission status` command to view his Microsoft 365 account permission for specific env:
+Project creator and collaborators can use `teamsapp collaborator status` command to view his Microsoft 365 account permission for specific env:
 
 ```bash
-teamsfx permission status --env dev
+teamsapp collaborator status --env dev
 ```
 
 #### List All Collaborators
 
-Project creator and collaborators can use `teamsfx permission status` command to view all collaborators for specific env:
+Project creator and collaborators can use `teamsapp collaborator status` command to view all collaborators for specific env:
 
 ```bash
-teamsfx permission status --env dev --list-all-collaborators
+teamsapp collaborator status --env dev --list-all-collaborators
 ```
 
 #### E2E Collaboration work flow in CLI
 
 As a project creator:
 
-- Create a new TeamsFx Tab project (You can also select bot), and the hosting type select Azure.
+- Create a new teamsapp Tab project (You can also select bot).
 
   ```bash
-  teamsfx new --interactive false --app-name newapp --host-type azure
+  teamsapp new -c notification -t timer-functions -l typescript -n myapp -i false
   ```
 
 - Login Microsoft 365 account and Azure account.
 
   ```bash
-  teamsfx account login azure
-  teamsfx account login Microsoft 365
+  teamsapp auth login azure
+  teamsapp auth login m365
   ```
 
 - Provision your project.
 
   ```bash
-  teamsfx provision
+  teamsapp provision
   ```
 
 - View collaborators. You should see yourself here.
 
   ```bash
-  teamsfx permission status --env dev --list-all-collaborators
+  teamsapp collaborator status --env dev --list-all-collaborators
   ```
 
-  ![list-all-collaborators](./images/permission-status-all.png)
+  ![list-all-collaborators](TODO)
 - Add another account as collaborator. Note that the added account must under the same tenant:
 
   ```bash
-  teamsfx permission grant --env dev --email user-email@user-tenant.com
+  teamsapp collaborator grant --env dev --email user-email@user-tenant.com
   ```
 
-  ![add-new-collaborator](./images/permission-grant.png)
+  ![add-new-collaborator](TODO)
 - Push your project to GitHub
 
 As a Project Collaborator:
@@ -411,21 +321,21 @@ As a Project Collaborator:
 - Login Microsoft 365 account. Note that the Microsoft 365 account should be the same as added above:
 
   ```bash
-  teamsfx account login Microsoft 365
+  teamsapp auth login m365
   ```
 
 - Login Azure account which has contributor permission for all the Azure resources.
 
   ```bash
-  teamsfx account login azure
+  teamsapp auth login azure
   ```
 
 - Check permission status. You should find yourself have the owner permission of the project:
 
   ```bash
-  teamsfx permission status --env dev
+  teamsapp collaborator status --env dev
   ```
 
-  ![permission status](./images/permission-status.png)
+  ![collaborator status](TODO)
 - Update Tab code, and deploy the project to remote.
 - Launch remote and the project should work fine.

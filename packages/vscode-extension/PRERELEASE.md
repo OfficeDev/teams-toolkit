@@ -2,6 +2,12 @@
 
 ## Changelog
 
+### November 15, 2023
+
+This is a hot fix version that contains a bug fix:
+
+- Fixed an issue in Teams Toolkit CLI where an environment variable is unexpectedly shared between Teams Toolkit CLI and Teams Toolkit for Visual Studio Code.
+
 ### November 14, 2023
 
 #### New Features

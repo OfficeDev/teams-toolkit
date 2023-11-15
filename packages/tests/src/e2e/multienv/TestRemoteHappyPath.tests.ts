@@ -43,7 +43,7 @@ describe("Multi Env Happy Path for Azure", function () {
       try {
         let result;
         result = await execAsync(
-          `teamsfx new --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-functions --programming-language javascript`,
+          `teamsapp new --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-functions --programming-language javascript`,
           {
             cwd: testFolder,
             env: processEnv,
@@ -57,7 +57,7 @@ describe("Multi Env Happy Path for Azure", function () {
         await CliHelper.addEnv(env, projectPath, processEnv);
 
         // list env
-        result = await execAsync(`teamsfx env list`, {
+        result = await execAsync(`teamsapp env list`, {
           cwd: projectPath,
           env: processEnv,
           timeout: 0,
@@ -106,7 +106,7 @@ describe("Multi Env Happy Path for Azure", function () {
         }
 
         // validate manifest
-        result = await execAsyncWithRetry(`teamsfx validate --env ${env}`, {
+        result = await execAsyncWithRetry(`teamsapp validate --env ${env}`, {
           cwd: projectPath,
           env: processEnv,
           timeout: 0,
@@ -118,7 +118,7 @@ describe("Multi Env Happy Path for Azure", function () {
         }
 
         // update manifest
-        const updateManifestCmd = `teamsfx update teams-app --env ${env}`;
+        const updateManifestCmd = `teamsapp update --env ${env}`;
         result = await execAsyncWithRetry(updateManifestCmd, {
           cwd: projectPath,
           env: processEnv,
@@ -131,7 +131,7 @@ describe("Multi Env Happy Path for Azure", function () {
         }
 
         // package
-        await execAsyncWithRetry(`teamsfx package --env ${env}`, {
+        await execAsyncWithRetry(`teamsapp package --env ${env}`, {
           cwd: projectPath,
           env: processEnv,
           timeout: 0,
@@ -144,7 +144,7 @@ describe("Multi Env Happy Path for Azure", function () {
         }
 
         // publish
-        await execAsyncWithRetry(`teamsfx publish --env ${env}`, {
+        await execAsyncWithRetry(`teamsapp publish --env ${env}`, {
           cwd: projectPath,
           env: processEnv,
           timeout: 0,

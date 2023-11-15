@@ -44,8 +44,8 @@ export function happyPathTest(runtime: Runtime): void {
     it("Provision Resource: app service hosted notification", async function () {
       const cmd =
         runtime === Runtime.Node
-          ? `teamsfx new --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-restify --programming-language typescript`
-          : `teamsfx new --runtime dotnet --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-webapi`;
+          ? `teamsapp new --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-restify --programming-language typescript`
+          : `teamsapp new --runtime dotnet --interactive false --app-name ${appName} --capability notification --bot-host-type-trigger http-webapi`;
       await execAsync(cmd, {
         cwd: testFolder,
         env: env,
@@ -72,7 +72,7 @@ export function happyPathTest(runtime: Runtime): void {
       }
 
       // deploy
-      await execAsyncWithRetry(`teamsfx deploy`, {
+      await execAsyncWithRetry(`teamsapp deploy`, {
         cwd: projectPath,
         env: env,
         timeout: 0,
@@ -91,14 +91,14 @@ export function happyPathTest(runtime: Runtime): void {
       }
 
       // test (validate)
-      await execAsyncWithRetry(`teamsfx validate --env ${envName}`, {
+      await execAsyncWithRetry(`teamsapp validate --env ${envName}`, {
         cwd: projectPath,
         env: env,
         timeout: 0,
       });
 
       // package
-      await execAsyncWithRetry(`teamsfx package --env ${envName}`, {
+      await execAsyncWithRetry(`teamsapp package --env ${envName}`, {
         cwd: projectPath,
         env: env,
         timeout: 0,

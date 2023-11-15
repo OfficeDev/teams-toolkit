@@ -1199,7 +1199,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     name: QuestionNames.Samples,
     cliName: "sample-name",
     cliDescription: "Specifies the Microsoft Teams App sample name.",
-    cliChoiceListCommand: "teamsfx list samples",
+    cliChoiceListCommand: "teamsapp list samples",
     skipValidation: true,
     cliType: "argument",
     title: getLocalizedString("core.SampleSelect.title"),

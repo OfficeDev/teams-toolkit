@@ -517,7 +517,7 @@ jobs:
           SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
           ADO_TOKEN: ${{ secrets.ADO_PAT }}
         run: |
-          npx nyc mocha ../tests/src/e2e/bot/EchoBotHappyPath.tests.ts
+          npx nyc mocha ../tests/src/e2e/**/*.tests.ts
       
       - name: pack zip
         if: ${{always()}}

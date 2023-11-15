@@ -108,7 +108,10 @@ export class SpecParser {
           continue;
         }
 
-        const [command, warning] = parseApiInfo(pathObjectItem);
+        const [command, warning] = parseApiInfo(
+          pathObjectItem,
+          this.options.allowMultipleParameters
+        );
 
         const apiInfo: APIInfo = {
           method: method,

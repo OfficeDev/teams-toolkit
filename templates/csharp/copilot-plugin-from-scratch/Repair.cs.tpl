@@ -1,21 +1,25 @@
 using {{SafeProjectName}}.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
+using System.Net;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
 namespace {{SafeProjectName}}
 {
-    public static class Repair
+    public class Repair
     {
-        [FunctionName("repair")]
-        public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = null)] HttpRequest req,
-            ILogger log)
+        private readonly ILogger _logger;
+
+        public Repair(ILoggerFactory loggerFactory)
+        {
+            _logger = loggerFactory.CreateLogger<Repair>();
+        }
+
+        [Function("repair")]
+        public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
             // Log that the HTTP trigger function received a request.
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            _logger.LogInformation("C# HTTP trigger function processed a request.");
 
             // Get the query parameters from the request.
             string assignedTo = req.Query["assignedTo"];
@@ -34,10 +38,11 @@ namespace {{SafeProjectName}}
                        parts[0].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase) ||
                        parts[1].Equals(assignedTo?.Trim(), StringComparison.InvariantCultureIgnoreCase);
             });
-            
+
             // Return filtered repair records, or an empty array if no records were found.
-            var results = new { results = repairs };
-            return new OkObjectResult(results);
+            var response = req.CreateResponse();
+            await response.WriteAsJsonAsync(new { results = repairs });
+            return response;
         }
     }
 }

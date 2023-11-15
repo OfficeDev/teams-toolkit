@@ -444,6 +444,9 @@ importers:
       ts-node:
         specifier: ^9.1.1
         version: 9.1.1(typescript@4.5.5)
+      tslib:
+        specifier: ^2.3.1
+        version: 2.6.1
       typescript:
         specifier: ^4.3.2
         version: 4.5.5
@@ -1719,10 +1722,10 @@ importers:
         specifier: 1.17.3
         version: 1.17.3
       '@microsoft/teamsapp-cli':
-        specifier: ^3.0.0-alpha
+        specifier: workspace:*
         version: link:../cli
       '@microsoft/teamsfx-api':
-        specifier: ^0.22.5
+        specifier: workspace:*
         version: link:../api
       '@types/semver':
         specifier: ^7.3.8
@@ -1778,7 +1781,7 @@ importers:
         specifier: 0.0.1
         version: 0.0.1(mocha@10.2.0)(mochawesome@7.0.1)
       '@microsoft/teamsfx-core':
-        specifier: ^2.0.5
+        specifier: workspace:*
         version: link:../fx-core
       '@types/chai':
         specifier: ^4.2.19
@@ -1894,6 +1897,9 @@ importers:
       ts-node:
         specifier: ^10.7.0
         version: 10.9.1(@types/node@14.17.4)(typescript@5.0.4)
+      tslib:
+        specifier: ^2.3.1
+        version: 2.6.1
       typescript:
         specifier: ^5.0.4
         version: 5.0.4

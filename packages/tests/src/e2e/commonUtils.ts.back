@@ -60,7 +60,7 @@ export async function execAsync(
       cmdUpdate = `npx ts-node ${filePath} ${cmdStr}`;
     } else if (cmd.includes("teamsapp")) {
       const cmdStr = cmd.replace("teamsapp ", "");
-      const filePath = path.resolve(__dirname, "./../../cli/cli.js");
+      const filePath = path.resolve(__dirname, "./../../../cli/cli.js");
       cmdUpdate = `npx ts-node ${filePath} ${cmdStr}`;
     }
     console.log("!! ------ Cmd: ", cmdUpdate);

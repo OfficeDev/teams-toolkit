@@ -9,12 +9,12 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { expect } from "chai";
 import { execAsync } from "../commonUtils";
 
-describe("teamsfx command help", function () {
+describe("teamsapp command help", function () {
   it(
-    `teamsfx account show -h`,
+    `teamsapp auth list -h`,
     { testPlanCaseId: 15685961, author: "zhiyou@microsoft.com" },
     async function () {
-      const result = await execAsync(`teamsfx account show -h`, {
+      const result = await execAsync(`teamsapp auth list -h`, {
         env: process.env,
         timeout: 0,
       });

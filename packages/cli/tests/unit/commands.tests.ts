@@ -197,7 +197,7 @@ describe("CLI commands", () => {
     it("happy path", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
-        command: { ...listSamplesCommand, fullName: "teamsfx list samples" },
+        command: { ...listSamplesCommand, fullName: "teamsapp list samples" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],

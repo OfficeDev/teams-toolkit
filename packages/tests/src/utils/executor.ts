@@ -60,7 +60,7 @@ export class Executor {
     customized: Record<string, string> = {}
   ) {
     const command =
-      `teamsfx new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
+      `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${language} ` +
       Object.entries(customized)
         .map(([key, value]) => "--" + key + " " + value)
         .join(" ");
@@ -68,7 +68,7 @@ export class Executor {
   }
 
   static async addEnv(workspace: string, newEnv: string, env = "dev") {
-    const command = `teamsfx env add ${newEnv} --env ${env}`;
+    const command = `teamsapp env add ${newEnv} --env ${env}`;
     return this.execute(command, workspace);
   }
 
@@ -80,14 +80,15 @@ export class Executor {
     localManifestPath: string
   ) {
     const command =
-      `teamsfx add spfx-web-part --spfx-webpart-name ${webpartName}` +
+      `teamsapp add spfx-web-part --spfx-webpart-name ${webpartName}` +
       ` --spfx-folder ${spfxFolder} --teams-manifest-file ${manifestPath}` +
       ` --local-teams-manifest-file ${localManifestPath} --interactive false `;
     return this.execute(command, workspace);
   }
 
-  static async upgrade(workspace: string) {
-    const command = `teamsfx upgrade --force`;
+  static async upgrade(workspace: string, isV3 = true) {
+    const prefix = isV3 ? "teamsapp" : "teamsfx";
+    const command = `${prefix} upgrade --force`;
     return this.execute(command, workspace);
   }
 
@@ -96,24 +97,27 @@ export class Executor {
     cmd: string,
     env = "dev",
     processEnv?: NodeJS.ProcessEnv,
-    npx = false
+    npx = false,
+    isV3 = true
   ) {
     const npxCommand = npx ? "npx " : "";
-    const command = `${npxCommand} teamsfx ${cmd} --env ${env}`;
+    const cliPrefix = isV3 ? "teamsapp" : "teamsfx";
+    const command = `${npxCommand} ${cliPrefix} ${cmd} --env ${env}`;
     return this.execute(command, workspace, processEnv);
   }
 
-  static async provision(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "provision", env);
+  static async provision(workspace: string, env = "dev", isV3 = true) {
+    return this.executeCmd(workspace, "provision", env, undefined, false, isV3);
   }
 
   static async provisionWithCustomizedProcessEnv(
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
     env = "dev",
-    npx = false
+    npx = false,
+    isV3 = true
   ) {
-    return this.executeCmd(workspace, "provision", env, processEnv, npx);
+    return this.executeCmd(workspace, "provision", env, processEnv, npx, isV3);
   }
 
   static async validate(workspace: string, env = "dev") {
@@ -128,9 +132,10 @@ export class Executor {
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
     env = "dev",
-    npx = false
+    npx = false,
+    isV3 = true
   ) {
-    return this.executeCmd(workspace, "deploy", env, processEnv, npx);
+    return this.executeCmd(workspace, "deploy", env, processEnv, npx, isV3);
   }
 
   static async deploy(workspace: string, env = "dev") {
@@ -141,9 +146,10 @@ export class Executor {
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
     env = "dev",
-    npx = false
+    npx = false,
+    isV3 = true
   ) {
-    return this.executeCmd(workspace, "deploy", env, processEnv, npx);
+    return this.executeCmd(workspace, "deploy", env, processEnv, npx, isV3);
   }
 
   static async publish(workspace: string, env = "dev") {
@@ -154,9 +160,10 @@ export class Executor {
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
     env = "dev",
-    npx = false
+    npx = false,
+    isV3 = true
   ) {
-    return this.executeCmd(workspace, "publish", env, processEnv, npx);
+    return this.executeCmd(workspace, "publish", env, processEnv, npx, isV3);
   }
 
   static async preview(workspace: string, env = "dev") {
@@ -167,9 +174,10 @@ export class Executor {
     workspace: string,
     processEnv: NodeJS.ProcessEnv,
     env = "dev",
-    npx = false
+    npx = false,
+    isV3 = true
   ) {
-    return this.executeCmd(workspace, "preview", env, processEnv, npx);
+    return this.executeCmd(workspace, "preview", env, processEnv, npx, isV3);
   }
 
   static async installCLI(workspace: string, version: string, global: boolean) {
@@ -191,7 +199,7 @@ export class Executor {
     template: TemplateProjectFolder,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx new sample ${template} --interactive false `;
+    const command = `teamsapp new sample ${template} --interactive false `;
     const timeout = 100000;
     try {
       await this.execute(command, testFolder, processEnv, timeout);
@@ -265,15 +273,6 @@ export class Executor {
     editDotEnvFile(localEnvPath, "TEAMS_APP_NAME", appName);
     editDotEnvFile(remoteEnvPath, "TEAMS_APP_NAME", appName);
     console.log(`successfully open project: ${newPath}`);
-  }
-
-  static async setSubscription(
-    subscription: string,
-    projectPath: string,
-    processEnv?: NodeJS.ProcessEnv
-  ) {
-    const command = `teamsfx account set --subscription ${subscription}`;
-    return this.execute(command, projectPath, processEnv);
   }
 
   static async package(workspace: string, env = "dev") {

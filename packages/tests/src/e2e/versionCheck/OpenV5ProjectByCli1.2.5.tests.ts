@@ -49,7 +49,8 @@ describe("version check", () => {
           projectPath,
           env,
           "dev",
-          true
+          true,
+          false
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -61,7 +62,8 @@ describe("version check", () => {
           projectPath,
           env,
           "dev",
-          true
+          true,
+          false
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -73,7 +75,8 @@ describe("version check", () => {
           projectPath,
           env,
           "dev",
-          true
+          true,
+          false
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -85,7 +88,8 @@ describe("version check", () => {
           projectPath,
           env,
           "dev",
-          true
+          true,
+          false
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);
@@ -97,7 +101,8 @@ describe("version check", () => {
           projectPath,
           env,
           "dev",
-          true
+          true,
+          false
         );
         chai.assert.isFalse(result.success);
         chai.assert.include(result.stderr, errorMessage);

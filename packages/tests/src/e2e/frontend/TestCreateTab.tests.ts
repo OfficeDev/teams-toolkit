@@ -94,7 +94,7 @@ describe("Create single tab", function () {
       { testPlanCaseId: 24137600, author: "zhijie.huang@microsoft.com" },
       async () => {
         // deploy
-        await execAsyncWithRetry(`teamsfx deploy`, {
+        await execAsyncWithRetry(`teamsapp deploy`, {
           cwd: projectPath,
           env: process.env,
           timeout: 0,

@@ -173,7 +173,6 @@ describe("teamsfx new sample", function () {
 
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision

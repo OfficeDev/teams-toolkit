@@ -13,7 +13,7 @@ import * as os from "os";
 import * as uuid from "uuid";
 import * as path from "path";
 import AdmZip from "adm-zip";
-import * as proxyquire from "proxyquire";
+import proxyquire from "proxyquire";
 
 describe("Test", () => {
   const sandbox = sinon.createSandbox();

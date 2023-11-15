@@ -498,6 +498,24 @@ jobs:
       
       - name: run test for coverage
         working-directory: packages/fx-core
+        env:
+          AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+          AZURE_ACCOUNT_OBJECT_ID: ${{ secrets.TEST_USER_OBJECT_ID }}
+          AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+          M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+          M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+          CI_ENABLED: "true"
+          M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+          TEAMSFX_DEBUG_TEMPLATE: "true"
+          NODE_ENV: "development"
+          TEAMSFX_AAD_DEPLOY_ONLY: "true"
+          SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
+          SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
+          ADO_TOKEN: ${{ secrets.ADO_PAT }}
         run: |
           npx nyc mocha ../tests/src/e2e/bot/EchoBotHappyPath.tests.ts
       

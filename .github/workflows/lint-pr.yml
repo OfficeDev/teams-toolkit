@@ -196,7 +196,7 @@ jobs:
           python .github/detect/sensitive-detect.py repo
 
   attension-on-version:
-    if: ${{ github.event_name !=  'pull_request' }}
+    if: ${{ github.event_name ==  'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: checkout branch
@@ -263,15 +263,10 @@ jobs:
         run: |
           npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ steps.branch-name.outputs.current_branch }} --yes
           npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt
-      - uses: edwardgeorge/file-outputs-action@main
-        id: test
+          cat feat_history.txt >> version_info.txt
+          cat fix_history.txt >> version_info.txt
+      - uses: JoseThen/comment-pr@v1.2.0
         with:
-          files: |
-            output1=version_info.txt
-            outpot2=feat_history.txt
-            output3=fix_history.txt
-      - uses: riskledger/update-pr-description@v2
-        with:
-          body: ${{join(steps.test.outputs.*, '')}}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          file_path: './version_info.txt'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

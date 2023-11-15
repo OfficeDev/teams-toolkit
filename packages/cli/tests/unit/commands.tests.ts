@@ -83,7 +83,7 @@ describe("CLI commands", () => {
   describe("getCreateCommand", async () => {
     it("happy path", async () => {
       mockedEnvRestore = mockedEnv({
-        COPILOT_PLUGIN: "false",
+        DEVELOP_COPILOT_PLUGIN: "false",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
@@ -106,7 +106,7 @@ describe("CLI commands", () => {
 
     it("createProjectOptions - API copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
-        COPILOT_PLUGIN: "true",
+        DEVELOP_COPILOT_PLUGIN: "true",
         API_COPILOT_PLUGIN: "true",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
@@ -128,7 +128,7 @@ describe("CLI commands", () => {
 
     it("createProjectOptions - API copilot plugin disabled but bot Copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
-        COPILOT_PLUGIN: "true",
+        DEVELOP_COPILOT_PLUGIN: "true",
         API_COPILOT_PLUGIN: "false",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
@@ -1157,7 +1157,7 @@ describe("CLI read-only commands", () => {
     });
     it("json", async () => {
       mockedEnvRestore = mockedEnv({
-        COPILOT_PLUGIN: "false",
+        DEVELOP_COPILOT_PLUGIN: "false",
       });
       const ctx: CLIContext = {
         command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
@@ -1195,7 +1195,7 @@ describe("CLI read-only commands", () => {
 
     it("json: bot Copilot plugin enabled only", async () => {
       mockedEnvRestore = mockedEnv({
-        COPILOT_PLUGIN: "true",
+        DEVELOP_COPILOT_PLUGIN: "true",
         API_COPILOT_PLUGIN: "false",
       });
       const ctx: CLIContext = {
@@ -1212,7 +1212,7 @@ describe("CLI read-only commands", () => {
 
     it("json: API Copilot plugin feature flag enabled", async () => {
       mockedEnvRestore = mockedEnv({
-        COPILOT_PLUGIN: "true",
+        DEVELOP_COPILOT_PLUGIN: "true",
         API_COPILOT_PLUGIN: "true",
       });
       const ctx: CLIContext = {

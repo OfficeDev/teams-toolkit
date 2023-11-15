@@ -2,7 +2,7 @@
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
   "include": [
-    "build/"
+    "src/"
   ],
   "extension": [".js",".ts"],
   "exclude": [

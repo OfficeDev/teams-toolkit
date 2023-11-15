@@ -41,39 +41,7 @@ import {
 import { getWebappServicePlan } from "../commonlib/utilities";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
-// export const execAsync = promisify(exec);
-
-export async function execAsync(
-  cmd: string,
-  opts?: {
-    cwd?: string;
-    env?: NodeJS.ProcessEnv;
-    timeout?: number;
-  }
-): Promise<{ stdout: string; stderr: string }> {
-  opts || (opts = {});
-  return new Promise((resolve, reject) => {
-    let cmdUpdate = "";
-    if (cmd.includes("teamsfx")) {
-      const cmdStr = cmd.replace("teamsfx ", "");
-      const filePath = path.resolve(__dirname, "./../../../cli/cliold.js");
-      cmdUpdate = `npx ts-node ${filePath} ${cmdStr}`;
-    } else if (cmd.includes("teamsapp")) {
-      const cmdStr = cmd.replace("teamsapp ", "");
-      const filePath = path.resolve(__dirname, "./../../cli/cli.js");
-      cmdUpdate = `npx ts-node ${filePath} ${cmdStr}`;
-    }
-    console.log("!! ------ Cmd: ", cmdUpdate);
-    const child = exec(cmdUpdate, opts, (err, stdout, stderr) =>
-      err
-        ? reject(err)
-        : resolve({
-            stdout: stdout.toString(),
-            stderr: stderr.toString(),
-          })
-    );
-  });
-}
+export const execAsync = promisify(exec);
 
 export async function execAsyncWithRetry(
   command: string,

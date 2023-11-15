@@ -18,6 +18,12 @@ on:
         required: false
         type: string
 
+      get-coverage:
+        description: "check e2e coverage for fx-core"
+        required: false
+        type: boolean
+        default: false
+
   schedule:
     - cron: "0 22 * * *"
 
@@ -451,3 +457,67 @@ jobs:
           MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
           MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
           MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
+
+  e2e-coverage:
+    if: ${{github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: mv files
+        working-directory: packages/tests
+        run: |
+          rm src/e2e/commonUtils.ts src/utils/commonUtils.ts
+          mv src/e2e/commonUtils.ts.tmp src/e2e/commonUtils.ts
+          mv src/utils/commonUtils.ts.tmp src/utils/commonUtils.ts
+
+      - uses: jossef/action-set-json-field@v1
+        with:
+            file: ./packages/fx-core/.nycrc
+            field: excludeAfterRemap
+            value: false
+
+      - uses: jossef/action-set-json-field@v1
+        with:
+            file: ./packages/fx-core/.nycrc
+            field: include
+            value: '["build"]'
+
+      - name: less nycrc
+        working-directory: packages/fx-core
+        run: |
+          less .nycrc
+      
+      - name: setup
+        run: |
+          npm run setup
+      
+      - name: run test for coverage
+        working-directory: packages/fx-core
+        run: |
+          npx nyc mocha ../tests/e2e/**/*.tests.ts
+      
+      - name: pack zip
+        if: ${{always()}}
+        working-directory: packages/fx-core
+        run: |
+          zip -r out1.zip .nyc_output/
+          zip -r out2.zip coverage/
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          name: coverage
+          path: |
+            packages/fx-core/out1.zip
+            packages/fx-core/out2.zip
+
+          
+      
+

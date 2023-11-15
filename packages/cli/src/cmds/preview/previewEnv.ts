@@ -43,7 +43,6 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Progress.M365Account]: `Checking ${Progress.M365Account}`,
 });
 
-// The new preview cmd `teamsfx preview --env ...`
 export default class PreviewEnv {
   public readonly description = "Preview the current application.";
 

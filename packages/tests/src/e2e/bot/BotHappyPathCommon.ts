@@ -44,7 +44,7 @@ export async function happyPathTest(
     trigger === undefined
       ? ""
       : `--bot-host-type-trigger ${trigger.join(" ")} `;
-  const cmdBase = `teamsfx new --interactive false --app-name ${appName} --capability ${capabilities} ${triggerStr}`;
+  const cmdBase = `teamsapp new --interactive false --app-name ${appName} --capability ${capabilities} ${triggerStr}`;
   const cmd =
     runtime === Runtime.Dotnet
       ? `${cmdBase} --runtime dotnet`
@@ -83,7 +83,7 @@ export async function happyPathTest(
   }
 
   // deploy
-  const cmdStr = "teamsfx deploy";
+  const cmdStr = "teamsapp deploy";
   await execAsyncWithRetry(cmdStr, {
     cwd: projectPath,
     env: env,
@@ -103,14 +103,14 @@ export async function happyPathTest(
   }
 
   // test (validate)
-  await execAsyncWithRetry(`teamsfx validate --env ${envName}`, {
+  await execAsyncWithRetry(`teamsapp validate --env ${envName}`, {
     cwd: projectPath,
     env: env,
     timeout: 0,
   });
 
   // package
-  await execAsyncWithRetry(`teamsfx package --env ${envName}`, {
+  await execAsyncWithRetry(`teamsapp package --env ${envName}`, {
     cwd: projectPath,
     env: env,
     timeout: 0,

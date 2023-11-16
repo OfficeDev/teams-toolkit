@@ -26,7 +26,7 @@ import {
   BotValidator,
   FunctionValidator,
 } from "../../commonlib";
-import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
+import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 
 export abstract class CaseFactory {
   public sampleName: TemplateProjectFolder;
@@ -114,7 +114,7 @@ export abstract class CaseFactory {
       onBeforeProvision,
       onCreate,
     } = this;
-    describe("Sample Tests", function () {
+    describe(`Sample Tests: ${sampleName}`, function () {
       const testFolder = getTestFolder();
       const appName = getUniqueAppName();
       const projectPath = path.resolve(testFolder, appName);

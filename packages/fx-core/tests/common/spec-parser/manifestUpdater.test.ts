@@ -115,7 +115,346 @@ describe("manifestUpdater", () => {
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
-      spec
+      spec,
+      false
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should support multiple parameters for get", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "number",
+                },
+              },
+              {
+                name: "name",
+                description: "Pet Name",
+                required: true,
+                schema: {
+                  type: "string",
+                },
+              },
+              {
+                name: "id",
+                description: "Pet Id",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+              {
+                name: "other1",
+                description: "Other Property1",
+                required: true,
+                schema: {
+                  type: "boolean",
+                },
+              },
+              {
+                name: "other2",
+                description: "Other Property2",
+                required: true,
+                schema: {
+                  type: "string",
+                  enum: ["enum1", "enum2", "enum3", "enum4"],
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              id: "getPets",
+              parameters: [
+                {
+                  name: "limit",
+                  title: "Limit",
+                  description: "Maximum number of pets to return",
+                  inputType: "number",
+                },
+                { name: "name", title: "Name", description: "Pet Name", inputType: "text" },
+                {
+                  name: "id",
+                  title: "Id",
+                  description: "Pet Id",
+                  inputType: "number",
+                },
+                {
+                  name: "other1",
+                  title: "Other1",
+                  description: "Other Property1",
+                  inputType: "toggle",
+                },
+                {
+                  name: "other2",
+                  title: "Other2",
+                  description: "Other Property2",
+                  inputType: "choiceset",
+                  choices: [
+                    {
+                      title: "enum1",
+                      value: "enum1",
+                    },
+                    {
+                      title: "enum2",
+                      value: "enum2",
+                    },
+                    {
+                      title: "enum3",
+                      value: "enum3",
+                    },
+                    {
+                      title: "enum4",
+                      value: "enum4",
+                    },
+                  ],
+                },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec,
+      true
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should support multiple parameters for post", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create Pet",
+            description: "Create Pet by Id",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Pet Name",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            parameters: [
+              {
+                name: "id",
+                description: "Pet Id",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Create Pet",
+              description: "Create Pet by Id",
+              id: "createPet",
+              parameters: [
+                {
+                  name: "id",
+                  title: "Id",
+                  description: "Pet Id",
+                  inputType: "number",
+                },
+                { name: "name", title: "Name", description: "Pet Name", inputType: "text" },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec,
+      true
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should support default value when allowMultipleParameter is true", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "id",
+                description: "Pet Id",
+                required: true,
+                schema: {
+                  type: "integer",
+                  default: 123,
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              id: "getPets",
+              parameters: [
+                {
+                  name: "id",
+                  title: "Id",
+                  description: "Pet Id",
+                  inputType: "number",
+                  value: 123,
+                },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec,
+      true
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -177,6 +516,7 @@ describe("manifestUpdater", () => {
       outputSpecPath,
       adaptiveCardFolder,
       spec,
+      false,
       "api_key_name"
     );
 
@@ -239,6 +579,7 @@ describe("manifestUpdater", () => {
       outputSpecPath,
       adaptiveCardFolder,
       spec,
+      false,
       "*api-key_name"
     );
 
@@ -328,7 +669,8 @@ describe("manifestUpdater", () => {
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
-      spec
+      spec,
+      false
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -348,7 +690,7 @@ describe("manifestUpdater", () => {
     const spec = {} as any;
     const readJSONStub = sinon.stub(fs, "readJSON").rejects(new Error("readJSON error"));
     try {
-      await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec);
+      await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec, false);
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err) {
       expect(err).to.be.instanceOf(SpecParserError);
@@ -419,7 +761,8 @@ describe("manifestUpdater", () => {
       {
         ...spec,
         info: { title: "My API" },
-      }
+      },
+      false
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -485,7 +828,8 @@ describe("manifestUpdater", () => {
       {
         ...spec,
         info: { title: "My API" },
-      }
+      },
+      false
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -626,7 +970,12 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      false
+    );
 
     expect(result).to.deep.equal(expectedCommands);
     expect(warnings).to.deep.equal([]);
@@ -676,7 +1025,12 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      false
+    );
 
     expect(result).to.deep.equal(expectedCommands);
     expect(warnings).to.deep.equal([]);
@@ -719,7 +1073,12 @@ describe("generateCommands", () => {
     };
     sinon.stub(fs, "pathExists").resolves(true);
 
-    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      false
+    );
     expect(result).to.deep.equal([
       {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
@@ -796,7 +1155,12 @@ describe("generateCommands", () => {
     };
     sinon.stub(fs, "pathExists").resolves(true);
 
-    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      false
+    );
     expect(result).to.deep.equal([
       {
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
@@ -850,7 +1214,12 @@ describe("generateCommands", () => {
     };
     sinon.stub(fs, "pathExists").resolves(true);
 
-    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      false
+    );
     expect(result).to.deep.equal([
       {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
@@ -915,7 +1284,12 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      false
+    );
 
     expect(result).to.deep.equal(expectedCommands);
     expect(warnings).to.deep.equal([]);
@@ -966,7 +1340,12 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      false
+    );
 
     expect(result).to.deep.equal(expectedCommands);
     expect(warnings).to.deep.equal([
@@ -1020,7 +1399,12 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [result, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      false
+    );
 
     expect(result).to.deep.equal(expectedCommands);
     expect(warnings).to.deep.equal([]);

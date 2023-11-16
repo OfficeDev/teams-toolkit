@@ -5,7 +5,7 @@ version: 1.0.0
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
   # Creates a Teams app
   - uses: teamsApp/create
@@ -84,7 +84,7 @@ provision:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand
@@ -121,7 +121,7 @@ deploy:
       # or add it to your environment variable file.
       resourceId: ${{BOT_AZURE_APP_SERVICE_RESOURCE_ID}}
 
-# Triggered when 'teamsfx publish' is executed
+# Triggered when 'teamsapp publish' is executed
 publish:
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

@@ -20,12 +20,18 @@ export async function updateManifest(
   outputSpecPath: string,
   adaptiveCardFolder: string,
   spec: OpenAPIV3.Document,
+  allowMultipleParameters: boolean,
   apiKeyAuthName?: string
 ): Promise<[TeamsAppManifest, WarningResult[]]> {
   try {
     const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
 
-    const [commands, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
+    const [commands, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      allowMultipleParameters
+    );
     const ComposeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
@@ -67,7 +73,8 @@ export async function updateManifest(
 export async function generateCommands(
   spec: OpenAPIV3.Document,
   adaptiveCardFolder: string,
-  manifestPath: string
+  manifestPath: string,
+  allowMultipleParameters: boolean
 ): Promise<[IMessagingExtensionCommand[], WarningResult[]]> {
   const paths = spec.paths;
   const commands: IMessagingExtensionCommand[] = [];
@@ -83,7 +90,7 @@ export async function generateCommands(
           if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
             const operationItem = operations[method];
             if (operationItem) {
-              const [command, warning] = parseApiInfo(operationItem);
+              const [command, warning] = parseApiInfo(operationItem, allowMultipleParameters);
 
               const adaptiveCardPath = path.join(adaptiveCardFolder, command.id + ".json");
               command.apiResponseRenderingTemplateFile = (await fs.pathExists(adaptiveCardPath))

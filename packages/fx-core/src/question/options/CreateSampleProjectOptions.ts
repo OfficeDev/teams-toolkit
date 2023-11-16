@@ -56,7 +56,7 @@ export const CreateSampleProjectArguments: CLICommandArgument[] = [
       "large-scale-notification",
       "graph-connector-bot",
     ],
-    choiceListCommand: "teamsfx list samples",
+    choiceListCommand: "teamsapp list samples",
     skipValidation: true,
   },
 ];

@@ -1471,6 +1471,72 @@ describe("SpecParser", () => {
       ]);
     });
 
+    it("should allow multiple parameters if allowMultipleParameters is true", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowMultipleParameters: true });
+      const spec = {
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                  required: true,
+                },
+                {
+                  name: "name",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                  required: true,
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          operationId: "getUserById",
+        },
+      ]);
+    });
+
     it("should not list api without operationId with allowMissingId is false", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });

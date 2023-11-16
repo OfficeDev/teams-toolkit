@@ -2,7 +2,7 @@
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
 {{#teamsAppCreate}} {{/teamsAppCreate}}
 
@@ -18,10 +18,10 @@ provision:
 
 {{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
 {{#cliRunDotnetCommand}} publish {{/cliRunDotnetCommand}}
 {{#azureFunctionsZipDeploy}}
-  artifactFolder: bin/Release/net6.0/win-x86/publish,
+  artifactFolder: bin/Release/{{TargetFramework}}/win-x86/publish,
   resourceId: ${{API_FUNCTION_RESOURCE_ID}}
 {{/azureFunctionsZipDeploy}}

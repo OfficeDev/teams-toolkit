@@ -88,9 +88,18 @@
 
     .tag {
       margin: 4px 8px 0px 0px;
+      height: 16px;
+      font-size: 13px;
+      padding: 2px 8px;
+      flex-shrink: 0;
+      border: 0;
+      border-radius: 2px;
 
-      &::part(control) {
-        border: 0;
+      span {
+        display: inline-block;
+        height: 16px;
+        top: -1.5px;
+        position: relative;
       }
     }
 
@@ -166,7 +175,7 @@ body.vscode-light {
     background-color: #F0F0F0;
   }
 
-  .tag::part(control) {
+  .tag {
     background-color: #E5E5E5;
     color: #606060;
   }
@@ -182,9 +191,9 @@ body.vscode-dark {
     background-color: #303031;
   }
 
-  .tag::part(control) {
-    background-color: #4D4D4D;
-    color: #FFFFFF;
+  .tag {
+    background-color: #333333;
+    color: #CCCCCC;
   }
 }
 

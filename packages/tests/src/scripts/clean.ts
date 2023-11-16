@@ -144,28 +144,38 @@ async function main() {
   );
   await devTunnelCleanHelper.deleteAll();
 
-  const m365TitleCleanService = await M365TitleCleanHelper.create(
-    Env.cleanTenantId,
-    "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
-    Env.username,
-    Env.password
-  );
-  console.log(`clean M365 Titles (exclude ${excludePrefix})`);
-  const acquisitions = await m365TitleCleanService.listAcquisitions();
-  if (acquisitions) {
-    for (const acquisition of acquisitions) {
-      for (const name of appNamePrefixList) {
-        if (
-          acquisition.titleDefinition.name.startsWith(name) &&
-          !acquisition.titleDefinition.name.startsWith(excludePrefix)
-        ) {
-          console.log(acquisition.titleDefinition.name);
-          console.log(acquisition.titleId);
-          await m365TitleCleanService.unacquire(acquisition.titleId);
+  let retry: boolean;
+  let count = 10;
+  const total = count + 1;
+  do {
+    retry = false;
+    console.log(`Start to try ${total - count} times`);
+    const m365TitleCleanService = await M365TitleCleanHelper.create(
+      Env.cleanTenantId,
+      "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
+      Env.username,
+      Env.password
+    );
+    console.log(`clean M365 Titles (exclude ${excludePrefix})`);
+    const acquisitions = await m365TitleCleanService.listAcquisitions();
+    if (acquisitions) {
+      for (const acquisition of acquisitions) {
+        for (const name of appNamePrefixList) {
+          if (!acquisition.titleDefinition.name.startsWith(excludePrefix)) {
+            console.log(acquisition.titleDefinition.name);
+            console.log(acquisition.titleId);
+            const result = await m365TitleCleanService.unacquire(
+              acquisition.titleId
+            );
+            if (!retry && result) {
+              retry = true;
+            }
+          }
         }
       }
     }
-  }
+    count--;
+  } while (retry && count > 0);
 }
 
 main()

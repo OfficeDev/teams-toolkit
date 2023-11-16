@@ -48,6 +48,7 @@ export class SpecParser {
     allowMissingId: true,
     allowSwagger: true,
     allowAPIKeyAuth: false,
+    allowMultipleParameters: false,
   };
 
   /**
@@ -97,7 +98,8 @@ export class SpecParser {
         this.parser,
         !!this.isSwaggerFile,
         this.options.allowMissingId,
-        this.options.allowAPIKeyAuth
+        this.options.allowAPIKeyAuth,
+        this.options.allowMultipleParameters
       );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -203,7 +205,8 @@ export class SpecParser {
         this.unResolveSpec!,
         this.spec!,
         this.options.allowMissingId,
-        this.options.allowAPIKeyAuth
+        this.options.allowAPIKeyAuth,
+        this.options.allowMultipleParameters
       );
 
       if (signal?.aborted) {
@@ -284,6 +287,7 @@ export class SpecParser {
         outputSpecPath,
         adaptiveCardFolder,
         newSpec,
+        this.options.allowMultipleParameters,
         firstAuthKey?.name
       );
 
@@ -324,7 +328,8 @@ export class SpecParser {
     const result = listSupportedAPIs(
       spec,
       this.options.allowMissingId,
-      this.options.allowAPIKeyAuth
+      this.options.allowAPIKeyAuth,
+      this.options.allowMultipleParameters
     );
     this.apiMap = result;
     return result;

@@ -35,10 +35,11 @@ import { Container } from "typedi";
 import { pathToFileURL } from "url";
 import { parse, parseDocument } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
-import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
+import { isValidProject } from "../common/projectSettingsHelper";
 import { SpecParser, SpecParserError } from "../common/spec-parser";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -71,6 +72,7 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
   ErrorResult,
@@ -91,11 +93,11 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import {
   FileNotFoundError,
+  InjectAPIKeyActionFailedError,
   InvalidProjectError,
-  assembleError,
   MultipleAuthError,
   MultipleServerError,
-  InjectAPIKeyActionFailedError,
+  assembleError,
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
@@ -120,8 +122,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
-import "../component/feature/sso";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -997,7 +997,7 @@ export class FxCore {
   ])
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     const projectPath = (inputs.projectPath as string) || "";
-    if (isValidProjectV3(projectPath) || isValidProjectV2(projectPath)) {
+    if (isValidProject(projectPath)) {
       const versionInfo = await getProjectVersionFromPath(projectPath);
       if (!versionInfo.version) {
         return err(new InvalidProjectError());

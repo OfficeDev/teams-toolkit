@@ -40,13 +40,14 @@ describe("upgrade", () => {
           TemplateProjectFolder.HelloWorldBotSSO,
           env,
           true,
-          true
+          true,
+          false
         );
       }
 
       {
         // upgrade
-        const result = await Executor.upgrade(projectPath);
+        const result = await Executor.upgrade(projectPath, false);
         chai.assert.isTrue(result.success);
         const manifestPath = path.join(
           projectPath,

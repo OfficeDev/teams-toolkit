@@ -36,7 +36,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       loading: true,
       layout: "grid",
       query: "",
-      filterTags: { capabilities: [], languages: [], technologies: [] },
+      filterTags: [],
     };
   }
 
@@ -203,10 +203,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           [TelemetryProperty.TriggerFrom]: triggerFrom,
           [TelemetryProperty.SampleAppName]: id,
           [TelemetryProperty.SearchText]: this.state.query,
-          [TelemetryProperty.SampleFilters]: this.state.filterTags.capabilities
-            .concat(this.state.filterTags.languages)
-            .concat(this.state.filterTags.technologies)
-            .join(","),
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.join(","),
           [TelemetryProperty.Layout]: this.state.layout,
         },
       },
@@ -228,10 +225,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
           [TelemetryProperty.Layout]: newLayout,
           [TelemetryProperty.SearchText]: this.state.query,
-          [TelemetryProperty.SampleFilters]: this.state.filterTags.capabilities
-            .concat(this.state.filterTags.languages)
-            .concat(this.state.filterTags.technologies)
-            .join(","),
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.join(","),
         },
       },
     });
@@ -245,7 +239,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     this.setState({ layout: newLayout });
   };
 
-  private onFilterConditionChanged = (query: string, filterTags: SampleFilterOptionType) => {
+  private onFilterConditionChanged = (query: string, filterTags: string[]) => {
     const containsTag = (targets: string[], tags: string[]) => {
       if (targets.length === 0) {
         return true;
@@ -257,11 +251,20 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       }
       return false;
     };
+    const capabilitiesFilter = filterTags.filter(
+      (tag) => this.filterOptions.capabilities.indexOf(tag) >= 0
+    );
+    const languagesFilter = filterTags.filter(
+      (tag) => this.filterOptions.languages.indexOf(tag) >= 0
+    );
+    const technologiesFilter = filterTags.filter(
+      (tag) => this.filterOptions.technologies.indexOf(tag) >= 0
+    );
     let filteredSamples = this.samples.filter((sample: SampleInfo) => {
       return (
-        containsTag(filterTags.capabilities, sample.tags) &&
-        containsTag(filterTags.languages, sample.tags) &&
-        containsTag(filterTags.technologies, sample.tags)
+        containsTag(capabilitiesFilter, sample.tags) &&
+        containsTag(languagesFilter, sample.tags) &&
+        containsTag(technologiesFilter, sample.tags)
       );
     });
     if (query !== "") {
@@ -282,10 +285,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           [TelemetryProperty.TriggerFrom]: triggerFrom,
           [TelemetryProperty.SampleAppName]: sample.id,
           [TelemetryProperty.SearchText]: this.state.query,
-          [TelemetryProperty.SampleFilters]: this.state.filterTags.capabilities
-            .concat(this.state.filterTags.languages)
-            .concat(this.state.filterTags.technologies)
-            .join(","),
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.join(","),
           [TelemetryProperty.Layout]: this.state.layout,
         },
       },
@@ -308,10 +308,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           [TelemetryProperty.TriggerFrom]: triggerFrom,
           [TelemetryProperty.SampleAppName]: sample.id,
           [TelemetryProperty.SearchText]: this.state.query,
-          [TelemetryProperty.SampleFilters]: this.state.filterTags.capabilities
-            .concat(this.state.filterTags.languages)
-            .concat(this.state.filterTags.technologies)
-            .join(","),
+          [TelemetryProperty.SampleFilters]: this.state.filterTags.join(","),
           [TelemetryProperty.Layout]: this.state.layout,
         },
       },

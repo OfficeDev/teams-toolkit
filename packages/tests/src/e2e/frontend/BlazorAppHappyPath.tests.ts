@@ -13,7 +13,7 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import { describe } from "mocha";
 import path from "path";
-import MockAzureAccountProvider from "@microsoft/teamsfx-cli/src/commonlib/azureLoginUserPassword";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import { FrontendWebAppConfig } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { EnvConstants } from "../../commonlib/constants";

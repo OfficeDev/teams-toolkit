@@ -177,27 +177,27 @@ describe("CLI helper", () => {
   describe("prettifyReturnLine", async () => {
     it("happy path 1", async () => {
       const res = helper.prettifyReturnLine(
-        `--capability -c        [Required]  Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`,
+        `--capability -c        [Required]  Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'help --list-capabilities' to see all available options.`,
         159,
         35,
         40
       );
       assert.equal(
         res,
-        `--capability -c        [Required]  Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help\n                                   --list-capabilities' to see all available options.`
+        `--capability -c        [Required]  Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'help\n                                   --list-capabilities' to see all available options.`
       );
     });
 
     it("happy path 2", async () => {
       const res = helper.prettifyReturnLine(
-        `--capability -c        [Required]  Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`,
+        `--capability -c        [Required]  Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'help --list-capabilities' to see all available options.`,
         60,
         35,
         40
       );
       assert.equal(
         res,
-        `--capability -c        [Required]  Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`
+        `--capability -c        [Required]  Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'help --list-capabilities' to see all available options.`
       );
     });
   });
@@ -207,15 +207,15 @@ describe("CLI helper", () => {
       sandbox.stub(helper, "termWidth").value(40);
       const res = helper.formatItem(
         "--capability -c        [Required]",
-        `Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`
+        `Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'help --list-capabilities' to see all available options.`
       );
       // console.log(res);
       // console.log(
-      //   `--capability -c        [Required]         Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`
+      //   `--capability -c        [Required]         Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'help --list-capabilities' to see all available options.`
       // );
       assert.equal(
         res,
-        `--capability -c        [Required]         Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'teamsfx help --list-capabilities' to see all available options.`
+        `--capability -c        [Required]         Specifies the Teams App capability. Allowed value: ["bot", "notification", "command-bot", etc.]. Use 'help --list-capabilities' to see all available options.`
       );
     });
     it("happy path 2", async () => {
@@ -239,11 +239,11 @@ describe("CLI helper", () => {
         description: "Description.",
         default: "a",
         choices: ["a", "b", "c", "d"],
-        choiceListCommand: "teamsfx list",
+        choiceListCommand: "list",
       });
       assert.equal(
         res,
-        `Description. Allowed value: ["a", "b", "c", etc.]. Default value: "a". Use 'teamsfx list' to see all available options.`
+        `Description. Allowed value: ["a", "b", "c", etc.]. Default value: "a". Use 'list' to see all available options.`
       );
     });
   });
@@ -255,16 +255,16 @@ describe("CLI helper", () => {
         description: "Description.",
         default: "a",
         choices: ["a", "b", "c", "d"],
-        choiceListCommand: "teamsfx list",
+        choiceListCommand: "list",
       });
       assert.equal(
         res,
-        `Description. Allowed value: ["a", "b", "c", etc.]. Default value: "a". Use 'teamsfx list' to see all available options.`
+        `Description. Allowed value: ["a", "b", "c", etc.]. Default value: "a". Use 'list' to see all available options.`
       );
     });
   });
   describe("formatHelp", async () => {
-    it("happy path for 'teamsfx new -h'", async () => {
+    it("happy path for 'new -h'", async () => {
       const rcommand = cloneDeep(rootCommand);
       rcommand.header = "Header:";
       rcommand.footer = "Footer:";
@@ -278,12 +278,12 @@ describe("CLI helper", () => {
       assert.include(res, "Commands:");
       assert.include(res, "Examples:");
     });
-    it("happy path for 'teamsfx new sample -h'", async () => {
+    it("happy path for 'new sample -h'", async () => {
       const command = createSampleCommand;
       const res = helper.formatHelp(command, rootCommand);
       assert.include(res, "<sample-name>");
     });
-    it("happy path for 'teamsfx env add -h'", async () => {
+    it("happy path for 'env add -h'", async () => {
       const command = envAddCommand;
       const res = helper.formatHelp(command, rootCommand);
       assert.include(res, "Run the command in interactive mode. Default value: false.");

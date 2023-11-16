@@ -9,7 +9,7 @@
         "@fluentui/react-components": "^9.18.0",
         "@microsoft/teams-js": "^2.13.0",
         "@microsoft/teamsfx": "^2.2.0",
-        "@microsoft/teamsfx-react": "^3.0.2-rc-hotfix.0",
+        "@microsoft/teamsfx-react": "^3.0.2",
         "axios": "^0.21.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, isCliV3Enabled } from "@microsoft/teamsfx-core";
+import { AppStudioScopes } from "@microsoft/teamsfx-core";
 import { TextType, colorize } from "../../colorize";
 import AzureTokenProvider, { getAzureProvider } from "../../commonlib/azureLogin";
 import AzureTokenCIProvider from "../../commonlib/azureLoginCI";
@@ -84,8 +84,8 @@ class AccountUtils {
 export const accountUtils = new AccountUtils();
 
 export const accountShowCommand: CLICommand = {
-  name: isCliV3Enabled() ? "list" : "show",
-  aliases: isCliV3Enabled() ? ["show"] : ["list"],
+  name: "list",
+  aliases: ["show"],
   description: "Display all connected Microsoft 365 and Azure accounts.",
   telemetry: {
     event: TelemetryEvent.AccountShow,
@@ -114,7 +114,7 @@ export const accountShowCommand: CLICommand = {
 
     if (m365Status.status !== signedIn && azureStatus.status !== signedIn) {
       logger.info(
-        `Use \`${process.env.TEAMSFX_CLI_BIN_NAME} account login azure\` or \`${process.env.TEAMSFX_CLI_BIN_NAME} account login m365\` to log in to Azure or Microsoft 365 account.`
+        `Use \`${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure\` or \`${process.env.TEAMSFX_CLI_BIN_NAME} auth login m365\` to log in to Azure or Microsoft 365 account.`
       );
     }
     return ok(undefined);

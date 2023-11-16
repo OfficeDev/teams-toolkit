@@ -1,9 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{{TargetFramework}}</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RuntimeFrameworkVersion>6.0.10</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +19,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.6.0" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.2.0" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="2.2.*" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="2.3.*" />
   </ItemGroup>
 
 </Project>

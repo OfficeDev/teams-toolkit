@@ -359,10 +359,11 @@ export class CapabilityOptions {
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
     };
   }
-  static bots(inputs?: Inputs): OptionItem[] {
+  static bots(inputs?: Inputs, includeAssistant?: boolean): OptionItem[] {
     return [
       CapabilityOptions.basicBot(),
       CapabilityOptions.aiBot(),
+      ...(includeAssistant === true ? [CapabilityOptions.aiAssistantBot()] : []),
       CapabilityOptions.notificationBot(),
       CapabilityOptions.commandBot(),
       CapabilityOptions.workflowBot(inputs),
@@ -428,7 +429,7 @@ export class CapabilityOptions {
    */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
-      ...CapabilityOptions.bots(inputs),
+      ...CapabilityOptions.bots(inputs, true),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.copilotPlugins(),
@@ -442,7 +443,7 @@ export class CapabilityOptions {
    */
   static all(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
-      ...CapabilityOptions.bots(inputs),
+      ...CapabilityOptions.bots(inputs, true),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
@@ -533,6 +534,15 @@ export class CapabilityOptions {
       description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
+
+  static aiAssistantBot(): OptionItem {
+    return {
+      id: "ai-assistant-bot",
+      label: getLocalizedString("core.aiAssistantBotOption.label"),
+      detail: getLocalizedString("core.aiAssistantBotOption.detail"),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
+    };
+  }
 }
 
 export function capabilityQuestion(): SingleSelectQuestion {
@@ -560,7 +570,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
     cliDescription: "Specifies the Microsoft Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
-    cliChoiceListCommand: "teamsfx list templates",
+    cliChoiceListCommand: "teamsapp list templates",
     type: "singleSelect",
     staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {
@@ -584,7 +594,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
       // nodejs capabilities
       const projectType = inputs[QuestionNames.ProjectType];
       if (projectType === ProjectTypeOptions.bot().id) {
-        return CapabilityOptions.bots(inputs);
+        return CapabilityOptions.bots(inputs, true);
       } else if (projectType === ProjectTypeOptions.tab().id) {
         return CapabilityOptions.tabs();
       } else if (projectType === ProjectTypeOptions.me().id) {
@@ -1189,7 +1199,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     name: QuestionNames.Samples,
     cliName: "sample-name",
     cliDescription: "Specifies the Microsoft Teams App sample name.",
-    cliChoiceListCommand: "teamsfx list samples",
+    cliChoiceListCommand: "teamsapp list samples",
     skipValidation: true,
     cliType: "argument",
     title: getLocalizedString("core.SampleSelect.title"),

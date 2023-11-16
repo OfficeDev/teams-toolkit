@@ -44,18 +44,14 @@ export function isApiCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
 }
 
-export function isCliNewUxEnabled(): boolean {
-  return true;
-}
-
-export function isCliV3Enabled(): boolean {
-  return isFeatureFlagEnabled("TEAMSFX_CLI_V3", false);
-}
-
 export function enableTestToolByDefault(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
 }
 
 export function isApiKeyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
+}
+
+export function isMultipleParametersEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
 }

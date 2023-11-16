@@ -55,7 +55,7 @@ describe("Migration Tests", function () {
     async () => {
       // install v2 stable cli 1.2.6
       await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      const result = await execCommand("./", "teamsfx -v");
+      const result = await execCommand("./", "teamsapp -v");
       console.log(result.stdout);
       expect(
         (result.stdout as string).includes(CliVersion.V2TeamsToolkitStable425)

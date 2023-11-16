@@ -29,6 +29,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: [
       "bot",
       "ai-bot",
+      "ai-assistant-bot",
       "notification",
       "command-bot",
       "workflow-bot",
@@ -44,7 +45,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "copilot-plugin-existing-api",
       "copilot-plugin-openai-plugin",
     ],
-    choiceListCommand: "teamsfx list templates",
+    choiceListCommand: "teamsapp list templates",
   },
   {
     name: "bot-host-type-trigger",

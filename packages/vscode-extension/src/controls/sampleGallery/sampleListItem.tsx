@@ -61,33 +61,35 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
           </div>
         </div>
         <div className="padding" onClick={this.onSampleTitleClicked} />
-        {sample.versionComparisonResult != 0 && (
-          <div className="info">
-            <span className="codicon codicon-info"></span>
-            <div className="tooltip">{tooltipText}</div>
-          </div>
-        )}
-        {sample.versionComparisonResult == 0 ? (
+        <div className="buttonSection">
+          {sample.versionComparisonResult != 0 && (
+            <div className="info">
+              <span className="codicon codicon-info"></span>
+              <div className="tooltip">{tooltipText}</div>
+            </div>
+          )}
+          {sample.versionComparisonResult == 0 ? (
+            <VSCodeButton
+              onClick={() =>
+                this.props.createSample(this.props.sample, TelemetryTriggerFrom.SampleGallery)
+              }
+            >
+              Create
+            </VSCodeButton>
+          ) : needUpgrade ? (
+            <VSCodeButton onClick={this.onUpgradeToolkit}>Upgrade Teams Toolkit</VSCodeButton>
+          ) : (
+            <VSCodeButton disabled>Create</VSCodeButton>
+          )}
           <VSCodeButton
+            appearance="secondary"
             onClick={() =>
-              this.props.createSample(this.props.sample, TelemetryTriggerFrom.SampleGallery)
+              this.props.viewGitHub(this.props.sample, TelemetryTriggerFrom.SampleGallery)
             }
           >
-            Create
+            View on GitHub
           </VSCodeButton>
-        ) : needUpgrade ? (
-          <VSCodeButton onClick={this.onUpgradeToolkit}>Upgrade Teams Toolkit</VSCodeButton>
-        ) : (
-          <VSCodeButton disabled>Create</VSCodeButton>
-        )}
-        <VSCodeButton
-          appearance="secondary"
-          onClick={() =>
-            this.props.viewGitHub(this.props.sample, TelemetryTriggerFrom.SampleGallery)
-          }
-        >
-          View on GitHub
-        </VSCodeButton>
+        </div>
       </div>
     );
   }

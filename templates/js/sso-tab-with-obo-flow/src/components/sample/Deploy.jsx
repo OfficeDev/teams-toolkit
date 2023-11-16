@@ -15,11 +15,11 @@ export function Deploy(props) {
         app's resources to the cloud to make sure your app will be running smoothly!
       </p>
       <p>
-        To provision your resources, you can either use our CLI command "teamsfx provision" or apply
-        "Teams: Provision" in Command palette.
+        To provision your resources, you can either use our CLI command "teamsapp provision" or
+        apply "Teams: Provision" in Command palette.
       </p>
       <p>
-        To deploy your app, you can either use our CLI command "teamsfx deploy" or apply "Teams:
+        To deploy your app, you can either use our CLI command "teamsapp deploy" or apply "Teams:
         Deploy" in Command palette.
       </p>
       <Image src="deploy.png" />

@@ -6,7 +6,6 @@ import "./sampleCard.scss";
 import * as React from "react";
 
 import { FontIcon, Image } from "@fluentui/react";
-import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 
 import Turtle from "../../../img/webview/sample/turtle.svg";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";

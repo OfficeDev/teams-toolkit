@@ -225,11 +225,6 @@ describe("teamsfx new sample", function () {
 
 ### CliHelper
 
-#### setSubscription
-
-```bash
-teamsfx account set --subscription ${subscription}
-```
 
 #### addEnv
 

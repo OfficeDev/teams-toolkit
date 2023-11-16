@@ -5,7 +5,7 @@ version: 1.1.0
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
   # Creates a Teams app
   - uses: teamsApp/create
@@ -92,7 +92,7 @@ provision:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
   - uses: cli/runDotnetCommand
     with:

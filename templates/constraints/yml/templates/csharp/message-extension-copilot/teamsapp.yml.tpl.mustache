@@ -2,7 +2,7 @@
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
 {{#teamsAppCreate}} {{/teamsAppCreate}}
 
@@ -20,7 +20,7 @@ provision:
 
 {{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
 {{#cliRunDotnetCommand}} publish {{/cliRunDotnetCommand}}
 

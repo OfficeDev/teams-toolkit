@@ -44,7 +44,7 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
-import { isApiKeyEnabled } from "../../../common/featureFlags";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -154,7 +154,11 @@ export async function listOperations(
 
   try {
     const allowAPIKeyAuth = isApiKeyEnabled();
-    const specParser = new SpecParser(apiSpecUrl as string, { allowAPIKeyAuth });
+    const allowMultipleParameters = isMultipleParametersEnabled();
+    const specParser = new SpecParser(apiSpecUrl as string, {
+      allowAPIKeyAuth,
+      allowMultipleParameters,
+    });
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors);
 

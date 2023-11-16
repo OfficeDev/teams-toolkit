@@ -30,6 +30,7 @@ import { QuestionNames } from "../../../question";
 import { SpecParser } from "../../../common/spec-parser";
 import { getAbsolutePath } from "../../utils/common";
 import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
@@ -184,7 +185,8 @@ export class CreateApiKeyDriver implements StepDriver {
   private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<string[]> {
     const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
     const parser = new SpecParser(absolutePath, {
-      allowAPIKeyAuth: true,
+      allowAPIKeyAuth: isApiKeyEnabled(),
+      allowMultipleParameters: isMultipleParametersEnabled(),
     });
     const operations = await parser.list();
     const domains = operations

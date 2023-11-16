@@ -8,8 +8,11 @@ import chaiAsPromised from "chai-as-promised";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 import { FeatureFlagName } from "../../src/common/constants";
-import { initializePreviewFeatureFlags, isApiKeyEnabled } from "../../src/common/featureFlags";
-
+import {
+  initializePreviewFeatureFlags,
+  isApiKeyEnabled,
+  isMultipleParametersEnabled,
+} from "../../src/common/featureFlags";
 chai.use(chaiAsPromised);
 
 describe("featureFlags", () => {
@@ -43,6 +46,23 @@ describe("featureFlags", () => {
     it("is false", async () => {
       mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "false" });
       const res = isApiKeyEnabled();
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("isMultipleParametersEnabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "true" });
+      const res = isMultipleParametersEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "false" });
+      const res = isMultipleParametersEnabled();
       chai.assert.isFalse(res);
     });
   });

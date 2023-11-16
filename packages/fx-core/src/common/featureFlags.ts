@@ -51,3 +51,7 @@ export function enableTestToolByDefault(): boolean {
 export function isApiKeyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
 }
+
+export function isMultipleParametersEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
+}

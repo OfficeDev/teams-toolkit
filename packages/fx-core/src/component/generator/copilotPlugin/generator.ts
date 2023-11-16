@@ -50,7 +50,7 @@ import {
 } from "../../../common/spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
-import { isApiKeyEnabled } from "../../../common/featureFlags";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
@@ -196,7 +196,8 @@ export class CopilotPluginGenerator {
 
       // validate API spec
       const allowAPIKeyAuth = isApiKeyEnabled();
-      const specParser = new SpecParser(url, { allowAPIKeyAuth });
+      const allowMultipleParameters = isMultipleParametersEnabled();
+      const specParser = new SpecParser(url, { allowAPIKeyAuth, allowMultipleParameters });
       const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
       const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);

@@ -18,8 +18,7 @@ provision:
 
 {{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
 {{#cliRunDotnetCommand}} publish {{/cliRunDotnetCommand}}
-
-{{#azureAppServiceZipDeploy}} artifactFolder: bin/Release/net6.0/win-x86/publish, resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}} {{/azureAppServiceZipDeploy}}
+{{#azureAppServiceZipDeploy}} artifactFolder: bin/Release/{{TargetFramework}}/win-x86/publish, resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}} {{/azureAppServiceZipDeploy}}

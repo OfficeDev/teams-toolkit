@@ -14,7 +14,7 @@ export interface ProjectTypeResult {
   tsconfigJson?: any;
   hasTeamsManifest: boolean;
   dependsOnTeamsJs: boolean;
-  lauguage: "typescript" | "javascript" | "csharp" | "java" | "python" | "other";
+  lauguage: "typescript" | "javascript" | "csharp" | "java" | "python" | "c" | "other";
 }
 
 class ProjectTypeChecker {
@@ -108,6 +108,9 @@ class ProjectTypeChecker {
       return false;
     } else if (fileName === "pom.xml" || fileName === "build.gradle") {
       data.lauguage = "java";
+      return false;
+    } else if (fileName.toLowerCase() === "makefile") {
+      data.lauguage = "c";
       return false;
     } else if (fileName === "requirements.txt" || fileName === "pyproject.toml") {
       data.lauguage = "python";

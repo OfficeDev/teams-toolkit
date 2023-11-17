@@ -15,7 +15,6 @@ import {
   Platform,
   SystemError,
 } from "@microsoft/teamsfx-api";
-import axios from "axios";
 import * as chai from "chai";
 import * as childProcess from "child_process";
 import EventEmitter from "events";
@@ -380,27 +379,30 @@ describe("helperMethods", async () => {
     }
 
     class MockedWriteStream {
-      on(event: string, cb: () => void) {
-        return this;
-      }
+      write(data: any) {}
+      close() {}
     }
 
     afterEach(() => {
       sandbox.restore();
     });
 
+    const mockFetch = async (url: any, options: any) => {
+      // You can customize the response here
+      const response = new Response("Hello, world!", {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+      });
+      return Promise.resolve(response);
+    };
+
     it("should download project template zip file", async () => {
-      const resp = new ResponseData();
-      sandbox.stub(axios, "get").resolves({ data: resp });
+      sandbox.stub(global, "fetch").value(mockFetch);
       const mockedStream = new MockedWriteStream();
-      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
-      // manully wait for the close event to be registered
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      resp.emit("close");
-      await promise;
-      chai.expect(unzipStub.calledOnce).to.be.true;
+      const res = await HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      chai.assert.isTrue(res);
     });
   });
 

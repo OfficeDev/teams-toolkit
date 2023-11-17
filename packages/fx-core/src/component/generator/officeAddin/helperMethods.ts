@@ -43,7 +43,7 @@ export class HelperMethods {
   static async unzipProjectTemplate(projectFolder: string): Promise<void> {
     return new Promise((resolve, reject) => {
       // TODO: Verify file exists
-      const readStream = fs.createReadStream(`${projectFolder}/${zipFile}`);
+      const readStream = fs.createReadStream(path.resolve(`${projectFolder}/${zipFile}`));
       readStream
         .pipe(unzip.Extract({ path: projectFolder }))
         .on("error", function (err: unknown) {

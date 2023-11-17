@@ -1233,8 +1233,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
       "graph-connector-bot",
     ], //using a static list instead of dynamic list to avoid the delay of fetching sample list for CLL_HELP
     dynamicOptions: async () => {
-      await sampleProvider.fetchSampleConfig();
-      return sampleProvider.SampleCollection.samples.map((sample) => {
+      return (await sampleProvider.SampleCollection).samples.map((sample) => {
         return {
           id: sample.id,
           label: sample.title,

@@ -217,8 +217,8 @@ export function renderTemplateFileName(
   );
 }
 
-export function getSampleInfoFromName(sampleName: string): SampleConfig {
-  const sample = sampleProvider.SampleCollection.samples.find(
+export async function getSampleInfoFromName(sampleName: string): Promise<SampleConfig> {
+  const sample = (await sampleProvider.SampleCollection).samples.find(
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (!sample) {

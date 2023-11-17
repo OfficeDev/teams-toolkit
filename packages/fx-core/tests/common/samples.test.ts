@@ -41,33 +41,33 @@ describe("Samples", () => {
 
   afterEach(() => {
     sandbox.restore();
-    sampleProvider["samplesConfig"] = undefined;
+    sampleProvider["sampleCollection"] = undefined;
     process.env["TEAMSFX_SAMPLE_CONFIG_BRANCH"] = undefined;
   });
 
   describe("fetchSampleConfig", () => {
     afterEach(() => {
       sandbox.restore();
-      sampleProvider["samplesConfig"] = undefined;
+      sampleProvider["sampleCollection"] = undefined;
       process.env["TEAMSFX_SAMPLE_CONFIG_BRANCH"] = undefined;
     });
 
     it("download sample config on 'dev' branch in alpha version", async () => {
       packageJson.version = "2.0.4-alpha.888a35067.0";
-      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+      sandbox.stub(global, "fetch").callsFake((input: RequestInfo | URL) => {
         if (
-          url ===
+          input ===
           "https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/dev/.config/samples-config-v3.json"
         ) {
-          return { data: fakedSampleConfig, status: 200 };
+          return Promise.resolve({
+            json: () => fakedSampleConfig,
+          } as unknown as Response);
         } else {
           throw err(undefined);
         }
       });
 
-      await sampleProvider.fetchSampleConfig();
-      chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
-      const samples = sampleProvider.SampleCollection.samples;
+      const samples = (await sampleProvider.SampleCollection).samples;
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
@@ -75,26 +75,26 @@ describe("Samples", () => {
         dir: "hello-world-tab-with-backend",
       });
       chai.expect(samples[0].gifUrl).equal(undefined);
-      const filterOptions = sampleProvider.SampleCollection.filterOptions;
+      const filterOptions = (await sampleProvider.SampleCollection).filterOptions;
       chai.expect(filterOptions.capabilities).to.deep.equal(["Tab"]);
     });
 
     it("download sample config of prerelease branch in prerelease(beta) version", async () => {
       packageJson.version = "2.0.4-beta.0";
-      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
         if (
-          url ===
+          input ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigBranchForPrerelease}/.config/samples-config-v3.json`
         ) {
-          return { data: fakedSampleConfig, status: 200 };
+          return Promise.resolve({
+            json: () => fakedSampleConfig,
+          } as unknown as Response);
         } else {
           throw err(undefined);
         }
       });
 
-      await sampleProvider.fetchSampleConfig();
-      chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
-      const samples = sampleProvider.SampleCollection.samples;
+      const samples = (await sampleProvider.SampleCollection).samples;
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
@@ -106,20 +106,20 @@ describe("Samples", () => {
 
     it("download sample config of rc tag in rc version", async () => {
       packageJson.version = "2.0.3-rc.1";
-      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
         if (
-          url ===
+          input ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
         ) {
-          return { data: fakedSampleConfig, status: 200 };
+          return Promise.resolve({
+            json: () => fakedSampleConfig,
+          } as unknown as Response);
         } else {
           throw err(undefined);
         }
       });
 
-      await sampleProvider.fetchSampleConfig();
-      chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
-      const samples = sampleProvider.SampleCollection.samples;
+      const samples = (await sampleProvider.SampleCollection).samples;
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
@@ -131,20 +131,20 @@ describe("Samples", () => {
 
     it("download sample config of release tag in stable version", async () => {
       packageJson.version = "2.0.3";
-      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
         if (
-          url ===
+          input ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
         ) {
-          return { data: fakedSampleConfig, status: 200 };
+          return Promise.resolve({
+            json: () => fakedSampleConfig,
+          } as unknown as Response);
         } else {
           throw err(undefined);
         }
       });
 
-      await sampleProvider.fetchSampleConfig();
-      chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
-      const samples = sampleProvider.SampleCollection.samples;
+      const samples = (await sampleProvider.SampleCollection).samples;
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
@@ -157,20 +157,20 @@ describe("Samples", () => {
     it("download sample config using feature flag if available in stable version", async () => {
       packageJson.version = "2.0.3";
       process.env["TEAMSFX_SAMPLE_CONFIG_BRANCH"] = "v2.0.0";
-      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
         if (
-          url ===
+          input ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/v2.0.0/.config/samples-config-v3.json`
         ) {
-          return { data: fakedSampleConfig, status: 200 };
+          return Promise.resolve({
+            json: () => fakedSampleConfig,
+          } as unknown as Response);
         } else {
           throw err(undefined);
         }
       });
 
-      await sampleProvider.fetchSampleConfig();
-      chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
-      const samples = sampleProvider.SampleCollection.samples;
+      const samples = (await sampleProvider.SampleCollection).samples;
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
@@ -183,21 +183,21 @@ describe("Samples", () => {
     it("download bundled sample config if feature flag branch is unavailable in stable version", async () => {
       packageJson.version = "2.0.3";
       process.env["TEAMSFX_SAMPLE_CONFIG_BRANCH"] = "v2.0.0";
-      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
         if (
-          url ===
+          input ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
         ) {
-          return { data: fakedSampleConfig, status: 200 };
+          return Promise.resolve({
+            json: () => fakedSampleConfig,
+          } as unknown as Response);
         } else {
           throw err(undefined);
         }
       });
 
       try {
-        await sampleProvider.fetchSampleConfig();
-        chai.expect(sampleProvider["samplesConfig"]).equal(fakedSampleConfig);
-        const samples = sampleProvider.SampleCollection.samples;
+        const samples = (await sampleProvider.SampleCollection).samples;
         chai.expect(samples[0].downloadUrlInfo).deep.equal({
           owner: "OfficeDev",
           repository: "TeamsFx-Samples",
@@ -212,12 +212,12 @@ describe("Samples", () => {
 
     it("has empty sample collection if network in disconnected", async () => {
       packageJson.version = "2.0.3";
-      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
         throw err(undefined);
       });
 
       try {
-        await sampleProvider.fetchSampleConfig();
+        await sampleProvider.SampleCollection;
         chai.assert.fail("should not reach here");
       } catch (e) {
         chai.assert.isTrue(e instanceof AccessGithubError);
@@ -225,17 +225,7 @@ describe("Samples", () => {
     });
   });
 
-  it("Get v3 samples - online sample config", () => {
-    sampleProvider["samplesConfig"] = sampleConfigV3;
-
-    const samples = sampleProvider.SampleCollection.samples;
-    for (const sample of samples) {
-      chai.expect(sampleConfigV3.samples.find((sampleInConfig) => sampleInConfig.id === sample.id))
-        .exist;
-    }
-  });
-
-  it("External sample url can be retrieved correctly in v3", () => {
+  it("External sample url can be retrieved correctly in v3", async () => {
     const fakedExternalSample = {
       id: "external-sample",
       title: "Test external sample",
@@ -254,8 +244,12 @@ describe("Samples", () => {
     };
     sampleConfigV3.samples.push(fakedExternalSample as any);
 
-    sampleProvider["samplesConfig"] = sampleConfigV3;
-    const samples = sampleProvider.SampleCollection.samples;
+    sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
+      return Promise.resolve({
+        json: () => sampleConfigV3,
+      } as unknown as Response);
+    });
+    const samples = (await sampleProvider.SampleCollection).samples;
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);
     chai.expect(faked).exist;
     chai.expect(faked?.downloadUrlInfo).equals(fakedExternalSample.downloadUrlInfo);
@@ -275,41 +269,10 @@ describe("Samples", () => {
     });
 
     try {
-      await sampleProvider.fetchSampleConfig();
+      await sampleProvider.SampleCollection;
       chai.assert.fail("should not reach here");
     } catch (e) {
       chai.assert.isTrue(e instanceof AccessGithubError);
     }
-  });
-
-  it("fetchSampleConfig - online sample config succeeds to obtain", async () => {
-    const fakedSampleConfig = {
-      samples: [
-        {
-          id: "hello-world-tab-with-backend",
-          title: "Tab App with Azure Backend",
-          shortDescription:
-            "A Hello World app of Microsoft Teams Tab app which has a backend service",
-          fullDescription:
-            "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app has a Tab frontend and a backend service using Azure Function.",
-          tags: ["Tab", "TS", "Azure function"],
-          time: "5min to run",
-          configuration: "Ready for debug",
-          suggested: true,
-        },
-      ],
-    };
-    sandbox.stub(axios, "get").resolves({ data: fakedSampleConfig, status: 200 });
-
-    await sampleProvider.fetchSampleConfig();
-
-    chai.expect(sampleProvider["samplesConfig"]).equals(fakedSampleConfig);
-  });
-
-  it("returns empty sample collection when sample config is undefined", () => {
-    const sampleCollection = sampleProvider.SampleCollection;
-
-    chai.expect(sampleCollection.filterOptions.capabilities).to.deep.equal([]);
-    chai.expect(sampleCollection.samples).to.deep.equal([]);
   });
 });

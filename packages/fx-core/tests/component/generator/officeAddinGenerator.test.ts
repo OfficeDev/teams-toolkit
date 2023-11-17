@@ -401,8 +401,7 @@ describe("helperMethods", async () => {
       const mockedStream = new MockedWriteStream();
       sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const res = await HelperMethods.downloadProjectTemplateZipFile("", "", "");
-      chai.assert.isTrue(res);
+      await HelperMethods.downloadProjectTemplateZipFile("", "", "");
     });
   });
 

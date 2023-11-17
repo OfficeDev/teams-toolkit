@@ -18,7 +18,7 @@ export class HelperMethods {
     projectFolder: string,
     projectRepo: string,
     projectBranch?: string
-  ): Promise<boolean> {
+  ): Promise<void> {
     const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
     const writeFileStream = fs.createWriteStream(path.resolve(projectFolder, zipFile));
     const response = await fetch(projectTemplateZipFile, { method: "GET" });
@@ -35,9 +35,7 @@ export class HelperMethods {
       }
       writeFileStream.close();
       await HelperMethods.unzipProjectTemplate(projectFolder);
-      return true;
     }
-    return false;
   }
 
   static async unzipProjectTemplate(projectFolder: string): Promise<void> {

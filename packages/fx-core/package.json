@@ -89,7 +89,6 @@
     "@microsoft/dev-tunnels-contracts": "~1.0.7445",
     "@microsoft/dev-tunnels-management": "~1.0.7445",
     "@microsoft/teamsfx-api": "workspace:*",
-    "@npmcli/arborist": "^4.2.0",
     "adm-zip": "^0.5.5",
     "ajv": "^8.5.0",
     "axios": "^0.21.4",

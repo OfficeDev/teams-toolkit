@@ -121,6 +121,13 @@ export enum TelemetryEvent {
   SkipDeploy = "skip-deploy",
   PublishInDeveloperPortal = "publish-in-developer-portal",
   MetaData = "metadata",
+  ProjectType = "project-type",
+}
+
+export enum ProjectTypeProps {
+  TeamsManifest = "teams-manifest",
+  TeamsJs = "teams-js",
+  Lauguage = "language",
 }
 
 export enum TelemetrySuccess {

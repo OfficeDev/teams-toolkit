@@ -122,6 +122,8 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { projectTypeChecker } from "../common/projectTypeChecker";
+import { ProjectTypeProps, TelemetryEvent } from "../common/telemetry";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1017,6 +1019,13 @@ export class FxCore {
         versionSource: VersionSource[versionInfo.source],
       });
     } else {
+      //try to check project type and send telemetry
+      const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
+      TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
+        [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
+        [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
+        [ProjectTypeProps.Lauguage]: projectTypeRes.lauguage,
+      });
       return err(new InvalidProjectError());
     }
   }

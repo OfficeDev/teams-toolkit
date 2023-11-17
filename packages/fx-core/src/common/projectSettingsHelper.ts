@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigFolderName, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import * as path from "path";
 import { MetadataV3 } from "./versionMetadata";
@@ -79,74 +79,4 @@ export function isValidProjectV2(workspacePath: string): boolean {
 
 export function isVSProject(projectSettings?: any): boolean {
   return projectSettings?.programmingLanguage === "csharp";
-}
-
-async function scanProjectFiles(projectPath: string, stats: ProjectStats) {
-  const files = fs.readdirSync(projectPath);
-  for (const file of files) {
-    const filePath = path.join(projectPath, file);
-    const stat = await fs.stat(filePath);
-    if (stat.isDirectory()) {
-      await scanProjectFiles(filePath, stats);
-    } else {
-      // count file extension
-      const parsedPath = path.parse(filePath);
-      const fileExtension = parsedPath.ext;
-      const count = stats.fileCounts[fileExtension] || 0;
-      stats.fileCounts[fileExtension] = count + 1;
-      if (file.toLowerCase().includes("manifest") && file.toLowerCase().endsWith(".json")) {
-        try {
-          const manifestContent = fs.readFileSync(filePath, "utf-8");
-          const manifestObject = JSON.parse(manifestContent) as TeamsAppManifest;
-          const schemaLink = manifestObject["$schema"];
-          const targetSchema = "https://developer.microsoft.com/en-us/json-schemas/teams";
-          if (schemaLink && schemaLink.startsWith(targetSchema)) {
-            stats.manifests.push(manifestObject);
-          }
-        } catch (error) {}
-      } else if (file.toLowerCase() === "package.json") {
-        try {
-          const packageJsonContent = fs.readFileSync(filePath, "utf-8");
-          const packageJsonObject = JSON.parse(packageJsonContent);
-          if (packageJsonObject?.dependencies?.["@microsoft/teamsfx"]) {
-            stats.packageJsons.push(packageJsonObject);
-          }
-        } catch (error) {}
-      }
-    }
-  }
-  return undefined;
-}
-
-export interface ProjectStats {
-  manifests: TeamsAppManifest[];
-  packageJsons: any[];
-  fileCounts: { [key in string]: number };
-}
-
-export interface ProjectType {
-  isTeamsAppProject: boolean;
-  dependsOnTeamsJs: boolean;
-  lauguage: "typescript" | "javascript" | "csharp" | "java" | "python" | "unknown";
-}
-
-export async function checkProjectType(projectPath: string) {
-  const stats: ProjectStats = {
-    manifests: [],
-    packageJsons: [],
-    fileCounts: {},
-  };
-  const result: ProjectType = {
-    isTeamsAppProject: false,
-    dependsOnTeamsJs: false,
-    lauguage: "unknown",
-  };
-  await scanProjectFiles(projectPath, stats);
-
-  result.dependsOnTeamsJs = stats.packageJsons.length > 0;
-  result.isTeamsAppProject = stats.manifests.length > 0;
-
-  const counts = Array.from(Object.keys(stats.fileCounts).map((key) => stats.fileCounts[key]));
-
-  return stats;
 }

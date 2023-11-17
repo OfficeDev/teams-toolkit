@@ -125,7 +125,9 @@ export enum TelemetryEvent {
 }
 
 export enum ProjectTypeProps {
-  TeamsManifest = "teams-manifest",
+  HasTeamsManifest = "has-teams-manifest",
+  TeamsManifestVersion = "teams-manifest-version",
+  TeamsAppId = "teams-app-id",
   TeamsJs = "teams-js",
   Lauguage = "language",
 }

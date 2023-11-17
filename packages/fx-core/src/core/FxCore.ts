@@ -1023,7 +1023,9 @@ export class FxCore {
       const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
         [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
-        [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
+        [ProjectTypeProps.HasTeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
+        [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifest?.manifestVersion || "",
+        [ProjectTypeProps.TeamsAppId]: projectTypeRes.manifest?.manifestVersion || "",
         [ProjectTypeProps.Lauguage]: projectTypeRes.lauguage,
       });
       return err(new InvalidProjectError());

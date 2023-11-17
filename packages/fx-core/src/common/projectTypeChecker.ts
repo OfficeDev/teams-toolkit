@@ -159,7 +159,7 @@ class ProjectTypeChecker {
       );
     } catch (e) {}
     result.hasTeamsManifest = !!result.manifest;
-    if (result.packageJson?.dependencies?.["@microsoft/teamsfx"]) {
+    if (result.packageJson?.dependencies?.["@microsoft/teams-js"]) {
       result.dependsOnTeamsJs = true;
     }
     return result;

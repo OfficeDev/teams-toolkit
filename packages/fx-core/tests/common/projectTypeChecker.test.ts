@@ -8,6 +8,7 @@ import sinon from "sinon";
 import path from "path";
 import { ProjectTypeResult, projectTypeChecker } from "../../src/common/projectTypeChecker";
 import { MetadataV3 } from "../../src/common/versionMetadata";
+import { TeamsAppManifest } from "@microsoft/teamsfx-api";
 
 describe("ProjectTypeChecker", () => {
   const sandbox = sinon.createSandbox();
@@ -370,6 +371,51 @@ describe("ProjectTypeChecker", () => {
       const res = await projectTypeChecker.findTeamsFxCallback(path.join("./abc.json"), result);
       assert.isTrue(res);
       assert.isFalse(result.isTeamsFx);
+    });
+  });
+
+  describe("checkProjectType", () => {
+    it("has manifest and depends on teams-js", async () => {
+      sandbox
+        .stub(projectTypeChecker, "scanFolder")
+        .callsFake(
+          async (
+            currentPath: string,
+            ignoreFolderName: string[],
+            data: ProjectTypeResult,
+            fileCallback: (filePath: string, data: ProjectTypeResult) => Promise<boolean>,
+            maxDepth: number
+          ) => {
+            data.manifest = new TeamsAppManifest();
+            data.packageJson = {
+              dependencies: { "@microsoft/teams-js": "1.0.0" },
+            };
+            return true;
+          }
+        );
+
+      const res = await projectTypeChecker.checkProjectType(path.join("./abc.json"));
+      assert.isTrue(res.hasTeamsManifest);
+      assert.isTrue(res.dependsOnTeamsJs);
+    });
+    it("has no manifest and not depend on teams-js", async () => {
+      sandbox
+        .stub(projectTypeChecker, "scanFolder")
+        .callsFake(
+          async (
+            currentPath: string,
+            ignoreFolderName: string[],
+            data: ProjectTypeResult,
+            fileCallback: (filePath: string, data: ProjectTypeResult) => Promise<boolean>,
+            maxDepth: number
+          ) => {
+            return true;
+          }
+        );
+
+      const res = await projectTypeChecker.checkProjectType(path.join("./abc.json"));
+      assert.isFalse(res.hasTeamsManifest);
+      assert.isFalse(res.dependsOnTeamsJs);
     });
   });
 });

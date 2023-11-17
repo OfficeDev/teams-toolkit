@@ -999,36 +999,42 @@ export class FxCore {
   ])
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     const projectPath = (inputs.projectPath as string) || "";
-    if (isValidProject(projectPath)) {
-      const versionInfo = await getProjectVersionFromPath(projectPath);
-      if (!versionInfo.version) {
-        return err(new InvalidProjectError());
-      }
-      const trackingId = await getTrackingIdFromPath(projectPath);
-      const isSupport = getVersionState(versionInfo);
-      // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
-      if (isSupport === VersionState.upgradeable) {
-        if (!(await checkActiveResourcePlugins(projectPath))) {
+    //try to check project type and send telemetry
+    const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
+    try {
+      if (isValidProject(projectPath)) {
+        projectTypeRes.isTeamsFx = true;
+        const versionInfo = await getProjectVersionFromPath(projectPath);
+        if (!versionInfo.version) {
           return err(new InvalidProjectError());
         }
+        const trackingId = await getTrackingIdFromPath(projectPath);
+        const isSupport = getVersionState(versionInfo);
+        // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
+        if (isSupport === VersionState.upgradeable) {
+          if (!(await checkActiveResourcePlugins(projectPath))) {
+            return err(new InvalidProjectError());
+          }
+        }
+        return ok({
+          currentVersion: versionInfo.version,
+          trackingId,
+          isSupport,
+          versionSource: VersionSource[versionInfo.source],
+        });
+      } else {
+        projectTypeRes.isTeamsFx = false;
+        return err(new InvalidProjectError());
       }
-      return ok({
-        currentVersion: versionInfo.version,
-        trackingId,
-        isSupport,
-        versionSource: VersionSource[versionInfo.source],
-      });
-    } else {
-      //try to check project type and send telemetry
-      const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
+    } finally {
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
+        [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
         [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
         [ProjectTypeProps.HasTeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
         [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifest?.manifestVersion || "",
         [ProjectTypeProps.TeamsAppId]: projectTypeRes.manifest?.id || "",
         [ProjectTypeProps.Lauguage]: projectTypeRes.lauguage,
       });
-      return err(new InvalidProjectError());
     }
   }
 

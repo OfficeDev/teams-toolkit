@@ -6,6 +6,7 @@ import fs from "fs-extra";
 import path from "path";
 
 export interface ProjectTypeResult {
+  isTeamsFx?: boolean;
   manifest?: TeamsAppManifest;
   packageJson?: any;
   tsconfigJson?: any;

@@ -21,12 +21,7 @@ export class HelperMethods {
   ): Promise<boolean> {
     const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
     const writeFileStream = fs.createWriteStream(path.resolve(projectFolder, zipFile));
-    const response = await fetch(projectTemplateZipFile, {
-      method: "GET",
-      headers: {
-        responseType: "stream",
-      },
-    });
+    const response = await fetch(projectTemplateZipFile, { method: "GET" });
     const reader = response.body?.getReader();
     if (reader) {
       while (true) {

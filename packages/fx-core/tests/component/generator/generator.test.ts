@@ -419,7 +419,7 @@ describe("Generator error", async () => {
   });
 
   it("sample not found error", async () => {
-    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").resolves(mockedSampleInfo);
     sandbox.stub(generatorUtils, "downloadDirectory").resolves([] as string[]);
     sandbox
       .stub(generatorUtils, "sendRequestWithTimeout")
@@ -507,10 +507,6 @@ describe("Generator happy path", async () => {
     templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
   }
 
-  beforeEach(async () => {
-    sampleProvider["samplesConfig"] = sampleConfigV3;
-  });
-
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
@@ -520,7 +516,9 @@ describe("Generator happy path", async () => {
 
   it("external sample", async () => {
     const axiosStub = sandbox.stub(axios, "get");
-    sandbox.stub(sampleProvider, "SampleCollection").value(mockedExternalSampleConfig);
+    sandbox
+      .stub(sampleProvider, "SampleCollection")
+      .value(Promise.resolve(mockedExternalSampleConfig));
     const sampleName = "test";
     const mockFileName = "test.txt";
     const mockFileData = "test data";
@@ -689,7 +687,7 @@ describe("Generate sample using download directory", () => {
     mockedEnvRestore = mockedEnv({
       DOWNLOAD_DIRECTORY: "true",
     });
-    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").resolves(mockedSampleInfo);
   });
 
   afterEach(async () => {

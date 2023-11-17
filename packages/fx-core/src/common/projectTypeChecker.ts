@@ -19,56 +19,50 @@ export interface ProjectTypeResult {
 
 class ProjectTypeChecker {
   async scanFolder(
-    folder: string,
+    currentPath: string,
     ignoreFolderName: string[],
     data: ProjectTypeResult,
-    fileCallback: (
-      foler: string,
-      file: string,
-      depth: number,
-      data: ProjectTypeResult
-    ) => Promise<boolean>,
-    depth = 0
+    fileCallback: (filePath: string, data: ProjectTypeResult) => Promise<boolean>,
+    maxDepth: number,
+    currentDepth = 0
   ) {
-    const file = path.parse(folder).base;
-    if (ignoreFolderName.includes(file)) {
+    const fileName = path.parse(currentPath).base;
+    if (ignoreFolderName.includes(fileName)) {
       return true;
     }
-    const files = await fs.readdir(folder);
-    for (const file of files) {
-      const filePath = path.join(folder, file);
-      const stat = await fs.stat(filePath);
-      if (stat.isDirectory()) {
-        const res = await this.scanFolder(
-          filePath,
-          ignoreFolderName,
-          data,
-          fileCallback,
-          depth + 1
-        );
-        if (!res) {
-          return false;
+    const stat = await fs.stat(currentPath);
+    if (stat.isDirectory()) {
+      if (currentDepth < maxDepth) {
+        const subFiles = await fs.readdir(currentPath);
+        for (const subFile of subFiles) {
+          const subFilePath = path.join(currentPath, subFile);
+          const res = await this.scanFolder(
+            subFilePath,
+            ignoreFolderName,
+            data,
+            fileCallback,
+            maxDepth,
+            currentDepth + 1
+          );
+          if (!res) {
+            return false;
+          }
         }
-      } else {
-        const res = await fileCallback(folder, file, depth, data);
-        if (!res) {
-          return false;
-        }
+      }
+    } else {
+      const res = await fileCallback(currentPath, data);
+      if (!res) {
+        return false;
       }
     }
     return true;
   }
 
-  async findManifestCallback(
-    folderPath: string,
-    fileName: string,
-    depth: number,
-    data: ProjectTypeResult
-  ): Promise<boolean> {
-    if (depth > 4) return false;
+  async findManifestCallback(filePath: string, data: ProjectTypeResult): Promise<boolean> {
+    const fileName = path.parse(filePath).base;
     if (fileName.toLowerCase().includes("manifest") && fileName.toLowerCase().endsWith(".json")) {
       try {
-        const manifestContent = await fs.readFile(path.join(folderPath, fileName), "utf-8");
+        const manifestContent = await fs.readFile(path.join(filePath, fileName), "utf-8");
         const manifestObject = JSON.parse(manifestContent);
         const schemaLink = manifestObject["$schema"];
         const targetSchema = "https://developer.microsoft.com/en-us/json-schemas/teams";
@@ -81,24 +75,18 @@ class ProjectTypeChecker {
     return true;
   }
 
-  async findProjecTypeCallback(
-    folderPath: string,
-    fileName: string,
-    depth: number,
-    data: ProjectTypeResult
-  ): Promise<boolean> {
-    if (depth > 2) return false;
-    if (fileName === "node_modules") return false;
-    const filaPath = path.join(folderPath, fileName);
+  async findProjectLanguateCallback(filePath: string, data: ProjectTypeResult): Promise<boolean> {
+    const parsed = path.parse(filePath);
+    const fileName = parsed.base;
     if (fileName === "tsconfig.json") {
       data.lauguage = "typescript";
       return false;
     } else if (fileName === "package.json") {
       try {
-        const content = await fs.readFile(path.join(folderPath, fileName), "utf-8");
+        const content = await fs.readFile(filePath, "utf-8");
         const json = JSON.parse(content);
         data.packageJson = json;
-        if (await fs.pathExists(path.join(folderPath, "tsconfig.json")))
+        if (await fs.pathExists(path.join(parsed.dir, "tsconfig.json")))
           data.lauguage = "typescript";
         else data.lauguage = "javascript";
         return false;
@@ -115,17 +103,25 @@ class ProjectTypeChecker {
     } else if (fileName === "requirements.txt" || fileName === "pyproject.toml") {
       data.lauguage = "python";
       return false;
-    } else if (filaPath === path.join(folderPath, ".fx", "configs", "projectSettings.json")) {
-      data.isTeamsFx = true;
-      data.teamsfxVersion = "<v5";
-      return true;
-    } else if (fileName === MetadataV3.configFile || fileName === MetadataV3.localConfigFile) {
-      data.isTeamsFx = true;
-      data.teamsfxVersion = "v5";
     }
     return true;
   }
-
+  async findTeamsFxCallback(filePath: string, data: ProjectTypeResult): Promise<boolean> {
+    return new Promise((resolve) => {
+      const parsed = path.parse(filePath);
+      const fileName = parsed.base;
+      if (filePath.includes(path.join(".fx", "configs", "projectSettings.json"))) {
+        data.isTeamsFx = true;
+        data.teamsfxVersion = "<v5";
+        resolve(false);
+      } else if (fileName === MetadataV3.configFile || fileName === MetadataV3.localConfigFile) {
+        data.isTeamsFx = true;
+        data.teamsfxVersion = "v5";
+        resolve(false);
+      }
+      resolve(true);
+    });
+  }
   async checkProjectType(projectPath: string) {
     const result: ProjectTypeResult = {
       isTeamsFx: false,
@@ -142,13 +138,23 @@ class ProjectTypeChecker {
         ["node_modules", "bin", "build", "dist", ".vscode"],
         result,
         this.findManifestCallback,
+        2,
         0
       );
       await this.scanFolder(
         projectPath,
         ["node_modules", "bin", "build", "dist", ".vscode"],
         result,
-        this.findProjecTypeCallback,
+        this.findProjectLanguateCallback,
+        2,
+        0
+      );
+      await this.scanFolder(
+        projectPath,
+        ["node_modules", "bin", "build", "dist", ".vscode"],
+        result,
+        this.findTeamsFxCallback,
+        2,
         0
       );
     } catch (e) {}

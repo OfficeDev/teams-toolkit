@@ -61,6 +61,7 @@
     "test:globalVars": "nyc mocha \"tests/core/globalVars.test.ts\"",
     "test:migration": "nyc mocha \"tests/core/middleware/migration/projectMigrationV3.test.ts\"",
     "test:teamsappMgr": "nyc mocha \"tests/component/driver/teamsApp/teamsappMgr.test.ts\"",
+    "test:projcheck": "nyc mocha \"tests/common/projectTypeChecker.test.ts\"",
     "clean": "rm -rf build",
     "prebuild": "npm run gen:cli",
     "build": "rimraf build && npx tsc -p ./",

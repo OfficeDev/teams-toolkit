@@ -1002,8 +1002,7 @@ export class FxCore {
     //try to check project type and send telemetry
     const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
     try {
-      if (isValidProject(projectPath)) {
-        projectTypeRes.isTeamsFx = true;
+      if (projectTypeRes.isTeamsFx) {
         const versionInfo = await getProjectVersionFromPath(projectPath);
         if (!versionInfo.version) {
           return err(new InvalidProjectError());
@@ -1023,12 +1022,12 @@ export class FxCore {
           versionSource: VersionSource[versionInfo.source],
         });
       } else {
-        projectTypeRes.isTeamsFx = false;
         return err(new InvalidProjectError());
       }
     } finally {
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
         [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
+        [ProjectTypeProps.TeamsFxVersion]: projectTypeRes.teamsfxVersion || "",
         [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
         [ProjectTypeProps.HasTeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
         [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifest?.manifestVersion || "",

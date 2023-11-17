@@ -4,9 +4,11 @@
 import { TeamsAppManifest } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
+import { MetadataV3 } from "./versionMetadata";
 
 export interface ProjectTypeResult {
-  isTeamsFx?: boolean;
+  isTeamsFx: boolean;
+  teamsfxVersion?: "<v5" | "v5";
   manifest?: TeamsAppManifest;
   packageJson?: any;
   tsconfigJson?: any;
@@ -87,6 +89,7 @@ class ProjectTypeChecker {
   ): Promise<boolean> {
     if (depth > 2) return false;
     if (fileName === "node_modules") return false;
+    const filaPath = path.join(folderPath, fileName);
     if (fileName === "tsconfig.json") {
       data.lauguage = "typescript";
       return false;
@@ -109,12 +112,20 @@ class ProjectTypeChecker {
     } else if (fileName === "requirements.txt" || fileName === "pyproject.toml") {
       data.lauguage = "python";
       return false;
+    } else if (filaPath === path.join(folderPath, ".fx", "configs", "projectSettings.json")) {
+      data.isTeamsFx = true;
+      data.teamsfxVersion = "<v5";
+      return true;
+    } else if (fileName === MetadataV3.configFile || fileName === MetadataV3.localConfigFile) {
+      data.isTeamsFx = true;
+      data.teamsfxVersion = "v5";
     }
     return true;
   }
 
   async checkProjectType(projectPath: string) {
     const result: ProjectTypeResult = {
+      isTeamsFx: false,
       manifest: undefined,
       packageJson: undefined,
       tsconfigJson: undefined,

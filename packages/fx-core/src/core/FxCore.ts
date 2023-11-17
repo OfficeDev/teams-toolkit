@@ -39,8 +39,9 @@ import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureF
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
-import { isValidProject } from "../common/projectSettingsHelper";
+import { projectTypeChecker } from "../common/projectTypeChecker";
 import { SpecParser, SpecParserError } from "../common/spec-parser";
+import { ProjectTypeProps, TelemetryEvent } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
@@ -122,8 +123,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { projectTypeChecker } from "../common/projectTypeChecker";
-import { ProjectTypeProps, TelemetryEvent } from "../common/telemetry";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 

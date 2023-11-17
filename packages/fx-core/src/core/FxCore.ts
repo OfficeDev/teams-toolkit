@@ -1025,7 +1025,7 @@ export class FxCore {
         [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
         [ProjectTypeProps.HasTeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
         [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifest?.manifestVersion || "",
-        [ProjectTypeProps.TeamsAppId]: projectTypeRes.manifest?.manifestVersion || "",
+        [ProjectTypeProps.TeamsAppId]: projectTypeRes.manifest?.id || "",
         [ProjectTypeProps.Lauguage]: projectTypeRes.lauguage,
       });
       return err(new InvalidProjectError());

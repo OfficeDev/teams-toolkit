@@ -205,7 +205,7 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       "span:first-child": {
         height: 24,
         lineHeight: 21,
-        backgroundColor: "var(--vscode-diffEditor-unchangedRegionBackground)",
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
         color: "var(--vscode-peekViewTitleDescription-foreground, #CCCCCC)",
         fontSize: 13,
         border: "1px solid var(--vscode-menu-separatorBackground, #3C3C3C)",
@@ -214,7 +214,6 @@ export default class SampleFilter extends React.Component<SampleFilterProps, unk
       },
     };
     const caretStyle: IStyle = {
-      backgroundColor: "var(--vscode-diffEditor-unchangedRegionBackground)",
       color: "var(--vscode-dropdown-foreground, #CCCCCC)",
       fontSize: 11,
       lineHeight: 16,

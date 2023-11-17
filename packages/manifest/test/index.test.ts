@@ -4,7 +4,6 @@ import * as path from "path";
 import fs from "fs-extra";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosPromise } from "axios";
 import { ManifestUtil, TeamsAppManifest, TeamsAppManifestJSONSchema } from "../src";
 chai.use(chaiAsPromised);
 
@@ -54,16 +53,11 @@ describe("Manifest manipulation", async () => {
 
   describe("validateManifest", async () => {
     const mocker = sinon.createSandbox();
-    const axiosInstanceMock = createMockedAxiosInstance();
-    axiosInstanceMock.get = async function <T = any, R = AxiosResponse<T>>(
-      url: string,
-      config?: AxiosRequestConfig
-    ): Promise<R> {
-      return { data: loadSchema() } as unknown as R;
-    };
+
+    const schema = await loadSchema();
 
     before(() => {
-      mocker.stub(axios, "create").returns(axiosInstanceMock);
+      mocker.stub(ManifestUtil, "fetchSchema").resolves(schema);
     });
 
     after(() => {
@@ -110,67 +104,4 @@ describe("Manifest manipulation", async () => {
 async function loadSchema(): Promise<TeamsAppManifestJSONSchema> {
   const schemaPath = path.join(__dirname, "MicrosoftTeams.schema.json");
   return fs.readJson(schemaPath);
-}
-
-function createMockedAxiosInstance(): AxiosInstance {
-  const mockAxiosInstance = (url: string, config?: AxiosRequestConfig): AxiosPromise => {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.defaults = axios.defaults;
-  mockAxiosInstance.interceptors = axios.interceptors;
-  mockAxiosInstance.getUri = (config?: AxiosRequestConfig): string => {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.request = function <T = any, R = AxiosResponse<T>>(
-    config: AxiosRequestConfig
-  ): Promise<R> {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.get = function <T = any, R = AxiosResponse<T>>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<R> {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.delete = function <T = any, R = AxiosResponse<T>>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<R> {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.head = function <T = any, R = AxiosResponse<T>>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<R> {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.options = function <T = any, R = AxiosResponse<T>>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<R> {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.post = function <T = any, R = AxiosResponse<T>>(
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<R> {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.put = function <T = any, R = AxiosResponse<T>>(
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<R> {
-    throw new Error("Method not implemented.");
-  };
-  mockAxiosInstance.patch = function <T = any, R = AxiosResponse<T>>(
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ): Promise<R> {
-    throw new Error("Method not implemented.");
-  };
-
-  return mockAxiosInstance as AxiosInstance;
 }

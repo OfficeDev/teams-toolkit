@@ -5,7 +5,6 @@ import { TeamsAppManifest, IComposeExtension } from "./manifest";
 import fs from "fs-extra";
 import Ajv from "ajv-draft-04";
 import { JSONSchemaType } from "ajv";
-import axios, { AxiosResponse } from "axios";
 import { DevPreviewSchema } from "./devPreviewManifest";
 import { ManifestCommonProperties } from "./ManifestCommonProperties";
 import { SharePointAppId } from "./constants";
@@ -68,6 +67,26 @@ export class ManifestUtil {
     }
   }
 
+  static async fetchSchema<T extends Manifest = TeamsAppManifest>(
+    manifest: T
+  ): Promise<JSONSchemaType<T>> {
+    if (!manifest.$schema) {
+      throw new Error("Manifest does not have a $schema property");
+    }
+    let result: JSONSchemaType<T>;
+    try {
+      const res = await fetch(manifest.$schema);
+      result = (await res.json()) as JSONSchemaType<T>;
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        throw new Error(`Failed to get manifest at url ${manifest.$schema} due to: ${e.message}`);
+      } else {
+        throw new Error(`Failed to get manifest at url ${manifest.$schema} due to: unknown error`);
+      }
+    }
+    return result;
+  }
+
   /**
    * Validate manifest against {@link TeamsAppManifest#$schema}.
    *
@@ -80,22 +99,8 @@ export class ManifestUtil {
   static async validateManifest<T extends Manifest = TeamsAppManifest>(
     manifest: T
   ): Promise<string[]> {
-    if (!manifest.$schema) {
-      throw new Error("Manifest does not have a $schema property");
-    }
-    let result: AxiosResponse<any>;
-    try {
-      const axiosInstance = axios.create();
-      result = await axiosInstance.get(manifest.$schema);
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        throw new Error(`Failed to get manifest at url ${manifest.$schema} due to: ${e.message}`);
-      } else {
-        throw new Error(`Failed to get manifest at url ${manifest.$schema} due to: unknown error`);
-      }
-    }
-
-    return ManifestUtil.validateManifestAgainstSchema(manifest, result.data);
+    const schema = await this.fetchSchema(manifest);
+    return ManifestUtil.validateManifestAgainstSchema(manifest, schema);
   }
 
   /**

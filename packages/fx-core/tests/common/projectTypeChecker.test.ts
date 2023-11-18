@@ -33,31 +33,7 @@ describe("ProjectTypeChecker", () => {
       const res = await projectTypeChecker.scanFolder("dir", ["dir"], result, callback, 2, 0);
       assert.isTrue(res);
     });
-    it("is dir and reach max depth", async () => {
-      sandbox.stub(fs, "stat").resolves({ isDirectory: () => true } as any);
-      const result: ProjectTypeResult = {
-        isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
-        hasTeamsManifest: false,
-        dependsOnTeamsJs: false,
-        lauguage: "other",
-      };
-      const callback = async (filePath: string, data: ProjectTypeResult) => {
-        return false;
-      };
-      const res = await projectTypeChecker.scanFolder("dir", [], result, callback, 1, 1);
-      assert.isTrue(res);
-    });
-    it("is dir and fast return false", async () => {
-      sandbox.stub(fs, "readdir").resolves(["sub-dir"] as any);
-      sandbox
-        .stub(fs, "stat")
-        .onFirstCall()
-        .resolves({ isDirectory: () => true } as any)
-        .onSecondCall()
-        .resolves({ isDirectory: () => false } as any);
+    it("file callback return false", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
         manifest: undefined,
@@ -73,7 +49,48 @@ describe("ProjectTypeChecker", () => {
       const res = await projectTypeChecker.scanFolder("dir", [], result, callback, 2, 0);
       assert.isFalse(res);
     });
-    it("is dir and return true", async () => {
+    it("is dir and reach max depth", async () => {
+      sandbox.stub(fs, "stat").resolves({ isDirectory: () => true } as any);
+      const result: ProjectTypeResult = {
+        isTeamsFx: false,
+        manifest: undefined,
+        packageJson: undefined,
+        tsconfigJson: undefined,
+        hasTeamsManifest: false,
+        dependsOnTeamsJs: false,
+        lauguage: "other",
+      };
+      const callback = async (filePath: string, data: ProjectTypeResult) => {
+        return true;
+      };
+      const res = await projectTypeChecker.scanFolder("dir", [], result, callback, 1, 1);
+      assert.isTrue(res);
+    });
+    it("is dir and sub-call return false", async () => {
+      sandbox.stub(fs, "readdir").resolves(["sub-dir"] as any);
+      sandbox.stub(fs, "stat").resolves({ isDirectory: () => true } as any);
+      const result: ProjectTypeResult = {
+        isTeamsFx: false,
+        manifest: undefined,
+        packageJson: undefined,
+        tsconfigJson: undefined,
+        hasTeamsManifest: false,
+        dependsOnTeamsJs: false,
+        lauguage: "other",
+      };
+      let index = 0;
+      const callback = async (filePath: string, data: ProjectTypeResult) => {
+        if (index === 0) {
+          index++;
+          return true;
+        } else {
+          return false;
+        }
+      };
+      const res = await projectTypeChecker.scanFolder("dir", [], result, callback, 2, 0);
+      assert.isFalse(res);
+    });
+    it("is dir and sub-call return true", async () => {
       sandbox.stub(fs, "readdir").resolves(["sub-dir"] as any);
       sandbox.stub(fs, "stat").resolves({ isDirectory: () => true } as any);
       const result: ProjectTypeResult = {
@@ -86,7 +103,7 @@ describe("ProjectTypeChecker", () => {
         lauguage: "other",
       };
       const callback = async (filePath: string, data: ProjectTypeResult) => {
-        return false;
+        return true;
       };
       const res = await projectTypeChecker.scanFolder("dir", ["sub-dir"], result, callback, 2, 0);
       assert.isTrue(res);
@@ -305,6 +322,7 @@ describe("ProjectTypeChecker", () => {
   });
   describe("findTeamsFxCallback", () => {
     it("isTeamsFx < v5", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
       const result: ProjectTypeResult = {
         isTeamsFx: false,
         manifest: undefined,
@@ -314,10 +332,7 @@ describe("ProjectTypeChecker", () => {
         dependsOnTeamsJs: false,
         lauguage: "other",
       };
-      const res = await projectTypeChecker.findTeamsFxCallback(
-        path.resolve("./.fx/configs/projectSettings.json"),
-        result
-      );
+      const res = await projectTypeChecker.findTeamsFxCallback(path.resolve("./.fx"), result);
       assert.isFalse(res);
       assert.isTrue(result.isTeamsFx);
       assert.equal(result.teamsfxVersion, "<v5");

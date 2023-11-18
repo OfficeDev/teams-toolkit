@@ -30,6 +30,10 @@ class ProjectTypeChecker {
     if (ignoreFolderName.includes(fileName)) {
       return true;
     }
+    const res = await fileCallback(currentPath, data);
+    if (!res) {
+      return false;
+    }
     const stat = await fs.stat(currentPath);
     if (stat.isDirectory()) {
       if (currentDepth < maxDepth) {
@@ -48,11 +52,6 @@ class ProjectTypeChecker {
             return false;
           }
         }
-      }
-    } else {
-      const res = await fileCallback(currentPath, data);
-      if (!res) {
-        return false;
       }
     }
     return true;
@@ -107,20 +106,22 @@ class ProjectTypeChecker {
     return true;
   }
   async findTeamsFxCallback(filePath: string, data: ProjectTypeResult): Promise<boolean> {
-    return new Promise((resolve) => {
-      const parsed = path.parse(filePath);
-      const fileName = parsed.base;
-      if (filePath.includes(path.join(".fx", "configs", "projectSettings.json"))) {
+    const parsed = path.parse(filePath);
+    const fileName = parsed.base;
+    if (fileName === ".fx") {
+      const settingFile = path.join(filePath, "configs", "projectSettings.json");
+      const exists = await fs.pathExists(settingFile);
+      if (exists) {
         data.isTeamsFx = true;
         data.teamsfxVersion = "<v5";
-        resolve(false);
-      } else if (fileName === MetadataV3.configFile || fileName === MetadataV3.localConfigFile) {
-        data.isTeamsFx = true;
-        data.teamsfxVersion = "v5";
-        resolve(false);
+        return false;
       }
-      resolve(true);
-    });
+    } else if (fileName === MetadataV3.configFile || fileName === MetadataV3.localConfigFile) {
+      data.isTeamsFx = true;
+      data.teamsfxVersion = "v5";
+      return false;
+    }
+    return true;
   }
   async checkProjectType(projectPath: string) {
     const result: ProjectTypeResult = {
@@ -149,12 +150,13 @@ class ProjectTypeChecker {
         2,
         0
       );
+      //only scan direct sub folder
       await this.scanFolder(
         projectPath,
         ["node_modules", "bin", "build", "dist", ".vscode"],
         result,
         this.findTeamsFxCallback,
-        2,
+        1,
         0
       );
     } catch (e) {}

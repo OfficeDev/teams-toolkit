@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  Func,
   FxError,
   IQTreeNode,
   Inputs,
@@ -20,21 +19,22 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
+import jsyaml from "js-yaml";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import jsyaml from "js-yaml";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
+import { projectTypeChecker } from "../../src/common/projectTypeChecker";
 import {
   ErrorType,
-  ValidationStatus,
-  WarningType,
   SpecParser,
   SpecParserError,
+  ValidationStatus,
+  WarningType,
 } from "../../src/common/spec-parser";
 import {
   DriverDefinition,
@@ -48,16 +48,18 @@ import {
 import { YamlParser } from "../../src/component/configManager/parser";
 import { coordinator } from "../../src/component/coordinator";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
+import * as buildAadManifest from "../../src/component/driver/aad/utility/buildAadManifest";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import "../../src/component/feature/sso";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
-import * as buildAadManifest from "../../src/component/driver/aad/utility/buildAadManifest";
 import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
+import { createDriverContext } from "../../src/component/utils";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -81,8 +83,8 @@ import {
 import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { createDriverContext } from "../../src/component/utils";
-import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
+import * as migrateUtil from "../../src/core/middleware/utils/v3MigrationUtils";
+import { VersionSource, VersionState } from "../../src/common/versionMetadata";
 
 const tools = new MockTools();
 
@@ -1289,6 +1291,48 @@ describe("getProjectInfo", async () => {
     const core = new FxCore(tools);
     const res = await core.getProjectInfo(".", "dev");
     assert.isTrue(res.isErr());
+  });
+});
+
+describe("projectVersionCheck", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("checkActiveResourcePlugins return false", async () => {
+    sandbox
+      .stub(migrateUtil, "getProjectVersionFromPath")
+      .resolves({ version: "a", source: VersionSource.teamsapp });
+    sandbox.stub(migrateUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx-xxxx");
+    sandbox.stub(migrateUtil, "getVersionState").returns(VersionState.upgradeable);
+    sandbox.stub(projectMigratorV3, "checkActiveResourcePlugins").resolves(false);
+    sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
+      isTeamsFx: true,
+      teamsfxVersion: "<v5",
+      lauguage: "other",
+      hasTeamsManifest: true,
+      dependsOnTeamsJs: false,
+    });
+    const core = new FxCore(tools);
+    const res = await core.projectVersionCheck({ platform: Platform.VSCode, projectPath: "." });
+    assert.isTrue(res.isErr());
+  });
+  it("happy", async () => {
+    sandbox
+      .stub(migrateUtil, "getProjectVersionFromPath")
+      .resolves({ version: "a", source: VersionSource.teamsapp });
+    sandbox.stub(migrateUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx-xxxx");
+    sandbox.stub(migrateUtil, "getVersionState").returns(VersionState.compatible);
+    sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
+      isTeamsFx: false,
+      teamsfxVersion: "<v5",
+      lauguage: "other",
+      hasTeamsManifest: false,
+      dependsOnTeamsJs: true,
+    });
+    const core = new FxCore(tools);
+    const res = await core.projectVersionCheck({ platform: Platform.VSCode, projectPath: "." });
+    assert.isTrue(res.isOk());
   });
 });
 

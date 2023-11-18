@@ -1324,6 +1324,23 @@ describe("projectVersionCheck", async () => {
     sandbox.stub(migrateUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx-xxxx");
     sandbox.stub(migrateUtil, "getVersionState").returns(VersionState.compatible);
     sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
+      isTeamsFx: true,
+      teamsfxVersion: "v5",
+      lauguage: "other",
+      hasTeamsManifest: false,
+      dependsOnTeamsJs: true,
+    });
+    const core = new FxCore(tools);
+    const res = await core.projectVersionCheck({ platform: Platform.VSCode, projectPath: "." });
+    assert.isTrue(res.isOk());
+  });
+  it("non-teamsfx", async () => {
+    sandbox
+      .stub(migrateUtil, "getProjectVersionFromPath")
+      .resolves({ version: "a", source: VersionSource.teamsapp });
+    sandbox.stub(migrateUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx-xxxx");
+    sandbox.stub(migrateUtil, "getVersionState").returns(VersionState.compatible);
+    sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
       isTeamsFx: false,
       teamsfxVersion: "<v5",
       lauguage: "other",
@@ -1332,7 +1349,7 @@ describe("projectVersionCheck", async () => {
     });
     const core = new FxCore(tools);
     const res = await core.projectVersionCheck({ platform: Platform.VSCode, projectPath: "." });
-    assert.isTrue(res.isOk());
+    assert.isTrue(res.isErr());
   });
 });
 

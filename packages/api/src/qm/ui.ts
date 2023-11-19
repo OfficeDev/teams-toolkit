@@ -61,6 +61,13 @@ export interface UIConfig<T> {
   buttons?: { icon: string; tooltip: string; command: string }[];
 }
 
+export interface ConfirmConfig extends UIConfig<boolean> {
+  /**
+   * display text for option true or false
+   */
+  transformer?: (value: boolean) => string;
+}
+
 /**
  * single selection UI config
  */
@@ -243,6 +250,8 @@ export interface InputResult<T> {
   result?: T;
 }
 
+export type ConfirmResult = InputResult<boolean>;
+
 export type SingleSelectResult = InputResult<string | OptionItem>;
 
 export type MultiSelectResult = InputResult<StaticOptions>;
@@ -259,6 +268,13 @@ export type SelectFolderResult = InputResult<string>;
  * Definition of user interaction, which is platform independent
  */
 export interface UserInteraction {
+  /**
+   * Shows confirm dialog
+   * @param config confirm config
+   * @returns A promise that resolves to the confirm result wrapper or FxError
+   * @throws FxError
+   */
+  confirm: (config: ConfirmConfig) => Promise<Result<ConfirmResult, FxError>>;
   /**
    * Shows a single selection list
    * @param config single selection config

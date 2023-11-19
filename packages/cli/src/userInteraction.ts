@@ -4,6 +4,8 @@
 import { confirm, input, password } from "@inquirer/prompts";
 import {
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   FxError,
   IProgressHandler,
   InputTextConfig,
@@ -29,6 +31,7 @@ import {
 import {
   InputValidationError,
   SelectSubscriptionError,
+  UserCancelError,
   assembleError,
 } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
@@ -141,10 +144,25 @@ class CLIUserInteraction implements UserInteraction {
     return ok(answer);
   }
 
-  async confirm(
-    name: string,
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    const loadRes = await this.loadDefaultValue(config);
+    if (loadRes.isErr()) {
+      return err(loadRes.error);
+    }
+    const result = await this._confirm(
+      config.title,
+      config.default as boolean | undefined,
+      config.transformer
+    );
+    if (result.isErr()) return err(result.error);
+    if (result.value) return ok({ type: "success", result: result.value });
+    else return err(new UserCancelError());
+  }
+
+  async _confirm(
     message: string,
-    defaultValue?: boolean
+    defaultValue?: boolean,
+    transformer?: (input: boolean) => string
   ): Promise<Result<boolean, FxError>> {
     if (!this.interactive) {
       return ok(defaultValue !== undefined ? defaultValue : true);
@@ -153,6 +171,7 @@ class CLIUserInteraction implements UserInteraction {
     const answer = await confirm({
       message,
       default: defaultValue ?? true,
+      transformer,
     });
     ScreenManager.continue();
     return ok(answer);
@@ -314,7 +333,7 @@ class CLIUserInteraction implements UserInteraction {
   }
 
   async loadDefaultValue(
-    config: InputTextConfig | SelectFileConfig | SelectFilesConfig
+    config: InputTextConfig | SelectFileConfig | SelectFilesConfig | ConfirmConfig
   ): Promise<Result<undefined, FxError>> {
     if (typeof config.default === "function") {
       // const bar = this.createProgressBar(config.title, 1);
@@ -550,7 +569,7 @@ class CLIUserInteraction implements UserInteraction {
         }
         return ok(undefined);
       case 1: {
-        const result = await this.confirm("showMessageName", plainText);
+        const result = await this._confirm(plainText);
         if (result.isOk()) {
           if (result.value) {
             return ok(items[0]);

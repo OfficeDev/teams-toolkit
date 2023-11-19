@@ -3,6 +3,7 @@
 
 import {
   Colors,
+  ConfirmQuestion,
   FolderQuestion,
   FxError,
   IProgressHandler,
@@ -850,6 +851,19 @@ describe("Question Model - Visitor Test", () => {
           name: "test",
           title: "test",
         },
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await questionVisitor(question, tools.ui, inputs);
+      assert.isTrue(res.isOk() && res.value.type === "success");
+    });
+    it("confirm", async () => {
+      sandbox.stub(tools.ui, "confirm").resolves(ok({ type: "success", result: true }));
+      const question: ConfirmQuestion = {
+        type: "confirm",
+        name: "test",
+        title: "test",
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,

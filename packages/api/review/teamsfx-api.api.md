@@ -1095,7 +1095,7 @@ export interface UserInputQuestion extends BaseQuestion {
 
 // @public
 export interface UserInteraction {
-    confirm: (config: ConfirmConfig) => Promise<Result<ConfirmResult, FxError>>;
+    confirm?: (config: ConfirmConfig) => Promise<Result<ConfirmResult, FxError>>;
     createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
     executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
     inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;

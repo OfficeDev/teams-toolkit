@@ -4,6 +4,8 @@
 import {
   ApiOperation,
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   CreateProjectResult,
   FxError,
   Inputs,
@@ -273,6 +275,9 @@ export const RequestTypes = {
     ),
     selectFolder: new RequestType1<SelectFolderConfig, Result<SelectFolderResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/selectFolderRequest`
+    ),
+    confirm: new RequestType1<ConfirmConfig, Result<ConfirmResult, FxError>, Error>(
+      `${Namespaces.UserInteraction}/confirmRequest`
     ),
     showMessage: new RequestType4<
       "info" | "warn" | "error",

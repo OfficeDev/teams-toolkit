@@ -315,7 +315,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       validation: validationFunc,
     });
     return res;
-  } else if (question.type === "confirm") {
+  } else if (question.type === "confirm" && ui.confirm) {
     const res = await ui.confirm({
       name: question.name,
       title: title,

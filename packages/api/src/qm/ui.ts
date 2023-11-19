@@ -274,7 +274,7 @@ export interface UserInteraction {
    * @returns A promise that resolves to the confirm result wrapper or FxError
    * @throws FxError
    */
-  confirm: (config: ConfirmConfig) => Promise<Result<ConfirmResult, FxError>>;
+  confirm?: (config: ConfirmConfig) => Promise<Result<ConfirmResult, FxError>>;
   /**
    * Shows a single selection list
    * @param config single selection config

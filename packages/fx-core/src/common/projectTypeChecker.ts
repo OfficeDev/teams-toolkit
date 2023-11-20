@@ -3,10 +3,9 @@
 
 import fs from "fs-extra";
 import path from "path";
-import { MetadataV3, VersionSource, VersionState } from "./versionMetadata";
+import semver from "semver";
 import { parseDocument } from "yaml";
-import { getVersionState } from "../core/middleware/utils/v3MigrationUtils";
-import { checkActiveResourcePlugins } from "../core/middleware/projectMigratorV3";
+import { MetadataV2, MetadataV3 } from "./versionMetadata";
 
 export enum TeamsfxConfigType {
   projectSettingsJson = "projectSettings.json",
@@ -27,9 +26,6 @@ export interface ProjectTypeResult {
   teamsfxConfigVersion?: string;
   teamsfxVersionState?: TeamsfxVersionState;
   teamsfxTrackingId?: string;
-  manifest?: any;
-  packageJson?: any;
-  tsconfigJson?: any;
   hasTeamsManifest: boolean;
   manifestCapabilities?: string[];
   dependsOnTeamsJs?: boolean;
@@ -103,7 +99,6 @@ class ProjectTypeChecker {
         const schemaLink = manifestObject["$schema"];
         const targetSchema = "https://developer.microsoft.com/en-us/json-schemas/teams";
         if (schemaLink && schemaLink.startsWith(targetSchema)) {
-          data.manifest = manifestObject;
           data.hasTeamsManifest = true;
           data.manifestCapabilities = this.getCapabilities(manifestObject);
           return false;
@@ -123,7 +118,9 @@ class ProjectTypeChecker {
       try {
         const content = await fs.readFile(filePath, "utf-8");
         const json = JSON.parse(content);
-        data.packageJson = json;
+        if (json?.dependencies?.[TeamsJsModule]) {
+          data.dependsOnTeamsJs = true;
+        }
         const tsconfigExist = await fs.pathExists(path.join(parsed.dir, "tsconfig.json"));
         if (!tsconfigExist) data.lauguages.push("js");
         return false;
@@ -155,6 +152,19 @@ class ProjectTypeChecker {
         const json = await fs.readJson(settingFile);
         data.teamsfxConfigVersion = json.version;
         data.teamsfxTrackingId = json.projectId;
+        const solutionSettings = json.solutionSettings;
+        if (!solutionSettings || !solutionSettings?.activeResourcePlugins) {
+          data.teamsfxVersionState = TeamsfxVersionState.Invalid;
+        } else if (data.teamsfxConfigVersion) {
+          if (
+            semver.gte(data.teamsfxConfigVersion, MetadataV2.projectVersion) &&
+            semver.lte(data.teamsfxConfigVersion, MetadataV2.projectMaxVersion)
+          ) {
+            data.teamsfxVersionState = TeamsfxVersionState.Upgradable;
+          } else {
+            data.teamsfxVersionState = TeamsfxVersionState.Unsupported;
+          }
+        }
         return false;
       }
     } else if (fileName === MetadataV3.configFile || fileName === MetadataV3.localConfigFile) {
@@ -165,6 +175,14 @@ class ProjectTypeChecker {
         const appYaml = parseDocument(yamlFileContent);
         data.teamsfxConfigVersion = appYaml.get("version") as string;
         data.teamsfxTrackingId = appYaml.get("projectId") as string;
+        if (
+          !semver.valid(data.teamsfxConfigVersion) ||
+          semver.lt(data.teamsfxConfigVersion, MetadataV3.unSupprotVersion)
+        ) {
+          data.teamsfxVersionState = TeamsfxVersionState.Compatible;
+        } else {
+          data.teamsfxVersionState = TeamsfxVersionState.Unsupported;
+        }
       }
       return false;
     }
@@ -204,34 +222,6 @@ class ProjectTypeChecker {
         0
       );
     } catch (e) {}
-    if (result.packageJson?.dependencies?.[TeamsJsModule]) {
-      result.dependsOnTeamsJs = true;
-    }
-
-    if (result.isTeamsFx) {
-      const source: VersionSource =
-        result.teamsfxConfigType === TeamsfxConfigType.projectSettingsJson
-          ? VersionSource.projectSettings
-          : result.teamsfxConfigType === TeamsfxConfigType.teamsappYml
-          ? VersionSource.teamsapp
-          : VersionSource.unknown;
-      const versionState = result.teamsfxConfigVersion
-        ? getVersionState({
-            version: result.teamsfxConfigVersion,
-            source: source,
-          })
-        : TeamsfxVersionState.Invalid;
-      // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
-      if (versionState === VersionState.upgradeable) {
-        if (!(await checkActiveResourcePlugins(projectPath))) {
-          result.teamsfxVersionState = TeamsfxVersionState.Invalid;
-        }
-      } else if (versionState === VersionState.compatible) {
-        result.teamsfxVersionState = TeamsfxVersionState.Compatible;
-      } else if (versionState === VersionState.unsupported) {
-        result.teamsfxVersionState = TeamsfxVersionState.Unsupported;
-      }
-    }
     return result;
   }
 }

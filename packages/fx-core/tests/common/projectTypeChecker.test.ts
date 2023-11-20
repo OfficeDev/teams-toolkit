@@ -150,7 +150,7 @@ describe("ProjectTypeChecker", () => {
       };
       const res = await projectTypeChecker.findManifestCallback("./manifest.json", result);
       assert.isFalse(res);
-      assert.isDefined(result.manifest);
+      assert.isTrue(result.hasTeamsManifest);
     });
 
     it("file name match, but schema is not correct", async () => {
@@ -163,7 +163,7 @@ describe("ProjectTypeChecker", () => {
       };
       const res = await projectTypeChecker.findManifestCallback("./manifest.json", result);
       assert.isTrue(res);
-      assert.isUndefined(result.manifest);
+      assert.isFalse(result.hasTeamsManifest);
     });
 
     it("file name match, but throw error", async () => {
@@ -176,7 +176,6 @@ describe("ProjectTypeChecker", () => {
       };
       const res = await projectTypeChecker.findManifestCallback("./manifest.json", result);
       assert.isTrue(res);
-      assert.isUndefined(result.manifest);
     });
   });
 
@@ -307,7 +306,7 @@ describe("ProjectTypeChecker", () => {
     });
   });
   describe("findTeamsFxCallback", () => {
-    it("isTeamsFx < v5", async () => {
+    it("isTeamsFx < v5 but invalid projectSettings.json", async () => {
       sandbox.stub(fs, "pathExists").resolves(true);
       sandbox.stub(fs, "readJson").resolves({
         version: "1.0.0",
@@ -325,12 +324,59 @@ describe("ProjectTypeChecker", () => {
       assert.equal(result.teamsfxConfigType, TeamsfxConfigType.projectSettingsJson);
       assert.equal(result.teamsfxConfigVersion, "1.0.0");
       assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
+      assert.equal(result.teamsfxVersionState, TeamsfxVersionState.Invalid);
     });
-    it("isTeamsFx = v5", async () => {
+    it("isTeamsFx < v5 but version state is unsupported", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({
+        solutionSettings: {
+          activeResourcePlugins: [],
+        },
+        version: "1.0.0",
+        projectId: "xxx-xxx-xxx",
+      });
+      const result: ProjectTypeResult = {
+        isTeamsFx: false,
+        hasTeamsManifest: false,
+        dependsOnTeamsJs: false,
+        lauguages: [],
+      };
+      const res = await projectTypeChecker.findTeamsFxCallback(path.resolve("./.fx"), result);
+      assert.isFalse(res);
+      assert.isTrue(result.isTeamsFx);
+      assert.equal(result.teamsfxConfigType, TeamsfxConfigType.projectSettingsJson);
+      assert.equal(result.teamsfxConfigVersion, "1.0.0");
+      assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
+      assert.equal(result.teamsfxVersionState, TeamsfxVersionState.Unsupported);
+    });
+    it("isTeamsFx < v5 but version state is upgradable", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({
+        solutionSettings: {
+          activeResourcePlugins: [],
+        },
+        version: "2.1.0",
+        projectId: "xxx-xxx-xxx",
+      });
+      const result: ProjectTypeResult = {
+        isTeamsFx: false,
+        hasTeamsManifest: false,
+        dependsOnTeamsJs: false,
+        lauguages: [],
+      };
+      const res = await projectTypeChecker.findTeamsFxCallback(path.resolve("./.fx"), result);
+      assert.isFalse(res);
+      assert.isTrue(result.isTeamsFx);
+      assert.equal(result.teamsfxConfigType, TeamsfxConfigType.projectSettingsJson);
+      assert.equal(result.teamsfxConfigVersion, "2.1.0");
+      assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
+      assert.equal(result.teamsfxVersionState, TeamsfxVersionState.Upgradable);
+    });
+    it("isTeamsFx = v5 and version state unsupported", async () => {
       const mockYamlContent = `# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
       # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
       # Visit https://aka.ms/teamsfx-actions for details on actions
-      version: 1.0.0
+      version: 2.0.0
       projectId: xxx-xxx-xxx
       `;
       sandbox.stub(fs, "readFile").resolves(mockYamlContent as any);
@@ -347,8 +393,9 @@ describe("ProjectTypeChecker", () => {
       assert.isFalse(res);
       assert.isTrue(result.isTeamsFx);
       assert.equal(result.teamsfxConfigType, TeamsfxConfigType.teamsappYml);
-      assert.equal(result.teamsfxConfigVersion, "1.0.0");
+      assert.equal(result.teamsfxConfigVersion, "2.0.0");
       assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
+      assert.equal(result.teamsfxVersionState, TeamsfxVersionState.Unsupported);
     });
     it("isTeamsFx = v5", async () => {
       const result: ProjectTypeResult = {
@@ -390,9 +437,7 @@ describe("ProjectTypeChecker", () => {
             maxDepth: number
           ) => {
             data.hasTeamsManifest = true;
-            data.packageJson = {
-              dependencies: { "@microsoft/teams-js": "1.0.0" },
-            };
+            data.dependsOnTeamsJs = true;
             return true;
           }
         );

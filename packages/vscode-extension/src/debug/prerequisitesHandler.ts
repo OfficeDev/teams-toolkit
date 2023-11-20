@@ -182,15 +182,19 @@ async function checkPort(
       const portsInUse = await localEnvManager.getPortsInUse(ports);
       const formatPortStr = (ports: number[]) =>
         ports.length > 1 ? ports.join(", ") : `${ports[0]}`;
+      const formatPortCmd = (ports: number[]) =>
+        ports.length > 1 ? `npx kill-port ${ports.join(" ")}` : `npx kill-port ${ports[0]}`;
       if (portsInUse.length > 0) {
         ctx.properties[TelemetryProperty.DebugPortsInUse] = JSON.stringify(portsInUse);
         const message = util.format(
           getDefaultString("teamstoolkit.localDebug.portsAlreadyInUse"),
-          formatPortStr(portsInUse)
+          formatPortStr(portsInUse),
+          formatPortCmd(portsInUse)
         );
         const displayMessage = util.format(
           localize("teamstoolkit.localDebug.portsAlreadyInUse"),
-          formatPortStr(portsInUse)
+          formatPortStr(portsInUse),
+          formatPortCmd(portsInUse)
         );
 
         return {

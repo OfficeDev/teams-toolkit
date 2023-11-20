@@ -3,7 +3,9 @@
 
 import {
   Colors,
+  ConfirmConfig,
   ConfirmQuestion,
+  ConfirmResult,
   FolderQuestion,
   FxError,
   IProgressHandler,
@@ -137,6 +139,9 @@ class MockUserInteraction implements UserInteraction {
     config: SingleFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>> {
     throw new Error("Method not implemented.");
+  }
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    return ok({ type: "success", result: true });
   }
 }
 

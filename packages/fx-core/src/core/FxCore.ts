@@ -1376,8 +1376,8 @@ export class FxCore {
       [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",
       [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
       [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
-      [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifest?.manifestVersion || "",
-      [ProjectTypeProps.TeamsManifestAppId]: projectTypeRes.manifest?.id || "",
+      [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifestVersion || "",
+      [ProjectTypeProps.TeamsManifestAppId]: projectTypeRes.manifestAppId || "",
       [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
       [ProjectTypeProps.TeamsManifestCapabilities]:
         projectTypeRes.manifestCapabilities?.join(",") || "",

@@ -29,6 +29,7 @@ export interface ProjectTypeResult {
   hasTeamsManifest: boolean;
   manifestCapabilities?: string[];
   manifestAppId?: string;
+  manifestVersion?: string;
   dependsOnTeamsJs?: boolean;
   lauguages: ("ts" | "js" | "csharp" | "java" | "python" | "c")[];
 }
@@ -103,6 +104,7 @@ class ProjectTypeChecker {
           data.hasTeamsManifest = true;
           data.manifestCapabilities = this.getCapabilities(manifestObject);
           data.manifestAppId = manifestObject.id;
+          data.manifest;
           return false;
         }
       } catch (error) {}

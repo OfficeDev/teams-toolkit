@@ -28,7 +28,11 @@ import sinon from "sinon";
 import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
-import { projectTypeChecker } from "../../src/common/projectTypeChecker";
+import {
+  TeamsfxConfigType,
+  TeamsfxVersionState,
+  projectTypeChecker,
+} from "../../src/common/projectTypeChecker";
 import {
   ErrorType,
   SpecParser,
@@ -83,8 +87,6 @@ import {
 import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import * as migrateUtil from "../../src/core/middleware/utils/v3MigrationUtils";
-import { VersionSource, VersionState } from "../../src/common/versionMetadata";
 
 const tools = new MockTools();
 
@@ -1294,62 +1296,40 @@ describe("getProjectInfo", async () => {
   });
 });
 
-describe("projectVersionCheck", async () => {
+describe("checkProjectType", async () => {
   const sandbox = sinon.createSandbox();
   afterEach(() => {
     sandbox.restore();
   });
-  it("checkActiveResourcePlugins return false", async () => {
-    sandbox
-      .stub(migrateUtil, "getProjectVersionFromPath")
-      .resolves({ version: "a", source: VersionSource.teamsapp });
-    sandbox.stub(migrateUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx-xxxx");
-    sandbox.stub(migrateUtil, "getVersionState").returns(VersionState.upgradeable);
-    sandbox.stub(projectMigratorV3, "checkActiveResourcePlugins").resolves(false);
+  it("happy 1", async () => {
     sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
-      isTeamsFx: true,
-      teamsfxVersion: "<v5",
-      lauguage: "other",
-      hasTeamsManifest: true,
+      isTeamsFx: false,
+      lauguages: [],
+      hasTeamsManifest: false,
       dependsOnTeamsJs: false,
     });
     const core = new FxCore(tools);
-    const res = await core.projectVersionCheck({ platform: Platform.VSCode, projectPath: "." });
-    assert.isTrue(res.isErr());
-  });
-  it("happy", async () => {
-    sandbox
-      .stub(migrateUtil, "getProjectVersionFromPath")
-      .resolves({ version: "a", source: VersionSource.teamsapp });
-    sandbox.stub(migrateUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx-xxxx");
-    sandbox.stub(migrateUtil, "getVersionState").returns(VersionState.compatible);
-    sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
-      isTeamsFx: true,
-      teamsfxVersion: "v5",
-      lauguage: "other",
-      hasTeamsManifest: false,
-      dependsOnTeamsJs: true,
-    });
-    const core = new FxCore(tools);
-    const res = await core.projectVersionCheck({ platform: Platform.VSCode, projectPath: "." });
+    const res = await core.checkProjectType("");
     assert.isTrue(res.isOk());
   });
-  it("non-teamsfx", async () => {
-    sandbox
-      .stub(migrateUtil, "getProjectVersionFromPath")
-      .resolves({ version: "a", source: VersionSource.teamsapp });
-    sandbox.stub(migrateUtil, "getTrackingIdFromPath").resolves("xxxx-xxxx-xxxx");
-    sandbox.stub(migrateUtil, "getVersionState").returns(VersionState.compatible);
+
+  it("happy 2", async () => {
     sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
-      isTeamsFx: false,
-      teamsfxVersion: "<v5",
-      lauguage: "other",
-      hasTeamsManifest: false,
+      isTeamsFx: true,
+      teamsfxConfigType: TeamsfxConfigType.teamsappYml,
+      teamsfxConfigVersion: "1.0.0",
+      teamsfxVersionState: TeamsfxVersionState.Compatible,
+      teamsfxTrackingId: "xxxx-xxxx-xxxx",
+      lauguages: [],
+      hasTeamsManifest: true,
+      manifestCapabilities: ["bot"],
+      manifestAppId: "xxx",
+      manifestVersion: "1.16",
       dependsOnTeamsJs: true,
     });
     const core = new FxCore(tools);
-    const res = await core.projectVersionCheck({ platform: Platform.VSCode, projectPath: "." });
-    assert.isTrue(res.isErr());
+    const res = await core.checkProjectType("");
+    assert.isTrue(res.isOk());
   });
 });
 

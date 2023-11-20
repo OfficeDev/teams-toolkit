@@ -401,6 +401,50 @@ describe("helperMethods", async () => {
       await promise;
       chai.assert.isTrue(unzipStub.calledOnce);
     });
+
+    it("unzipProjectTemplate error", async () => {
+      const resp = new ResponseData();
+      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
+      const mockedStream = new MockedWriteStream();
+      sandbox.stub(HelperMethods, "unzipProjectTemplate").rejects(new Error());
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      // manully wait for the close event to be registered
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      resp.emit("close");
+      try {
+        await promise;
+        chai.assert.fail("should throw error");
+      } catch (e) {}
+    });
+
+    it("download error", async () => {
+      const resp = new ResponseData();
+      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
+      const mockedStream = new MockedWriteStream();
+      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      // manully wait for the close event to be registered
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      resp.emit("error", new Error());
+      try {
+        await promise;
+        chai.assert.fail("should throw error");
+      } catch (e) {}
+      chai.assert.isTrue(unzipStub.notCalled);
+    });
+
+    it("Response body is null.", async () => {
+      sandbox.stub(fetch, "default").resolves({ body: null } as any);
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      try {
+        await promise;
+        chai.assert.fail("should throw error");
+      } catch (e) {
+        chai.assert.equal(e, `Response body is null.`);
+      }
+    });
   });
 
   describe("unzipProjectTemplate", () => {

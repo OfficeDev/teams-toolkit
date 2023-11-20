@@ -39,6 +39,7 @@ import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { QuestionNames } from "../../../src/question";
 import { MockTools } from "../../core/utils";
+import * as fetch from "node-fetch";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -371,7 +372,6 @@ describe("helperMethods", async () => {
 
   describe("downloadProjectTemplateZipFile", async () => {
     const sandbox = sinon.createSandbox();
-
     class ResponseData extends EventEmitter {
       pipe(ws: fs.WriteStream) {
         return this;
@@ -379,29 +379,27 @@ describe("helperMethods", async () => {
     }
 
     class MockedWriteStream {
-      write(data: any) {}
-      close() {}
+      on(event: string, cb: () => void) {
+        return this;
+      }
     }
 
     afterEach(() => {
       sandbox.restore();
     });
 
-    const mockFetch = async (url: any, options: any) => {
-      // You can customize the response here
-      const response = new Response("Hello, world!", {
-        status: 200,
-        headers: { "Content-Type": "text/plain" },
-      });
-      return Promise.resolve(response);
-    };
-
     it("should download project template zip file", async () => {
-      sandbox.stub(global, "fetch").value(mockFetch);
+      const resp = new ResponseData();
+      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
       const mockedStream = new MockedWriteStream();
-      sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      await HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      // manully wait for the close event to be registered
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      resp.emit("close");
+      await promise;
+      chai.assert.isTrue(unzipStub.calledOnce);
     });
   });
 

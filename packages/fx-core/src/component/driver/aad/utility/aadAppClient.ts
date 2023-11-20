@@ -3,7 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import { LogProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
-import axios, { AxiosError, AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosHeaders, AxiosInstance } from "axios";
 import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
 import { AadOwner } from "../../../../common/permissionInterface";
 import { GraphScopes } from "../../../../common/tools";
@@ -52,7 +52,7 @@ export class AadAppClient {
       const token = tokenResponse.value;
 
       if (!config.headers) {
-        config.headers = {};
+        config.headers = new AxiosHeaders();
       }
       config.headers["Authorization"] = `Bearer ${token}`;
 

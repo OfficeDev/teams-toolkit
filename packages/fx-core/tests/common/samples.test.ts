@@ -200,7 +200,7 @@ describe("Samples", () => {
 
     it("has empty sample collection if network in disconnected", async () => {
       packageJson.version = "2.0.3";
-      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         throw err(undefined);
       });
 
@@ -232,10 +232,8 @@ describe("Samples", () => {
     };
     sampleConfigV3.samples.push(fakedExternalSample as any);
 
-    sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
-      return Promise.resolve({
-        json: () => sampleConfigV3,
-      } as unknown as Response);
+    sandbox.stub(axios, "get").callsFake(async () => {
+      return { data: sampleConfigV3, status: 200 };
     });
     const samples = (await sampleProvider.SampleCollection).samples;
     const faked = samples.find((sample) => sample.id === fakedExternalSample.id);

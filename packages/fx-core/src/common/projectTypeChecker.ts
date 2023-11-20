@@ -28,6 +28,7 @@ export interface ProjectTypeResult {
   teamsfxTrackingId?: string;
   hasTeamsManifest: boolean;
   manifestCapabilities?: string[];
+  manifestAppId?: string;
   dependsOnTeamsJs?: boolean;
   lauguages: ("ts" | "js" | "csharp" | "java" | "python" | "c")[];
 }
@@ -101,6 +102,7 @@ class ProjectTypeChecker {
         if (schemaLink && schemaLink.startsWith(targetSchema)) {
           data.hasTeamsManifest = true;
           data.manifestCapabilities = this.getCapabilities(manifestObject);
+          data.manifestAppId = manifestObject.id;
           return false;
         }
       } catch (error) {}

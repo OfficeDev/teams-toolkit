@@ -104,7 +104,7 @@ class ProjectTypeChecker {
           data.hasTeamsManifest = true;
           data.manifestCapabilities = this.getCapabilities(manifestObject);
           data.manifestAppId = manifestObject.id;
-          data.manifest;
+          data.manifestVersion = manifestObject.manifestVersion;
           return false;
         }
       } catch (error) {}

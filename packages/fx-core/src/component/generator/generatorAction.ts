@@ -41,7 +41,11 @@ export interface GeneratorContext {
 
   onActionStart?: (action: GeneratorAction, context: GeneratorContext) => Promise<void>;
   onActionEnd?: (action: GeneratorAction, context: GeneratorContext) => Promise<void>;
-  onActionError: (action: GeneratorAction, context: GeneratorContext, error: Error) => void;
+  onActionError: (
+    action: GeneratorAction,
+    context: GeneratorContext,
+    error: Error
+  ) => Promise<void>;
 }
 
 export interface GeneratorAction {

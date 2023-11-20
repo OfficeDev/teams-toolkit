@@ -158,9 +158,8 @@ export class Generator {
         await action.run(context);
         await context.onActionEnd?.(action, context);
       } catch (e) {
-        await cleanupFolder(context.destination);
         if (e instanceof BaseComponentInnerError) throw e.toFxError();
-        if (e instanceof Error) context.onActionError(action, context, e);
+        if (e instanceof Error) await context.onActionError(action, context, e);
       }
     }
   }
@@ -170,7 +169,7 @@ export function templateDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error
-): void {
+): Promise<void> {
   switch (action.name) {
     case GeneratorActionName.FetchTemplateUrlWithTag:
     case GeneratorActionName.FetchZipFromUrl:
@@ -182,22 +181,25 @@ export function templateDefaultOnActionError(
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
       context.logProvider.error(error.message);
-      throw new TemplateZipFallbackError().toFxError();
+      return Promise.reject(new TemplateZipFallbackError().toFxError());
     case GeneratorActionName.Unzip:
       context.logProvider.error(error.message);
-      throw new UnzipError().toFxError();
+      return Promise.reject(new UnzipError().toFxError());
     default:
-      throw new Error(error.message);
+      return Promise.reject(new Error(error.message));
   }
+  return Promise.resolve();
 }
 
-export function sampleDefaultOnActionError(
+export async function sampleDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error
-): void {
+): Promise<void> {
   context.logProvider.error(error.message);
-
+  if (await fs.pathExists(context.destination)) {
+    await fs.rm(context.destination, { recursive: true });
+  }
   switch (action.name) {
     case GeneratorActionName.FetchSampleInfo:
       throw new DownloadSampleNetworkError(context.url!).toFxError();

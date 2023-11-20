@@ -25,15 +25,15 @@ export interface ProjectTypeResult {
   isTeamsFx: boolean;
   teamsfxConfigType?: TeamsfxConfigType;
   teamsfxConfigVersion?: string;
-  teamsfxTrackingId?: string;
   teamsfxVersionState?: TeamsfxVersionState;
+  teamsfxTrackingId?: string;
   manifest?: any;
   packageJson?: any;
   tsconfigJson?: any;
   hasTeamsManifest: boolean;
   manifestCapabilities?: string[];
   dependsOnTeamsJs?: boolean;
-  lauguages: ("typescript" | "javascript" | "csharp" | "java" | "python" | "c")[];
+  lauguages: ("ts" | "js" | "csharp" | "java" | "python" | "c")[];
 }
 
 class ProjectTypeChecker {
@@ -84,9 +84,9 @@ class ProjectTypeChecker {
       capabilities.push("configurableTab");
     }
     if (manifest.bots && manifest.bots.length > 0) {
-      capabilities.push("Bot");
+      capabilities.push("bot");
     }
-    if (manifest.composeExtensions) {
+    if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
       capabilities.push("composeExtension");
     }
     if (manifest.extensions && manifest.extensions.length > 0) {
@@ -117,15 +117,15 @@ class ProjectTypeChecker {
     const parsed = path.parse(filePath);
     const fileName = parsed.base;
     if (fileName === "tsconfig.json") {
-      data.lauguages.push("typescript");
+      data.lauguages.push("ts");
       return false;
     } else if (fileName === "package.json") {
       try {
         const content = await fs.readFile(filePath, "utf-8");
         const json = JSON.parse(content);
         data.packageJson = json;
-        if (!(await fs.pathExists(path.join(parsed.dir, "tsconfig.json"))))
-          data.lauguages.push("javascript");
+        const tsconfigExist = await fs.pathExists(path.join(parsed.dir, "tsconfig.json"));
+        if (!tsconfigExist) data.lauguages.push("js");
         return false;
       } catch (error) {}
     } else if (fileName.toLowerCase().endsWith(".csproj")) {

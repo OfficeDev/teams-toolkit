@@ -6,9 +6,15 @@ import fs from "fs-extra";
 import "mocha";
 import sinon from "sinon";
 import path from "path";
-import { ProjectTypeResult, projectTypeChecker } from "../../src/common/projectTypeChecker";
+import {
+  ProjectTypeResult,
+  TeamsfxConfigType,
+  TeamsfxVersionState,
+  projectTypeChecker,
+} from "../../src/common/projectTypeChecker";
 import { MetadataV3 } from "../../src/common/versionMetadata";
 import { TeamsAppManifest } from "@microsoft/teamsfx-api";
+import * as yaml from "yaml";
 
 describe("ProjectTypeChecker", () => {
   const sandbox = sinon.createSandbox();
@@ -20,12 +26,9 @@ describe("ProjectTypeChecker", () => {
     it("file in ignore list", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const callback = async (filePath: string, data: ProjectTypeResult) => {
         return true;
@@ -36,12 +39,9 @@ describe("ProjectTypeChecker", () => {
     it("file callback return false", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const callback = async (filePath: string, data: ProjectTypeResult) => {
         return false;
@@ -53,12 +53,9 @@ describe("ProjectTypeChecker", () => {
       sandbox.stub(fs, "stat").resolves({ isDirectory: () => true } as any);
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const callback = async (filePath: string, data: ProjectTypeResult) => {
         return true;
@@ -71,12 +68,9 @@ describe("ProjectTypeChecker", () => {
       sandbox.stub(fs, "stat").resolves({ isDirectory: () => true } as any);
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       let index = 0;
       const callback = async (filePath: string, data: ProjectTypeResult) => {
@@ -95,12 +89,9 @@ describe("ProjectTypeChecker", () => {
       sandbox.stub(fs, "stat").resolves({ isDirectory: () => true } as any);
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const callback = async (filePath: string, data: ProjectTypeResult) => {
         return true;
@@ -109,7 +100,41 @@ describe("ProjectTypeChecker", () => {
       assert.isTrue(res);
     });
   });
-
+  describe("getCapabilities", () => {
+    it("all capabilities", async () => {
+      const manifest = {
+        staticTabs: [1],
+        configurableTabs: [1],
+        bots: [1],
+        composeExtensions: [1],
+        extensions: [1],
+      };
+      const capabilities = projectTypeChecker.getCapabilities(manifest);
+      assert.deepEqual(capabilities, [
+        "staticTab",
+        "configurableTab",
+        "bot",
+        "composeExtension",
+        "extension",
+      ]);
+    });
+    it("empty manifest", async () => {
+      const manifest = {
+        staticTabs: [],
+        configurableTabs: [],
+        bots: [],
+        composeExtensions: [],
+        extensions: [],
+      };
+      const capabilities = projectTypeChecker.getCapabilities(manifest);
+      assert.deepEqual(capabilities, []);
+    });
+    it("empty capabilities", async () => {
+      const manifest = {};
+      const capabilities = projectTypeChecker.getCapabilities(manifest);
+      assert.deepEqual(capabilities, []);
+    });
+  });
   describe("findManifestCallback", () => {
     it("found", async () => {
       sandbox.stub(fs, "readFile").resolves(
@@ -119,12 +144,9 @@ describe("ProjectTypeChecker", () => {
       );
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findManifestCallback("./manifest.json", result);
       assert.isFalse(res);
@@ -135,12 +157,9 @@ describe("ProjectTypeChecker", () => {
       sandbox.stub(fs, "readFile").resolves(JSON.stringify({}) as any);
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findManifestCallback("./manifest.json", result);
       assert.isTrue(res);
@@ -151,12 +170,9 @@ describe("ProjectTypeChecker", () => {
       sandbox.stub(fs, "readFile").rejects(new Error("error"));
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findManifestCallback("./manifest.json", result);
       assert.isTrue(res);
@@ -165,187 +181,164 @@ describe("ProjectTypeChecker", () => {
   });
 
   describe("findProjectLanguateCallback", () => {
-    it("typescript", async () => {
+    it("ts", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./tsconfig.json", result);
       assert.isFalse(res);
-      assert.equal(result.lauguage, "typescript");
+      assert.deepEqual(result.lauguages, ["ts"]);
     });
-    it("typescript", async () => {
+    it("ts", async () => {
       sandbox.stub(fs, "readFile").resolves(JSON.stringify({}) as any);
       sandbox.stub(fs, "pathExists").resolves(true);
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./package.json", result);
       assert.isFalse(res);
-      assert.equal(result.lauguage, "typescript");
+      assert.deepEqual(result.lauguages, []);
     });
-    it("javascript", async () => {
+    it("js", async () => {
       sandbox.stub(fs, "readFile").resolves(JSON.stringify({}) as any);
       sandbox.stub(fs, "pathExists").resolves(false);
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./package.json", result);
       assert.isFalse(res);
-      assert.equal(result.lauguage, "javascript");
+      assert.deepEqual(result.lauguages, ["js"]);
     });
     it("read package.json throw error", async () => {
       sandbox.stub(fs, "readFile").rejects(new Error());
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./package.json", result);
       assert.isTrue(res);
-      assert.equal(result.lauguage, "other");
+      assert.deepEqual(result.lauguages, []);
     });
 
     it(".csproj", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./abc.csproj", result);
       assert.isFalse(res);
-      assert.equal(result.lauguage, "csharp");
+      assert.deepEqual(result.lauguages, ["csharp"]);
     });
 
     it("java", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./pom.xml", result);
       assert.isFalse(res);
-      assert.equal(result.lauguage, "java");
+      assert.deepEqual(result.lauguages, ["java"]);
     });
 
     it("java", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./build.gradle", result);
       assert.isFalse(res);
-      assert.equal(result.lauguage, "java");
+      assert.deepEqual(result.lauguages, ["java"]);
     });
 
     it("c", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./makefile", result);
       assert.isFalse(res);
-      assert.equal(result.lauguage, "c");
+      assert.deepEqual(result.lauguages, ["c"]);
     });
 
     it("python", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback(
         "./requirements.txt",
         result
       );
       assert.isFalse(res);
-      assert.equal(result.lauguage, "python");
+      assert.deepEqual(result.lauguages, ["python"]);
     });
 
     it("python", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./pyproject.toml", result);
       assert.isFalse(res);
-      assert.equal(result.lauguage, "python");
+      assert.deepEqual(result.lauguages, ["python"]);
     });
   });
   describe("findTeamsFxCallback", () => {
     it("isTeamsFx < v5", async () => {
       sandbox.stub(fs, "pathExists").resolves(true);
+      sandbox.stub(fs, "readJson").resolves({
+        version: "1.0.0",
+        projectId: "xxx-xxx-xxx",
+      });
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findTeamsFxCallback(path.resolve("./.fx"), result);
       assert.isFalse(res);
       assert.isTrue(result.isTeamsFx);
-      assert.equal(result.teamsfxVersion, "<v5");
+      assert.equal(result.teamsfxConfigType, TeamsfxConfigType.projectSettingsJson);
+      assert.equal(result.teamsfxConfigVersion, "1.0.0");
+      assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
     });
     it("isTeamsFx = v5", async () => {
+      const mockYamlContent = `# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+      # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+      # Visit https://aka.ms/teamsfx-actions for details on actions
+      version: 1.0.0
+      projectId: xxx-xxx-xxx
+      `;
+      sandbox.stub(fs, "readFile").resolves(mockYamlContent as any);
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findTeamsFxCallback(
         path.join("./", MetadataV3.configFile),
@@ -353,17 +346,16 @@ describe("ProjectTypeChecker", () => {
       );
       assert.isFalse(res);
       assert.isTrue(result.isTeamsFx);
-      assert.equal(result.teamsfxVersion, "v5");
+      assert.equal(result.teamsfxConfigType, TeamsfxConfigType.teamsappYml);
+      assert.equal(result.teamsfxConfigVersion, "1.0.0");
+      assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
     });
     it("isTeamsFx = v5", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findTeamsFxCallback(
         path.join("./", MetadataV3.localConfigFile),
@@ -371,17 +363,13 @@ describe("ProjectTypeChecker", () => {
       );
       assert.isFalse(res);
       assert.isTrue(result.isTeamsFx);
-      assert.equal(result.teamsfxVersion, "v5");
     });
     it("isTeamsFx = false", async () => {
       const result: ProjectTypeResult = {
         isTeamsFx: false,
-        manifest: undefined,
-        packageJson: undefined,
-        tsconfigJson: undefined,
         hasTeamsManifest: false,
         dependsOnTeamsJs: false,
-        lauguage: "other",
+        lauguages: [],
       };
       const res = await projectTypeChecker.findTeamsFxCallback(path.join("./abc.json"), result);
       assert.isTrue(res);
@@ -401,7 +389,7 @@ describe("ProjectTypeChecker", () => {
             fileCallback: (filePath: string, data: ProjectTypeResult) => Promise<boolean>,
             maxDepth: number
           ) => {
-            data.manifest = new TeamsAppManifest();
+            data.hasTeamsManifest = true;
             data.packageJson = {
               dependencies: { "@microsoft/teams-js": "1.0.0" },
             };

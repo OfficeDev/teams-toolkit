@@ -10,6 +10,7 @@ import fse from "fs-extra";
 import * as path from "path";
 import * as unzip from "unzipper";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
+import fetch from "node-fetch";
 
 const zipFile = "project.zip";
 
@@ -19,23 +20,33 @@ export class HelperMethods {
     projectRepo: string,
     projectBranch?: string
   ): Promise<void> {
-    const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
-    const writeFileStream = fs.createWriteStream(path.resolve(projectFolder, zipFile));
+    const projectTemplateZipFile = path.resolve(
+      `${projectRepo}/archive/${projectBranch || ""}.zip`
+    );
     const response = await fetch(projectTemplateZipFile, { method: "GET" });
-    const reader = response.body?.getReader();
-    if (reader) {
-      while (true) {
-        const res = await reader.read();
-        if (res.value) {
-          writeFileStream.write(res.value);
-        }
-        if (res.done) {
-          break;
-        }
+    return new Promise<void>((resolve, reject) => {
+      if (response.body) {
+        response.body
+          .pipe(fs.createWriteStream(path.resolve(projectFolder, zipFile)))
+          .on("error", (err) => {
+            reject(
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+              `Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`
+            );
+          })
+          .on("close", () => {
+            HelperMethods.unzipProjectTemplate(projectFolder)
+              .then(() => {
+                resolve();
+              })
+              .catch((err) => {
+                reject(err);
+              });
+          });
+      } else {
+        reject(`Response body is null.`);
       }
-      writeFileStream.close();
-      await HelperMethods.unzipProjectTemplate(projectFolder);
-    }
+    });
   }
 
   static async unzipProjectTemplate(projectFolder: string): Promise<void> {

@@ -8,6 +8,7 @@ import { JSONSchemaType } from "ajv";
 import { DevPreviewSchema } from "./devPreviewManifest";
 import { ManifestCommonProperties } from "./ManifestCommonProperties";
 import { SharePointAppId } from "./constants";
+import fetch from "node-fetch";
 
 export * from "./manifest";
 export * as devPreview from "./devPreviewManifest";

@@ -54,14 +54,12 @@ describe("Samples", () => {
 
     it("download sample config on 'dev' branch in alpha version", async () => {
       packageJson.version = "2.0.4-alpha.888a35067.0";
-      sandbox.stub(global, "fetch").callsFake((input: RequestInfo | URL) => {
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
-          input ===
+          url ===
           "https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/dev/.config/samples-config-v3.json"
         ) {
-          return Promise.resolve({
-            json: () => fakedSampleConfig,
-          } as unknown as Response);
+          return { data: fakedSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -81,14 +79,12 @@ describe("Samples", () => {
 
     it("download sample config of prerelease branch in prerelease(beta) version", async () => {
       packageJson.version = "2.0.4-beta.0";
-      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
-          input ===
+          url ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigBranchForPrerelease}/.config/samples-config-v3.json`
         ) {
-          return Promise.resolve({
-            json: () => fakedSampleConfig,
-          } as unknown as Response);
+          return { data: fakedSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -106,14 +102,12 @@ describe("Samples", () => {
 
     it("download sample config of rc tag in rc version", async () => {
       packageJson.version = "2.0.3-rc.1";
-      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
-          input ===
+          url ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
         ) {
-          return Promise.resolve({
-            json: () => fakedSampleConfig,
-          } as unknown as Response);
+          return { data: fakedSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -131,14 +125,12 @@ describe("Samples", () => {
 
     it("download sample config of release tag in stable version", async () => {
       packageJson.version = "2.0.3";
-      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
-          input ===
+          url ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
         ) {
-          return Promise.resolve({
-            json: () => fakedSampleConfig,
-          } as unknown as Response);
+          return { data: fakedSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -157,14 +149,12 @@ describe("Samples", () => {
     it("download sample config using feature flag if available in stable version", async () => {
       packageJson.version = "2.0.3";
       process.env["TEAMSFX_SAMPLE_CONFIG_BRANCH"] = "v2.0.0";
-      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
-          input ===
+          url ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/v2.0.0/.config/samples-config-v3.json`
         ) {
-          return Promise.resolve({
-            json: () => fakedSampleConfig,
-          } as unknown as Response);
+          return { data: fakedSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -183,14 +173,12 @@ describe("Samples", () => {
     it("download bundled sample config if feature flag branch is unavailable in stable version", async () => {
       packageJson.version = "2.0.3";
       process.env["TEAMSFX_SAMPLE_CONFIG_BRANCH"] = "v2.0.0";
-      sandbox.stub(global, "fetch").callsFake(async (input: RequestInfo | URL) => {
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
-          input ===
+          url ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
         ) {
-          return Promise.resolve({
-            json: () => fakedSampleConfig,
-          } as unknown as Response);
+          return { data: fakedSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }

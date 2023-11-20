@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import axios from "axios";
+
 import { hooks } from "@feathersjs/hooks";
 
-import { SampleUrlInfo } from "../component/generator/utils";
+import { SampleUrlInfo, sendRequestWithTimeout } from "../component/generator/utils";
 import { ErrorContextMW } from "../core/globalVars";
 import { AccessGithubError } from "../error/common";
 import { FeatureFlagName } from "./constants";
@@ -162,14 +164,16 @@ class SampleProvider {
   private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {
     const url = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`;
     try {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
+      const fileResponse = await sendRequestWithTimeout(
+        async () => {
+          return await axios.get(url, { responseType: "json" });
         },
-      });
-      if (response) {
-        return await response.json();
+        1000,
+        3
+      );
+
+      if (fileResponse && fileResponse.data) {
+        return fileResponse.data;
       }
     } catch (e) {
       throw new AccessGithubError(url, "SampleProvider", e);

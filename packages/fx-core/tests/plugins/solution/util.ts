@@ -3,6 +3,8 @@ import { AccessToken, GetTokenOptions } from "@azure/identity";
 import {
   AzureAccountProvider,
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   Context,
   CryptoProvider,
   FxError,
@@ -171,6 +173,10 @@ export class MockedUserInteraction implements UserInteraction {
     env?: { [k: string]: string };
   }): Promise<Result<string, FxError>> {
     return ok("");
+  }
+
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    return ok({ type: "success", value: true });
   }
 }
 

@@ -212,6 +212,23 @@ export type ConditionFunc = (inputs: Inputs) => boolean | Promise<boolean>;
 export const ConfigFolderName = "fx";
 
 // @public (undocumented)
+export interface ConfirmConfig extends UIConfig<boolean> {
+    transformer?: (value: boolean) => string;
+}
+
+// @public
+export interface ConfirmQuestion extends UserInputQuestion {
+    default?: boolean | LocalFunc<boolean>;
+    transformer?: (value: boolean) => string;
+    // (undocumented)
+    type: "confirm";
+    value?: boolean;
+}
+
+// @public (undocumented)
+export type ConfirmResult = InputResult<boolean>;
+
+// @public (undocumented)
 export interface Context {
     // (undocumented)
     expServiceProvider?: ExpServiceProvider;
@@ -618,7 +635,7 @@ export enum Platform {
 export const ProductName = "teamsfx";
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion | ConfirmQuestion;
 
 // @public (undocumented)
 export const ResponseTemplatesFolderName = "responseTemplates";
@@ -1065,19 +1082,20 @@ export interface UserInputQuestion extends BaseQuestion {
     cliName?: string;
     cliShortName?: string;
     cliType?: "option" | "argument";
-    default?: string | string[] | LocalFunc<string | string[] | undefined>;
+    default?: string | string[] | boolean | LocalFunc<string | string[] | boolean | undefined>;
     isBoolean?: boolean;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
     required?: boolean;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innerText";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innerText" | "confirm";
     validation?: ValidationSchema;
     validationHelp?: string;
 }
 
 // @public
 export interface UserInteraction {
+    confirm?: (config: ConfirmConfig) => Promise<Result<ConfirmResult, FxError>>;
     createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
     executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
     inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;

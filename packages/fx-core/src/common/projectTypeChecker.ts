@@ -157,7 +157,11 @@ class ProjectTypeChecker {
         data.teamsfxConfigVersion = json.version;
         data.teamsfxTrackingId = json.projectId;
         const solutionSettings = json.solutionSettings;
-        if (!solutionSettings || !solutionSettings?.activeResourcePlugins) {
+        if (
+          !solutionSettings ||
+          !solutionSettings?.activeResourcePlugins ||
+          !data.teamsfxConfigVersion
+        ) {
           data.teamsfxVersionState = TeamsfxVersionState.Invalid;
         } else if (data.teamsfxConfigVersion) {
           if (

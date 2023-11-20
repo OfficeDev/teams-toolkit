@@ -19,6 +19,7 @@ import {
   ResponseTemplatesFolderName,
   AppPackageFolderName,
   Warning,
+  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";

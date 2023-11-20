@@ -41,6 +41,69 @@ export async function updateManifest(
     };
 
     const updatedManifest = { ...originalManifest, ...updatedPart };
+    updatedManifest.graphConnector = {
+      connectionId: "<Connection Id>",
+      connectionName: "<Connection Name>",
+      description: spec?.paths[0]?.get?.summary ?? "",
+      authenticationEntity: {
+        path: "https://api.github.com/repos/{org}/{repo}/issues",
+        authenticationKind: "anonymous",
+      },
+      schema: [
+        {
+          name: "IssueId",
+          type: "Int64",
+          fieldPath: "id",
+          selectedAnnotations: ["query", "searchable"],
+        },
+        {
+          name: "IssueTitle",
+          type: "String",
+          fieldPath: "title",
+          selectedAnnotations: ["query", "searchable"],
+          semanticLabels: ["title"],
+        },
+        {
+          name: "IssueBody",
+          type: "String",
+          fieldPath: "body",
+          selectedAnnotations: ["query", "searchable"],
+        },
+        {
+          name: "IssueUserId",
+          type: "String",
+          fieldPath: "user.id",
+          selectedAnnotations: ["query", "searchable"],
+        },
+      ],
+      ApiParameters: {
+        Url: "https://api.github.com/repos/{org}/{repo}/issues",
+        Headers: {
+          Accept: "application/vnd.github.v3+json",
+          "User-Agent": ".NET Foundation Repository Reporter",
+        },
+        QueryParameters: ["state", "per_page", "page"],
+        Pagination: {
+          PageSize: 100,
+          OffsetStart: 0,
+          OffsetType: "page",
+          Parameters: {
+            Limit: "per_page",
+            Offset: "page",
+          },
+        },
+        ItemId: "IssueId",
+      },
+      aclSetting: {
+        useItemLevelAcl: false,
+      },
+      identityConfiguration: {
+        isIdentitySyncRequired: false,
+      },
+      refreshSetting: {
+        fullSyncInterval: 3600,
+      },
+    };
 
     return [updatedManifest, warnings];
   } catch (err) {

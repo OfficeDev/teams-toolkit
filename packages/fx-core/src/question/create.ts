@@ -120,7 +120,7 @@ export class ProjectTypeOptions {
   static copilotPlugin(platform?: Platform): OptionItem {
     return {
       id: "copilot-plugin-type",
-      label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(debug-disconnect) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.copilotPlugin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),

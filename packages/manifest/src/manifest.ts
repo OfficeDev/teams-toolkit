@@ -2,6 +2,9 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { Agent } from "http";
+import { type } from "os";
+
 export interface IDeveloper {
   /**
    * The display name for the developer.
@@ -356,6 +359,14 @@ export interface ITogetherModeScene {
   seatsReservedForOrganizersOrPresenters: number;
 }
 
+export interface ISchema {
+  name: string;
+  type: string;
+  fieldPath: string;
+  selectedAnnotations: string[]; // enum
+  semanticLabels?: string[]; // enum
+}
+
 export type AppManifest = Record<string, any>;
 
 /**
@@ -435,7 +446,39 @@ export class TeamsAppManifest implements AppManifest {
    * Specify the app's Graph connector configuration. If this is present then webApplicationInfo.id must also be specified.
    */
   graphConnector?: {
-    notificationUrl: string;
+    notificationUrl?: string;
+    connectionId: string;
+    connectionName: string;
+    description: string;
+    authenticationEntity: {
+      path: string;
+      authenticationKind: string;
+    };
+    schema: ISchema[];
+    ApiParameters: {
+      Url: string;
+      Headers: Record<string, string>;
+      QueryParameters: string[];
+      Pagination: {
+        PageSize: number;
+        OffsetStart: number;
+        OffsetType: string; //enum
+        Parameters: {
+          Limit: string;
+          Offset: string;
+        };
+      };
+      ItemId: string;
+    };
+    aclSetting: {
+      useItemLevelAcl: boolean;
+    };
+    identityConfiguration: {
+      isIdentitySyncRequired: boolean;
+    };
+    refreshSetting: {
+      fullSyncInterval: number;
+    };
   };
   /**
    * The set of compose extensions for this app. Currently only one compose extension per app is supported.

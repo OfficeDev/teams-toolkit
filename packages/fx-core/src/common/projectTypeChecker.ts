@@ -3,8 +3,10 @@
 
 import fs from "fs-extra";
 import path from "path";
-import { MetadataV3 } from "./versionMetadata";
+import { MetadataV3, VersionSource, VersionState } from "./versionMetadata";
 import { parseDocument } from "yaml";
+import { getVersionState } from "../core/middleware/utils/v3MigrationUtils";
+import { checkActiveResourcePlugins } from "../core/middleware/projectMigratorV3";
 
 export enum TeamsfxConfigType {
   projectSettingsJson = "projectSettings.json",
@@ -12,11 +14,19 @@ export enum TeamsfxConfigType {
 }
 export const TeamsJsModule = "@microsoft/teams-js";
 
+export enum TeamsfxVersionState {
+  Compatible = "compatible",
+  Upgradable = "upgradable",
+  Unsupported = "unsupported",
+  Invalid = "invalid",
+}
+
 export interface ProjectTypeResult {
   isTeamsFx: boolean;
   teamsfxConfigType?: TeamsfxConfigType;
   teamsfxConfigVersion?: string;
   teamsfxTrackingId?: string;
+  teamsfxVersionState?: TeamsfxVersionState;
   manifest?: any;
   packageJson?: any;
   tsconfigJson?: any;
@@ -196,6 +206,31 @@ class ProjectTypeChecker {
     } catch (e) {}
     if (result.packageJson?.dependencies?.[TeamsJsModule]) {
       result.dependsOnTeamsJs = true;
+    }
+
+    if (result.isTeamsFx) {
+      const source: VersionSource =
+        result.teamsfxConfigType === TeamsfxConfigType.projectSettingsJson
+          ? VersionSource.projectSettings
+          : result.teamsfxConfigType === TeamsfxConfigType.teamsappYml
+          ? VersionSource.teamsapp
+          : VersionSource.unknown;
+      const versionState = result.teamsfxConfigVersion
+        ? getVersionState({
+            version: result.teamsfxConfigVersion,
+            source: source,
+          })
+        : TeamsfxVersionState.Invalid;
+      // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
+      if (versionState === VersionState.upgradeable) {
+        if (!(await checkActiveResourcePlugins(projectPath))) {
+          result.teamsfxVersionState = TeamsfxVersionState.Invalid;
+        }
+      } else if (versionState === VersionState.compatible) {
+        result.teamsfxVersionState = TeamsfxVersionState.Compatible;
+      } else if (versionState === VersionState.unsupported) {
+        result.teamsfxVersionState = TeamsfxVersionState.Unsupported;
+      }
     }
     return result;
   }

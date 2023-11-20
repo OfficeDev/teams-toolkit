@@ -35,13 +35,11 @@ import { Container } from "typedi";
 import { pathToFileURL } from "url";
 import { parse, parseDocument } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
-import { projectTypeChecker } from "../common/projectTypeChecker";
+import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { SpecParser, SpecParserError } from "../common/spec-parser";
-import { ProjectTypeProps, TelemetryEvent } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
@@ -73,7 +71,6 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
-import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
   ErrorResult,
@@ -94,11 +91,11 @@ import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import {
   FileNotFoundError,
-  InjectAPIKeyActionFailedError,
   InvalidProjectError,
+  assembleError,
   MultipleAuthError,
   MultipleServerError,
-  assembleError,
+  InjectAPIKeyActionFailedError,
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
@@ -123,6 +120,10 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
+import "../component/feature/sso";
+import { projectTypeChecker } from "../common/projectTypeChecker";
+import { ProjectTypeProps, TelemetryEvent } from "../common/telemetry";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -998,41 +999,27 @@ export class FxCore {
   ])
   async projectVersionCheck(inputs: Inputs): Promise<Result<VersionCheckRes, FxError>> {
     const projectPath = (inputs.projectPath as string) || "";
-    //try to check project type and send telemetry
-    const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
-    try {
-      if (projectTypeRes.isTeamsFx) {
-        const versionInfo = await getProjectVersionFromPath(projectPath);
-        if (!versionInfo.version) {
-          return err(new InvalidProjectError());
-        }
-        const trackingId = await getTrackingIdFromPath(projectPath);
-        const isSupport = getVersionState(versionInfo);
-        // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
-        if (isSupport === VersionState.upgradeable) {
-          if (!(await checkActiveResourcePlugins(projectPath))) {
-            return err(new InvalidProjectError());
-          }
-        }
-        return ok({
-          currentVersion: versionInfo.version,
-          trackingId,
-          isSupport,
-          versionSource: VersionSource[versionInfo.source],
-        });
-      } else {
+    if (isValidProjectV3(projectPath) || isValidProjectV2(projectPath)) {
+      const versionInfo = await getProjectVersionFromPath(projectPath);
+      if (!versionInfo.version) {
         return err(new InvalidProjectError());
       }
-    } finally {
-      TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
-        [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
-        [ProjectTypeProps.TeamsFxVersion]: projectTypeRes.teamsfxConfigType || "",
-        [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
-        [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
-        [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifest?.manifestVersion || "",
-        [ProjectTypeProps.TeamsAppId]: projectTypeRes.manifest?.id || "",
-        [ProjectTypeProps.Lauguage]: projectTypeRes.lauguages.join(","),
+      const trackingId = await getTrackingIdFromPath(projectPath);
+      const isSupport = getVersionState(versionInfo);
+      // if the project is upgradeable, check whether the project is valid and invalid project should not show upgrade option.
+      if (isSupport === VersionState.upgradeable) {
+        if (!(await checkActiveResourcePlugins(projectPath))) {
+          return err(new InvalidProjectError());
+        }
+      }
+      return ok({
+        currentVersion: versionInfo.version,
+        trackingId,
+        isSupport,
+        versionSource: VersionSource[versionInfo.source],
       });
+    } else {
+      return err(new InvalidProjectError());
     }
   }
 
@@ -1374,5 +1361,18 @@ export class FxCore {
       inputs.includeExistingAPIs,
       inputs.shouldLogWarning
     );
+  }
+  @hooks([ErrorContextMW({ component: "FxCore", stage: "checkProjectType" }), ErrorHandlerMW])
+  async checkProjectType(projectPath: string) {
+    const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
+    TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
+      [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
+      [ProjectTypeProps.TeamsFxVersion]: projectTypeRes.teamsfxConfigType || "",
+      [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
+      [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
+      [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifest?.manifestVersion || "",
+      [ProjectTypeProps.TeamsAppId]: projectTypeRes.manifest?.id || "",
+      [ProjectTypeProps.Lauguage]: projectTypeRes.lauguages.join(","),
+    });
   }
 }

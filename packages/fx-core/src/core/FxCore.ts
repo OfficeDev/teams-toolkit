@@ -1026,12 +1026,12 @@ export class FxCore {
     } finally {
       TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
         [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
-        [ProjectTypeProps.TeamsFxVersion]: projectTypeRes.teamsfxVersion || "",
+        [ProjectTypeProps.TeamsFxVersion]: projectTypeRes.teamsfxConfigType || "",
         [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
         [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
         [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifest?.manifestVersion || "",
         [ProjectTypeProps.TeamsAppId]: projectTypeRes.manifest?.id || "",
-        [ProjectTypeProps.Lauguage]: projectTypeRes.lauguage,
+        [ProjectTypeProps.Lauguage]: projectTypeRes.lauguages.join(","),
       });
     }
   }

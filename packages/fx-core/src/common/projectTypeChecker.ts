@@ -1,20 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { TeamsAppManifest } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import path from "path";
 import { MetadataV3 } from "./versionMetadata";
+import { parseDocument } from "yaml";
+
+export enum TeamsfxConfigType {
+  projectSettingsJson = "projectSettings.json",
+  teamsappYml = "teamsapp.yml",
+}
+export const TeamsJsModule = "@microsoft/teams-js";
 
 export interface ProjectTypeResult {
   isTeamsFx: boolean;
-  teamsfxVersion?: "<v5" | "v5";
-  manifest?: TeamsAppManifest;
+  teamsfxConfigType?: TeamsfxConfigType;
+  teamsfxConfigVersion?: string;
+  teamsfxTrackingId?: string;
+  manifest?: any;
   packageJson?: any;
   tsconfigJson?: any;
   hasTeamsManifest: boolean;
-  dependsOnTeamsJs: boolean;
-  lauguage: "typescript" | "javascript" | "csharp" | "java" | "python" | "c" | "other";
+  manifestCapabilities?: string[];
+  dependsOnTeamsJs?: boolean;
+  lauguages: ("typescript" | "javascript" | "csharp" | "java" | "python" | "c")[];
 }
 
 class ProjectTypeChecker {
@@ -56,7 +65,25 @@ class ProjectTypeChecker {
     }
     return true;
   }
-
+  getCapabilities(manifest: any): string[] {
+    const capabilities: string[] = [];
+    if (manifest.staticTabs && manifest.staticTabs.length > 0) {
+      capabilities.push("staticTab");
+    }
+    if (manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+      capabilities.push("configurableTab");
+    }
+    if (manifest.bots && manifest.bots.length > 0) {
+      capabilities.push("Bot");
+    }
+    if (manifest.composeExtensions) {
+      capabilities.push("composeExtension");
+    }
+    if (manifest.extensions && manifest.extensions.length > 0) {
+      capabilities.push("extension");
+    }
+    return capabilities;
+  }
   async findManifestCallback(filePath: string, data: ProjectTypeResult): Promise<boolean> {
     const fileName = path.parse(filePath).base;
     if (fileName.toLowerCase().includes("manifest") && fileName.toLowerCase().endsWith(".json")) {
@@ -67,6 +94,8 @@ class ProjectTypeChecker {
         const targetSchema = "https://developer.microsoft.com/en-us/json-schemas/teams";
         if (schemaLink && schemaLink.startsWith(targetSchema)) {
           data.manifest = manifestObject;
+          data.hasTeamsManifest = true;
+          data.manifestCapabilities = this.getCapabilities(manifestObject);
           return false;
         }
       } catch (error) {}
@@ -78,29 +107,28 @@ class ProjectTypeChecker {
     const parsed = path.parse(filePath);
     const fileName = parsed.base;
     if (fileName === "tsconfig.json") {
-      data.lauguage = "typescript";
+      data.lauguages.push("typescript");
       return false;
     } else if (fileName === "package.json") {
       try {
         const content = await fs.readFile(filePath, "utf-8");
         const json = JSON.parse(content);
         data.packageJson = json;
-        if (await fs.pathExists(path.join(parsed.dir, "tsconfig.json")))
-          data.lauguage = "typescript";
-        else data.lauguage = "javascript";
+        if (!(await fs.pathExists(path.join(parsed.dir, "tsconfig.json"))))
+          data.lauguages.push("javascript");
         return false;
       } catch (error) {}
     } else if (fileName.toLowerCase().endsWith(".csproj")) {
-      data.lauguage = "csharp";
+      data.lauguages.push("csharp");
       return false;
     } else if (fileName === "pom.xml" || fileName === "build.gradle") {
-      data.lauguage = "java";
+      data.lauguages.push("java");
       return false;
     } else if (fileName.toLowerCase() === "makefile") {
-      data.lauguage = "c";
+      data.lauguages.push("c");
       return false;
     } else if (fileName === "requirements.txt" || fileName === "pyproject.toml") {
-      data.lauguage = "python";
+      data.lauguages.push("python");
       return false;
     }
     return true;
@@ -113,12 +141,21 @@ class ProjectTypeChecker {
       const exists = await fs.pathExists(settingFile);
       if (exists) {
         data.isTeamsFx = true;
-        data.teamsfxVersion = "<v5";
+        data.teamsfxConfigType = TeamsfxConfigType.projectSettingsJson;
+        const json = await fs.readJson(settingFile);
+        data.teamsfxConfigVersion = json.version;
+        data.teamsfxTrackingId = json.projectId;
         return false;
       }
     } else if (fileName === MetadataV3.configFile || fileName === MetadataV3.localConfigFile) {
       data.isTeamsFx = true;
-      data.teamsfxVersion = "v5";
+      data.teamsfxConfigType = TeamsfxConfigType.teamsappYml;
+      if (fileName === MetadataV3.configFile) {
+        const yamlFileContent: string = await fs.readFile(filePath, "utf8");
+        const appYaml = parseDocument(yamlFileContent);
+        data.teamsfxConfigVersion = appYaml.get("version") as string;
+        data.teamsfxTrackingId = appYaml.get("projectId") as string;
+      }
       return false;
     }
     return true;
@@ -126,12 +163,9 @@ class ProjectTypeChecker {
   async checkProjectType(projectPath: string) {
     const result: ProjectTypeResult = {
       isTeamsFx: false,
-      manifest: undefined,
-      packageJson: undefined,
-      tsconfigJson: undefined,
       hasTeamsManifest: false,
       dependsOnTeamsJs: false,
-      lauguage: "other",
+      lauguages: [],
     };
     try {
       await this.scanFolder(
@@ -160,8 +194,7 @@ class ProjectTypeChecker {
         0
       );
     } catch (e) {}
-    result.hasTeamsManifest = !!result.manifest;
-    if (result.packageJson?.dependencies?.["@microsoft/teams-js"]) {
+    if (result.packageJson?.dependencies?.[TeamsJsModule]) {
       result.dependsOnTeamsJs = true;
     }
     return result;

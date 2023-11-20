@@ -31,7 +31,7 @@ import {
   GeneratorContext,
   TemplateActionSeq,
 } from "./generatorAction";
-import { cleanupFolder, renderTemplateFileData, renderTemplateFileName } from "./utils";
+import { renderTemplateFileData, renderTemplateFileName } from "./utils";
 import { enableTestToolByDefault } from "../../common/featureFlags";
 import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
 

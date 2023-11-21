@@ -30,12 +30,11 @@ const githubUserEmailMap = new Map([
 async function getTemplatesDependencies() {
   var dependenciesMap = new Map();
   const templatePkgJsonPath = `${repoRoot}/templates/**/package.json.tpl`;
-  const codeOwnerPath = `${repoRoot}/.github/CODEOWNERS`;
   const packageJsonFiles = await glob.glob(templatePkgJsonPath, {
     ignore: "node_modules/**",
   });
   const codeOwnerFile = await fs
-    .readFileSync(codeOwnerPath, "utf8")
+    .readFileSync(path.join(repoRoot, ".github/CODEOWNERS"), "utf8")
     .split("\r\n")
     .filter((line) => line.startsWith("/templates/**"));
   console.log(codeOwnerFile);
@@ -58,7 +57,10 @@ async function getTemplatesDependencies() {
       `${repoRoot}/templates`,
       path.dirname(packageJsonFile)
     );
-    if (path.basename(packageJsonDir) === "tab") {
+    if (
+      path.basename(packageJsonDir) === "tab" ||
+      path.basename(packageJsonDir) === "bot"
+    ) {
       packageJsonDir = packageJsonDir.slice(0, -4);
     }
     let codeOwners = [];

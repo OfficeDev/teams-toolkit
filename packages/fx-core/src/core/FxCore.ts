@@ -121,9 +121,9 @@ import {
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
-import "../component/feature/sso";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
 import { ProjectTypeProps, TelemetryEvent } from "../common/telemetry";
+import { expandEnvironmentVariable } from "../component/utils/common";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -737,9 +737,10 @@ export class FxCore {
         (d: any) => d.uses === "teamsApp/create"
       );
       if (teamsAppCreate) {
-        const name = teamsAppCreate.with.name as string;
+        let name = teamsAppCreate.with.name as string;
         if (name) {
-          return ok(name.replace("-${{TEAMSFX_ENV}}", "").replace("${{APP_NAME_SUFFIX}}", ""));
+          name = expandEnvironmentVariable(name, { APP_NAME_SUFFIX: "", TEAMSFX_ENV: "" });
+          return ok(name);
         }
       }
     }

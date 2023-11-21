@@ -165,6 +165,12 @@ describe("expandEnvironmentVariable", () => {
     expect(result).to.equal("myappabc");
     expect(resolved.length).to.equal(1);
   });
+
+  it("support input envs", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    const result = expandEnvironmentVariable(template, { APP_NAME_SUFFIX: "" });
+    expect(result).to.equal("myappabc");
+  });
 });
 
 describe("TeamsFxTelemetryReporter", () => {

@@ -76,6 +76,7 @@ jobs:
           version: 8
 
       - name: Setup project
+        working-directory: ./
         run: |
           npm run setup
 

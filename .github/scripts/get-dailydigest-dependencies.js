@@ -33,11 +33,9 @@ async function getTemplatesDependencies() {
   const packageJsonFiles = await glob.glob(templatePkgJsonPath, {
     ignore: "node_modules/**",
   });
-  const codeOwnerFile = await fs.readFileSync(
-    path.join(repoRoot, ".github/CODEOWNERS"),
-    "utf8"
-  );
-  // .split("\r\n")
+  const codeOwnerFile = await fs
+    .readFileSync(path.join(repoRoot, ".github/CODEOWNERS"), "utf8")
+    .split("\n");
   // .filter((line) => line.startsWith("/templates/**"));
   console.log(codeOwnerFile);
   const codeOwnerMap = new Map();

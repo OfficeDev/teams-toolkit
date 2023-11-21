@@ -2,7 +2,7 @@ name: Templates Dependencies New Version Released
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "00 15 * * *"
 
 jobs:
   notification:

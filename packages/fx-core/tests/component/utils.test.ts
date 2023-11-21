@@ -168,7 +168,7 @@ describe("expandEnvironmentVariable", () => {
 
   it("support input envs", () => {
     const template = "myapp${{ APP_NAME_SUFFIX }}";
-    const result = expandEnvironmentVariable(template, { APP_NAME_SUFFIX: "" });
+    const result = expandEnvironmentVariable(template, { APP_NAME_SUFFIX: "abc" });
     expect(result).to.equal("myappabc");
   });
 });

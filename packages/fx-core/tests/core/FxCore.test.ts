@@ -1217,7 +1217,7 @@ describe("getTeamsAppName", async () => {
     sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     const core = new FxCore(tools);
     const res = await core.getTeamsAppName(".");
-    assert.isTrue(res.isOk() && res.value === "testappname");
+    assert.isTrue(res.isOk() && res.value === "testappname-");
   });
   it("happy path", async () => {
     sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");

@@ -24,7 +24,7 @@ jobs:
       - name: Get All Updated Templates Dependencies
         id: getUpdatedTemplatesDependencies
         run: |
-          node ./.github/scripts/get-dailydigest-dependencies.js >> $GITHUB_OUTPUT
+          echo "result=$(node ./.github/scripts/get-dailydigest-dependencies.js)" >> $GITHUB_OUTPUT
 
       - name: Echo result
         if: ${{ always() }}

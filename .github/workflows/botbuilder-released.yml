@@ -2,7 +2,7 @@ name: Botbuilder New Version Released
 on:
   schedule:
     - cron: "0 0 * * *"
-
+ 
 jobs:
   notification:
     runs-on: ubuntu-latest
@@ -11,11 +11,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-
+ 
       - name: Install npm packages
         run: |
           npm install axios
-
+ 
       - name: Get LTS Version
         id: getLTSVersion
         uses: actions/github-script@v6
@@ -31,7 +31,7 @@ jobs:
             } else {
               return '';
             }
-
+ 
       - name: Setup Email and Recipient
         if: ${{ contains(steps.getLTSVersion.outputs.result, 'v') }}
         id: email
@@ -39,14 +39,14 @@ jobs:
           emails="vsciotadt@microsoft.com;zhididr@microsoft.com;johmil@microsoft.com"
           subject="Bot Framework JS SDK ${{steps.getLTSVersion.outputs.result}} Released"
           body="Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases"
-
+ 
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
           echo "body=$body" >> $GITHUB_OUTPUT
-
+ 
       - name: Checkout
         uses: actions/checkout@v3
-
+ 
       - name: Send E-mail Notifications
         uses: ./.github/actions/send-email-report
         env:

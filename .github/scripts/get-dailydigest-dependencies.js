@@ -33,10 +33,12 @@ async function getTemplatesDependencies() {
   const packageJsonFiles = await glob.glob(templatePkgJsonPath, {
     ignore: "node_modules/**",
   });
-  const codeOwnerFile = await fs
-    .readFileSync(path.join(repoRoot, ".github/CODEOWNERS"), "utf8")
-    .split("\r\n")
-    .filter((line) => line.startsWith("/templates/**"));
+  const codeOwnerFile = await fs.readFileSync(
+    path.join(repoRoot, ".github/CODEOWNERS"),
+    "utf8"
+  );
+  // .split("\r\n")
+  // .filter((line) => line.startsWith("/templates/**"));
   console.log(codeOwnerFile);
   const codeOwnerMap = new Map();
   codeOwnerFile.forEach((line) => {
@@ -73,7 +75,11 @@ async function getTemplatesDependencies() {
     Object.assign(dependencies, packageJson["devDependencies"]);
     for (dependency in dependencies) {
       if (dependenciesMap.has(dependency)) {
-        dependenciesMap.get(dependency).dependencies.push(packageJsonDir);
+        dependenciesMap.get(dependency).dependencies = [
+          ...new Set(
+            dependenciesMap.get(dependency).dependencies.concat(packageJsonDir)
+          ),
+        ];
         dependenciesMap.get(dependency).owners = [
           ...new Set(dependenciesMap.get(dependency).owners.concat(codeOwners)),
         ];

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  Func,
   FxError,
   IQTreeNode,
   Inputs,
@@ -20,9 +19,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
+import jsyaml from "js-yaml";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import jsyaml from "js-yaml";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
@@ -30,11 +29,16 @@ import { FxCore, getUuid } from "../../src";
 import { FeatureFlagName } from "../../src/common/constants";
 import { LaunchHelper } from "../../src/common/m365/launchHelper";
 import {
+  TeamsfxConfigType,
+  TeamsfxVersionState,
+  projectTypeChecker,
+} from "../../src/common/projectTypeChecker";
+import {
   ErrorType,
-  ValidationStatus,
-  WarningType,
   SpecParser,
   SpecParserError,
+  ValidationStatus,
+  WarningType,
 } from "../../src/common/spec-parser";
 import {
   DriverDefinition,
@@ -48,16 +52,18 @@ import {
 import { YamlParser } from "../../src/component/configManager/parser";
 import { coordinator } from "../../src/component/coordinator";
 import { UpdateAadAppDriver } from "../../src/component/driver/aad/update";
+import * as buildAadManifest from "../../src/component/driver/aad/utility/buildAadManifest";
 import { AddWebPartDriver } from "../../src/component/driver/add/addWebPart";
 import { DriverContext } from "../../src/component/driver/interface/commonArgs";
 import { CreateAppPackageDriver } from "../../src/component/driver/teamsApp/createAppPackage";
+import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ValidateManifestDriver } from "../../src/component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../../src/component/driver/teamsApp/validateAppPackage";
 import "../../src/component/feature/sso";
 import * as CopilotPluginHelper from "../../src/component/generator/copilotPlugin/helper";
-import * as buildAadManifest from "../../src/component/driver/aad/utility/buildAadManifest";
 import { OpenAIPluginManifestHelper } from "../../src/component/generator/copilotPlugin/helper";
+import { createDriverContext } from "../../src/component/utils";
 import { envUtil } from "../../src/component/utils/envUtil";
 import { metadataUtil } from "../../src/component/utils/metadataUtil";
 import { pathUtils } from "../../src/component/utils/pathUtils";
@@ -81,8 +87,6 @@ import {
 import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
-import { createDriverContext } from "../../src/component/utils";
-import { teamsappMgr } from "../../src/component/driver/teamsApp/teamsappMgr";
 
 const tools = new MockTools();
 
@@ -1289,6 +1293,43 @@ describe("getProjectInfo", async () => {
     const core = new FxCore(tools);
     const res = await core.getProjectInfo(".", "dev");
     assert.isTrue(res.isErr());
+  });
+});
+
+describe("checkProjectType", async () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("happy 1", async () => {
+    sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
+      isTeamsFx: false,
+      lauguages: [],
+      hasTeamsManifest: false,
+      dependsOnTeamsJs: false,
+    });
+    const core = new FxCore(tools);
+    const res = await core.checkProjectType("");
+    assert.isTrue(res.isOk());
+  });
+
+  it("happy 2", async () => {
+    sandbox.stub(projectTypeChecker, "checkProjectType").resolves({
+      isTeamsFx: true,
+      teamsfxConfigType: TeamsfxConfigType.teamsappYml,
+      teamsfxConfigVersion: "1.0.0",
+      teamsfxVersionState: TeamsfxVersionState.Compatible,
+      teamsfxTrackingId: "xxxx-xxxx-xxxx",
+      lauguages: [],
+      hasTeamsManifest: true,
+      manifestCapabilities: ["bot"],
+      manifestAppId: "xxx",
+      manifestVersion: "1.16",
+      dependsOnTeamsJs: true,
+    });
+    const core = new FxCore(tools);
+    const res = await core.checkProjectType("");
+    assert.isTrue(res.isOk());
   });
 });
 

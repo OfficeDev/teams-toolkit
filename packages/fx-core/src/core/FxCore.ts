@@ -122,6 +122,8 @@ import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty }
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
 import "../component/feature/sso";
+import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
+import { ProjectTypeProps, TelemetryEvent } from "../common/telemetry";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1359,5 +1361,27 @@ export class FxCore {
       inputs.includeExistingAPIs,
       inputs.shouldLogWarning
     );
+  }
+
+  /**
+   * check project type info
+   */
+  @hooks([ErrorContextMW({ component: "FxCore", stage: "checkProjectType" }), ErrorHandlerMW])
+  async checkProjectType(projectPath: string): Promise<Result<ProjectTypeResult, FxError>> {
+    const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
+    TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
+      [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
+      [ProjectTypeProps.TeamsfxConfigType]: projectTypeRes.teamsfxConfigType || "",
+      [ProjectTypeProps.TeamsfxConfigVersion]: projectTypeRes.teamsfxConfigVersion || "",
+      [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",
+      [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
+      [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
+      [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifestVersion || "",
+      [ProjectTypeProps.TeamsManifestAppId]: projectTypeRes.manifestAppId || "",
+      [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
+      [ProjectTypeProps.TeamsManifestCapabilities]:
+        projectTypeRes.manifestCapabilities?.join(",") || "",
+    });
+    return ok(projectTypeRes);
   }
 }

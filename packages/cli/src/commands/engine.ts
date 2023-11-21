@@ -18,8 +18,10 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Correlator,
-  ProjectTypeProps,
+  IncompatibleProjectError,
+  VersionState,
   assembleError,
+  fillinProjectTypeProperties,
   getHashedEnv,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
@@ -43,9 +45,8 @@ import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
 import { CliConfigOptions } from "../userSetttings";
-import { editDistance } from "../utils";
+import { editDistance, getSystemInputs } from "../utils";
 import { helper } from "./helper";
-import { fillinProjectTypeProperties } from "@microsoft/teamsfx-core";
 
 class CLIEngine {
   /**
@@ -202,26 +203,26 @@ class CLIEngine {
       }
     }
 
-    // // 6. version check
-    // const inputs = getSystemInputs(context.optionValues.projectPath as string);
-    // inputs.ignoreEnvInfo = true;
-    // const skipCommands = ["new", "sample", "upgrade", "update", "package", "publish", "validate"];
-    // if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
-    //   const core = getFxCore();
-    //   const res = await core.projectVersionCheck(inputs);
-    //   if (res.isErr()) {
-    //     return err(res.error);
-    //   } else {
-    //     if (res.value.isSupport === VersionState.unsupported) {
-    //       return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
-    //     } else if (res.value.isSupport === VersionState.upgradeable) {
-    //       const upgrade = await core.phantomMigrationV3(inputs);
-    //       if (upgrade.isErr()) {
-    //         return err(upgrade.error);
-    //       }
-    //     }
-    //   }
-    // }
+    // 6. version check
+    const inputs = getSystemInputs(context.optionValues.projectPath as string);
+    inputs.ignoreEnvInfo = true;
+    const skipCommands = ["new", "sample", "upgrade", "update", "package", "publish", "validate"];
+    if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
+      const core = getFxCore();
+      const res = await core.projectVersionCheck(inputs);
+      if (res.isErr()) {
+        return err(res.error);
+      } else {
+        if (res.value.isSupport === VersionState.unsupported) {
+          return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
+        } else if (res.value.isSupport === VersionState.upgradeable) {
+          const upgrade = await core.phantomMigrationV3(inputs);
+          if (upgrade.isErr()) {
+            return err(upgrade.error);
+          }
+        }
+      }
+    }
 
     try {
       // 7. run handler

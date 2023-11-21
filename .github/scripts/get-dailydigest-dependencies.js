@@ -35,9 +35,8 @@ async function getTemplatesDependencies() {
   });
   const codeOwnerFile = await fs
     .readFileSync(path.join(repoRoot, ".github/CODEOWNERS"), "utf8")
-    .split("\n");
-  // .filter((line) => line.startsWith("/templates/**"));
-  console.log(codeOwnerFile);
+    .split("\n")
+    .filter((line) => line.startsWith("/templates/**"));
   const codeOwnerMap = new Map();
   codeOwnerFile.forEach((line) => {
     codeOwnerMap.set(

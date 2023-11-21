@@ -38,6 +38,7 @@ async function getTemplatesDependencies() {
     .readFileSync(codeOwnerPath, "utf8")
     .split("\r\n")
     .filter((line) => line.startsWith("/templates/**"));
+  console.log(codeOwnerFile);
   const codeOwnerMap = new Map();
   codeOwnerFile.forEach((line) => {
     codeOwnerMap.set(

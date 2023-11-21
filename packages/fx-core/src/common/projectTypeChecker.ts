@@ -25,7 +25,7 @@ export interface ProjectTypeResult {
   teamsfxConfigType?: TeamsfxConfigType;
   teamsfxConfigVersion?: string;
   teamsfxVersionState?: TeamsfxVersionState;
-  teamsfxTrackingId?: string;
+  teamsfxProjectId?: string;
   hasTeamsManifest: boolean;
   manifestCapabilities?: string[];
   manifestAppId?: string;
@@ -73,41 +73,25 @@ class ProjectTypeChecker {
     }
     return true;
   }
-  getCapabilities(manifest: any): string[] {
-    const capabilities: string[] = [];
-    if (manifest.staticTabs && manifest.staticTabs.length > 0) {
-      capabilities.push("staticTab");
-    }
-    if (manifest.configurableTabs && manifest.configurableTabs.length > 0) {
-      capabilities.push("configurableTab");
-    }
-    if (manifest.bots && manifest.bots.length > 0) {
-      capabilities.push("bot");
-    }
-    if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
-      capabilities.push("composeExtension");
-    }
-    if (manifest.extensions && manifest.extensions.length > 0) {
-      capabilities.push("extension");
-    }
-    return capabilities;
-  }
+
   async findManifestCallback(filePath: string, data: ProjectTypeResult): Promise<boolean> {
     const fileName = path.parse(filePath).base;
     if (fileName.toLowerCase().includes("manifest") && fileName.toLowerCase().endsWith(".json")) {
       try {
-        const manifestContent = await fs.readFile(path.join(filePath, fileName), "utf-8");
+        const manifestContent = await fs.readFile(filePath, "utf-8");
         const manifestObject = JSON.parse(manifestContent);
         const schemaLink = manifestObject["$schema"];
         const targetSchema = "https://developer.microsoft.com/en-us/json-schemas/teams";
         if (schemaLink && schemaLink.startsWith(targetSchema)) {
           data.hasTeamsManifest = true;
-          data.manifestCapabilities = this.getCapabilities(manifestObject);
+          data.manifestCapabilities = getCapabilities(manifestObject);
           data.manifestAppId = manifestObject.id;
           data.manifestVersion = manifestObject.manifestVersion;
           return false;
         }
-      } catch (error) {}
+      } catch (error) {
+        console.log(error);
+      }
     }
     return true;
   }
@@ -127,6 +111,7 @@ class ProjectTypeChecker {
         }
         const tsconfigExist = await fs.pathExists(path.join(parsed.dir, "tsconfig.json"));
         if (!tsconfigExist) data.lauguages.push("js");
+        else data.lauguages.push("ts");
         return false;
       } catch (error) {}
     } else if (fileName.toLowerCase().endsWith(".csproj")) {
@@ -155,7 +140,7 @@ class ProjectTypeChecker {
         data.teamsfxConfigType = TeamsfxConfigType.projectSettingsJson;
         const json = await fs.readJson(settingFile);
         data.teamsfxConfigVersion = json.version;
-        data.teamsfxTrackingId = json.projectId;
+        data.teamsfxProjectId = json.projectId;
         const solutionSettings = json.solutionSettings;
         if (
           !solutionSettings ||
@@ -182,7 +167,7 @@ class ProjectTypeChecker {
         const yamlFileContent: string = await fs.readFile(filePath, "utf8");
         const appYaml = parseDocument(yamlFileContent);
         data.teamsfxConfigVersion = appYaml.get("version") as string;
-        data.teamsfxTrackingId = appYaml.get("projectId") as string;
+        data.teamsfxProjectId = appYaml.get("projectId") as string;
         if (
           !semver.valid(data.teamsfxConfigVersion) ||
           semver.lt(data.teamsfxConfigVersion, MetadataV3.unSupprotVersion)
@@ -191,6 +176,8 @@ class ProjectTypeChecker {
         } else {
           data.teamsfxVersionState = TeamsfxVersionState.Unsupported;
         }
+      } else {
+        return true;
       }
       return false;
     }
@@ -233,5 +220,23 @@ class ProjectTypeChecker {
     return result;
   }
 }
-
+export function getCapabilities(manifest: any): string[] {
+  const capabilities: string[] = [];
+  if (manifest.staticTabs && manifest.staticTabs.length > 0) {
+    capabilities.push("staticTab");
+  }
+  if (manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+    capabilities.push("configurableTab");
+  }
+  if (manifest.bots && manifest.bots.length > 0) {
+    capabilities.push("bot");
+  }
+  if (manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+    capabilities.push("composeExtension");
+  }
+  if (manifest.extensions && manifest.extensions.length > 0) {
+    capabilities.push("extension");
+  }
+  return capabilities;
+}
 export const projectTypeChecker = new ProjectTypeChecker();

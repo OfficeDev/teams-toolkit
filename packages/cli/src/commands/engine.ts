@@ -18,8 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Correlator,
-  IncompatibleProjectError,
-  VersionState,
+  ProjectTypeProps,
   assembleError,
   getHashedEnv,
   isUserCancelError,
@@ -44,8 +43,9 @@ import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
 import { CliConfigOptions } from "../userSetttings";
-import { editDistance, getSystemInputs } from "../utils";
+import { editDistance } from "../utils";
 import { helper } from "./helper";
+import { fillinProjectTypeProperties } from "@microsoft/teamsfx-core";
 
 class CLIEngine {
   /**
@@ -121,11 +121,10 @@ class CLIEngine {
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
       const core = getFxCore();
-      const res = await core.getProjectMetadata(context.optionValues.projectPath as string);
+      const res = await core.checkProjectType(context.optionValues.projectPath as string);
       if (res.isOk()) {
-        const value = res.value;
-        context.telemetryProperties[TelemetryProperty.ProjectId] = value.projectId || "";
-        context.telemetryProperties[TelemetryProperty.SettingsVersion] = value.version || "";
+        const projectTypeResult = res.value;
+        fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
       }
     }
 
@@ -203,26 +202,26 @@ class CLIEngine {
       }
     }
 
-    // 6. version check
-    const inputs = getSystemInputs(context.optionValues.projectPath as string);
-    inputs.ignoreEnvInfo = true;
-    const skipCommands = ["new", "sample", "upgrade", "update", "package", "publish", "validate"];
-    if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
-      const core = getFxCore();
-      const res = await core.projectVersionCheck(inputs);
-      if (res.isErr()) {
-        return err(res.error);
-      } else {
-        if (res.value.isSupport === VersionState.unsupported) {
-          return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
-        } else if (res.value.isSupport === VersionState.upgradeable) {
-          const upgrade = await core.phantomMigrationV3(inputs);
-          if (upgrade.isErr()) {
-            return err(upgrade.error);
-          }
-        }
-      }
-    }
+    // // 6. version check
+    // const inputs = getSystemInputs(context.optionValues.projectPath as string);
+    // inputs.ignoreEnvInfo = true;
+    // const skipCommands = ["new", "sample", "upgrade", "update", "package", "publish", "validate"];
+    // if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
+    //   const core = getFxCore();
+    //   const res = await core.projectVersionCheck(inputs);
+    //   if (res.isErr()) {
+    //     return err(res.error);
+    //   } else {
+    //     if (res.value.isSupport === VersionState.unsupported) {
+    //       return err(IncompatibleProjectError("core.projectVersionChecker.cliUseNewVersion"));
+    //     } else if (res.value.isSupport === VersionState.upgradeable) {
+    //       const upgrade = await core.phantomMigrationV3(inputs);
+    //       if (upgrade.isErr()) {
+    //         return err(upgrade.error);
+    //       }
+    //     }
+    //   }
+    // }
 
     try {
       // 7. run handler

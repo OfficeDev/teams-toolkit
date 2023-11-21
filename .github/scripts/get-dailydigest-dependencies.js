@@ -54,7 +54,7 @@ async function getTemplatesDependencies() {
   packageJsonFiles.forEach((packageJsonFile) => {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonFile, "utf8"));
     let packageJsonDir = path.relative(
-      "C:/Users/yiqingzhao/TeamsFx/templates",
+      `${repoRoot}/templates`,
       path.dirname(packageJsonFile)
     );
     if (path.basename(packageJsonDir) === "tab") {

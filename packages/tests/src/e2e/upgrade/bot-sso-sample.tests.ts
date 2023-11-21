@@ -47,7 +47,7 @@ describe("upgrade", () => {
 
       {
         // upgrade
-        const result = await Executor.upgrade(projectPath, false);
+        const result = await Executor.upgrade(projectPath, true);
         chai.assert.isTrue(result.success);
         const manifestPath = path.join(
           projectPath,

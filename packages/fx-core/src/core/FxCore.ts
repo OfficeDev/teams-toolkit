@@ -739,7 +739,7 @@ export class FxCore {
       if (teamsAppCreate) {
         let name = teamsAppCreate.with.name as string;
         if (name) {
-          name = expandEnvironmentVariable(name, { APP_NAME_SUFFIX: "", TEAMSFX_ENV: "" });
+          name = expandEnvironmentVariable(name, { APP_NAME_SUFFIX: "", TEAMSFX_ENV: " " }).trim();
           return ok(name);
         }
       }

@@ -1217,6 +1217,30 @@ describe("getTeamsAppName", async () => {
     sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     const core = new FxCore(tools);
     const res = await core.getTeamsAppName(".");
+    assert.isTrue(res.isOk() && res.value === "testappname-");
+  });
+  it("happy path", async () => {
+    sandbox.stub(pathUtils, "getYmlFilePath").returns("./teamsapp.yml");
+    const mockProjectModel: any = {
+      projectId: "12345",
+      provision: {
+        name: "provision",
+        driverDefs: [
+          {
+            uses: "teamsApp/create",
+            with: {
+              name: "testappname${{APP_NAME_SUFFIX}}",
+            },
+            writeToEnvironmentFile: {
+              teamsAppId: "TEAMS_APP_ID",
+            },
+          },
+        ],
+      },
+    };
+    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
+    const core = new FxCore(tools);
+    const res = await core.getTeamsAppName(".");
     assert.isTrue(res.isOk() && res.value === "testappname");
   });
   it("return empty value", async () => {

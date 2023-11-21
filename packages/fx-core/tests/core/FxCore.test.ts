@@ -1343,7 +1343,7 @@ describe("checkProjectType", async () => {
       teamsfxConfigType: TeamsfxConfigType.teamsappYml,
       teamsfxConfigVersion: "1.0.0",
       teamsfxVersionState: TeamsfxVersionState.Compatible,
-      teamsfxTrackingId: "xxxx-xxxx-xxxx",
+      teamsfxProjectId: "xxxx-xxxx-xxxx",
       lauguages: [],
       hasTeamsManifest: true,
       manifestCapabilities: ["bot"],

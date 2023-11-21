@@ -89,9 +89,7 @@ class ProjectTypeChecker {
           data.manifestVersion = manifestObject.manifestVersion;
           return false;
         }
-      } catch (error) {
-        console.log(error);
-      }
+      } catch (error) {}
     }
     return true;
   }

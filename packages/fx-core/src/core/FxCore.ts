@@ -35,11 +35,14 @@ import { Container } from "typedi";
 import { pathToFileURL } from "url";
 import { parse, parseDocument } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
+import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
 import { SpecParser, SpecParserError } from "../common/spec-parser";
+import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
@@ -85,17 +88,18 @@ import {
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
 import { createContextV3, createDriverContext } from "../component/utils";
+import { expandEnvironmentVariable } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
 import { metadataUtil } from "../component/utils/metadataUtil";
 import { pathUtils } from "../component/utils/pathUtils";
 import { settingsUtil } from "../component/utils/settingsUtil";
 import {
   FileNotFoundError,
+  InjectAPIKeyActionFailedError,
   InvalidProjectError,
-  assembleError,
   MultipleAuthError,
   MultipleServerError,
-  InjectAPIKeyActionFailedError,
+  assembleError,
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
@@ -120,10 +124,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
-import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { ProjectTypeProps, TelemetryEvent } from "../common/telemetry";
-import { expandEnvironmentVariable } from "../component/utils/common";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1370,19 +1370,9 @@ export class FxCore {
   @hooks([ErrorContextMW({ component: "FxCore", stage: "checkProjectType" }), ErrorHandlerMW])
   async checkProjectType(projectPath: string): Promise<Result<ProjectTypeResult, FxError>> {
     const projectTypeRes = await projectTypeChecker.checkProjectType(projectPath);
-    TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, {
-      [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
-      [ProjectTypeProps.TeamsfxConfigType]: projectTypeRes.teamsfxConfigType || "",
-      [ProjectTypeProps.TeamsfxConfigVersion]: projectTypeRes.teamsfxConfigVersion || "",
-      [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",
-      [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
-      [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
-      [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifestVersion || "",
-      [ProjectTypeProps.TeamsManifestAppId]: projectTypeRes.manifestAppId || "",
-      [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
-      [ProjectTypeProps.TeamsManifestCapabilities]:
-        projectTypeRes.manifestCapabilities?.join(",") || "",
-    });
+    const props: Record<string, string> = {};
+    fillinProjectTypeProperties(props, projectTypeRes);
+    TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.ProjectType, props);
     return ok(projectTypeRes);
   }
 }

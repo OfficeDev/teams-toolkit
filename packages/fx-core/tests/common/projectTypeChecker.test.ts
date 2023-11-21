@@ -4,17 +4,16 @@
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import sinon from "sinon";
 import path from "path";
+import sinon from "sinon";
 import {
   ProjectTypeResult,
   TeamsfxConfigType,
   TeamsfxVersionState,
+  getCapabilities,
   projectTypeChecker,
 } from "../../src/common/projectTypeChecker";
 import { MetadataV3 } from "../../src/common/versionMetadata";
-import { TeamsAppManifest } from "@microsoft/teamsfx-api";
-import * as yaml from "yaml";
 
 describe("ProjectTypeChecker", () => {
   const sandbox = sinon.createSandbox();
@@ -109,7 +108,7 @@ describe("ProjectTypeChecker", () => {
         composeExtensions: [1],
         extensions: [1],
       };
-      const capabilities = projectTypeChecker.getCapabilities(manifest);
+      const capabilities = getCapabilities(manifest);
       assert.deepEqual(capabilities, [
         "staticTab",
         "configurableTab",
@@ -126,12 +125,12 @@ describe("ProjectTypeChecker", () => {
         composeExtensions: [],
         extensions: [],
       };
-      const capabilities = projectTypeChecker.getCapabilities(manifest);
+      const capabilities = getCapabilities(manifest);
       assert.deepEqual(capabilities, []);
     });
     it("empty capabilities", async () => {
       const manifest = {};
-      const capabilities = projectTypeChecker.getCapabilities(manifest);
+      const capabilities = getCapabilities(manifest);
       assert.deepEqual(capabilities, []);
     });
   });
@@ -202,7 +201,7 @@ describe("ProjectTypeChecker", () => {
       };
       const res = await projectTypeChecker.findProjectLanguateCallback("./package.json", result);
       assert.isFalse(res);
-      assert.deepEqual(result.lauguages, []);
+      assert.deepEqual(result.lauguages, ["ts"]);
     });
     it("js", async () => {
       sandbox.stub(fs, "readFile").resolves(JSON.stringify({}) as any);
@@ -323,7 +322,7 @@ describe("ProjectTypeChecker", () => {
       assert.isTrue(result.isTeamsFx);
       assert.equal(result.teamsfxConfigType, TeamsfxConfigType.projectSettingsJson);
       assert.equal(result.teamsfxConfigVersion, "1.0.0");
-      assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
+      assert.equal(result.teamsfxProjectId, "xxx-xxx-xxx");
       assert.equal(result.teamsfxVersionState, TeamsfxVersionState.Invalid);
     });
     it("isTeamsFx < v5 but version state is unsupported", async () => {
@@ -346,7 +345,7 @@ describe("ProjectTypeChecker", () => {
       assert.isTrue(result.isTeamsFx);
       assert.equal(result.teamsfxConfigType, TeamsfxConfigType.projectSettingsJson);
       assert.equal(result.teamsfxConfigVersion, "1.0.0");
-      assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
+      assert.equal(result.teamsfxProjectId, "xxx-xxx-xxx");
       assert.equal(result.teamsfxVersionState, TeamsfxVersionState.Unsupported);
     });
     it("isTeamsFx < v5 but version state is upgradable", async () => {
@@ -369,7 +368,7 @@ describe("ProjectTypeChecker", () => {
       assert.isTrue(result.isTeamsFx);
       assert.equal(result.teamsfxConfigType, TeamsfxConfigType.projectSettingsJson);
       assert.equal(result.teamsfxConfigVersion, "2.1.0");
-      assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
+      assert.equal(result.teamsfxProjectId, "xxx-xxx-xxx");
       assert.equal(result.teamsfxVersionState, TeamsfxVersionState.Upgradable);
     });
     it("isTeamsFx = v5 and version state unsupported", async () => {
@@ -394,7 +393,7 @@ describe("ProjectTypeChecker", () => {
       assert.isTrue(result.isTeamsFx);
       assert.equal(result.teamsfxConfigType, TeamsfxConfigType.teamsappYml);
       assert.equal(result.teamsfxConfigVersion, "2.0.0");
-      assert.equal(result.teamsfxTrackingId, "xxx-xxx-xxx");
+      assert.equal(result.teamsfxProjectId, "xxx-xxx-xxx");
       assert.equal(result.teamsfxVersionState, TeamsfxVersionState.Unsupported);
     });
     it("isTeamsFx = v5", async () => {
@@ -408,7 +407,7 @@ describe("ProjectTypeChecker", () => {
         path.join("./", MetadataV3.localConfigFile),
         result
       );
-      assert.isFalse(res);
+      assert.isTrue(res);
       assert.isTrue(result.isTeamsFx);
     });
     it("isTeamsFx = false", async () => {

@@ -1,54 +1,58 @@
-name: Templates Dependencies New Version Released
+name: Botbuilder New Version Released
 on:
-  workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
-
+ 
 jobs:
   notification:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
-
+          node-version: 14
+ 
       - name: Install npm packages
         run: |
           npm install axios
-          npm install glob
-
-      - name: Get All Updated Templates Dependencies
-        id: getUpdatedTemplatesDependencies
+ 
+      - name: Get LTS Version
+        id: getLTSVersion
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const axios = require("axios");
+            const response = await axios.get("https://registry.npmjs.org/botbuilder");
+            const ltsVersion = response.data["dist-tags"].latest;
+            const ltsVersionTime = response.data.time[ltsVersion];
+            const timeDiff = (new Date() - new Date(ltsVersionTime)) / 1000;
+            if (timeDiff <= 86400) {
+              return 'v' + ltsVersion;
+            } else {
+              return '';
+            }
+ 
+      - name: Setup Email and Recipient
+        if: ${{ contains(steps.getLTSVersion.outputs.result, 'v') }}
+        id: email
         run: |
-          node ./.github/scripts/get-dailydigest-dependencies.js >> $GITHUB_OUTPUT
-
-      - name: Echo result
-        if: ${{ always() }}
-        run: |
-          echo "${{ steps.getUpdatedTemplatesDependencies.outputs.result }}"
-
-      # - name: Setup Email and Recipient
-      #   if: ${{ contains(steps.getLTSVersion.outputs.result, 'v') }}
-      #   id: email
-      #   run: |
-      #     emails="yiqingzhao@microsoft.com"
-      #     subject="Bot Framework JS SDK ${{steps.getLTSVersion.outputs.result}} Released"
-      #     body="Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases"
-
-      #     echo "to=$emails" >> $GITHUB_OUTPUT
-      #     echo "subject=$subject" >> $GITHUB_OUTPUT
-      #     echo "body=$body" >> $GITHUB_OUTPUT
-
-      # - name: Send E-mail Notifications
-      #   uses: ./.github/actions/send-email-report
-      #   env:
-      #     TO: ${{ steps.email.outputs.to }}
-      #     BODY: '"${{ steps.email.outputs.body }}"'
-      #     SUBJECT: ${{ steps.email.outputs.subject }}
-      #     MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
-      #     MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
-      #     MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
+          emails="vsciotadt@microsoft.com;zhididr@microsoft.com;johmil@microsoft.com"
+          subject="Bot Framework JS SDK ${{steps.getLTSVersion.outputs.result}} Released"
+          body="Botbuilder ${{steps.getLTSVersion.outputs.result}} has been released.\n Details can be found here: https://github.com/microsoft/botbuilder-js/releases"
+ 
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
+          echo "body=$body" >> $GITHUB_OUTPUT
+ 
+      - name: Checkout
+        uses: actions/checkout@v3
+ 
+      - name: Send E-mail Notifications
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.email.outputs.to }}
+          BODY: '"${{ steps.email.outputs.body }}"'
+          SUBJECT: ${{ steps.email.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

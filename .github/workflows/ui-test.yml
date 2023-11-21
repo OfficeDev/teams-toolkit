@@ -316,7 +316,7 @@ jobs:
         if: contains(matrix.test-case,  'upgrade') == false
         working-directory: packages/tests
         run: |
-          npm install @microsoft/teamsfx-cli@${{ needs.setup.outputs.npm-tag }}
+          npm install @microsoft/teamsapp-cli@${{ needs.setup.outputs.npm-tag }}
 
       - name: Download samples (migration use v1.1.0)
         if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case,  'upgrade')

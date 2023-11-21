@@ -28,17 +28,17 @@ jobs:
           echo "$(node ./.github/scripts/get-dailydigest-dependencies.js)" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
 
-      - name: Echo result
-        if: ${{ always() }}
+      - name: Get Date
+        id: getDate
         run: |
-          echo "${{ steps.getUpdatedTemplatesDependencies.outputs.result }}"
+          echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
       - name: Setup Email and Recipient
         if: ${{ always() }}
         id: email
         run: |
           emails="yiqingzhao@microsoft.com"
-          subject="Templates Dependencies Daily Check"
+          subject="Templates Dependencies Daily Check " + "${{ steps.getDate.outputs.date }}}"
           body="${{steps.getUpdatedTemplatesDependencies.outputs.result}}"
 
           echo "to=$emails" >> $GITHUB_OUTPUT

@@ -21,6 +21,7 @@ import {
   IncompatibleProjectError,
   VersionState,
   assembleError,
+  fillinProjectTypeProperties,
   getHashedEnv,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
@@ -121,11 +122,10 @@ class CLIEngine {
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
       const core = getFxCore();
-      const res = await core.getProjectMetadata(context.optionValues.projectPath as string);
+      const res = await core.checkProjectType(context.optionValues.projectPath as string);
       if (res.isOk()) {
-        const value = res.value;
-        context.telemetryProperties[TelemetryProperty.ProjectId] = value.projectId || "";
-        context.telemetryProperties[TelemetryProperty.SettingsVersion] = value.version || "";
+        const projectTypeResult = res.value;
+        fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
       }
     }
 

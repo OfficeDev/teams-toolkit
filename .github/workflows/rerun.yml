@@ -67,13 +67,18 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup node
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
+          node-version: 18
 
-      - name: Install npm packages
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup project
+        working-directory: ./
         run: |
-          npm install
+          npm run setup
 
       - name: Clean resource
         if: always()

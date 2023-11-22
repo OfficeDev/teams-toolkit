@@ -133,8 +133,7 @@ export class Generator {
       [TelemetryProperty.SampleAppName]: sampleName,
       [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
-    await sampleProvider.fetchSampleConfig();
-    const sample = getSampleInfoFromName(sampleName);
+    const sample = await getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
     const generatorContext: GeneratorContext = {
       name: sampleName,

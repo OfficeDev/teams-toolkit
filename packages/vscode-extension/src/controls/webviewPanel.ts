@@ -195,7 +195,7 @@ export class WebviewPanel {
 
   private async LoadSampleCollection() {
     try {
-      await sampleProvider.fetchSampleConfig();
+      await sampleProvider.refreshSampleConfig();
     } catch (e: unknown) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
@@ -204,7 +204,7 @@ export class WebviewPanel {
       });
       return;
     }
-    const sampleCollection = sampleProvider.SampleCollection;
+    const sampleCollection = await sampleProvider.SampleCollection;
     const sampleData = sampleCollection.samples.map((sample) => {
       const extensionVersion = extensionPackage.version;
       let versionComparisonResult = 0;

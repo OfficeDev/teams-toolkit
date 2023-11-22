@@ -18,8 +18,6 @@ import { TaskDefaultValue, TunnelType } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors } from "../../error";
-import { VS_CODE_UI } from "../../extension";
-import { tools } from "../../handlers";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import {
   TelemetryEvent,
@@ -38,6 +36,8 @@ import {
 } from "./baseTunnelTaskTerminal";
 import { DevTunnelManager } from "./utils/devTunnelManager";
 import { DevTunnelStateManager } from "./utils/devTunnelStateManager";
+import { tools } from "../../globalVariables";
+import { VS_CODE_UI } from "../../qm/vsc_ui";
 
 const DevTunnelScopes = ["46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2/.default"];
 const TunnelManagementUserAgent = { name: "Teams-Toolkit" };

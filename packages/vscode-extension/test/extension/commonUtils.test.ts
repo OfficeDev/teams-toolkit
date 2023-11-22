@@ -1,19 +1,18 @@
-import * as chai from "chai";
-import * as os from "os";
-import * as sinon from "sinon";
-import * as cp from "child_process";
-import * as vscode from "vscode";
-import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
+import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as chai from "chai";
+import * as cp from "child_process";
+import * as mockfs from "mock-fs";
+import * as os from "os";
+import * as sinon from "sinon";
+import * as vscode from "vscode";
+import { Uri } from "vscode";
 import * as extensionPackage from "../../package.json";
 import * as globalVariables from "../../src/globalVariables";
-import * as handlers from "../../src/handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import * as commonUtils from "../../src/utils/commonUtils";
 import { MockCore } from "../mocks/mockCore";
-import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import * as mockfs from "mock-fs";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -106,37 +105,19 @@ describe("CommonUtils", () => {
 
   describe("getProjectId", async () => {
     const sandbox = sinon.createSandbox();
-    const core = new MockCore();
-
-    beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
-    });
-
     afterEach(() => {
       sandbox.restore();
     });
-
     it("happy path", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
-      sandbox.stub(core, "getProjectId").resolves(ok("mock-project-id"));
-      const result = await commonUtils.getProjectId();
+      sandbox
+        .stub(globalVariables, "projectTypeResult")
+        .value({ teamsfxProjectId: "mock-project-id" });
+      const result = commonUtils.getProjectId();
       chai.expect(result).equals("mock-project-id");
     });
-    it("workspaceUri is undefined", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
-      const result = await commonUtils.getProjectId();
-      chai.expect(result).equals(undefined);
-    });
-    it("return error", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
-      sandbox.stub(core, "getProjectId").resolves(err(new UserError({})));
-      const result = await commonUtils.getProjectId();
-      chai.expect(result).equals(undefined);
-    });
-    it("throw error", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
-      sandbox.stub(core, "getProjectId").rejects(new UserError({}));
-      const result = await commonUtils.getProjectId();
+    it("projectTypeResult is undefined", async () => {
+      sandbox.stub(globalVariables, "projectTypeResult").value(undefined);
+      const result = commonUtils.getProjectId();
       chai.expect(result).equals(undefined);
     });
   });
@@ -146,7 +127,7 @@ describe("CommonUtils", () => {
     const core = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
+      sandbox.stub(globalVariables, "core").value(core);
     });
 
     afterEach(() => {
@@ -155,29 +136,29 @@ describe("CommonUtils", () => {
 
     it("happy path", async () => {
       sandbox.stub(core, "getTeamsAppName").resolves(ok("mock-app-name"));
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(".");
       const result = await commonUtils.getAppName();
       chai.expect(result).equals("mock-app-name");
     });
     it("workspaceUri is undefined", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(undefined);
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
     });
     it("return error", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(".");
       sandbox.stub(core, "getTeamsAppName").resolves(err(new UserError({})));
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
     });
     it("throw error", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(".");
       sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
     });
     it("should return undefined if getTeamsAppName returns empty string", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(".");
       sandbox.stub(core, "getTeamsAppName").resolves(ok(""));
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
@@ -189,7 +170,7 @@ describe("CommonUtils", () => {
     const core = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
+      sandbox.stub(globalVariables, "core").value(core);
     });
 
     afterEach(() => {
@@ -204,29 +185,31 @@ describe("CommonUtils", () => {
         m365TenantId: "mock-tenant-id",
       };
       sandbox.stub(core, "getProjectInfo").resolves(ok(info));
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
-      sandbox.stub(coreUtils, "isValidProject").returns(true);
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(".");
+      sandbox.stub(globalVariables, "isTeamsFxProject").returns(true);
       const result = await commonUtils.getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).deep.equals({
         appId: "mock-app-id",
         tenantId: "mock-tenant-id",
       });
     });
-    it("isValidProject is false", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
-      sandbox.stub(coreUtils, "isValidProject").returns(false);
+    it("isTeamsFxProject is false", async () => {
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(".");
+      sandbox.stub(globalVariables, "isTeamsFxProject").returns(false);
       const result = await commonUtils.getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).equals(undefined);
     });
     it("return error", async () => {
-      sandbox.stub(coreUtils, "isValidProject").returns(true);
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(".");
+      sandbox.stub(globalVariables, "isTeamsFxProject").returns(true);
       sandbox.stub(core, "getProjectInfo").resolves(err(new UserError({})));
       const result = await commonUtils.getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).equals(undefined);
     });
     it("throw error", async () => {
-      sandbox.stub(coreUtils, "isValidProject").returns(true);
-      sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
+      sandbox.stub(globalVariables, "getWorkspacePath").returns(".");
+      sandbox.stub(globalVariables, "isTeamsFxProject").returns(true);
+      sandbox.stub(core, "getProjectInfo").rejects(new UserError({}));
       const result = await commonUtils.getTeamsAppTelemetryInfoByEnv("dev");
       chai.expect(result).equals(undefined);
     });
@@ -317,7 +300,7 @@ describe("CommonUtils", () => {
     });
 
     it("returns false if teamsAppId is empty", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "getWorkspaceUri").returns(Uri.file("test"));
       sandbox.stub(envUtil, "readEnv").resolves(
         ok({
           TEAMS_APP_ID: "",
@@ -330,13 +313,12 @@ describe("CommonUtils", () => {
     });
 
     it("returns true if teamsAppId is not empty", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "getWorkspaceUri").returns(Uri.file("test"));
       sandbox.stub(envUtil, "readEnv").resolves(
         ok({
           TEAMS_APP_ID: "xxx",
         })
       );
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(pathUtils, "getYmlFilePath");
       sandbox.stub(metadataUtil, "parse").resolves(ok({} as any));
 
@@ -346,7 +328,7 @@ describe("CommonUtils", () => {
     });
 
     it("returns false if teamsAppId has error", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "getWorkspaceUri").returns(Uri.file("test"));
       sandbox.stub(envUtil, "readEnv").resolves(ok({}));
 
       const result = await commonUtils.getProvisionSucceedFromEnv("test");
@@ -363,7 +345,7 @@ describe("CommonUtils", () => {
     });
 
     it("no workspace", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+      sandbox.stub(globalVariables, "getWorkspaceUri").returns(undefined);
 
       const result = await commonUtils.hasAdaptiveCardInWorkspace();
 
@@ -371,7 +353,7 @@ describe("CommonUtils", () => {
     });
 
     it("happy path", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      sandbox.stub(globalVariables, "getWorkspaceUri").returns(vscode.Uri.file("/test"));
       mockfs({
         "/test/card.json": JSON.stringify({
           $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
@@ -393,7 +375,7 @@ describe("CommonUtils", () => {
     });
 
     it("hasAdaptiveCardInWorkspace() no adaptive card file", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      sandbox.stub(globalVariables, "getWorkspaceUri").returns(vscode.Uri.file("/test"));
       mockfs({
         "/test/card.json": JSON.stringify({ hello: "world" }),
       });
@@ -404,7 +386,7 @@ describe("CommonUtils", () => {
     });
 
     it("hasAdaptiveCardInWorkspace() very large adaptive card file", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      sandbox.stub(globalVariables, "getWorkspaceUri").returns(vscode.Uri.file("/test"));
       mockfs({
         "/test/card.json": JSON.stringify({
           $schema: "http://adaptivecards.io/schemas/adaptive-card.json",

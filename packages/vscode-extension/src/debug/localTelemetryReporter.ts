@@ -215,14 +215,13 @@ type TaskInfo = {
 
 export async function getTaskInfo(): Promise<TaskInfo | undefined> {
   try {
-    if (!globalVariables.isTeamsFxProject || !globalVariables.workspaceUri?.fsPath) {
+    const wspath = globalVariables.getWorkspacePath();
+    if (!globalVariables.isTeamsFxProject() || !wspath) {
       return undefined;
     }
 
     const localEnvManager = new LocalEnvManager();
-    const taskJson = (await localEnvManager.getTaskJson(
-      globalVariables.workspaceUri.fsPath
-    )) as ITaskJson;
+    const taskJson = (await localEnvManager.getTaskJson(wspath)) as ITaskJson;
     if (!taskJson) {
       return undefined;
     }

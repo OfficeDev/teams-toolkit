@@ -1,14 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FxError, Result, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import * as globalVariables from "../globalVariables";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 
 export async function selectAndDebug(): Promise<Result<null, FxError>> {
-  if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
+  if (globalVariables.isTeamsFxProject()) {
     await vscode.commands.executeCommand("workbench.view.debug");
     await vscode.commands.executeCommand("workbench.action.debug.selectandstart");
     return ok(null);
@@ -32,8 +31,7 @@ export async function registerRunIcon(): Promise<void> {
 }
 
 async function enableRunIcon(): Promise<void> {
-  const validProject =
-    globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath);
+  const validProject = globalVariables.isTeamsFxProject();
   await vscode.commands.executeCommand("setContext", "fx-extension.runIconActive", validProject);
 }
 

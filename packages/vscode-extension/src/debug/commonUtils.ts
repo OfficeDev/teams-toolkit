@@ -11,12 +11,12 @@ import * as vscode from "vscode";
 import VsCodeLogInstance from "../commonlib/log";
 
 import * as globalVariables from "../globalVariables";
-import { core, getSystemInputs } from "../handlers";
+import { getSystemInputs } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
 import { ExtensionErrors, ExtensionSource } from "../error";
-import { VS_CODE_UI } from "../extension";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -34,10 +34,11 @@ export async function getNpmInstallLogInfo(): Promise<any> {
 
 export async function getTestToolLogInfo(): Promise<string | undefined> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-  if (!globalVariables.workspaceUri?.fsPath) {
+  const ws = globalVariables.getWorkspacePath();
+  if (!ws) {
     return undefined;
   }
-  return await localEnvManager.getTestToolLogInfo(globalVariables.workspaceUri?.fsPath);
+  return await localEnvManager.getTestToolLogInfo(ws);
 }
 
 export class LocalDebugSession {
@@ -131,7 +132,7 @@ export async function getV3TeamsAppId(projectPath: string, env: string): Promise
 }
 
 export async function getTeamsAppKeyName(env?: string): Promise<string | undefined> {
-  const templatePath = pathUtils.getYmlFilePath(globalVariables.workspaceUri!.fsPath, env);
+  const templatePath = pathUtils.getYmlFilePath(globalVariables.getWorkspacePath()!, env);
   const maybeProjectModel = await metadataUtil.parse(templatePath, env);
   if (maybeProjectModel.isErr()) {
     return undefined;
@@ -150,7 +151,7 @@ export async function getTeamsAppKeyName(env?: string): Promise<string | undefin
 export async function triggerV3Migration(): Promise<void> {
   const inputs = getSystemInputs();
   inputs.stage = Stage.debug;
-  const result = await core.phantomMigrationV3(inputs);
+  const result = await globalVariables.core.phantomMigrationV3(inputs);
   if (result.isErr()) {
     await vscode.debug.stopDebugging();
     throw result.error;

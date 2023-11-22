@@ -124,7 +124,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       needsMigration = true;
     } else if (
       task.definition.command === TaskCommand.checkPrerequisites &&
-      !isValidProjectV3(globalVariables.workspaceUri!.fsPath)
+      !isValidProjectV3(globalVariables.getWorkspacePath()!)
     ) {
       needsMigration = true;
     }

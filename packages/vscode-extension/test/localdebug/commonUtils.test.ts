@@ -28,7 +28,7 @@ describe("[debug > commonUtils]", () => {
     });
 
     it("returns teamsAppId successfully", async () => {
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
+      sandbox.stub(globalVariables, "getWorkspaceUri").returns(Uri.file("test"));
       sandbox.stub(pathUtils, "getYmlFilePath");
       sandbox.stub(metadataUtil, "parse").resolves(
         ok({

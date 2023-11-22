@@ -9,15 +9,15 @@ import * as vscode from "vscode";
 import { ProductName, UserError } from "@microsoft/teamsfx-api";
 import {
   Correlator,
-  getHashedEnv,
   Hub,
-  isValidProject,
   TaskCommand,
+  getHashedEnv,
+  isValidProject,
 } from "@microsoft/teamsfx-core";
 
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../error";
-import { VS_CODE_UI } from "../extension";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 import * as globalVariables from "../globalVariables";
 import {
   TelemetryEvent,
@@ -198,7 +198,7 @@ function onDidEndTaskHandler(event: vscode.TaskEndEvent): void {
 }
 
 async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): Promise<void> {
-  if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
+  if (globalVariables.isTeamsFxProject()) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
       allRunningTeamsfxTasks.set(getTaskKey(task), event.processId);
@@ -311,7 +311,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
       let cwd: string | undefined;
       if (cwdOption !== undefined) {
-        cwd = cwdOption.replace("${workspaceFolder}", globalVariables.workspaceUri!.fsPath);
+        cwd = cwdOption.replace("${workspaceFolder}", globalVariables.getWorkspacePath()!);
       }
       const npmInstallLogInfo = await getNpmInstallLogInfo();
       let validNpmInstallLogInfo = false;
@@ -419,7 +419,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 }
 
 async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
-  if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
+  if (globalVariables.isTeamsFxProject()) {
     const debugConfig = event.configuration as TeamsfxDebugConfiguration;
     if (
       debugConfig &&

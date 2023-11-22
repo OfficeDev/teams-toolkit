@@ -1,15 +1,13 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
 import * as path from "path";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, Stage, Void } from "@microsoft/teamsfx-api";
-import { TaskDefaultValue } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { TaskDefaultValue, Correlator } from "@microsoft/teamsfx-core";
 import * as globalVariables from "../../globalVariables";
 import { getSystemInputs, runCommand } from "../../handlers";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/extTelemetryEvents";
@@ -66,7 +64,7 @@ export class LifecycleTaskTerminal extends BaseTaskTerminal {
     inputs.isLocalDebug = true;
     if (this.args.template) {
       inputs.workflowFilePath = path.resolve(
-        globalVariables.workspaceUri?.fsPath ?? "",
+        globalVariables.getWorkspacePath() ?? "",
         BaseTaskTerminal.resolveTeamsFxVariables(this.args.template)
       );
     }

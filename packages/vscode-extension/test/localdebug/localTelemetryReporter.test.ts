@@ -4,13 +4,12 @@ import { LocalEnvManager, TaskOverallLabel } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import * as vscode from "vscode";
 import {
   DefaultPlaceholder,
+  UndefinedPlaceholder,
   getTaskInfo,
   maskArrayValue,
   maskValue,
-  UndefinedPlaceholder,
 } from "../../src/debug/localTelemetryReporter";
 import * as globalVariables from "../../src/globalVariables";
 
@@ -97,30 +96,28 @@ describe("LocalTelemetryReporter", () => {
     });
 
     it("Failed to get task.json", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
-      sinon
-        .stub(globalVariables, "workspaceUri")
-        .value(vscode.Uri.parse(path.resolve(__dirname, "unknown")));
+      sinon.stub(globalVariables, "isTeamsFxProject").returns(true);
+      sinon.stub(globalVariables, "getWorkspacePath").returns(path.resolve(__dirname, "unknown"));
       sinon.stub(LocalEnvManager.prototype, "getTaskJson").returns(Promise.resolve(undefined));
       const res = await getTaskInfo();
       chai.assert.isUndefined(res);
     });
 
     it("Failed to get renamed label", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
+      sinon.stub(globalVariables, "isTeamsFxProject").returns(true);
       sinon
-        .stub(globalVariables, "workspaceUri")
-        .value(vscode.Uri.parse(path.resolve(__dirname, "data", "renameLabel")));
+        .stub(globalVariables, "getWorkspacePath")
+        .returns(path.resolve(__dirname, "data", "renameLabel"));
       const res = await getTaskInfo();
       chai.assert.isEmpty(res?.PreLaunchTaskInfo);
       chai.assert.isFalse(res?.IsTransparentTask);
     });
 
     it("task.json of old tab project", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
+      sinon.stub(globalVariables, "isTeamsFxProject").returns(true);
       sinon
-        .stub(globalVariables, "workspaceUri")
-        .value(vscode.Uri.parse(path.resolve(__dirname, "data", "oldTab")));
+        .stub(globalVariables, "getWorkspacePath")
+        .returns(path.resolve(__dirname, "data", "oldTab"));
       const res = await getTaskInfo();
       chai.assert.exists(res?.PreLaunchTaskInfo);
       chai.assert.sameDeepOrderedMembers(
@@ -147,10 +144,10 @@ describe("LocalTelemetryReporter", () => {
     });
 
     it("task.json of a tab + bot + func project", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
+      sinon.stub(globalVariables, "isTeamsFxProject").returns(true);
       sinon
-        .stub(globalVariables, "workspaceUri")
-        .value(vscode.Uri.parse(path.resolve(__dirname, "data", "tabbotfunc")));
+        .stub(globalVariables, "getWorkspacePath")
+        .returns(path.resolve(__dirname, "data", "tabbotfunc"));
       const res = await getTaskInfo();
       chai.assert.isTrue(res?.IsTransparentTask);
       chai.assert.isUndefined(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentM365]);
@@ -203,10 +200,10 @@ describe("LocalTelemetryReporter", () => {
     });
 
     it("task.json of a m365 project", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
+      sinon.stub(globalVariables, "isTeamsFxProject").returns(true);
       sinon
-        .stub(globalVariables, "workspaceUri")
-        .value(vscode.Uri.parse(path.resolve(__dirname, "data", "m365")));
+        .stub(globalVariables, "getWorkspacePath")
+        .returns(path.resolve(__dirname, "data", "m365"));
       const res = await getTaskInfo();
       chai.assert.isTrue(res?.IsTransparentTask);
       chai.assert.exists(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentM365]);
@@ -288,10 +285,10 @@ describe("LocalTelemetryReporter", () => {
       );
     });
     it("task.json of user customized project", async () => {
-      sinon.stub(globalVariables, "isTeamsFxProject").value(true);
+      sinon.stub(globalVariables, "isTeamsFxProject").returns(true);
       sinon
-        .stub(globalVariables, "workspaceUri")
-        .value(vscode.Uri.parse(path.resolve(__dirname, "data", "customized")));
+        .stub(globalVariables, "getWorkspacePath")
+        .returns(path.resolve(__dirname, "data", "customized"));
       const res = await getTaskInfo();
       chai.assert.isTrue(res?.IsTransparentTask);
       chai.assert.isUndefined(res?.PreLaunchTaskInfo?.[TaskOverallLabel.TransparentM365]);

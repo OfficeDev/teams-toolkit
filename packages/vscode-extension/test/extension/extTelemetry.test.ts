@@ -95,9 +95,9 @@ describe("ExtTelemetry", () => {
     before(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
       chai.util.addProperty(ExtTelemetry, "settingsVersion", () => "1.0.0");
-      sandbox.stub(fs, "pathExistsSync").returns(false);
-      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
-      sandbox.stub(globalVariables, "isSPFxProject").value(false);
+      sandbox.stub(fs, "pathExists").resolves(false);
+      sandbox.stub(globalVariables, "getWorkspacePath").returns("test");
+      sandbox.stub(globalVariables, "isSPFxProject").resolves(false);
       sandbox.stub(globalVariables, "isExistingUser").value("no");
     });
 
@@ -195,7 +195,7 @@ describe("ExtTelemetry", () => {
       const clock = sinon.useFakeTimers();
       let state = "";
       sandbox.stub(telemetryModule, "lastCorrelationId").value("correlation-id");
-      sandbox.stub(commonUtils, "getProjectId").resolves("project-id");
+      sandbox.stub(commonUtils, "getProjectId").returns("project-id");
       const globalStateUpdateStub = sandbox
         .stub(globalState, "globalStateUpdate")
         .callsFake(async (key, value) => (state = value));

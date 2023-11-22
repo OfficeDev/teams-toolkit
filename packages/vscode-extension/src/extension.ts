@@ -13,12 +13,12 @@ import {
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
+import { AuthSvcScopes, Correlator, setRegion } from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
-  CryptoCodeLensProvider,
   CopilotPluginCodeLensProvider,
+  CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
@@ -37,17 +37,16 @@ import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
+  getWorkspacePath,
   initializeGlobalVariables,
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  isTeamsfxUpgradable,
   setUriEventHandler,
-  unsetIsTeamsFxProject,
-  workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
-import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
@@ -60,11 +59,9 @@ import {
   syncFeatureFlags,
 } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
+import { PrereleasePage } from "./utils/prerelease";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { PrereleasePage } from "./utils/prerelease";
-
-export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
   // load the feature flags.
@@ -72,8 +69,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
-  VS_CODE_UI = new VsCodeUI(context);
-  initializeGlobalVariables(context);
+  await initializeGlobalVariables(context);
+
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
@@ -84,23 +81,26 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  if (isTeamsFxProject) {
+  const isTeamsFx = isTeamsFxProject();
+
+  if (isTeamsFx) {
     activateTeamsFxRegistration(context);
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
   }
 
   // Call activate function of toolkit core.
   handlers.activate();
 
   // Init VSC context key
-  await initializeContextKey(context, isTeamsFxProject);
+  await initializeContextKey(context, isTeamsFx);
 
   // UI is ready to show & interact
-  await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+  await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFx);
 
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
   // Don't wait this async method to let it run in background.
-  void runBackgroundAsyncTasks(context, isTeamsFxProject);
+  void runBackgroundAsyncTasks(context, isTeamsFx);
   await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 }
 
@@ -652,11 +652,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
 
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
-
+  const ws = getWorkspacePath();
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isM365",
-    workspaceUri && (await isM365Project(workspaceUri.fsPath))
+    ws && (await isM365Project(ws))
   );
 
   if (isTeamsFxProject) {
@@ -680,7 +680,7 @@ async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxP
   await setAadManifestEnabledContext();
   await setTDPIntegrationEnabledContext();
 
-  const upgradeable = await checkProjectUpgradable();
+  const upgradeable = isTeamsfxUpgradable();
   if (upgradeable) {
     await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", true);
     await handlers.checkUpgrade([TelemetryTriggerFrom.Auto]);
@@ -906,10 +906,9 @@ async function runBackgroundAsyncTasks(
 }
 
 async function runTeamsFxBackgroundTasks() {
-  const upgradeable = await checkProjectUpgradable();
-  if (isTeamsFxProject) {
+  if (isTeamsFxProject()) {
     await handlers.autoOpenProjectHandler();
-    await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
+    await TreeViewManagerInstance.updateTreeViewsByContent(isTeamsfxUpgradable());
   }
 }
 
@@ -930,25 +929,14 @@ function runCommand(commandName: string, args: unknown[]) {
   void commandController.runCommand(commandName, args);
 }
 
-async function checkProjectUpgradable(): Promise<boolean> {
-  const versionCheckResult = await handlers.projectVersionCheck();
-  if (versionCheckResult.isErr()) {
-    unsetIsTeamsFxProject();
-    return false;
-  }
-  const upgradeable = versionCheckResult.isOk()
-    ? versionCheckResult.value.isSupport == VersionState.upgradeable
-    : false;
-  return upgradeable;
-}
-
 async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
-  const wasTeamsFxProject = isTeamsFxProject;
-  initializeGlobalVariables(context);
-  if (isTeamsFxProject && !wasTeamsFxProject) {
+  const wasTeamsFxProject = isTeamsFxProject();
+  await initializeGlobalVariables(context);
+  const isTeamsFx = isTeamsFxProject();
+  if (isTeamsFx && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 
-    await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+    await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFx);
 
     const aadTemplateWatcher = vscode.workspace.createFileSystemWatcher("**/aad.template.json");
 
@@ -959,8 +947,8 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
     void runTeamsFxBackgroundTasks();
   }
 
-  const upgradeable = await checkProjectUpgradable();
-  if (isTeamsFxProject) {
+  const upgradeable = isTeamsfxUpgradable();
+  if (isTeamsFx) {
     await vscode.commands.executeCommand("setContext", "fx-extension.canUpgradeV3", upgradeable);
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   }

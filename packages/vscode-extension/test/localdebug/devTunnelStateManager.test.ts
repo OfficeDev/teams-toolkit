@@ -10,7 +10,6 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import * as vscode from "vscode";
 import { DevTunnelStateManager } from "../../src/debug/taskTerminal/utils/devTunnelStateManager";
 import * as globalVariables from "../../src/globalVariables";
 chai.use(chaiAsPromised);
@@ -21,7 +20,7 @@ describe("devTunnelStateManager", () => {
   beforeEach(async () => {
     const filePath = path.resolve(baseDir, uuid.v4().substring(0, 6));
     await fs.ensureDir(filePath);
-    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.parse(filePath));
+    sandbox.stub(globalVariables, "getWorkspacePath").returns(filePath);
     sandbox.stub(process, "env").value({ TEAMSFX_DEV_TUNNEL_TEST: "true" });
   });
 

@@ -18,13 +18,10 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
-  Context,
-  CoreCallbackEvent,
   CreateProjectResult,
   Func,
   FxError,
   Inputs,
-  M365TokenProvider,
   ManifestTemplateFileName,
   ManifestUtil,
   OptionItem,
@@ -37,8 +34,6 @@ import {
   StaticOptions,
   SubscriptionInfo,
   SystemError,
-  TemplateFolderName,
-  Tools,
   UserError,
   Void,
   VsCodeEnv,
@@ -57,29 +52,27 @@ import {
   Correlator,
   DepsManager,
   DepsType,
-  FxCore,
   Hub,
   InvalidProjectError,
+  JSONSyntaxError,
+  MetadataV3,
   askSubscription,
   assembleError,
   environmentManager,
   generateScaffoldingSummary,
-  getFixedCommonProjectSettings,
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
   isUserCancelError,
   isValidProject,
+  manifestUtils,
   pathUtils,
   setRegion,
-  manifestUtils,
-  JSONSyntaxError,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
-import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
-import { signedIn, signedOut } from "./commonlib/common/constant";
+import { signedIn } from "./commonlib/common/constant";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
@@ -97,11 +90,11 @@ import { openHubWebClient } from "./debug/launch";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
-import * as exp from "./exp/index";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
-import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
+import { core, tools } from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
+import { VS_CODE_UI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
   AccountType,
@@ -132,117 +125,34 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, loadedLocale, localize } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { MetadataV3 } from "@microsoft/teamsfx-core";
 
-export let core: FxCore;
-export let tools: Tools;
+export function activate() {
+  const workspacePath = globalVariables.getWorkspacePath();
+  if (workspacePath) {
+    addFileSystemWatcher(workspacePath);
+    // refresh env tree when env config files added or deleted.
+    workspace.onDidCreateFiles(async (event) => {
+      await refreshEnvTreeOnFileChanged(workspacePath, event.files);
+    });
 
-export function activate(): Result<Void, FxError> {
-  const result: Result<Void, FxError> = ok(Void);
-  const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
-  if (validProject) {
-    const fixedProjectSettings = getFixedCommonProjectSettings(
-      globalVariables.workspaceUri?.fsPath
-    );
-    ExtTelemetry.addSharedProperty(
-      TelemetryProperty.ProjectId,
-      fixedProjectSettings?.projectId as string
-    );
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
-    void AzureAccountManager.setStatusChangeMap(
-      "successfully-sign-in-azure",
-      (status, token, accountInfo) => {
-        if (status === signedIn) {
-          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
-        } else if (status === signedOut) {
-          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
-        }
-        return Promise.resolve();
-      },
-      false
-    );
-  }
-  try {
-    const m365Login: M365TokenProvider = M365TokenInstance;
-    const m365NotificationCallback = (
-      status: string,
-      token: string | undefined,
-      accountInfo: Record<string, unknown> | undefined
-    ) => {
-      if (status === signedIn) {
-        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignIn"));
-      } else if (status === signedOut) {
-        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignOut"));
+    workspace.onDidDeleteFiles(async (event) => {
+      await refreshEnvTreeOnFileChanged(workspacePath, event.files);
+    });
+
+    workspace.onDidRenameFiles(async (event) => {
+      const files = [];
+      for (const f of event.files) {
+        files.push(f.newUri);
+        files.push(f.oldUri);
       }
-      return Promise.resolve();
-    };
 
-    void M365TokenInstance.setStatusChangeMap(
-      "successfully-sign-in-m365",
-      { scopes: AppStudioScopes },
-      m365NotificationCallback,
-      false
-    );
-    tools = {
-      logProvider: VsCodeLogInstance,
-      tokenProvider: {
-        azureAccountProvider: AzureAccountManager,
-        m365TokenProvider: m365Login,
-      },
-      telemetryReporter: ExtTelemetry.reporter,
-      ui: VS_CODE_UI,
-      expServiceProvider: exp.getExpService(),
-    };
-    core = new FxCore(tools);
-    core.on(CoreCallbackEvent.lock, async (command: string) => {
-      globalVariables.setCommandIsRunning(true);
-      await commandController.lockedByOperation(command);
+      await refreshEnvTreeOnFileChanged(workspacePath, files);
     });
-    core.on(CoreCallbackEvent.unlock, async (command: string) => {
-      globalVariables.setCommandIsRunning(false);
-      await commandController.unlockedByOperation(command);
+
+    workspace.onDidSaveTextDocument(async (event) => {
+      await refreshEnvTreeOnFileContentChanged(workspacePath, event.uri.fsPath);
     });
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
-    if (workspacePath) {
-      addFileSystemWatcher(workspacePath);
-    }
-
-    if (workspacePath) {
-      // refresh env tree when env config files added or deleted.
-      workspace.onDidCreateFiles(async (event) => {
-        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
-      });
-
-      workspace.onDidDeleteFiles(async (event) => {
-        await refreshEnvTreeOnFileChanged(workspacePath, event.files);
-      });
-
-      workspace.onDidRenameFiles(async (event) => {
-        const files = [];
-        for (const f of event.files) {
-          files.push(f.newUri);
-          files.push(f.oldUri);
-        }
-
-        await refreshEnvTreeOnFileChanged(workspacePath, files);
-      });
-
-      workspace.onDidSaveTextDocument(async (event) => {
-        await refreshEnvTreeOnFileContentChanged(workspacePath, event.uri.fsPath);
-      });
-    }
-  } catch (e) {
-    const FxError: FxError = {
-      name: (e as Error).name,
-      source: ExtensionSource,
-      message: (e as Error).message,
-      stack: (e as Error).stack,
-      timestamp: new Date(),
-    };
-    void showError(FxError);
-    return err(FxError);
   }
-  return result;
 }
 
 // only used for telemetry
@@ -284,7 +194,8 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
 }
 
 export function addFileSystemWatcher(workspacePath: string) {
-  if (isValidProject(globalVariables.workspaceUri?.fsPath)) {
+  const isTeamsfx = globalVariables.isTeamsFxProject();
+  if (isTeamsfx) {
     const packageLockFileWatcher = vscode.workspace.createFileSystemWatcher("**/package-lock.json");
 
     packageLockFileWatcher.onDidCreate(async (event) => {
@@ -294,23 +205,21 @@ export function addFileSystemWatcher(workspacePath: string) {
     packageLockFileWatcher.onDidChange(async (event) => {
       await sendSDKVersionTelemetry(event.fsPath);
     });
-
     const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-    yorcFileWatcher.onDidCreate((event) => {
-      refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidCreate(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidChange((event) => {
-      refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidChange(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidDelete((event) => {
-      refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidDelete(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
     });
   }
 }
 
-export function refreshSPFxTreeOnFileChanged() {
-  globalVariables.initializeGlobalVariables(globalVariables.context);
-
+export async function refreshSPFxTreeOnFileChanged() {
+  await globalVariables.initializeGlobalVariables(globalVariables.context);
   TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
 
@@ -343,7 +252,7 @@ async function refreshEnvTreeOnFileContentChanged(workspacePath: string, filePat
 
 export function getSystemInputs(): Inputs {
   const answers: Inputs = {
-    projectPath: globalVariables.workspaceUri?.fsPath,
+    projectPath: globalVariables.getWorkspacePath(),
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
     locale: loadedLocale,
@@ -407,7 +316,7 @@ export async function updateAutoOpenGlobalKey(
     await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
   }
 
-  if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
+  if ((globalVariables.projectTypeResult as any).isSPFx()) {
     globalStateUpdate(GlobalKey.AutoInstallDependency, true);
   }
 }
@@ -479,7 +388,7 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
 }
 
 async function isVideoFilterProject(): Promise<boolean> {
-  const projPath = globalVariables.workspaceUri?.fsPath;
+  const projPath = globalVariables.getWorkspacePath();
   if (projPath) {
     const result = await commonTools.isVideoFilterProject(projPath);
     return result.isOk() && result.value;
@@ -502,8 +411,8 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
  * Ask user to select environment, local is included
  */
 export async function askTargetEnvironment(): Promise<Result<string, FxError>> {
-  const projectPath = globalVariables.workspaceUri?.fsPath;
-  if (!isValidProject(projectPath)) {
+  const projectPath = globalVariables.getWorkspacePath();
+  if (!globalVariables.isTeamsFxProject()) {
     return err(new InvalidProjectError());
   }
   const envProfilesResult = await environmentManager.listAllEnvConfigs(projectPath!);
@@ -560,7 +469,7 @@ export async function publishInDeveloperPortalHandler(
     TelemetryEvent.PublishInDeveloperPortalStart,
     getTriggerFromProperty(args)
   );
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const workspacePath = globalVariables.getWorkspacePath();
   const zipDefaultFolder: string | undefined = path.join(
     workspacePath!,
     BuildFolderName,
@@ -1221,22 +1130,22 @@ export async function autoOpenProjectHandler(): Promise<void> {
   const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
   const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, "")) as string;
   const autoInstallDependency = (await globalStateGet(GlobalKey.AutoInstallDependency)) as boolean;
+  const wspath = globalVariables.getWorkspacePath();
   if (isOpenWalkThrough) {
     await showLocalDebugMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
-
-    if (globalVariables.workspaceUri?.fsPath) {
-      await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+    if (wspath) {
+      await ShowScaffoldingWarningSummary(wspath, createWarnings);
       await globalStateUpdate(GlobalKey.CreateWarnings, "");
     }
   }
-  if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
+  if (isOpenReadMe === wspath) {
     await showLocalDebugMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
-    await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+    await ShowScaffoldingWarningSummary(wspath, createWarnings);
     await globalStateUpdate(GlobalKey.CreateWarnings, "");
   }
   if (isOpenSampleReadMe) {
@@ -1368,10 +1277,10 @@ export async function showLocalDebugMessage() {
   let message = util.format(
     localize("teamstoolkit.handlers.localDebugDescription.fallback"),
     appName,
-    globalVariables.workspaceUri?.fsPath
+    globalVariables.getWorkspacePath()
   );
   if (isWindows) {
-    const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
+    const folderLink = encodeURI(globalVariables.getWorkspaceUri()!.toString());
     const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
     message = util.format(
       localize("teamstoolkit.handlers.localDebugDescription"),
@@ -1697,7 +1606,7 @@ export async function openAzureAccountHandler() {
 }
 
 export function saveTextDocumentHandler(document: vscode.TextDocumentWillSaveEvent) {
-  if (!isValidProject(globalVariables.workspaceUri?.fsPath)) {
+  if (!globalVariables.isTeamsFxProject()) {
     return;
   }
 
@@ -1990,8 +1899,7 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     TelemetryEvent.PreviewAadManifestFile,
     getTriggerFromProperty(args)
   );
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
-  const validProject = isValidProject(workspacePath);
+  const validProject = globalVariables.isTeamsFxProject();
   if (!validProject) {
     ExtTelemetry.sendTelemetryErrorEvent(
       TelemetryEvent.PreviewAadManifestFile,
@@ -2028,7 +1936,9 @@ export async function openPreviewAadFile(args: any[]): Promise<Result<any, FxErr
     return err(res.error);
   }
 
-  const manifestFile = `${workspacePath as string}/${BuildFolderName}/aad.${envName}.json`;
+  const manifestFile = `${
+    globalVariables.getWorkspacePath() as string
+  }/${BuildFolderName}/aad.${envName}.json`;
 
   if (fs.existsSync(manifestFile)) {
     void workspace.openTextDocument(manifestFile).then((document) => {
@@ -2060,7 +1970,7 @@ export async function openConfigStateFile(args: any[]): Promise<any> {
   }
 
   ExtTelemetry.sendTelemetryEvent(telemetryStartName);
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const workspacePath = globalVariables.getWorkspacePath();
   if (!workspacePath) {
     const noOpenWorkspaceError = new UserError(
       ExtensionSource,
@@ -2154,7 +2064,7 @@ export async function updatePreviewManifest(args: any[]): Promise<any> {
   const result = await runCommand(Stage.deployTeams, inputs);
 
   if (!args || args.length === 0) {
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    const workspacePath = globalVariables.getWorkspacePath();
     const inputs = getSystemInputs();
     inputs.ignoreEnvInfo = true;
     const env = await core.getSelectedEnv(inputs);
@@ -2189,7 +2099,7 @@ export function editAadManifestTemplate(args: any[]) {
     getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
   );
   if (args && args.length > 1) {
-    const workspacePath = globalVariables.workspaceUri?.fsPath;
+    const workspacePath = globalVariables.getWorkspacePath();
     const manifestPath = `${workspacePath as string}/${MetadataV3.aadManifestFileName}`;
     void workspace.openTextDocument(manifestPath).then((document) => {
       void window.showTextDocument(document);
@@ -2429,7 +2339,7 @@ export async function openLifecycleTreeview(args?: any[]) {
     TelemetryEvent.ClickOpenLifecycleTreeview,
     getTriggerFromProperty(args)
   );
-  if (globalVariables.isTeamsFxProject) {
+  if (globalVariables.isTeamsFxProject()) {
     await vscode.commands.executeCommand("teamsfx-lifecycle.focus");
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.teamsfx");

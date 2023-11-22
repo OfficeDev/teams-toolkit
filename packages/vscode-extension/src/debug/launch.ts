@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { VS_CODE_UI } from "../extension";
+import { VS_CODE_UI } from "../qm/vsc_ui";
 import * as constants from "./constants";
 import VsCodeLogInstance from "../commonlib/log";
 import { Hub } from "@microsoft/teamsfx-core";

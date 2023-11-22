@@ -7,11 +7,15 @@
 import * as util from "util";
 import * as vscode from "vscode";
 import { err, FxError, ok, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { assembleError, envUtil, TunnelType } from "@microsoft/teamsfx-core";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { LocalTelemetryReporter } from "@microsoft/teamsfx-core";
-import { DotenvOutput } from "@microsoft/teamsfx-core";
-import { pathUtils } from "@microsoft/teamsfx-core";
+import {
+  assembleError,
+  envUtil,
+  TunnelType,
+  Correlator,
+  LocalTelemetryReporter,
+  DotenvOutput,
+  pathUtils,
+} from "@microsoft/teamsfx-core";
 import VsCodeLogInstance from "../../commonlib/log";
 import { ExtensionErrors, ExtensionSource } from "../../error";
 import * as globalVariables from "../../globalVariables";
@@ -229,10 +233,11 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     }
   ): Promise<Result<OutputInfo, FxError>> {
     try {
+      const ws = globalVariables.getWorkspacePath();
       const result: OutputInfo = {
         file: undefined,
       };
-      if (!globalVariables.workspaceUri?.fsPath || !env) {
+      if (!ws || !env) {
         return ok(result);
       }
 
@@ -240,11 +245,8 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
         return ok(result);
       }
 
-      const res = await envUtil.writeEnv(globalVariables.workspaceUri.fsPath, env, envVars);
-      const envFilePathResult = await pathUtils.getEnvFilePath(
-        globalVariables.workspaceUri.fsPath,
-        env
-      );
+      const res = await envUtil.writeEnv(ws, env, envVars);
+      const envFilePathResult = await pathUtils.getEnvFilePath(ws, env);
       if (envFilePathResult.isOk()) {
         result.file = envFilePathResult.value;
       }
@@ -257,10 +259,11 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   protected async readPropertiesFromEnv(
     env: string | undefined
   ): Promise<Result<DotenvOutput, FxError>> {
-    if (!globalVariables.workspaceUri?.fsPath || !env) {
+    const ws = globalVariables.getWorkspacePath();
+    if (!ws || !env) {
       return ok({});
     }
-    return await envUtil.readEnv(globalVariables.workspaceUri.fsPath, env, false, false);
+    return await envUtil.readEnv(ws, env, false, false);
   }
 }
 

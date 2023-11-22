@@ -20,9 +20,10 @@ import {
   openTerminalDisplayMessage,
   openTerminalMessage,
 } from "../constants";
-import { core, getSystemInputs } from "../../handlers";
+import { getSystemInputs } from "../../handlers";
 import { CoreQuestionNames, environmentNameManager } from "@microsoft/teamsfx-core";
 import { HubOptions } from "@microsoft/teamsfx-core";
+import { core } from "../../globalVariables";
 
 interface LaunchTeamsClientArgs {
   env?: string;
@@ -87,7 +88,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   private openUrl(url: string): Promise<Result<Void, FxError>> {
     return new Promise<Result<Void, FxError>>((resolve) => {
       const options: cp.SpawnOptions = {
-        cwd: globalVariables.workspaceUri?.fsPath ?? "",
+        cwd: globalVariables.getWorkspacePath() ?? "",
         shell: false,
         detached: false,
       };

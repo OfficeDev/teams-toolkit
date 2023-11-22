@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { manifestUtils } from "@microsoft/teamsfx-core";
 
-import { isSPFxProject, workspaceUri } from "../globalVariables";
+import { getWorkspacePath, isSPFxProject } from "../globalVariables";
 import { localize } from "../utils/localizeUtils";
 import accountTreeViewProviderInstance from "./account/accountTreeViewProvider";
 import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
@@ -49,7 +49,7 @@ class TreeViewManager {
 
   public async updateTreeViewsByContent(removeProjectRelatedCommands = false): Promise<void> {
     let isTeamsApp = false;
-    const manifestRes = await manifestUtils.readAppManifest(workspaceUri?.fsPath || "");
+    const manifestRes = await manifestUtils.readAppManifest(getWorkspacePath()!);
     if (manifestRes.isOk()) {
       isTeamsApp = manifestUtils.getCapabilities(manifestRes.value).length > 0;
     }

@@ -19,7 +19,7 @@ import { CONFIGURATION_PREFIX, ConfigurationKey } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
 import { getV3TeamsAppId } from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
-import { core } from "../handlers";
+import { core } from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import { glob } from "glob";
 
@@ -71,8 +71,8 @@ export async function getTeamsAppTelemetryInfoByEnv(
   env: string
 ): Promise<TeamsAppTelemetryInfo | undefined> {
   try {
-    const ws = globalVariables.workspaceUri!.fsPath;
-    if (isValidProject(ws)) {
+    const ws = globalVariables.getWorkspacePath();
+    if (ws && globalVariables.isTeamsFxProject()) {
       const projectInfoRes = await core.getProjectInfo(ws, env);
       if (projectInfoRes.isOk()) {
         const projectInfo = projectInfoRes.value;
@@ -86,26 +86,16 @@ export async function getTeamsAppTelemetryInfoByEnv(
   return undefined;
 }
 
-export async function getProjectId(): Promise<string | undefined> {
-  if (!globalVariables.workspaceUri) {
-    return undefined;
-  }
-  try {
-    const ws = globalVariables.workspaceUri.fsPath;
-    const projInfoRes = await core.getProjectId(ws);
-    if (projInfoRes.isOk()) {
-      return projInfoRes.value;
-    }
-  } catch (e) {}
-  return undefined;
+export function getProjectId(): string | undefined {
+  return globalVariables.projectTypeResult?.teamsfxProjectId;
 }
 
 export async function getAppName(): Promise<string | undefined> {
-  if (!globalVariables.workspaceUri) {
+  const ws = globalVariables.getWorkspacePath();
+  if (!ws) {
     return undefined;
   }
   try {
-    const ws = globalVariables.workspaceUri.fsPath;
     const nameRes = await core.getTeamsAppName(ws);
     if (nameRes.isOk() && nameRes.value != "") {
       return nameRes.value;
@@ -319,7 +309,7 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
 export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
   // If TEAMS_APP_ID is set, it's highly possible that the project is provisioned.
   try {
-    const teamsAppId = await getV3TeamsAppId(globalVariables.workspaceUri!.fsPath, env);
+    const teamsAppId = await getV3TeamsAppId(globalVariables.getWorkspaceUri()!.fsPath, env);
     return teamsAppId !== "";
   } catch (error) {
     return false;
@@ -327,13 +317,13 @@ export async function getProvisionSucceedFromEnv(env: string): Promise<boolean |
 }
 
 async function getProvisionResultJson(env: string): Promise<Record<string, string> | undefined> {
-  if (globalVariables.workspaceUri) {
+  if (globalVariables.getWorkspacePath()) {
     if (!globalVariables.isTeamsFxProject) {
       return undefined;
     }
 
     const configRoot = await commonUtils.getProjectRoot(
-      globalVariables.workspaceUri.fsPath,
+      globalVariables.getWorkspacePath()!,
       `.${ConfigFolderName}`
     );
 
@@ -406,8 +396,8 @@ export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
   // Skip large files which are unlikely to be adaptive cards to prevent performance impact.
   const fileSizeLimit = 1024 * 1024;
 
-  if (globalVariables.workspaceUri) {
-    const files = await glob(globalVariables.workspaceUri.path + "/**/*.json", {
+  if (globalVariables.getWorkspaceUri()) {
+    const files = await glob(globalVariables.getWorkspaceUri()!.path + "/**/*.json", {
       ignore: ["**/node_modules/**", "./node_modules/**"],
     });
     for (const file of files) {

@@ -1,21 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FxError, Stage } from "@microsoft/teamsfx-api";
+import {
+  Correlator,
+  fillInTelemetryPropsForFxError,
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
-import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { Correlator, fillInTelemetryPropsForFxError } from "@microsoft/teamsfx-core";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as extensionPackage from "../../package.json";
 import { VSCodeTelemetryReporter } from "../commonlib/telemetry";
 import * as globalVariables from "../globalVariables";
 import { getProjectId } from "../utils/commonUtils";
-import {
-  TelemetryComponentType,
-  TelemetryErrorType,
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "./extTelemetryEvents";
+import { TelemetryComponentType, TelemetryEvent, TelemetryProperty } from "./extTelemetryEvents";
 
 const TelemetryCacheKey = "TelemetryEvents";
 // export for UT
@@ -102,7 +100,7 @@ export namespace ExtTelemetry {
 
     properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
-    if (globalVariables.workspaceUri) {
+    if (globalVariables.getWorkspacePath()) {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
@@ -132,7 +130,7 @@ export namespace ExtTelemetry {
 
     fillInTelemetryPropsForFxError(properties, error);
 
-    if (globalVariables.workspaceUri) {
+    if (globalVariables.getWorkspacePath()) {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
@@ -158,7 +156,7 @@ export namespace ExtTelemetry {
 
     properties[TelemetryProperty.IsExistingUser] = globalVariables.isExistingUser;
 
-    if (globalVariables.workspaceUri) {
+    if (globalVariables.getWorkspacePath()) {
       properties[TelemetryProperty.IsSpfx] = globalVariables.isSPFxProject.toString();
     }
 
@@ -177,7 +175,7 @@ export namespace ExtTelemetry {
       eventName: eventName,
       properties: {
         [TelemetryProperty.CorrelationId]: lastCorrelationId,
-        [TelemetryProperty.ProjectId]: await getProjectId(),
+        [TelemetryProperty.ProjectId]: getProjectId(),
         [TelemetryProperty.Timestamp]: new Date().toISOString(),
         ...properties,
       },

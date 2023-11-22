@@ -3,7 +3,6 @@ import * as sinon from "sinon";
 
 import { ok } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 import * as globalVariables from "../../../src/globalVariables";
 import EnvironmentTreeViewProvider from "../../../src/treeview/environmentTreeViewProvider";
@@ -16,8 +15,8 @@ describe("EnvironmentTreeViewProvider", () => {
   });
 
   it("reloadEnvironments", async () => {
-    sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "test" });
+    sandbox.stub(globalVariables, "isTeamsFxProject").returns(true);
+    sandbox.stub(globalVariables, "getWorkspacePath").returns("test");
 
     const result = await EnvironmentTreeViewProvider.reloadEnvironments();
 
@@ -25,7 +24,7 @@ describe("EnvironmentTreeViewProvider", () => {
   });
 
   it("getChildren", async () => {
-    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "test" });
+    sandbox.stub(globalVariables, "getWorkspacePath").returns("test");
     sandbox.stub(environmentManager, "listRemoteEnvConfigs").returns(Promise.resolve(ok(["test"])));
     sandbox.stub(environmentManager, "getExistingNonRemoteEnvs").returns(Promise.resolve(["test"]));
 

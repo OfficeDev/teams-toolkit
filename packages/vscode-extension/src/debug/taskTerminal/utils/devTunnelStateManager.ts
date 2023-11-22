@@ -104,12 +104,11 @@ class FileStateService implements IStateService {
   private readonly stateFileName = "devtunnel.state.json";
   async get<T>(key: string): Promise<T | undefined> {
     try {
-      if (!globalVariables.workspaceUri?.fsPath) {
+      const ws = globalVariables.getWorkspacePath();
+      if (!ws) {
         return undefined;
       }
-      const data = await fs.readJson(
-        path.resolve(globalVariables.workspaceUri.fsPath, this.stateFileName)
-      );
+      const data = await fs.readJson(path.resolve(ws, this.stateFileName));
 
       return data?.[key] as T;
     } catch {
@@ -119,10 +118,11 @@ class FileStateService implements IStateService {
 
   async update(key: string, value: any): Promise<void> {
     try {
-      if (!globalVariables.workspaceUri?.fsPath) {
+      const ws = globalVariables.getWorkspacePath();
+      if (!ws) {
         return;
       }
-      const stateFilePath = path.resolve(globalVariables.workspaceUri.fsPath, this.stateFileName);
+      const stateFilePath = path.resolve(ws, this.stateFileName);
       let data: { [key: string]: any } = {};
       try {
         data = await fs.readJson(stateFilePath);

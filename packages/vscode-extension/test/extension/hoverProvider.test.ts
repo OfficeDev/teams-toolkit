@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as chai from "chai";
-import * as sinon from "sinon";
-import * as vscode from "vscode";
-import { v4 } from "uuid";
 import { ok } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import { ManifestTemplateHoverProvider } from "../../src/hoverProvider";
+import * as chai from "chai";
+import * as sinon from "sinon";
+import { v4 } from "uuid";
+import * as vscode from "vscode";
 import { environmentVariableRegex } from "../../src/constants";
-import * as handlers from "../../src/handlers";
+import * as globalVariables from "../../src/globalVariables";
+import { ManifestTemplateHoverProvider } from "../../src/hoverProvider";
 import { MockCore } from "../mocks/mockCore";
 
 describe("Manifest template hover - V3", async () => {
@@ -38,7 +37,7 @@ describe("Manifest template hover - V3", async () => {
   } as any;
 
   beforeEach(() => {
-    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(globalVariables, "core").value(new MockCore());
     sinon.stub(envUtil, "listEnv").resolves(ok(["local", "dev"]));
   });
 

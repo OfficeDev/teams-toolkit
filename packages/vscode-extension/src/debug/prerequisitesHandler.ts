@@ -40,9 +40,7 @@ import { signedOut } from "../commonlib/common/constant";
 import VsCodeLogInstance from "../commonlib/log";
 import M365TokenInstance from "../commonlib/m365Login";
 import { ExtensionErrors, ExtensionSource } from "../error";
-import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { checkCopilotCallback, openAccountHelpHandler, tools } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
@@ -60,6 +58,9 @@ import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ProgressHelper } from "./progressHelper";
 import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
+import { VS_CODE_UI } from "../qm/vsc_ui";
+import { tools } from "../globalVariables";
+import { checkCopilotCallback, openAccountHelpHandler } from "../handlers";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",
@@ -616,7 +617,7 @@ async function checkNode(
       try {
         VsCodeLogInstance.outputChannel.appendLine(`${prefix} ${ProgressMessage[nodeDep]} ...`);
         const nodeStatus = await depsManager.ensureDependency(nodeDep, true, {
-          projectPath: globalVariables.workspaceUri?.fsPath,
+          projectPath: globalVariables.getWorkspacePath(),
         });
         return {
           checker: nodeStatus.name,
@@ -780,7 +781,7 @@ async function checkFailure(
 }
 
 function getOrderedCheckersForGetStarted(): PrerequisiteOrderedChecker[] {
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  const workspacePath = globalVariables.getWorkspacePath();
   return [
     {
       info: { checker: workspacePath ? DepsType.ProjectNode : DepsType.LtsNode },

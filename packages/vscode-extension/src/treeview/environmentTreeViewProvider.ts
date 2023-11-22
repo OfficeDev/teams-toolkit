@@ -33,7 +33,7 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
   }
 
   public async reloadEnvironments(): Promise<Result<Void, FxError>> {
-    if (!globalVariables.workspaceUri || !isValidProject(globalVariables.workspaceUri.fsPath)) {
+    if (!globalVariables.getWorkspacePath() || !globalVariables.isTeamsFxProject()) {
       return ok(Void);
     }
     return await this.mutex.runExclusive(() => {
@@ -70,10 +70,11 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
   }
 
   private async getEnvironments(): Promise<DynamicNode[] | undefined | null> {
-    if (!globalVariables.workspaceUri) {
+    const ws = globalVariables.getWorkspacePath();
+    if (!ws) {
       return null;
     }
-    const workspacePath: string = globalVariables.workspaceUri.fsPath;
+    const workspacePath: string = ws;
     return await this.mutex.runExclusive(async () => {
       if (this.needRefresh) {
         const envNamesResult = await environmentManager.listRemoteEnvConfigs(workspacePath);

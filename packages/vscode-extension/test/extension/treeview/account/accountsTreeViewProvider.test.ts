@@ -18,7 +18,7 @@ describe("AccountTreeViewProvider", () => {
 
   it("subscribeToStatusChanges", async () => {
     sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "test" });
+    sandbox.stub(globalVariables, "getWorkspaceUri").returns({ fsPath: "test" } as any);
     sandbox.stub(EnvironemtTreeProvider, "refreshRemoteEnvWarning");
     const azureAccountProviderStub = stubInterface<AzureAccountProvider>();
     const m365TokenProviderStub = stubInterface<M365TokenProvider>();

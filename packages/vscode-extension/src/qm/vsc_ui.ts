@@ -7,7 +7,6 @@ import {
   commands,
   Disposable,
   env,
-  ExtensionContext,
   extensions,
   InputBox,
   QuickInputButton,
@@ -61,7 +60,6 @@ import {
 import * as packageJson from "../../package.json";
 import { TerminalName } from "../constants";
 import { ExtensionErrors, ExtensionSource } from "../error";
-import { showOutputChannel } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -146,11 +144,6 @@ function isSame(set1: Set<string>, set2: Set<string>): boolean {
 const internalUIError = new SystemError("UI", "InternalError", "VS Code failed to operate.");
 
 export class VsCodeUI implements UserInteraction {
-  context: ExtensionContext;
-  constructor(context: ExtensionContext) {
-    this.context = context;
-  }
-
   async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     if (typeof config.options === "object" && config.options.length === 0) {
       return err(
@@ -1129,3 +1122,5 @@ export class VsCodeUI implements UserInteraction {
     }
   }
 }
+
+export const VS_CODE_UI = new VsCodeUI();

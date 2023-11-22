@@ -59,7 +59,7 @@
     "onView:teamsfx-empty-project",
     "onUri",
     "workspaceContains:/**/manifest.json",
-    "workspaceContains:/package.json",
+    "workspaceContains:package.json",
     "workspaceContains:teamsapp.local.yml"
   ],
   "capabilities": {

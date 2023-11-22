@@ -38,6 +38,8 @@ import { TeamsfxTaskProvider } from "./debug/teamsfxTaskProvider";
 import * as exp from "./exp";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
+  checkProjectType,
+  initFxCore,
   initializeGlobalVariables,
   isExistingUser,
   isSPFxProject,
@@ -75,13 +77,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
   VS_CODE_UI = new VsCodeUI(context);
 
-  await initializeGlobalVariables(context);
-
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
   setUriEventHandler(uriHandler);
   context.subscriptions.push(vscode.window.registerUriHandler(uriHandler));
+
+  initializeGlobalVariables(context);
 
   registerActivateCommands(context);
 
@@ -90,6 +92,9 @@ export async function activate(context: vscode.ExtensionContext) {
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
   }
+
+  // initialize FxCore
+  initFxCore();
 
   // Call activate function of toolkit core.
   handlers.activate();
@@ -104,6 +109,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // Don't wait this async method to let it run in background.
   void runBackgroundAsyncTasks(context, isTeamsFxProject);
+
   await vscode.commands.executeCommand("setContext", "fx-extension.initialized", true);
 }
 
@@ -875,6 +881,9 @@ async function runBackgroundAsyncTasks(
   isTeamsFxProject: boolean
 ) {
   await exp.initialize(context);
+
+  await checkProjectType();
+
   await vscode.commands.executeCommand(
     "setContext",
     "fx-extension.isNewUser",
@@ -940,7 +949,7 @@ async function checkProjectUpgradable(): Promise<boolean> {
 
 async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   const wasTeamsFxProject = isTeamsFxProject;
-  await initializeGlobalVariables(context);
+  initializeGlobalVariables(context);
   if (isTeamsFxProject && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 

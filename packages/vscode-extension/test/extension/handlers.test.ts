@@ -118,9 +118,7 @@ describe("handlers", () => {
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const initGlobalVariables = sandbox
-      .stub(globalVariables, "initializeGlobalVariables")
-      .resolves();
+    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
     const updateTreeViewsOnSPFxChanged = sandbox.stub(
       TreeViewManagerInstance,
       "updateTreeViewsOnSPFxChanged"
@@ -1977,9 +1975,7 @@ describe("handlers", () => {
   });
 
   it("refreshSPFxTreeOnFileChanged", async () => {
-    const initGlobalVariables = sandbox
-      .stub(globalVariables, "initializeGlobalVariables")
-      .resolves();
+    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
     const updateTreeViewsOnSPFxChanged = sandbox
       .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
       .resolves();
@@ -2558,15 +2554,15 @@ describe("autoOpenProjectHandler", () => {
   });
 
   it("treeViewDebugInTestToolHandler", async () => {
-    sinon.stub(globalVariables, "core").value(new MockCore());
-    sinon.stub(ExtTelemetry, "sendTelemetryEvent");
-    const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
+    sandbox.stub(globalVariables, "core").value(new MockCore());
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
 
     await handlers.treeViewDebugInTestToolHandler();
 
     chai.assert.isTrue(
       executeCommandStub.calledOnceWith("workbench.action.quickOpen", "debug in Test Tool")
     );
-    sinon.restore();
+    sandbox.restore();
   });
 });

@@ -17,7 +17,7 @@ describe("Global Variables", () => {
   it("set log folder", async () => {
     sinon.stub(fs, "pathExists").resolves(false);
     sinon.stub(fs, "mkdir").callsFake(async () => {});
-    await globalVariables.initializeGlobalVariables({
+    globalVariables.initializeGlobalVariables({
       globalState: {
         get: () => undefined,
       },

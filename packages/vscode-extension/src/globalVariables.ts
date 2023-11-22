@@ -2,7 +2,12 @@
 // Licensed under the MIT license.
 
 import { CoreCallbackEvent, Tools } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, FxCore, fillinProjectTypeProperties } from "@microsoft/teamsfx-core";
+import {
+  AppStudioScopes,
+  FxCore,
+  fillinProjectTypeProperties,
+  isValidProject,
+} from "@microsoft/teamsfx-core";
 import {
   ProjectTypeResult,
   TeamsfxVersionState,
@@ -92,15 +97,26 @@ export function initFxCore() {
   });
 }
 
-export async function initializeGlobalVariables(ctx: vscode.ExtensionContext): Promise<void> {
+export function initializeGlobalVariables(ctx: vscode.ExtensionContext) {
   if (vscode.workspace && vscode.workspace.workspaceFolders) {
     if (vscode.workspace.workspaceFolders.length > 0) {
       workspaceUri = vscode.workspace.workspaceFolders[0].uri;
     }
   }
   context = ctx;
-  initFxCore();
   isExistingUser = context.globalState.get<string>(UserState.IsExisting) || "no";
+  isTeamsFxProject = isValidProject();
+  // Default Extension log path
+  // e.g. C:/Users/xx/AppData/Roaming/Code/logs/20230221T095340/window7/exthost/TeamsDevApp.ms-teams-vscode-extension
+  defaultExtensionLogPath = ctx.logUri.fsPath;
+  void fs.pathExists(defaultExtensionLogPath).then((exists) => {
+    if (!exists) {
+      void fs.mkdir(defaultExtensionLogPath);
+    }
+  });
+}
+
+export async function checkProjectType() {
   const workspacePath = getWorkspacePath();
   if (workspacePath) {
     const res = await core.checkProjectType(workspacePath);
@@ -136,12 +152,6 @@ export async function initializeGlobalVariables(ctx: vscode.ExtensionContext): P
         isSPFxProject = await fs.pathExists(path.join(workspacePath, "SPFx"));
       }
     }
-  }
-  // Default Extension log path
-  // e.g. C:/Users/xx/AppData/Roaming/Code/logs/20230221T095340/window7/exthost/TeamsDevApp.ms-teams-vscode-extension
-  defaultExtensionLogPath = ctx.logUri.fsPath;
-  if (!(await fs.pathExists(defaultExtensionLogPath))) {
-    await fs.mkdir(defaultExtensionLogPath);
   }
 }
 

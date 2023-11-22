@@ -18,12 +18,10 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
-  CoreCallbackEvent,
   CreateProjectResult,
   Func,
   FxError,
   Inputs,
-  M365TokenProvider,
   ManifestTemplateFileName,
   ManifestUtil,
   OptionItem,
@@ -54,7 +52,6 @@ import {
   Correlator,
   DepsManager,
   DepsType,
-  FxCore,
   Hub,
   InvalidProjectError,
   JSONSyntaxError,
@@ -62,7 +59,6 @@ import {
   assembleError,
   environmentManager,
   generateScaffoldingSummary,
-  getFixedCommonProjectSettings,
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
@@ -75,9 +71,8 @@ import {
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
 import { MetadataV3 } from "@microsoft/teamsfx-core";
-import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
-import { signedIn, signedOut } from "./commonlib/common/constant";
+import { signedIn } from "./commonlib/common/constant";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
@@ -95,7 +90,6 @@ import { openHubWebClient } from "./debug/launch";
 import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { selectAndDebug } from "./debug/runIconHandler";
 import { ExtensionErrors, ExtensionSource } from "./error";
-import * as exp from "./exp/index";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
@@ -134,6 +128,7 @@ import { ExtensionSurvey } from "./utils/survey";
 
 export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
+
   try {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
@@ -207,20 +202,20 @@ export function addFileSystemWatcher(workspacePath: string) {
     });
 
     const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-    yorcFileWatcher.onDidCreate(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidCreate((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidChange(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidChange((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidDelete(async (event) => {
-      await refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidDelete((event) => {
+      refreshSPFxTreeOnFileChanged();
     });
   }
 }
 
-export async function refreshSPFxTreeOnFileChanged() {
-  await globalVariables.initializeGlobalVariables(globalVariables.context);
+export function refreshSPFxTreeOnFileChanged() {
+  globalVariables.initializeGlobalVariables(globalVariables.context);
 
   TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }

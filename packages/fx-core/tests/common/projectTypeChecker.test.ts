@@ -8,6 +8,7 @@ import path from "path";
 import sinon from "sinon";
 import {
   ProjectTypeResult,
+  SPFxKey,
   TeamsfxConfigType,
   TeamsfxVersionState,
   getCapabilities,
@@ -420,6 +421,36 @@ describe("ProjectTypeChecker", () => {
       const res = await projectTypeChecker.findTeamsFxCallback(path.join("./abc.json"), result);
       assert.isTrue(res);
       assert.isFalse(result.isTeamsFx);
+    });
+  });
+
+  describe("findSPFxCallback", () => {
+    it("not found", async () => {
+      const result: ProjectTypeResult = {
+        isTeamsFx: false,
+        hasTeamsManifest: false,
+        dependsOnTeamsJs: false,
+        isSPFx: false,
+        lauguages: [],
+      };
+      const res = await projectTypeChecker.findSPFxCallback(path.join("./abc.json"), result);
+      assert.isTrue(res);
+      assert.isFalse(result.isSPFx);
+    });
+    it("found", async () => {
+      sandbox.stub(fs, "readJson").resolves({
+        [SPFxKey]: "xxx-xxx-xxx",
+      });
+      const result: ProjectTypeResult = {
+        isTeamsFx: false,
+        hasTeamsManifest: false,
+        dependsOnTeamsJs: false,
+        isSPFx: false,
+        lauguages: [],
+      };
+      const res = await projectTypeChecker.findSPFxCallback(path.join("./.yo-rc.json"), result);
+      assert.isFalse(res);
+      assert.isTrue(result.isSPFx);
     });
   });
 

@@ -13,6 +13,8 @@ export enum TeamsfxConfigType {
 }
 export const TeamsJsModule = "@microsoft/teams-js";
 
+export const SPFxKey = "@microsoft/generator-sharepoint";
+
 export enum TeamsfxVersionState {
   Compatible = "compatible",
   Upgradable = "upgradable",
@@ -31,6 +33,7 @@ export interface ProjectTypeResult {
   manifestAppId?: string;
   manifestVersion?: string;
   dependsOnTeamsJs?: boolean;
+  isSPFx?: boolean;
   lauguages: ("ts" | "js" | "csharp" | "java" | "python" | "c")[];
 }
 
@@ -181,6 +184,18 @@ class ProjectTypeChecker {
     }
     return true;
   }
+  async findSPFxCallback(filePath: string, data: ProjectTypeResult): Promise<boolean> {
+    const parsed = path.parse(filePath);
+    const fileName = parsed.base;
+    if (fileName === ".yo-rc.json") {
+      const content = await fs.readJson(filePath);
+      if (content[SPFxKey]) {
+        data.isSPFx = true;
+        return false;
+      }
+    }
+    return true;
+  }
   async checkProjectType(projectPath: string) {
     const result: ProjectTypeResult = {
       isTeamsFx: false,
@@ -212,6 +227,14 @@ class ProjectTypeChecker {
         result,
         this.findTeamsFxCallback,
         1,
+        0
+      );
+      await this.scanFolder(
+        projectPath,
+        ["node_modules", "bin", "build", "dist", ".vscode"],
+        result,
+        this.findSPFxCallback,
+        2,
         0
       );
     } catch (e) {}

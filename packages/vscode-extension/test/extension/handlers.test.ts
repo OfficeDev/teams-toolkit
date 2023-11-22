@@ -3,11 +3,11 @@
  */
 import * as chai from "chai";
 import * as fs from "fs-extra";
+import * as mockfs from "mock-fs";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
 import * as vscode from "vscode";
-import * as mockfs from "mock-fs";
 
 import {
   ConfigFolderName,
@@ -20,29 +20,25 @@ import {
   Stage,
   SystemError,
   UserError,
-  Void,
   VsCodeEnv,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
-import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
-import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import {
   AppDefinition,
   AppStudioClient,
   CollaborationState,
   DepsManager,
   DepsType,
-  FxCore,
-  ObjectIsUndefinedError,
   UnhandledError,
   UserCancelError,
   environmentManager,
   manifestUtils,
   pathUtils,
 } from "@microsoft/teamsfx-core";
-import commandController from "../../src/commandController";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as commonTools from "@microsoft/teamsfx-core/build/common/tools";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import VsCodeLogInstance, { VsCodeLogProvider } from "../../src/commonlib/log";
@@ -52,36 +48,27 @@ import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
 import * as debugCommonUtils from "../../src/debug/commonUtils";
 import * as launch from "../../src/debug/launch";
+import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
 import { ExtensionErrors } from "../../src/error";
 import { TreatmentVariableValue } from "../../src/exp/treatmentVariables";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
+import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
 import { ProgressHandler } from "../../src/progressHandler";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as extTelemetryEvents from "../../src/telemetry/extTelemetryEvents";
-import accountTreeViewProviderInstance from "../../src/treeview/account/accountTreeViewProvider";
 import envTreeProviderInstance from "../../src/treeview/environmentTreeViewProvider";
 import TreeViewManagerInstance from "../../src/treeview/treeViewManager";
 import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { MockCore } from "../mocks/mockCore";
-import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
-import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
 
 describe("handlers", () => {
   describe("activate()", function () {
     const sandbox = sinon.createSandbox();
-
-    beforeEach(() => {
-      sandbox.stub(accountTreeViewProviderInstance, "subscribeToStatusChanges");
-      sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
-      sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
-      sandbox.stub(ExtTelemetry, "dispose");
-    });
-
     afterEach(() => {
       sandbox.restore();
     });
@@ -92,22 +79,30 @@ describe("handlers", () => {
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
     });
 
-    // it("Valid project", async () => {
-    //   sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
-    //   sandbox.stub(vscode.workspace, "onDidCreateFiles").value(()=>{ dispose: () => undefined });
-    //   sandbox.stub(vscode.workspace, "onDidDeleteFiles").value(()=>{ dispose: () => undefined });
-    //   sandbox.stub(vscode.workspace, "onDidSaveTextDocument").value(()=>{ dispose: () => undefined });
-    //   const result = await handlers.activate();
+    it("has workspaceUri", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+      sandbox.stub(vscode, "workspace").value({
+        onDidCreateFiles: () => {},
+        onDidDeleteFiles: () => {},
+        onDidRenameFiles: () => {},
+        onDidSaveTextDocument: () => {},
+      });
+      const result = await handlers.activate();
+      chai.assert.isTrue(result.isOk());
+    });
 
-    //   chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
-    // });
-
-    // it("throws error", async () => {
-    //   sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
-    //   sandbox.stub(vscode.workspace, "onDidCreateFiles").value(()=> { throw new Error() });
-    //   const result = await handlers.activate();
-    //   chai.assert.isTrue(result.isErr());
-    // });
+    it("throws error", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+      sandbox.stub(vscode, "workspace").value({
+        onDidCreateFiles: () => {
+          throw new Error("test");
+        },
+        onDidDeleteFiles: () => {},
+        onDidSaveTextDocument: () => {},
+      });
+      const result = await handlers.activate();
+      chai.assert.isTrue(result.isErr());
+    });
   });
   const sandbox = sinon.createSandbox();
   afterEach(() => {

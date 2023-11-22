@@ -17,21 +17,21 @@ import {
 } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import * as activate from "../../src/activate";
 import { getFxCore, resetFxCore } from "../../src/activate";
 import { engine } from "../../src/commands/engine";
 import { start } from "../../src/commands/index";
 import {
-  listTemplatesCommand,
   listSamplesCommand,
+  listTemplatesCommand,
   m365SideloadingCommand,
 } from "../../src/commands/models";
 import { getCreateCommand } from "../../src/commands/models/create";
 import { createSampleCommand } from "../../src/commands/models/createSample";
 import { rootCommand } from "../../src/commands/models/root";
 import { logger } from "../../src/commonlib/logger";
+import { CliTelemetryReporter } from "../../src/commonlib/telemetry";
 import {
   InvalidChoiceError,
   UnknownArgumentError,
@@ -40,10 +40,8 @@ import {
 } from "../../src/error";
 import * as main from "../../src/index";
 import CliTelemetry from "../../src/telemetry/cliTelemetry";
-import { getVersion } from "../../src/utils";
 import { UserSettings } from "../../src/userSetttings";
-import { CliTelemetryReporter } from "../../src/commonlib/telemetry";
-import * as common from "@microsoft/teamsfx-core";
+import { getVersion } from "../../src/utils";
 
 describe("CLI Engine", () => {
   const sandbox = sinon.createSandbox();
@@ -62,8 +60,8 @@ describe("CLI Engine", () => {
       assert.equal(result.cmd.name, createSampleCommand.name);
       assert.deepEqual(result.remainingArgs, []);
     });
-    it("should find m365 command alias", async () => {
-      const result = engine.findCommand(rootCommand, ["m365", "sideloading"]);
+    it("should find sideloading command alias", async () => {
+      const result = engine.findCommand(rootCommand, ["sideloading"]);
       assert.equal(result.cmd.name, m365SideloadingCommand.name);
       assert.deepEqual(result.remainingArgs, []);
     });
@@ -572,12 +570,6 @@ describe("CLI Engine", () => {
       sandbox.restore();
     });
     it("new logger", async () => {
-      sandbox.stub(common, "isCliNewUxEnabled").returns(true);
-      resetFxCore();
-      getFxCore();
-    });
-    it("old logger", async () => {
-      sandbox.stub(common, "isCliNewUxEnabled").returns(false);
       resetFxCore();
       getFxCore();
     });

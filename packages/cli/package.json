@@ -1,6 +1,6 @@
 {
-  "name": "@microsoft/teamsfx-cli",
-  "version": "2.0.2",
+  "name": "@microsoft/teamsapp-cli",
+  "version": "3.0.0-alpha",
   "author": "Microsoft Corporation",
   "description": "",
   "license": "MIT",
@@ -34,11 +34,12 @@
   },
   "keywords": [
     "teamsfx",
-    "teamsfx-cli"
+    "teamsfx-cli",
+    "teamsapp-cli",
+    "teamsapp"
   ],
   "preferGlobal": true,
   "bin": {
-    "teamsfx": "./cliold.js",
     "teamsapp": "./cli.js"
   },
   "aiKey": "1c56be97-bb74-42cf-b04b-8f1aabf04592",
@@ -84,6 +85,7 @@
     "terser-webpack-plugin": "^5.1.2",
     "ts-loader": "^9.2.2",
     "ts-node": "^9.1.1",
+    "tslib": "^2.3.1",
     "typescript": "^4.3.2",
     "umd-compat-loader": "^2.1.2",
     "url-loader": "^4.1.1",

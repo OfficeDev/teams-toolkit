@@ -4,13 +4,13 @@
 /**
  * @author darrmill@microsoft.com, yefuwang@microsoft.com
  */
-import axios from "axios";
+import { ManifestUtil, devPreview } from "@microsoft/teamsfx-api";
 import fs from "fs";
 import fse from "fs-extra";
 import * as path from "path";
 import * as unzip from "unzipper";
-import { ManifestUtil, devPreview } from "@microsoft/teamsfx-api";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
+import fetch from "node-fetch";
 
 const zipFile = "project.zip";
 
@@ -20,37 +20,39 @@ export class HelperMethods {
     projectRepo: string,
     projectBranch?: string
   ): Promise<void> {
-    const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
-    return axios
-      .get(projectTemplateZipFile, {
-        responseType: "stream",
-      })
-      .then((response) => {
-        return new Promise<void>((resolve, reject) => {
-          response.data
-            .pipe(fs.createWriteStream(`${projectFolder}/${zipFile}`))
-            .on("error", function (err: unknown) {
-              reject(
-                // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                `Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`
-              );
-            })
-            .on("close", async () => {
-              await HelperMethods.unzipProjectTemplate(projectFolder);
-              resolve();
-            });
-        });
-      })
-      .catch((err) => {
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        console.log(`Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`);
-      });
+    const projectTemplateZipFile = path.resolve(
+      `${projectRepo}/archive/${projectBranch || ""}.zip`
+    );
+    const response = await fetch(projectTemplateZipFile, { method: "GET" });
+    return new Promise<void>((resolve, reject) => {
+      if (response.body) {
+        response.body
+          .pipe(fs.createWriteStream(path.resolve(projectFolder, zipFile)))
+          .on("error", (err) => {
+            reject(
+              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+              `Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`
+            );
+          })
+          .on("close", () => {
+            HelperMethods.unzipProjectTemplate(projectFolder)
+              .then(() => {
+                resolve();
+              })
+              .catch((err) => {
+                reject(err);
+              });
+          });
+      } else {
+        reject(`Response body is null.`);
+      }
+    });
   }
 
   static async unzipProjectTemplate(projectFolder: string): Promise<void> {
     return new Promise((resolve, reject) => {
       // TODO: Verify file exists
-      const readStream = fs.createReadStream(`${projectFolder}/${zipFile}`);
+      const readStream = fs.createReadStream(path.resolve(`${projectFolder}/${zipFile}`));
       readStream
         .pipe(unzip.Extract({ path: projectFolder }))
         .on("error", function (err: unknown) {

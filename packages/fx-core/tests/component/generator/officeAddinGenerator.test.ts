@@ -15,7 +15,6 @@ import {
   Platform,
   SystemError,
 } from "@microsoft/teamsfx-api";
-import axios from "axios";
 import * as chai from "chai";
 import * as childProcess from "child_process";
 import EventEmitter from "events";
@@ -40,6 +39,7 @@ import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { QuestionNames } from "../../../src/question";
 import { MockTools } from "../../core/utils";
+import * as fetch from "node-fetch";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -372,7 +372,6 @@ describe("helperMethods", async () => {
 
   describe("downloadProjectTemplateZipFile", async () => {
     const sandbox = sinon.createSandbox();
-
     class ResponseData extends EventEmitter {
       pipe(ws: fs.WriteStream) {
         return this;
@@ -391,16 +390,60 @@ describe("helperMethods", async () => {
 
     it("should download project template zip file", async () => {
       const resp = new ResponseData();
-      sandbox.stub(axios, "get").resolves({ data: resp });
+      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
       const mockedStream = new MockedWriteStream();
       const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
       const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
       // manully wait for the close event to be registered
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       resp.emit("close");
       await promise;
-      chai.expect(unzipStub.calledOnce).to.be.true;
+      chai.assert.isTrue(unzipStub.calledOnce);
+    });
+
+    it("unzipProjectTemplate error", async () => {
+      const resp = new ResponseData();
+      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
+      const mockedStream = new MockedWriteStream();
+      sandbox.stub(HelperMethods, "unzipProjectTemplate").rejects(new Error());
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      // manully wait for the close event to be registered
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      resp.emit("close");
+      try {
+        await promise;
+        chai.assert.fail("should throw error");
+      } catch (e) {}
+    });
+
+    it("download error", async () => {
+      const resp = new ResponseData();
+      sandbox.stub(fetch, "default").resolves({ body: resp } as any);
+      const mockedStream = new MockedWriteStream();
+      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      // manully wait for the close event to be registered
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      resp.emit("error", new Error());
+      try {
+        await promise;
+        chai.assert.fail("should throw error");
+      } catch (e) {}
+      chai.assert.isTrue(unzipStub.notCalled);
+    });
+
+    it("Response body is null.", async () => {
+      sandbox.stub(fetch, "default").resolves({ body: null } as any);
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      try {
+        await promise;
+        chai.assert.fail("should throw error");
+      } catch (e) {
+        chai.assert.equal(e, `Response body is null.`);
+      }
     });
   });
 

@@ -20,7 +20,6 @@ import {
   CancelDownloading,
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
-  FetchZipFromUrlError,
   SampleNotFoundError,
   TemplateNotFoundError,
   TemplateZipFallbackError,
@@ -42,6 +41,7 @@ export class Generator {
   public static getDefaultVariables(
     appName: string,
     safeProjectNameFromVS?: string,
+    targetFramework?: string,
     apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
@@ -53,6 +53,7 @@ export class Generator {
     return {
       appName: appName,
       ProjectName: appName,
+      TargetFramework: targetFramework ?? "net8.0",
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
       ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
@@ -132,8 +133,7 @@ export class Generator {
       [TelemetryProperty.SampleAppName]: sampleName,
       [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
-    await sampleProvider.fetchSampleConfig();
-    const sample = getSampleInfoFromName(sampleName);
+    const sample = await getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
     const generatorContext: GeneratorContext = {
       name: sampleName,
@@ -214,10 +214,6 @@ export async function sampleDefaultOnActionError(
       } else {
         throw new DownloadSampleNetworkError(context.url!).toFxError();
       }
-    case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.url!, error).toFxError();
-    case GeneratorActionName.Unzip:
-      throw new UnzipError().toFxError();
     default:
       throw new Error(error.message);
   }

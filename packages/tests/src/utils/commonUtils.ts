@@ -205,15 +205,18 @@ export async function CLIVersionCheck(
   version: "V2" | "V3",
   projectPath: string
 ): Promise<{ success: boolean; cliVersion: string }> {
-  const command = `npx teamsfx --version`;
+  const command = `npx teamsapp --version`;
   const { success, stdout } = await Executor.execute(command, projectPath);
   chai.expect(success).to.eq(true);
   const cliVersion = stdout.trim();
+  const versionGeneralRegex = /(\d\.\d+\.\d+).*$/;
+  const cliVersionOutputs = cliVersion.match(versionGeneralRegex);
+  console.log(cliVersionOutputs![0]);
   let versionRegex;
   if (version === "V2") versionRegex = /^1\.\d+\.\d+.*$/;
-  else if (version === "V3") versionRegex = /^2\.\d+\.\d+.*$/;
+  else if (version === "V3") versionRegex = /^[23]\.\d+\.\d+.*$/;
   else throw new Error(`Invalid version specified: ${version}`);
-  chai.expect(cliVersion).to.match(versionRegex);
+  chai.expect(cliVersionOutputs![0]).to.match(versionRegex);
   console.log(`CLI Version: ${cliVersion}`);
   return { success: true, cliVersion };
 }

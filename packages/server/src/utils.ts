@@ -67,7 +67,7 @@ export async function getResponseWithErrorHandling<T>(
   });
 }
 
-export async function convertUIConfigToJson<T extends string | string[]>(
+export async function convertUIConfigToJson<T extends string | string[] | boolean>(
   config: UIConfig<T>
 ): Promise<UIConfig<T>> {
   const newConfig = deepCopy(config);

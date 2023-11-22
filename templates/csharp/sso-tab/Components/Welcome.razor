@@ -3,7 +3,6 @@
 @using Microsoft.Extensions.Hosting
 @inject TeamsFx teamsfx
 @inject TeamsUserCredential teamsUserCredential
-@inject MicrosoftTeams MicrosoftTeams
 @inject IWebHostEnvironment HostEnvironment
 @inject IConfiguration Configuration
 @inject NavigationManager MyNavigationManager
@@ -27,10 +26,7 @@ else
                     <Content>
                         <div style="display:block; width:100%;">
                             <EditCode />
-                            @if (isInTeams)
-                            {
                                 <CurrentUser UserName="@userName" />
-                            }
                             <Graph ErrorMessage="@errorMessage" />
                         </div>
                     </Content>
@@ -55,30 +51,18 @@ else
 @code {
     string userName;
     string errorMessage;
-    bool isInTeams;
     bool isLoading = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-
         if (firstRender)
         {
-            isInTeams = await MicrosoftTeams.IsInTeams();
-
-            if (isInTeams)
-            {
-                var user = await teamsUserCredential.GetUserInfoAsync();
-                userName = user.DisplayName;
-            }
-            else
-            {
-                errorMessage = "Not running in Microsoft Teams.";
-            }
-
-            isLoading = false;
-            StateHasChanged();
+            var user = await teamsUserCredential.GetUserInfoAsync();
+            userName = user.DisplayName;
         }
+        isLoading = false;
+        StateHasChanged();
     }
 
     private string GetEnvironmentName()

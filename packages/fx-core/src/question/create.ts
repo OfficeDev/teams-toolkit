@@ -570,7 +570,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
     cliDescription: "Specifies the Microsoft Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
-    cliChoiceListCommand: "teamsfx list templates",
+    cliChoiceListCommand: "teamsapp list templates",
     type: "singleSelect",
     staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {
@@ -1199,7 +1199,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     name: QuestionNames.Samples,
     cliName: "sample-name",
     cliDescription: "Specifies the Microsoft Teams App sample name.",
-    cliChoiceListCommand: "teamsfx list samples",
+    cliChoiceListCommand: "teamsapp list samples",
     skipValidation: true,
     cliType: "argument",
     title: getLocalizedString("core.SampleSelect.title"),
@@ -1233,8 +1233,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
       "graph-connector-bot",
     ], //using a static list instead of dynamic list to avoid the delay of fetching sample list for CLL_HELP
     dynamicOptions: async () => {
-      await sampleProvider.fetchSampleConfig();
-      return sampleProvider.SampleCollection.samples.map((sample) => {
+      return (await sampleProvider.SampleCollection).samples.map((sample) => {
         return {
           id: sample.id,
           label: sample.title,

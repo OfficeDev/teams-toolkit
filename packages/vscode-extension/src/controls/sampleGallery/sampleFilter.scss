@@ -28,7 +28,7 @@
     border: 1px solid var(--vscode-menu-separatorBackground, #3C3C3C);
     height: 24px;
     color: var(--vscode-peekViewTitleDescription-foreground, #CCCCCC);
-    background: var(--vscode-diffEditor-unchangedRegionBackground);
+    background: rgba(255, 255, 255, 0.1);
 
     input::placeholder {
       color: "#A0A0A0";
@@ -64,20 +64,22 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
+  margin-top: 8px;
 
   .filter-tag {
     flex-shrink: 0;
     margin-right: 16px;
-    margin-top: 16px;
+    margin-top: 8px;
     height: 16px;
     font-size: 13px;
     padding: 2px 8px;
     border: 0;
+    border-radius: 2px;
 
     span {
       display: inline-block;
       height: 16px;
-      top: -2px;
+      top: -3px;
       position: relative;
     }
 
@@ -94,7 +96,7 @@
 
   button {
     height: 20px;
-    margin: 16px 0 0 0;
+    margin: 8px 0 0 0;
     font-size: 14px;
     padding: 0;
     color: var(--vscode-textLink-foreground);

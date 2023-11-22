@@ -24,7 +24,6 @@ import {
 } from "ts-morph";
 import { questionNodes } from ".";
 import { validate } from "../ui/validationUtils";
-import { sampleProvider } from "../common/samples";
 
 async function collectNodesForCliOptions(node: IQTreeNode, nodeList: IQTreeNode[]) {
   if (node.cliOptionDisabled === "all") return;
@@ -119,7 +118,8 @@ async function computeRequired(node: IQTreeNode) {
           }
         }
       }
-      if (childRequired) (child.data as any).required = true;
+      if (childRequired && (child.data as any).required !== false)
+        (child.data as any).required = true;
       // console.log(
       //   child.data.name,
       //   "parent required:",
@@ -425,7 +425,6 @@ async function batchGenerate() {
   await generateCliOptions(questionNodes.createProject(), "CreateProject");
   await generateInputs(questionNodes.createProject(), "CreateProject");
 
-  await sampleProvider.fetchSampleConfig();
   await generateCliOptions(questionNodes.createSampleProject(), "CreateSampleProject");
   await generateInputs(questionNodes.createSampleProject(), "CreateSampleProject");
 

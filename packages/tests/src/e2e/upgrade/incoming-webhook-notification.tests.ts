@@ -38,13 +38,14 @@ describe("upgrade", () => {
           TemplateProjectFolder.IncomingWebhook,
           env,
           true,
-          true
+          true,
+          false
         );
       }
 
       {
         // provision
-        const result = await Executor.provision(projectPath);
+        const result = await Executor.provision(projectPath, "dev", true);
         chai.assert.include(
           result.stderr,
           "This command only works for project created by Teams Toolkit"

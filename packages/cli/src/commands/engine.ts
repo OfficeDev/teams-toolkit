@@ -21,8 +21,8 @@ import {
   IncompatibleProjectError,
   VersionState,
   assembleError,
+  fillinProjectTypeProperties,
   getHashedEnv,
-  isCliV3Enabled,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
 import { cloneDeep, pick } from "lodash";
@@ -122,11 +122,10 @@ class CLIEngine {
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
       const core = getFxCore();
-      const res = await core.getProjectMetadata(context.optionValues.projectPath as string);
+      const res = await core.checkProjectType(context.optionValues.projectPath as string);
       if (res.isOk()) {
-        const value = res.value;
-        context.telemetryProperties[TelemetryProperty.ProjectId] = value.projectId || "";
-        context.telemetryProperties[TelemetryProperty.SettingsVersion] = value.version || "";
+        const projectTypeResult = res.value;
+        fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
       }
     }
 
@@ -207,12 +206,7 @@ class CLIEngine {
     // 6. version check
     const inputs = getSystemInputs(context.optionValues.projectPath as string);
     inputs.ignoreEnvInfo = true;
-    const skipCommands = [
-      "new",
-      "sample",
-      "upgrade",
-      ...(isCliV3Enabled() ? ["update", "package", "publish", "validate"] : []),
-    ];
+    const skipCommands = ["new", "sample", "upgrade", "update", "package", "publish", "validate"];
     if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
       const core = getFxCore();
       const res = await core.projectVersionCheck(inputs);

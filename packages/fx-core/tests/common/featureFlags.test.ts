@@ -11,10 +11,8 @@ import { FeatureFlagName } from "../../src/common/constants";
 import {
   initializePreviewFeatureFlags,
   isApiKeyEnabled,
-  isCliNewUxEnabled,
-  isCliV3Enabled,
+  isMultipleParametersEnabled,
 } from "../../src/common/featureFlags";
-
 chai.use(chaiAsPromised);
 
 describe("featureFlags", () => {
@@ -35,30 +33,6 @@ describe("featureFlags", () => {
     });
   });
 
-  describe("isCliNewUxEnabled()", () => {
-    it("is true", async () => {
-      const res = isCliNewUxEnabled();
-      chai.assert.isTrue(res);
-    });
-  });
-
-  describe("isCliV3Enabled()", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-    it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_V3: "true" });
-      const res = isCliV3Enabled();
-      chai.assert.isTrue(res);
-    });
-    it("is false", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_V3: "false" });
-      const res = isCliV3Enabled();
-      chai.assert.isFalse(res);
-    });
-  });
-
   describe("isApiKeyEnabled()", () => {
     let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {
@@ -72,6 +46,23 @@ describe("featureFlags", () => {
     it("is false", async () => {
       mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "false" });
       const res = isApiKeyEnabled();
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("isMultipleParametersEnabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "true" });
+      const res = isMultipleParametersEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "false" });
+      const res = isMultipleParametersEnabled();
       chai.assert.isFalse(res);
     });
   });

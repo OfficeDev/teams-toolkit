@@ -63,7 +63,7 @@ export function getSystemInputs(projectPath?: string, env?: string): Inputs {
     projectPath: projectPath,
     correlationId: uuid.v4(),
     env: env,
-    nonInteractive: !CLIUIInstance.interactive,
+    nonInteractive: false,
   };
   return systemInputs;
 }
@@ -116,9 +116,8 @@ export interface Sample {
 }
 
 export async function getTemplates(): Promise<Sample[]> {
-  await sampleProvider.fetchSampleConfig();
   const version = getVersion();
-  const availableSamples = sampleProvider.SampleCollection.samples.filter(
+  const availableSamples = (await sampleProvider.SampleCollection).samples.filter(
     (sample: SampleConfig) => {
       if (sample.minimumCliVersion !== undefined) {
         return semver.gte(version, sample.minimumCliVersion);

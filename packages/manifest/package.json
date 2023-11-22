@@ -6,10 +6,11 @@
   "license": "MIT",
   "dependencies": {
     "@types/fs-extra": "^11.0.1",
+    "@types/node-fetch": "^2.6.9",
     "ajv": "^8.5.0",
     "ajv-draft-04": "^1.0.0",
-    "axios": "^0.21.2",
-    "fs-extra": "^9.1.0"
+    "fs-extra": "^9.1.0",
+    "node-fetch": "2.7.0"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",

@@ -18,7 +18,7 @@ import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import semver from "semver";
-import { CancelDownloading, ParseUrlError } from "./error";
+import { CancelDownloading } from "./error";
 import { deepCopy } from "../../common/tools";
 import { InvalidInputError } from "../../core/error";
 import { ProgrammingLanguage } from "../../question";
@@ -217,8 +217,8 @@ export function renderTemplateFileName(
   );
 }
 
-export function getSampleInfoFromName(sampleName: string): SampleConfig {
-  const sample = sampleProvider.SampleCollection.samples.find(
+export async function getSampleInfoFromName(sampleName: string): Promise<SampleConfig> {
+  const sample = (await sampleProvider.SampleCollection).samples.find(
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (!sample) {
@@ -265,14 +265,6 @@ type SampleFileInfo = {
   }[];
   sha: string;
 };
-
-export function parseSampleUrl(url: string): SampleUrlInfo {
-  const urlParserRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)[/](.*)/;
-  const parsed = urlParserRegex.exec(url);
-  if (!parsed) throw new ParseUrlError(url);
-  const [owner, repository, ref, dir] = parsed.slice(1);
-  return { owner, repository, ref, dir };
-}
 
 async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): Promise<any> {
   const fileInfoUrl = `https://api.github.com/repos/${urlInfo.owner}/${urlInfo.repository}/git/trees/${urlInfo.ref}?recursive=1`;

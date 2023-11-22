@@ -53,6 +53,7 @@ export enum TemplateProject {
   SpfxProductivity = "One Productivity Hub using Graph Toolkit with SPFx",
   RetailDashboard = "Contoso Retail Dashboard",
   TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
+  LargeScaleBot = "Large Scale Notification Bot",
 }
 
 export enum TemplateProjectFolder {
@@ -83,6 +84,7 @@ export enum TemplateProjectFolder {
   SpfxProductivity = "spfx-productivity-dashboard",
   RetailDashboard = "react-retail-dashboard",
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
+  LargeScaleBot = "large-scale-notification",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -120,6 +122,7 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.SpfxProductivity]: TemplateProjectFolder.SpfxProductivity,
     [TemplateProject.RetailDashboard]: TemplateProjectFolder.RetailDashboard,
     [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
+    [TemplateProject.LargeScaleBot]: TemplateProjectFolder.LargeScaleBot,
   };
 
 export enum Resource {

@@ -213,6 +213,114 @@ describe("Samples", () => {
     });
   });
 
+  describe("getSampleReadmeHtml", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("calls GitHub API to get html response", async () => {
+      let requestUrl = "";
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+        requestUrl = url;
+        return { data: "html content", status: 200 };
+      });
+
+      const fakeSample = {
+        id: "external-sample",
+        title: "Test external sample",
+        shortDescription: "short description for external sample",
+        fullDescription: "full description for external sample",
+        types: [],
+        tags: ["External"],
+        time: "5min to run",
+        configuration: "Ready for debug",
+        thumbnailUrl: "",
+        onboardDate: new Date(),
+        suggested: false,
+        downloadUrlInfo: {
+          owner: "Test",
+          repository: "Test-Samples",
+          ref: "main",
+          dir: "faked-external-sample",
+        },
+      };
+      const html = await sampleProvider.getSampleReadmeHtml(fakeSample);
+      chai.expect(html).equal("html content");
+      chai
+        .expect(requestUrl)
+        .equal(
+          "https://api.github.com/repos/Test/Test-Samples/readme/faked-external-sample/?ref=main"
+        );
+    });
+
+    it("returns empty string when content is empty", async () => {
+      let requestUrl = "";
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+        requestUrl = url;
+        return { status: 200 };
+      });
+
+      const fakeSample = {
+        id: "external-sample",
+        title: "Test external sample",
+        shortDescription: "short description for external sample",
+        fullDescription: "full description for external sample",
+        types: [],
+        tags: ["External"],
+        time: "5min to run",
+        configuration: "Ready for debug",
+        thumbnailUrl: "",
+        onboardDate: new Date(),
+        suggested: false,
+        downloadUrlInfo: {
+          owner: "Test",
+          repository: "Test-Samples",
+          ref: "main",
+          dir: "faked-external-sample",
+        },
+      };
+      const html = await sampleProvider.getSampleReadmeHtml(fakeSample);
+      chai.expect(html).equal("");
+      chai
+        .expect(requestUrl)
+        .equal(
+          "https://api.github.com/repos/Test/Test-Samples/readme/faked-external-sample/?ref=main"
+        );
+    });
+
+    it("throws error when no network connection", async () => {
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+        throw err(undefined);
+      });
+
+      const fakeSample = {
+        id: "external-sample",
+        title: "Test external sample",
+        shortDescription: "short description for external sample",
+        fullDescription: "full description for external sample",
+        types: [],
+        tags: ["External"],
+        time: "5min to run",
+        configuration: "Ready for debug",
+        thumbnailUrl: "",
+        onboardDate: new Date(),
+        suggested: false,
+        downloadUrlInfo: {
+          owner: "Test",
+          repository: "Test-Samples",
+          ref: "main",
+          dir: "faked-external-sample",
+        },
+      };
+      try {
+        await sampleProvider.getSampleReadmeHtml(fakeSample);
+        chai.assert.fail("should not reach here");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof AccessGithubError);
+      }
+    });
+  });
+
   it("External sample url can be retrieved correctly in v3", async () => {
     const fakedExternalSample = {
       id: "external-sample",

@@ -140,8 +140,8 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
 
     it("filters samples have maximum cli verion", async () => {
-      sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
-        core.sampleProvider["samplesConfig"] = {
+      sandbox.stub(core.sampleProvider, "SampleCollection").value(
+        Promise.resolve({
           filterOptions: {
             capabilities: ["Tab"],
             languages: ["TS"],
@@ -158,8 +158,14 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               tags: [],
               time: "1hr to run",
               configuration: "",
-              gifPath: "",
+              thumbnailPath: "",
               suggested: false,
+              downloadUrlInfo: {
+                owner: "",
+                repository: "",
+                ref: "",
+                dir: "",
+              },
             },
             {
               id: "test1",
@@ -171,20 +177,26 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               tags: [],
               time: "1hr to run",
               configuration: "",
-              gifPath: "",
+              thumbnailPath: "",
               suggested: false,
               maximumCliVersion: "1.0.0",
+              downloadUrlInfo: {
+                owner: "",
+                repository: "",
+                ref: "",
+                dir: "",
+              },
             },
           ],
-        };
-      });
+        })
+      );
       const templates = await getTemplates();
       expect(templates.length).equals(1);
     });
 
     it("filters samples have minimum cli verion", async () => {
-      sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
-        core.sampleProvider["samplesConfig"] = {
+      sandbox.stub(core.sampleProvider, "SampleCollection").value(
+        Promise.resolve({
           filterOptions: {
             capabilities: ["Tab"],
             languages: ["TS"],
@@ -201,8 +213,14 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               tags: [],
               time: "1hr to run",
               configuration: "",
-              gifPath: "",
+              thumbnailPath: "",
               suggested: false,
+              downloadUrlInfo: {
+                owner: "",
+                repository: "",
+                ref: "",
+                dir: "",
+              },
             },
             {
               id: "test1",
@@ -214,13 +232,19 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               tags: [],
               time: "1hr to run",
               configuration: "",
-              gifPath: "",
+              thumbnailPath: "",
               suggested: false,
               minimumCliVersion: "3.1.0",
+              downloadUrlInfo: {
+                owner: "",
+                repository: "",
+                ref: "",
+                dir: "",
+              },
             },
           ],
-        };
-      });
+        })
+      );
       const templates = await getTemplates();
       expect(templates.length).equals(1);
     });

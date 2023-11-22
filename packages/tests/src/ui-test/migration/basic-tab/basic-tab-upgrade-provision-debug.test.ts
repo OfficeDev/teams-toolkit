@@ -1,12 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
-import {
-  Timeout,
-  Capability,
-  Notification,
-  CliVersion,
-} from "../../../utils/constants";
+import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
@@ -20,10 +15,8 @@ import {
   upgradeByCommandPalette,
 } from "../../../utils/vscodeOperation";
 import * as dotenv from "dotenv";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
-import { VSBrowser } from "vscode-extension-tester";
-import { runDeploy, runProvision } from "../../remotedebug/remotedebugContext";
+import { CLIVersionCheck } from "../../../utils/commonUtils";
+
 dotenv.config();
 
 describe("Migration Tests", function () {
@@ -72,9 +65,12 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
-      await VSBrowser.instance.driver.sleep(Timeout.shortTimeWait);
-      await runProvision(mirgationDebugTestContext.appName);
-      await runDeploy();
+      // v3 provision
+      await mirgationDebugTestContext.provisionWithCLI("dev", true);
+      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
+      // v3 deploy
+      await mirgationDebugTestContext.deployWithCLI("dev");
+
       // UI verify
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       const page = await initPage(

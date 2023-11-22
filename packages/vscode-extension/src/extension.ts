@@ -17,8 +17,8 @@ import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/t
 
 import {
   AadAppTemplateCodeLensProvider,
-  CryptoCodeLensProvider,
   CopilotPluginCodeLensProvider,
+  CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
@@ -60,10 +60,9 @@ import {
   syncFeatureFlags,
 } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
-import { ExtensionSurvey } from "./utils/survey";
-import { ExtensionUpgrade } from "./utils/upgrade";
-import { PrereleasePage } from "./utils/prerelease";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
+import { ReleaseNote } from "./utils/releaseNote";
+import { ExtensionSurvey } from "./utils/survey";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -889,10 +888,8 @@ async function runBackgroundAsyncTasks(
   ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
 
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
-  const upgrade = new ExtensionUpgrade(context);
-  await upgrade.showChangeLog();
-  const prereleasePage = new PrereleasePage(context);
-  await prereleasePage.checkAndShow();
+  const releaseNote = new ReleaseNote(context);
+  await releaseNote.show();
 
   await openWelcomePageAfterExtensionInstallation();
 

@@ -23,6 +23,7 @@ import * as cfg from "./common/userPasswordConfig";
 import CLILogProvider from "./log";
 import { ConvertTokenToJson, ErrorMessage } from "./codeFlowLogin";
 import { signedIn, signedOut } from "./common/constant";
+import { AppStudioScopes, AuthSvcScopes, setRegion } from "@microsoft/teamsfx-core";
 
 dotenv.config();
 
@@ -69,7 +70,30 @@ export class M365ProviderUserPassword extends BasicLogin implements M365TokenPro
       });
 
     if (M365ProviderUserPassword.accessToken) {
-      return ok(M365ProviderUserPassword.accessToken);
+      const m365Token = M365ProviderUserPassword.accessToken;
+
+      // Set region for App Studio API
+      if (tokenRequest.scopes === AppStudioScopes) {
+        const authSvcRequest = {
+          scopes: AuthSvcScopes,
+          username: user!,
+          password: password!,
+        };
+        let authSvcToken;
+        await pca
+          .acquireTokenByUsernamePassword(authSvcRequest)
+          .then((response) => {
+            authSvcToken = response!.accessToken;
+          })
+          .catch((e: any) => {
+            CLILogProvider.necessaryLog(LogLevel.Error, JSON.stringify(e, undefined, 4));
+          });
+        if (authSvcToken) {
+          await setRegion(authSvcToken);
+        }
+      }
+
+      return ok(m365Token);
     } else {
       return err(
         new UserError({
@@ -108,7 +132,7 @@ export class M365ProviderUserPassword extends BasicLogin implements M365TokenPro
     throw new Error("Method not implemented.");
   }
 
-  async signout(): Promise<boolean> {
+  signout(): boolean {
     throw new Error("Method not implemented.");
   }
 }

@@ -30,6 +30,8 @@ import { localize } from "./utils/localizeUtils";
 export let core: FxCore;
 export let tools: Tools;
 export let context: vscode.ExtensionContext;
+export let workspaceUri: vscode.Uri | undefined;
+export let isTeamsFxProject = false;
 export let isSPFxProject = false;
 export let isExistingUser = "no";
 export let uriEventHandler: UriHandler;
@@ -42,20 +44,14 @@ export let projectTypeResult: ProjectTypeResult | undefined = {
   lauguages: [],
 };
 
-export function getWorkspacePath(): string | undefined {
-  return getWorkspaceUri()?.fsPath;
-}
-export function getWorkspaceUri(): vscode.Uri | undefined {
-  if (vscode.workspace && vscode.workspace.workspaceFolders) {
-    if (vscode.workspace.workspaceFolders.length > 0) {
-      const workspaceUri = vscode.workspace.workspaceFolders[0].uri;
-      return workspaceUri;
-    }
+if (vscode.workspace && vscode.workspace.workspaceFolders) {
+  if (vscode.workspace.workspaceFolders.length > 0) {
+    workspaceUri = vscode.workspace.workspaceFolders[0].uri;
   }
-  return undefined;
 }
-export function isTeamsFxProject(): boolean {
-  return projectTypeResult?.isTeamsFx ?? false;
+
+export function getWorkspacePath(): string | undefined {
+  return workspaceUri?.fsPath;
 }
 
 export function isTeamsfxUpgradable(): boolean {
@@ -112,6 +108,7 @@ export async function initializeGlobalVariables(ctx: vscode.ExtensionContext): P
     if (res.isOk()) {
       projectTypeResult = res.value;
       if (projectTypeResult.isTeamsFx) {
+        isTeamsFxProject = true;
         // isSPFxProject = projectTypeResult.isSPFx;
         ExtTelemetry.addSharedProperty(
           TelemetryProperty.ProjectId,

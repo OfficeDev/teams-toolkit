@@ -7,12 +7,7 @@ import * as React from "react";
 
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { SampleProps } from "./ISamples";
 
 export default class SampleListItem extends React.Component<SampleProps, unknown> {
@@ -77,7 +72,13 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
               Create
             </VSCodeButton>
           ) : needUpgrade ? (
-            <VSCodeButton onClick={this.onUpgradeToolkit}>Upgrade Teams Toolkit</VSCodeButton>
+            <VSCodeButton
+              onClick={() =>
+                this.props.upgradeToolkit(this.props.sample, TelemetryTriggerFrom.SampleGallery)
+              }
+            >
+              Upgrade Teams Toolkit
+            </VSCodeButton>
           ) : (
             <VSCodeButton disabled>Create</VSCodeButton>
           )}
@@ -95,28 +96,6 @@ export default class SampleListItem extends React.Component<SampleProps, unknown
   }
 
   private onSampleTitleClicked = () => {
-    if (this.props.sample.versionComparisonResult != 0) {
-      return;
-    }
     this.props.selectSample(this.props.sample.id, TelemetryTriggerFrom.SampleGallery);
-  };
-
-  private onUpgradeToolkit = () => {
-    vscode.postMessage({
-      command: Commands.SendTelemetryEvent,
-      data: {
-        eventName: TelemetryEvent.UpgradeToolkitForSample,
-        properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.SampleGallery,
-          [TelemetryProperty.SampleAppName]: this.props.sample.id,
-        },
-      },
-    });
-    vscode.postMessage({
-      command: Commands.UpgradeToolkit,
-      data: {
-        version: this.props.sample.minimumToolkitVersion,
-      },
-    });
   };
 }

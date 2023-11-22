@@ -140,6 +140,33 @@ class SampleProvider {
     };
   }
 
+  public async getSampleReadmeHtml(sample: SampleConfig): Promise<string> {
+    const urlInfo = sample.downloadUrlInfo;
+    const url = `https://api.github.com/repos/${urlInfo.owner}/${urlInfo.repository}/readme/${urlInfo.dir}/?ref=${urlInfo.ref}`;
+    try {
+      const readmeResponse = await sendRequestWithTimeout(
+        async () => {
+          return await axios.get(url, {
+            headers: {
+              Accept: "application/vnd.github.html",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          });
+        },
+        1000,
+        3
+      );
+
+      if (readmeResponse && readmeResponse.data) {
+        return readmeResponse.data as string;
+      } else {
+        return "";
+      }
+    } catch (e) {
+      throw new AccessGithubError(url, "SampleProvider", e);
+    }
+  }
+
   private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {
     const url = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`;
     try {

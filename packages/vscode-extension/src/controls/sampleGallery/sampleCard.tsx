@@ -95,9 +95,6 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
   }
 
   onSampleCardClicked = () => {
-    if (this.props.sample.versionComparisonResult != 0) {
-      return;
-    }
     this.props.selectSample(this.props.sample.id, TelemetryTriggerFrom.SampleGallery);
   };
 }

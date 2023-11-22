@@ -57,7 +57,10 @@
     "workspaceContains:/.fx/**/*",
     "workspaceContains:teamsapp.yml",
     "onView:teamsfx-empty-project",
-    "onUri"
+    "onUri",
+    "workspaceContains:/**/manifest.json",
+    "workspaceContains:package.json",
+    "workspaceContains:teamsapp.local.yml"
   ],
   "capabilities": {
     "untrustedWorkspaces": {

@@ -63,6 +63,7 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { PrereleasePage } from "./utils/prerelease";
+import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -903,6 +904,8 @@ async function runBackgroundAsyncTasks(
   survey.activate();
 
   await recommendACPExtension();
+
+  await checkProjectTypeAndSendTelemetry();
 }
 
 async function runTeamsFxBackgroundTasks() {

@@ -53,13 +53,6 @@ describe("Migration Tests", function () {
       author: "v-helzha@microsoft.com",
     },
     async () => {
-      // install v2 stable cli 1.2.6
-      await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      const result = await execCommand("./", "teamsapp -v");
-      console.log(result.stdout);
-      expect(
-        (result.stdout as string).includes(CliVersion.V2TeamsToolkitStable425)
-      ).to.be.true;
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup

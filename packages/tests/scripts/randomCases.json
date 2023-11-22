@@ -62,7 +62,8 @@
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
-            "sample-localdebug-chef-bot"
+            "sample-localdebug-chef-bot",
+            "sample-localdebug-large-scale-notification"
         ]
     },
     {

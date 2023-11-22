@@ -310,11 +310,17 @@ export class CliHelper {
     if (isV3Enabled()) {
       command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
     } else {
-      command = `teamsapp new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+      command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
     }
     const timeout = 100000;
     try {
-      await Executor.execute("teamsapp -v", testFolder);
+      if (isV3Enabled()) {
+        const { stdout } = await Executor.execute("teamsapp -v", testFolder);
+        console.log(stdout);
+      } else {
+        const { stdout } = await Executor.execute("teamsfx -v", testFolder);
+        console.log(stdout);
+      }
       await Executor.execute(command, testFolder);
       const message = `scaffold project to ${path.resolve(
         testFolder,

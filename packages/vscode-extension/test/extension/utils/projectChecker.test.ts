@@ -5,6 +5,8 @@ import * as global from "../../../src/globalVariables";
 import * as handler from "../../../src/handlers";
 import { checkProjectTypeAndSendTelemetry } from "../../../src/utils/projectChecker";
 import { MockCore } from "../../mocks/mockCore";
+import * as vscode from "vscode";
+import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 
 describe("checkProjectTypeAndSendTelemetry", () => {
   const sandbox = sinon.createSandbox();
@@ -23,6 +25,7 @@ describe("checkProjectTypeAndSendTelemetry", () => {
         lauguages: ["ts"],
       })
     );
+    sandbox.stub(ExtTelemetry, "addSharedProperty");
     await checkProjectTypeAndSendTelemetry();
   });
   it("error", async () => {

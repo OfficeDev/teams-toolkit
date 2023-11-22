@@ -63,8 +63,6 @@ describe("Migration Tests", function () {
       }
 
       // upgrade
-      // await startDebugging();
-      // await upgrade();
       await upgradeByCommandPalette();
       // verify upgrade
       await validateUpgrade();

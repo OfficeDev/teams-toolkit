@@ -59,13 +59,16 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.provisionWithCLI("dev", false);
 
       // upgrade
-      // await startDebugging();
-      // await upgrade();
       await upgradeByCommandPalette();
       // verify upgrade
       await validateUpgrade();
 
       // enable cli v3
+      await CliHelper.installCLI(
+        "alpha",
+        false,
+        mirgationDebugTestContext.projectPath
+      );
       CliHelper.setV3Enable();
 
       // v3 provision

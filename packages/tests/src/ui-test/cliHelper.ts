@@ -72,7 +72,7 @@ export class CliHelper {
     if (v3) {
       const childProcess = spawnCommand(
         os.type() === "Windows_NT" ? "npx.cmd" : "npx",
-        ["teamsfx", "provision", "--env", env, "--verbose"],
+        ["teamsapp", "provision", "--env", env, "--verbose"],
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,

@@ -66,8 +66,6 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.debugWithCLI("local");
 
       // upgrade
-      // await startDebugging();
-      // await upgrade();
       await upgradeByCommandPalette();
       // verify upgrade
       await validateUpgrade();

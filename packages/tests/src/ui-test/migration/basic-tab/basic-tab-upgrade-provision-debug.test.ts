@@ -56,12 +56,16 @@ describe("Migration Tests", function () {
       }
 
       // upgrade
-      // await startDebugging();
-      // await upgrade();
       await upgradeByCommandPalette();
       // verify upgrade
       await validateUpgrade();
 
+      // enable cli v3
+      await CliHelper.installCLI(
+        Env.TARGET_CLI,
+        false,
+        mirgationDebugTestContext.projectPath
+      );
       // enable cli v3
       CliHelper.setV3Enable();
 

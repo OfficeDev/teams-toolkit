@@ -17,8 +17,8 @@ import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/t
 
 import {
   AadAppTemplateCodeLensProvider,
-  CryptoCodeLensProvider,
   CopilotPluginCodeLensProvider,
+  CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
@@ -60,8 +60,9 @@ import {
   syncFeatureFlags,
 } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
-import { ExtensionSurvey } from "./utils/survey";
+import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
+import { ExtensionSurvey } from "./utils/survey";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -900,6 +901,8 @@ async function runBackgroundAsyncTasks(
   survey.activate();
 
   await recommendACPExtension();
+
+  await checkProjectTypeAndSendTelemetry();
 }
 
 async function runTeamsFxBackgroundTasks() {

@@ -42,7 +42,7 @@ import M365TokenInstance from "../commonlib/m365Login";
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { VS_CODE_UI } from "../extension";
 import * as globalVariables from "../globalVariables";
-import { checkCopilotCallback, openAccountHelpHandler, tools } from "../handlers";
+import { checkCopilotCallback, openAccountHelpHandler } from "../handlers";
 import { ProgressHandler } from "../progressHandler";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
@@ -60,6 +60,7 @@ import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 import { ProgressHelper } from "./progressHelper";
 import { allRunningTeamsfxTasks, terminateAllRunningTeamsfxTasks } from "./teamsfxTaskHandler";
+import { tools } from "../globalVariables";
 
 enum Checker {
   M365Account = "Microsoft 365 Account",

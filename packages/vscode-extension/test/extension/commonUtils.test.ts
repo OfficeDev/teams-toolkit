@@ -1,19 +1,18 @@
-import * as chai from "chai";
-import * as os from "os";
-import * as sinon from "sinon";
-import * as cp from "child_process";
-import * as vscode from "vscode";
-import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
+import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as chai from "chai";
+import * as cp from "child_process";
+import * as mockfs from "mock-fs";
+import * as os from "os";
+import * as sinon from "sinon";
+import * as vscode from "vscode";
+import { Uri } from "vscode";
 import * as extensionPackage from "../../package.json";
 import * as globalVariables from "../../src/globalVariables";
-import * as handlers from "../../src/handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 import * as commonUtils from "../../src/utils/commonUtils";
 import { MockCore } from "../mocks/mockCore";
-import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
-import * as mockfs from "mock-fs";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -109,7 +108,7 @@ describe("CommonUtils", () => {
     const core = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
+      sandbox.stub(globalVariables, "core").value(core);
     });
 
     afterEach(() => {
@@ -146,7 +145,7 @@ describe("CommonUtils", () => {
     const core = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
+      sandbox.stub(globalVariables, "core").value(core);
     });
 
     afterEach(() => {
@@ -189,7 +188,7 @@ describe("CommonUtils", () => {
     const core = new MockCore();
 
     beforeEach(() => {
-      sandbox.stub(handlers, "core").value(core);
+      sandbox.stub(globalVariables, "core").value(core);
     });
 
     afterEach(() => {

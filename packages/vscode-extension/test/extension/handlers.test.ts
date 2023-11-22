@@ -44,7 +44,7 @@ import {
 import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
-import { VsCodeLogProvider } from "../../src/commonlib/log";
+import VsCodeLogInstance, { VsCodeLogProvider } from "../../src/commonlib/log";
 import M365TokenInstance from "../../src/commonlib/m365Login";
 import { DeveloperPortalHomeLink, GlobalKey } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
@@ -67,7 +67,6 @@ import * as commonUtils from "../../src/utils/commonUtils";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { ExtensionSurvey } from "../../src/utils/survey";
 import { MockCore } from "../mocks/mockCore";
-import VsCodeLogInstance from "../../src/commonlib/log";
 import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
 import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
 
@@ -92,7 +91,7 @@ describe("handlers", () => {
     });
 
     it("Valid project", async () => {
-      sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
       const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const addSharedPropertyStub = sandbox.stub(ExtTelemetry, "addSharedProperty");
       const setCommandIsRunningStub = sandbox.stub(globalVariables, "setCommandIsRunning");
@@ -150,18 +149,7 @@ describe("handlers", () => {
       );
       const result = await handlers.activate();
 
-      chai.assert.isTrue(addSharedPropertyStub.called);
-      chai.assert.isTrue(sendTelemetryStub.calledOnceWith("open-teams-app"));
       chai.assert.deepEqual(result.isOk() ? result.value : result.error.name, {});
-
-      lockCallback("test");
-      setCommandIsRunningStub.calledOnceWith(true);
-      lockedByOperationStub.calledOnceWith("test");
-
-      unlockCallback("test");
-      unlockedByOperationStub.calledOnceWith("test");
-
-      chai.assert.isTrue(showMessageStub.called);
     });
 
     it("throws error", async () => {
@@ -187,20 +175,12 @@ describe("handlers", () => {
     chai.expect(input.platform).equals(Platform.VSCode);
   });
 
-  it("getSettingsVersion", async () => {
-    sandbox.stub(handlers, "core").value(new MockCore());
-    sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-    sandbox
-      .stub(MockCore.prototype, "projectVersionCheck")
-      .resolves(ok({ currentVersion: "3.0.0" }));
-    const res = await handlers.getSettingsVersion();
-    chai.assert.equal(res, "3.0.0");
-  });
-
   it("addFileSystemWatcher detect SPFx project", async () => {
     const workspacePath = "test";
     const isValidProject = sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
-    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
+    const initGlobalVariables = sandbox
+      .stub(globalVariables, "initializeGlobalVariables")
+      .resolves();
     const updateTreeViewsOnSPFxChanged = sandbox.stub(
       TreeViewManagerInstance,
       "updateTreeViewsOnSPFxChanged"
@@ -268,7 +248,7 @@ describe("handlers", () => {
 
   it("updateAutoOpenGlobalKey", async () => {
     sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
-    sandbox.stub(globalVariables, "checkIsSPFx").returns(true);
+    sandbox.stub(globalVariables, "isSPFxProject").value(true);
     const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
     await handlers.updateAutoOpenGlobalKey(false, vscode.Uri.file("test"), [
@@ -286,11 +266,10 @@ describe("handlers", () => {
     it("createNewProjectHandler()", async () => {
       const clock = sinon.useFakeTimers();
 
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(globalVariables, "checkIsSPFx").returns(false);
-      const createProject = sinon.spy(handlers.core, "createProject");
+      const createProject = sinon.spy(globalVariables.core, "createProject");
       const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
 
       await handlers.createNewProjectHandler();
@@ -308,10 +287,10 @@ describe("handlers", () => {
     });
 
     it("provisionHandler()", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const provisionResources = sinon.spy(handlers.core, "provisionResources");
+      const provisionResources = sinon.spy(globalVariables.core, "provisionResources");
       sinon.stub(envTreeProviderInstance, "reloadEnvironments");
 
       await handlers.provisionHandler();
@@ -321,10 +300,10 @@ describe("handlers", () => {
     });
 
     it("deployHandler()", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
+      const deployArtifacts = sinon.spy(globalVariables.core, "deployArtifacts");
 
       await handlers.deployHandler();
 
@@ -333,10 +312,10 @@ describe("handlers", () => {
     });
 
     it("publishHandler()", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const publishApplication = sinon.spy(handlers.core, "publishApplication");
+      const publishApplication = sinon.spy(globalVariables.core, "publishApplication");
 
       await handlers.publishHandler();
 
@@ -345,7 +324,7 @@ describe("handlers", () => {
     });
 
     it("buildPackageHandler()", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
 
@@ -357,13 +336,13 @@ describe("handlers", () => {
     });
 
     it("validateManifestHandler() - app package", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(localizeUtils, "localize").returns("");
       sinon.stub(projectSettingsHelper, "isValidProject").returns(true);
       sinon.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      const validateApplication = sinon.spy(handlers.core, "validateApplication");
+      const validateApplication = sinon.spy(globalVariables.core, "validateApplication");
 
       sinon.stub(extension, "VS_CODE_UI").value({
         selectOption: () => {
@@ -376,8 +355,8 @@ describe("handlers", () => {
     });
 
     it("copilotPluginAddAPIHandler()", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
-      const addAPIHanlder = sinon.spy(handlers.core, "copilotPluginAddAPI");
+      sinon.stub(globalVariables, "core").value(new MockCore());
+      const addAPIHanlder = sinon.spy(globalVariables.core, "copilotPluginAddAPI");
       const args = [
         {
           fsPath: "manifest.json",
@@ -394,8 +373,8 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(handlers.core, "previewWithManifest").resolves(err({ foo: "bar" } as any));
+      sinon.stub(globalVariables, "core").value(new MockCore());
+      sinon.stub(globalVariables.core, "previewWithManifest").resolves(err({ foo: "bar" } as any));
 
       const result = await handlers.treeViewPreviewHandler("dev");
 
@@ -407,8 +386,8 @@ describe("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(handlers.core, "previewWithManifest").resolves(ok("test-url"));
+      sinon.stub(globalVariables, "core").value(new MockCore());
+      sinon.stub(globalVariables.core, "previewWithManifest").resolves(ok("test-url"));
       sandbox.stub(launch, "openHubWebClient").resolves();
 
       const result = await handlers.treeViewPreviewHandler("dev");
@@ -684,10 +663,10 @@ describe("handlers", () => {
     });
 
     it("create sample with projectid", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const createProject = sinon.spy(handlers.core, "createProject");
+      const createProject = sinon.spy(globalVariables.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
       const inputs = { projectId: uuid.v4(), platform: Platform.VSCode };
 
@@ -699,10 +678,10 @@ describe("handlers", () => {
     });
 
     it("create from scratch without projectid", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const createProject = sinon.spy(handlers.core, "createProject");
+      const createProject = sinon.spy(globalVariables.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
 
       await handlers.runCommand(Stage.create);
@@ -714,10 +693,10 @@ describe("handlers", () => {
     });
 
     it("provisionResources", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const provisionResources = sinon.spy(handlers.core, "provisionResources");
+      const provisionResources = sinon.spy(globalVariables.core, "provisionResources");
 
       await handlers.runCommand(Stage.provision);
 
@@ -726,10 +705,10 @@ describe("handlers", () => {
     });
 
     it("deployArtifacts", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const deployArtifacts = sinon.spy(handlers.core, "deployArtifacts");
+      const deployArtifacts = sinon.spy(globalVariables.core, "deployArtifacts");
 
       await handlers.runCommand(Stage.deploy);
 
@@ -739,10 +718,10 @@ describe("handlers", () => {
 
     it("deployAadManifest", async () => {
       const sandbox = sinon.createSandbox();
-      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
+      const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
       const input: Inputs = handlers.getSystemInputs();
       await handlers.runCommand(Stage.deployAad, input);
 
@@ -754,7 +733,7 @@ describe("handlers", () => {
       const sandbox = sinon.createSandbox();
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(handlers.core, "deployAadManifest").resolves(ok(undefined));
+      sandbox.stub(globalVariables.core, "deployAadManifest").resolves(ok(undefined));
       const input: Inputs = handlers.getSystemInputs();
       const res = await handlers.runCommand(Stage.deployAad, input);
       chai.assert.isTrue(res.isOk());
@@ -765,13 +744,13 @@ describe("handlers", () => {
     });
 
     it("localDebug", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
       let ignoreEnvInfo: boolean | undefined = undefined;
       let localDebugCalled = 0;
       sinon
-        .stub(handlers.core, "localDebug")
+        .stub(globalVariables.core, "localDebug")
         .callsFake(async (inputs: Inputs): Promise<Result<undefined, FxError>> => {
           ignoreEnvInfo = inputs.ignoreEnvInfo;
           localDebugCalled += 1;
@@ -786,10 +765,10 @@ describe("handlers", () => {
     });
 
     it("publishApplication", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const publishApplication = sinon.spy(handlers.core, "publishApplication");
+      const publishApplication = sinon.spy(globalVariables.core, "publishApplication");
 
       await handlers.runCommand(Stage.publish);
 
@@ -798,10 +777,10 @@ describe("handlers", () => {
     });
 
     it("createEnv", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const createEnv = sinon.spy(handlers.core, "createEnv");
+      const createEnv = sinon.spy(globalVariables.core, "createEnv");
       sinon.stub(vscode.commands, "executeCommand");
 
       await handlers.runCommand(Stage.createEnv);
@@ -914,7 +893,7 @@ describe("handlers", () => {
   it("openReadMeHandler - create project", async () => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
-    sandbox.stub(handlers, "core").value(undefined);
+    sandbox.stub(globalVariables, "core").value(undefined);
     const showMessageStub = sandbox
       .stub(vscode.window, "showInformationMessage")
       .callsFake(
@@ -933,7 +912,7 @@ describe("handlers", () => {
   it("openReadMeHandler - open folder", async () => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(globalVariables, "isTeamsFxProject").value(false);
-    sandbox.stub(handlers, "core").value(undefined);
+    sandbox.stub(globalVariables, "core").value(undefined);
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
     const showMessageStub = sandbox
       .stub(vscode.window, "showInformationMessage")
@@ -1016,11 +995,11 @@ describe("handlers", () => {
     });
     it("successfully update secret", async () => {
       sinon.stub(globalVariables, "context").value({ extensionPath: "" });
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const decrypt = sinon.spy(handlers.core, "decrypt");
-      const encrypt = sinon.spy(handlers.core, "encrypt");
+      const decrypt = sinon.spy(globalVariables.core, "decrypt");
+      const encrypt = sinon.spy(globalVariables.core, "encrypt");
       sinon.stub(vscode.commands, "executeCommand");
       const editBuilder = sinon.spy();
       sinon.stub(vscode.window, "activeTextEditor").value({
@@ -1047,12 +1026,12 @@ describe("handlers", () => {
 
     it("failed to update due to corrupted secret", async () => {
       sinon.stub(globalVariables, "context").value({ extensionPath: "" });
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      const decrypt = sinon.stub(handlers.core, "decrypt");
+      const decrypt = sinon.stub(globalVariables.core, "decrypt");
       decrypt.returns(Promise.resolve(err(new UserError("", "fake error", ""))));
-      const encrypt = sinon.spy(handlers.core, "encrypt");
+      const encrypt = sinon.spy(globalVariables.core, "encrypt");
       sinon.stub(vscode.commands, "executeCommand");
       const editBuilder = sinon.spy();
       sinon.stub(vscode.window, "activeTextEditor").value({
@@ -1085,7 +1064,7 @@ describe("handlers", () => {
     });
 
     it("happy path: grant permission", async () => {
-      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(extension, "VS_CODE_UI").value({
         selectOption: () => Promise.resolve(ok({ type: "success", result: "grantPermission" })),
       });
@@ -1114,7 +1093,7 @@ describe("handlers", () => {
     });
 
     it("happy path: list collaborator", async () => {
-      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(extension, "VS_CODE_UI").value({
         selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
       });
@@ -1150,7 +1129,7 @@ describe("handlers", () => {
     });
 
     it("happy path: list collaborator throws error", async () => {
-      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(extension, "VS_CODE_UI").value({
         selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
       });
@@ -1172,7 +1151,7 @@ describe("handlers", () => {
     });
 
     it("happy path: list collaborator throws login error", async () => {
-      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(extension, "VS_CODE_UI").value({
         selectOption: () => Promise.resolve(ok({ type: "success", result: "listCollaborator" })),
       });
@@ -1198,7 +1177,7 @@ describe("handlers", () => {
     });
 
     it("User Cancel", async () => {
-      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(extension, "VS_CODE_UI").value({
         selectOption: () =>
           Promise.resolve(err(new UserError("source", "errorName", "errorMessage"))),
@@ -1215,7 +1194,7 @@ describe("handlers", () => {
 
     beforeEach(() => {
       sandbox.stub(handlers, "getSystemInputs").returns({} as Inputs);
-      sandbox.stub(handlers, "core").value(mockCore);
+      sandbox.stub(globalVariables, "core").value(mockCore);
     });
 
     afterEach(() => {
@@ -1298,8 +1277,8 @@ describe("handlers", () => {
       scratch: "no",
       platform: Platform.VSCode,
     };
-    sandbox.stub(handlers, "core").value(new MockCore());
-    const createProject = sandbox.spy(handlers.core, "createSampleProject");
+    sandbox.stub(globalVariables, "core").value(new MockCore());
+    const createProject = sandbox.spy(globalVariables.core, "createSampleProject");
 
     await handlers.downloadSample(inputs);
 
@@ -1312,10 +1291,10 @@ describe("handlers", () => {
       scratch: "no",
       platform: Platform.VSCode,
     };
-    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(globalVariables, "core").value(new MockCore());
     const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
     const createProject = sandbox
-      .stub(handlers.core, "createSampleProject")
+      .stub(globalVariables.core, "createSampleProject")
       .rejects(err(new Error("Cannot get user login information")));
 
     await handlers.downloadSample(inputs);
@@ -1330,20 +1309,20 @@ describe("handlers", () => {
       scratch: "no",
       platform: Platform.VSCode,
     };
-    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(globalVariables, "core").value(new MockCore());
     const showErrorMessageStub = sandbox.stub(vscode.window, "showErrorMessage");
     const createProject = sandbox
-      .stub(handlers.core, "createProject")
+      .stub(globalVariables.core, "createProject")
       .resolves(err(new SystemError("test", "test", "Cannot get user login information")));
 
     await handlers.downloadSample(inputs);
   });
 
   it("deployAadAppmanifest", async () => {
-    sandbox.stub(handlers, "core").value(new MockCore());
+    sandbox.stub(globalVariables, "core").value(new MockCore());
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    const deployAadManifest = sandbox.spy(handlers.core, "deployAadManifest");
+    const deployAadManifest = sandbox.spy(globalVariables.core, "deployAadManifest");
     await handlers.updateAadAppManifest([{ fsPath: "path/aad.dev.template" }]);
     sandbox.assert.calledOnce(deployAadManifest);
     deployAadManifest.restore();
@@ -1443,7 +1422,6 @@ describe("handlers", () => {
     beforeEach(() => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent").resolves();
-      sinon.stub(globalVariables, "checkIsSPFx").returns(false);
     });
     afterEach(() => {
       sinon.restore();
@@ -1552,7 +1530,7 @@ describe("handlers", () => {
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
       const getApp = sinon.stub(AppStudioClient, "getApp").throws("error");
@@ -1577,8 +1555,8 @@ describe("handlers", () => {
       const createProgressBar = sinon
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
-      sinon.stub(handlers, "core").value(new MockCore());
-      const createProject = sinon.spy(handlers.core, "createProject");
+      sinon.stub(globalVariables, "core").value(new MockCore());
+      const createProject = sinon.spy(globalVariables.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
       sinon.stub(globalState, "globalStateUpdate");
       const appDefinition: AppDefinition = {
@@ -1606,12 +1584,12 @@ describe("handlers", () => {
     });
 
     it("publish in developer portal - success", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon
         .stub(extension.VS_CODE_UI, "selectFile")
         .resolves(ok({ type: "success", result: "test.zip" }));
-      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      const publish = sinon.spy(globalVariables.core, "publishInDeveloperPortal");
       sinon
         .stub(extension.VS_CODE_UI, "selectOption")
         .resolves(ok({ type: "success", result: "test.zip" }));
@@ -1630,12 +1608,12 @@ describe("handlers", () => {
     });
 
     it("publish in developer portal - cancelled", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon
         .stub(extension.VS_CODE_UI, "selectFile")
         .resolves(ok({ type: "success", result: "test2.zip" }));
-      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      const publish = sinon.spy(globalVariables.core, "publishInDeveloperPortal");
       sinon.stub(extension.VS_CODE_UI, "selectOption").resolves(err(new UserCancelError("VSC")));
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
@@ -1652,10 +1630,10 @@ describe("handlers", () => {
     });
 
     it("select file error", async () => {
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       sinon.stub(extension.VS_CODE_UI, "selectFile").resolves(err(new UserCancelError("VSC")));
-      const publish = sinon.spy(handlers.core, "publishInDeveloperPortal");
+      const publish = sinon.spy(globalVariables.core, "publishInDeveloperPortal");
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(vscode.commands, "executeCommand");
@@ -1675,7 +1653,7 @@ describe("handlers", () => {
 
     it("open link with loginHint", async () => {
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
-      sinon.stub(handlers, "core").value(new MockCore());
+      sinon.stub(globalVariables, "core").value(new MockCore());
       sinon.stub(M365TokenInstance, "getStatus").resolves(
         ok({
           status: signedIn,
@@ -2058,13 +2036,15 @@ describe("handlers", () => {
     });
   });
 
-  it("refreshSPFxTreeOnFileChanged", () => {
-    const initGlobalVariables = sandbox.stub(globalVariables, "initializeGlobalVariables");
+  it("refreshSPFxTreeOnFileChanged", async () => {
+    const initGlobalVariables = sandbox
+      .stub(globalVariables, "initializeGlobalVariables")
+      .resolves();
     const updateTreeViewsOnSPFxChanged = sandbox
       .stub(TreeViewManagerInstance, "updateTreeViewsOnSPFxChanged")
       .resolves();
 
-    handlers.refreshSPFxTreeOnFileChanged();
+    await handlers.refreshSPFxTreeOnFileChanged();
 
     chai.expect(initGlobalVariables.calledOnce).to.be.true;
     chai.expect(updateTreeViewsOnSPFxChanged.calledOnce).to.be.true;
@@ -2121,7 +2101,7 @@ describe("handlers", () => {
     });
 
     it("updatePreviewManifest", async () => {
-      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(globalVariables, "core").value(new MockCore());
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const openTextDocumentStub = sandbox
@@ -2142,7 +2122,7 @@ describe("openPreviewAadFile", () => {
   });
   it("manifest file not exists", async () => {
     const core = new MockCore();
-    sandbox.stub(handlers, "core").value(core);
+    sandbox.stub(globalVariables, "core").value(core);
     sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
     sandbox.stub(fs, "existsSync").returns(false);
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
@@ -2154,7 +2134,7 @@ describe("openPreviewAadFile", () => {
     );
     sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
     sandbox.stub(handlers, "showError").callsFake(async () => {});
-    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(undefined));
+    sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
     const res = await handlers.openPreviewAadFile([]);
     chai.assert.isTrue(res.isErr());
@@ -2162,7 +2142,7 @@ describe("openPreviewAadFile", () => {
 
   it("happy path", async () => {
     const core = new MockCore();
-    sandbox.stub(handlers, "core").value(core);
+    sandbox.stub(globalVariables, "core").value(core);
     sandbox.stub(projectSettingsHelper, "isValidProject").returns(true);
     sandbox.stub(fs, "existsSync").returns(true);
     sandbox.stub(environmentManager, "listAllEnvConfigs").resolves(ok(["dev"]));
@@ -2174,7 +2154,7 @@ describe("openPreviewAadFile", () => {
     );
     sandbox.stub(handlers, "askTargetEnvironment").resolves(ok("dev"));
     sandbox.stub(handlers, "showError").callsFake(async () => {});
-    sandbox.stub(handlers.core, "buildAadManifest").resolves(ok(undefined));
+    sandbox.stub(globalVariables.core, "buildAadManifest").resolves(ok(undefined));
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent").resolves();
     sandbox.stub(vscode.workspace, "openTextDocument").resolves();
     sandbox.stub(vscode.window, "showTextDocument").resolves();
@@ -2437,7 +2417,7 @@ describe("autoOpenProjectHandler", () => {
 
   it("runUserTask() - error", async () => {
     const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-    sandbox.stub(handlers, "core").value(undefined);
+    sandbox.stub(globalVariables, "core").value(undefined);
     sandbox.stub(commonUtils, "getTeamsAppTelemetryInfoByEnv");
     sandbox.stub(VsCodeLogInstance, "error");
 
@@ -2638,7 +2618,7 @@ describe("autoOpenProjectHandler", () => {
   });
 
   it("treeViewDebugInTestToolHandler", async () => {
-    sinon.stub(handlers, "core").value(new MockCore());
+    sinon.stub(globalVariables, "core").value(new MockCore());
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
 

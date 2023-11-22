@@ -13,12 +13,13 @@ import {
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
+import { AuthSvcScopes, Correlator, setRegion } from "@microsoft/teamsfx-core";
 
+import { TeamsfxVersionState } from "@microsoft/teamsfx-core/build/common/projectTypeChecker";
 import {
   AadAppTemplateCodeLensProvider,
-  CryptoCodeLensProvider,
   CopilotPluginCodeLensProvider,
+  CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
@@ -41,8 +42,8 @@ import {
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  projectTypeResult,
   setUriEventHandler,
-  unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
@@ -60,9 +61,9 @@ import {
   syncFeatureFlags,
 } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
+import { PrereleasePage } from "./utils/prerelease";
 import { ExtensionSurvey } from "./utils/survey";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { PrereleasePage } from "./utils/prerelease";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -73,7 +74,9 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 
   VS_CODE_UI = new VsCodeUI(context);
-  initializeGlobalVariables(context);
+
+  await initializeGlobalVariables(context);
+
   loadLocalizedStrings();
 
   const uriHandler = new UriHandler();
@@ -885,7 +888,7 @@ async function runBackgroundAsyncTasks(
       true
     );
 
-  ExtTelemetry.settingsVersion = await handlers.getSettingsVersion();
+  ExtTelemetry.settingsVersion = projectTypeResult?.teamsfxConfigVersion ?? "";
 
   await ExtTelemetry.sendCachedTelemetryEventsAsync();
   const upgrade = new ExtensionUpgrade(context);
@@ -931,20 +934,13 @@ function runCommand(commandName: string, args: unknown[]) {
 }
 
 async function checkProjectUpgradable(): Promise<boolean> {
-  const versionCheckResult = await handlers.projectVersionCheck();
-  if (versionCheckResult.isErr()) {
-    unsetIsTeamsFxProject();
-    return false;
-  }
-  const upgradeable = versionCheckResult.isOk()
-    ? versionCheckResult.value.isSupport == VersionState.upgradeable
-    : false;
-  return upgradeable;
+  const upgradeable = projectTypeResult?.teamsfxVersionState === TeamsfxVersionState.Upgradable;
+  return new Promise((resolve) => resolve(upgradeable));
 }
 
 async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
   const wasTeamsFxProject = isTeamsFxProject;
-  initializeGlobalVariables(context);
+  await initializeGlobalVariables(context);
   if (isTeamsFxProject && !wasTeamsFxProject) {
     activateTeamsFxRegistration(context);
 

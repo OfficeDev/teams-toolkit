@@ -11,12 +11,13 @@ import * as vscode from "vscode";
 import VsCodeLogInstance from "../commonlib/log";
 
 import * as globalVariables from "../globalVariables";
-import { core, getSystemInputs } from "../handlers";
+import { getSystemInputs } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { allRunningDebugSessions } from "./teamsfxTaskHandler";
 
 import { ExtensionErrors, ExtensionSource } from "../error";
 import { VS_CODE_UI } from "../extension";
+import { core } from "../globalVariables";
 
 export async function getProjectRoot(
   folderPath: string,

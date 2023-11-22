@@ -20,9 +20,10 @@ import {
   openTerminalDisplayMessage,
   openTerminalMessage,
 } from "../constants";
-import { core, getSystemInputs } from "../../handlers";
+import { getSystemInputs } from "../../handlers";
 import { CoreQuestionNames, environmentNameManager } from "@microsoft/teamsfx-core";
 import { HubOptions } from "@microsoft/teamsfx-core";
+import { core } from "../../globalVariables";
 
 interface LaunchTeamsClientArgs {
   env?: string;

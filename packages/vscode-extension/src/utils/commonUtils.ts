@@ -14,14 +14,14 @@ import {
   initializePreviewFeatureFlags,
   isValidProject,
 } from "@microsoft/teamsfx-core";
+import { glob } from "glob";
 import * as extensionPackage from "../../package.json";
 import { CONFIGURATION_PREFIX, ConfigurationKey } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
 import { getV3TeamsAppId } from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
-import { core } from "../handlers";
+import { core } from "../globalVariables";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-import { glob } from "glob";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {

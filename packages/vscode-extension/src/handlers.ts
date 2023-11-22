@@ -18,7 +18,6 @@ import {
   AppPackageFolderName,
   BuildFolderName,
   ConfigFolderName,
-  Context,
   CoreCallbackEvent,
   CreateProjectResult,
   Func,
@@ -37,8 +36,6 @@ import {
   StaticOptions,
   SubscriptionInfo,
   SystemError,
-  TemplateFolderName,
-  Tools,
   UserError,
   Void,
   VsCodeEnv,
@@ -60,6 +57,7 @@ import {
   FxCore,
   Hub,
   InvalidProjectError,
+  JSONSyntaxError,
   askSubscription,
   assembleError,
   environmentManager,
@@ -70,13 +68,13 @@ import {
   globalStateUpdate,
   isUserCancelError,
   isValidProject,
+  manifestUtils,
   pathUtils,
   setRegion,
-  manifestUtils,
-  JSONSyntaxError,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
+import { MetadataV3 } from "@microsoft/teamsfx-core";
 import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { signedIn, signedOut } from "./commonlib/common/constant";
@@ -101,6 +99,7 @@ import * as exp from "./exp/index";
 import { TreatmentVariableValue } from "./exp/treatmentVariables";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
+import { core, tools } from "./globalVariables";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -132,76 +131,10 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, loadedLocale, localize } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { MetadataV3 } from "@microsoft/teamsfx-core";
-
-export let core: FxCore;
-export let tools: Tools;
 
 export function activate(): Result<Void, FxError> {
   const result: Result<Void, FxError> = ok(Void);
-  const validProject = isValidProject(globalVariables.workspaceUri?.fsPath);
-  if (validProject) {
-    const fixedProjectSettings = getFixedCommonProjectSettings(
-      globalVariables.workspaceUri?.fsPath
-    );
-    ExtTelemetry.addSharedProperty(
-      TelemetryProperty.ProjectId,
-      fixedProjectSettings?.projectId as string
-    );
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenTeamsApp, {});
-    void AzureAccountManager.setStatusChangeMap(
-      "successfully-sign-in-azure",
-      (status, token, accountInfo) => {
-        if (status === signedIn) {
-          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignIn"));
-        } else if (status === signedOut) {
-          void window.showInformationMessage(localize("teamstoolkit.handlers.azureSignOut"));
-        }
-        return Promise.resolve();
-      },
-      false
-    );
-  }
   try {
-    const m365Login: M365TokenProvider = M365TokenInstance;
-    const m365NotificationCallback = (
-      status: string,
-      token: string | undefined,
-      accountInfo: Record<string, unknown> | undefined
-    ) => {
-      if (status === signedIn) {
-        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignIn"));
-      } else if (status === signedOut) {
-        void window.showInformationMessage(localize("teamstoolkit.handlers.m365SignOut"));
-      }
-      return Promise.resolve();
-    };
-
-    void M365TokenInstance.setStatusChangeMap(
-      "successfully-sign-in-m365",
-      { scopes: AppStudioScopes },
-      m365NotificationCallback,
-      false
-    );
-    tools = {
-      logProvider: VsCodeLogInstance,
-      tokenProvider: {
-        azureAccountProvider: AzureAccountManager,
-        m365TokenProvider: m365Login,
-      },
-      telemetryReporter: ExtTelemetry.reporter,
-      ui: VS_CODE_UI,
-      expServiceProvider: exp.getExpService(),
-    };
-    core = new FxCore(tools);
-    core.on(CoreCallbackEvent.lock, async (command: string) => {
-      globalVariables.setCommandIsRunning(true);
-      await commandController.lockedByOperation(command);
-    });
-    core.on(CoreCallbackEvent.unlock, async (command: string) => {
-      globalVariables.setCommandIsRunning(false);
-      await commandController.unlockedByOperation(command);
-    });
     const workspacePath = globalVariables.workspaceUri?.fsPath;
     if (workspacePath) {
       addFileSystemWatcher(workspacePath);
@@ -245,28 +178,6 @@ export function activate(): Result<Void, FxError> {
   return result;
 }
 
-// only used for telemetry
-export async function getSettingsVersion(): Promise<string | undefined> {
-  if (core) {
-    const input = getSystemInputs();
-    input.ignoreEnvInfo = true;
-
-    // TODO: from the experience of 'is-from-sample':
-    // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
-    // This is a workaround to prevent that. We can change to the following code after the root cause is found.
-    // const projectConfig = await core.getProjectConfig(input);
-    // ignore errors for telemetry
-    // if (projectConfig.isOk()) {
-    //   return projectConfig.value?.settings?.version;
-    // }
-    const versionCheckResult = await projectVersionCheck();
-    if (versionCheckResult.isOk()) {
-      return versionCheckResult.value.currentVersion;
-    }
-  }
-  return undefined;
-}
-
 async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
   let needRefresh = false;
   for (const file of files) {
@@ -296,20 +207,20 @@ export function addFileSystemWatcher(workspacePath: string) {
     });
 
     const yorcFileWatcher = vscode.workspace.createFileSystemWatcher("**/.yo-rc.json");
-    yorcFileWatcher.onDidCreate((event) => {
-      refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidCreate(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidChange((event) => {
-      refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidChange(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
     });
-    yorcFileWatcher.onDidDelete((event) => {
-      refreshSPFxTreeOnFileChanged();
+    yorcFileWatcher.onDidDelete(async (event) => {
+      await refreshSPFxTreeOnFileChanged();
     });
   }
 }
 
-export function refreshSPFxTreeOnFileChanged() {
-  globalVariables.initializeGlobalVariables(globalVariables.context);
+export async function refreshSPFxTreeOnFileChanged() {
+  await globalVariables.initializeGlobalVariables(globalVariables.context);
 
   TreeViewManagerInstance.updateTreeViewsOnSPFxChanged();
 }
@@ -407,7 +318,7 @@ export async function updateAutoOpenGlobalKey(
     await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
   }
 
-  if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
+  if (globalVariables.isSPFxProject) {
     globalStateUpdate(GlobalKey.AutoInstallDependency, true);
   }
 }

@@ -33,7 +33,7 @@ import { DevTunnelManager } from "../../src/debug/taskTerminal/utils/devTunnelMa
 
 import { ExtensionErrors, ExtensionSource } from "../../src/error";
 import * as globalVariables from "../../src/globalVariables";
-import { tools } from "../../src/handlers";
+import { tools } from "../../src/globalVariables";
 
 chai.use(chaiAsPromised);
 

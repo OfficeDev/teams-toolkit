@@ -19,7 +19,6 @@ import {
   unzip,
   zipFolder,
 } from "./utils";
-import { sampleProvider } from "../../common/samples";
 
 export interface GeneratorContext {
   name: string;

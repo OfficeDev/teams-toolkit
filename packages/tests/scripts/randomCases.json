@@ -18,7 +18,11 @@
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
             "sample-localdebug-proactive-message",
-            "sample-localdebug-assistant-dashboard"
+            "sample-localdebug-assistant-dashboard",
+            "basic-tab-debug-upgrade-debug",
+            "basic-tab-upgrade-debug",
+            "bot-debug-upgrade-debug",
+            "bot-upgrade-debug"
         ]
     },
     {
@@ -62,7 +66,12 @@
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
-            "sample-localdebug-chef-bot"
+            "sample-localdebug-chef-bot",
+            "sample-localdebug-large-scale-notification",
+            "basic-tab-provision-upgrade-provision-debug",
+            "basic-tab-upgrade-provision-debug",
+            "bot-provision-upgrade-provision-debug",
+            "bot-upgrade-provision-debug"
         ]
     },
     {

@@ -63,7 +63,13 @@ export class CliHelper {
     }
     console.log(`[Provision] ${projectPath}`);
     const timeout = timeoutPromise(1000 * 60 * 10);
-    const version = await execAsyncWithRetry(`npx teamsapp -v `, {
+    let command = "";
+    if (v3) {
+      command = `npx teamsapp -v`;
+    } else {
+      command = `npx teamsfx -v`;
+    }
+    const version = await execAsyncWithRetry(command, {
       cwd: projectPath,
       env: processEnv ? processEnv : process.env,
     });
@@ -136,7 +142,7 @@ export class CliHelper {
   static async addFeature(feature: string, cwd: string) {
     console.log(`[start] add feature ${feature}... `);
     const { success } = await Executor.execute(
-      `teamsapp add ${feature} --verbose --interactive false`,
+      `teamsfx add ${feature} --verbose --interactive false`,
       cwd
     );
     chai.expect(success).to.be.true;

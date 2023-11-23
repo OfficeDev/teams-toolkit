@@ -15,6 +15,7 @@ import {
 } from "../../../utils/vscodeOperation";
 import * as dotenv from "dotenv";
 import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
+import { CliHelper } from "../../cliHelper";
 
 dotenv.config();
 
@@ -58,6 +59,9 @@ describe("Migration Tests", function () {
       await upgradeByCommandPalette();
       // verify upgrade
       await validateUpgrade();
+
+      // enable cli v3
+      CliHelper.setV3Enable();
 
       // v3 provision
       await runProvision(mirgationDebugTestContext.appName);

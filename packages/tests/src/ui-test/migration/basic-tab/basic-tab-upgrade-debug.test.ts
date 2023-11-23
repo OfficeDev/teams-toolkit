@@ -17,14 +17,11 @@ import {
 import {
   validateNotification,
   startDebugging,
-  upgrade,
   waitForTerminal,
   validateUpgrade,
   upgradeByCommandPalette,
 } from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);

@@ -16,6 +16,7 @@ import {
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
 import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
+import { CliHelper } from "../../cliHelper";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -53,6 +54,9 @@ describe("Migration Tests", function () {
       await upgradeByTreeView();
       // verify upgrade
       await validateUpgrade();
+
+      // enable cli v3
+      CliHelper.setV3Enable();
 
       // v3 provision
       await runProvision(mirgationDebugTestContext.appName);

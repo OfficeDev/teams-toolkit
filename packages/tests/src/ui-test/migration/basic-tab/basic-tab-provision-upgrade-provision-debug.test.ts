@@ -8,14 +8,13 @@ import {
   initPage,
   validateTabNoneSSO,
 } from "../../../utils/playwrightOperation";
-import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   validateUpgrade,
   upgradeByCommandPalette,
 } from "../../../utils/vscodeOperation";
 import * as dotenv from "dotenv";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
 
 dotenv.config();
 
@@ -63,19 +62,9 @@ describe("Migration Tests", function () {
       // verify upgrade
       await validateUpgrade();
 
-      // enable cli v3
-      await CliHelper.installCLI(
-        "alpha",
-        false,
-        mirgationDebugTestContext.projectPath
-      );
-      CliHelper.setV3Enable();
-
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
-      // v3 deploy
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await runProvision(mirgationDebugTestContext.appName);
+      await runDeploy(Timeout.botDeploy);
 
       // UI verify
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");

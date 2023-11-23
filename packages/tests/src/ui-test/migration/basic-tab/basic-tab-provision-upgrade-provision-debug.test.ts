@@ -14,7 +14,10 @@ import {
   upgradeByCommandPalette,
 } from "../../../utils/vscodeOperation";
 import * as dotenv from "dotenv";
-import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
+import {
+  reRunProvision,
+  reRunDeploy,
+} from "../../remotedebug/remotedebugContext";
 import { CliHelper } from "../../cliHelper";
 
 dotenv.config();
@@ -67,8 +70,8 @@ describe("Migration Tests", function () {
       CliHelper.setV3Enable();
 
       // v3 provision
-      await runProvision(mirgationDebugTestContext.appName);
-      await runDeploy(Timeout.botDeploy);
+      await reRunProvision();
+      await reRunDeploy(Timeout.botDeploy);
 
       // UI verify
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");

@@ -16,7 +16,10 @@ import {
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
-import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
+import {
+  reRunProvision,
+  reRunDeploy,
+} from "../../remotedebug/remotedebugContext";
 import { CliHelper } from "../../cliHelper";
 
 describe("Migration Tests", function () {
@@ -64,8 +67,8 @@ describe("Migration Tests", function () {
       CliHelper.setV3Enable();
 
       // v3 provision
-      await runProvision(mirgationDebugTestContext.appName);
-      await runDeploy(Timeout.botDeploy);
+      await reRunProvision();
+      await reRunDeploy(Timeout.botDeploy);
 
       // UI verify
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");

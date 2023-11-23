@@ -199,7 +199,7 @@ export class MigrationTestContext extends TestContext {
   public async provisionWithCLI(
     env: "local" | "dev",
     v3: boolean,
-    environment?: NodeJS.ProcessEnv
+    environment: NodeJS.ProcessEnv = process.env
   ): Promise<void> {
     process.env["AZURE_RESOURCE_GROUP_NAME"] = this.rgName;
     await AzSqlHelper.login();

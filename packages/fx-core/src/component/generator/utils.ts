@@ -233,6 +233,12 @@ export function zipFolder(folderPath: string): AdmZip {
   return zip;
 }
 
+export async function cleanupFolder(folder: string): Promise<void> {
+  if (await fs.pathExists(folder)) {
+    await fs.rm(folder, { recursive: true });
+  }
+}
+
 export async function downloadDirectory(
   sampleInfo: SampleUrlInfo,
   dstPath: string,

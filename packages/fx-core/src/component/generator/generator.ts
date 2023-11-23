@@ -20,7 +20,6 @@ import {
   CancelDownloading,
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
-  SampleNotFoundError,
   TemplateNotFoundError,
   TemplateZipFallbackError,
   UnzipError,
@@ -32,8 +31,7 @@ import {
   GeneratorContext,
   TemplateActionSeq,
 } from "./generatorAction";
-import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
-import { sampleProvider } from "../../common/samples";
+import { cleanupFolder, renderTemplateFileData, renderTemplateFileName } from "./utils";
 import { enableTestToolByDefault } from "../../common/featureFlags";
 import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
 
@@ -82,7 +80,8 @@ export class Generator {
   ): Promise<Result<undefined, FxError>> {
     const replaceMap = ctx.templateVariables ?? {};
     const generatorContext: GeneratorContext = {
-      name: language ?? commonTemplateName,
+      name: scenario,
+      language: language ?? commonTemplateName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>
@@ -133,22 +132,19 @@ export class Generator {
       [TelemetryProperty.SampleAppName]: sampleName,
       [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
-    const sample = await getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
+
     const generatorContext: GeneratorContext = {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      sampleInfo: sample.downloadUrlInfo,
       timeoutInMs: sampleDefaultTimeoutInMs,
       onActionError: sampleDefaultOnActionError,
     };
+
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
     ctx.logProvider.debug(`Downloading sample "${sampleName}" to ${destinationPath}`);
     await this.generate(generatorContext, DownloadDirectoryActionSeq);
-    if (!generatorContext.outputs?.length) {
-      return err(new SampleNotFoundError(sampleName).toFxError());
-    }
     return ok(undefined);
   }
 
@@ -162,10 +158,9 @@ export class Generator {
         await action.run(context);
         await context.onActionEnd?.(action, context);
       } catch (e) {
-        if (!context.onActionError) {
-          throw e;
-        }
-        if (e instanceof Error) await context.onActionError(action, context, e);
+        await cleanupFolder(context.destination);
+        if (e instanceof BaseComponentInnerError) throw e.toFxError();
+        if (e instanceof Error) context.onActionError(action, context, e);
       }
     }
   }
@@ -175,7 +170,7 @@ export function templateDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error
-): Promise<void> {
+): void {
   switch (action.name) {
     case GeneratorActionName.FetchTemplateUrlWithTag:
     case GeneratorActionName.FetchZipFromUrl:
@@ -187,29 +182,27 @@ export function templateDefaultOnActionError(
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
       context.logProvider.error(error.message);
-      return Promise.reject(new TemplateZipFallbackError().toFxError());
+      throw new TemplateZipFallbackError().toFxError();
     case GeneratorActionName.Unzip:
       context.logProvider.error(error.message);
-      return Promise.reject(new UnzipError().toFxError());
+      throw new UnzipError().toFxError();
     default:
-      return Promise.reject(new Error(error.message));
+      throw new Error(error.message);
   }
-  return Promise.resolve();
 }
 
-export async function sampleDefaultOnActionError(
+export function sampleDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error
-): Promise<void> {
+): void {
   context.logProvider.error(error.message);
+
   switch (action.name) {
+    case GeneratorActionName.FetchSampleInfo:
+      throw new DownloadSampleNetworkError(context.url!).toFxError();
     case GeneratorActionName.DownloadDirectory:
-      if (await fs.pathExists(context.destination)) {
-        await fs.rm(context.destination, { recursive: true });
-      }
-      if (error instanceof BaseComponentInnerError) throw error.toFxError();
-      else if (error.message.includes("403")) {
+      if (error.message.includes("403")) {
         throw new DownloadSampleApiLimitError(context.url!).toFxError();
       } else {
         throw new DownloadSampleNetworkError(context.url!).toFxError();

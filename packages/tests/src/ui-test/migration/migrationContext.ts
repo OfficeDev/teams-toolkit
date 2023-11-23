@@ -201,12 +201,11 @@ export class MigrationTestContext extends TestContext {
     v3: boolean,
     environment?: NodeJS.ProcessEnv
   ): Promise<void> {
-    if (v3) {
-      process.env["AZURE_RESOURCE_GROUP_NAME"] = this.rgName;
-      await AzSqlHelper.login();
-      const azhelper = new AzSqlHelper(this.rgName, []);
-      await azhelper.createResourceGroup();
-    }
+    process.env["AZURE_RESOURCE_GROUP_NAME"] = this.rgName;
+    await AzSqlHelper.login();
+    const azhelper = new AzSqlHelper(this.rgName, []);
+    await azhelper.createResourceGroup();
+
     await CliHelper.provisionProject(this.projectPath, env, v3, environment);
   }
 

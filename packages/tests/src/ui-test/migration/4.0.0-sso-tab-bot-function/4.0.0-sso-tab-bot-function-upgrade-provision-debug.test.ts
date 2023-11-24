@@ -19,10 +19,8 @@ import {
   upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
-import {
-  CLIVersionCheck,
-  updateFunctionAuthorizationPolicy,
-} from "../../../utils/commonUtils";
+import { updateFunctionAuthorizationPolicy } from "../../../utils/commonUtils";
+import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -69,20 +67,12 @@ describe("Migration Tests", function () {
       //verify upgrade
       await validateUpgrade();
 
-      // install test cil in project
-      await CliHelper.installCLI(
-        Env.TARGET_CLI,
-        false,
-        mirgationDebugTestContext.projectPath
-      );
       // enable cli v3
       CliHelper.setV3Enable();
 
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
-      // v3 deploy
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await runProvision(mirgationDebugTestContext.appName);
+      await runDeploy(Timeout.botDeploy);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       // UI verify

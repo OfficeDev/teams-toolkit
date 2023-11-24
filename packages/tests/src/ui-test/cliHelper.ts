@@ -10,7 +10,6 @@ import {
 } from "../utils/commonUtils";
 import {
   TemplateProjectFolder,
-  Resource,
   ResourceToDeploy,
   Capability,
 } from "../utils/constants";
@@ -56,17 +55,27 @@ export class CliHelper {
     projectPath: string,
     env: "local" | "dev" = "local",
     v3 = true,
-    processEnv?: NodeJS.ProcessEnv
+    processEnv: NodeJS.ProcessEnv = process.env
   ) {
     if (!isV3Enabled() && env === "local") {
       chai.assert.fail("local env is not supported in v2");
     }
     console.log(`[Provision] ${projectPath}`);
     const timeout = timeoutPromise(1000 * 60 * 10);
-    const version = await execAsyncWithRetry(`npx teamsapp -v `, {
-      cwd: projectPath,
-      env: processEnv ? processEnv : process.env,
-    });
+    let command = "";
+    if (v3) {
+      command = `npx teamsapp -v`;
+    } else {
+      command = `npx teamsfx -v`;
+    }
+    const version = await execAsyncWithRetry(
+      command,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+      },
+      1
+    );
     console.log(`[Provision] cli version: ${version.stdout}`);
 
     if (v3) {
@@ -136,7 +145,7 @@ export class CliHelper {
   static async addFeature(feature: string, cwd: string) {
     console.log(`[start] add feature ${feature}... `);
     const { success } = await Executor.execute(
-      `teamsapp add ${feature} --verbose --interactive false`,
+      `teamsfx add ${feature} --verbose --interactive false`,
       cwd
     );
     chai.expect(success).to.be.true;

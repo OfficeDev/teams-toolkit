@@ -11,7 +11,6 @@ import * as core from "@microsoft/teamsfx-core";
 
 import activate from "../../src/activate";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
-import { UserSettings } from "../../src/userSetttings";
 import {
   editDistance,
   getColorizedString,
@@ -248,31 +247,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const templates = await getTemplates();
       expect(templates.length).equals(1);
     });
-  });
-});
-
-describe("UserSettings", async () => {
-  const sandbox = sinon.createSandbox();
-  afterEach(() => {
-    sandbox.restore();
-  });
-  it("getConfigSync WriteFileError", async () => {
-    sandbox.stub(fs, "pathExistsSync").throws(new Error("error"));
-    const res = UserSettings.getConfigSync();
-    expect(res.isErr()).equals(true);
-    if (res.isErr()) {
-      expect(res.error instanceof core.WriteFileError).equals(true);
-    }
-  });
-  it("setConfigSync WriteFileError", async () => {
-    sandbox.stub(UserSettings, "getConfigSync").returns(apis.ok({}));
-    sandbox.stub(UserSettings, "getUserSettingsFile").returns("");
-    sandbox.stub(fs, "writeJSONSync").throws(new Error("error"));
-    const res = UserSettings.setConfigSync({});
-    expect(res.isErr()).equals(true);
-    if (res.isErr()) {
-      expect(res.error instanceof core.WriteFileError).equals(true);
-    }
   });
 });
 

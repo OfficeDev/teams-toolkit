@@ -7,7 +7,6 @@ import * as os from "os";
 import * as appInsights from "applicationinsights";
 import { machineIdSync } from "node-machine-id";
 import logger from "../commonlib/log";
-import { UserSettings } from "../userSetttings";
 
 export default class TelemetryReporter {
   private appInsightsClient: appInsights.TelemetryClient | undefined;
@@ -23,20 +22,7 @@ export default class TelemetryReporter {
     this.cliVersion = cliVersion;
     this.machineId = machineIdSync();
     this.appRoot = appRoot;
-    this.updateUserOptIn(key);
-  }
-
-  private updateUserOptIn(key: string): void {
-    const result = UserSettings.getTelemetrySetting();
-    if (result.isOk() && result.value === false) {
-      this.userOptIn = false;
-    } else {
-      this.userOptIn = true;
-    }
-
-    if (this.userOptIn) {
-      this.createAppInsightsClient(key);
-    }
+    this.createAppInsightsClient(key);
   }
 
   private createAppInsightsClient(key: string) {

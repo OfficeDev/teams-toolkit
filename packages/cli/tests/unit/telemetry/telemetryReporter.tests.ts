@@ -6,7 +6,6 @@ import sinon from "sinon";
 import { TelemetryClient } from "applicationinsights";
 
 import Reporter from "../../../src/telemetry/telemetryReporter";
-import { UserSettings } from "../../../src/userSetttings";
 import { expect } from "../utils";
 import Logger from "../../../src/commonlib/log";
 
@@ -21,12 +20,6 @@ describe("Telemetry Reporter", function () {
     const sandbox = sinon.createSandbox();
 
     before(() => {
-      sandbox
-        .stub(UserSettings, "getTelemetrySetting")
-        .onFirstCall()
-        .returns(ok(false))
-        .onSecondCall()
-        .returns(ok(true));
       sandbox.stub(Reporter.prototype, <any>"createAppInsightsClient");
     });
 
@@ -46,7 +39,6 @@ describe("Telemetry Reporter", function () {
   });
 
   it("getCommonProperties", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     const reporter = new Reporter("real", "real", "real", "real");
     const properties = reporter["getCommonProperties"]();
     expect(Object.keys(properties)).deep.equals([
@@ -58,7 +50,6 @@ describe("Telemetry Reporter", function () {
   });
 
   it("cloneAndChange", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     const reporter = new Reporter("real", "real", "real", "real");
     const obj = {
       a: "aa",
@@ -79,9 +70,7 @@ describe("Telemetry Reporter", function () {
   describe("anonymizeFilePaths", () => {
     const sandbox = sinon.createSandbox();
 
-    before(() => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-    });
+    before(() => {});
 
     after(() => {
       sandbox.restore();
@@ -115,9 +104,7 @@ describe("Telemetry Reporter", function () {
   describe("removePropertiesWithPossibleUserInfo", () => {
     const sandbox = sinon.createSandbox();
 
-    before(() => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-    });
+    before(() => {});
 
     after(() => {
       sandbox.restore();
@@ -155,7 +142,6 @@ describe("Telemetry Reporter", function () {
   });
 
   it("sendTelemetryEvent", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     sandbox.stub(TelemetryClient.prototype, "trackEvent");
     sandbox.stub(Logger, "debug");
     const reporter = new Reporter("real", "real", "real", "real");
@@ -165,7 +151,6 @@ describe("Telemetry Reporter", function () {
   });
 
   it("sendTelemetryErrorEvent", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     sandbox.stub(TelemetryClient.prototype, "trackEvent");
     sandbox.stub(Logger, "debug");
     const reporter = new Reporter("real", "real", "real", "real");
@@ -175,7 +160,6 @@ describe("Telemetry Reporter", function () {
   });
 
   it("sendTelemetryException", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     sandbox.stub(TelemetryClient.prototype, "trackEvent");
     sandbox.stub(Logger, "debug");
     const reporter = new Reporter("real", "real", "real", "real");

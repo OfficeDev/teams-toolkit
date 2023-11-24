@@ -31,6 +31,31 @@ interface ScriptDriverArgs {
   redirectTo?: string;
 }
 
+/**
+ * Get the default shell for the current platform:
+ * - If `SHELL` environment variable is set, return its value. otherwise:
+ * - On macOS, return `/bin/zsh` if it exists, otherwise return `/bin/bash`.
+ * - On Windows, return the value of the `ComSpec` environment variable if it exists, otherwise return `cmd.exe`.
+ * - On Linux, return `/bin/sh`.
+ */
+export async function defaultShell(): Promise<string | true> {
+  if (process.env.SHELL) {
+    return process.env.SHELL;
+  }
+  if (process.platform === "darwin") {
+    if (await fs.pathExists("/bin/zsh")) return "/bin/zsh";
+    else if (await fs.pathExists("/bin/bash")) return "/bin/bash";
+    return true;
+  }
+  if (process.platform === "win32") {
+    return process.env.COMSPEC || "cmd.exe";
+  }
+  if (await fs.pathExists("/bin/sh")) {
+    return "/bin/sh";
+  }
+  return true;
+}
+
 @Service(ACTION_NAME)
 export class ScriptDriver implements StepDriver {
   async _run(
@@ -82,24 +107,22 @@ export async function executeCommand(
   redirectTo?: string
 ): Promise<Result<[string, DotenvOutput], FxError>> {
   const systemEncoding = await getSystemEncoding();
-  return new Promise((resolve, reject) => {
+  const dshell = await defaultShell();
+  return new Promise((resolve) => {
+    const finalShell = shell || dshell;
     const platform = os.platform();
     let workingDir = workingDirectory || ".";
     workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
     if (platform === "win32") {
       workingDir = capitalizeFirstLetter(path.resolve(workingDir ?? ""));
     }
-    let run = command;
     let appendFile: string | undefined = undefined;
     if (redirectTo) {
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
     }
-    if (shell === "cmd") {
-      run = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
-    }
     logProvider.verbose(
       `Start to run command: "${maskSecretValues(command)}" with args: ${JSON.stringify({
-        shell: shell,
+        shell: finalShell,
         cwd: workingDir,
         encoding: "buffer",
         env: { ...process.env, ...env },
@@ -109,44 +132,45 @@ export async function executeCommand(
     const allOutputStrings: string[] = [];
     const stderrStrings: string[] = [];
     process.env.VSLANG = undefined; // Workaroud to disable VS environment variable to void charset encoding issue for non-English characters
-    const cp = child_process.exec(
-      run,
-      {
-        shell: shell,
-        cwd: workingDir,
-        encoding: "buffer",
-        env: { ...process.env, ...env },
-        timeout: timeout,
-      },
-      (error) => {
-        if (error) {
-          error.message = stderrStrings.join("").trim() || error.message;
-          resolve(err(convertScriptErrorToFxError(error, run)));
-        } else {
-          // handle '::set-output' or '::set-teamsfx-env' pattern
-          const outputString = allOutputStrings.join("");
-          const outputObject = parseSetOutputCommand(outputString);
-          if (Object.keys(outputObject).length > 0)
-            logProvider.verbose(
-              `script output env variables: ${maskSecretValues(JSON.stringify(outputObject))}`
-            );
-          resolve(ok([outputString, outputObject]));
-        }
-      }
-    );
+    const cp = child_process.spawn(command, {
+      stdio: ["inherit", "pipe", "pipe"],
+      shell: finalShell,
+      cwd: workingDir,
+      env: { ...process.env, ...env },
+      timeout: timeout,
+    });
     const dataHandler = (data: string) => {
       allOutputStrings.push(data);
       if (appendFile) {
         fs.appendFileSync(appendFile, data);
       }
     };
-    cp.stdout?.on("data", (data: Buffer) => {
+    cp.stdout.on("data", (data: any) => {
       const str = bufferToString(data, systemEncoding);
-      logProvider.info(` [script action stdout] ${maskSecretValues(str)}`);
+      logProvider.info(` [script stdout] ${maskSecretValues(data)}`);
       dataHandler(str);
     });
+    cp.on("exit", (code: number | null) => {
+      if (code === null) {
+        //timeout
+        resolve(err(new ScriptTimeoutError(command)));
+      } else if (code === 1) {
+        //error
+        const error = new ScriptExecutionError(command, stderrStrings.join("").trim());
+        resolve(err(error));
+      } else if (code === 0) {
+        //success
+        const outputString = allOutputStrings.join("");
+        const outputObject = parseSetOutputCommand(outputString);
+        if (Object.keys(outputObject).length > 0)
+          logProvider.verbose(
+            `script output env variables: ${maskSecretValues(JSON.stringify(outputObject))}`
+          );
+        resolve(ok([outputString, outputObject]));
+      }
+    });
     const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
-    cp.stderr?.on("data", handler);
+    cp.stderr.on("data", handler);
   });
 }
 
@@ -154,11 +178,11 @@ export function getStderrHandler(
   logProvider: LogProvider,
   systemEncoding: string,
   stderrStrings: string[],
-  dataHandler: (data: string) => void
+  dataHandler: (data: any) => void
 ): (data: Buffer) => void {
   return (data: Buffer) => {
     const str = bufferToString(data, systemEncoding);
-    logProvider.warning(` [script action stderr] ${maskSecretValues(str)}`);
+    logProvider.warning(` [script stderr] ${maskSecretValues(str)}`);
     dataHandler(str);
     stderrStrings.push(str);
   };

@@ -4,22 +4,22 @@
 /**
  * @author huajiezhang <huajiezhang@microsoft.com>
  */
-import { err, FxError, ok, Result, LogProvider } from "@microsoft/teamsfx-api";
-import { Service } from "typedi";
-import { DriverContext } from "../interface/commonArgs";
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { hooks } from "@feathersjs/hooks";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { TelemetryConstant } from "../../constant/commonConstant";
-import { ProgressMessages } from "../../messages";
-import { DotenvOutput } from "../../utils/envUtil";
-import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script";
-import { getSystemEncoding } from "../../utils/charsetUtils";
-import * as path from "path";
-import os from "os";
+import { FxError, LogProvider, Result, err, ok } from "@microsoft/teamsfx-api";
+import child_process from "child_process";
 import fs from "fs-extra";
 import iconv from "iconv-lite";
-import child_process from "child_process";
+import os from "os";
+import * as path from "path";
+import { Service } from "typedi";
+import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script";
+import { TelemetryConstant } from "../../constant/commonConstant";
+import { ProgressMessages } from "../../messages";
+import { getSystemEncoding } from "../../utils/charsetUtils";
+import { DotenvOutput } from "../../utils/envUtil";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 
 const ACTION_NAME = "script";
 
@@ -38,22 +38,22 @@ interface ScriptDriverArgs {
  * - On Windows, return the value of the `ComSpec` environment variable if it exists, otherwise return `cmd.exe`.
  * - On Linux, return `/bin/sh`.
  */
-export async function defaultShell(): Promise<string | true> {
+export async function defaultShell(): Promise<string | undefined> {
   if (process.env.SHELL) {
     return process.env.SHELL;
   }
   if (process.platform === "darwin") {
     if (await fs.pathExists("/bin/zsh")) return "/bin/zsh";
     else if (await fs.pathExists("/bin/bash")) return "/bin/bash";
-    return true;
+    return undefined;
   }
   if (process.platform === "win32") {
-    return process.env.COMSPEC || "cmd.exe";
+    return process.env.ComSpec || "cmd.exe";
   }
   if (await fs.pathExists("/bin/sh")) {
     return "/bin/sh";
   }
-  return true;
+  return undefined;
 }
 
 @Service(ACTION_NAME)
@@ -110,6 +110,10 @@ export async function executeCommand(
   const dshell = await defaultShell();
   return new Promise((resolve) => {
     const finalShell = shell || dshell;
+    let finalCmd = command;
+    if (typeof finalShell === "string" && finalShell.includes("cmd")) {
+      finalCmd = `%ComSpec% /D /E:ON /V:OFF /S /C "CALL ${command}"`;
+    }
     const platform = os.platform();
     let workingDir = workingDirectory || ".";
     workingDir = path.isAbsolute(workingDir) ? workingDir : path.join(projectPath, workingDir);
@@ -121,10 +125,10 @@ export async function executeCommand(
       appendFile = path.isAbsolute(redirectTo) ? redirectTo : path.join(projectPath, redirectTo);
     }
     logProvider.verbose(
-      `Start to run command: "${maskSecretValues(command)}" with args: ${JSON.stringify({
+      `Start to run command: "${maskSecretValues(finalCmd)}" with args: ${JSON.stringify({
         shell: finalShell,
         cwd: workingDir,
-        encoding: "buffer",
+        encoding: systemEncoding,
         env: { ...process.env, ...env },
         timeout: timeout,
       })}.`
@@ -132,45 +136,43 @@ export async function executeCommand(
     const allOutputStrings: string[] = [];
     const stderrStrings: string[] = [];
     process.env.VSLANG = undefined; // Workaroud to disable VS environment variable to void charset encoding issue for non-English characters
-    const cp = child_process.spawn(command, {
-      stdio: ["inherit", "pipe", "pipe"],
-      shell: finalShell,
-      cwd: workingDir,
-      env: { ...process.env, ...env },
-      timeout: timeout,
-    });
+    const cp = child_process.exec(
+      finalCmd,
+      {
+        shell: finalShell,
+        cwd: workingDir,
+        env: { ...process.env, ...env },
+        timeout: timeout,
+      },
+      (error) => {
+        if (error) {
+          error.message = stderrStrings.join("").trim() || error.message;
+          resolve(err(convertScriptErrorToFxError(error, finalCmd)));
+        } else {
+          // handle '::set-output' or '::set-teamsfx-env' pattern
+          const outputString = allOutputStrings.join("");
+          const outputObject = parseSetOutputCommand(outputString);
+          if (Object.keys(outputObject).length > 0)
+            logProvider.verbose(
+              `script output env variables: ${maskSecretValues(JSON.stringify(outputObject))}`
+            );
+          resolve(ok([outputString, outputObject]));
+        }
+      }
+    );
     const dataHandler = (data: string) => {
       allOutputStrings.push(data);
       if (appendFile) {
         fs.appendFileSync(appendFile, data);
       }
     };
-    cp.stdout.on("data", (data: any) => {
+    cp.stdout?.on("data", (data: any) => {
       const str = bufferToString(data, systemEncoding);
       logProvider.info(` [script stdout] ${maskSecretValues(data)}`);
       dataHandler(str);
     });
     const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
-    cp.stderr.on("data", handler);
-    cp.on("exit", (code: number | null) => {
-      if (code === null) {
-        //timeout
-        resolve(err(new ScriptTimeoutError(command)));
-      } else if (code === 1) {
-        //error
-        const error = new ScriptExecutionError(command, stderrStrings.join("").trim());
-        resolve(err(error));
-      } else if (code === 0) {
-        //success
-        const outputString = allOutputStrings.join("");
-        const outputObject = parseSetOutputCommand(outputString);
-        if (Object.keys(outputObject).length > 0)
-          logProvider.verbose(
-            `script output env variables: ${maskSecretValues(JSON.stringify(outputObject))}`
-          );
-        resolve(ok([outputString, outputObject]));
-      }
-    });
+    cp.stderr?.on("data", handler);
   });
 }
 

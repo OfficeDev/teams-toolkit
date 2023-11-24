@@ -150,6 +150,8 @@ export async function executeCommand(
       logProvider.info(` [script stdout] ${maskSecretValues(data)}`);
       dataHandler(str);
     });
+    const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
+    cp.stderr.on("data", handler);
     cp.on("exit", (code: number | null) => {
       if (code === null) {
         //timeout
@@ -169,8 +171,6 @@ export async function executeCommand(
         resolve(ok([outputString, outputObject]));
       }
     });
-    const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
-    cp.stderr.on("data", handler);
   });
 }
 

@@ -5,6 +5,7 @@ import {
   AppPackageFolderName,
   AzureAccountProvider,
   BuildFolderName,
+  ConfirmQuestion,
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
@@ -918,13 +919,22 @@ export function resourceGroupQuestionNode(
   };
 }
 
+export function apiSpecApiKeyConfirmQestion(): ConfirmQuestion {
+  return {
+    name: QuestionNames.ApiSpecApiKeyConfirm,
+    title: getLocalizedString("core.createProjectQuestion.ApiKeyConfirm"),
+    type: "confirm",
+    default: true,
+  };
+}
+
 export function apiSpecApiKeyQuestion(): IQTreeNode {
   return {
     data: {
       type: "text",
       name: QuestionNames.ApiSpecApiKey,
       cliShortName: "k",
-      title: getLocalizedString("core.createaProjectQuestion.ApiKey"),
+      title: getLocalizedString("core.createProjectQuestion.ApiKey"),
       cliDescription: "Api key for OpenAPI spec.",
       forgetLastValue: true,
       validation: {
@@ -956,5 +966,10 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
         !inputs.clientSecret
       );
     },
+    children: [
+      {
+        data: apiSpecApiKeyConfirmQestion(),
+      },
+    ],
   };
 }

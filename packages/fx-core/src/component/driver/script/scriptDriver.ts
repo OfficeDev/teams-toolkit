@@ -141,6 +141,7 @@ export async function executeCommand(
       {
         shell: finalShell,
         cwd: workingDir,
+        encoding: "buffer",
         env: { ...process.env, ...env },
         timeout: timeout,
       },
@@ -166,9 +167,9 @@ export async function executeCommand(
         fs.appendFileSync(appendFile, data);
       }
     };
-    cp.stdout?.on("data", (data: any) => {
+    cp.stdout?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
-      logProvider.info(` [script stdout] ${maskSecretValues(data)}`);
+      logProvider.info(` [script stdout] ${maskSecretValues(str)}`);
       dataHandler(str);
     });
     const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
@@ -180,7 +181,7 @@ export function getStderrHandler(
   logProvider: LogProvider,
   systemEncoding: string,
   stderrStrings: string[],
-  dataHandler: (data: any) => void
+  dataHandler: (data: string) => void
 ): (data: Buffer) => void {
   return (data: Buffer) => {
     const str = bufferToString(data, systemEncoding);

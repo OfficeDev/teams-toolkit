@@ -167,32 +167,13 @@ export async function executeCommand(
         fs.appendFileSync(appendFile, data);
       }
     };
-    cp.stdout?.on("data", (data: any) => {
+    cp.stdout?.on("data", (data: Buffer) => {
       const str = bufferToString(data, systemEncoding);
       logProvider.info(` [script stdout] ${maskSecretValues(str)}`);
       dataHandler(str);
     });
     const handler = getStderrHandler(logProvider, systemEncoding, stderrStrings, dataHandler);
     cp.stderr?.on("data", handler);
-    cp.on("exit", (code: number | null) => {
-      if (code === null) {
-        //timeout
-        resolve(err(new ScriptTimeoutError(command)));
-      } else if (code === 1) {
-        //error
-        const error = new ScriptExecutionError(command, stderrStrings.join("").trim());
-        resolve(err(error));
-      } else if (code === 0) {
-        //success
-        const outputString = allOutputStrings.join("");
-        const outputObject = parseSetOutputCommand(outputString);
-        if (Object.keys(outputObject).length > 0)
-          logProvider.verbose(
-            `script output env variables: ${maskSecretValues(JSON.stringify(outputObject))}`
-          );
-        resolve(ok([outputString, outputObject]));
-      }
-    });
   });
 }
 
@@ -200,7 +181,7 @@ export function getStderrHandler(
   logProvider: LogProvider,
   systemEncoding: string,
   stderrStrings: string[],
-  dataHandler: (data: any) => void
+  dataHandler: (data: string) => void
 ): (data: Buffer) => void {
   return (data: Buffer) => {
     const str = bufferToString(data, systemEncoding);

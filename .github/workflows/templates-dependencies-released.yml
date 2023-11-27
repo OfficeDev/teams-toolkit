@@ -24,9 +24,7 @@ jobs:
       - name: Get All Updated Templates Dependencies
         id: getUpdatedTemplatesDependencies
         run: |
-          # echo 'result<<EOF' >> $GITHUB_OUTPUT
           echo "result=$(node ./.github/scripts/get-dailydigest-dependencies.js)" >> $GITHUB_OUTPUT
-          # echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: Get Date
         id: getDate
@@ -43,9 +41,7 @@ jobs:
 
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
-          # echo 'body<<EOF' >> $GITHUB_OUTPUT
-          echo "$body" >> $GITHUB_OUTPUT
-          # echo 'EOF' >> $GITHUB_OUTPUT
+          echo "body=$body" >> $GITHUB_OUTPUT
 
       - name: Send E-mail Notifications
         uses: ./.github/actions/send-email-report

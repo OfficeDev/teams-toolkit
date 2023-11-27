@@ -20,6 +20,7 @@ import {
   CancelDownloading,
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
+  FetchSampleInfoError,
   TemplateNotFoundError,
   TemplateZipFallbackError,
   UnzipError,
@@ -31,7 +32,12 @@ import {
   GeneratorContext,
   TemplateActionSeq,
 } from "./generatorAction";
-import { renderTemplateFileData, renderTemplateFileName } from "./utils";
+import {
+  convertToUrl,
+  isApiLimitError,
+  renderTemplateFileData,
+  renderTemplateFileName,
+} from "./utils";
 import { enableTestToolByDefault } from "../../common/featureFlags";
 import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
 
@@ -202,12 +208,13 @@ export async function sampleDefaultOnActionError(
   }
   switch (action.name) {
     case GeneratorActionName.FetchSampleInfo:
-      throw new DownloadSampleNetworkError(context.url!).toFxError();
+      throw new FetchSampleInfoError(error).toFxError();
     case GeneratorActionName.DownloadDirectory:
-      if (error.message.includes("403")) {
-        throw new DownloadSampleApiLimitError(context.url!).toFxError();
+      const url = convertToUrl(context.sampleInfo!);
+      if (isApiLimitError(error)) {
+        throw new DownloadSampleApiLimitError(url, error).toFxError();
       } else {
-        throw new DownloadSampleNetworkError(context.url!).toFxError();
+        throw new DownloadSampleNetworkError(url, error).toFxError();
       }
     default:
       throw new Error(error.message);

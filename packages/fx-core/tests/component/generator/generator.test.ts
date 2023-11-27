@@ -5,13 +5,15 @@ import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse, AxiosHeaders } from "axios";
 import {
   downloadDirectory,
   getSampleInfoFromName,
   runWithLimitedConcurrency,
   renderTemplateFileData,
   renderTemplateFileName,
+  simplifyAxiosError,
+  isApiLimitError,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
 import {
@@ -303,7 +305,15 @@ describe("Generator utils", () => {
 
   it("download directory get file info error", async () => {
     const axiosStub = sandbox.stub(axios, "get");
-    axiosStub.onFirstCall().resolves({ status: 403 });
+    const error = new Error("Network error");
+    (error as any).isAxiosError = true;
+    (error as any).response = {
+      status: 403,
+      headers: {
+        "x-ratelimit-remaining": "0",
+      },
+    };
+    axiosStub.onFirstCall().rejects(error);
     try {
       await downloadDirectory(
         {
@@ -316,7 +326,6 @@ describe("Generator utils", () => {
       );
     } catch (e) {
       assert.exists(e);
-      assert.isTrue(e.message.includes("HTTP Request failed"));
       return;
     }
     assert.fail("Should not reach here.");
@@ -356,6 +365,91 @@ describe("Generator utils", () => {
     res = [];
     await runWithLimitedConcurrency(data, callback, 1);
     assert.deepEqual(res, [1, 10, 2, 3]);
+  });
+
+  it("convert sample info to url", async () => {
+    const sampleInfo: generatorUtils.SampleUrlInfo = {
+      owner: "OfficeDev",
+      repository: "TeamsFx-Samples",
+      ref: "dev",
+      dir: "test",
+    };
+    const url = generatorUtils.convertToUrl(sampleInfo);
+    assert.equal(url, "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test");
+  });
+
+  it("should simplify an AxiosError", () => {
+    const mockError: AxiosError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 403,
+        statusText: "Forbidden",
+        headers: {
+          "x-ratelimit-remaining": "0",
+        },
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const simplifiedError = simplifyAxiosError(mockError);
+    const expectedError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      config: undefined,
+      stack: "Error stack",
+      status: 403,
+      statusText: "Forbidden",
+      headers: {
+        "x-ratelimit-remaining": "0",
+      },
+      data: "Error data",
+    };
+
+    assert.deepEqual(simplifiedError, expectedError);
+  });
+
+  it("should return true for an API limit error", () => {
+    const mockError: AxiosError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 403,
+        statusText: "Forbidden",
+        headers: {
+          "x-ratelimit-remaining": "0",
+        },
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+
+    assert.isTrue(isApiLimitError(mockError));
+  });
+
+  it("should return false for a non-API limit error", () => {
+    const mockError: AxiosError = {
+      message: "Not Found",
+      name: "AxiosError",
+      code: "404",
+      stack: "Error stack",
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    assert.isFalse(isApiLimitError(mockError));
   });
 });
 
@@ -427,7 +521,7 @@ describe("Generator error", async () => {
     sandbox.stub(fetchSampleInfoAction, "run").throws(new Error("test"));
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+      assert.equal(result.error.name, "FetchSampleInfoError");
     } else {
       assert.fail("fetch sample info error should be thrown.");
     }
@@ -727,11 +821,19 @@ describe("Generate sample using download directory", () => {
 
   it("download directory throw api limit error", async () => {
     const axiosStub = sandbox.stub(axios, "get");
-    axiosStub.onFirstCall().resolves({ status: 403 });
+    const error = new Error("Network error");
+    (error as any).isAxiosError = true;
+    (error as any).response = {
+      status: 403,
+      headers: {
+        "x-ratelimit-remaining": "0",
+      },
+    };
+    axiosStub.onSecondCall().rejects(error);
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     assert.isTrue(result.isErr());
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "DownloadSampleApiLimitError");
+      assert.equal(result.error.name, "DownloadSampleApiLimitError");
     }
   });
 
@@ -742,7 +844,7 @@ describe("Generate sample using download directory", () => {
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     assert.isTrue(result.isErr());
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+      assert.equal(result.error.name, "DownloadSampleNetworkError");
     }
   });
 
@@ -764,7 +866,7 @@ describe("Generate sample using download directory", () => {
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     assert.isTrue(result.isErr());
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+      assert.equal(result.error.name, "DownloadSampleNetworkError");
     }
     assert.isFalse(await fs.pathExists(path.join(tmpDir, sampleName)));
   });
@@ -776,7 +878,7 @@ describe("Generate sample using download directory", () => {
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     assert.isTrue(result.isErr());
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+      assert.equal(result.error.name, "DownloadSampleNetworkError");
     }
     assert.isTrue(rmStub.calledOnce);
     assert.isTrue(existsStub.calledOnce);

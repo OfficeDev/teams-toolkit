@@ -12,6 +12,7 @@ import {
   DependencyStatus,
   EmptyLogger,
   EmptyTelemetry,
+  TestToolReleaseType,
   v3DefaultHelpLink,
 } from "../../../common/deps-checker";
 import {
@@ -128,7 +129,12 @@ export class ToolsInstallDriverImpl {
     }
 
     if (args.testTool) {
-      await this.resolveTestTool(`${args.testTool.version}`, args.testTool.symlinkDir);
+      await this.resolveTestTool(
+        // Hardcode to npm release type if running from YAML
+        TestToolReleaseType.Npm,
+        `${args.testTool.version}`,
+        args.testTool.symlinkDir
+      );
     }
 
     return res;
@@ -257,10 +263,15 @@ export class ToolsInstallDriverImpl {
     return res;
   }
 
-  async resolveTestTool(versionRange: string, symlinkDir: string): Promise<void> {
+  async resolveTestTool(
+    releaseType: TestToolReleaseType,
+    versionRange: string,
+    symlinkDir: string
+  ): Promise<void> {
     const checker = new TestToolChecker();
     const projectPath = this.context.projectPath;
     const status = await checker.resolve({
+      releaseType,
       versionRange,
       symlinkDir,
       projectPath,

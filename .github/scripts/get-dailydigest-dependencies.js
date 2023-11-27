@@ -91,6 +91,127 @@ async function getTemplatesDependencies() {
   return dependenciesMap;
 }
 
+function generateAdaptiveCardTable(arr) {
+  let table = {
+    type: "Table",
+    firstRowAsHeaders: true,
+    columns: [
+      {
+        width: 2,
+      },
+      {
+        width: 1,
+      },
+      {
+        width: 3,
+      },
+      {
+        width: 2,
+      },
+    ],
+    rows: [
+      {
+        type: "TableRow",
+        cells: [
+          {
+            type: "TableCell",
+            items: [
+              {
+                type: "TextBlock",
+                text: "Name",
+                wrap: true,
+                weight: "Bolder",
+              },
+            ],
+          },
+          {
+            type: "TableCell",
+            items: [
+              {
+                type: "TextBlock",
+                text: "Version",
+                wrap: true,
+                weight: "Bolder",
+              },
+            ],
+          },
+          {
+            type: "TableCell",
+            items: [
+              {
+                type: "TextBlock",
+                text: "Templates",
+                wrap: true,
+                weight: "Bolder",
+              },
+            ],
+          },
+          {
+            type: "TableCell",
+            items: [
+              {
+                type: "TextBlock",
+                text: "Owners",
+                wrap: true,
+                weight: "Bolder",
+              },
+            ],
+          },
+        ],
+        style: "accent",
+      },
+    ],
+  };
+  for (const entry of arr) {
+    table.rows.push({
+      type: "TableRow",
+      cells: [
+        {
+          type: "TableCell",
+          items: [
+            {
+              type: "TextBlock",
+              text: `[${entry.name}](https://www.npmjs.com/package/${entry.name})`,
+              wrap: true,
+            },
+          ],
+        },
+        {
+          type: "TableCell",
+          items: [
+            {
+              type: "TextBlock",
+              text: entry.version,
+              wrap: true,
+            },
+          ],
+        },
+        {
+          type: "TableCell",
+          items: [
+            {
+              type: "TextBlock",
+              text: entry.dependencies.join("\n\r"),
+              wrap: true,
+            },
+          ],
+        },
+        {
+          type: "TableCell",
+          items: [
+            {
+              type: "TextBlock",
+              text: entry.owners.join("\n\r"),
+              wrap: true,
+            },
+          ],
+        },
+      ],
+    });
+  }
+  return table;
+}
+
 async function main() {
   const dependenciesMap = await getTemplatesDependencies();
   let arr = [];
@@ -101,7 +222,7 @@ async function main() {
         const ltsVersion = response.data["dist-tags"].latest;
         const ltsVersionTime = response.data.time[ltsVersion];
         const timeDiff = (new Date() - new Date(ltsVersionTime)) / 1000;
-        if (timeDiff <= 86400) {
+        if (timeDiff <= 86400 * 3) {
           arr.push({
             name: entry[0],
             version: ltsVersion,
@@ -111,7 +232,9 @@ async function main() {
         }
       });
   }
-  return arr;
+  const table = generateAdaptiveCardTable(arr);
+  const tableString = JSON.stringify(table);
+  return tableString;
 }
 
 main().then((result) => {

@@ -25,6 +25,7 @@ import {
   convertPathToCamelCase,
   getAPIKeyAuthArray,
   listSupportedAPIs,
+  resolveServerUrl,
   validateSpec,
 } from "./utils";
 import { updateManifest } from "./manifestUpdater";
@@ -142,7 +143,7 @@ export class SpecParser {
           );
         }
 
-        apiResult.server = serverUrl.url;
+        apiResult.server = resolveServerUrl(serverUrl.url);
 
         let operationId = operation.operationId;
         if (!operationId) {

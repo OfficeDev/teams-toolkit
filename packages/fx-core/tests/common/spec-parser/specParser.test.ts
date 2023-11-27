@@ -22,6 +22,7 @@ import * as AdaptiveCardGenerator from "../../../src/common/spec-parser/adaptive
 import * as utils from "../../../src/common/spec-parser/utils";
 import jsyaml from "js-yaml";
 import { format } from "../../../src/common/spec-parser/utils";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -1060,6 +1061,14 @@ describe("SpecParser", () => {
   });
 
   describe("list", () => {
+    let envRestore: RestoreFn | undefined;
+    afterEach(() => {
+      if (envRestore) {
+        envRestore();
+        envRestore = undefined;
+      }
+    });
+
     it("should return a list of HTTP methods and paths for all GET with 1 parameter and without security", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath);
@@ -1674,6 +1683,77 @@ describe("SpecParser", () => {
         expect((err as SpecParserError).message).contain(ConstantString.NoServerInformation);
         expect((err as SpecParserError).errorType).to.equal(ErrorType.NoServerInformation);
       }
+    });
+
+    it("should return correct domain when domain contains placeholder", async () => {
+      envRestore = mockedEnv({
+        ["SERVER_ENV"]: "https://server1",
+      });
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowAPIKeyAuth: true });
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+          },
+        },
+        servers: [
+          {
+            url: "${{SERVER_ENV}}",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              security: [{ api_key: [] }],
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          auth: { type: "apiKey", name: "api_key", in: "header" },
+          operationId: "getUserById",
+        },
+      ]);
     });
   });
 });

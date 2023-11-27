@@ -2,22 +2,25 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredential } from "@azure/core-auth";
 import * as identity from "@azure/identity";
-import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
 import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import { login, LoginStatus } from "./common/login";
+import { LoginStatus, login } from "./common/login";
 
-import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
-import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
+import {
+  ConvertTokenToJson,
+  InvalidAzureSubscriptionError,
+  isValidProjectV3,
+} from "@microsoft/teamsfx-core";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
-import { ConvertTokenToJson, isValidProject, isValidProjectV3 } from "@microsoft/teamsfx-core";
-import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
+import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
+import CLILogProvider from "./log";
 
 /**
  * Prepare for service principal login, not fully implemented

@@ -205,7 +205,9 @@ export async function CLIVersionCheck(
   version: "V2" | "V3",
   projectPath: string
 ): Promise<{ success: boolean; cliVersion: string }> {
-  const command = `npx teamsapp --version`;
+  let command = "";
+  if (version === "V2") command = `npx teamsfx --version`;
+  else if (version === "V3") command = `npx teamsapp --version`;
   const { success, stdout } = await Executor.execute(command, projectPath);
   chai.expect(success).to.eq(true);
   const cliVersion = stdout.trim();

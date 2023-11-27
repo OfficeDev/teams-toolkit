@@ -25,7 +25,7 @@ jobs:
         id: getUpdatedTemplatesDependencies
         run: |
           # echo 'result<<EOF' >> $GITHUB_OUTPUT
-          echo "$(node ./.github/scripts/get-dailydigest-dependencies.js)" >> $GITHUB_OUTPUT
+          echo "result=$(node ./.github/scripts/get-dailydigest-dependencies.js)" >> $GITHUB_OUTPUT
           # echo 'EOF' >> $GITHUB_OUTPUT
 
       - name: Get Date

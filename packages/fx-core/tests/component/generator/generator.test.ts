@@ -29,6 +29,7 @@ import {
   fetchTemplateFromLocalAction,
   fetchZipFromUrlAction,
   unzipAction,
+  fetchSampleInfoAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
@@ -404,6 +405,8 @@ describe("Generator error", async () => {
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
+    } else {
+      assert.fail("template fallback error should be thrown.");
     }
   });
 
@@ -415,6 +418,18 @@ describe("Generator error", async () => {
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "UnzipError");
+    } else {
+      assert.fail("upzip error should be thrown.");
+    }
+  });
+
+  it("fetch sample info fail", async () => {
+    sandbox.stub(fetchSampleInfoAction, "run").throws(new Error("test"));
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    if (result.isErr()) {
+      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+    } else {
+      assert.fail("fetch sample info error should be thrown.");
     }
   });
 

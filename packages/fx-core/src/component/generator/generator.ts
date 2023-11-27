@@ -20,7 +20,6 @@ import {
   CancelDownloading,
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
-  SampleNotFoundError,
   TemplateNotFoundError,
   TemplateZipFallbackError,
   UnzipError,
@@ -32,8 +31,7 @@ import {
   GeneratorContext,
   TemplateActionSeq,
 } from "./generatorAction";
-import { getSampleInfoFromName, renderTemplateFileData, renderTemplateFileName } from "./utils";
-import { sampleProvider } from "../../common/samples";
+import { renderTemplateFileData, renderTemplateFileName } from "./utils";
 import { enableTestToolByDefault } from "../../common/featureFlags";
 import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
 
@@ -82,7 +80,8 @@ export class Generator {
   ): Promise<Result<undefined, FxError>> {
     const replaceMap = ctx.templateVariables ?? {};
     const generatorContext: GeneratorContext = {
-      name: language ?? commonTemplateName,
+      name: scenario,
+      language: language ?? commonTemplateName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>
@@ -133,22 +132,19 @@ export class Generator {
       [TelemetryProperty.SampleAppName]: sampleName,
       [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
-    const sample = await getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
+
     const generatorContext: GeneratorContext = {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      sampleInfo: sample.downloadUrlInfo,
       timeoutInMs: sampleDefaultTimeoutInMs,
       onActionError: sampleDefaultOnActionError,
     };
+
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
     ctx.logProvider.debug(`Downloading sample "${sampleName}" to ${destinationPath}`);
     await this.generate(generatorContext, DownloadDirectoryActionSeq);
-    if (!generatorContext.outputs?.length) {
-      return err(new SampleNotFoundError(sampleName).toFxError());
-    }
     return ok(undefined);
   }
 
@@ -162,9 +158,7 @@ export class Generator {
         await action.run(context);
         await context.onActionEnd?.(action, context);
       } catch (e) {
-        if (!context.onActionError) {
-          throw e;
-        }
+        if (e instanceof BaseComponentInnerError) throw e.toFxError();
         if (e instanceof Error) await context.onActionError(action, context, e);
       }
     }
@@ -203,13 +197,14 @@ export async function sampleDefaultOnActionError(
   error: Error
 ): Promise<void> {
   context.logProvider.error(error.message);
+  if (await fs.pathExists(context.destination)) {
+    await fs.rm(context.destination, { recursive: true });
+  }
   switch (action.name) {
+    case GeneratorActionName.FetchSampleInfo:
+      throw new DownloadSampleNetworkError(context.url!).toFxError();
     case GeneratorActionName.DownloadDirectory:
-      if (await fs.pathExists(context.destination)) {
-        await fs.rm(context.destination, { recursive: true });
-      }
-      if (error instanceof BaseComponentInnerError) throw error.toFxError();
-      else if (error.message.includes("403")) {
+      if (error.message.includes("403")) {
         throw new DownloadSampleApiLimitError(context.url!).toFxError();
       } else {
         throw new DownloadSampleNetworkError(context.url!).toFxError();

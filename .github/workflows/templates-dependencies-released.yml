@@ -39,7 +39,7 @@ jobs:
         run: |
           emails="yiqingzhao@microsoft.com"
           subject="Templates Dependencies Daily Check ${{ steps.getDate.outputs.date }}"
-          body="<html><span>${{steps.getUpdatedTemplatesDependencies.outputs.result}}</span></html>"
+          body="${{steps.getUpdatedTemplatesDependencies.outputs.result}}"
 
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT

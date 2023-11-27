@@ -92,6 +92,7 @@ async function getTemplatesDependencies() {
 }
 
 function generateAdaptiveCardTable(arr) {
+  if (arr.length === 0) return {};
   let table = {
     type: "Table",
     firstRowAsHeaders: true,

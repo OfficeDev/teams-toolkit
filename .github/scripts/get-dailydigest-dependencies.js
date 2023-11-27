@@ -171,7 +171,7 @@ function generateAdaptiveCardTable(arr) {
           items: [
             {
               type: "TextBlock",
-              text: `[${entry.name}]\(https://www.npmjs.com/package/${entry.name}\)`,
+              text: `[${entry.name}]\\(https://www.npmjs.com/package/${entry.name}\\)`,
               wrap: true,
             },
           ],

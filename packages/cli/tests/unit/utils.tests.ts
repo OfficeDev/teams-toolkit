@@ -14,11 +14,9 @@ import AzureAccountManager from "../../src/commonlib/azureLogin";
 import {
   editDistance,
   getColorizedString,
-  getSettingsVersion,
   getSystemInputs,
   getTemplates,
   getVersion,
-  isWorkspaceSupported,
   toLocaleLowerCase,
 } from "../../src/utils";
 import { expect } from "./utils";
@@ -34,68 +32,6 @@ describe("Utils Tests", function () {
     expect(toLocaleLowerCase("MiNe")).equals("mine");
     expect(toLocaleLowerCase(["ItS", "HiS"])).deep.equals(["its", "his"]);
     expect(toLocaleLowerCase(undefined)).equals(undefined);
-  });
-
-  describe("getSettingsVersion", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readFileSync").callsFake((path: any) => {
-        if (path.includes("realbuterror")) {
-          throw Error("realbuterror");
-        } else {
-          return `
-version: 1.0.0
-projectId: 00000000-0000-0000-0000-000000000000`;
-        }
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path in V3", () => {
-      const result = getSettingsVersion("real");
-      expect(result).deep.equals("1.0.0");
-    });
-
-    it("Real Path but cannot read", () => {
-      const result = getSettingsVersion("realbuterror");
-      expect(result).equals(undefined);
-    });
-
-    it("Fake Path", () => {
-      const result = getSettingsVersion("fake");
-      expect(result).equals(undefined);
-    });
-  });
-
-  describe("isWorkspaceSupported", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path in V3", async () => {
-      const result = isWorkspaceSupported("real");
-      expect(result).equals(true);
-    });
-
-    it("Fake Path", async () => {
-      const result = isWorkspaceSupported("fake");
-      expect(result).equals(false);
-    });
   });
 
   it("getSystemInputs", async () => {

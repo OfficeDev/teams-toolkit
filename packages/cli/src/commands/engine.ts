@@ -44,7 +44,6 @@ import {
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
-import { CliConfigOptions } from "../userSetttings";
 import { editDistance, getSystemInputs } from "../utils";
 import { helper } from "./helper";
 
@@ -90,7 +89,7 @@ class CLIEngine {
       telemetryProperties: {
         [TelemetryProperty.CommandName]: foundCommand.fullName,
         [TelemetryProperty.Component]: TelemetryComponentType,
-        [CliConfigOptions.RunFrom]: tryDetectCICDPlatform(),
+        [TelemetryProperty.RunFrom]: tryDetectCICDPlatform(),
         [TelemetryProperty.BinName]: rootCmd.name,
       },
     };

@@ -12,12 +12,11 @@ import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@micro
 import { login, LoginStatus } from "./common/login";
 
 import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
-import { isWorkspaceSupported } from "../utils";
 import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
-import { ConvertTokenToJson } from "@microsoft/teamsfx-core";
+import { ConvertTokenToJson, isValidProject, isValidProjectV3 } from "@microsoft/teamsfx-core";
 import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
 
 /**
@@ -202,7 +201,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   getSubscriptionInfoPath(): Promise<string | undefined> {
     if (AzureAccountManager.rootPath) {
-      if (isWorkspaceSupported(AzureAccountManager.rootPath)) {
+      if (isValidProjectV3(AzureAccountManager.rootPath)) {
         const subscriptionFile = path.join(
           AzureAccountManager.rootPath,
           `.${ConfigFolderName}`,

@@ -13,7 +13,6 @@ export default class TelemetryReporter {
   private cliName: string;
   private cliVersion: string;
   private machineId: string;
-  private userOptIn = true;
   private logging = true;
   private appRoot: string | undefined;
 
@@ -171,7 +170,7 @@ export default class TelemetryReporter {
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ): void {
-    if (this.userOptIn && eventName && this.appInsightsClient) {
+    if (eventName && this.appInsightsClient) {
       const cleanProperties = this.cloneAndChange(properties, (key: string, prop: string) =>
         this.anonymizeFilePaths(prop)
       );
@@ -200,7 +199,7 @@ export default class TelemetryReporter {
     measurements?: { [key: string]: number },
     _errorProps?: string[]
   ): void {
-    if (this.userOptIn && eventName && this.appInsightsClient) {
+    if (eventName && this.appInsightsClient) {
       const cleanProperties = this.cloneAndChange(properties, (key: string, prop: string) => {
         return this.anonymizeFilePaths(prop);
       });
@@ -227,7 +226,7 @@ export default class TelemetryReporter {
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ): void {
-    if (this.userOptIn && error && this.appInsightsClient) {
+    if (error && this.appInsightsClient) {
       const cleanProperties = this.cloneAndChange(properties, (_key: string, prop: string) =>
         this.anonymizeFilePaths(prop)
       );

@@ -13,6 +13,7 @@ import {
   FxCore,
   getSideloadingStatus,
   HubTypes,
+  isValidProjectV3,
   loadTeamsFxDevScript,
   TelemetryContext,
 } from "@microsoft/teamsfx-core";
@@ -27,7 +28,7 @@ import { cliSource } from "../../constants";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
-import { getColorizedString, getSystemInputs, isWorkspaceSupported } from "../../utils";
+import { getColorizedString, getSystemInputs } from "../../utils";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
@@ -54,7 +55,7 @@ export default class PreviewEnv {
   public async runCommand(args: {
     [argName: string]: boolean | string | string[] | undefined;
   }): Promise<Result<null, FxError>> {
-    if (args.folder === undefined || !isWorkspaceSupported(args.folder as string)) {
+    if (args.folder === undefined || !isValidProjectV3(args.folder as string)) {
       return err(errors.WorkspaceNotSupported(args.folder as string));
     }
     const workspaceFolder = path.resolve(args.folder as string);

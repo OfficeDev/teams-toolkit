@@ -5,7 +5,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import * as url from "url";
-import semver, { ReleaseType } from "semver";
+import semver from "semver";
 import * as uuid from "uuid";
 import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../localizeUtils";

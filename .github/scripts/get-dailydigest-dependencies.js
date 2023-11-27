@@ -222,7 +222,7 @@ async function main() {
         const ltsVersion = response.data["dist-tags"].latest;
         const ltsVersionTime = response.data.time[ltsVersion];
         const timeDiff = (new Date() - new Date(ltsVersionTime)) / 1000;
-        if (timeDiff <= 86400 * 3) {
+        if (timeDiff <= 86400) {
           arr.push({
             name: entry[0],
             version: ltsVersion,

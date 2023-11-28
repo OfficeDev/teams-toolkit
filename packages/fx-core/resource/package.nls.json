@@ -201,6 +201,7 @@
   "error.generator.SampleNotFoundError": "Unable to find sample: %s.",
   "error.generator.UnzipError": "Unable to unzip templates and write to disk.",
   "error.generator.MissKeyError": "Unable to find key %s",
+  "error.generator.FetchSampleInfoError": "Unable to fetch sample info",
   "error.generator.DownloadSampleApiLimitError": "Unable to download sample due to throttling. Retry later after rate limit reset (This may take up to 1 hour). Alternatively, you can go to %s to git clone the repo manually",
   "error.generator.DownloadSampleNetworkError": "Unable to download sample due to network error. Check your network connection and retry. Alternatively, you can go to %s to git clone the repo manually",
   "error.copilotPlugin.openAiPluginManifest.CannotGetManifest": "Unable to get OpenAI plugin manifest from '%s'.",

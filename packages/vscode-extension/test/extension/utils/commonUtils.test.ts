@@ -2,6 +2,7 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import { syncFeatureFlags } from "../../../src/utils/commonUtils";
 import * as vscode from "vscode";
+import { EventEmitter } from "events";
 
 describe("commonUtils", () => {
   describe("syncFeatureFlags", () => {
@@ -10,6 +11,8 @@ describe("commonUtils", () => {
     });
 
     it("set feature flag", () => {
+      const eventEmitter = new EventEmitter();
+      sinon.replace(vscode.workspace, "onDidChangeConfiguration", eventEmitter as any);
       const stub = sinon
         .stub(vscode.workspace, "getConfiguration")
         .callsFake(

@@ -1237,6 +1237,12 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Visit [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin) to learn more."
+        },
+        "fx-extension.logLevel": {
+          "type": "string",
+          "enum": ["debug", "verbose", "info"],
+          "default": "info",
+          "markdownDescription": "Set the log level of Teams Toolkit. The default value is `info`. The available values are `debug`, `verbose`, `info`."
         }
       }
     }

@@ -11,6 +11,7 @@ import { defaultExtensionLogPath } from "../globalVariables";
 const outputChannelDisplayName = "Teams Toolkit";
 
 export class VsCodeLogProvider implements LogProvider {
+  logLevel: LogLevel = LogLevel.Info;
   outputChannel: vscode.OutputChannel;
   logFileName: string;
 
@@ -46,9 +47,13 @@ export class VsCodeLogProvider implements LogProvider {
     return `${defaultExtensionLogPath}/${this.logFileName}`;
   }
 
-  verbose(message: string): void {}
+  verbose(message: string): void {
+    return this.log(LogLevel.Debug, message);
+  }
 
-  debug(message: string): void {}
+  debug(message: string): void {
+    return this.log(LogLevel.Verbose, message);
+  }
 
   info(message: Array<{ content: string; color: Colors }>): void;
 
@@ -75,7 +80,7 @@ export class VsCodeLogProvider implements LogProvider {
    */
   log(logLevel: LogLevel, message: string): void {
     try {
-      if (logLevel < LogLevel.Info) return;
+      if (logLevel < this.logLevel) return;
       if (logLevel >= LogLevel.Warning) this.outputChannel.show();
       const dateString = new Date().toJSON();
       const formattedMessage = `[${dateString}] [${LogLevel[logLevel]}] - ${message}`;

@@ -8,7 +8,7 @@ import * as path from "path";
 import { format } from "util";
 import * as vscode from "vscode";
 
-import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, LogLevel, SubscriptionInfo } from "@microsoft/teamsfx-api";
 import {
   PluginNames,
   initializePreviewFeatureFlags,
@@ -22,6 +22,7 @@ import * as globalVariables from "../globalVariables";
 import { core } from "../handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 import { glob } from "glob";
+import VsCodeLogInstance from "../commonlib/log";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -199,11 +200,11 @@ export function anonymizeFilePaths(stack?: string): string {
   return updatedStack;
 }
 
-export function getConfiguration(key: string): boolean {
+export function getConfiguration(key: string): boolean | string {
   const configuration: vscode.WorkspaceConfiguration =
     vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
 
-  return configuration.get<boolean>(key, false);
+  return configuration.get<boolean | string>(key, false);
 }
 
 export function syncFeatureFlags() {
@@ -216,8 +217,24 @@ export function syncFeatureFlags() {
   ).toString();
 
   initializePreviewFeatureFlags();
+
+  setLogLevelFromConfig();
+
+  vscode.workspace.onDidChangeConfiguration((event: vscode.ConfigurationChangeEvent) => {
+    if (event.affectsConfiguration(CONFIGURATION_PREFIX)) {
+      setLogLevelFromConfig();
+    }
+  });
 }
 
+export function setLogLevelFromConfig() {
+  const logLevel = getConfiguration(ConfigurationKey.LogLevel) as string;
+  if (logLevel === "debug") {
+    VsCodeLogInstance.logLevel = LogLevel.Debug;
+  } else if (logLevel === "verbose") {
+    VsCodeLogInstance.logLevel = LogLevel.Verbose;
+  }
+}
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";

@@ -27,7 +27,7 @@ export async function zipFolderAsync(
       await fs.remove(cache);
     } catch (e) {
       if (e instanceof Error && (e as any)?.code === "EBUSY") {
-        throw new CacheFileInUse(e);
+        throw new CacheFileInUse(cache, e);
       }
       throw e;
     }

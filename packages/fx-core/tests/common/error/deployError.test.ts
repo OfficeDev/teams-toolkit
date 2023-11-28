@@ -96,8 +96,12 @@ describe("ZipFileError", () => {
 
 describe("CacheFileInUse", () => {
   it("should create a new CacheFileInUse with the correct message", () => {
-    const error = new CacheFileInUse(new Error("zipPath error"));
+    const path = "/path/to/the/zip/file.zip";
+    const error = new CacheFileInUse(path, new Error("zipPath error"));
     expect(error).to.be.instanceOf(UserError);
     expect(error.source).to.equal("azureDeploy");
+    expect(error.message).to.equal(
+      `Failed to clear the distribution zip file in ${path}. The file may be currently in use. Please close any applications using the file and try again.`
+    );
   });
 });

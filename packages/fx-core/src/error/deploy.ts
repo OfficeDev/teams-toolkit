@@ -42,11 +42,11 @@ export class ZipFileError extends UserError {
 }
 
 export class CacheFileInUse extends UserError {
-  constructor(error: Error) {
+  constructor(path: string, error: Error) {
     super({
       source: "azureDeploy",
-      message: getDefaultString("error.deploy.ZipFileTargetInUse"),
-      displayMessage: getLocalizedString("error.deploy.ZipFileTargetInUse"),
+      message: getDefaultString("error.deploy.ZipFileTargetInUse", path),
+      displayMessage: getLocalizedString("error.deploy.ZipFileTargetInUse", path),
       error: error,
       categories: [ErrorCategory.External],
     });

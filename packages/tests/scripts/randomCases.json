@@ -67,11 +67,7 @@
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
             "sample-localdebug-chef-bot",
-            "sample-localdebug-large-scale-notification",
-            "basic-tab-provision-upgrade-provision-debug",
-            "basic-tab-upgrade-provision-debug",
-            "bot-provision-upgrade-provision-debug",
-            "bot-upgrade-provision-debug"
+            "sample-localdebug-large-scale-notification"
         ]
     },
     {
@@ -99,7 +95,11 @@
             "sample-remotedebug-assistant-dashboard",
             "sample-remotedebug-hello-world-tab-outlook",
             "sample-remotedebug-bot-sso",
-            "sample-remotedebug-sso-tab-via-apim-proxy"
+            "sample-remotedebug-sso-tab-via-apim-proxy",
+            "basic-tab-provision-upgrade-provision-debug",
+            "bot-provision-upgrade-provision-debug",
+            "basic-tab-upgrade-provision-debug",
+            "bot-upgrade-provision-debug"
         ]
     },
     {

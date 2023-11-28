@@ -220,7 +220,7 @@ export function syncFeatureFlags() {
 
   setLogLevelFromConfig();
 
-  vscode.workspace.onDidChangeConfiguration((event: vscode.ConfigurationChangeEvent) => {
+  vscode.workspace.onDidChangeConfiguration?.((event: vscode.ConfigurationChangeEvent) => {
     if (event.affectsConfiguration(CONFIGURATION_PREFIX)) {
       setLogLevelFromConfig();
     }

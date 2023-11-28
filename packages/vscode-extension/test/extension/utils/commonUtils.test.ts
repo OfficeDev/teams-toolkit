@@ -11,8 +11,8 @@ describe("commonUtils", () => {
     });
 
     it("set feature flag", () => {
-      const eventEmitter = new EventEmitter();
-      sinon.replace(vscode.workspace, "onDidChangeConfiguration", eventEmitter as any);
+      // const eventEmitter = new EventEmitter();
+      // sinon.replace(vscode.workspace, "onDidChangeConfiguration", eventEmitter as any);
       const stub = sinon
         .stub(vscode.workspace, "getConfiguration")
         .callsFake(

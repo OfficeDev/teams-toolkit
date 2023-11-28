@@ -622,6 +622,7 @@
   "error.yaml.LifeCycleUndefinedError": "Lifecycle '%s' is undefined, yaml file: %s",
   "error.yaml.InvalidActionInputError": "The '%s' action cannot be completed as the following parameter(s): %s, are either missing or have an invalid value in the provided yaml file: %s. Ensure that the required parameters are provided and have valid values and try again.",
   "error.common.InstallSoftwareError": "Unable to install %s. You can install it manually and restart Visual Studio Code if you are using the Toolkit in Visual Studio Code.",
+  "error.common.VersionError": "Unable find a version satisfying the given version range %s.",
   "error.common.MissingEnvironmentVariablesError": "The program cannot proceed as the following environment variables are missing: '%s', which are required for file: %s. Make sure the required variables are set either by editing the .env file '%s' with the correct names and values , or by setting the system environment variables with the correct names and values. If you are developing with a new project created with Teams Toolkit, running provision or debug will register correct values for these environment variables.",
   "error.common.InvalidProjectError": "This command only works for project created by Teams Toolkit.",
   "error.common.FileNotFoundError": "The file or directory is not found: '%s'. Check if it exists and you have permission to access it.",

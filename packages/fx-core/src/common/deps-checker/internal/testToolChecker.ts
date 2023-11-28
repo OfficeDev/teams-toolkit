@@ -23,6 +23,9 @@ import { createSymlink, rename, unlinkSymlink, cleanup } from "../util/fileHelpe
 import { isWindows } from "../util/system";
 import { TelemetryProperties } from "../constant/telemetry";
 import { cpUtils } from "../util";
+import fetch from "node-fetch";
+import maxSatisfying from "semver/ranges/max-satisfying";
+import { downloadToTempFile, unzip } from "../util/downloadHelper";
 
 enum InstallType {
   Global = "global",
@@ -36,11 +39,12 @@ interface InstallationInfoFile {
   lastCheckTimestamp: number;
 }
 
+const InstallTimeout = 5 * 60 * 1000;
+
 export class TestToolChecker implements DepsChecker {
   private telemetryProperties: { [key: string]: string };
   private readonly name = "Teams App Test Tool";
   private readonly npmPackageName = "@microsoft/teams-app-test-tool";
-  private readonly timeout = 5 * 60 * 1000;
   private readonly checkUpdateTimeout = 10 * 1000;
   private readonly npmCommandName = isWindows() ? "teamsapptester.cmd" : "teamsapptester";
   private readonly binaryCommandName = isWindows() ? "teamsapptester.exe" : "teamsapptester";
@@ -122,10 +126,8 @@ export class TestToolChecker implements DepsChecker {
 
     let installationInfo: TestToolDependencyStatus;
     try {
-      if (installOptions.releaseType === "npm") {
-        if (!(await this.hasNode())) {
-          throw new NodeNotFoundError(Messages.NodeNotFound(), v3NodeNotFoundHelpLink);
-        }
+      if (installOptions.releaseType === TestToolReleaseType.Npm && !(await this.hasNode())) {
+        throw new NodeNotFoundError(Messages.NodeNotFound(), v3NodeNotFoundHelpLink);
       }
       installationInfo = await this.getInstallationInfo(installOptions);
       if (!installationInfo.isInstalled) {
@@ -171,10 +173,11 @@ export class TestToolChecker implements DepsChecker {
 
     const tmpVersion = `tmp-${uuid.v4().slice(0, 6)}`;
     const tmpPath = this.getPortableInstallPath(releaseType, tmpVersion);
-    if (releaseType === "npm") {
+    await fs.ensureDir(tmpPath);
+    if (releaseType === TestToolReleaseType.Npm) {
       await this.npmInstall(projectPath, tmpPath, versionRange);
     } else {
-      await this.binaryInstall(projectPath, tmpPath, versionRange);
+      await this.binaryInstall(tmpPath, versionRange);
     }
     const versionRes = await this.checkVersion(
       releaseType,
@@ -213,37 +216,40 @@ export class TestToolChecker implements DepsChecker {
     latestInstalledVersion: string,
     versionRange: string
   ): Promise<boolean> {
-    if (releaseType === TestToolReleaseType.Binary) {
-      throw new Error("Not implemented");
-    }
-
-    try {
-      const result = await cpUtils.executeCommand(
-        undefined,
-        undefined,
-        // avoid powershell execution policy issue.
-        { shell: isWindows() ? "cmd.exe" : true, timeout: this.checkUpdateTimeout },
-        "npm",
-        "view",
-        `"${this.npmPackageName}@${versionRange}"`,
-        "version",
-        "--json"
-      );
-      // when there are one result, it will return string
-      // when there are multiple results, it will return array of strings
-      let versionList: string[] | string = JSON.parse(result);
-      if (typeof versionList === "string") {
-        versionList = [versionList];
-      }
-      if (!Array.isArray(versionList)) {
-        // do update if npm returned invalid result
+    if (releaseType === TestToolReleaseType.Npm) {
+      try {
+        const result = await cpUtils.executeCommand(
+          undefined,
+          undefined,
+          // avoid powershell execution policy issue.
+          { shell: isWindows() ? "cmd.exe" : true, timeout: this.checkUpdateTimeout },
+          "npm",
+          "view",
+          `"${this.npmPackageName}@${versionRange}"`,
+          "version",
+          "--json"
+        );
+        // when there are one result, it will return string
+        // when there are multiple results, it will return array of strings
+        let versionList: string[] | string = JSON.parse(result);
+        if (typeof versionList === "string") {
+          versionList = [versionList];
+        }
+        if (!Array.isArray(versionList)) {
+          // do update if npm returned invalid result
+          return true;
+        }
+        return versionList.filter((v) => semver.gt(v, latestInstalledVersion)).length > 0;
+      } catch {
+        // just a best effort optimization to save one download if no recent version has been released
+        // do update if check failed
         return true;
       }
+    } else {
+      // get version list
+      const releases = await GitHubHelpers.listGitHubReleases();
+      const versionList = releases.map((release) => release.version);
       return versionList.filter((v) => semver.gt(v, latestInstalledVersion)).length > 0;
-    } catch {
-      // just a best effort optimization to save one download if no recent version has been released
-      // do update if check failed
-      return true;
     }
   }
 
@@ -407,7 +413,7 @@ export class TestToolChecker implements DepsChecker {
       undefined,
       undefined,
       // avoid powershell execution policy issue.
-      { shell: isWindows() ? "cmd.exe" : true, timeout: this.timeout },
+      { shell: isWindows() ? "cmd.exe" : true, timeout: InstallTimeout },
       `"${execPath}"`,
       "--version"
     );
@@ -450,7 +456,7 @@ export class TestToolChecker implements DepsChecker {
         undefined,
         undefined,
         // avoid powershell execution policy issue.
-        { shell: isWindows() ? "cmd.exe" : true, timeout: this.timeout },
+        { shell: isWindows() ? "cmd.exe" : true, timeout: InstallTimeout },
         `npm`,
         "install",
         `"${pkg}"`,
@@ -495,8 +501,32 @@ export class TestToolChecker implements DepsChecker {
     return undefined;
   }
 
-  private binaryInstall(projectPath: string, prefix: string, versionRange: string): Promise<void> {
-    throw new Error("Not implemented");
+  private async binaryInstall(installPath: string, versionRange: string): Promise<void> {
+    const releases = await GitHubHelpers.listGitHubReleases();
+    const targetVersion = maxSatisfying(
+      releases.map((release) => release.version),
+      versionRange
+    );
+    if (targetVersion === null) {
+      throw new DepsCheckerError(
+        getLocalizedString("error.common.VersionError", versionRange),
+        v3DefaultHelpLink
+      );
+    }
+    const release = releases.find((value) => value.version === targetVersion) as GitHubRelease;
+
+    await downloadToTempFile(
+      release.url,
+      {
+        timeout: InstallTimeout,
+        headers: {
+          Accept: "application/octet-stream",
+        },
+      },
+      async (filePath: string) => {
+        await unzip(filePath, installPath);
+      }
+    );
   }
 
   private getBinFolder(releaseType: TestToolReleaseType, installPath: string) {
@@ -557,5 +587,52 @@ export class TestToolChecker implements DepsChecker {
       telemetryProperties: this.telemetryProperties,
       error: error,
     });
+  }
+}
+
+export interface GitHubRelease {
+  version: string;
+  url: string;
+}
+
+export class GitHubHelpers {
+  private static readonly releasePackageName = "teams-app-test-tool";
+  private static readonly artifactNamePrefix = "teamsapptester";
+  public static async listGitHubReleases(): Promise<GitHubRelease[]> {
+    // GitHub API without auth
+    const response = await fetch(
+      "https://api.github.com/repos/OfficeDev/TeamsAppTestTool/releases",
+      {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "X-Github-Api-Version": "2022-11-28",
+        },
+        timeout: InstallTimeout,
+      }
+    );
+    const releases: {
+      tag_name: string;
+      assets: { name: string; url: string }[];
+    }[] = await response.json();
+
+    const result: GitHubRelease[] = [];
+    for (const release of releases) {
+      const parts = release.tag_name.split("@");
+      const assets = release.assets.filter((asset) =>
+        asset.name.includes(`${this.artifactNamePrefix}-${os.platform()}-${os.arch()}`)
+      );
+      if (parts.length === 2) {
+        const pkgName = parts[0];
+        const version = parts[1];
+        if (pkgName == this.releasePackageName && assets.length > 0) {
+          result.push({
+            version,
+            url: release.assets[0].url,
+          });
+        }
+      }
+    }
+
+    return result;
   }
 }

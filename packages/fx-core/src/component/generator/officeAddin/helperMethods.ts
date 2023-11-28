@@ -20,10 +20,8 @@ export class HelperMethods {
     projectRepo: string,
     projectBranch?: string
   ): Promise<void> {
-    const projectTemplateZipFile = path.resolve(
-      `${projectRepo}/archive/${projectBranch || ""}.zip`
-    );
-    const response = await fetch(projectTemplateZipFile, { method: "GET" });
+    const projectTemplateZipUrl = `${projectRepo}/archive/${projectBranch || ""}.zip`;
+    const response = await fetch(projectTemplateZipUrl, { method: "GET" });
     return new Promise<void>((resolve, reject) => {
       if (response.body) {
         response.body
@@ -31,7 +29,7 @@ export class HelperMethods {
           .on("error", (err) => {
             reject(
               // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-              `Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`
+              `Unable to download project zip file for "${projectTemplateZipUrl}".\n${err}`
             );
           })
           .on("close", () => {

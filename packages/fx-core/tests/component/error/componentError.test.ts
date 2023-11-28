@@ -190,7 +190,7 @@ describe("BaseComponentInnerError", () => {
       expect(fxError).to.be.instanceOf(Error);
       expect(fxError).to.be.instanceOf(UserError);
       expect(fxError.source).to.equal(source);
-      expect(fxError.name).to.equal(innerError.name);
+      expect(fxError.name).to.equal(name);
       expect(fxError.message).to.equal("Inner error message.");
     });
 

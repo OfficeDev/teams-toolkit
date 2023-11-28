@@ -43,6 +43,7 @@ import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
 import * as folderUtils from "../../../../fx-core/src/folder";
 import {
+  DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
   FetchSampleInfoError,
 } from "../../../src/component/generator/error";
@@ -419,6 +420,30 @@ describe("Generator utils", () => {
 
     assert.deepEqual(simplifiedError, expectedError);
   });
+  it("should simplify an AxiosError with no response", () => {
+    const mockError: AxiosError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      stack: "Error stack",
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const simplifiedError = simplifyAxiosError(mockError);
+    const expectedError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      data: undefined,
+      headers: undefined,
+      status: undefined,
+      statusText: undefined,
+      config: undefined,
+      stack: "Error stack",
+    };
+
+    assert.deepEqual(simplifiedError, expectedError);
+  });
 
   it("should return true for an API limit error", () => {
     const mockError: AxiosError = {
@@ -568,6 +593,54 @@ describe("Generator error", async () => {
       toJSON: () => ({}),
     };
     const error = new DownloadSampleNetworkError(url, mockError);
+    assert.deepEqual(error.innerError, simplifyAxiosError(mockError));
+  });
+  it("create fetch sample info error with correct inner error", async () => {
+    const mockError: AxiosError = {
+      message: "Test error",
+      name: "AxiosError",
+      config: {
+        headers: new AxiosHeaders(),
+      },
+      code: "500",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 500,
+        statusText: "Internal Server Error",
+        headers: {},
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const error = new FetchSampleInfoError(mockError);
+    assert.deepEqual(error.innerError, simplifyAxiosError(mockError));
+  });
+  it("create download sample api limit error with correct inner error", async () => {
+    const url = "http://example.com";
+    const mockError: AxiosError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 403,
+        statusText: "Forbidden",
+        headers: {
+          "x-ratelimit-remaining": "0",
+        },
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const error = new DownloadSampleApiLimitError(url, mockError);
     assert.deepEqual(error.innerError, simplifyAxiosError(mockError));
   });
 });

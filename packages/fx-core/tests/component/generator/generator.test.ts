@@ -42,6 +42,10 @@ import { placeholderDelimiters } from "../../../src/component/generator/constant
 import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
 import * as folderUtils from "../../../../fx-core/src/folder";
+import {
+  DownloadSampleNetworkError,
+  FetchSampleInfoError,
+} from "../../../src/component/generator/error";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -540,6 +544,31 @@ describe("Generator error", async () => {
     } else {
       assert.fail("Sample not found error should be thrown.");
     }
+  });
+  it("create download sample network error with correct inner error", async () => {
+    const url = "http://example.com";
+    const mockError: AxiosError = {
+      message: "Test error",
+      name: "AxiosError",
+      config: {
+        headers: new AxiosHeaders(),
+      },
+      code: "500",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 500,
+        statusText: "Internal Server Error",
+        headers: {},
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const error = new DownloadSampleNetworkError(url, mockError);
+    assert.deepEqual(error.innerError, simplifyAxiosError(mockError));
   });
 });
 

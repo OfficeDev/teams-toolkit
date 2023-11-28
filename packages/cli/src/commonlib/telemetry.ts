@@ -6,7 +6,6 @@ import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
-import { CliConfigOptions } from "../userSetttings";
 import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
 import { logger } from "./logger";
 
@@ -61,7 +60,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
+    properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
 
@@ -85,7 +84,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
+    properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
 
@@ -109,7 +108,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
+    properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryException(error, properties, measurements);
   }

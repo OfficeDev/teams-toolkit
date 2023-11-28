@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-api";
-import { envUtil } from "@microsoft/teamsfx-core";
+import { envUtil, isValidProjectV3 } from "@microsoft/teamsfx-core";
 import os from "os";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { isWorkspaceSupported } from "../../utils";
 import { ProjectFolderOption } from "../common";
 
 export const envListCommand: CLICommand = {
@@ -18,7 +17,7 @@ export const envListCommand: CLICommand = {
   },
   handler: async (ctx) => {
     const inputs = ctx.optionValues as InputsWithProjectPath;
-    if (!isWorkspaceSupported(inputs.projectPath)) {
+    if (!isValidProjectV3(inputs.projectPath)) {
       return err(WorkspaceNotSupported(inputs.projectPath));
     }
     const envListRes = await envUtil.listEnv(inputs.projectPath, true);
@@ -26,7 +25,7 @@ export const envListCommand: CLICommand = {
       return err(envListRes.error);
     }
     const envList = envListRes.value.join(os.EOL);
-    await logger.info(envList);
+    logger.info(envList);
     return ok(undefined);
   },
 };

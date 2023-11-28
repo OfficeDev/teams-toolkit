@@ -72,14 +72,14 @@ export class BaseComponentInnerError extends Error {
         // if innerError is set, send innerError to telemetry
         error: this.innerError ?? this,
         helpLink: this.helpLink,
-        name: this.name,
+        name: this.innerError?.name ? this.innerError.name : this.name,
         message: this.message,
         displayMessage: this.toDisplayMessage(),
       } as UserErrorOptions);
     } else {
       return new SystemError({
         source: camelCase(this.source),
-        name: this.name,
+        name: this.innerError?.name ? this.innerError.name : this.name,
         message: this.message,
         // if innerError is set, send innerError to telemetry
         error: this.innerError ?? this,

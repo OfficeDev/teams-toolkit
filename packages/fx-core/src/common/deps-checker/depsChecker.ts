@@ -54,7 +54,7 @@ export interface FuncInstallOptions {
 
 export interface TestToolInstallOptions {
   releaseType: TestToolReleaseType;
-  symlinkDir: string | undefined;
+  symlinkDir?: string;
   projectPath: string;
   versionRange: string;
 }

@@ -6,22 +6,16 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { format } from "util";
-import * as vscode from "vscode";
 
 import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import {
-  PluginNames,
-  initializePreviewFeatureFlags,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { PluginNames, isValidProject } from "@microsoft/teamsfx-core";
+import { glob } from "glob";
 import * as extensionPackage from "../../package.json";
-import { CONFIGURATION_PREFIX, ConfigurationKey } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
 import { getV3TeamsAppId } from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
 import { core } from "../handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-import { glob } from "glob";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -197,25 +191,6 @@ export function anonymizeFilePaths(stack?: string): string {
   }
 
   return updatedStack;
-}
-
-export function getConfiguration(key: string): boolean {
-  const configuration: vscode.WorkspaceConfiguration =
-    vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
-
-  return configuration.get<boolean>(key, false);
-}
-
-export function syncFeatureFlags() {
-  process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.BicepEnvCheckerEnable
-  ).toString();
-
-  process.env["DEVELOP_COPILOT_PLUGIN"] = getConfiguration(
-    ConfigurationKey.CopilotPluginEnable
-  ).toString();
-
-  initializePreviewFeatureFlags();
 }
 
 export class FeatureFlags {

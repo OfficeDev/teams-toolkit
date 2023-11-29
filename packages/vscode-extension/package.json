@@ -1237,6 +1237,12 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Visit [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin) to learn more."
+        },
+        "fx-extension.logLevel": {
+          "type": "string",
+          "enum": ["debug", "verbose", "info"],
+          "default": "info",
+          "markdownDescription": "Set the log level of Teams Toolkit. The default value is `info`. The available values are `debug`, `verbose`, `info`. The definitions of the log levels are:\n\n`debug`\n\n- Detailed HTTP request and response to external service (Azure, M365, TDP, SPFx, ...)\n- Authentication and authorization flows\n- Any necessary debug information for each command (error stack trace when an error happens, telemetry data, ARM templates)\n\n`verbose`\n\n- Progress updates on resource lifecycles (CRUD), including resource names, IDs, etc\n- Action flow details, including steps/actions being performed and outcomes.\n- Any diagnostic information that is necessary for user to inspect\n\n`info`\n\n- Summary results for each command being executed.\n"
         }
       }
     }

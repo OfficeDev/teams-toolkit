@@ -1,17 +1,17 @@
-# Build Outlook add-ins using Teams Toolkit
-Outlook add-ins are integrations built by third parties into Outlook by using our web-based platform.
+# Build Office add-ins using Teams Toolkit
+Office add-ins are integrations built by third parties into Office App by using our web-based platform.
 Now you have the ability to create a single unit of distribution for all your Microsoft 365 extensions by using the same manifest format and schema, based on the current JSON-formatted Teams manifest.
 
 ## Prerequisites
 
 - [NodeJS](https://nodejs.org/en/): version 16 or 18.
-- Outlook for Windows: Beta Channel, Build 16320 or higher. Follow [this link](https://github.com/OfficeDev/TeamsFx/wiki/How-to-switch-Outlook-client-update-channel-and-verify-Outlook-client-build-version) for switching update channels and check your Outlook client build version.
-- Edge installed for debugging Outlook add-in.
+- Office for Windows: Beta Channel, Build 16320 or higher. Follow [this link](https://github.com/OfficeDev/TeamsFx/wiki/How-to-switch-Outlook-client-update-channel-and-verify-Outlook-client-build-version) for switching update channels and check your Office client build version.
+- Edge installed for debugging Office add-in.
 - An M365 account. If you do not have M365 account, apply one from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher.
 
-## Debug Outlook add-in
-- Please note that the same M365 account should be used both in Teams Toolkit and Outlook.
+## Debug Office add-in
+- Please note that the same M365 account should be used both in Teams Toolkit and Office.
 - From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code. Please run VSCode as administrator if localhost loopback for Microsoft Edge Webview hasn't been enabled. Once enbaled, administrator priviledge is no longer required.
 
 ## Edit the manifest

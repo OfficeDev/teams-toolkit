@@ -115,23 +115,21 @@ export class OfficeAddinGenerator {
             projectRepoBranchInfo.branch
           );
 
-          // let host;
-          // if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
-          //   host = jsonData.getHostTemplateNames(template);
-          //   for (let i = 0; i < host.length; i++) {
-          //     const hostName = host[i];
-          //     // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          //     const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(
-          //       hostName
-          //     )}`;
-          //     await OfficeAddinGenerator.childProcessExec(cmdLine);
-          //   }
-          // } else {
-          //   host = inputs[QuestionNames.OfficeAddinHost];
-          //   // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          //   const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
-          //   await OfficeAddinGenerator.childProcessExec(cmdLine);
-          // }
+          let host;
+          if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
+            host = jsonData.getHostTemplateNames(template);
+            //for (let i = 0; i < host.length; i++) {
+            const hostName = host[0];
+            // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(hostName)}`;
+            await OfficeAddinGenerator.childProcessExec(cmdLine);
+            // }
+          } else {
+            host = inputs[QuestionNames.OfficeAddinHost];
+            // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
+            await OfficeAddinGenerator.childProcessExec(cmdLine);
+          }
 
           const manifestPath = jsonData.getManifestPath(template) as string;
           // modify manifest guid and DisplayName

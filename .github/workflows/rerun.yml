@@ -21,20 +21,21 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     steps:
-      - name: re-run failed jobs
+      - name: wait for 60s
         run: |
           sleep 60
+          echo "wait for 60s"
+      - name: re-run failed jobs
+        run: |
           run=`curl \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.inputs.run_id }}`
-          
           status=`jq -r '.conclusion' <<< "$run"`
           runningStatus=`jq -r '.status' <<< "$run"`
           run_attempt=`jq -r '.run_attempt' <<< "$run"`
-          echo "$run"
-
+          
           if [[ "$status" == "failure" && "$run_attempt" -lt ${{ github.event.inputs.max_attempts }} ]]; then
             echo "[start] rerun failed jobs ${{ github.event.inputs.run_id }} $status $run_attempt..."
             curl \
@@ -57,7 +58,6 @@ jobs:
               https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.inputs.run_id }}/rerun-failed-jobs
             echo "[finish] rerun again..."
           fi
-
   clean:
     name: Clean resource
     runs-on: ubuntu-latest

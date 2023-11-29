@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  Context,
   FuncValidation,
   FxError,
   Inputs,
@@ -50,6 +51,8 @@ import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
+import { MockedUserInteraction } from "../plugins/solution/util";
+import * as utils from "../../src/component/utils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -1971,6 +1974,19 @@ describe("scaffold question", () => {
       sandbox.stub<any, any>(fs, "pathExists").resolves(false);
       validRes = await validFunc(inputs.appName, inputs);
       assert.isTrue(validRes === undefined);
+    });
+
+    it("app name has 24 length", async () => {
+      const mockedUI = new MockedUserInteraction();
+      sandbox.stub(utils, "createContextV3").returns({
+        userInteraction: mockedUI,
+      } as Context);
+      const showMessageStub = sandbox.stub(mockedUI, "showMessage");
+
+      const input = "abcdefghijklmnopqrstuvwx";
+      await validFunc(input);
+
+      assert.isTrue(showMessageStub.calledOnce);
     });
 
     it("app name exceed maxlength of 30", async () => {

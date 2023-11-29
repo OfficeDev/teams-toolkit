@@ -29,7 +29,7 @@ import {
   TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
-import { VersionCheckRes } from "@microsoft/teamsfx-core";
+import { DependencyStatus, TestToolInstallOptions, VersionCheckRes } from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   NotificationType2,
@@ -179,6 +179,11 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<ApiOperation[], FxError>>;
+  checkAndInstallTestTool: (
+    inputs: Inputs,
+    options: TestToolInstallOptions,
+    token: CancellationToken
+  ) => Promise<Result<DependencyStatus, FxError>>;
 }
 
 /**

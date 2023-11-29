@@ -10,3 +10,5 @@ export * from "./depsManager";
 export * from "./depsTelemetry";
 export * from "./constant";
 export * from "./util";
+export * from "./coreDepsLoggerAdapter";
+export * from "./coreDepsTelemetryAdapter";

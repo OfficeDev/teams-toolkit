@@ -210,6 +210,7 @@
   "core.QuestionAppName.validation.pattern": "Application name must start with letters and contain at least two letters or digits. It can not contain some special characters.",
   "core.QuestionAppName.validation.maxlength": "Application name is longer than the maximum length of 30.",
   "core.QuestionAppName.validation.pathExist": "Path exists: %s. Select a different application name.",
+  "core.QuestionAppName.validation.lengthWarning": "Your application name may exceed the maximum length of 30 characters because Teams Toolkit will automatically append a \"-local\" suffix for the Teams application registered for local debugging purposes. You may continue, but make sure to update your application name in the \"manifest.json\" file.",
   "core.ProgrammingLanguageQuestion.placeholder": "Select a programming language.",
   "core.ProgrammingLanguageQuestion.placeholder.spfx": "SPFx is currently supporting TypeScript only.",
   "core.option.tutorial": "Open tutorial",

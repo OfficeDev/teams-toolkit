@@ -48,11 +48,11 @@ export class VsCodeLogProvider implements LogProvider {
   }
 
   verbose(message: string): void {
-    return this.log(LogLevel.Debug, message);
+    return this.log(LogLevel.Verbose, message);
   }
 
   debug(message: string): void {
-    return this.log(LogLevel.Verbose, message);
+    return this.log(LogLevel.Debug, message);
   }
 
   info(message: Array<{ content: string; color: Colors }>): void;

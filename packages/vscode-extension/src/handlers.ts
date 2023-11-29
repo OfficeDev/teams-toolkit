@@ -74,6 +74,7 @@ import {
   setRegion,
   manifestUtils,
   JSONSyntaxError,
+  MetadataV3,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -132,7 +133,6 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, loadedLocale, localize } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { MetadataV3 } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1778,9 +1778,9 @@ export async function showError(e: UserError | SystemError) {
         commands.executeCommand("vscode.open", helpLinkUrl);
       },
     };
-    VsCodeLogInstance.error(
-      `code:${e.source}.${e.name}, message: ${e.message}\n Help link: ${e.helpLink}`
-    );
+    VsCodeLogInstance.error(`code:${errorCode}, message: ${e.message}\n Help link: ${e.helpLink}`);
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
     if (button) button.run();
   } else if (e instanceof SystemError) {
@@ -1808,8 +1808,9 @@ export async function showError(e: UserError | SystemError) {
         await commands.executeCommand("vscode.open", similarIssueLink);
       },
     };
+    VsCodeLogInstance.error(`code:${errorCode}, message: ${e.message}`);
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
+    VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       issue,

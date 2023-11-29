@@ -29,9 +29,9 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.event.inputs.run_id }}`
           
-          echo "$run"
           status=`jq -r '.conclusion' <<< "$run"`
           run_attempt=`jq -r '.run_attempt' <<< "$run"`
+          echo "$run"
 
           if [[ "$status" == "failure" && "$run_attempt" -lt ${{ github.event.inputs.max_attempts }} ]]; then
             echo "[start] rerun failed jobs ${{ github.event.inputs.run_id }} $status $run_attempt..."
@@ -45,7 +45,7 @@ jobs:
 
           sleep 60
 
-          if [[ "$status" != "queue" || "$status" != "in_progress" && "$run_attempt" -lt ${{ github.event.inputs.max_attempts }} ]]; then
+          if [[ ("$status" != "queued" || "$status" != "in_progress") && "$run_attempt" -lt ${{ github.event.inputs.max_attempts }} ]]; then
             echo "[start] rerun check..."
           curl \
             -X POST \

@@ -9,15 +9,15 @@ export const projectProperties = {
       manifestPath: "manifest.json",
       templates: {
         typescript: {
+          prerelease: "json-preview-yo-office-prerelease",
           repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
           branch: "json-preview-yo-office",
-          prerelease: "json-preview-yo-office-prerelease",
 
           frameworks: {
             default: {
-              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
-              branch: "json-preview-yo-office",
-              prerelease: "json-preview-yo-office-prerelease",
+              repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane",
+              branch: "yueli/json-preview-toolkit",
+              prerelease: "yueli/json-preview-toolkit",
             },
             react: {
               repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",

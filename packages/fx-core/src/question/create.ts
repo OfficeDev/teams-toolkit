@@ -431,6 +431,15 @@ export class CapabilityOptions {
         ];
   }
 
+  static officeAll(): OptionItem[] {
+    return [
+      ...CapabilityOptions.officeAddinItemsWXPO(),
+      CapabilityOptions.content(),
+      CapabilityOptions.customFunction(),
+      CapabilityOptions.officeAddinImport(),
+    ];
+  }
+
   static copilotPlugins(): OptionItem[] {
     return [
       CapabilityOptions.copilotPluginNewApi(),
@@ -469,10 +478,21 @@ export class CapabilityOptions {
   }
 
   // office addin
-  static officeAddinImport(): OptionItem {
+  static outlookAddinImport(): OptionItem {
     return {
       id: "import",
       label: getLocalizedString("core.importAddin.label"),
+      detail: getLocalizedString("core.importAddin.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.previewOnWindow"
+      ),
+    };
+  }
+
+  static officeAddinImport(): OptionItem {
+    return {
+      id: "import",
+      label: getLocalizedString("core.importOfficeAddin.label"),
       detail: getLocalizedString("core.importAddin.detail"),
       description: getLocalizedString(
         "core.createProjectQuestion.option.description.previewOnWindow"
@@ -500,6 +520,32 @@ export class CapabilityOptions {
         "core.createProjectQuestion.option.description.previewOnWindow"
       ),
     }));
+  }
+
+  static content(): OptionItem {
+    return {
+      id: "content",
+      label: "Content",
+      detail: "Create new objects for Excel or PowerPoint",
+      // label: `${getLocalizedString("Content")}`,
+      // detail: getLocalizedString("Create new objects for Excel or PowerPoint"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.previewOnWindow"
+      ),
+    };
+  }
+
+  static customFunction(): OptionItem {
+    return {
+      id: "custom-function",
+      label: "Custom Function",
+      detail: "Add new function to Excel",
+      // label: `${getLocalizedString("Custom Function")}`,
+      // detail: getLocalizedString("Add new function to Excel"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.previewOnWindow"
+      ),
+    };
   }
 
   static nonSsoTabAndBot(): OptionItem {
@@ -620,9 +666,9 @@ export function capabilityQuestion(): SingleSelectQuestion {
       } else if (projectType === ProjectTypeOptions.me().id) {
         return CapabilityOptions.mes();
       } else if (projectType === ProjectTypeOptions.outlookAddin().id) {
-        return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
+        return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.outlookAddinImport()];
       } else if (projectType === ProjectTypeOptions.officeAddin().id) {
-        return [...CapabilityOptions.officeAddinItemsWXPO(), CapabilityOptions.officeAddinImport()];
+        return CapabilityOptions.officeAll();
       } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
         return CapabilityOptions.copilotPlugins();
       } else {
@@ -1735,7 +1781,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         // office addin import sub-tree
-        condition: { equals: CapabilityOptions.officeAddinImport().id },
+        condition: { equals: CapabilityOptions.outlookAddinImport().id },
         data: { type: "group", name: QuestionNames.OfficeAddinImport },
         children: [
           {

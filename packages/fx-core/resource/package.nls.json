@@ -414,6 +414,7 @@
   "core.common.SendingApiRequest": "Sending API request: %s. Request body: %s",
   "core.common.ReceiveApiResponse": "Received API response: %s.",
   "core.importAddin.label": "Import an Existing Outlook Add-ins",
+  "core.importOfficeAddin.label": "Import an Existing Office Add-ins",
   "core.importAddin.detail": "Upgrade an Add-ins project to the latest app manifest and project structure",
   "core.newTaskpaneAddin.label": "Taskpane",
   "core.newTaskpaneAddin.detail": "Customize the Ribbon with a button and embed content in the Taskpane",

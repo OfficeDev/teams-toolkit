@@ -25,10 +25,10 @@ export class ConfigManager {
     ).toString();
   }
   loadLogLevel() {
-    const logLevel = this.getConfiguration(ConfigurationKey.LogLevel, "info") as string;
-    if (logLevel === "debug") {
+    const logLevel = this.getConfiguration(ConfigurationKey.LogLevel, "Info") as string;
+    if (logLevel === "Debug") {
       VsCodeLogInstance.logLevel = LogLevel.Debug;
-    } else if (logLevel === "verbose") {
+    } else if (logLevel === "Verbose") {
       VsCodeLogInstance.logLevel = LogLevel.Verbose;
     } else {
       VsCodeLogInstance.logLevel = LogLevel.Info;

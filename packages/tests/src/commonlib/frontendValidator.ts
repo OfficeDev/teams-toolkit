@@ -200,14 +200,18 @@ export class FrontendValidator {
     token: string
   ) {
     try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       const frontendContainerResponse = await axios.get(
         baseUrlContainer(
           subscriptionId,
           resourceGroupName,
           frontendObject.storageName,
           frontendObject.containerName
-        )
+        ),
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       return frontendContainerResponse?.data?.name;
@@ -227,7 +231,7 @@ export class FrontendValidator {
         baseUrlBlob(storageName, containerName, sasToken),
         {
           transformRequest: (data, headers) => {
-            delete headers.common["Authorization"];
+            delete headers?.["Authorization"];
           },
         }
       );
@@ -255,7 +259,6 @@ export class FrontendValidator {
       const expiredDate = new Date();
       expiredDate.setDate(new Date().getDate() + 3);
 
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       const sasTokenResponse = await axios.post(
         baseUrlSasToken(subscriptionId, resourceGroupName, storageName),
         {
@@ -263,6 +266,11 @@ export class FrontendValidator {
           signedPermission: "rl",
           signedResourceTypes: "sco",
           signedServices: "bf",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
       return sasTokenResponse?.data?.accountSasToken;

@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ok } from "@microsoft/teamsfx-api";
-import sinon from "sinon";
 import { TelemetryClient } from "applicationinsights";
+import sinon from "sinon";
 
-import Reporter from "../../../src/telemetry/telemetryReporter";
-import { UserSettings } from "../../../src/userSetttings";
-import { expect } from "../utils";
 import Logger from "../../../src/commonlib/log";
+import Reporter from "../../../src/telemetry/telemetryReporter";
+import { expect } from "../utils";
 
 describe("Telemetry Reporter", function () {
   const sandbox = sinon.createSandbox();
@@ -17,36 +15,7 @@ describe("Telemetry Reporter", function () {
     sandbox.restore();
   });
 
-  describe("updateUserOptIn", () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox
-        .stub(UserSettings, "getTelemetrySetting")
-        .onFirstCall()
-        .returns(ok(false))
-        .onSecondCall()
-        .returns(ok(true));
-      sandbox.stub(Reporter.prototype, <any>"createAppInsightsClient");
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("telemetry false", () => {
-      const reporter = new Reporter("real", "real", "real", "real");
-      expect(reporter["userOptIn"]).to.be.false;
-    });
-
-    it("telemetry true", () => {
-      const reporter = new Reporter("real", "real", "real", "real");
-      expect(reporter["userOptIn"]).to.be.true;
-    });
-  });
-
   it("getCommonProperties", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     const reporter = new Reporter("real", "real", "real", "real");
     const properties = reporter["getCommonProperties"]();
     expect(Object.keys(properties)).deep.equals([
@@ -58,7 +27,6 @@ describe("Telemetry Reporter", function () {
   });
 
   it("cloneAndChange", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     const reporter = new Reporter("real", "real", "real", "real");
     const obj = {
       a: "aa",
@@ -79,9 +47,7 @@ describe("Telemetry Reporter", function () {
   describe("anonymizeFilePaths", () => {
     const sandbox = sinon.createSandbox();
 
-    before(() => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-    });
+    before(() => {});
 
     after(() => {
       sandbox.restore();
@@ -115,9 +81,7 @@ describe("Telemetry Reporter", function () {
   describe("removePropertiesWithPossibleUserInfo", () => {
     const sandbox = sinon.createSandbox();
 
-    before(() => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-    });
+    before(() => {});
 
     after(() => {
       sandbox.restore();
@@ -155,32 +119,26 @@ describe("Telemetry Reporter", function () {
   });
 
   it("sendTelemetryEvent", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     sandbox.stub(TelemetryClient.prototype, "trackEvent");
     sandbox.stub(Logger, "debug");
     const reporter = new Reporter("real", "real", "real", "real");
     reporter["appInsightsClient"] = new TelemetryClient("123");
-    reporter["userOptIn"] = true;
     reporter.sendTelemetryEvent("eventName", { a: "real" });
   });
 
   it("sendTelemetryErrorEvent", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     sandbox.stub(TelemetryClient.prototype, "trackEvent");
     sandbox.stub(Logger, "debug");
     const reporter = new Reporter("real", "real", "real", "real");
     reporter["appInsightsClient"] = new TelemetryClient("123");
-    reporter["userOptIn"] = true;
     reporter.sendTelemetryErrorEvent("eventName", { a: "real" });
   });
 
   it("sendTelemetryException", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     sandbox.stub(TelemetryClient.prototype, "trackEvent");
     sandbox.stub(Logger, "debug");
     const reporter = new Reporter("real", "real", "real", "real");
     reporter["appInsightsClient"] = new TelemetryClient("123");
-    reporter["userOptIn"] = true;
     reporter.sendTelemetryException(new Error("test error"), { a: "real" });
   });
 

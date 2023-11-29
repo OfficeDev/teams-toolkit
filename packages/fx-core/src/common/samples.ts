@@ -57,51 +57,72 @@ type SampleConfigType = {
 };
 
 class SampleProvider {
-  private samplesConfig: SampleConfigType | undefined;
-  private branchOrTag = SampleConfigTag;
+  private sampleCollection: SampleCollection | undefined;
 
-  @hooks([ErrorContextMW({ component: "SampleProvider" })])
-  public async fetchSampleConfig() {
-    const version: string = packageJson.version;
-    if (version.includes("alpha")) {
-      // daily build version always use 'dev' branch
-      this.branchOrTag = "dev";
-    } else if (version.includes("beta")) {
-      // prerelease build version always use branch head for prerelease.
-      this.branchOrTag = SampleConfigBranchForPrerelease;
-    } else if (version.includes("rc")) {
-      // if there is a breaking change, the tag is not used by any stable version.
-      this.branchOrTag = SampleConfigTag;
-    } else {
-      // stable version uses the head of branch defined by feature flag when available
-      this.branchOrTag = SampleConfigTag;
-      const branch = process.env[FeatureFlagName.SampleConfigBranch];
-      if (branch) {
-        try {
-          const data = await this.fetchRawFileContent(branch);
-          this.branchOrTag = branch;
-          this.samplesConfig = data as SampleConfigType;
-        } catch (e: unknown) {}
-      }
+  public get SampleCollection(): Promise<SampleCollection> {
+    if (!this.sampleCollection) {
+      return this.refreshSampleConfig();
     }
-    if (this.samplesConfig === undefined) {
-      this.samplesConfig = (await this.fetchRawFileContent(this.branchOrTag)) as SampleConfigType;
-    }
+    return Promise.resolve(this.sampleCollection);
   }
 
-  public get SampleCollection(): SampleCollection {
+  public async refreshSampleConfig(): Promise<SampleCollection> {
+    const { samplesConfig, ref } = await this.fetchOnlineSampleConfig();
+    this.sampleCollection = this.parseOnlineSampleConfig(samplesConfig, ref);
+    return this.sampleCollection;
+  }
+
+  private async fetchOnlineSampleConfig() {
+    const version: string = packageJson.version;
+    const configBranchInEnv = process.env[FeatureFlagName.SampleConfigBranch];
+    let samplesConfig: SampleConfigType | undefined;
+    let ref = SampleConfigTag;
+
+    // Set default value for branchOrTag
+    if (version.includes("alpha")) {
+      // daily build version always use 'dev' branch
+      ref = "dev";
+    } else if (version.includes("beta")) {
+      // prerelease build version always use branch head for prerelease.
+      ref = SampleConfigBranchForPrerelease;
+    } else if (version.includes("rc")) {
+      // if there is a breaking change, the tag is not used by any stable version.
+      ref = SampleConfigTag;
+    } else {
+      // stable version uses the head of branch defined by feature flag when available
+      ref = SampleConfigTag;
+    }
+
+    // Set branchOrTag value if branch in env is valid
+    if (configBranchInEnv) {
+      try {
+        const data = await this.fetchRawFileContent(configBranchInEnv);
+        ref = configBranchInEnv;
+        samplesConfig = data as SampleConfigType;
+      } catch (e: unknown) {}
+    }
+
+    if (samplesConfig === undefined) {
+      samplesConfig = (await this.fetchRawFileContent(ref)) as SampleConfigType;
+    }
+
+    return { samplesConfig, ref };
+  }
+
+  @hooks([ErrorContextMW({ component: "SampleProvider" })])
+  private parseOnlineSampleConfig(samplesConfig: SampleConfigType, ref: string): SampleCollection {
     const samples =
-      this.samplesConfig?.samples.map((sample) => {
+      samplesConfig?.samples.map((sample) => {
         const isExternal = sample["downloadUrlInfo"] ? true : false;
         let gifUrl =
           sample["gifPath"] !== undefined
-            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
-                this.branchOrTag
-              }/${sample["id"] as string}/${sample["gifPath"] as string}`
+            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${ref}/${
+                sample["id"] as string
+              }/${sample["gifPath"] as string}`
             : undefined;
-        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${
-          this.branchOrTag
-        }/${sample["id"] as string}/${sample["thumbnailPath"] as string}`;
+        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${ref}/${
+          sample["id"] as string
+        }/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
           const info = sample["downloadUrlInfo"] as SampleUrlInfo;
           gifUrl =
@@ -122,7 +143,7 @@ class SampleProvider {
             : {
                 owner: SampleConfigOwner,
                 repository: SampleConfigRepo,
-                ref: this.branchOrTag,
+                ref: ref,
                 dir: sample["id"] as string,
               },
           gifUrl: gifUrl,
@@ -133,11 +154,38 @@ class SampleProvider {
     return {
       samples,
       filterOptions: {
-        capabilities: this.samplesConfig?.filterOptions["capabilities"] || [],
-        languages: this.samplesConfig?.filterOptions["languages"] || [],
-        technologies: this.samplesConfig?.filterOptions["technologies"] || [],
+        capabilities: samplesConfig?.filterOptions["capabilities"] || [],
+        languages: samplesConfig?.filterOptions["languages"] || [],
+        technologies: samplesConfig?.filterOptions["technologies"] || [],
       },
     };
+  }
+
+  public async getSampleReadmeHtml(sample: SampleConfig): Promise<string> {
+    const urlInfo = sample.downloadUrlInfo;
+    const url = `https://api.github.com/repos/${urlInfo.owner}/${urlInfo.repository}/readme/${urlInfo.dir}/?ref=${urlInfo.ref}`;
+    try {
+      const readmeResponse = await sendRequestWithTimeout(
+        async () => {
+          return await axios.get(url, {
+            headers: {
+              Accept: "application/vnd.github.html",
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          });
+        },
+        1000,
+        3
+      );
+
+      if (readmeResponse && readmeResponse.data) {
+        return readmeResponse.data as string;
+      } else {
+        return "";
+      }
+    } catch (e) {
+      throw new AccessGithubError(url, "SampleProvider", e);
+    }
   }
 
   private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {

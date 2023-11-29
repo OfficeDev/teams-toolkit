@@ -6,7 +6,7 @@ import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import { Inputs } from "@microsoft/teamsfx-api";
-import { Correlator, sampleProvider } from "@microsoft/teamsfx-core";
+import { Correlator, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
@@ -138,6 +138,9 @@ export class WebviewPanel {
           case Commands.LoadSampleCollection:
             await this.LoadSampleCollection();
             break;
+          case Commands.LoadSampleReadme:
+            await this.LoadSampleReadme(msg.data);
+            break;
           case Commands.UpgradeToolkit:
             await this.OpenToolkitInExtensionView(msg.data.version);
             break;
@@ -192,7 +195,7 @@ export class WebviewPanel {
 
   private async LoadSampleCollection() {
     try {
-      await sampleProvider.fetchSampleConfig();
+      await sampleProvider.refreshSampleConfig();
     } catch (e: unknown) {
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleCollection,
@@ -201,7 +204,7 @@ export class WebviewPanel {
       });
       return;
     }
-    const sampleCollection = sampleProvider.SampleCollection;
+    const sampleCollection = await sampleProvider.SampleCollection;
     const sampleData = sampleCollection.samples.map((sample) => {
       const extensionVersion = extensionPackage.version;
       let versionComparisonResult = 0;
@@ -231,12 +234,40 @@ export class WebviewPanel {
     }
   }
 
+  private async LoadSampleReadme(sample: SampleConfig) {
+    let htmlContent = "";
+    try {
+      htmlContent = await sampleProvider.getSampleReadmeHtml(sample);
+    } catch (e: unknown) {
+      await this.panel.webview.postMessage({
+        message: Commands.LoadSampleReadme,
+        error: e,
+        readme: "",
+      });
+      return;
+    }
+    if (this.panel && this.panel.webview) {
+      const readme = this.replaceRelativeImagePaths(htmlContent, sample);
+      await this.panel.webview.postMessage({
+        message: Commands.LoadSampleReadme,
+        readme: readme,
+      });
+    }
+  }
+
   private async OpenToolkitInExtensionView(version: string) {
     // await vscode.commands.executeCommand(
     //   "workbench.extensions.installExtension",
     //   `teamsdevapp.ms-teams-vscode-extension@${version}`
     // );
     await vscode.commands.executeCommand("workbench.extensions.action.checkForUpdates");
+  }
+
+  private replaceRelativeImagePaths(htmlContent: string, sample: SampleConfig) {
+    const urlInfo = sample.downloadUrlInfo;
+    const imageUrlBase = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${urlInfo.ref}/${urlInfo.dir}`;
+    const imageRegex = /img\s+src="([^"]+)"/gm;
+    return htmlContent.replace(imageRegex, `img src="${imageUrlBase}/$1"`);
   }
 
   private getWebpageTitle(panelType: PanelType): string {

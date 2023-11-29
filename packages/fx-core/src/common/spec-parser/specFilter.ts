@@ -14,7 +14,8 @@ export function specFilter(
   resolvedSpec: OpenAPIV3.Document,
   allowMissingId: boolean,
   allowAPIKeyAuth: boolean,
-  allowMultipleParameters: boolean
+  allowMultipleParameters: boolean,
+  allowOauth2: boolean
 ): OpenAPIV3.Document {
   try {
     const newSpec = { ...unResolveSpec };
@@ -30,7 +31,8 @@ export function specFilter(
           resolvedSpec,
           allowMissingId,
           allowAPIKeyAuth,
-          allowMultipleParameters
+          allowMultipleParameters,
+          allowOauth2
         )
       ) {
         continue;

@@ -3,6 +3,8 @@
 
 import {
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   err,
   FxError,
   InputTextConfig,
@@ -79,6 +81,9 @@ export class MockUserInteraction implements UserInteraction {
       end: async (): Promise<void> => {},
     };
     return handler;
+  }
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    return ok({ type: "success", result: true });
   }
 }
 

@@ -22,6 +22,7 @@ import { CancelDownloading } from "./error";
 import { deepCopy } from "../../common/tools";
 import { InvalidInputError } from "../../core/error";
 import { ProgrammingLanguage } from "../../question";
+import { AxiosError } from "axios";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -217,8 +218,8 @@ export function renderTemplateFileName(
   );
 }
 
-export function getSampleInfoFromName(sampleName: string): SampleConfig {
-  const sample = sampleProvider.SampleCollection.samples.find(
+export async function getSampleInfoFromName(sampleName: string): Promise<SampleConfig> {
+  const sample = (await sampleProvider.SampleCollection).samples.find(
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (!sample) {
@@ -340,4 +341,33 @@ export function convertToLangKey(programmingLanguage: string): string {
     }
   }
   return programmingLanguage;
+}
+
+export function convertToUrl(sampleInfo: SampleUrlInfo): string {
+  return `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`;
+}
+
+export function simplifyAxiosError(error: AxiosError): Error {
+  const simplifiedError = {
+    message: error.message,
+    name: error.name,
+    config: error.config,
+    code: error.code,
+    stack: error.stack,
+    status: error.response?.status,
+    statusText: error.response?.statusText,
+    headers: error.response?.headers,
+    data: error.response?.data,
+  };
+  return simplifiedError;
+}
+
+export function isApiLimitError(error: Error): boolean {
+  //https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api?apiVersion=2022-11-28#exceeding-the-rate-limit
+  return (
+    axios.isAxiosError(error) &&
+    error.response?.status !== undefined &&
+    [403, 429].includes(error.response.status) &&
+    error.response?.headers?.["x-ratelimit-remaining"] === "0"
+  );
 }

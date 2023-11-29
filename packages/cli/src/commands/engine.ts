@@ -21,6 +21,7 @@ import {
   IncompatibleProjectError,
   VersionState,
   assembleError,
+  fillinProjectTypeProperties,
   getHashedEnv,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
@@ -43,7 +44,6 @@ import {
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
-import { CliConfigOptions } from "../userSetttings";
 import { editDistance, getSystemInputs } from "../utils";
 import { helper } from "./helper";
 
@@ -89,7 +89,7 @@ class CLIEngine {
       telemetryProperties: {
         [TelemetryProperty.CommandName]: foundCommand.fullName,
         [TelemetryProperty.Component]: TelemetryComponentType,
-        [CliConfigOptions.RunFrom]: tryDetectCICDPlatform(),
+        [TelemetryProperty.RunFrom]: tryDetectCICDPlatform(),
         [TelemetryProperty.BinName]: rootCmd.name,
       },
     };
@@ -121,11 +121,10 @@ class CLIEngine {
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
       const core = getFxCore();
-      const res = await core.getProjectMetadata(context.optionValues.projectPath as string);
+      const res = await core.checkProjectType(context.optionValues.projectPath as string);
       if (res.isOk()) {
-        const value = res.value;
-        context.telemetryProperties[TelemetryProperty.ProjectId] = value.projectId || "";
-        context.telemetryProperties[TelemetryProperty.SettingsVersion] = value.version || "";
+        const projectTypeResult = res.value;
+        fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
       }
     }
 

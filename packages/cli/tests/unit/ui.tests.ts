@@ -307,25 +307,63 @@ describe("User Interaction Tests", function () {
       expect(result.isOk() ? result.value : result.error).to.be.deep.equals("id1");
     });
   });
-  describe("confirm", async () => {
+  describe("_confirm", async () => {
     afterEach(() => {
       sandbox.restore();
     });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
       sandbox.stub(prompts, "confirm").resolves(false);
-      const result = await UI.confirm("test", "Select a string", false);
+      const result = await UI._confirm("Select a string", false);
       expect(result.isOk() ? result.value : result.error).to.be.equals(false);
     });
     it("non-interactive", async () => {
       sandbox.stub(UI, "interactive").value(false);
-      const result = await UI.confirm("test", "Select a string", false);
+      const result = await UI._confirm("Select a string", false);
       expect(result.isOk() ? result.value : result.error).to.be.equals(false);
     });
     it("non-interactive - no default value", async () => {
       sandbox.stub(UI, "interactive").value(false);
-      const result = await UI.confirm("test", "Select a string");
+      const result = await UI._confirm("Select a string");
       expect(result.isOk() ? result.value : result.error).to.be.equals(true);
+    });
+  });
+  describe("confirm", async () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("load default error", async () => {
+      sandbox.stub(UI, "loadDefaultValue").resolves(err(new UserCancelError()));
+      const result = await UI.confirm({
+        name: "test",
+        title: "test",
+        default: async () => true,
+      });
+      expect(result.isErr());
+    });
+    it("_confirm error", async () => {
+      sandbox.stub(UI, "_confirm").resolves(err(new UserCancelError()));
+      const result = await UI.confirm({
+        name: "test",
+        title: "test",
+      });
+      expect(result.isErr());
+    });
+    it("confirm: yes", async () => {
+      sandbox.stub(UI, "_confirm").resolves(ok(true));
+      const result = await UI.confirm({
+        name: "test",
+        title: "test",
+      });
+      expect(result.isOk());
+    });
+    it("confirm: no", async () => {
+      sandbox.stub(UI, "_confirm").resolves(ok(false));
+      const result = await UI.confirm({
+        name: "test",
+        title: "test",
+      });
+      expect(result.isErr());
     });
   });
   describe("input", async () => {
@@ -451,17 +489,17 @@ describe("User Interaction Tests", function () {
       }
     });
     it("items.length is equal to 1 - confirm returns true", async () => {
-      sandbox.stub(UI, "confirm").resolves(ok(true));
+      sandbox.stub(UI, "_confirm").resolves(ok(true));
       const result = await UI.showMessage("info", msg1, true, items[0]);
       expect(result.isOk() && result.value === items[0]).to.be.true;
     });
     it("items.length is equal to 1 - confirm returns false", async () => {
-      sandbox.stub(UI, "confirm").resolves(ok(false));
+      sandbox.stub(UI, "_confirm").resolves(ok(false));
       const result = await UI.showMessage("info", msg1, true, items[0]);
       expect(result.isOk() && result.value === undefined).to.be.true;
     });
     it("items.length is equal to 1 - confirm returns error", async () => {
-      sandbox.stub(UI, "confirm").resolves(err(new UserCancelError()));
+      sandbox.stub(UI, "_confirm").resolves(err(new UserCancelError()));
       const result = await UI.showMessage("info", msg1, true, items[0]);
       expect(result.isErr()).to.be.true;
     });

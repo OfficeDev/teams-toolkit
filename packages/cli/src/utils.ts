@@ -6,13 +6,9 @@ import fs from "fs-extra";
 import path from "path";
 import semver from "semver";
 import * as uuid from "uuid";
-import { parse } from "yaml";
 
 import { Colors, Inputs, Platform } from "@microsoft/teamsfx-api";
 import { SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
-
-import { teamsAppFileName } from "./constants";
-import CLIUIInstance from "./userInteraction";
 
 export function toLocaleLowerCase(arg: any): any {
   if (typeof arg === "string") {
@@ -20,41 +16,6 @@ export function toLocaleLowerCase(arg: any): any {
   } else if (arg instanceof Array) {
     return arg.map((s: string) => s.toLocaleLowerCase());
   } else return arg;
-}
-
-export function isWorkspaceSupported(workspace: string): boolean {
-  const p = workspace;
-
-  const checklist = [p, path.join(p, teamsAppFileName)];
-
-  for (const fp of checklist) {
-    if (!fs.existsSync(path.resolve(fp))) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Only used for telemetry
-export function getSettingsVersion(rootFolder: string | undefined): string | undefined {
-  if (!rootFolder) {
-    return undefined;
-  }
-  if (isWorkspaceSupported(rootFolder)) {
-    const filePath = path.join(rootFolder, teamsAppFileName);
-    if (!fs.existsSync(filePath)) {
-      return undefined;
-    }
-
-    try {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
-      const configuration = parse(fileContent);
-      return configuration.version;
-    } catch (e) {
-      return undefined;
-    }
-  }
-  return undefined;
 }
 
 export function getSystemInputs(projectPath?: string, env?: string): Inputs {
@@ -116,9 +77,8 @@ export interface Sample {
 }
 
 export async function getTemplates(): Promise<Sample[]> {
-  await sampleProvider.fetchSampleConfig();
   const version = getVersion();
-  const availableSamples = sampleProvider.SampleCollection.samples.filter(
+  const availableSamples = (await sampleProvider.SampleCollection).samples.filter(
     (sample: SampleConfig) => {
       if (sample.minimumCliVersion !== undefined) {
         return semver.gte(version, sample.minimumCliVersion);

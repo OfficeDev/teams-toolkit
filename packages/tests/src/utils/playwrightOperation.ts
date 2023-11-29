@@ -94,6 +94,9 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.TabSSOApimProxy]: async () => {
     await startDebuggingAzure("Debug (Chrome)", "local", `TabSSOApimProxy`);
   },
+  [TemplateProject.LargeScaleBot]: async () => {
+    await startDebugging();
+  },
 };
 
 export async function initPage(

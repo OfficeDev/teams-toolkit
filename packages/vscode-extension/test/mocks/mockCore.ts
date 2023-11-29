@@ -7,7 +7,9 @@ import {
   Result,
   ok,
 } from "@microsoft/teamsfx-api";
-import { CoreCallbackFunc } from "@microsoft/teamsfx-core";
+import { CoreCallbackFunc, FxCore } from "@microsoft/teamsfx-core";
+import { ProjectTypeResult } from "@microsoft/teamsfx-core/build/common/projectTypeChecker";
+import { TelemetryMeasurements } from "../../src/telemetry/extTelemetryEvents";
 
 export class MockCore {
   constructor() {}
@@ -128,6 +130,15 @@ export class MockCore {
       teamsAppId: "",
       teamsAppName: "",
       m365TenantId: "",
+    });
+  }
+
+  async checkProjectType(input: string): Promise<Result<ProjectTypeResult, FxError>> {
+    return ok({
+      isTeamsFx: true,
+      hasTeamsManifest: true,
+      dependsOnTeamsJs: false,
+      lauguages: ["ts"],
     });
   }
 }

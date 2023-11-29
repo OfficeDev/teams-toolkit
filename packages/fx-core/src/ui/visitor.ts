@@ -149,6 +149,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     | string[]
     | (() => Promise<string>)
     | (() => Promise<string[]>)
+    | boolean
     | undefined = undefined;
   if (question.forgetLastValue !== true && question.value)
     defaultValue = question.value as string | string[];
@@ -312,6 +313,15 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       step: step,
       totalSteps: totalSteps,
       validation: validationFunc,
+    });
+    return res;
+  } else if (question.type === "confirm" && ui.confirm) {
+    const res = await ui.confirm({
+      name: question.name,
+      title: title,
+      default: defaultValue as boolean,
+      step: step,
+      totalSteps: totalSteps,
     });
     return res;
   }

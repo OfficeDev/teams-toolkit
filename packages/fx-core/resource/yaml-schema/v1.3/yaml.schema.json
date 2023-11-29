@@ -1434,12 +1434,11 @@
             },
             "workingDirectory": {
               "type": "string",
-              "description": "current working directory. Defaults to the directory of this file."
+              "description": "Current working directory. Defaults to the directory of this file."
             },
             "shell": {
               "type": "string",
-              "enum": ["bash", "sh", "powershell", "pwsh", "cmd"],
-              "description": "The shell type. Can be omitted. If omitted, it defaults to bash on Linux/MacOS, defaults to pwsh on windows."
+              "description": "Shell command. If not specified, use default shell for current platform. The rule is: 1) use the value of the 'SHELL' environment variable if it is set. Otherwise the shell depends on operation system: 2) on macOS, use '/bin/zsh' if it exists, otherwise use '/bin/bash'; 3) On Windows, use the value of the 'ComSpec' environment variable if it exists, otherwise use 'cmd.exe'; 4) On Linux or other OS, use '/bin/sh' if it extis."
             },
             "timeout": {
               "type": "number",

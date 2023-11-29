@@ -24,6 +24,8 @@ import {
 
 import {
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   err,
   ExecuteFuncConfig,
   FxError,
@@ -960,6 +962,17 @@ export class VsCodeUI implements UserInteraction {
         return err(selectFileOrItemRes.error);
       }
     }
+  }
+
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    const confirmText = config.transformer?.(true) || "Confirm";
+    const res = await this.showMessage("warn", config.title, true, confirmText);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+    const value = res.value;
+    if (value === confirmText) return ok({ type: "success", result: true });
+    return err(new UserCancelError("VSC"));
   }
 
   public async showMessage(

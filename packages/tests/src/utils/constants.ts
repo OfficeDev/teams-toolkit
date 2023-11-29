@@ -309,7 +309,9 @@ export type OptionType =
   | "functimernoti"
   | "addin"
   | "importaddin"
-  | "linkunfurl";
+  | "linkunfurl"
+  | "aichat"
+  | "aiassist";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
@@ -404,6 +406,10 @@ export class ValidationContent {
   static readonly BotWelcomeInstruction =
     "Hi there! I'm a Teams bot that will echo what you said to me";
   static readonly GraphBot = "Your Graph Connector Bot is Running";
+  static readonly AiChatBotWelcomeInstruction = "How can I help you today?";
+  static readonly AiAssistantBotWelcomeInstruction =
+    "I'm an assistant bot. How can I help you today?";
+  static readonly AiBotErrorMessage = "The bot encountered an error or bug";
 }
 
 export class CliVersion {

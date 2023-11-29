@@ -1317,7 +1317,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and sideloading permission is enabled");
+        assert.include(account, "is logged in and uploading custom apps permission is enabled");
       });
       it("checkM365Account - error", async () => {
         sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
@@ -1361,7 +1361,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and sideloading permission is enabled");
+        assert.include(account, "is logged in and uploading custom apps permission is enabled");
       });
 
       it("checkM365Account - no sideloading permission", async () => {
@@ -1387,7 +1387,7 @@ describe("CLI read-only commands", () => {
         const value = (accountRes as any).value;
         assert.include(
           value,
-          "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account"
+          "Your Microsoft 365 tenant admin hasn't enabled uploading custom apps permission for your account"
         );
       });
     });

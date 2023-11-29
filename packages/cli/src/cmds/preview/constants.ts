@@ -102,9 +102,9 @@ export const doctorResult = {
   InstallNodeV3:
     "The supported node versions are specified in the package.json. Go to https://nodejs.org/about/releases/ to install a supported Node.js.",
   SideLoadingDisabled:
-    "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
+    "Your Microsoft 365 tenant admin hasn't enabled uploading custom apps permission for your account. You can't install your app to Teams!",
   NotSignIn: "No Microsoft 365 account login",
-  SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading permission enabled`,
+  SignInSuccess: `Microsoft 365 Account (@account) is logged in and uploading custom apps permission enabled`,
   SkipTrustingCert: "Skip trusting development certificate for localhost",
   HelpLink: `Please refer to @Link for more information.`,
   NgrokWarning:

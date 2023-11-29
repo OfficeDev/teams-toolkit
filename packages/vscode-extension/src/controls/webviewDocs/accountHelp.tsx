@@ -42,15 +42,15 @@ export default function PrepareM365Account() {
             account.
           </li>
           <li>
-            The Microsoft 365 account should be granted with sideloading permission to update the
-            Teams app.
+            The Microsoft 365 account should be granted with uploading custom apps permission to
+            update the Teams app.
           </li>
         </ol>
       </p>
       <p>
-        Sideloading is the permission of your Microsoft 365 account to upload the Teams app to Teams
-        client. You can contact your tenant administrator to turn on the sideloading permission for
-        your organization.{" "}
+        Uploading custom apps is the permission of your Microsoft 365 account to upload the Teams
+        app to Teams client. You can contact your tenant administrator to turn on the uploading
+        custom apps permission for your organization.{" "}
       </p>
       <p>
         Or you can create a free qualified Microsoft 365 development account to resolve the above
@@ -105,7 +105,7 @@ export default function PrepareM365Account() {
             Open Teams Toolkit for Visual Studio Code and log into the Teams Toolkit extension using
             your developer account created in step 1.
           </p>
-          <p>The sideloading permission has already been configured.</p>
+          <p>The uploading custom apps permission has already been configured.</p>
           <p>
             <img src={M365Account} alt="Teams Toolkit Microsoft 365 account" />
           </p>

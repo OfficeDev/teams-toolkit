@@ -225,7 +225,7 @@ export function isSupportedAuth(
 
     for (const auths of authSchemaArray) {
       if (auths.length === 1) {
-        if (allowAPIKeyAuth && !allowOauth2 && isAPIKeyAuth(auths[0].authSchema)) {
+        if (!allowOauth2 && allowAPIKeyAuth && isAPIKeyAuth(auths[0].authSchema)) {
           return true;
         } else if (!allowAPIKeyAuth && allowOauth2 && isBearerTokenAuth(auths[0].authSchema)) {
           return true;

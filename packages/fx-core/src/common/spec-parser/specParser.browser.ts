@@ -36,6 +36,7 @@ export class SpecParser {
     allowSwagger: false,
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
+    allowOauth2: false,
   };
 
   /**
@@ -86,7 +87,8 @@ export class SpecParser {
         !!this.isSwaggerFile,
         this.options.allowMissingId,
         this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters
+        this.options.allowMultipleParameters,
+        this.options.allowOauth2
       );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -185,7 +187,8 @@ export class SpecParser {
       spec,
       this.options.allowMissingId,
       this.options.allowAPIKeyAuth,
-      this.options.allowMultipleParameters
+      this.options.allowMultipleParameters,
+      this.options.allowAPIKeyAuth
     );
     this.apiMap = result;
     return result;

@@ -23,7 +23,7 @@ import { SpecParserError } from "./specParserError";
 import { specFilter } from "./specFilter";
 import {
   convertPathToCamelCase,
-  getAPIKeyAuthArray,
+  getAuthArray,
   listSupportedAPIs,
   resolveServerUrl,
   validateSpec,
@@ -50,6 +50,7 @@ export class SpecParser {
     allowSwagger: true,
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
+    allowOauth2: false,
   };
 
   /**
@@ -100,7 +101,8 @@ export class SpecParser {
         !!this.isSwaggerFile,
         this.options.allowMissingId,
         this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters
+        this.options.allowMultipleParameters,
+        this.options.allowOauth2
       );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -151,11 +153,11 @@ export class SpecParser {
         }
         apiResult.operationId = operationId;
 
-        const apiKeyAuthArray = getAPIKeyAuthArray(operation.security, spec);
+        const authArray = getAuthArray(operation.security, spec);
 
-        for (const apiKeyAuth of apiKeyAuthArray) {
-          if (apiKeyAuth.length === 1) {
-            apiResult.auth = apiKeyAuth[0];
+        for (const auths of authArray) {
+          if (auths.length === 1) {
+            apiResult.auth = auths[0].authSchema;
             break;
           }
         }
@@ -207,7 +209,8 @@ export class SpecParser {
         this.spec!,
         this.options.allowMissingId,
         this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters
+        this.options.allowMultipleParameters,
+        this.options.allowOauth2
       );
 
       if (signal?.aborted) {
@@ -216,30 +219,21 @@ export class SpecParser {
 
       const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
 
-      const operationIdToAPIAuthKey: Map<string, OpenAPIV3.ApiKeySecurityScheme> = new Map();
+      const AuthSet: Set<OpenAPIV3.SecuritySchemeObject> = new Set();
       let hasMultipleAPIKeyAuth = false;
-      let firstAuthKey: OpenAPIV3.ApiKeySecurityScheme | undefined;
 
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
           const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
 
-          const apiKeyAuthArr = getAPIKeyAuthArray(operation.security, newSpec);
+          const authArray = getAuthArray(operation.security, newSpec);
 
-          // Currently we don't support multiple apiKey auth
-          if (apiKeyAuthArr.length > 0 && apiKeyAuthArr.every((auths) => auths.length > 1)) {
-            hasMultipleAPIKeyAuth = true;
-            break;
-          }
-
-          if (apiKeyAuthArr && apiKeyAuthArr.length > 0) {
-            if (!firstAuthKey) {
-              firstAuthKey = apiKeyAuthArr[0][0];
-            } else if (firstAuthKey.name !== apiKeyAuthArr[0][0].name) {
+          if (authArray && authArray.length > 0) {
+            AuthSet.add(authArray[0][0].authSchema);
+            if (AuthSet.size > 1) {
               hasMultipleAPIKeyAuth = true;
               break;
             }
-            operationIdToAPIAuthKey.set(operation.operationId!, apiKeyAuthArr[0][0]);
           }
         }
       }
@@ -290,13 +284,14 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
+      const auth = Array.from(AuthSet)[0];
       const [updatedManifest, warnings] = await updateManifest(
         manifestPath,
         outputSpecPath,
         adaptiveCardFolder,
         newSpec,
         this.options.allowMultipleParameters,
-        firstAuthKey?.name
+        auth && auth.type === "apiKey" ? auth?.name : ""
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
@@ -337,7 +332,8 @@ export class SpecParser {
       spec,
       this.options.allowMissingId,
       this.options.allowAPIKeyAuth,
-      this.options.allowMultipleParameters
+      this.options.allowMultipleParameters,
+      this.options.allowOauth2
     );
     this.apiMap = result;
     return result;

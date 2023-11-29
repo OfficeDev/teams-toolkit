@@ -114,7 +114,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -152,7 +152,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, false, false, false);
+      const result = isSupportedApi(method, path, spec as any, false, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -204,7 +204,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -276,7 +276,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -348,7 +348,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, true, false);
+      const result = isSupportedApi(method, path, spec as any, true, true, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -427,7 +427,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, true, false);
+      const result = isSupportedApi(method, path, spec as any, true, true, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -480,7 +480,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -533,7 +533,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -586,7 +586,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, true, false);
       assert.strictEqual(result, true);
     });
 
@@ -647,7 +647,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, true, false);
       assert.strictEqual(result, false);
     });
 
@@ -703,7 +703,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -760,7 +760,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -798,7 +798,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -836,7 +836,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -873,7 +873,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -910,7 +910,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -948,7 +948,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -986,7 +986,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1024,7 +1024,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1051,7 +1051,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1077,7 +1077,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1109,7 +1109,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
   });
@@ -1407,7 +1407,7 @@ describe("utils", () => {
   describe("validateServer", () => {
     it("should return an error if there is no server information", () => {
       const spec = { paths: {} };
-      const errors = validateServer(spec as OpenAPIV3.Document, true, false, false);
+      const errors = validateServer(spec as OpenAPIV3.Document, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1426,7 +1426,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1440,7 +1440,7 @@ describe("utils", () => {
         servers: [{ url: "https://example.com" }],
         paths: {},
       };
-      const errors = validateServer(spec as OpenAPIV3.Document, true, false, false);
+      const errors = validateServer(spec as OpenAPIV3.Document, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1452,7 +1452,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1484,7 +1484,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1518,7 +1518,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1552,7 +1552,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.RelativeServerUrlNotSupported,

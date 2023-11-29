@@ -1261,7 +1261,7 @@ export class FxCore {
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
           if (operation) {
-            if (operation.auth) {
+            if (operation.auth && operation.auth.type === "apiKey") {
               authNames.add(operation.auth.name);
               serverUrls.add(operation.server);
             }

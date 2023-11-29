@@ -10,6 +10,7 @@ import { Duplex } from "stream";
 import { CancellationToken, createMessageConnection } from "vscode-jsonrpc";
 import { setFunc } from "../src/customizedFuncAdapter";
 import ServerConnection from "../src/serverConnection";
+import { DependencyStatus, DepsManager, TestToolInstallOptions } from "@microsoft/teamsfx-core";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -451,6 +452,16 @@ describe("serverConnections", () => {
     const fake = sandbox.fake.resolves(ok(undefined));
     sandbox.replace(connection["core"], "copilotPluginAddAPI", fake);
     const res = await connection.copilotPluginAddAPIRequest({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isOk());
+  });
+
+  it("checkAndInstallTestTool", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox.stub(DepsManager.prototype, "ensureDependency").resolves({} as DependencyStatus);
+    const res = await connection.checkAndInstallTestTool(
+      {} as TestToolInstallOptions & { correlationId: string },
+      {} as CancellationToken
+    );
     assert.isTrue(res.isOk());
   });
 });

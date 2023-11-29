@@ -1,0 +1,490 @@
+<testsuite name="Mocha Tests" tests="488" failures="0" errors="0" skipped="0" timestamp="Wed, 29 Nov 2023 06:53:22 GMT" time="10.504">
+<testcase classname="Manifest codelens" name="Template codelens - V3" time="0"/>
+<testcase classname="Manifest codelens" name="ResolveEnvironmentVariableCodelens" time="0.001"/>
+<testcase classname="Manifest codelens" name="ResolveEnvironmentVariableCodelens for AAD manifest" time="0"/>
+<testcase classname="Manifest codelens" name="ComputeTemplateCodeLenses for AAD manifest template" time="0.002"/>
+<testcase classname="Manifest codelens" name="ComputeTemplateCodeLenses for aad manifest" time="0.003"/>
+<testcase classname="Manifest codelens" name="ComputeTemplateCodeLenses for aad manifest if template not exist" time="0.001"/>
+<testcase classname="Manifest codelens" name="PermissionsJsonFileCodeLensProvider for Microsoft Entra manifest template" time="0"/>
+<testcase classname="Crypto CodeLensProvider" name="envData codelens" time="0.001"/>
+<testcase classname="Crypto CodeLensProvider" name="hides when command is running" time="0.001"/>
+<testcase classname="Copilot plugin CodeLensProvider" name="Add API" time="0.002"/>
+<testcase classname="Copilot plugin CodeLensProvider" name="Do not show codelens for non-copilot plugin project" time="0"/>
+<testcase classname="teamsapp.yml CodeLensProvider" name="should work with correct teamsapp.yml" time="0.001"/>
+<testcase classname="Command Controller" name="directly call command callback" time="0.001"/>
+<testcase classname="Command Controller" name="refresh UI when receiving lock events" time="0.001"/>
+<testcase classname="Command Controller" name="refresh UI when receiving unlock events" time="0.003"/>
+<testcase classname="CommonUtils getPackageVersion" name="alpha version" time="0"/>
+<testcase classname="CommonUtils getPackageVersion" name="beta version" time="0"/>
+<testcase classname="CommonUtils getPackageVersion" name="rc version" time="0"/>
+<testcase classname="CommonUtils getPackageVersion" name="formal version" time="0"/>
+<testcase classname="CommonUtils openFolderInExplorer" name="happy path" time="0"/>
+<testcase classname="CommonUtils isFeatureFlag" name="return true when enabled" time="0"/>
+<testcase classname="CommonUtils isFeatureFlag" name="return false when disabled" time="0"/>
+<testcase classname="CommonUtils sleep" name="sleep should be accurate" time="0"/>
+<testcase classname="CommonUtils os assertion" name="should return exactly result according to os.type" time="0.001"/>
+<testcase classname="CommonUtils getProjectId" name="happy path" time="0.001"/>
+<testcase classname="CommonUtils getProjectId" name="workspaceUri is undefined" time="0.001"/>
+<testcase classname="CommonUtils getProjectId" name="return error" time="0.001"/>
+<testcase classname="CommonUtils getProjectId" name="throw error" time="0"/>
+<testcase classname="CommonUtils getAppName" name="happy path" time="0"/>
+<testcase classname="CommonUtils getAppName" name="workspaceUri is undefined" time="0"/>
+<testcase classname="CommonUtils getAppName" name="return error" time="0"/>
+<testcase classname="CommonUtils getAppName" name="throw error" time="0"/>
+<testcase classname="CommonUtils getAppName" name="should return undefined if getTeamsAppName returns empty string" time="0"/>
+<testcase classname="CommonUtils getTeamsAppTelemetryInfoByEnv" name="happy path" time="0.001"/>
+<testcase classname="CommonUtils getTeamsAppTelemetryInfoByEnv" name="isValidProject is false" time="0"/>
+<testcase classname="CommonUtils getTeamsAppTelemetryInfoByEnv" name="return error" time="0"/>
+<testcase classname="CommonUtils getTeamsAppTelemetryInfoByEnv" name="throw error" time="0"/>
+<testcase classname="CommonUtils isTriggerFromWalkThrough" name="Should return false with no args" time="0"/>
+<testcase classname="CommonUtils isTriggerFromWalkThrough" name="Should return false with empty args" time="0.001"/>
+<testcase classname="CommonUtils isTriggerFromWalkThrough" name="Should return true with walkthrough args" time="0"/>
+<testcase classname="CommonUtils isTriggerFromWalkThrough" name="Should return true with notification args" time="0"/>
+<testcase classname="CommonUtils isTriggerFromWalkThrough" name="Should return false with other args" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return cmp with no args" time="0.001"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return cmp with empty args" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return Auto" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return CodeLens" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return EditorTitle" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return Webview" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return Notification" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return Other" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return QuickPick" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return SideBar" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return TreeView" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return Unknow" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return ViewTitleNavigation" time="0"/>
+<testcase classname="CommonUtils getTriggerFromProperty" name="Should return WalkThrough" time="0"/>
+<testcase classname="CommonUtils getProvisionSucceedFromEnv" name="returns false if teamsAppId is empty" time="0.002"/>
+<testcase classname="CommonUtils getProvisionSucceedFromEnv" name="returns true if teamsAppId is not empty" time="0.001"/>
+<testcase classname="CommonUtils getProvisionSucceedFromEnv" name="returns false if teamsAppId has error" time="0.001"/>
+<testcase classname="CommonUtils hasAdaptiveCardInWorkspace()" name="no workspace" time="0"/>
+<testcase classname="CommonUtils hasAdaptiveCardInWorkspace()" name="happy path" time="0.02"/>
+<testcase classname="CommonUtils hasAdaptiveCardInWorkspace()" name="hasAdaptiveCardInWorkspace() no adaptive card file" time="0.005"/>
+<testcase classname="CommonUtils hasAdaptiveCardInWorkspace()" name="hasAdaptiveCardInWorkspace() very large adaptive card file" time="0.006"/>
+<testcase classname="configMgr loadLogLevel" name="Debug" time="0"/>
+<testcase classname="configMgr loadLogLevel" name="Verbose" time="0"/>
+<testcase classname="configMgr loadLogLevel" name="Info" time="0.001"/>
+<testcase classname="configMgr changeConfigCallback" name="happy" time="0"/>
+<testcase classname="configMgr loadConfigs" name="happy" time="0"/>
+<testcase classname="configMgr loadFeatureFlags" name="happy" time="0"/>
+<testcase classname="configMgr registerConfigChangeCallback" name="happy" time="0"/>
+<testcase classname="openWelcomePageAfterExtensionInstallation()" name="will not open welcome page if shown before" time="0"/>
+<testcase classname="openWelcomePageAfterExtensionInstallation()" name="opens welcome page if not shown before" time="0"/>
+<testcase classname="ExtTelemetry setHasSentTelemetry" name="query-expfeature" time="0"/>
+<testcase classname="ExtTelemetry setHasSentTelemetry" name="other-event" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.create" time="0.001"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.provision" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.deploy" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.publish" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.creatEnv" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.addWebpart" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="Stage.copilotPluginAddAPI" time="0"/>
+<testcase classname="ExtTelemetry stageToEvent" name="unknown" time="0"/>
+<testcase classname="ExtTelemetry Send Telemetry" name="sendTelemetryEvent" time="0"/>
+<testcase classname="ExtTelemetry Send Telemetry" name="sendTelemetryErrorEvent" time="0.002"/>
+<testcase classname="ExtTelemetry Send Telemetry" name="sendTelemetryException" time="0"/>
+<testcase classname="ExtTelemetry deactivate event" name="cacheTelemetryEventAsync" time="0.001"/>
+<testcase classname="ExtTelemetry deactivate event" name="sendCachedTelemetryEventsAsync" time="0.001"/>
+<testcase classname="Global Variables isSPFxProject" name="return false for non-spfx project" time="0.001"/>
+<testcase classname="Global Variables isSPFxProject" name="return true for spfx project" time="0.001"/>
+<testcase classname="Global Variables isSPFxProject" name="set uri handler" time="0"/>
+<testcase classname="Global Variables isSPFxProject" name="set log folder" time="0"/>
+<testcase classname="Global Variables isSPFxProject" name="set commandIsRunning" time="0"/>
+<testcase classname="Global Variables isSPFxProject" name="unsetIsTeamsFxProject()" time="0"/>
+<testcase classname="handlers" name="getSystemInputs()" time="0"/>
+<testcase classname="handlers" name="getSettingsVersion" time="0"/>
+<testcase classname="handlers" name="addFileSystemWatcher detect SPFx project" time="0.002"/>
+<testcase classname="handlers" name="addFileSystemWatcher in invalid project" time="0.001"/>
+<testcase classname="handlers" name="sendSDKVersionTelemetry" time="0"/>
+<testcase classname="handlers" name="updateAutoOpenGlobalKey" time="0.001"/>
+<testcase classname="handlers" name="openAccountHelpHandler()" time="0"/>
+<testcase classname="handlers" name="openWelcomeHandler" time="0"/>
+<testcase classname="handlers" name="openSurveyHandler" time="0"/>
+<testcase classname="handlers" name="openSamplesHandler" time="0"/>
+<testcase classname="handlers" name="openReadMeHandler" time="0.001"/>
+<testcase classname="handlers" name="openReadMeHandler - create project" time="0.011"/>
+<testcase classname="handlers" name="openReadMeHandler - open folder" time="0"/>
+<testcase classname="handlers" name="openReadMeHandler - function notification bot template" time="0.001"/>
+<testcase classname="handlers" name="openReadMeHandler - restify notification bot template" time="0.001"/>
+<testcase classname="handlers" name="signOutM365" time="0"/>
+<testcase classname="handlers" name="signOutAzure" time="0"/>
+<testcase classname="handlers" name="downloadSample" time="0"/>
+<testcase classname="handlers" name="downloadSample - error" time="0.001"/>
+<testcase classname="handlers" name="downloadSample - LoginFailureError" time="0.001"/>
+<testcase classname="handlers" name="deployAadAppmanifest" time="0"/>
+<testcase classname="handlers" name="showError" time="0.003"/>
+<testcase classname="handlers" name="showError - similar issues" time="0.001"/>
+<testcase classname="handlers" name="refreshSPFxTreeOnFileChanged" time="0"/>
+<testcase classname="handlers activate()" name="No globalState error" time="0"/>
+<testcase classname="handlers activate()" name="Valid project" time="0.002"/>
+<testcase classname="handlers activate()" name="throws error" time="0.001"/>
+<testcase classname="handlers command handlers" name="createNewProjectHandler()" time="0.001"/>
+<testcase classname="handlers command handlers" name="provisionHandler()" time="0.001"/>
+<testcase classname="handlers command handlers" name="deployHandler()" time="0"/>
+<testcase classname="handlers command handlers" name="publishHandler()" time="0"/>
+<testcase classname="handlers command handlers" name="buildPackageHandler()" time="0.002"/>
+<testcase classname="handlers command handlers" name="validateManifestHandler() - app package" time="0.001"/>
+<testcase classname="handlers command handlers" name="copilotPluginAddAPIHandler()" time="0.001"/>
+<testcase classname="handlers command handlers" name="treeViewPreviewHandler() - previewWithManifest error" time="0.008"/>
+<testcase classname="handlers command handlers" name="treeViewPreviewHandler() - happy path" time="0.001"/>
+<testcase classname="handlers command handlers" name="selectTutorialsHandler()" time="0.002"/>
+<testcase classname="handlers command handlers" name="selectTutorialsHandler() for SPFx projects - v3" time="0.001"/>
+<testcase classname="handlers runCommand()" name="openConfigStateFile() - InvalidArgs" time="0.01"/>
+<testcase classname="handlers runCommand()" name="openConfigStateFile() - noOpenWorkspace" time="0.001"/>
+<testcase classname="handlers runCommand()" name="openConfigStateFile() - invalidProject" time="0.001"/>
+<testcase classname="handlers runCommand()" name="openConfigStateFile() - invalid target environment" time="0.007"/>
+<testcase classname="handlers runCommand()" name="openConfigStateFile() - valid args" time="0.005"/>
+<testcase classname="handlers runCommand()" name="openConfigStateFile() - invalid env folder" time="0.004"/>
+<testcase classname="handlers runCommand()" name="openConfigStateFile() - success" time="0.005"/>
+<testcase classname="handlers runCommand()" name="create sample with projectid" time="0.001"/>
+<testcase classname="handlers runCommand()" name="create from scratch without projectid" time="0"/>
+<testcase classname="handlers runCommand()" name="provisionResources" time="0"/>
+<testcase classname="handlers runCommand()" name="deployArtifacts" time="0"/>
+<testcase classname="handlers runCommand()" name="deployAadManifest" time="0"/>
+<testcase classname="handlers runCommand()" name="deployAadManifest happy path" time="0.001"/>
+<testcase classname="handlers runCommand()" name="localDebug" time="0"/>
+<testcase classname="handlers runCommand()" name="publishApplication" time="0.001"/>
+<testcase classname="handlers runCommand()" name="createEnv" time="0.001"/>
+<testcase classname="handlers detectVsCodeEnv()" name="locally run" time="0.001"/>
+<testcase classname="handlers detectVsCodeEnv()" name="Remotely run" time="0.001"/>
+<testcase classname="handlers decryptSecret" name="successfully update secret" time="0.001"/>
+<testcase classname="handlers decryptSecret" name="failed to update due to corrupted secret" time="0.001"/>
+<testcase classname="handlers permission v3" name="happy path: grant permission" time="0.001"/>
+<testcase classname="handlers permission v3" name="happy path: list collaborator" time="0.001"/>
+<testcase classname="handlers permission v3" name="happy path: list collaborator throws error" time="0.002"/>
+<testcase classname="handlers permission v3" name="happy path: list collaborator throws login error" time="0.001"/>
+<testcase classname="handlers permission v3" name="User Cancel" time="0.001"/>
+<testcase classname="handlers checkUpgrade" name="calls phantomMigrationV3 with isNonmodalMessage when auto triggered" time="0.001"/>
+<testcase classname="handlers checkUpgrade" name="calls phantomMigrationV3 with skipUserConfirm trigger from sideBar and command palette" time="0"/>
+<testcase classname="handlers checkUpgrade" name="shows error message when phantomMigrationV3 fails" time="0"/>
+<testcase classname="handlers getDotnetPathHandler" name="dotnet is installed" time="0"/>
+<testcase classname="handlers getDotnetPathHandler" name="dotnet is not installed" time="0"/>
+<testcase classname="handlers getDotnetPathHandler" name="failed to get dotnet path" time="0.001"/>
+<testcase classname="handlers scaffoldFromDeveloperPortalHandler" name="missing args" time="0"/>
+<testcase classname="handlers scaffoldFromDeveloperPortalHandler" name="incorrect number of args" time="0.001"/>
+<testcase classname="handlers scaffoldFromDeveloperPortalHandler" name="general error when signing in M365" time="0.002"/>
+<testcase classname="handlers scaffoldFromDeveloperPortalHandler" name="error when signing M365" time="0.001"/>
+<testcase classname="handlers scaffoldFromDeveloperPortalHandler" name="error when signing in M365 but missing display message" time="0.001"/>
+<testcase classname="handlers scaffoldFromDeveloperPortalHandler" name="failed to get teams app" time="0.001"/>
+<testcase classname="handlers scaffoldFromDeveloperPortalHandler" name="happy path" time="0.001"/>
+<testcase classname="handlers publishInDeveloperPortalHandler" name="publish in developer portal - success" time="0.003"/>
+<testcase classname="handlers publishInDeveloperPortalHandler" name="publish in developer portal - cancelled" time="0.001"/>
+<testcase classname="handlers publishInDeveloperPortalHandler" name="select file error" time="0.001"/>
+<testcase classname="handlers openAppManagement" name="open link with loginHint" time="0"/>
+<testcase classname="handlers openAppManagement" name="open link without loginHint" time="0"/>
+<testcase classname="handlers installAppInTeams" name="happy path" time="0"/>
+<testcase classname="handlers installAppInTeams" name="migration error" time="0.001"/>
+<testcase classname="handlers callBackFunctions" name="checkCopilotCallback()" time="0"/>
+<testcase classname="handlers callBackFunctions" name="checkSideloadingCallback()" time="0"/>
+<testcase classname="handlers callBackFunctions" name="signinAzureCallback" time="0"/>
+<testcase classname="handlers validateAzureDependenciesHandler" name="happy path" time="0.001"/>
+<testcase classname="handlers validateAzureDependenciesHandler" name="migration error" time="0"/>
+<testcase classname="handlers validateLocalPrerequisitesHandler" name="happy path" time="0"/>
+<testcase classname="handlers validateLocalPrerequisitesHandler" name="migration error" time="0"/>
+<testcase classname="handlers backendExtensionsInstallHandler" name="happy path" time="0.001"/>
+<testcase classname="handlers backendExtensionsInstallHandler" name="migration error" time="0"/>
+<testcase classname="handlers preDebugCheckHandler" name="happy path" time="0"/>
+<testcase classname="handlers preDebugCheckHandler" name="happy path" time="0"/>
+<testcase classname="handlers migrateTeamsTabAppHandler" name="happy path" time="0.001"/>
+<testcase classname="handlers migrateTeamsTabAppHandler" name="happy path: failed files" time="0.001"/>
+<testcase classname="handlers migrateTeamsTabAppHandler" name="error" time="0.002"/>
+<testcase classname="handlers migrateTeamsTabAppHandler" name="user cancel" time="0.001"/>
+<testcase classname="handlers migrateTeamsTabAppHandler" name="user cancel: skip folder selection" time="0"/>
+<testcase classname="handlers migrateTeamsTabAppHandler" name="no change in package.json" time="0.001"/>
+<testcase classname="handlers migrateTeamsManifestHandler" name="happy path" time="0.001"/>
+<testcase classname="handlers migrateTeamsManifestHandler" name="user cancel: skip file selection" time="0.001"/>
+<testcase classname="handlers migrateTeamsManifestHandler" name="error" time="0.002"/>
+<testcase classname="handlers openDocumentHandler" name="opens upgrade guide when clicked from sidebar" time="0"/>
+<testcase classname="handlers getPathDelimiterHandler" name="happy path" time="0"/>
+<testcase classname="handlers others" name="cmpAccountsHandler" time="0.001"/>
+<testcase classname="handlers others" name="updatePreviewManifest" time="0.001"/>
+<testcase classname="openPreviewAadFile" name="manifest file not exists" time="0.002"/>
+<testcase classname="openPreviewAadFile" name="happy path" time="0.001"/>
+<testcase classname="editAadManifestTemplate" name="happy path" time="0"/>
+<testcase classname="editAadManifestTemplate" name="happy path: no parameter" time="0.001"/>
+<testcase classname="editAadManifestTemplate" name="happy path: workspaceUri is undefined" time="0"/>
+<testcase classname="autoOpenProjectHandler" name="opens walk through" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="opens README" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="opens sample README" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="opens README and show warnings successfully" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="skip show warnings if parsing error" time="0.002"/>
+<testcase classname="autoOpenProjectHandler" name="skip show warnings if cannot get manifest" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="auto install dependency" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="openFolderHandler()" time="0"/>
+<testcase classname="autoOpenProjectHandler" name="runUserTask() - error" time="0.002"/>
+<testcase classname="autoOpenProjectHandler" name="validateGetStartedPrerequisitesHandler() - error" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="registerAccountMenuCommands() - signedinM365" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="registerAccountMenuCommands() - signedinAzure" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="registerAccountMenuCommands() - error" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="openSampleReadmeHandler() - trigger from walkthrough" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="showLocalDebugMessage()" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="installAdaptiveCardExt()" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="signInAzure()" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="signInM365()" time="0.001"/>
+<testcase classname="autoOpenProjectHandler" name="openLifecycleTreeview() - TeamsFx Project" time="0"/>
+<testcase classname="autoOpenProjectHandler" name="openLifecycleTreeview() - non-TeamsFx Project" time="0"/>
+<testcase classname="autoOpenProjectHandler" name="treeViewDebugInTestToolHandler" time="0"/>
+<testcase classname="autoOpenProjectHandler acpInstalled()" name="already installed" time="0"/>
+<testcase classname="autoOpenProjectHandler acpInstalled()" name="not installed" time="0.001"/>
+<testcase classname="Manifest template hover - V3" name="hover - match" time="0.001"/>
+<testcase classname="Manifest template hover - V3" name="hover - local" time="0.001"/>
+<testcase classname="Manifest template hover - V3" name="hover-undefined" time="0"/>
+<testcase classname="Manifest template hover - V3" name="hover - no value" time="0"/>
+<testcase classname="ProgressHandler" name="terminal" time="0"/>
+<testcase classname="ProgressHandler" name="output" time="0"/>
+<testcase classname="ProgressHandler" name="not started" time="0"/>
+<testcase classname="UI Unit Tests Manually" name="Show Progress 2" time="8.098"/>
+<testcase classname="UI Unit Tests Select Folder" name="has returns default folder" time="0.002"/>
+<testcase classname="UI Unit Tests Select Folder" name="has returns user cancel" time="0.001"/>
+<testcase classname="UI Unit Tests Select File" name="has returns default file" time="0.001"/>
+<testcase classname="UI Unit Tests Select File" name="has returns user cancel" time="0.002"/>
+<testcase classname="UI Unit Tests Select File" name="has returns item in possible files" time="0.001"/>
+<testcase classname="UI Unit Tests Select File" name="has returns invalid input item id" time="0"/>
+<testcase classname="UI Unit Tests Select File" name="selects a file which pass validation" time="0.002"/>
+<testcase classname="UI Unit Tests Select File" name="selects a file with error thrown when validating result" time="0.002"/>
+<testcase classname="UI Unit Tests Open File" name="open the preview of Markdown file" time="0.001"/>
+<testcase classname="UI Unit Tests runCommand" name="runs command successfully" time="0.002"/>
+<testcase classname="UI Unit Tests runCommand" name="runs command timeout" time="0.001"/>
+<testcase classname="UI Unit Tests single select" name="select success with validation" time="0.002"/>
+<testcase classname="UI Unit Tests single select" name="select fail with validation" time="0.001"/>
+<testcase classname="UI Unit Tests single select" name="loads dynamic options in a short time" time="0.002"/>
+<testcase classname="UI Unit Tests single select" name="loads dynamic option in a short time and auto select" time="0"/>
+<testcase classname="UI Unit Tests single select" name="loads dynamic options in a short time and shows" time="0.001"/>
+<testcase classname="UI Unit Tests single select" name="loads dynamic option in a long time and shows" time="0.502"/>
+<testcase classname="UI Unit Tests Select local file or input" name="selects local file successfully" time="0.001"/>
+<testcase classname="UI Unit Tests Select local file or input" name="selects local file error" time="0"/>
+<testcase classname="UI Unit Tests Select local file or input" name="inputs a value sucessfully" time="0"/>
+<testcase classname="UI Unit Tests Select local file or input" name="inputs a value error" time="0.001"/>
+<testcase classname="UI Unit Tests Select local file or input" name="inputs a value back and then sucessfully" time="0"/>
+<testcase classname="telemetry" name="sendTelemetryEvent" time="0"/>
+<testcase classname="telemetry" name="sendTelemetryErrorEvent" time="0.001"/>
+<testcase classname="telemetry" name="sendTelemetryException" time="0"/>
+<testcase classname="AccountTreeViewProvider" name="subscribeToStatusChanges" time="0.003"/>
+<testcase classname="AccountTreeViewProvider" name="getChildren" time="0.001"/>
+<testcase classname="AzureNode" name="setSignedIn" time="0.001"/>
+<testcase classname="AzureNode" name="setSigningIn" time="0"/>
+<testcase classname="AzureNode" name="setSignedOut" time="0"/>
+<testcase classname="AzureNode" name="getChildren" time="0"/>
+<testcase classname="sideloadingNode" name="getTreeItem with empty string" time="0"/>
+<testcase classname="sideloadingNode" name="getTreeItem with check false" time="0"/>
+<testcase classname="sideloadingNode" name="getTreeItem with check true" time="0.001"/>
+<testcase classname="sideloadingNode" name="getTreeItem with check error" time="0"/>
+<testcase classname="sideloadingNode" name="getTreeItem with token error" time="0"/>
+<testcase classname="sideloadingNode" name="getTreeItem with empty token" time="0.001"/>
+<testcase classname="sideloadingNode" name="getChildren" time="0"/>
+<testcase classname="m365Node" name="setSignedIn" time="0"/>
+<testcase classname="m365Node" name="setSigningIn" time="0"/>
+<testcase classname="m365Node" name="setSignedOut" time="0"/>
+<testcase classname="m365Node" name="setSwitching" time="0"/>
+<testcase classname="m365Node" name="getChildren" time="0"/>
+<testcase classname="m365Node" name="updateChecks" time="0.001"/>
+<testcase classname="sideloadingNode" name="getTreeItem with empty string" time="0"/>
+<testcase classname="sideloadingNode" name="getTreeItem with invalid token" time="0"/>
+<testcase classname="sideloadingNode" name="getTreeItem with valid token" time="0"/>
+<testcase classname="sideloadingNode" name="getChildren" time="0"/>
+<testcase classname="CommandsTreeViewProvider" name="getCommands" time="0.001"/>
+<testcase classname="CommandsTreeViewProvider" name="getTreeItem" time="0"/>
+<testcase classname="CommandsTreeViewProvider" name="getChildren" time="0.001"/>
+<testcase classname="EnvironmentNode" name="getTreeItem for local" time="0.001"/>
+<testcase classname="EnvironmentNode" name="getTreeItem for local" time="0"/>
+<testcase classname="EnvironmentNode" name="getChildren returns warning for SPFx project" time="0.002"/>
+<testcase classname="EnvironmentNode" name="getChildren returns subscription" time="0.001"/>
+<testcase classname="EnvironmentTreeViewProvider" name="reloadEnvironments" time="0.001"/>
+<testcase classname="EnvironmentTreeViewProvider" name="getChildren" time="0.001"/>
+<testcase classname="TreeViewCommand" name="setStatus" time="0"/>
+<testcase classname="TreeViewManager" name="registerTreeViews" time="0"/>
+<testcase classname="TreeViewManager" name="registerTreeViews" time="0"/>
+<testcase classname="TreeViewManager" name="setRunningCommand" time="0.001"/>
+<testcase classname="TreeViewManager" name="updateTreeViewsOnSPFxChanged" time="0.001"/>
+<testcase classname="uri handler" name="invalid uri missing query" time="0.001"/>
+<testcase classname="uri handler" name="invalid uri missing referer" time="0.001"/>
+<testcase classname="uri handler" name="invalid uri missing app id" time="0"/>
+<testcase classname="uri handler" name="valid uri" time="0.001"/>
+<testcase classname="uri handler" name="error hanlding uri" time="0"/>
+<testcase classname="uri handler" name="valid code spaces callback uri" time="0"/>
+<testcase classname="localizeUtils loadLocalizedStrings" name="should log error if no default string collection" time="0"/>
+<testcase classname="localizeUtils loadLocalizedStrings" name="should log error if no string file found for current locale" time="0.001"/>
+<testcase classname="localizeUtils parseLocale" name="should return current locale" time="0"/>
+<testcase classname="checkProjectTypeAndSendTelemetry" name="happy" time="0.002"/>
+<testcase classname="checkProjectTypeAndSendTelemetry" name="error" time="0.001"/>
+<testcase classname="checkProjectTypeAndSendTelemetry" name="workspaceUri is undefined" time="0"/>
+<testcase classname="stable version shows changelog" name="show changelog notification happy path" time="0.002"/>
+<testcase classname="stable version shows changelog" name="should not show changelog if button is not clicked" time="0.001"/>
+<testcase classname="stable version shows changelog" name="should not show changelog when version is not changed" time="0.001"/>
+<testcase classname="prerelease version shows prerelease note" name="success" time="0"/>
+<testcase classname="prerelease version shows prerelease note" name="returns prerelease version undefined" time="0"/>
+<testcase classname="prerelease version shows prerelease note" name="has same version" time="0"/>
+<testcase classname="prerelease version shows prerelease note" name="has undefined version" time="0.001"/>
+<testcase classname="versionUtil Compare Version" name="same version" time="0"/>
+<testcase classname="versionUtil Compare Version" name="Compare Pre Version" time="0"/>
+<testcase classname="versionUtil Compare Version" name="Compare Empty Version" time="0"/>
+<testcase classname="versionUtil Compare Version" name="Prerelease version" time="0.001"/>
+<testcase classname="[debug &#x3E; commonUtils] getV3TeamsAppId" name="returns teamsAppId successfully" time="0.001"/>
+<testcase classname="devTunnelStateManager" name="happy path" time="0.032"/>
+<testcase classname="devTunnelStateManager" name="concurrency" time="0.047"/>
+<testcase classname="devTunnelStateManager" name="delete a non-existent item" time="0.001"/>
+<testcase classname="devTunnelTaskTerminal do" name="happy path" time="0.03"/>
+<testcase classname="devTunnelTaskTerminal do" name="delete existing tunnel" time="0.03"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="undefined args" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property type - undefined" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property type - error string" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property type - number" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports - undefined" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports - not array" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports - empty" time="0.001"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.portNumber - undefined" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.portNumber - string" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.portNumber - string" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.protocol - undefined" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.protocol - error string" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.access - error string" time="0.001"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.writeToEnvironmentFile - error type" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.writeToEnvironmentFile.endpoint - error type" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.writeToEnvironmentFile.domain - error type" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property ports.writeToEnvironmentFile - empty" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property env - error type" time="0.001"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="property env - error expiration" time="0"/>
+<testcase classname="devTunnelTaskTerminal resolveArgs" name="happy path" time="0"/>
+<testcase classname="devTunnelTaskTerminal saveTunnelToEnv" name="empty tunnel" time="0"/>
+<testcase classname="devTunnelTaskTerminal saveTunnelToEnv" name="empty env" time="0.001"/>
+<testcase classname="devTunnelTaskTerminal saveTunnelToEnv" name="error uri" time="0.001"/>
+<testcase classname="devTunnelTaskTerminal saveTunnelToEnv" name="one port" time="0"/>
+<testcase classname="devTunnelTaskTerminal saveTunnelToEnv" name="multiple ports" time="0"/>
+<testcase classname="LocalTelemetryReporter maskValue()" name="mask undefined value without known values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskValue()" name="mask unknown value without known values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskValue()" name="mask undefined value with string known values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskValue()" name="mask unknown value with string known values" time="0.001"/>
+<testcase classname="LocalTelemetryReporter maskValue()" name="mask known value with string known values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskValue()" name="mask undefined value with mask value" time="0"/>
+<testcase classname="LocalTelemetryReporter maskValue()" name="mask unknown value with mask values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskValue()" name="mask known value with mask values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskArrayValue()" name="mask undefined value without known values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskArrayValue()" name="mask empty array value without known values" time="0.001"/>
+<testcase classname="LocalTelemetryReporter maskArrayValue()" name="mask unknown array value without known values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskArrayValue()" name="mask values with string known values" time="0"/>
+<testcase classname="LocalTelemetryReporter maskArrayValue()" name="mask values with mask value" time="0"/>
+<testcase classname="LocalTelemetryReporter getTaskInfo()" name="Failed to get task.json" time="0.001"/>
+<testcase classname="LocalTelemetryReporter getTaskInfo()" name="Failed to get renamed label" time="0.009"/>
+<testcase classname="LocalTelemetryReporter getTaskInfo()" name="task.json of old tab project" time="0.007"/>
+<testcase classname="LocalTelemetryReporter getTaskInfo()" name="task.json of a tab + bot + func project" time="0.008"/>
+<testcase classname="LocalTelemetryReporter getTaskInfo()" name="task.json of a m365 project" time="0.006"/>
+<testcase classname="LocalTelemetryReporter getTaskInfo()" name="task.json of user customized project" time="0.007"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="empty" time="0.001"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Only one message" time="0"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Two message asc" time="0"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Two message desc" time="0.001"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Three message asc" time="0"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Three message desc" time="0.001"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Three message random order" time="0.001"/>
+<testcase classname="[debug &#x3E; ProgressHelper] ParallelProgressHelper" name="Not finished" time="0"/>
+<testcase classname="[debug &#x3E; teamsfxTaskProvider] resolveTask" name="no task" time="0"/>
+<testcase classname="Migrate" name="JS Migrate app\replace-appInitialization-notifyAppLoaded" time="0.039"/>
+<testcase classname="Migrate" name="JS Migrate app\replace-appInitialization-notifyExpectedFailure" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate app\replace-appInitialization-notifyFailure" time="0.013"/>
+<testcase classname="Migrate" name="JS Migrate app\replace-appInitialization-notifySuccess" time="0.014"/>
+<testcase classname="Migrate" name="JS Migrate app\replace-executeDeepLink" time="0.014"/>
+<testcase classname="Migrate" name="JS Migrate app\replace-getContext" time="0.021"/>
+<testcase classname="Migrate" name="JS Migrate app\replace-initialize" time="0.01"/>
+<testcase classname="Migrate" name="JS Migrate app\replace-registerOnThemeChangeHandler" time="0.01"/>
+<testcase classname="Migrate" name="JS Migrate authentication\replace-authentication-authenticate" time="0.013"/>
+<testcase classname="Migrate" name="JS Migrate authentication\replace-authentication-getAuthToken" time="0.014"/>
+<testcase classname="Migrate" name="JS Migrate authentication\replace-authentication-getUser" time="0.014"/>
+<testcase classname="Migrate" name="JS Migrate authentication\replace-authentication-initialize" time="0.012"/>
+<testcase classname="Migrate" name="JS Migrate authentication\replace-authentication-notifyFailure" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate authentication\replace-authentication-notifySuccess" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate dialog\replace-tasks-startTask" time="0.015"/>
+<testcase classname="Migrate" name="JS Migrate dialog\replace-tasks-submitTask" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate dialog\replace-tasks-updateTask" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate location\replace-location-getLocation" time="0.013"/>
+<testcase classname="Migrate" name="JS Migrate location\replace-location-showLocation" time="0.014"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-default-import" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-dynamic-import-module" time="0.016"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-getContext-commentLine" time="0.02"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-import-function-directly" time="0.017"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-import-module" time="0.008"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-import-with-comment" time="0.016"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-multiple-namespaces" time="0.01"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-require-module" time="0.016"/>
+<testcase classname="Migrate" name="JS Migrate others\replace-without-entire-import" time="0.012"/>
+<testcase classname="Migrate" name="JS Migrate pages\replace-shareDeepLink" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate pages.appButton\replace-registerAppButtonClickHandler" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate pages.config\replace-settings-getSettings" time="0.014"/>
+<testcase classname="Migrate" name="JS Migrate pages.config\replace-settings-initialize" time="0.013"/>
+<testcase classname="Migrate" name="JS Migrate pages.config\replace-settings-registerOnRemoveHandler" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate pages.config\replace-settings-registerOnSaveHandler" time="0.01"/>
+<testcase classname="Migrate" name="JS Migrate pages.config\replace-settings-setSettings" time="0.014"/>
+<testcase classname="Migrate" name="JS Migrate pages.config\replace-settings-setValidityState" time="0.012"/>
+<testcase classname="Migrate" name="JS Migrate teamsCore\replace-enablePrintCapability" time="0.01"/>
+<testcase classname="Migrate" name="JS Migrate teamsCore\replace-registerOnLoadHandler" time="0.01"/>
+<testcase classname="Migrate" name="JS Migrate unchanged\replace-authentication-getUser" time="0.011"/>
+<testcase classname="Migrate" name="JS Migrate unchanged\replace-uninitializeCommunication" time="0.011"/>
+<testcase classname="Migrate" name="TS Migrate app\replace-appInitialization-notifyAppLoaded" time="0.038"/>
+<testcase classname="Migrate" name="TS Migrate app\replace-appInitialization-notifyExpectedFailure" time="0.012"/>
+<testcase classname="Migrate" name="TS Migrate app\replace-appInitialization-notifyFailure" time="0.01"/>
+<testcase classname="Migrate" name="TS Migrate app\replace-appInitialization-notifySuccess" time="0.01"/>
+<testcase classname="Migrate" name="TS Migrate app\replace-executeDeepLink" time="0.004"/>
+<testcase classname="Migrate" name="TS Migrate app\replace-getContext" time="0.003"/>
+<testcase classname="Migrate" name="TS Migrate app\replace-initialize" time="0.007"/>
+<testcase classname="Migrate" name="TS Migrate app\replace-registerOnThemeChangeHandler" time="0.007"/>
+<testcase classname="Migrate" name="TS Migrate authentication\replace-authentication-authenticate" time="0.015"/>
+<testcase classname="Migrate" name="TS Migrate authentication\replace-authentication-getAuthToken" time="0.014"/>
+<testcase classname="Migrate" name="TS Migrate authentication\replace-authentication-getUser" time="0.004"/>
+<testcase classname="Migrate" name="TS Migrate authentication\replace-authentication-initialize" time="0.013"/>
+<testcase classname="Migrate" name="TS Migrate authentication\replace-authentication-notifyFailure" time="0.013"/>
+<testcase classname="Migrate" name="TS Migrate authentication\replace-authentication-notifySuccess" time="0.015"/>
+<testcase classname="Migrate" name="TS Migrate dialog\replace-tasks-startTask" time="0.016"/>
+<testcase classname="Migrate" name="TS Migrate dialog\replace-tasks-submitTask" time="0.012"/>
+<testcase classname="Migrate" name="TS Migrate dialog\replace-tasks-updateTask" time="0.009"/>
+<testcase classname="Migrate" name="TS Migrate enum\replace-application-entire-manual-parameter" time="0.011"/>
+<testcase classname="Migrate" name="TS Migrate enum\replace-application-entire-manual-parameter2" time="0.01"/>
+<testcase classname="Migrate" name="TS Migrate enum\replace-application-entire" time="0.009"/>
+<testcase classname="Migrate" name="TS Migrate enum\replace-application-qualifier-entire" time="0.017"/>
+<testcase classname="Migrate" name="TS Migrate enum\replace-application-qualifier" time="0.013"/>
+<testcase classname="Migrate" name="TS Migrate enum\replace-application" time="0.009"/>
+<testcase classname="Migrate" name="TS Migrate enum\replace-taskModuleDimension" time="0.012"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-entire-module\ts-expression-with-type-arguements\replace-context" time="0.014"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-entire-module\ts-expression-with-type-arguements\replace-settings-saveEvent" time="0.011"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-entire-module\ts-expression-with-type-arguements\replace-taskInfo" time="0.011"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-entire-module\ts-type-reference\replace-settings-saveEvent" time="0.016"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-entire-module\ts-type-reference\replace-settings-settings" time="0.019"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-entire-module\ts-type-reference\replace-taskInfo" time="0.016"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-entire-module\unchanged\replace-context" time="0.009"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-single-export\ts-expression-with-type-arguements\replace-context" time="0.022"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-single-export\ts-expression-with-type-arguements\replace-settings-saveEvent" time="0.012"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-single-export\ts-expression-with-type-arguements\replace-taskInfo" time="0.009"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-single-export\ts-type-reference\replace-settings-saveEvent" time="0.016"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-single-export\ts-type-reference\replace-settings-settings" time="0.019"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-single-export\ts-type-reference\replace-taskInfo" time="0.017"/>
+<testcase classname="Migrate" name="TS Migrate interface\import-single-export\unchanged\replace-context" time="0.017"/>
+<testcase classname="Migrate" name="TS Migrate location\replace-location-getLocation" time="0.012"/>
+<testcase classname="Migrate" name="TS Migrate location\replace-location-showLocation" time="0.004"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-default-import" time="0.004"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-dynamic-import-module" time="0.015"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-getContext-commentLine" time="0.004"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-import-equals" time="0.013"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-import-function-directly" time="0.003"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-import-module" time="0.003"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-import-with-comment" time="0.002"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-multiple-namespaces" time="0.006"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-require-module" time="0.009"/>
+<testcase classname="Migrate" name="TS Migrate others\replace-without-entire-import" time="0.015"/>
+<testcase classname="Migrate" name="TS Migrate pages\replace-shareDeepLink" time="0.003"/>
+<testcase classname="Migrate" name="TS Migrate pages.appButton\replace-registerAppButtonClickHandler" time="0.003"/>
+<testcase classname="Migrate" name="TS Migrate pages.config\replace-settings-getSettings" time="0.013"/>
+<testcase classname="Migrate" name="TS Migrate pages.config\replace-settings-initialize" time="0.014"/>
+<testcase classname="Migrate" name="TS Migrate pages.config\replace-settings-registerOnRemoveHandler" time="0.011"/>
+<testcase classname="Migrate" name="TS Migrate pages.config\replace-settings-registerOnSaveHandler" time="0.012"/>
+<testcase classname="Migrate" name="TS Migrate pages.config\replace-settings-setSettings" time="0.017"/>
+<testcase classname="Migrate" name="TS Migrate pages.config\replace-settings-setValidityState" time="0.012"/>
+<testcase classname="Migrate" name="TS Migrate teamsCore\replace-enablePrintCapability" time="0.003"/>
+<testcase classname="Migrate" name="TS Migrate teamsCore\replace-registerOnLoadHandler" time="0.003"/>
+<testcase classname="Migrate" name="TS Migrate unchanged\replace-authentication-getUser" time="0.003"/>
+<testcase classname="Migrate" name="TS Migrate unchanged\replace-uninitializeCommunication" time="0.005"/>
+<testcase classname="TeamsAppMigrationHandler updateCodes" name="happy path" time="0.003"/>
+<testcase classname="TeamsAppMigrationHandler updateCodes" name="some failures" time="0.001"/>
+<testcase classname="TeamsAppMigrationHandler updatePackageJson" name="happy path" time="0"/>
+<testcase classname="TeamsAppMigrationHandler updatePackageJson" name="no package.json" time="0.001"/>
+<testcase classname="TeamsAppMigrationHandler updateManifest" name="happy path" time="0"/>
+<testcase classname="TeamsAppMigrationHandler updateManifest" name="exception" time="0.001"/>
+</testsuite>

@@ -11,30 +11,30 @@ describe("configMgr", () => {
     afterEach(async () => {
       sanbox.restore();
     });
-    it("debug", () => {
+    it("Debug", () => {
       sanbox.stub(vscode.workspace, "getConfiguration").returns({
         get: () => {
-          return "debug";
+          return "Debug";
         },
       } as any);
       configMgr.loadLogLevel();
       chai.assert.equal(VsCodeLogInstance.logLevel, LogLevel.Debug);
     });
 
-    it("verbose", () => {
+    it("Verbose", () => {
       sanbox.stub(vscode.workspace, "getConfiguration").returns({
         get: () => {
-          return "verbose";
+          return "Verbose";
         },
       } as any);
       configMgr.loadLogLevel();
       chai.assert.equal(VsCodeLogInstance.logLevel, LogLevel.Verbose);
     });
 
-    it("info", () => {
+    it("Info", () => {
       sanbox.stub(vscode.workspace, "getConfiguration").returns({
         get: () => {
-          return "info";
+          return "Info";
         },
       } as any);
       configMgr.loadLogLevel();

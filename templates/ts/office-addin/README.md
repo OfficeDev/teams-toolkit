@@ -17,7 +17,7 @@ Now you have the ability to create a single unit of distribution for all your Mi
 ## Edit the manifest
 
 You can find the app manifest in `./appPackage` folder. The folder contains one manifest file:
-* `manifest.json`: Manifest file for Outlook add-in running locally or running remotely (After deployed to Azure).
+* `manifest.json`: Manifest file for Office add-in running locally or running remotely (After deployed to Azure).
 You may add any extra properties or permissions you require to this file. See the [schema reference](https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/op/extensions/MicrosoftTeams.schema.json) for more information.
 
 ## Deploy to Azure
@@ -44,4 +44,4 @@ To check that your manifest file is valid:
 - From TeamsFx CLI: run command `teamsfx validate` in your project directory.
 
 ## Known Issues
-- Publish is not supported for an Outlook add-in project now.
+- Publish is not supported for an Office add-in project now.

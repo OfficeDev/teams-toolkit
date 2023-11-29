@@ -75,4 +75,15 @@ describe("configMgr", () => {
       chai.assert.isTrue(stub.called);
     });
   });
+
+  describe("registerConfigChangeCallback", () => {
+    afterEach(() => {
+      sanbox.restore();
+    });
+    it("happy", () => {
+      const stub = sanbox.stub(configMgr, "loadConfigs").returns();
+      configMgr.registerConfigChangeCallback();
+      chai.assert.isTrue(stub.called);
+    });
+  });
 });

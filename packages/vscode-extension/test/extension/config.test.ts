@@ -1,31 +1,12 @@
-import * as sinon from "sinon";
+import { LogLevel } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
+import * as sinon from "sinon";
 import * as vscode from "vscode";
 import VsCodeLogInstance from "../../src/commonlib/log";
-import { LogLevel } from "@microsoft/teamsfx-api";
-import * as config from "../../src/configuration";
-import { ConfigurationKey } from "../../src/constants";
+import { configMgr } from "../../src/config";
 
-describe("Configuration", () => {
+describe("configMgr", () => {
   const sanbox = sinon.createSandbox();
-  describe("loadConfigurations", () => {
-    afterEach(async () => {
-      sanbox.restore();
-    });
-    it("happy", () => {
-      const stub = sanbox.stub(vscode.workspace, "getConfiguration").returns({
-        get: (key: string) => {
-          if (key === ConfigurationKey.BicepEnvCheckerEnable) return true;
-          if (key === ConfigurationKey.CopilotPluginEnable) return true;
-          if (key === ConfigurationKey.LogLevel) return "debug";
-          return "debug";
-        },
-      } as any);
-      config.loadConfigurations();
-      chai.assert.isTrue(stub.called);
-    });
-  });
-
   describe("loadLogLevel", () => {
     afterEach(async () => {
       sanbox.restore();
@@ -36,7 +17,7 @@ describe("Configuration", () => {
           return "debug";
         },
       } as any);
-      config.loadLogLevel();
+      configMgr.loadLogLevel();
       chai.assert.equal(VsCodeLogInstance.logLevel, LogLevel.Debug);
     });
 
@@ -46,7 +27,7 @@ describe("Configuration", () => {
           return "verbose";
         },
       } as any);
-      config.loadLogLevel();
+      configMgr.loadLogLevel();
       chai.assert.equal(VsCodeLogInstance.logLevel, LogLevel.Verbose);
     });
 
@@ -56,25 +37,41 @@ describe("Configuration", () => {
           return "info";
         },
       } as any);
-      config.loadLogLevel();
+      configMgr.loadLogLevel();
       chai.assert.equal(VsCodeLogInstance.logLevel, LogLevel.Info);
     });
   });
 
   describe("changeConfigCallback", () => {
-    afterEach(async () => {
+    afterEach(() => {
       sanbox.restore();
     });
     it("happy", () => {
-      const stub = sanbox.stub(vscode.workspace, "getConfiguration").returns({
-        get: (key: string) => {
-          if (key === ConfigurationKey.BicepEnvCheckerEnable) return true;
-          if (key === ConfigurationKey.CopilotPluginEnable) return true;
-          if (key === ConfigurationKey.LogLevel) return "debug";
-          return "debug";
-        },
-      } as any);
-      config.changeConfigCallback({ affectsConfiguration: () => true });
+      const stub = sanbox.stub(configMgr, "loadConfigs").returns();
+      configMgr.changeConfigCallback({ affectsConfiguration: () => true });
+      chai.assert.isTrue(stub.called);
+    });
+  });
+  describe("loadConfigs", () => {
+    afterEach(() => {
+      sanbox.restore();
+    });
+    it("happy", () => {
+      const stub = sanbox.stub(configMgr, "loadLogLevel").returns();
+      const stub2 = sanbox.stub(configMgr, "loadFeatureFlags").returns();
+      configMgr.loadConfigs();
+      chai.assert.isTrue(stub.called);
+      chai.assert.isTrue(stub2.called);
+    });
+  });
+
+  describe("loadFeatureFlags", () => {
+    afterEach(() => {
+      sanbox.restore();
+    });
+    it("happy", () => {
+      const stub = sanbox.stub(configMgr, "getConfiguration").returns(false);
+      configMgr.loadFeatureFlags();
       chai.assert.isTrue(stub.called);
     });
   });

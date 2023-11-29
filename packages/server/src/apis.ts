@@ -180,8 +180,7 @@ export interface IServerConnection {
     token: CancellationToken
   ) => Promise<Result<ApiOperation[], FxError>>;
   checkAndInstallTestTool: (
-    inputs: Inputs,
-    options: TestToolInstallOptions,
+    options: TestToolInstallOptions & { correlationId: string },
     token: CancellationToken
   ) => Promise<Result<DependencyStatus, FxError>>;
 }

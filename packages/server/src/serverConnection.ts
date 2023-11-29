@@ -463,11 +463,10 @@ export default class ServerConnection implements IServerConnection {
   }
 
   public async checkAndInstallTestTool(
-    inputs: Inputs,
-    options: TestToolInstallOptions,
+    options: TestToolInstallOptions & { correlationId: string },
     token: CancellationToken
   ): Promise<Result<DependencyStatus, FxError>> {
-    const corrId = inputs.correlationId || "";
+    const corrId = options.correlationId || "";
 
     const depsManager = new DepsManager(
       new CoreDepsLoggerAdapter(this.tools.logProvider),

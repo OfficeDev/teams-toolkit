@@ -37,7 +37,7 @@ jobs:
         run: |
           emails="yiqingzhao@microsoft.com"
           subject="Templates Dependencies Daily Check ${{ steps.getDate.outputs.date }}"
-          body=${{steps.getUpdatedTemplatesDependencies.outputs.result}}
+          body="<span>${{steps.getUpdatedTemplatesDependencies.outputs.result}}</span>"
 
           echo "to=$emails" >> $GITHUB_OUTPUT
           echo "subject=$subject" >> $GITHUB_OUTPUT
@@ -47,7 +47,7 @@ jobs:
         uses: ./.github/actions/send-email-report
         env:
           TO: ${{ steps.email.outputs.to }}
-          BODY: '""${{ steps.email.outputs.body }}\""'
+          BODY: '"${{ steps.email.outputs.body }}"'
           SUBJECT: ${{ steps.email.outputs.subject }}
           MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
           MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}

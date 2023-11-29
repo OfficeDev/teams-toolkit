@@ -6,23 +6,16 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { format } from "util";
-import * as vscode from "vscode";
 
-import { ConfigFolderName, LogLevel, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import {
-  PluginNames,
-  initializePreviewFeatureFlags,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import { PluginNames, isValidProject } from "@microsoft/teamsfx-core";
+import { glob } from "glob";
 import * as extensionPackage from "../../package.json";
-import { CONFIGURATION_PREFIX, ConfigurationKey } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
 import { getV3TeamsAppId } from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
 import { core } from "../handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-import { glob } from "glob";
-import VsCodeLogInstance from "../commonlib/log";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -200,41 +193,6 @@ export function anonymizeFilePaths(stack?: string): string {
   return updatedStack;
 }
 
-export function getConfiguration(key: string): boolean | string {
-  const configuration: vscode.WorkspaceConfiguration =
-    vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
-
-  return configuration.get<boolean | string>(key, false);
-}
-
-export function syncFeatureFlags() {
-  process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.BicepEnvCheckerEnable
-  ).toString();
-
-  process.env["DEVELOP_COPILOT_PLUGIN"] = getConfiguration(
-    ConfigurationKey.CopilotPluginEnable
-  ).toString();
-
-  initializePreviewFeatureFlags();
-
-  setLogLevelFromConfig();
-
-  vscode.workspace.onDidChangeConfiguration?.((event: vscode.ConfigurationChangeEvent) => {
-    if (event.affectsConfiguration(CONFIGURATION_PREFIX)) {
-      setLogLevelFromConfig();
-    }
-  });
-}
-
-export function setLogLevelFromConfig() {
-  const logLevel = getConfiguration(ConfigurationKey.LogLevel) as string;
-  if (logLevel === "debug") {
-    VsCodeLogInstance.logLevel = LogLevel.Debug;
-  } else if (logLevel === "verbose") {
-    VsCodeLogInstance.logLevel = LogLevel.Verbose;
-  }
-}
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";

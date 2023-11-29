@@ -13,7 +13,13 @@ import {
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
+import {
+  AuthSvcScopes,
+  Correlator,
+  VersionState,
+  initializePreviewFeatureFlags,
+  setRegion,
+} from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -28,6 +34,7 @@ import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
+import { registerConfigChangeCallback } from "./configuration";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
@@ -53,12 +60,7 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
-import {
-  delay,
-  hasAdaptiveCardInWorkspace,
-  isM365Project,
-  syncFeatureFlags,
-} from "./utils/commonUtils";
+import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
@@ -67,8 +69,9 @@ import { ExtensionSurvey } from "./utils/survey";
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
-  // load the feature flags.
-  syncFeatureFlags();
+  initializePreviewFeatureFlags();
+
+  registerConfigChangeCallback();
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 

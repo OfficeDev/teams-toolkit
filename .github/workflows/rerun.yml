@@ -35,6 +35,9 @@ jobs:
           status=`jq -r '.conclusion' <<< "$run"`
           runningStatus=`jq -r '.status' <<< "$run"`
           run_attempt=`jq -r '.run_attempt' <<< "$run"`
+          echo "status: $status"
+          echo "runningStatus: $runningStatus"
+          echo "run_attempt: $run_attempt"
 
           if [[ "$status" == "failure" && "$run_attempt" -lt ${{ github.event.inputs.max_attempts }} ]]; then
             echo "[start] rerun failed jobs ${{ github.event.inputs.run_id }} $status $run_attempt..."
@@ -48,7 +51,7 @@ jobs:
           fi
 
           sleep 60
-          if [[ ("$runningStatus" != "queued" || "$runningStatus" != "in_progress") && "$run_attempt" -lt ${{ github.event.inputs.max_attempts }} ]]; then
+          if [[ "$runningStatus" != "queued" && "$runningStatus" != "in_progress" && "$run_attempt" -lt ${{ github.event.inputs.max_attempts }} ]]; then
             echo "[start] rerun check..."
             curl \
               -X POST \

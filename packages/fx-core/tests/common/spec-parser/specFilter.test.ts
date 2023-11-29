@@ -148,7 +148,7 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true, false, false);
+    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -189,7 +189,7 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true, false, false);
+    const actualSpec = specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -237,6 +237,7 @@ describe("specFilter", () => {
       filter,
       unResolvedSpec as any,
       unResolvedSpec as any,
+      false,
       false,
       false,
       false
@@ -321,6 +322,7 @@ describe("specFilter", () => {
       unResolvedSpec as any,
       true,
       false,
+      false,
       false
     );
 
@@ -330,7 +332,7 @@ describe("specFilter", () => {
   it("should not filter anything if filter item not exist", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    specFilter(filter, unResolveSpec, unResolveSpec, true, false, false);
+    specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -362,6 +364,7 @@ describe("specFilter", () => {
       unResolvedSpec as any,
       true,
       false,
+      false,
       false
     );
 
@@ -371,7 +374,7 @@ describe("specFilter", () => {
   it("should not modify the original OpenAPI spec", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    specFilter(filter, unResolveSpec, unResolveSpec, true, false, false);
+    specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -383,7 +386,7 @@ describe("specFilter", () => {
       .throws(new Error("isSupportedApi error"));
 
     try {
-      specFilter(filter, unResolveSpec, unResolveSpec, true, false, false);
+      specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
       expect.fail("Expected specFilter to throw a SpecParserError");
     } catch (err) {
       expect(err).to.be.instanceOf(SpecParserError);

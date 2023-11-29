@@ -20,9 +20,7 @@ export class HelperMethods {
     projectRepo: string,
     projectBranch?: string
   ): Promise<void> {
-    const projectTemplateZipFile = path.resolve(
-      `${projectRepo}/archive/${projectBranch || ""}.zip`
-    );
+    const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
     const response = await fetch(projectTemplateZipFile, { method: "GET" });
     return new Promise<void>((resolve, reject) => {
       if (response.body) {

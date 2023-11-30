@@ -91,126 +91,124 @@ async function getTemplatesDependencies() {
   return dependenciesMap;
 }
 
-function generateAdaptiveCardTable(arr) {
-  if (arr.length === 0) return {};
-  let table = {
-    type: "Table",
-    firstRowAsHeaders: true,
-    columns: [
-      {
-        width: 2,
-      },
-      {
-        width: 1,
-      },
-      {
-        width: 3,
-      },
-      {
-        width: 2,
-      },
-    ],
-    rows: [
-      {
-        type: "TableRow",
-        cells: [
-          {
-            type: "TableCell",
-            items: [
-              {
-                type: "TextBlock",
-                text: "Name",
-                wrap: true,
-                weight: "Bolder",
-              },
-            ],
-          },
-          {
-            type: "TableCell",
-            items: [
-              {
-                type: "TextBlock",
-                text: "Version",
-                wrap: true,
-                weight: "Bolder",
-              },
-            ],
-          },
-          {
-            type: "TableCell",
-            items: [
-              {
-                type: "TextBlock",
-                text: "Templates",
-                wrap: true,
-                weight: "Bolder",
-              },
-            ],
-          },
-          {
-            type: "TableCell",
-            items: [
-              {
-                type: "TextBlock",
-                text: "Owners",
-                wrap: true,
-                weight: "Bolder",
-              },
-            ],
-          },
-        ],
-        style: "accent",
-      },
-    ],
-  };
-  for (const entry of arr) {
-    table.rows.push({
-      type: "TableRow",
-      cells: [
+function generateAdaptiveCardColumnSets(arr) {
+  if (arr.length === 0) {
+    return [];
+  }
+  let columnSets = [
+    {
+      type: "ColumnSet",
+      columns: [
         {
-          type: "TableCell",
+          type: "Column",
+          width: 25,
           items: [
             {
               type: "TextBlock",
-              text: `[${entry.name}](https://www.npmjs.com/package/${entry.name})`,
+              text: "Name",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+        {
+          type: "Column",
+          width: 15,
+          items: [
+            {
+              type: "TextBlock",
+              text: "Version",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+        {
+          type: "Column",
+          width: 40,
+          items: [
+            {
+              type: "TextBlock",
+              text: "Templates",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+        {
+          type: "Column",
+          width: 20,
+          items: [
+            {
+              type: "TextBlock",
+              text: "Owners",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+      ],
+      separator: true,
+    },
+  ];
+  for (items of arr) {
+    columnSets.push({
+      type: "ColumnSet",
+      columns: [
+        {
+          type: "Column",
+          width: 25,
+          items: [
+            {
+              type: "TextBlock",
+              text: `[${items.name}](https://www.npmjs.com/package/${items.name})`,
               wrap: true,
             },
           ],
         },
         {
-          type: "TableCell",
+          type: "Column",
+          width: 15,
           items: [
             {
               type: "TextBlock",
-              text: entry.version,
+              text: items.version,
               wrap: true,
             },
           ],
         },
         {
-          type: "TableCell",
+          type: "Column",
+          width: 40,
           items: [
             {
               type: "TextBlock",
-              text: entry.dependencies.join("\n\r"),
+              text: items.dependencies.join("\n\r"),
               wrap: true,
             },
           ],
         },
         {
-          type: "TableCell",
+          type: "Column",
+          width: 20,
           items: [
             {
               type: "TextBlock",
-              text: entry.owners.join("\n\r"),
+              text: items.owners.join("\n\r"),
               wrap: true,
             },
           ],
         },
       ],
+      separator: true,
     });
   }
-  return table;
+
+  return columnSets;
 }
 
 async function main() {
@@ -233,7 +231,7 @@ async function main() {
         }
       });
   }
-  const table = generateAdaptiveCardTable(arr);
+  const table = generateAdaptiveCardColumnSets(arr);
   const tableString = JSON.stringify(table);
   return JSON.stringify(tableString);
 }

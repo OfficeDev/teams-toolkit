@@ -464,4 +464,14 @@ describe("serverConnections", () => {
     );
     assert.isTrue(res.isOk());
   });
+  it("checkAndInstallTestTool error", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox.stub(DepsManager.prototype, "ensureDependency").rejects("MockError");
+    const res = await connection.checkAndInstallTestTool(
+      {} as TestToolInstallOptions & { correlationId: string },
+      {} as CancellationToken
+    );
+    assert.isFalse(res.isOk());
+    assert.match(res._unsafeUnwrapErr().message, /MockError/);
+  });
 });

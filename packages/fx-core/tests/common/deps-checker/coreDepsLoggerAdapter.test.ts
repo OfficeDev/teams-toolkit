@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 import { LogProvider } from "@microsoft/teamsfx-api";
 import { CoreDepsLoggerAdapter } from "../../../src/common/deps-checker/coreDepsLoggerAdapter";
 
-describe("Func Tools Checker Test", () => {
+describe("CoreDepsLoggerAdapter", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(() => {

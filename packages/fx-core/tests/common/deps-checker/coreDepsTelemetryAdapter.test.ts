@@ -13,7 +13,7 @@ import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { CoreDepsTelemetryAdapter } from "../../../src/common/deps-checker/coreDepsTelemetryAdapter";
 import { DepsCheckerEvent } from "../../../src/common/deps-checker/constant";
 
-describe("Func Tools Checker Test", () => {
+describe("CoreDepsTelemetryAdapter", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {

@@ -6,7 +6,12 @@ import { OpenAPIV3 } from "openapi-types";
 import fs from "fs-extra";
 import path from "path";
 import { ErrorType, WarningResult } from "./interfaces";
-import { getSafeRegistrationIdEnvName, parseApiInfo } from "./utils";
+import {
+  getSafeRegistrationIdEnvName,
+  isAPIKeyAuth,
+  isBearerTokenAuth,
+  parseApiInfo,
+} from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
 import {
@@ -21,46 +26,59 @@ export async function updateManifest(
   adaptiveCardFolder: string,
   spec: OpenAPIV3.Document,
   allowMultipleParameters: boolean,
-  apiKeyAuthName?: string
+  auth?: OpenAPIV3.SecuritySchemeObject
 ): Promise<[TeamsAppManifest, WarningResult[]]> {
   try {
     const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
-
+    const updatedPart: any = {};
     const [commands, warnings] = await generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,
       allowMultipleParameters
     );
-    const ComposeExtension: IComposeExtension = {
+    const composeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
       commands: commands,
     };
 
-    if (apiKeyAuthName) {
-      const safeApiSecretRegistrationId = getSafeRegistrationIdEnvName(
-        `${apiKeyAuthName}_${ConstantString.RegistrationIdPostfix}`
-      );
+    if (auth) {
+      if (isAPIKeyAuth(auth)) {
+        auth = auth as OpenAPIV3.ApiKeySecurityScheme;
+        const safeApiSecretRegistrationId = getSafeRegistrationIdEnvName(
+          `${auth.name}_${ConstantString.RegistrationIdPostfix}`
+        );
+        (composeExtension as any).authorization = {
+          authType: "apiSecretServiceAuth",
+          apiSecretServiceAuthConfiguration: {
+            apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
+          },
+        };
+      } else if (isBearerTokenAuth(auth)) {
+        (composeExtension as any).authorization = {
+          authType: "microsoftEntra",
+          microsoftEntraConfiguration: {
+            supportsSingleSignOn: true,
+          },
+        };
 
-      (ComposeExtension as any).authorization = {
-        authType: "apiSecretServiceAuth",
-        apiSecretServiceAuthConfiguration: {
-          apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
-        },
-      };
+        updatedPart.webApplicationInfo = {
+          id: "${{AAD_APP_CLIENT_ID}}",
+          resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
+        };
+      }
     }
 
-    const updatedPart = {
-      description: {
-        short: spec.info.title.slice(0, ConstantString.ShortDescriptionMaxLens),
-        full: (spec.info.description ?? originalManifest.description.full)?.slice(
-          0,
-          ConstantString.FullDescriptionMaxLens
-        ),
-      },
-      composeExtensions: [ComposeExtension],
+    updatedPart.description = {
+      short: spec.info.title.slice(0, ConstantString.ShortDescriptionMaxLens),
+      full: (spec.info.description ?? originalManifest.description.full)?.slice(
+        0,
+        ConstantString.FullDescriptionMaxLens
+      ),
     };
+
+    updatedPart.composeExtensions = [composeExtension];
 
     const updatedManifest = { ...originalManifest, ...updatedPart };
 

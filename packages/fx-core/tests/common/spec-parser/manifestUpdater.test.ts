@@ -461,7 +461,7 @@ describe("manifestUpdater", () => {
     expect(warnings).to.deep.equal([]);
   });
 
-  it("should contain auth property in manifest if pass the api key name", async () => {
+  it("should contain auth property in manifest if pass the api key auth", async () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
     const adaptiveCardFolder = "/path/to/your/adaptiveCards";
@@ -510,14 +510,156 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const apiKeyAuth = {
+      type: "apiKey" as const,
+      name: "api_key_name",
+      in: "header",
+    };
     const [result, warnings] = await updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
       spec,
       false,
-      "api_key_name"
+      apiKeyAuth
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should contain auth property in manifest if pass the sso auth", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          authorization: {
+            authType: "microsoftEntra",
+            microsoftEntraConfiguration: {
+              supportsSingleSignOn: true,
+            },
+          },
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              id: "getPets",
+              parameters: [
+                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Create a pet",
+              description: "Create a new pet in the store",
+              id: "createPet",
+              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+            },
+          ],
+        },
+      ],
+      webApplicationInfo: {
+        id: "${{AAD_APP_CLIENT_ID}}",
+        resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
+      },
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const oauth2 = {
+      type: "oauth2" as const,
+      flows: {
+        implicit: {
+          authorizationUrl: "https://example.com/api/oauth/dialog",
+          scopes: {
+            "write:pets": "modify pets in your account",
+            "read:pets": "read your pets",
+          },
+        },
+      },
+    };
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec,
+      false,
+      oauth2
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should not contain auth property in manifest if pass the unknown auth", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              id: "getPets",
+              parameters: [
+                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Create a pet",
+              description: "Create a new pet in the store",
+              id: "createPet",
+              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const basicAuth = {
+      type: "http" as const,
+      scheme: "basic",
+    };
+    const [result, warnings] = await updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec,
+      false,
+      basicAuth
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -573,14 +715,18 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const apiKeyAuth = {
+      type: "apiKey" as const,
+      name: "*api-key_name",
+      in: "header",
+    };
     const [result, warnings] = await updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
       spec,
       false,
-      "*api-key_name"
+      apiKeyAuth
     );
 
     expect(result).to.deep.equal(expectedManifest);

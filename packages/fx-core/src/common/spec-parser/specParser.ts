@@ -291,7 +291,7 @@ export class SpecParser {
         adaptiveCardFolder,
         newSpec,
         this.options.allowMultipleParameters,
-        auth && auth.type === "apiKey" ? auth?.name : ""
+        auth
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });

@@ -56,12 +56,12 @@ async function getTemplatesDependencies() {
       `${repoRoot}/templates`,
       path.dirname(packageJsonFile)
     );
-    if (
-      path.basename(packageJsonDir) === "tab" ||
-      path.basename(packageJsonDir) === "bot"
-    ) {
-      packageJsonDir = packageJsonDir.slice(0, -4);
-    }
+    // if (
+    //   path.basename(packageJsonDir) === "tab" ||
+    //   path.basename(packageJsonDir) === "bot"
+    // ) {
+    //   packageJsonDir = packageJsonDir.slice(0, -4);
+    // }
     let codeOwners = [];
     for (const [key, value] of codeOwnerMap) {
       if (key.includes(path.basename(packageJsonDir))) {
@@ -71,6 +71,7 @@ async function getTemplatesDependencies() {
     let dependencies = packageJson["dependencies"];
     Object.assign(dependencies, packageJson["devDependencies"]);
     for (dependency in dependencies) {
+      console.log(dependency, dependencies[dependency]);
       if (dependenciesMap.has(dependency)) {
         dependenciesMap.get(dependency).dependencies = [
           ...new Set(

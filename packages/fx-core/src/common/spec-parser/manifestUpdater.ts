@@ -46,17 +46,15 @@ export async function updateManifest(
     if (auth) {
       if (isAPIKeyAuth(auth)) {
         auth = auth as OpenAPIV3.ApiKeySecurityScheme;
-        if (auth.name) {
-          const safeApiSecretRegistrationId = getSafeRegistrationIdEnvName(
-            `${auth.name}_${ConstantString.RegistrationIdPostfix}`
-          );
-          (composeExtension as any).authorization = {
-            authType: "apiSecretServiceAuth",
-            apiSecretServiceAuthConfiguration: {
-              apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
-            },
-          };
-        }
+        const safeApiSecretRegistrationId = getSafeRegistrationIdEnvName(
+          `${auth.name}_${ConstantString.RegistrationIdPostfix}`
+        );
+        (composeExtension as any).authorization = {
+          authType: "apiSecretServiceAuth",
+          apiSecretServiceAuthConfiguration: {
+            apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
+          },
+        };
       } else if (isBearerTokenAuth(auth)) {
         (composeExtension as any).authorization = {
           authType: "microsoftEntra",

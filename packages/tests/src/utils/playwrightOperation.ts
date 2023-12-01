@@ -1797,7 +1797,7 @@ export async function validateContact(
 
         await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
-      page.waitForTimeout(1000);
+      await page.waitForTimeout(10000);
 
       // verify add person
       await addPerson(frame, options?.displayName || "");
@@ -2037,10 +2037,12 @@ export async function addPerson(
   displayName: string
 ): Promise<void> {
   console.log(`add person: ${displayName}`);
-  const input = await frame?.waitForSelector("input#people-picker-input");
+  const input = await frame?.waitForSelector("input#control");
   await input?.click();
   await input?.type(displayName);
-  const item = await frame?.waitForSelector(`span:has-text("${displayName}")`);
+  const item = await frame?.waitForSelector(
+    `ul#suggestions-list div:has-text("${displayName}")`
+  );
   await item?.click();
   await frame?.waitForSelector(
     `div.table-area div.line1:has-text("${displayName}")`
@@ -2053,7 +2055,7 @@ export async function delPerson(
 ): Promise<void> {
   console.log(`delete person: ${displayName}`);
   await frame?.waitForSelector(
-    `li div.details.small div:has-text("${displayName}")`
+    `li.selected-list-item div:has-text("${displayName}")`
   );
 
   const closeBtn = await frame?.waitForSelector('li div[role="button"]');

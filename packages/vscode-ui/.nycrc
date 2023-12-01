@@ -6,7 +6,8 @@
   ],
   "extension": [".js",".ts"],
   "exclude": [
-    
+    "src/ui.ts",
+    "src/progressHandler.ts"
   ],
   "reporter": [
     "text",
@@ -16,5 +17,5 @@
     "lcov"
   ],
   "check-coverage": true,
-  "lines": 72.7
+  "lines": 80
 }

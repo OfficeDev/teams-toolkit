@@ -53,7 +53,7 @@ export class DefaultLocalizer implements Localizer {
     return " (Space key to check/uncheck)";
   }
   loadingOptionsTimeoutMessage(): string {
-    return "loading options timeout";
+    return "Loading options timeout.";
   }
   loadingDefaultPlaceholder(): string {
     return "Loading default value...";

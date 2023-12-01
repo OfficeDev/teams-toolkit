@@ -839,6 +839,30 @@ export async function createNewProject(
       }
       break;
     }
+    case "aichat": {
+      await input.selectQuickPick(CreateProjectQuestion.Bot);
+      await input.selectQuickPick("AI Chat Bot");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
+    case "aiassist": {
+      await input.selectQuickPick(CreateProjectQuestion.Bot);
+      await input.selectQuickPick("AI Assistant Bot");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
     default:
       break;
   }

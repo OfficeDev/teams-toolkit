@@ -311,7 +311,8 @@ export type OptionType =
   | "importaddin"
   | "linkunfurl"
   | "aichat"
-  | "aiassist";
+  | "aiassist"
+  | "msgnewapi";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

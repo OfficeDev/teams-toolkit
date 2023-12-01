@@ -863,6 +863,19 @@ export async function createNewProject(
       }
       break;
     }
+    case "msgnewapi": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with a new API");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
     default:
       break;
   }

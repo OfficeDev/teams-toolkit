@@ -1744,7 +1744,7 @@ export async function validateContact(
 
         await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
-      page.waitForTimeout(1000);
+      await page.waitForTimeout(10000);
 
       // verify add person
       await addPerson(frame, options?.displayName || "");

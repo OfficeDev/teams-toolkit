@@ -31,7 +31,8 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { UserCancelError } from "@microsoft/teamsfx-core";
-import { FxQuickPickItem, VsCodeUI } from "../../../src/qm/vsc_ui";
+import { FxQuickPickItem } from "@microsoft/vscode-ui";
+import { VsCodeUI } from "../../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { sleep } from "../../../src/utils/commonUtils";
 import { VsCodeLogProvider } from "../../../src/commonlib/log";

@@ -303,6 +303,7 @@
     "teamstoolkit.qm.emptySelection": "select option is empty",
     "teamstoolkit.qm.multiSelectKeyboard": " (Space key to check/uncheck)",
     "teamstoolkit.qm.validatingInput": "Validating...",
+    "teamstoolkit.qm.userCancel": "User canceled.",
     "teamstoolkit.survey.banner.message": "userAsked",
     "teamstoolkit.survey.banner.title": "Tell us what you think about Teams Toolkit.",
     "teamstoolkit.survey.cancelMessage": "userCancelled",

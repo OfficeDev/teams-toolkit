@@ -20,7 +20,6 @@
             "sample-localdebug-proactive-message",
             "sample-localdebug-assistant-dashboard",
             "basic-tab-debug-upgrade-debug",
-            "basic-tab-upgrade-debug",
             "bot-debug-upgrade-debug",
             "bot-upgrade-debug"
         ]
@@ -67,7 +66,8 @@
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
             "sample-localdebug-chef-bot",
-            "sample-localdebug-large-scale-notification"
+            "sample-localdebug-large-scale-notification",
+            "basic-tab-upgrade-debug"
         ]
     },
     {

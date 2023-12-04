@@ -92,7 +92,11 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging("Teams workbench (Chrome)");
   },
   [TemplateProject.TabSSOApimProxy]: async () => {
-    await startDebuggingAzure("Debug (Chrome)", "local", `TabSSOApimProxy`);
+    await startDebuggingAzure(
+      "Debug in Teams (Chrome)",
+      "local",
+      `TabSSOApimProxy`
+    );
   },
 };
 

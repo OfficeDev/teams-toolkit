@@ -8,7 +8,9 @@ import {
   EmptyOptionsError,
   InternalUIError,
   ScriptTimeoutError,
+  UnhandledError,
   UserCancelError,
+  assembleError,
 } from "../src/error";
 
 describe("Error", () => {
@@ -46,5 +48,19 @@ describe("Error", () => {
     assert.equal(error.name, "ScriptTimeoutError");
     assert.equal(error.message, "a");
     assert.equal(error.displayMessage, "b");
+  });
+
+  it("UnhandledError", async () => {
+    const error = new UnhandledError("a", "a", "b");
+    assert.equal(error.name, "UnhandledError");
+    assert.equal(error.message, "a");
+    assert.equal(error.displayMessage, "b");
+  });
+
+  it("assembleError", async () => {
+    const error = assembleError("a", "b", "c") as any;
+    assert.equal(error.name, "UnhandledError");
+    assert.equal(error.message, "b");
+    assert.equal(error.displayMessage, "c");
   });
 });

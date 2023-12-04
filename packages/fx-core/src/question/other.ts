@@ -5,6 +5,7 @@ import {
   AppPackageFolderName,
   AzureAccountProvider,
   BuildFolderName,
+  ConfirmQuestion,
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
@@ -20,21 +21,20 @@ import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
 import { AppStudioScopes } from "../common/tools";
-import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
+import { Constants } from "../component/driver/add/utility/constants";
+import { recommendedLocations, resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
-import { environmentManager } from "../core/environment";
+import { environmentNameManager } from "../core/environmentName";
 import { TOOLS } from "../core/globalVars";
 import {
+  SPFxFrameworkQuestion,
   SPFxImportFolderQuestion,
   SPFxWebpartNameQuestion,
   apiOperationQuestion,
   apiSpecLocationQuestion,
-  SPFxFrameworkQuestion,
 } from "./create";
 import { QuestionNames } from "./questionNames";
-import { environmentNameManager } from "../core/environmentName";
-import { Constants } from "../component/driver/add/utility/constants";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -507,7 +507,8 @@ export function selectTargetEnvQuestion(
         if (throwErrorIfNoEnv) throw res.error;
         return [defaultValueIfNoEnv];
       }
-      return res.value;
+      // "testtool" env is a pure local env and doesn't have manifest
+      return res.value.filter((env) => env !== environmentNameManager.getTestToolEnvName());
     },
     skipSingleOption: true,
     forgetLastValue: true,
@@ -581,10 +582,10 @@ export async function isAadMainifestContainsPlaceholder(inputs: Inputs): Promise
 export function selectAadManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.AadAppManifestFilePath,
-    cliName: "aad-manifest-file",
+    cliName: "entra-app-manifest-file",
     cliShortName: "a",
     cliDescription:
-      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder.",
+      "Specifies the Microsoft Entra app manifest file path, can be either absolute path or relative path to project root folder.",
     title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
@@ -868,7 +869,30 @@ function selectResourceGroupLocationQuestion(
       if (getLocationsRes.isErr()) {
         throw getLocationsRes.error;
       }
-      return getLocationsRes.value;
+      const recommended = getLocationsRes.value.filter((location) => {
+        return recommendedLocations.indexOf(location) >= 0;
+      });
+      const others = getLocationsRes.value.filter((location) => {
+        return recommendedLocations.indexOf(location) < 0;
+      });
+      return [
+        ...recommended.map((location) => {
+          return {
+            id: location,
+            label: location,
+            groupName: getLocalizedString(
+              "core.QuestionNewResourceGroupLocation.group.recommended"
+            ),
+          } as OptionItem;
+        }),
+        ...others.map((location) => {
+          return {
+            id: location,
+            label: location,
+            groupName: getLocalizedString("core.QuestionNewResourceGroupLocation.group.others"),
+          } as OptionItem;
+        }),
+      ];
     },
     default: "Central US",
   };
@@ -890,6 +914,61 @@ export function resourceGroupQuestionNode(
             data: selectResourceGroupLocationQuestion(azureAccountProvider, subscriptionId),
           },
         ],
+      },
+    ],
+  };
+}
+
+export function apiSpecApiKeyConfirmQestion(): ConfirmQuestion {
+  return {
+    name: QuestionNames.ApiSpecApiKeyConfirm,
+    title: getLocalizedString("core.createProjectQuestion.ApiKeyConfirm"),
+    type: "confirm",
+    default: true,
+  };
+}
+
+export function apiSpecApiKeyQuestion(): IQTreeNode {
+  return {
+    data: {
+      type: "text",
+      name: QuestionNames.ApiSpecApiKey,
+      cliShortName: "k",
+      title: getLocalizedString("core.createProjectQuestion.ApiKey"),
+      cliDescription: "Api key for OpenAPI spec.",
+      forgetLastValue: true,
+      validation: {
+        validFunc: (input: string): string | undefined => {
+          const pattern = /^(\w){10,128}/g;
+          const match = pattern.test(input);
+
+          const result = match
+            ? undefined
+            : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+          return result;
+        },
+      },
+      additionalValidationOnAccept: {
+        validFunc: (input: string, inputs?: Inputs): string | undefined => {
+          if (!inputs) {
+            throw new Error("inputs is undefined"); // should never happen
+          }
+
+          process.env[QuestionNames.ApiSpecApiKey] = input;
+          return;
+        },
+      },
+    },
+    condition: (inputs: Inputs) => {
+      return (
+        inputs.outputEnvVarNames &&
+        !process.env[inputs.outputEnvVarNames.get("registrationId")] &&
+        !inputs.clientSecret
+      );
+    },
+    children: [
+      {
+        data: apiSpecApiKeyConfirmQestion(),
       },
     ],
   };

@@ -6,7 +6,7 @@ import axios from "axios";
 import * as chai from "chai";
 import glob from "glob";
 import path from "path";
-import MockAzureAccountProvider from "@microsoft/teamsfx-cli/src/commonlib/azureLoginUserPassword";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import { StateConfigKey, PluginId, EnvConstants } from "./constants";
 import {
   getSubscriptionIdFromResourceId,

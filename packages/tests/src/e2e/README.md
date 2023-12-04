@@ -8,7 +8,7 @@
 
    ```bash
    # download test version
-   npm install -g @microsoft/teamsfx-cli@VERSION
+   npm install -g @microsoft/teamsapp-cli@VERSION
    ```
 
 2. Download Teamsfx Project
@@ -150,7 +150,7 @@ import {
 import { AadValidator, BotValidator } from "../../commonlib";
 import { TemplateProject } from "../../commonlib/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
+import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 import { environmentNameManager } from "@microsoft/teamsfx-core";
 
 describe("teamsfx new sample", function () {
@@ -173,7 +173,6 @@ describe("teamsfx new sample", function () {
 
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
@@ -226,11 +225,6 @@ describe("teamsfx new sample", function () {
 
 ### CliHelper
 
-#### setSubscription
-
-```bash
-teamsapp auth set --subscription ${subscription}
-```
 
 #### addEnv
 

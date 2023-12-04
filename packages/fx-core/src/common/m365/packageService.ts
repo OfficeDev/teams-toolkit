@@ -5,7 +5,7 @@ import axios from "axios";
 import FormData from "form-data";
 import fs from "fs-extra";
 
-import { LogProvider, SystemError } from "@microsoft/teamsfx-api";
+import { LogProvider, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { waitSeconds } from "../tools";
 import { NotExtendedToM365Error } from "./errors";
@@ -131,7 +131,7 @@ export class PackageService {
       this.logger?.error("Sideloading failed.");
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
-        this.traceError(error);
+        error = this.traceError(error);
       } else {
         this.logger?.error(error.message);
       }
@@ -203,7 +203,7 @@ export class PackageService {
       this.logger?.error("Sideloading failed.");
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
-        this.traceError(error);
+        error = this.traceError(error);
       } else {
         this.logger?.error(error.message);
       }
@@ -253,10 +253,10 @@ export class PackageService {
       this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
-        this.traceError(error);
         if (error.response.status === 404) {
           throw new NotExtendedToM365Error(M365ErrorSource);
         }
+        error = this.traceError(error);
       } else {
         this.logger?.error(error.message);
       }
@@ -295,7 +295,7 @@ export class PackageService {
       this.logger?.error("Unacquire failed.");
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
-        this.traceError(error);
+        error = this.traceError(error);
       } else {
         this.logger?.error(error.message);
       }
@@ -328,7 +328,7 @@ export class PackageService {
       this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
-        this.traceError(error);
+        error = this.traceError(error);
       } else {
         this.logger?.error(error.message);
       }
@@ -342,7 +342,8 @@ export class PackageService {
     try {
       const serviceUrl = await this.getTitleServiceUrl(token);
       this.logger?.debug(`Get active experiences from service URL ${serviceUrl} ...`);
-      const response = await this.axiosInstance.get("/catalog/v1/users/experiences", {
+      // users/experiences is deprecating, using users/uitypes instead
+      const response = await this.axiosInstance.get("/catalog/v1/users/uitypes", {
         baseURL: serviceUrl,
         headers: {
           Authorization: `Bearer ${token}`,
@@ -356,7 +357,7 @@ export class PackageService {
       this.logger?.error("Fail to get active experiences.");
       if (error.response) {
         this.logger?.error(JSON.stringify(error.response.data));
-        this.traceError(error);
+        error = this.traceError(error);
       } else {
         this.logger?.error(error.message);
       }
@@ -397,7 +398,7 @@ export class PackageService {
     }
   }
 
-  private traceError(error: any) {
+  private traceError(error: any): any {
     // add error details and trace to message
     const detail = JSON.stringify(error.response.data ?? {});
     const tracingId = error.response.headers?.traceresponse ?? "";
@@ -407,5 +408,16 @@ export class PackageService {
       detail: detail,
       tracingId: tracingId,
     });
+
+    // HTTP 400 as user error due to invalid input
+    if (error.response?.status === 400) {
+      error = new UserError({
+        error,
+        source: M365ErrorSource,
+        message: error.message,
+      });
+    }
+
+    return error;
   }
 }

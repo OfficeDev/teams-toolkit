@@ -15,10 +15,10 @@ describe("account command", function () {
   const testFolder = getTestFolder();
 
   it(
-    `account show `,
+    `auth list`,
     { testPlanCaseId: 15232246, author: "zhiyou@microsoft.com" },
     async function () {
-      stdlog = await execAsync(`teamsapp auth show`, {
+      stdlog = await execAsync(`teamsapp auth list`, {
         env: process.env,
         timeout: 0,
       });
@@ -28,7 +28,7 @@ describe("account command", function () {
   );
 
   it(
-    `account logout`,
+    `auth logout`,
     { testPlanCaseId: 15232255, author: "zhiyou@microsoft.com" },
     async function () {
       stdlog = await execAsync(`teamsapp auth logout azure`, {

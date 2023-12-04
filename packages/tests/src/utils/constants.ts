@@ -53,6 +53,7 @@ export enum TemplateProject {
   SpfxProductivity = "One Productivity Hub using Graph Toolkit with SPFx",
   RetailDashboard = "Contoso Retail Dashboard",
   TabSSOApimProxy = "SSO Enabled Tab via APIM Proxy",
+  LargeScaleBot = "Large Scale Notification Bot",
 }
 
 export enum TemplateProjectFolder {
@@ -83,6 +84,7 @@ export enum TemplateProjectFolder {
   SpfxProductivity = "spfx-productivity-dashboard",
   RetailDashboard = "react-retail-dashboard",
   TabSSOApimProxy = "sso-enabled-tab-via-apim-proxy",
+  LargeScaleBot = "large-scale-notification",
   // v2 only
   Deeplinking = "deep-linking-hello-world-tab-without-sso-M365",
 }
@@ -120,6 +122,7 @@ export const sampleProjectMap: Record<TemplateProject, TemplateProjectFolder> =
     [TemplateProject.SpfxProductivity]: TemplateProjectFolder.SpfxProductivity,
     [TemplateProject.RetailDashboard]: TemplateProjectFolder.RetailDashboard,
     [TemplateProject.TabSSOApimProxy]: TemplateProjectFolder.TabSSOApimProxy,
+    [TemplateProject.LargeScaleBot]: TemplateProjectFolder.LargeScaleBot,
   };
 
 export enum Resource {
@@ -276,7 +279,7 @@ export class CommandPaletteCommands {
   public static readonly CreateEnvironmentCommand: string =
     "Teams: Create New Environment";
   public static readonly DeployAadAppManifestCommand: string =
-    "Teams: Update Azure Active Directory App";
+    "Teams: Update Microsoft Entra App";
   public static readonly UpgradeProjectCommand: string =
     "Teams: Upgrade Project";
   public static readonly InstallTTK: string =
@@ -297,13 +300,18 @@ export type OptionType =
   | "spfxreact"
   | "spfxnone"
   | "spfxmin"
+  | "gspfxreact"
+  | "gspfxnone"
+  | "gspfxmin"
   | "dashboard"
   | "workflow"
   | "timenoti"
   | "functimernoti"
   | "addin"
   | "importaddin"
-  | "linkunfurl";
+  | "linkunfurl"
+  | "aichat"
+  | "aiassist";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
@@ -386,6 +394,8 @@ export class CreateProjectQuestion {
   static readonly OfficeAddin = "Outlook Add-in";
   static readonly NewTeamsApp = "Start with a Teams capability";
   static readonly SpfxSharepointFrameworkInTtk = "Install the latest SPFx";
+  static readonly SpfxSharepointFrameworkGlobalEnvInTtk =
+    "Use globally installed SPFx";
   static readonly NewAddinApp = "Start with an Outlook add-in";
   static readonly CreateNewSpfxSolution = "Create a New SPFx Solution";
 }
@@ -396,6 +406,10 @@ export class ValidationContent {
   static readonly BotWelcomeInstruction =
     "Hi there! I'm a Teams bot that will echo what you said to me";
   static readonly GraphBot = "Your Graph Connector Bot is Running";
+  static readonly AiChatBotWelcomeInstruction = "How can I help you today?";
+  static readonly AiAssistantBotWelcomeInstruction =
+    "I'm an assistant bot. How can I help you today?";
+  static readonly AiBotErrorMessage = "The bot encountered an error or bug";
 }
 
 export class CliVersion {

@@ -18,6 +18,12 @@ on:
         required: false
         type: string
 
+      get-coverage:
+        description: "check e2e coverage for fx-core"
+        required: false
+        type: boolean
+        default: false
+
   schedule:
     - cron: "0 22 * * *"
 
@@ -25,7 +31,7 @@ on:
 
 jobs:
   setup:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'false' ) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
     runs-on: ubuntu-latest
     outputs:
       cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
@@ -177,7 +183,7 @@ jobs:
       - name: Update CLI and legacy-peer-deps for PR cases
         if: ${{  github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx'  }}
         run: |
-          npm install -g @microsoft/teamsfx-cli@latest
+          npm install -g @microsoft/teamsapp-cli@alpha
           npm config set legacy-peer-deps false
 
       - name: print system info
@@ -451,3 +457,79 @@ jobs:
           MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
           MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
           MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
+
+  e2e-coverage:
+    if: ${{github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: mv files
+        working-directory: packages/tests
+        run: |
+          rm src/e2e/commonUtils.ts src/utils/commonUtils.ts
+          mv src/e2e/commonUtils.ts.back src/e2e/commonUtils.ts
+          mv src/utils/commonUtils.ts.back src/utils/commonUtils.ts
+
+      - uses: jossef/action-set-json-field@v1
+        with:
+            file: ./packages/fx-core/.nycrc
+            field: excludeAfterRemap
+            value: false
+
+      - name: Update config.json
+        working-directory: packages/fx-core
+        run: echo "`jq '.include=["build"]' .nycrc`" > .nycrc
+
+      - name: less nycrc
+        working-directory: packages/fx-core
+        run: |
+          less .nycrc
+      
+      - name: setup
+        run: |
+          npm run setup
+      
+      - name: run test for coverage
+        working-directory: packages/fx-core
+        env:
+          AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+          AZURE_ACCOUNT_OBJECT_ID: ${{ secrets.TEST_USER_OBJECT_ID }}
+          AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+          AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+          M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+          M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+          M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+          CI_ENABLED: "true"
+          M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
+          TEAMSFX_DEBUG_TEMPLATE: "true"
+          NODE_ENV: "development"
+          TEAMSFX_AAD_DEPLOY_ONLY: "true"
+          SIDELOADING_SERVICE_ENDPOINT: ${{ secrets.SIDELOADING_SERVICE_ENDPOINT }}
+          SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
+          ADO_TOKEN: ${{ secrets.ADO_PAT }}
+        run: |
+          npx nyc mocha --parallel ../tests/src/e2e/**/*.tests.ts
+      
+      - name: pack zip
+        if: ${{always()}}
+        working-directory: packages/fx-core
+        run: |
+          zip -r out1.zip .nyc_output/
+          zip -r out2.zip coverage/
+
+      - uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          name: coverage
+          path: |
+            packages/fx-core/out1.zip
+            packages/fx-core/out2.zip

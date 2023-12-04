@@ -114,6 +114,8 @@ export enum TelemetryEvent {
   M365Sigeloading = "m365-sideloading",
   M365Unacquire = "m365-unacquire",
   M365LaunchInfo = "m365-launch-info",
+
+  Doctor = "doctor",
 }
 
 export enum TelemetryProperty {
@@ -154,6 +156,8 @@ export enum TelemetryProperty {
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
 
+  RunFrom = "run-from",
+
   // command related property
   CommandName = "command-name",
   CommandHelp = "command-help",
@@ -168,7 +172,12 @@ export enum TelemetrySuccess {
   Yes = "yes",
   No = "no",
 }
-
+export enum CliConfigRunFrom {
+  GitHub = "GitHub",
+  AzDo = "AzDo",
+  Jenkins = "Jenkins",
+  Other = "Other",
+}
 export enum TelemetryErrorType {
   UserError = "user",
   SystemError = "system",

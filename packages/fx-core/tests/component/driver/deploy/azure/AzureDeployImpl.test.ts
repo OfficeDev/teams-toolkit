@@ -9,7 +9,6 @@ import { DeployArgs } from "../../../../../src/component/driver/interface/buildA
 import { TestAzureAccountProvider } from "../../../util/azureAccountMock";
 import { TestLogProvider } from "../../../util/logProviderMock";
 import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
-import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { AzureZipDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/AzureZipDeployImpl";
 import * as tools from "../../../../../src/common/tools";
 import * as sinon from "sinon";
@@ -22,7 +21,7 @@ import {
 } from "../../../../../src/error/deploy";
 import * as chai from "chai";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
-import chaiAsPromised from "chai-as-promised";
+import chaiAsPromised = require("chai-as-promised");
 chai.use(chaiAsPromised);
 import * as appService from "@azure/arm-appservice";
 import { RestError } from "@azure/storage-blob";
@@ -32,9 +31,21 @@ import {
 } from "@azure/arm-appservice";
 import { HttpStatusCode } from "../../../../../src/component/constant/commonConstant";
 import { DeployStatus } from "../../../../../src/component/constant/deployConstant";
+import * as fs from "fs-extra";
+import * as os from "os";
+import * as path from "path";
 
 describe("AzureDeployImpl zip deploy acceleration", () => {
   const sandbox = sinon.createSandbox();
+  const tempFile = path.join(os.tmpdir(), "test.zip");
+
+  before(async () => {
+    fs.writeFileSync(tempFile, "test");
+  });
+
+  after(async () => {
+    fs.rmSync(tempFile, { recursive: true, force: true });
+  });
 
   beforeEach(async () => {
     sandbox.stub(tools, "waitSeconds").resolves();
@@ -396,7 +407,12 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     };
     await chai
       .expect(
-        impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config, new TestLogProvider())
+        impl.zipDeployPackage(
+          "mockEndPoint",
+          fs.createReadStream(tempFile),
+          config,
+          new TestLogProvider()
+        )
       )
       .to.be.rejectedWith(DeployZipPackageError);
   });
@@ -445,7 +461,12 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     };
     await chai
       .expect(
-        impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config, new TestLogProvider())
+        impl.zipDeployPackage(
+          "mockEndPoint",
+          fs.createReadStream(tempFile),
+          config,
+          new TestLogProvider()
+        )
       )
       .to.be.rejectedWith(DeployZipPackageError);
   });
@@ -487,12 +508,17 @@ describe("AzureDeployImpl zip deploy acceleration", () => {
     };
     await chai
       .expect(
-        impl.zipDeployPackage("mockEndPoint", Buffer.alloc(1, ""), config, new TestLogProvider())
+        impl.zipDeployPackage(
+          "mockEndPoint",
+          fs.createReadStream(tempFile),
+          config,
+          new TestLogProvider()
+        )
       )
       .to.be.rejectedWith(DeployZipPackageError);
   });
 
-  it("throws Error when no basic auth allowed and AAD request fail", async () => {
+  it("throws Error when no basic auth allowed and Microsoft Entra request fail", async () => {
     const args = {
       workingDirectory: "/",
       artifactFolder: "/",

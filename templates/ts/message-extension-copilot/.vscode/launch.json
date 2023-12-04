@@ -223,7 +223,7 @@
                 "Launch App in Copilot (Edge)",
                 "Attach to Local Service"
             ],
-            "preLaunchTask": "Start Teams App Locally",
+            "preLaunchTask": "Start Teams App Locally (Copilot)",
             "presentation": {
                 "group": "group 2: Copilot",
                 "order": 1
@@ -236,7 +236,7 @@
                 "Launch App in Copilot (Chrome)",
                 "Attach to Local Service"
             ],
-            "preLaunchTask": "Start Teams App Locally",
+            "preLaunchTask": "Start Teams App Locally (Copilot)",
             "presentation": {
                 "group": "group 2: Copilot",
                 "order": 2

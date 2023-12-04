@@ -13,7 +13,17 @@ import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-auth';
 
 // @public (undocumented)
+export interface ApiKeyAuthInfo {
+    // (undocumented)
+    authName?: string;
+    // (undocumented)
+    serverUrl: string;
+}
+
+// @public (undocumented)
 export interface ApiOperation {
+    // (undocumented)
+    data: ApiKeyAuthInfo;
     // (undocumented)
     groupName: string;
     // (undocumented)
@@ -200,6 +210,23 @@ export type ConditionFunc = (inputs: Inputs) => boolean | Promise<boolean>;
 
 // @public (undocumented)
 export const ConfigFolderName = "fx";
+
+// @public (undocumented)
+export interface ConfirmConfig extends UIConfig<boolean> {
+    transformer?: (value: boolean) => string;
+}
+
+// @public
+export interface ConfirmQuestion extends UserInputQuestion {
+    default?: boolean | LocalFunc<boolean>;
+    transformer?: (value: boolean) => string;
+    // (undocumented)
+    type: "confirm";
+    value?: boolean;
+}
+
+// @public (undocumented)
+export type ConfirmResult = InputResult<boolean>;
 
 // @public (undocumented)
 export interface Context {
@@ -608,7 +635,7 @@ export enum Platform {
 export const ProductName = "teamsfx";
 
 // @public (undocumented)
-export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion;
+export type Question = SingleSelectQuestion | MultiSelectQuestion | TextInputQuestion | SingleFileQuestion | MultiFileQuestion | FolderQuestion | SingleFileQuestion | SingleFileOrInputQuestion | ConfirmQuestion;
 
 // @public (undocumented)
 export const ResponseTemplatesFolderName = "responseTemplates";
@@ -1055,19 +1082,20 @@ export interface UserInputQuestion extends BaseQuestion {
     cliName?: string;
     cliShortName?: string;
     cliType?: "option" | "argument";
-    default?: string | string[] | LocalFunc<string | string[] | undefined>;
+    default?: string | string[] | boolean | LocalFunc<string | string[] | boolean | undefined>;
     isBoolean?: boolean;
     placeholder?: string | LocalFunc<string | undefined>;
     prompt?: string | LocalFunc<string | undefined>;
     required?: boolean;
     title: string | LocalFunc<string | undefined>;
-    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innerText";
+    type: "singleSelect" | "multiSelect" | "singleFile" | "multiFile" | "folder" | "text" | "singleFileOrText" | "innerText" | "confirm";
     validation?: ValidationSchema;
     validationHelp?: string;
 }
 
 // @public
 export interface UserInteraction {
+    confirm?: (config: ConfirmConfig) => Promise<Result<ConfirmResult, FxError>>;
     createProgressBar: (title: string, totalSteps: number) => IProgressHandler;
     executeFunction?(config: ExecuteFuncConfig): any | Promise<any>;
     inputText: (config: InputTextConfig) => Promise<Result<InputTextResult, FxError>>;
@@ -1082,6 +1110,8 @@ export interface UserInteraction {
         env?: {
             [k: string]: string;
         };
+        shellName?: string;
+        iconPath?: string;
     }): Promise<Result<string, FxError>>;
     selectFile: (config: SelectFileConfig) => Promise<Result<SelectFileResult, FxError>>;
     selectFileOrInput?(config: SingleFileOrInputConfig): Promise<Result<InputResult<string>, FxError>>;

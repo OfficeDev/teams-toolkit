@@ -1,29 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
-import {
-  Timeout,
-  Capability,
-  Notification,
-  CliVersion,
-} from "../../../utils/constants";
+import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
   initPage,
   validateTabNoneSSO,
 } from "../../../utils/playwrightOperation";
-import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   validateUpgrade,
   upgradeByCommandPalette,
 } from "../../../utils/vscodeOperation";
 import * as dotenv from "dotenv";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
-import { VSBrowser } from "vscode-extension-tester";
-import { runDeploy, runProvision } from "../../remotedebug/remotedebugContext";
+import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
+import { CliHelper } from "../../cliHelper";
+
 dotenv.config();
 
 describe("Migration Tests", function () {
@@ -53,13 +46,6 @@ describe("Migration Tests", function () {
       author: "v-helzha@microsoft.com",
     },
     async () => {
-      // install v2 stable cli 1.2.6
-      await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      const result = await execCommand("./", "teamsfx -v");
-      console.log(result.stdout);
-      expect(
-        (result.stdout as string).includes(CliVersion.V2TeamsToolkitStable425)
-      ).to.be.true;
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
@@ -70,8 +56,6 @@ describe("Migration Tests", function () {
       }
 
       // upgrade
-      // await startDebugging();
-      // await upgrade();
       await upgradeByCommandPalette();
       // verify upgrade
       await validateUpgrade();
@@ -79,9 +63,10 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
-      await VSBrowser.instance.driver.sleep(Timeout.shortTimeWait);
+      // v3 provision
       await runProvision(mirgationDebugTestContext.appName);
-      await runDeploy();
+      await runDeploy(Timeout.botDeploy);
+
       // UI verify
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       const page = await initPage(

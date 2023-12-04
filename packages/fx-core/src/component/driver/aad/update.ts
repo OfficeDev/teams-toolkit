@@ -6,7 +6,7 @@ import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
 import { Service } from "typedi";
 import { AadAppClient } from "./utility/aadAppClient";
 import axios from "axios";
-import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
+import { SystemError, UserError, ok, err } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -20,7 +20,7 @@ import {
   UnhandledError,
 } from "../../../error/common";
 
-const actionName = "aadApp/update"; // DO NOT MODIFY the name
+export const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
@@ -47,15 +47,15 @@ export class UpdateAadAppDriver implements StepDriver {
       );
 
       // MS Graph API does not allow adding new OAuth permissions and pre authorize it within one request
-      // So split update AAD app to two requests:
-      // 1. If there's preAuthorizedApplications, remove it temporary and update AAD app to create possible new permission
+      // So split update Microsoft Entra app to two requests:
+      // 1. If there's preAuthorizedApplications, remove it temporary and update Microsoft Entra app to create possible new permission
       if (manifest.preAuthorizedApplications && manifest.preAuthorizedApplications.length > 0) {
         const preAuthorizedApplications = manifest.preAuthorizedApplications;
         manifest.preAuthorizedApplications = [];
         await aadAppClient.updateAadApp(manifest);
         manifest.preAuthorizedApplications = preAuthorizedApplications;
       }
-      // 2. Update AAD app again with full manifest to set preAuthorizedApplications
+      // 2. Update Microsoft Entra app again with full manifest to set preAuthorizedApplications
       await aadAppClient.updateAadApp(manifest);
       const summary = getLocalizedString(
         logMessageKeys.successUpdateAadAppManifest,
@@ -88,12 +88,15 @@ export class UpdateAadAppDriver implements StepDriver {
           summaries: summaries,
         };
       }
-      if (axios.isAxiosError(error)) {
-        const message = JSON.stringify(error.response!.data);
+      if (
+        axios.isAxiosError(error) &&
+        error.response // If no response, treat as unhandled error first to understand the actual problem
+      ) {
+        const message = JSON.stringify(error.response.data);
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
-        if (error.response!.status >= 400 && error.response!.status < 500) {
+        if (error.response.status >= 400 && error.response.status < 500) {
           return {
             result: err(new HttpClientError(error, actionName, message, helpLink)),
             summaries: summaries,

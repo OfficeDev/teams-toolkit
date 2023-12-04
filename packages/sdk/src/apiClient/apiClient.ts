@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 import { AuthProvider } from "./authProvider";
 
 /**
@@ -22,7 +22,9 @@ export function createApiClient(apiEndpoint: string, authProvider: AuthProvider)
     baseURL: apiEndpoint,
   });
   instance.interceptors.request.use(async function (config) {
-    return await authProvider.AddAuthenticationInfo(config);
+    return (await authProvider.AddAuthenticationInfo(
+      config
+    )) as Promise<InternalAxiosRequestConfig>;
   });
   return instance;
 }

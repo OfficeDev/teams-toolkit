@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  Context,
   FuncValidation,
   FxError,
   Inputs,
@@ -50,6 +51,8 @@ import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
+import { MockedUserInteraction } from "../plugins/solution/util";
+import * as utils from "../../src/component/utils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -86,6 +89,7 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "false",
+        [FeatureFlagName.SampleConfigBranch]: "dev",
       });
     });
     afterEach(() => {
@@ -143,7 +147,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 5);
+          assert.isTrue(options.length === 6);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
@@ -1012,14 +1016,33 @@ describe("scaffold question", () => {
       });
 
       describe("list operations", async () => {
+        let mockedEnvRestore: RestoreFn = () => {};
+
+        afterEach(() => {
+          mockedEnvRestore();
+        });
         it(" list operations successfully", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
             [QuestionNames.ApiSpecLocation]: "apispec",
             supportedApisFromApiSpec: [
-              { id: "operation1", label: "operation1", groupName: "1" },
-              { id: "operation2", label: "operation2", groupName: "2" },
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
             ],
           };
 
@@ -1028,6 +1051,194 @@ describe("scaffold question", () => {
           assert.isTrue(options.length === 2);
           assert.isTrue(options[0].id === "operation1");
           assert.isTrue(options[1].id === "operation2");
+        });
+
+        it(" validate operations successfully", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.isUndefined(res);
+        });
+
+        it(" validate operations with auth successfully", async () => {
+          mockedEnvRestore = mockedEnv({
+            [FeatureFlagName.ApiKey]: "true",
+          });
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const placeholder = question.placeholder as string;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.isTrue(placeholder.includes("API key"));
+          assert.isUndefined(res);
+        });
+
+        it(" validate operations should return error message when selected APIs with multiple server url", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server2",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.equal(
+            res,
+            getLocalizedString(
+              "core.createProjectQuestion.apiSpec.operation.multipleServer",
+              ["https://server1", "https://server2"].join(", ")
+            )
+          );
+        });
+
+        it(" validate operations should success when selected APIs with multiple server url but only one contains auth", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server2",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.isUndefined(res);
+        });
+
+        it(" validate operations should return error message when select APIs with multiple auth", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1-label",
+                groupName: "1",
+                data: {
+                  authName: "auth1",
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2-label",
+                groupName: "2",
+                data: {
+                  authName: "auth2",
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation3",
+                label: "operation3-label",
+                groupName: "1",
+                data: {
+                  authName: "auth3",
+                  serverUrl: "https://server1",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
+
+          assert.equal(
+            res,
+            getLocalizedString(
+              "core.createProjectQuestion.apiSpec.operation.multipleAuth",
+              ["auth1", "auth2"].join(", ")
+            )
+          );
         });
 
         it(" list operations error", async () => {
@@ -1073,14 +1284,41 @@ describe("scaffold question", () => {
             errors: [],
             warnings: [{ content: "warn", type: WarningType.Unknown }],
           });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "get operation1",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+              operationId: "getOperation1",
+            },
+            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+          ]);
           sandbox.stub(fs, "pathExists").resolves(true);
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
-            { id: "get operation1", label: "get operation1", groupName: "GET" },
-            { id: "get operation2", label: "get operation2", groupName: "GET" },
+            {
+              id: "get operation1",
+              label: "get operation1",
+              groupName: "GET",
+              data: {
+                authName: "api_key",
+                serverUrl: "https://server",
+              },
+            },
+            {
+              id: "get operation2",
+              label: "get operation2",
+              groupName: "GET",
+              data: {
+                serverUrl: "https://server2",
+              },
+            },
           ]);
           assert.isUndefined(res);
         });
@@ -1094,13 +1332,41 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "get operation1",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+              operationId: "getOperation1",
+            },
+
+            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+          ]);
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("https://www.test.com", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
-            { id: "get operation1", label: "get operation1", groupName: "GET" },
-            { id: "get operation2", label: "get operation2", groupName: "GET" },
+            {
+              id: "get operation1",
+              label: "get operation1",
+              groupName: "GET",
+              data: {
+                authName: "api_key",
+                serverUrl: "https://server",
+              },
+            },
+            {
+              id: "get operation2",
+              label: "get operation2",
+              groupName: "GET",
+              data: {
+                serverUrl: "https://server2",
+              },
+            },
           ]);
           assert.isUndefined(res);
         });
@@ -1111,7 +1377,19 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["get operation1", "get operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "get operation1",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+              operationId: "getOperation1",
+            },
+            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+          ]);
 
           let err: Error | undefined = undefined;
           try {
@@ -1219,18 +1497,23 @@ describe("scaffold question", () => {
             platform: Platform.VSCode,
             "manifest-path": "fakePath",
           };
-          const operationMap = new Map<string, string>([
-            ["getUserById", "GET /user/{userId}"],
-            ["getStoreOrder", "GET /store/order"],
-          ]);
 
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox
-            .stub(SpecParser.prototype, "list")
-            .resolves(["GET /user/{userId}", "GET /store/order"]);
-          sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+              operationId: "getUserById",
+            },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+          ]);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById"]);
           sandbox.stub(fs, "pathExists").resolves(true);
@@ -1238,7 +1521,14 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
           assert.deepEqual(inputs.supportedApisFromApiSpec, [
-            { id: "GET /store/order", label: "GET /store/order", groupName: "GET" },
+            {
+              id: "GET /store/order",
+              label: "GET /store/order",
+              groupName: "GET",
+              data: {
+                serverUrl: "https://server2",
+              },
+            },
           ]);
           assert.isUndefined(res);
         });
@@ -1249,18 +1539,23 @@ describe("scaffold question", () => {
             platform: Platform.VSCode,
             "manifest-path": "fakePath",
           };
-          const operationMap = new Map<string, string>([
-            ["getUserById", "GET /user/{userId}"],
-            ["getStoreOrder", "GET /store/order"],
-          ]);
 
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox
-            .stub(SpecParser.prototype, "list")
-            .resolves(["GET /user/{userId}", "GET /store/order"]);
-          sandbox.stub(SpecParser.prototype, "listOperationMap").resolves(operationMap);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+              operationId: "getUserById",
+            },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+          ]);
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById", "getStoreOrder"]);
           sandbox.stub(fs, "pathExists").resolves(true);
@@ -1289,7 +1584,19 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+              operationId: "getUserById",
+            },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+          ]);
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
@@ -1318,7 +1625,19 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+              operationId: "getUserById",
+            },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+          ]);
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
@@ -1347,7 +1666,19 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves(["operation1", "operation2"]);
+          sandbox.stub(SpecParser.prototype, "list").resolves([
+            {
+              api: "GET /user/{userId}",
+              server: "https://server",
+              auth: {
+                name: "api_key",
+                in: "header",
+                type: "apiKey",
+              },
+              operationId: "getUserById",
+            },
+            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+          ]);
 
           const res = await (question.additionalValidationOnAccept as any).validFunc(
             "https://test.com/",
@@ -1643,6 +1974,19 @@ describe("scaffold question", () => {
       sandbox.stub<any, any>(fs, "pathExists").resolves(false);
       validRes = await validFunc(inputs.appName, inputs);
       assert.isTrue(validRes === undefined);
+    });
+
+    it("app name has 24 length", async () => {
+      const mockedUI = new MockedUserInteraction();
+      sandbox.stub(utils, "createContextV3").returns({
+        userInteraction: mockedUI,
+      } as Context);
+      const showMessageStub = sandbox.stub(mockedUI, "showMessage");
+
+      const input = "abcdefghijklmnopqrstuvwx";
+      await validFunc(input);
+
+      assert.isTrue(showMessageStub.calledOnce);
     });
 
     it("app name exceed maxlength of 30", async () => {

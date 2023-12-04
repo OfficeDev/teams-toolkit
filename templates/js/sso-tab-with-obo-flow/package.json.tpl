@@ -21,10 +21,13 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/react-router-dom": "^5.3.3",
+    "concurrently": "^8.2.2",
     "env-cmd": "^10.1.0"
   },
   "scripts": {
-    "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
+    "dev:teamsfx": "concurrently \"npm run start:tab\" \"npm run start:api\"",
+    "start:tab": "env-cmd --silent -f .localConfigs npm run start",
+    "start:api": "cd api && npm run dev:teamsfx",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "echo \"Error: no test specified\" && exit 1",

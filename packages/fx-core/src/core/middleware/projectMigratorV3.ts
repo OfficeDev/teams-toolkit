@@ -450,7 +450,7 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     await context.fsWriteFile(manifestPath, manifest);
   }
 
-  // Read AAD app manifest and save to ./aad.manifest.json
+  // Read Microsoft Entra app manifest and save to ./aad.manifest.json
   const oldAadManifestPath = path.join(oldAppPackageFolderPath, MetadataV2.aadTemplateFileName);
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)

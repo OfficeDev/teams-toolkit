@@ -1,31 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, ok } from "@microsoft/teamsfx-api";
+import { logger } from "../../commonlib/logger";
 import { FooterText } from "../../constants";
+import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { getVersion } from "../../utils";
+import { helper } from "../helper";
 import { accountCommand } from "./account";
 import { addCommand } from "./add";
 import { getCreateCommand } from "./create";
 import { deployCommand } from "./deploy";
+import { entraAppCommand } from "./entraAppUpdate";
 import { envCommand } from "./env";
-import { m365Command } from "./m365";
-import { packageCommand } from "./package";
+import { listCommand } from "./list";
+import { m365LaunchInfoCommand } from "./m365LaunchInfo";
+import { m365SideloadingCommand } from "./m365Sideloading";
+import { m365UnacquireCommand } from "./m365Unacquire";
 import { permissionCommand } from "./permission";
 import { previewCommand } from "./preview";
 import { provisionCommand } from "./provision";
-import { publishCommand } from "./publish";
-import { updateCommand } from "./update";
-import { upgradeCommand } from "./upgrade";
-import { validateCommand } from "./validate";
-import { listCommand } from "./list";
-import { helper } from "../helper";
-import { logger } from "../../commonlib/logger";
-import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { teamsappUpdateCommand } from "./teamsapp/update";
-import { teamsappValidateCommand } from "./teamsapp/validate";
+import { teamsappDoctorCommand } from "./teamsapp/doctor";
 import { teamsappPackageCommand } from "./teamsapp/package";
 import { teamsappPublishCommand } from "./teamsapp/publish";
-import { isCliV3Enabled } from "@microsoft/teamsfx-core";
+import { teamsappUpdateCommand } from "./teamsapp/update";
+import { teamsappValidateCommand } from "./teamsapp/validate";
+import { upgradeCommand } from "./upgrade";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -52,17 +51,17 @@ export const rootCommand: CLICommand = {
     envCommand,
     permissionCommand,
     upgradeCommand,
-    m365Command,
     listCommand,
     helpCommand,
-    ...(isCliV3Enabled()
-      ? [
-          teamsappUpdateCommand,
-          teamsappValidateCommand,
-          teamsappPackageCommand,
-          teamsappPublishCommand,
-        ]
-      : [packageCommand, updateCommand, validateCommand, publishCommand]),
+    teamsappUpdateCommand,
+    teamsappValidateCommand,
+    teamsappPackageCommand,
+    teamsappPublishCommand,
+    teamsappDoctorCommand,
+    entraAppCommand,
+    m365SideloadingCommand,
+    m365UnacquireCommand,
+    m365LaunchInfoCommand,
   ],
   sortCommands: true,
   options: [

@@ -35,11 +35,6 @@ export function isVideoFilterEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
 }
 
-export function isImportSPFxEnabled(): boolean {
-  return true;
-  //return isFeatureFlagEnabled(FeatureFlagName.ImportSPFx, false);
-}
-
 export function isCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
 }
@@ -49,14 +44,14 @@ export function isApiCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
 }
 
-export function isCliNewUxEnabled(): boolean {
-  return true;
+export function enableTestToolByDefault(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
 }
 
-export function isCliV3Enabled(): boolean {
-  return isFeatureFlagEnabled("TEAMSFX_CLI_V3", false);
+export function isApiKeyEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
 }
 
-export function isTestToolEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TestTool, false);
+export function isMultipleParametersEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
 }

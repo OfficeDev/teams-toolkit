@@ -68,13 +68,13 @@ import {
   getHashedEnv,
   globalStateGet,
   globalStateUpdate,
-  isImportSPFxEnabled,
   isUserCancelError,
   isValidProject,
   pathUtils,
   setRegion,
   manifestUtils,
   JSONSyntaxError,
+  MetadataV3,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -133,7 +133,6 @@ import {
 } from "./utils/commonUtils";
 import { getDefaultString, loadedLocale, localize } from "./utils/localizeUtils";
 import { ExtensionSurvey } from "./utils/survey";
-import { MetadataV3 } from "@microsoft/teamsfx-core";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -406,6 +405,10 @@ export async function updateAutoOpenGlobalKey(
 
   if (warnings?.length) {
     await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
+  }
+
+  if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
+    globalStateUpdate(GlobalKey.AutoInstallDependency, true);
   }
 }
 
@@ -704,9 +707,6 @@ export async function runCommand(
     switch (stage) {
       case Stage.create: {
         inputs.projectId = inputs.projectId ?? uuid.v4();
-        if (!isImportSPFxEnabled()) {
-          inputs["spfx-solution"] = "new";
-        }
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -1220,6 +1220,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
   const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
   const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
   const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, "")) as string;
+  const autoInstallDependency = (await globalStateGet(GlobalKey.AutoInstallDependency)) as boolean;
   if (isOpenWalkThrough) {
     await showLocalDebugMessage();
     await openWelcomeHandler([TelemetryTriggerFrom.Auto]);
@@ -1242,6 +1243,10 @@ export async function autoOpenProjectHandler(): Promise<void> {
     await showLocalDebugMessage();
     await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
+  }
+  if (autoInstallDependency) {
+    await autoInstallDependencyHandler();
+    await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
   }
 }
 
@@ -1327,6 +1332,15 @@ export async function openSampleReadmeHandler(args?: any) {
       await commands.executeCommand(PreviewMarkdownCommand, uri);
     }
   }
+}
+
+export async function autoInstallDependencyHandler() {
+  await VS_CODE_UI.runCommand({
+    cmd: "npm i",
+    workingDirectory: "${workspaceFolder}/src",
+    shellName: localize("teamstoolkit.handlers.autoInstallDependency"),
+    iconPath: "cloud-download",
+  });
 }
 
 export async function showLocalDebugMessage() {
@@ -1764,9 +1778,9 @@ export async function showError(e: UserError | SystemError) {
         commands.executeCommand("vscode.open", helpLinkUrl);
       },
     };
-    VsCodeLogInstance.error(
-      `code:${e.source}.${e.name}, message: ${e.message}\n Help link: ${e.helpLink}`
-    );
+    VsCodeLogInstance.error(`code:${errorCode}, message: ${e.message}\n Help link: ${e.helpLink}`);
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
     const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
     if (button) button.run();
   } else if (e instanceof SystemError) {
@@ -1794,8 +1808,9 @@ export async function showError(e: UserError | SystemError) {
         await commands.executeCommand("vscode.open", similarIssueLink);
       },
     };
+    VsCodeLogInstance.error(`code:${errorCode}, message: ${e.message}`);
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-    VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
+    VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
     const button = await window.showErrorMessage(
       `[${errorCode}]: ${notificationMessage}`,
       issue,

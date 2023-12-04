@@ -9,6 +9,8 @@
     "license": "MIT",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
+        "dev:teamsfx:testtool": "env-cmd --silent -f .localConfigs.testTool npm run dev",
+        "dev:teamsfx:launch-testtool": "env-cmd --silent -f env/.env.testtool teamsapptester start",
         "dev": "func start --typescript --language-worker=\"--inspect=9239\" --port \"3978\" --cors \"*\"",
         "prepare-storage:teamsfx": "azurite --silent --location ./_storage_emulator --debug ./_storage_emulator/debug.log",
         "watch:teamsfx": "tsc --watch",
@@ -24,7 +26,7 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^2.3.0-rc-hotfix.0",
+        "@microsoft/teamsfx": "^2.3.1-beta",
         "botbuilder": "^4.20.0"
     },
     "devDependencies": {

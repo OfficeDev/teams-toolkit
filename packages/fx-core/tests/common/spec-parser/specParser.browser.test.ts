@@ -628,7 +628,7 @@ describe("SpecParser in Browser", () => {
         },
       };
 
-      const specParser = new SpecParser(specPath);
+      const specParser = new SpecParser(specPath, { allowMissingId: true });
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
@@ -770,19 +770,6 @@ describe("SpecParser in Browser", () => {
           outputSpecPath,
           "path/to/adaptiveCardFolder"
         );
-        expect.fail("Should throw not implemented error");
-      } catch (error) {
-        expect(error.message).to.equal("Method not implemented.");
-      }
-    });
-  });
-
-  describe("listOperationMap", async () => {
-    it("should throw an error if loading the spec fails", async () => {
-      try {
-        const specPath = "valid-spec.yaml";
-        const specParser = new SpecParser(specPath);
-        await specParser.listOperationMap();
         expect.fail("Should throw not implemented error");
       } catch (error) {
         expect(error.message).to.equal("Method not implemented.");

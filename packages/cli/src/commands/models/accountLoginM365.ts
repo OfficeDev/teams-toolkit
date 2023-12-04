@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import M365TokenProvider from "../../commonlib/m365Login";
-import { outputM365Info } from "../../cmds/account";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { accountUtils } from "./accountShow";
 
 export const accountLoginM365Command: CLICommand = {
   name: "m365",
@@ -11,9 +11,9 @@ export const accountLoginM365Command: CLICommand = {
   telemetry: {
     event: TelemetryEvent.AccountLoginM365,
   },
-  handler: async (ctx) => {
+  handler: async () => {
     await M365TokenProvider.signout();
-    await outputM365Info("login");
+    await accountUtils.outputM365Info("login");
     return ok(undefined);
   },
 };

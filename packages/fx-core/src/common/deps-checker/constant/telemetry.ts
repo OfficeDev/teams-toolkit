@@ -38,6 +38,7 @@ export enum TelemetryProperties {
 
   InstalledTestToolVersion = "installed-test-tool-version",
   InstallTestToolError = "install-test-tool-error",
+  InstallTestToolReleaseType = "install-test-tool-release-type",
   SymlinkTestToolVersion = "symlink-test-tool-version",
   SymlinkTestToolVersionError = "symlink-test-tool-version-error",
   SelectedPortableTestToolVersion = "selected-test-tool-version",

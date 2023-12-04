@@ -516,6 +516,7 @@ export async function createNewProject(
 ): Promise<void> {
   const driver = VSBrowser.instance.driver;
   let scaffoldingTime = 60 * 1000;
+  const scaffoldingSpfxTime = 7 * 60 * 1000;
   if (!testRootFolder) {
     testRootFolder = path.resolve(__dirname, "../../resource/");
   }
@@ -650,7 +651,7 @@ export async function createNewProject(
       break;
     }
     case "spfxreact": {
-      scaffoldingTime = 7 * 60 * 1000;
+      scaffoldingTime = scaffoldingSpfxTime;
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
       await input.selectQuickPick("SPFx");
@@ -673,7 +674,7 @@ export async function createNewProject(
       break;
     }
     case "spfxnone": {
-      scaffoldingTime = 7 * 60 * 1000;
+      scaffoldingTime = scaffoldingSpfxTime;
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
@@ -697,7 +698,7 @@ export async function createNewProject(
       break;
     }
     case "spfxmin": {
-      scaffoldingTime = 5 * 60 * 1000;
+      scaffoldingTime = scaffoldingSpfxTime;
       // Choose Tab(SPFx)
       await input.selectQuickPick(CreateProjectQuestion.Tab);
       await driver.sleep(Timeout.input);
@@ -712,6 +713,28 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       // Choose React or None
       await input.selectQuickPick("Minimal");
+      // Input Web Part Name
+      await input.setText(appName);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      // Input Web Part Description
+      await driver.sleep(Timeout.input);
+      break;
+    }
+    case "gspfxreact": {
+      await input.selectQuickPick(CreateProjectQuestion.Tab);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
+      // Wait for Node version check
+      await driver.sleep(Timeout.longTimeWait);
+      await input.selectQuickPick(
+        CreateProjectQuestion.SpfxSharepointFrameworkGlobalEnvInTtk
+      );
+      await driver.sleep(Timeout.input);
+      // Choose React or None
+      await input.selectQuickPick("React");
       // Input Web Part Name
       await input.setText(appName);
       await driver.sleep(Timeout.input);
@@ -816,6 +839,30 @@ export async function createNewProject(
       }
       break;
     }
+    case "aichat": {
+      await input.selectQuickPick(CreateProjectQuestion.Bot);
+      await input.selectQuickPick("AI Chat Bot");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
+    case "aiassist": {
+      await input.selectQuickPick(CreateProjectQuestion.Bot);
+      await input.selectQuickPick("AI Assistant Bot");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
     default:
       break;
   }
@@ -841,7 +888,9 @@ export async function createNewProject(
   );
   console.log("copy path: ", projectPath, " to: ", projectCopyPath);
   await fs.mkdir(projectCopyPath);
-  await fs.copy(projectPath, projectCopyPath);
+  const filterFunc = (src: string) =>
+    src.indexOf("node_modules") > -1 ? false : true;
+  await fs.copy(projectPath, projectCopyPath, { filter: filterFunc });
   console.log("open project path");
   await openExistingProject(projectCopyPath);
 }

@@ -9,6 +9,7 @@ import {
 } from "./create";
 import {
   addWebPartQuestionNode,
+  apiSpecApiKeyQuestion,
   copilotPluginAddAPIQuestionNode,
   createNewEnvQuestionNode,
   deployAadManifestQuestionNode,
@@ -62,6 +63,9 @@ export class QuestionNodes {
   }
   copilotPluginAddAPI(): IQTreeNode {
     return copilotPluginAddAPIQuestionNode();
+  }
+  apiKey(): IQTreeNode {
+    return apiSpecApiKeyQuestion();
   }
 }
 

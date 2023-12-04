@@ -5,16 +5,10 @@ import "./sampleCard.scss";
 
 import * as React from "react";
 
-import { FontIcon, Image } from "@fluentui/react";
-import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { Image } from "@fluentui/react";
 
 import Turtle from "../../../img/webview/sample/turtle.svg";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
-import { Commands } from "../Commands";
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { SampleProps } from "./ISamples";
 
 export default class SampleCard extends React.Component<SampleProps, unknown> {
@@ -25,16 +19,7 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
   render() {
     const sample = this.props.sample;
     const unavailable = sample.versionComparisonResult != 0;
-    const previewImage = (
-      <>
-        {sample.suggested && (
-          <div className="triangle">
-            <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
-          </div>
-        )}
-        <Image className="thumbnail" src={sample.thumbnailUrl} />
-      </>
-    );
+    const previewImage = <Image className="thumbnail" src={sample.thumbnailUrl} />;
     const legacySampleImage = (
       <div className="unavailableSampleImage">
         <Turtle className="turtle" />
@@ -60,9 +45,9 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
           {sample.tags &&
             sample.tags.map((value: string) => {
               return (
-                <VSCodeTag className="tag" key={value}>
-                  {value}
-                </VSCodeTag>
+                <div className="tag" key={value}>
+                  <span>{value}</span>
+                </div>
               );
             })}
         </div>
@@ -101,19 +86,6 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
   }
 
   onSampleCardClicked = () => {
-    if (this.props.sample.versionComparisonResult != 0) {
-      return;
-    }
-    vscode.postMessage({
-      command: Commands.SendTelemetryEvent,
-      data: {
-        eventName: TelemetryEvent.ClickSampleCard,
-        properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sample.id,
-        },
-      },
-    });
-    this.props.selectSample(this.props.sample.id);
+    this.props.selectSample(this.props.sample.id, TelemetryTriggerFrom.SampleGallery);
   };
 }

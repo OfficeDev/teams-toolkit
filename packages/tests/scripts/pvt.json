@@ -6,6 +6,7 @@
       "remotedebug-spfxreact-none",
       "remotedebug-spfxreact-minimal",
       "remotedebug-spfxreact",
+      "remotedebug-spfxreact-globalpkg",
       "localdebug-tab-nosso",
       "localdebug-bot",
       "localdebug-bot-twice",
@@ -49,7 +50,11 @@
       "remotedebug-notification-func-timertrigger-ts-win-only",
       "remotedebug-notification-func-timertrigger-win-only",
       "remotedebug-link-unfurling-win-only",
-      "remotedebug-link-unfurling-ts-win-only"
+      "remotedebug-link-unfurling-ts-win-only",
+      "remotedebug-aichat-bot-win-only",
+      "remotedebug-aichat-bot-ts-win-only",
+      "remotedebug-aiassistant-bot-win-only",
+      "remotedebug-aiassistant-bot-ts-win-only"
     ]
   },
   "ubuntu-latest": {
@@ -94,7 +99,11 @@
       "localdebug-notification-func-timertrigger-ts",
       "localdebug-notification-func-timertrigger",
       "localdebug-link-unfurling",
-      "localdebug-link-unfurling-ts"
+      "localdebug-link-unfurling-ts",
+      "localdebug-aichat-bot",
+      "localdebug-aichat-bot-ts",
+      "localdebug-aiassistant-bot",
+      "localdebug-aiassistant-bot-ts"
     ]
   },
   "macos-latest": {

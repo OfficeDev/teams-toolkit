@@ -10,6 +10,8 @@
     "main": "./src/index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
+        "dev:teamsfx:testtool": "env-cmd --silent -f .localConfigs.testTool npm run dev",
+        "dev:teamsfx:launch-testtool": "env-cmd --silent -f env/.env.testtool teamsapptester start",
         "dev": "nodemon --inspect=9239 --signal SIGINT ./src/index.js",
         "start": "node ./src/index.js",
         "watch": "nodemon ./src/index.js",
@@ -21,7 +23,7 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^2.3.0-rc-hotfix.0",
+        "@microsoft/teamsfx": "^2.3.1-beta",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },

@@ -13,7 +13,7 @@ import * as chai from "chai";
 import fs from "fs-extra";
 import { describe } from "mocha";
 import path from "path";
-import MockAzureAccountProvider from "@microsoft/teamsfx-cli/src/commonlib/azureLoginUserPassword";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import { FrontendWebAppConfig } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { EnvConstants } from "../../commonlib/constants";
@@ -117,8 +117,11 @@ describe("Blazor App", function () {
       chai.assert.exists(endpoint);
       const axiosInstance = axios.create();
       try {
-        const response = await axiosInstance.get(endpoint);
-        chai.assert.equal(response.status, 200);
+        // wait until the web app starts
+        setTimeout(async () => {
+          const response = await axiosInstance.get(endpoint);
+          chai.assert.equal(response.status, 200);
+        }, 30000);
       } catch (e) {
         chai.assert.notExists(e);
       }

@@ -39,7 +39,7 @@ describe("Collaboration", function () {
 
       // new a project
       await execAsync(
-        `teamsfx new --interactive false --capability tab-spfx --app-name ${appName}`,
+        `teamsapp new --interactive false --capability tab-spfx --app-name ${appName}`,
         {
           cwd: testFolder,
           env: process.env,
@@ -51,7 +51,7 @@ describe("Collaboration", function () {
       removeTeamsAppExtendToM365(filePath);
 
       // provision
-      await execAsyncWithRetry(`teamsfx provision`, {
+      await execAsyncWithRetry(`teamsapp provision`, {
         cwd: projectPath,
         env: process.env,
         timeout: 0,

@@ -8,7 +8,7 @@ import axios from "axios";
 
 import { M365TokenProvider } from "@microsoft/teamsfx-api";
 
-import MockM365TokenProvider from "@microsoft/teamsfx-cli/src/commonlib/m365LoginUserPassword";
+import MockM365TokenProvider from "@microsoft/teamsapp-cli/src/commonlib/m365LoginUserPassword";
 import {
   IAADDefinition,
   IAadObject,
@@ -32,7 +32,7 @@ export class AadValidator {
     isLocalDebug = false,
     provider?: M365TokenProvider
   ): IAadObject {
-    console.log("Start to init validator for Azure AD app.");
+    console.log("Start to init validator for Microsoft Entra app.");
 
     AadValidator.provider = provider || MockM365TokenProvider;
 
@@ -42,7 +42,7 @@ export class AadValidator {
     );
     chai.assert.exists(aadObject);
 
-    console.log("Successfully init validator for Azure AD app.");
+    console.log("Successfully init validator for Microsoft Entra app.");
     return aadObject!;
   }
 
@@ -52,7 +52,7 @@ export class AadValidator {
     expectAadName?: string,
     expectApplicationIdUri?: string
   ) {
-    console.log("Start to validate Azure AD app.");
+    console.log("Start to validate Microsoft Entra app.");
 
     const groundTruth = await AadValidator.getAadApp(aadObject.objectId);
     chai.assert.exists(groundTruth);
@@ -69,14 +69,14 @@ export class AadValidator {
     }
 
     if (expectedPermission) {
-      console.log("Start to validate permission for Azure AD app.");
+      console.log("Start to validate permission for Microsoft Entra app.");
       chai.assert(
         expectedPermission,
         JSON.stringify(groundTruth?.requiredResourceAccess)
       );
     }
 
-    console.log("Successfully validate Azure AD app.");
+    console.log("Successfully validate Microsoft Entra app.");
   }
 
   private static parseConfig(
@@ -112,7 +112,7 @@ export class AadValidator {
           return <IAADDefinition>aadGetResponse.data;
         }
       } catch (error) {
-        console.log("Azure AD app get failed. Retry.");
+        console.log("Microsoft Entra app get failed. Retry.");
       }
 
       await delay(10000);

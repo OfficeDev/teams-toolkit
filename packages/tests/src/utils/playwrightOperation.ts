@@ -94,6 +94,9 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
   [TemplateProject.TabSSOApimProxy]: async () => {
     await startDebuggingAzure("Debug (Chrome)", "local", `TabSSOApimProxy`);
   },
+  [TemplateProject.LargeScaleBot]: async () => {
+    await startDebugging();
+  },
 };
 
 export async function initPage(
@@ -914,6 +917,75 @@ export async function validateEchoBot(
   }
 }
 
+export async function validateWelcomeAndReplyBot(
+  page: Page,
+  options: {
+    botCommand?: string;
+    expectedWelcomeMessage?: string;
+    expectedReplyMessage?: string;
+  } = {
+    botCommand: "helloWorld",
+    expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+    expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+  }
+) {
+  try {
+    console.log("start to verify bot");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    try {
+      console.log("dismiss message");
+      await frame?.waitForSelector("div.ui-box");
+      await page
+        .click('button:has-text("Dismiss")', {
+          timeout: Timeout.playwrightDefaultTimeout,
+        })
+        .catch(() => {});
+    } catch (error) {
+      console.log("no message to dismiss");
+    }
+
+    await RetryHandler.retry(async () => {
+      await frame?.waitForSelector(
+        `p:has-text("${
+          options?.expectedWelcomeMessage ||
+          ValidationContent.AiChatBotWelcomeInstruction
+        }")`
+      );
+      console.log(
+        options?.expectedWelcomeMessage ||
+          ValidationContent.AiChatBotWelcomeInstruction
+      );
+      console.log("verified bot that it has sent welcome!!!");
+    }, 2);
+
+    await RetryHandler.retry(async () => {
+      console.log("sending message ", options?.botCommand || "helloWorld");
+      await frame?.fill(
+        'div.ck-content[role="textbox"]',
+        options?.botCommand || "helloWorld"
+      );
+      await frame?.click('button[name="send"]');
+      await frame?.waitForSelector(
+        `p:has-text("${options?.expectedReplyMessage}")`
+      );
+      console.log(
+        `verify bot successfully with content ${options?.expectedReplyMessage}!!!`
+      );
+    }, 2);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
 export async function validateBot(
   page: Page,
   options: { botCommand?: string; expected?: ValidationContent } = {
@@ -1672,7 +1744,7 @@ export async function validateContact(
 
         await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
-      page.waitForTimeout(1000);
+      await page.waitForTimeout(10000);
 
       // verify add person
       await addPerson(frame, options?.displayName || "");
@@ -1912,10 +1984,12 @@ export async function addPerson(
   displayName: string
 ): Promise<void> {
   console.log(`add person: ${displayName}`);
-  const input = await frame?.waitForSelector("input#people-picker-input");
+  const input = await frame?.waitForSelector("input#control");
   await input?.click();
   await input?.type(displayName);
-  const item = await frame?.waitForSelector(`span:has-text("${displayName}")`);
+  const item = await frame?.waitForSelector(
+    `ul#suggestions-list div:has-text("${displayName}")`
+  );
   await item?.click();
   await frame?.waitForSelector(
     `div.table-area div.line1:has-text("${displayName}")`
@@ -1928,7 +2002,7 @@ export async function delPerson(
 ): Promise<void> {
   console.log(`delete person: ${displayName}`);
   await frame?.waitForSelector(
-    `li div.details.small div:has-text("${displayName}")`
+    `li.selected-list-item div:has-text("${displayName}")`
   );
 
   const closeBtn = await frame?.waitForSelector('li div[role="button"]');

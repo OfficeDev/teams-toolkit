@@ -4,103 +4,11 @@
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
-import * as uuid from "uuid";
-import { parse } from "yaml";
-import { Options } from "yargs";
 import semver from "semver";
+import * as uuid from "uuid";
 
-import {
-  Colors,
-  Inputs,
-  IQTreeNode,
-  MultiSelectQuestion,
-  OptionItem,
-  Platform,
-  Question,
-  SingleSelectQuestion,
-} from "@microsoft/teamsfx-api";
-import {
-  CapabilityOptions,
-  CoreQuestionNames,
-  getSingleOption,
-  SampleConfig,
-  sampleProvider,
-} from "@microsoft/teamsfx-core";
-
-import { teamsAppFileName } from "./constants";
-import CLIUIInstance from "./userInteraction";
-
-function getChoicesFromQTNodeQuestion(data: Question): string[] | undefined {
-  const option = "staticOptions" in data ? data.staticOptions : undefined;
-  if (option && option instanceof Array && option.length > 0) {
-    if (typeof option[0] === "string") {
-      return option as string[];
-    } else {
-      return (option as OptionItem[]).map((op) => op.cliName || toLocaleLowerCase(op.id));
-    }
-  } else {
-    return undefined;
-  }
-}
-
-export function getSingleOptionString(
-  q: SingleSelectQuestion | MultiSelectQuestion
-): string | string[] {
-  const singleOption = getSingleOption(q);
-  if (q.returnObject) {
-    if (q.type === "singleSelect") {
-      return typeof singleOption === "string" ? singleOption : singleOption.id;
-    } else {
-      return [singleOption[0].id];
-    }
-  } else {
-    return singleOption;
-  }
-}
-
-export async function toYargsOptions(data: Question): Promise<Options> {
-  let choices = getChoicesFromQTNodeQuestion(data);
-  if (data.type === "singleSelect" && data.name === CoreQuestionNames.Capabilities) {
-    const options = CapabilityOptions.all({ platform: Platform.CLI });
-    choices = options.map((op) => op.id);
-  }
-  let defaultValue = data.default;
-  if (typeof data.default === "function") {
-    defaultValue = await data.default({ platform: Platform.CLI_HELP });
-  }
-  let title: any = data.title;
-  if (typeof data.title === "function") {
-    title = await data.title({ platform: Platform.CLI_HELP });
-  }
-
-  if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
-    defaultValue = defaultValue.map((item) => item.toLocaleLowerCase());
-  } else if (defaultValue && typeof defaultValue === "string") {
-    defaultValue = defaultValue.toLocaleLowerCase();
-  } else {
-    defaultValue = undefined;
-  }
-
-  if (defaultValue === undefined) {
-    return {
-      array: data.type === "multiSelect",
-      description: title || "",
-      choices: choices,
-      hidden: !!(data as any).hide,
-      global: false,
-      type: "string",
-    };
-  }
-  return {
-    array: data.type === "multiSelect",
-    description: title || "",
-    default: defaultValue,
-    choices: choices,
-    hidden: !!(data as any).hide,
-    global: false,
-    type: "string",
-  };
-}
+import { Colors, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
 
 export function toLocaleLowerCase(arg: any): any {
   if (typeof arg === "string") {
@@ -110,55 +18,13 @@ export function toLocaleLowerCase(arg: any): any {
   } else return arg;
 }
 
-export function flattenNodes(node: IQTreeNode): IQTreeNode[] {
-  const nodeCopy = Object.assign({}, node);
-  const children = (nodeCopy.children || []).concat([]);
-  nodeCopy.children = undefined;
-  return [nodeCopy].concat(...children.map((nd) => flattenNodes(nd)));
-}
-
-export function isWorkspaceSupported(workspace: string): boolean {
-  const p = workspace;
-
-  const checklist = [p, path.join(p, teamsAppFileName)];
-
-  for (const fp of checklist) {
-    if (!fs.existsSync(path.resolve(fp))) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Only used for telemetry
-export function getSettingsVersion(rootFolder: string | undefined): string | undefined {
-  if (!rootFolder) {
-    return undefined;
-  }
-  if (isWorkspaceSupported(rootFolder)) {
-    const filePath = path.join(rootFolder, teamsAppFileName);
-    if (!fs.existsSync(filePath)) {
-      return undefined;
-    }
-
-    try {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
-      const configuration = parse(fileContent);
-      return configuration.version;
-    } catch (e) {
-      return undefined;
-    }
-  }
-  return undefined;
-}
-
 export function getSystemInputs(projectPath?: string, env?: string): Inputs {
   const systemInputs: Inputs = {
     platform: Platform.CLI,
     projectPath: projectPath,
     correlationId: uuid.v4(),
     env: env,
-    nonInteractive: !CLIUIInstance.interactive,
+    nonInteractive: false,
   };
   return systemInputs;
 }
@@ -211,9 +77,8 @@ export interface Sample {
 }
 
 export async function getTemplates(): Promise<Sample[]> {
-  await sampleProvider.fetchSampleConfig();
   const version = getVersion();
-  const availableSamples = sampleProvider.SampleCollection.samples.filter(
+  const availableSamples = (await sampleProvider.SampleCollection).samples.filter(
     (sample: SampleConfig) => {
       if (sample.minimumCliVersion !== undefined) {
         return semver.gte(version, sample.minimumCliVersion);
@@ -225,12 +90,13 @@ export async function getTemplates(): Promise<Sample[]> {
     }
   );
   const samples = availableSamples.map((sample: SampleConfig) => {
+    const info = sample.downloadUrlInfo;
     return {
       tags: sample.tags,
       name: sample.title,
       description: sample.shortDescription,
       id: sample.id,
-      url: sample.downloadUrl,
+      url: `https://github.com/${info.owner}/${info.repository}/tree/${info.ref}/${info.dir}`,
     };
   });
   return samples;

@@ -5,6 +5,8 @@ import { MessageConnection } from "vscode-jsonrpc";
 
 import {
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   FxError,
   InputTextConfig,
   InputTextResult,
@@ -86,6 +88,14 @@ export default class ServerUserInteraction implements UserInteraction {
   async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
     const promise = this.connection.sendRequest(
       RequestTypes.ui.selectFolder,
+      await convertUIConfigToJson(config)
+    );
+    return getResponseWithErrorHandling(promise);
+  }
+
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    const promise = this.connection.sendRequest(
+      RequestTypes.ui.confirm,
       await convertUIConfigToJson(config)
     );
     return getResponseWithErrorHandling(promise);

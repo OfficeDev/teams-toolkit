@@ -53,9 +53,15 @@ export interface FuncInstallOptions {
 }
 
 export interface TestToolInstallOptions {
-  symlinkDir: string;
+  releaseType: TestToolReleaseType;
+  symlinkDir?: string;
   projectPath: string;
   versionRange: string;
+}
+
+export enum TestToolReleaseType {
+  Npm = "npm",
+  Binary = "binary",
 }
 
 export type InstallOptions = BaseInstallOptions | FuncInstallOptions | TestToolInstallOptions;

@@ -2,21 +2,33 @@
 // Licensed under the MIT license.
 
 import AdmZip from "adm-zip";
-import path from "path";
-import { fetchZipFromUrl, fetchTemplateZipUrl, unzip, zipFolder, downloadDirectory } from "./utils";
 import fs from "fs-extra";
-import { getTemplatesFolder } from "../../folder";
-import { MissKeyError } from "./error";
-import { FeatureFlagName } from "../../common/constants";
+import path from "path";
+
 import { LogProvider } from "@microsoft/teamsfx-api";
+
+import { FeatureFlagName } from "../../common/constants";
+import { getTemplatesFolder } from "../../folder";
+import { MissKeyError, SampleNotFoundError, TemplateNotFoundError } from "./error";
+import {
+  downloadDirectory,
+  fetchTemplateZipUrl,
+  fetchZipFromUrl,
+  getSampleInfoFromName,
+  SampleUrlInfo,
+  unzip,
+  zipFolder,
+} from "./utils";
 
 export interface GeneratorContext {
   name: string;
+  language?: string;
   destination: string;
   logProvider: LogProvider;
   tryLimits?: number;
   timeoutInMs?: number;
   url?: string;
+  sampleInfo?: SampleUrlInfo;
   zip?: AdmZip;
   fallback?: boolean;
   cancelDownloading?: boolean;
@@ -28,7 +40,7 @@ export interface GeneratorContext {
 
   onActionStart?: (action: GeneratorAction, context: GeneratorContext) => Promise<void>;
   onActionEnd?: (action: GeneratorAction, context: GeneratorContext) => Promise<void>;
-  onActionError?: (
+  onActionError: (
     action: GeneratorAction,
     context: GeneratorContext,
     error: Error
@@ -45,6 +57,7 @@ export enum GeneratorActionName {
   FetchTemplateUrlWithTag = "FetchTemplatesUrlWithTag",
   FetchZipFromUrl = "FetchZipFromUrl",
   FetchTemplateZipFromLocal = "FetchTemplateZipFromLocal",
+  FetchSampleInfo = "FetchSampleInfo",
   DownloadDirectory = "DownloadDirectory",
   Unzip = "Unzip",
 }
@@ -72,7 +85,7 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
       __dirname,
       "../../../../../",
       "templates",
-      context.name
+      context.language!
     );
 
     context.zip = zipFolder(templateSourceCodePath);
@@ -80,15 +93,26 @@ export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
   },
 };
 
+export const fetchSampleInfoAction: GeneratorAction = {
+  name: GeneratorActionName.FetchSampleInfo,
+  run: async (context: GeneratorContext) => {
+    const sample = await getSampleInfoFromName(context.name);
+    context.sampleInfo = sample.downloadUrlInfo;
+  },
+};
+
 export const downloadDirectoryAction: GeneratorAction = {
   name: GeneratorActionName.DownloadDirectory,
   run: async (context: GeneratorContext) => {
     context.logProvider.debug(`Downloading sample by directory: ${JSON.stringify(context)}`);
-    if (!context.url) {
-      throw new MissKeyError("url");
+    if (!context.sampleInfo) {
+      throw new MissKeyError("sampleInfo");
     }
 
-    context.outputs = await downloadDirectory(context.url, context.destination);
+    context.outputs = await downloadDirectory(context.sampleInfo, context.destination);
+    if (!context.outputs?.length) {
+      throw new SampleNotFoundError(context.name);
+    }
   },
 };
 
@@ -100,7 +124,11 @@ export const fetchTemplateUrlWithTagAction: GeneratorAction = {
     }
 
     context.logProvider.debug(`Fetching template url with tag: ${JSON.stringify(context)}`);
-    context.url = await fetchTemplateZipUrl(context.name, context.tryLimits, context.timeoutInMs);
+    context.url = await fetchTemplateZipUrl(
+      context.language!,
+      context.tryLimits,
+      context.timeoutInMs
+    );
   },
 };
 
@@ -128,7 +156,7 @@ export const fetchTemplateFromLocalAction: GeneratorAction = {
     context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);
     context.fallback = true;
     const fallbackPath = path.join(getTemplatesFolder(), "fallback");
-    const fileName = `${context.name}.zip`;
+    const fileName = `${context.language!}.zip`;
     const zipPath: string = path.join(fallbackPath, fileName);
 
     const data: Buffer = await fs.readFile(zipPath);
@@ -140,6 +168,9 @@ export const fetchTemplateFromLocalAction: GeneratorAction = {
       context.fileDataReplaceFn,
       context.filterFn
     );
+    if (!context.outputs?.length) {
+      throw new TemplateNotFoundError(context.name);
+    }
   },
 };
 
@@ -169,4 +200,7 @@ export const TemplateActionSeq: GeneratorAction[] = [
 ];
 
 export const SampleActionSeq: GeneratorAction[] = [fetchZipFromUrlAction, unzipAction];
-export const DownloadDirectoryActionSeq: GeneratorAction[] = [downloadDirectoryAction];
+export const DownloadDirectoryActionSeq: GeneratorAction[] = [
+  fetchSampleInfoAction,
+  downloadDirectoryAction,
+];

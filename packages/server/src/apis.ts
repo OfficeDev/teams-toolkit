@@ -4,6 +4,8 @@
 import {
   ApiOperation,
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   CreateProjectResult,
   FxError,
   Inputs,
@@ -27,7 +29,7 @@ import {
   TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
-import { VersionCheckRes } from "@microsoft/teamsfx-core";
+import { DependencyStatus, TestToolInstallOptions, VersionCheckRes } from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   NotificationType2,
@@ -177,6 +179,10 @@ export interface IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<ApiOperation[], FxError>>;
+  checkAndInstallTestTool: (
+    options: TestToolInstallOptions & { correlationId: string },
+    token: CancellationToken
+  ) => Promise<Result<DependencyStatus, FxError>>;
 }
 
 /**
@@ -273,6 +279,9 @@ export const RequestTypes = {
     ),
     selectFolder: new RequestType1<SelectFolderConfig, Result<SelectFolderResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/selectFolderRequest`
+    ),
+    confirm: new RequestType1<ConfirmConfig, Result<ConfirmResult, FxError>, Error>(
+      `${Namespaces.UserInteraction}/confirmRequest`
     ),
     showMessage: new RequestType4<
       "info" | "warn" | "error",

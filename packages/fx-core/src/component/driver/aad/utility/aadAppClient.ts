@@ -3,8 +3,9 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import { LogProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
-import axios, { AxiosError, AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestHeaders } from "axios";
 import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { AadOwner } from "../../../../common/permissionInterface";
 import { GraphScopes } from "../../../../common/tools";
 import { ErrorContextMW } from "../../../../core/globalVars";
@@ -15,7 +16,6 @@ import { IAADDefinition } from "../interface/IAADDefinition";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadManifestHelper } from "./aadManifestHelper";
 import { aadErrorCode, constants } from "./constants";
-import { getLocalizedString } from "../../../../common/localizeUtils";
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
 
@@ -52,7 +52,7 @@ export class AadAppClient {
       const token = tokenResponse.value;
 
       if (!config.headers) {
-        config.headers = {};
+        config.headers = {} as AxiosRequestHeaders;
       }
       config.headers["Authorization"] = `Bearer ${token}`;
 
@@ -64,7 +64,7 @@ export class AadAppClient {
       );
       return response;
     });
-    // Add retry logic. Retry post request may result in creating additional resources but should be fine in AAD driver.
+    // Add retry logic. Retry post request may result in creating additional resources but should be fine in Microsoft Entra driver.
     axiosRetry(this.axios, {
       retries: this.retryNumber,
       retryDelay: axiosRetry.exponentialDelay, // exponetial delay time: Math.pow(2, retryNumber) * 100
@@ -80,7 +80,7 @@ export class AadAppClient {
     const requestBody: IAADDefinition = {
       displayName: displayName,
       signInAudience: signInAudience,
-    }; // Create an AAD app without setting anything
+    }; // Create a Microsoft Entra app without setting anything
 
     const response = await this.axios.post("applications", requestBody);
 
@@ -101,7 +101,7 @@ export class AadAppClient {
         retryCondition: (error) =>
           axiosRetry.isNetworkError(error) ||
           axiosRetry.isRetryableError(error) ||
-          this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
+          this.is404Error(error), // also retry 404 error since Microsoft Entra need sometime to sync created Microsoft Entra app data
       },
     });
 
@@ -120,8 +120,8 @@ export class AadAppClient {
           retryCondition: (error) =>
             axiosRetry.isNetworkError(error) ||
             axiosRetry.isRetryableError(error) ||
-            this.is404Error(error) || // also retry 404 error since AAD need sometime to sync created AAD app data
-            this.is400Error(error), // sometimes AAD will complain OAuth permission not found if we pre-authorize a newly created permission
+            this.is404Error(error) || // also retry 404 error since Microsoft Entra need sometime to sync created Microsoft Entra app data
+            this.is400Error(error), // sometimes Microsoft Entra will complain OAuth permission not found if we pre-authorize a newly created permission
         },
       });
     } catch (err) {
@@ -145,7 +145,7 @@ export class AadAppClient {
         retryCondition: (error) =>
           axiosRetry.isNetworkError(error) ||
           axiosRetry.isRetryableError(error) ||
-          this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
+          this.is404Error(error), // also retry 404 error since Microsoft Entra need sometime to sync created Microsoft Entra app data
       },
     });
 
@@ -176,12 +176,12 @@ export class AadAppClient {
         retryCondition: (error) =>
           axiosRetry.isNetworkError(error) ||
           axiosRetry.isRetryableError(error) ||
-          this.is404Error(error), // also retry 404 error since AAD need sometime to sync created AAD app data
+          this.is404Error(error), // also retry 404 error since Microsoft Entra need sometime to sync created Microsoft Entra app data
       },
     });
   }
 
-  // only use it to retry 404 errors for create client secret / update AAD app requests right after AAD app creation
+  // only use it to retry 404 errors for create client secret / update Microsoft Entra app requests right after Microsoft Entra app creation
   private is404Error(error: AxiosError<any>): boolean {
     return error.code !== "ECONNABORTED" && (!error.response || error.response.status === 404);
   }

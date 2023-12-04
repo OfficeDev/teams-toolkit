@@ -8,6 +8,7 @@ import chaiAsPromised from "chai-as-promised";
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import fs from "fs-extra";
+import { UserError } from "@microsoft/teamsfx-api";
 import { MockLogProvider } from "../../core/utils";
 import { PackageService } from "../../../src/common/m365/packageService";
 import { UnhandledError } from "../../../src/error/common";
@@ -441,6 +442,37 @@ describe("Package Service", () => {
     chai.assert.isTrue(actualError.message.includes("test-post"));
   });
 
+  it("sideLoading badrequest as user error", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    const expectedError = new Error("test-post") as any;
+    expectedError.response = {
+      data: {
+        foo: "bar",
+      },
+      headers: {
+        traceresponse: "tracing-id",
+      },
+      status: 400,
+    };
+    axiosPostResponses["/dev/v1/users/packages"] = expectedError;
+
+    const packageService = new PackageService("https://test-endpoint");
+    let actualError: any;
+    try {
+      await packageService.sideLoading("test-token", "test-path");
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isDefined(actualError);
+    chai.assert.isTrue(actualError.message.includes("test-post"));
+    chai.assert.isTrue(actualError instanceof UserError);
+  });
+
   it("retrieveTitleId happy path", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {
@@ -793,7 +825,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = {
+    axiosGetResponses["/catalog/v1/users/uitypes"] = {
       data: {
         activeExperiences: ["foo", "bar"],
       },
@@ -829,7 +861,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = new Error("test-get");
+    axiosGetResponses["/catalog/v1/users/uitypes"] = new Error("test-get");
 
     const packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
@@ -853,7 +885,7 @@ describe("Package Service", () => {
     expectedError.response = {
       data: {},
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = expectedError;
+    axiosGetResponses["/catalog/v1/users/uitypes"] = expectedError;
 
     let packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
@@ -884,7 +916,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = {
+    axiosGetResponses["/catalog/v1/users/uitypes"] = {
       data: {
         activeExperiences: ["foo", "bar"],
       },
@@ -909,7 +941,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = {
+    axiosGetResponses["/catalog/v1/users/uitypes"] = {
       foo: "bar",
     };
 
@@ -932,7 +964,7 @@ describe("Package Service", () => {
         titlesServiceUrl: "https://test-url",
       },
     };
-    axiosGetResponses["/catalog/v1/users/experiences"] = new Error("test-get");
+    axiosGetResponses["/catalog/v1/users/uitypes"] = new Error("test-get");
 
     let packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;

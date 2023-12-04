@@ -14,7 +14,7 @@ provision:
     writeToEnvironmentFile:
       # Write the information of created resources into environment file for the specified environment variable(s).
       teamsAppId: TEAMS_APP_ID
-  - uses: botAadApp/create # Creates a new AAD app for Bot Registration.
+  - uses: botAadApp/create # Creates a new Microsoft Entra app for Bot Registration.
     with:
       name: vsCommandBotbt${{RESOURCE_SUFFIX}}
     writeToEnvironmentFile:

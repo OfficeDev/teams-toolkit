@@ -1,0 +1,54 @@
+name: Templates Dependencies New Version Released
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 15 * * *"
+
+jobs:
+  notification:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install npm packages
+        run: |
+          npm install axios
+          npm install glob
+
+      - name: Get All Updated Templates Dependencies
+        id: getUpdatedTemplatesDependencies
+        run: |
+          echo "result=$(node ./.github/scripts/get-dailydigest-dependencies.js)" >> $GITHUB_OUTPUT
+
+      - name: Get Date
+        id: getDate
+        run: |
+          echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Setup Email and Recipient
+        if: ${{ always() }}
+        id: email
+        run: |
+          emails="yiqingzhao@microsoft.com"
+          subject="Templates Dependencies Daily Check ${{ steps.getDate.outputs.date }}"
+          body=${{steps.getUpdatedTemplatesDependencies.outputs.result}}
+
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
+          echo "body=$body" >> $GITHUB_OUTPUT
+
+      - name: Send E-mail Notifications
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.email.outputs.to }}
+          BODY: ${{ steps.email.outputs.body }}
+          SUBJECT: ${{ steps.email.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

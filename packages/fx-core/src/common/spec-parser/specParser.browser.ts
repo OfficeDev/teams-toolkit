@@ -12,6 +12,7 @@ import {
   ValidateResult,
   ValidationStatus,
   Parameter,
+  ListAPIResult,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { listSupportedAPIs, parseApiInfo, validateSpec } from "./utils";
@@ -23,7 +24,7 @@ import { ConstantString } from "./constants";
 export class SpecParser {
   public readonly pathOrSpec: string | OpenAPIV3.Document;
   public readonly parser: SwaggerParser;
-  public readonly options: ParseOptions;
+  public readonly options: Required<ParseOptions>;
 
   private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
   private spec: OpenAPIV3.Document | undefined;
@@ -33,6 +34,9 @@ export class SpecParser {
   private defaultOptions: ParseOptions = {
     allowMissingId: false,
     allowSwagger: false,
+    allowAPIKeyAuth: false,
+    allowMultipleParameters: false,
+    allowOauth2: false,
   };
 
   /**
@@ -46,7 +50,7 @@ export class SpecParser {
     this.options = {
       ...this.defaultOptions,
       ...(options ?? {}),
-    };
+    } as Required<ParseOptions>;
   }
 
   /**
@@ -77,7 +81,15 @@ export class SpecParser {
         };
       }
 
-      return validateSpec(this.spec!, this.parser, !!this.isSwaggerFile);
+      return validateSpec(
+        this.spec!,
+        this.parser,
+        !!this.isSwaggerFile,
+        this.options.allowMissingId,
+        this.options.allowAPIKeyAuth,
+        this.options.allowMultipleParameters,
+        this.options.allowOauth2
+      );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -98,7 +110,10 @@ export class SpecParser {
           continue;
         }
 
-        const [command, warning] = parseApiInfo(pathObjectItem);
+        const [command, warning] = parseApiInfo(
+          pathObjectItem,
+          this.options.allowMultipleParameters
+        );
 
         const apiInfo: APIInfo = {
           method: method,
@@ -128,16 +143,7 @@ export class SpecParser {
    * according to copilot plugin spec, only list get and post method without auth
    */
   // eslint-disable-next-line @typescript-eslint/require-await
-  async list(): Promise<string[]> {
-    throw new Error("Method not implemented.");
-  }
-
-  /**
-   * List all the OpenAPI operations in the specification file and return a map of operationId and operation path.
-   * @returns A map of operationId and operation path, such as [{'getPetById': 'GET /pets/{petId}'}, {'getUser': 'GET /user/{userId}'}]
-   */
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async listOperationMap(): Promise<Map<string, string>> {
+  async list(): Promise<ListAPIResult[]> {
     throw new Error("Method not implemented.");
   }
 
@@ -177,7 +183,13 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = listSupportedAPIs(spec, this.options.allowMissingId!);
+    const result = listSupportedAPIs(
+      spec,
+      this.options.allowMissingId,
+      this.options.allowAPIKeyAuth,
+      this.options.allowMultipleParameters,
+      this.options.allowAPIKeyAuth
+    );
     this.apiMap = result;
     return result;
   }

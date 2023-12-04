@@ -11,7 +11,7 @@ import fs from "fs-extra";
 import path from "path";
 import { cleanUpLocalProject, execAsync, getTestFolder } from "../commonUtils";
 
-describe("teamsfx new sample", function () {
+describe("teamsapp new sample", function () {
   const testFolder = getTestFolder();
   const sampleName = "todo-list-with-Azure-backend";
   const projectPath = path.resolve(testFolder, sampleName);
@@ -20,9 +20,11 @@ describe("teamsfx new sample", function () {
     `${sampleName}`,
     { testPlanCaseId: 24137474, author: "zhiyou@microsoft.com" },
     async function () {
-      await execAsync(`teamsfx new sample ${sampleName} -i false`, {
+      const env = Object.assign({}, process.env);
+      env.TEAMSFX_SAMPLE_CONFIG_BRANCH = "dev";
+      await execAsync(`teamsapp new sample ${sampleName} -i false`, {
         cwd: testFolder,
-        env: process.env,
+        env: env,
         timeout: 0,
       });
 

@@ -40,7 +40,7 @@
 /packages/cli/src/commands/models/accountShow.ts @swatDong @xiaolang124 @kimizhu
 
 /packages/cli/src/commands/models/add.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang @MSFT-yiz
-/packages/cli/src/commands/models/addSPFxWebpart.ts @HuihuiWu-Microsoft @nliu-ms @jayzhang @MSFT-yiz
+/packages/cli/src/commands/models/addSPFxWebpart.ts @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang @MSFT-yiz
 
 /packages/cli/src/commands/models/m365.ts @swatDong @kuojianlu @kimizhu
 /packages/cli/src/commands/models/m365LaunchInfo.ts @swatDong @kuojianlu @kimizhu
@@ -75,7 +75,7 @@
 /packages/cli/tests/unit/cmds/m365 @swatDong @kuojianlu @kimizhu
 
 
-/packages/api @jayzhang @1yefuwang1 @LongOddCode @nliu-ms
+/packages/api @jayzhang @LongOddCode @nliu-ms
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu
 
 /packages/sdk @tecton @blackchoey @SLdragon @wenytang-ms @yiqing-zhao
@@ -96,7 +96,7 @@
 /.github/CODEOWNERS @adashen @eriolchan @kimizhu @MSFT-yiz @zhenjiao-ms
 /packages/server @chagong @Alive-Fish @jayzhang
 
-/Localize @HuihuiWu-Microsoft @tecton
+/Localize @HuihuiWu-Microsoft @tecton @chagong
 
 /packages/sdk-react @tecton @yiqing-zhao
 
@@ -117,8 +117,9 @@
 /templates/**/non-sso-tab-default-bot @hund030 @yuqizhou77
 /templates/**/default-bot-message-extension @yuqizhou77 @MSFT-yiz
 /templates/**/message-extension @yuqizhou77 @MSFT-yiz
-/templates/**/office-addin @1yefuwang1 @jayzhang
+/templates/**/office-addin @jayzhang @nliu-ms
 /templates/**/copilot-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
+/templates/**/copilot-plugin-existing-api-api-key @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/spfx-tab @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /templates/**/spfx-tab-import @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 
@@ -134,6 +135,7 @@
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
 /templates/**/m365-tab @kimizhu @swatDong @kuojianlu
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
+/templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
 
 /packages/fx-core/.eslintignore @LongOddCode @wenytang-ms
 /packages/fx-core/.eslintrc.js @LongOddCode @wenytang-ms
@@ -168,7 +170,7 @@
 /packages/fx-core/tests/common/globalState.test.ts @tecton @jayzhang @LongOddCode
 
 /packages/fx-core/src/common/jsonUtils.ts @jayzhang @xzf0587 @LongOddCode
-/packages/fx-core/src/common/localizeUtils.ts @jayzhang @HuihuiWu-Microsoft
+/packages/fx-core/src/common/localizeUtils.ts @jayzhang @HuihuiWu-Microsoft @chagong
 /packages/fx-core/src/common/permissionInterface.ts @SLdragon @KennethBWSong
 /packages/fx-core/src/common/projectSettingsHelper.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/common/projectSettingsHelperV3.ts @jayzhang @xzf0587 @LongOddCode
@@ -182,8 +184,8 @@
 /packages/fx-core/tests/common/utils.test.ts @jayzhang @xzf0587 @LongOddCode
 
 /packages/fx-core/src/common/versionMetadata.ts @xzf0587 @blackchoey @adashen
-/packages/fx-core/src/failpoint @1yefuwang1 @LongOddCode
-/packages/fx-core/tests/core/failpoint.test.ts @1yefuwang1 @LongOddCode
+/packages/fx-core/src/failpoint @jayzhang @LongOddCode
+/packages/fx-core/tests/core/failpoint.test.ts @jayzhang @LongOddCode
 /packages/fx-core/src/folder.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/index.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/src/ui/visitor.ts @jayzhang @xzf0587 @LongOddCode
@@ -255,6 +257,8 @@
 /packages/fx-core/tests/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong @adashen
 /packages/fx-core/src/component/driver/util/utils.ts @blackchoey @xzf0587 @adashen
 /packages/fx-core/tests/component/driver/util/utils.test.ts @blackchoey @xzf0587 @adashen
+/packages/fx-core/src/component/driver/apiKey @KennethBWSong @SLdragon @adashen
+/packages/fx-core/tests/component/driver/apiKey @KennethBWSong @SLdragon @adashen
 
 /packages/fx-core/src/core/middleware/utils/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
 /packages/fx-core/tests/core/middleware/debug @swatDong @XiaofuHuang @kuojianlu @kimizhu
@@ -283,11 +287,11 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/resource/package.nls.zh-Hant.json @HuihuiWu-Microsoft @chagong @jayzhang
 /packages/fx-core/resource/package.nls.zh-cn.json @HuihuiWu-Microsoft @chagong @jayzhang
 /packages/fx-core/resource/package.nls.zh-tw.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/yaml-schema @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
-/packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms @xzf0587 @hund030
+/packages/fx-core/resource/yaml-schema @jayzhang @wenytang-ms @kuojianlu @Siglud
+/packages/fx-core/src/core @jayzhang @LongOddCode @jayzhang @nliu-ms @xzf0587 @hund030
 
-/packages/fx-core/src/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
-/packages/fx-core/tests/component/configManager @1yefuwang1 @wenytang-ms @kuojianlu @Siglud
+/packages/fx-core/src/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
+/packages/fx-core/tests/component/configManager @jayzhang @wenytang-ms @kuojianlu @Siglud
 
 /packages/fx-core/src/error @jayzhang @xzf0587 @hund030 @LongOddCode
 
@@ -298,18 +302,17 @@ packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-do
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 
-/packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
-/packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @1yefuwang1 @HuihuiWu-Microsoft
+/packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
+/packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
 
-/packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
-/packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang
-/packages/fx-core/src/common/samples-config-v3.json @HuihuiWu-Microsoft @wenytang-ms @jayzhang
+/packages/fx-core/src/common/samples.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
+/packages/fx-core/tests/common/samples.test.ts @HuihuiWu-Microsoft @wenytang-ms @jayzhang @tecton
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
-/packages/fx-core/src/component/generator/officeAddin @1yefuwang1 @jayzhang @LongOddCode
-/packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @1yefuwang1 @jayzhang @LongOddCode
+/packages/fx-core/src/component/generator/officeAddin @jayzhang @LongOddCode
+/packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @jayzhang @LongOddCode
 /packages/fx-core/src/component/driver/deploy/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/driver/deploy/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/src/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
@@ -346,7 +349,7 @@ packages/fx-core/tests/core/collaborator.test.ts @KennethBWSong @SLdragon @adash
 
 packages/fx-core/tests/helpers.ts @jayzhang @MSFT-yiz
 
-packages/manifest/ @1yefuwang1 @MSFT-yiz
+packages/manifest/ @jayzhang @MSFT-yiz
 
 packages/fx-core/src/common/spec-parser/ @SLdragon @adashen
 packages/fx-core/tests/common/spec-parser/ @SLdragon @adashen

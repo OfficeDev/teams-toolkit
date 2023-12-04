@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   CLIPlatforms,
   FolderQuestion,
   IQTreeNode,
@@ -25,6 +26,7 @@ import {
   isCLIDotNetEnabled,
   isCopilotPluginEnabled,
   isApiCopilotPluginEnabled,
+  isApiKeyEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -357,10 +359,11 @@ export class CapabilityOptions {
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
     };
   }
-  static bots(inputs?: Inputs): OptionItem[] {
+  static bots(inputs?: Inputs, includeAssistant?: boolean): OptionItem[] {
     return [
       CapabilityOptions.basicBot(),
       CapabilityOptions.aiBot(),
+      ...(includeAssistant === true ? [CapabilityOptions.aiAssistantBot()] : []),
       CapabilityOptions.notificationBot(),
       CapabilityOptions.commandBot(),
       CapabilityOptions.workflowBot(inputs),
@@ -426,7 +429,7 @@ export class CapabilityOptions {
    */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
-      ...CapabilityOptions.bots(inputs),
+      ...CapabilityOptions.bots(inputs, true),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.copilotPlugins(),
@@ -440,7 +443,7 @@ export class CapabilityOptions {
    */
   static all(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
-      ...CapabilityOptions.bots(inputs),
+      ...CapabilityOptions.bots(inputs, true),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
     ];
@@ -531,6 +534,15 @@ export class CapabilityOptions {
       description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
+
+  static aiAssistantBot(): OptionItem {
+    return {
+      id: "ai-assistant-bot",
+      label: getLocalizedString("core.aiAssistantBotOption.label"),
+      detail: getLocalizedString("core.aiAssistantBotOption.detail"),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
+    };
+  }
 }
 
 export function capabilityQuestion(): SingleSelectQuestion {
@@ -558,7 +570,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
     cliDescription: "Specifies the Microsoft Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
-    cliChoiceListCommand: "teamsfx list templates",
+    cliChoiceListCommand: "teamsapp list templates",
     type: "singleSelect",
     staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {
@@ -582,7 +594,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
       // nodejs capabilities
       const projectType = inputs[QuestionNames.ProjectType];
       if (projectType === ProjectTypeOptions.bot().id) {
-        return CapabilityOptions.bots(inputs);
+        return CapabilityOptions.bots(inputs, true);
       } else if (projectType === ProjectTypeOptions.tab().id) {
         return CapabilityOptions.tabs();
       } else if (projectType === ProjectTypeOptions.me().id) {
@@ -1154,6 +1166,15 @@ export function appNameQuestion(): TextInputQuestion {
           pattern: AppNamePattern,
           maxLength: 30,
         };
+        if (input.length === 24) {
+          // show warning notification because it may exceed the Teams app name max length after appending suffix
+          const context = createContextV3();
+          void context.userInteraction.showMessage(
+            "warn",
+            getLocalizedString("core.QuestionAppName.validation.lengthWarning"),
+            false
+          );
+        }
         const appName = input;
         const validateResult = jsonschema.validate(appName, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
@@ -1187,21 +1208,41 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     name: QuestionNames.Samples,
     cliName: "sample-name",
     cliDescription: "Specifies the Microsoft Teams App sample name.",
-    cliChoiceListCommand: "teamsfx list samples",
+    cliChoiceListCommand: "teamsapp list samples",
     skipValidation: true,
     cliType: "argument",
     title: getLocalizedString("core.SampleSelect.title"),
-    staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
-      return {
-        id: sample.id,
-        label: sample.title,
-        description: `${sample.time} • ${sample.configuration}`,
-        detail: sample.shortDescription,
-      } as OptionItem;
-    }),
+    staticOptions: [
+      "hello-world-tab-with-backend",
+      "graph-toolkit-contact-exporter",
+      "bot-sso",
+      "todo-list-SPFx",
+      "hello-world-in-meeting",
+      "todo-list-with-Azure-backend-M365",
+      "NPM-search-connector-M365",
+      "bot-proactive-messaging-teamsfx",
+      "adaptive-card-notification",
+      "incoming-webhook-notification",
+      "stocks-update-notification-bot",
+      "query-org-user-with-message-extension-sso",
+      "team-central-dashboard",
+      "graph-connector-app",
+      "graph-toolkit-one-productivity-hub",
+      "todo-list-with-Azure-backend",
+      "share-now",
+      "hello-world-teams-tab-and-outlook-add-in",
+      "outlook-add-in-set-signature",
+      "developer-assist-dashboard",
+      "live-share-dice-roller",
+      "teams-chef-bot",
+      "spfx-productivity-dashboard",
+      "react-retail-dashboard",
+      "sso-enabled-tab-via-apim-proxy",
+      "large-scale-notification",
+      "graph-connector-bot",
+    ], //using a static list instead of dynamic list to avoid the delay of fetching sample list for CLL_HELP
     dynamicOptions: async () => {
-      await sampleProvider.fetchSampleConfig();
-      return sampleProvider.SampleCollection.samples.map((sample) => {
+      return (await sampleProvider.SampleCollection).samples.map((sample) => {
         return {
           id: sample.id,
           label: sample.title,
@@ -1554,17 +1595,46 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     cliDescription: "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
     placeholder: includeExistingAPIs
-      ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+      ? isApiKeyEnabled()
+        ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.apikey.placeholder")
+        : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
       : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
     forgetLastValue: true,
     staticOptions: [],
     validation: {
-      validFunc: (input: string[]): string | undefined => {
+      validFunc: (input: string[], inputs?: Inputs): string | undefined => {
         if (input.length < 1 || input.length > 10) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
             input.length,
             10
+          );
+        }
+        const operations: ApiOperation[] = inputs?.supportedApisFromApiSpec as ApiOperation[];
+
+        const authNames: Set<string> = new Set();
+        const serverUrls: Set<string> = new Set();
+        for (const inputItem of input) {
+          const operation = operations.find((op) => op.id === inputItem);
+          if (operation) {
+            if (operation.data.authName) {
+              authNames.add(operation.data.authName);
+              serverUrls.add(operation.data.serverUrl);
+            }
+          }
+        }
+
+        if (authNames.size > 1) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.multipleAuth",
+            Array.from(authNames).join(", ")
+          );
+        }
+
+        if (serverUrls.size > 1) {
+          return getLocalizedString(
+            "core.createProjectQuestion.apiSpec.operation.multipleServer",
+            Array.from(serverUrls).join(", ")
           );
         }
       },
@@ -1574,7 +1644,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         throw new EmptyOptionError(QuestionNames.ApiOperation, "question");
       }
 
-      const operations = inputs.supportedApisFromApiSpec;
+      const operations = inputs.supportedApisFromApiSpec as ApiOperation[];
 
       return operations;
     },

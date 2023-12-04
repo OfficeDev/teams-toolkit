@@ -16,6 +16,7 @@ import {
   resolveServerUrl,
   isWellKnownName,
   format,
+  getSafeRegistrationIdEnvName,
 } from "../../../src/common/spec-parser/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../../../src/common/spec-parser/constants";
@@ -113,7 +114,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -151,7 +152,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, false);
+      const result = isSupportedApi(method, path, spec as any, false, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -203,7 +204,456 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      assert.strictEqual(result, true);
+    });
+
+    it("should return false if method is POST, path is valid, parameter is supported and only one required param in parameters but contains auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+            api_key2: {
+              type: "apiKey",
+              name: "api_key2",
+              in: "header",
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  api_key2: [],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return true if allowAPIKeyAuth is true and contains apiKey auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+            api_key2: {
+              type: "apiKey",
+              name: "api_key2",
+              in: "header",
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  api_key2: [],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, true, true, false, false);
+      assert.strictEqual(result, true);
+    });
+
+    it("should return false if allowAPIKeyAuth is true but contains multiple apiKey auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+            api_key2: {
+              type: "apiKey",
+              name: "api_key2",
+              in: "header",
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  api_key2: [],
+                  api_key: [],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, true, true, false, false);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return true if allowOauth2 is true and contains aad auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            oauth: {
+              type: "oauth2",
+              flows: {
+                implicit: {
+                  authorizationUrl: "https://example.com/api/oauth/dialog",
+                  scopes: {
+                    "write:pets": "modify pets in your account",
+                    "read:pets": "read your pets",
+                  },
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  oauth: ["read:pets"],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, true, false, false, true);
+      assert.strictEqual(result, true);
+    });
+
+    it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, but contains aad auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+            oauth: {
+              type: "oauth2",
+              flows: {
+                implicit: {
+                  authorizationUrl: "https://example.com/api/oauth/dialog",
+                  scopes: {
+                    "write:pets": "modify pets in your account",
+                    "read:pets": "read your pets",
+                  },
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  oauth: ["read:pets"],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, true, true, false, false);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, and contains aad auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+            oauth: {
+              type: "oauth2",
+              flows: {
+                implicit: {
+                  authorizationUrl: "https://example.com/api/oauth/dialog",
+                  scopes: {
+                    "write:pets": "modify pets in your account",
+                    "read:pets": "read your pets",
+                  },
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  oauth: ["read:pets"],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, true, true, false, true);
       assert.strictEqual(result, true);
     });
 
@@ -256,7 +706,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -309,7 +759,121 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      assert.strictEqual(result, false);
+    });
+
+    it("should support multiple required parameters", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, true, false, true, false);
+      assert.strictEqual(result, true);
+    });
+
+    it("should not support multiple required parameters count larger than 5", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["id1", "id2", "id3", "id4", "id5", "id6"],
+                      properties: {
+                        id1: {
+                          type: "string",
+                        },
+                        id2: {
+                          type: "string",
+                        },
+                        id3: {
+                          type: "string",
+                        },
+                        id4: {
+                          type: "string",
+                        },
+                        id5: {
+                          type: "string",
+                        },
+                        id6: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = isSupportedApi(method, path, spec as any, true, false, true, false);
       assert.strictEqual(result, false);
     });
 
@@ -365,7 +929,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -422,7 +986,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -460,7 +1024,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -498,7 +1062,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -535,7 +1099,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -572,7 +1136,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -610,7 +1174,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -648,7 +1212,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -686,7 +1250,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -713,7 +1277,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -739,7 +1303,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -771,7 +1335,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true);
+      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
   });
@@ -1069,7 +1633,7 @@ describe("utils", () => {
   describe("validateServer", () => {
     it("should return an error if there is no server information", () => {
       const spec = { paths: {} };
-      const errors = validateServer(spec as OpenAPIV3.Document, true);
+      const errors = validateServer(spec as OpenAPIV3.Document, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1088,7 +1652,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1102,7 +1666,7 @@ describe("utils", () => {
         servers: [{ url: "https://example.com" }],
         paths: {},
       };
-      const errors = validateServer(spec as OpenAPIV3.Document, true);
+      const errors = validateServer(spec as OpenAPIV3.Document, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1114,7 +1678,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1146,7 +1710,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1180,7 +1744,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1214,7 +1778,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true);
+      const errors = validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.RelativeServerUrlNotSupported,
@@ -1509,6 +2073,28 @@ describe("utils", () => {
     it("should handle no placeholders", () => {
       const result = format("Hello, world!");
       expect(result).to.equal("Hello, world!");
+    });
+  });
+
+  describe("getSafeRegistrationIdEnvName", () => {
+    it("should return an empty string if authName is not provided", () => {
+      expect(getSafeRegistrationIdEnvName("")).to.equal("");
+    });
+
+    it("should replace non-alphanumeric characters with underscores and convert to uppercase", () => {
+      expect(getSafeRegistrationIdEnvName("auth@name")).to.equal("AUTH_NAME");
+    });
+
+    it('should prefix the result with "PREFIX_" if it does not start with an uppercase letter', () => {
+      expect(getSafeRegistrationIdEnvName("1authname")).to.equal("PREFIX_1AUTHNAME");
+    });
+
+    it('should not prefix the result with "PREFIX_" if it starts with an uppercase letter', () => {
+      expect(getSafeRegistrationIdEnvName("Authname")).to.equal("AUTHNAME");
+    });
+
+    it("should convert all lowercase letters to uppercase", () => {
+      expect(getSafeRegistrationIdEnvName("authname")).to.equal("AUTHNAME");
     });
   });
 });

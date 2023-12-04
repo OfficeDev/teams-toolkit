@@ -4,6 +4,7 @@ export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
   CopilotPluginEnable = "developCopilotPlugin",
+  LogLevel = "logLevel",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -27,6 +28,7 @@ export enum GlobalKey {
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
   CreateWarnings = "CreateWarnings",
   SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
+  AutoInstallDependency = "teamsToolkit:autoInstallDependency",
 }
 
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;

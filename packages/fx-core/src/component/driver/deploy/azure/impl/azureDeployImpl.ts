@@ -34,6 +34,7 @@ import {
 } from "../../../../../error";
 import { hooks } from "@feathersjs/hooks";
 import { ErrorContextMW } from "../../../../../core/globalVars";
+import path from "path";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -74,6 +75,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);
+    await this.cleanup();
     return true;
   }
 
@@ -88,6 +90,27 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void>;
+
+  /**
+   * cleanup function after deployment is finished
+   * @protected
+   */
+  protected async cleanup(): Promise<void> {
+    if (this.zipFilePath && !this.dryRun && fs.existsSync(this.zipFilePath)) {
+      try {
+        await fs.remove(this.zipFilePath);
+        // if upper folder is empty, remove it
+        const parentFolder = path.dirname(this.zipFilePath);
+        if ((await fs.readdir(parentFolder)).length === 0) {
+          await fs.remove(parentFolder);
+        }
+      } catch (e) {
+        this.logger.warning(
+          `Failed to remove zip package. ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`
+        );
+      }
+    }
+  }
 
   /**
    * check if resource id is legal and parse it
@@ -193,7 +216,9 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       const defaultScope = "https://management.azure.com/.default";
       const token = await azureCredential.getToken(defaultScope);
       if (token) {
-        this.logger.info("Get AAD token successfully. Upload zip package through AAD Auth mode.");
+        this.logger.info(
+          "Get Microsoft Entra token successfully. Upload zip package through AAD Auth mode."
+        );
         return {
           headers: {
             "Content-Type": "application/octet-stream",
@@ -205,11 +230,14 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           timeout: DeployConstant.DEPLOY_TIMEOUT_IN_MS,
         };
       } else {
-        this.context.telemetryReporter.sendTelemetryErrorEvent("Get-Deploy-AAD-token-failed", {
-          error: "AAD token is empty.",
-        });
+        this.context.telemetryReporter.sendTelemetryErrorEvent(
+          "Get-Deploy-Microsoft Entra-token-failed",
+          {
+            error: "Microsoft Entra token is empty.",
+          }
+        );
         this.logger.info(
-          "Get AAD token failed. AAD Token is empty. Upload zip package through basic auth mode. Please check your Azure credential."
+          "Get Microsoft Entra token failed. AAD Token is empty. Upload zip package through basic auth mode. Please check your Azure credential."
         );
       }
     } catch (e) {
@@ -224,12 +252,12 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       );
     }
 
-    // IF only enable AAD deploy, throw error
+    // IF only enable Microsoft Entra deploy, throw error
     if (process.env["TEAMSFX_AAD_DEPLOY_ONLY"] === "true") {
       throw new GetPublishingCredentialsError(
         azureResource.instanceId,
         azureResource.resourceGroupName,
-        new Error("Get AAD token failed."),
+        new Error("Get Microsoft Entra token failed."),
         this.helpLink
       );
     }

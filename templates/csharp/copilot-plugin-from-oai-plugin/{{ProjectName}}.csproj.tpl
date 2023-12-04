@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{{TargetFramework}}</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
-    <ProjectCapability Include="CopilotPlugin" />
+    <ProjectCapability Include="APIME" />
   </ItemGroup>
 
   <ItemGroup>

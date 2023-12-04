@@ -26,12 +26,12 @@ export const PermissionListOptions: CLICommandOption[] = [
     description: "Specifies the environment name for the project.",
   },
   {
-    name: "aad-manifest-file",
+    name: "entra-app-manifest-file",
     questionName: "manifest-file-path",
     type: "string",
     shortName: "a",
     description:
-      "Specifies the Azure AD app manifest file path, can be either absolute path or relative path to project root folder.",
+      "Specifies the Microsoft Entra app manifest file path, can be either absolute path or relative path to project root folder.",
     default: "./aad.manifest.json",
   },
 ];

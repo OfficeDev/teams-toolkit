@@ -33,6 +33,9 @@ import {
   WarningResult,
   WarningType,
   SpecParserError,
+  ErrorType,
+  ErrorResult as ApiSpecErrorResult,
+  ListAPIResult,
 } from "../../../common/spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -41,10 +44,7 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
-import {
-  ErrorType,
-  ErrorResult as ApiSpecErrorResult,
-} from "../../../common/spec-parser/interfaces";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -153,7 +153,12 @@ export async function listOperations(
   }
 
   try {
-    const specParser = new SpecParser(apiSpecUrl!);
+    const allowAPIKeyAuth = isApiKeyEnabled();
+    const allowMultipleParameters = isMultipleParametersEnabled();
+    const specParser = new SpecParser(apiSpecUrl as string, {
+      allowAPIKeyAuth,
+      allowMultipleParameters,
+    });
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors);
 
@@ -170,7 +175,7 @@ export async function listOperations(
       return err(validationRes.errors);
     }
 
-    let operations = await specParser.list();
+    let operations: ListAPIResult[] = await specParser.list();
 
     // Filter out exsiting APIs
     if (!includeExistingAPIs) {
@@ -180,10 +185,13 @@ export async function listOperations(
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
       if (manifest.isOk()) {
         const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-        const operationMaps = await specParser.listOperationMap();
-        const existingOperations = existingOperationIds.map((key) => operationMaps.get(key));
+
+        const existingOperations = existingOperationIds.map(
+          (key) => operations.find((item) => item.operationId === key)?.api
+        );
+
         operations = operations.filter(
-          (operation: string) => !existingOperations.includes(operation)
+          (operation: ListAPIResult) => !existingOperations.includes(operation.api)
         );
         // No extra API can be added
         if (operations.length == 0) {
@@ -212,11 +220,23 @@ export async function listOperations(
   }
 }
 
-function sortOperations(operations: string[]): ApiOperation[] {
+function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
   const operationsWithSeparator: ApiOperation[] = [];
   for (const operation of operations) {
-    const arr = operation.toUpperCase().split(" ");
-    operationsWithSeparator.push({ id: operation, label: operation, groupName: arr[0] });
+    const arr = operation.api.toUpperCase().split(" ");
+    const result: ApiOperation = {
+      id: operation.api,
+      label: operation.api,
+      groupName: arr[0],
+      data: {
+        serverUrl: operation.server,
+      },
+    };
+
+    if (operation.auth && operation.auth.type === "apiKey") {
+      result.data.authName = operation.auth.name;
+    }
+    operationsWithSeparator.push(result);
   }
 
   return operationsWithSeparator.sort((operation1: ApiOperation, operation2: ApiOperation) => {
@@ -567,13 +587,13 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {
-        let content = error.content;
+        let content: string = error.content;
         if (error.content.startsWith("ResolverError: Error downloading")) {
           content = error.content
             .split("\n")
             .map((o) => o.trim())
             .join(". ");
-          content = content + ". " + getLocalizedString("core.common.ErrorFetchApiSpec");
+          content = `${content}. ${getLocalizedString("core.common.ErrorFetchApiSpec")}`;
         }
         return content;
       }

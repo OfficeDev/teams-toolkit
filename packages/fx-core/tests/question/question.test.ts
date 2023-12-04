@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  ConditionFunc,
+  FuncValidation,
   Inputs,
   Platform,
   Question,
+  TextInputQuestion,
   UserError,
   UserInteraction,
   err,
@@ -12,7 +15,7 @@ import {
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import { RestoreFn } from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as path from "path";
 import sinon from "sinon";
 import { CollaborationConstants, QuestionTreeVisitor, envUtil, traverse } from "../../src";
@@ -21,6 +24,7 @@ import { setTools } from "../../src/core/globalVars";
 import { QuestionNames, SPFxImportFolderQuestion, questionNodes } from "../../src/question";
 import {
   TeamsAppValidationOptions,
+  apiSpecApiKeyQuestion,
   createNewEnvQuestionNode,
   envQuestionCondition,
   isAadMainifestContainsPlaceholder,
@@ -867,7 +871,19 @@ describe("copilotPluginQuestions", async () => {
           result: ["https://example.json"],
         });
       } else if (question.name == QuestionNames.ApiOperation) {
-        return ok({ type: "success", result: ["testOperation1"] });
+        return ok({
+          type: "success",
+          result: [
+            {
+              id: "testOperation1",
+              label: "operation1",
+              groupName: "1",
+              data: {
+                serverUrl: "https://server1",
+              },
+            },
+          ],
+        });
       }
       return ok({ type: "success", result: undefined });
     };
@@ -910,8 +926,10 @@ describe("selectLocalTeamsAppManifestQuestion", async () => {
 });
 describe("selectAadManifestQuestion", async () => {
   const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn = () => {};
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
   it("default for CLI_HELP", async () => {
     const question = selectAadManifestQuestion();
@@ -927,5 +945,78 @@ describe("selectAadManifestQuestion", async () => {
       const res = await question.default({ platform: Platform.VSCode, projectPath: "./" });
       assert.isUndefined(res);
     }
+  });
+  it("CLI V3", async () => {
+    mockedEnvRestore = mockedEnv({
+      TEAMSFX_CLI_V3: "true",
+    });
+    const question = selectAadManifestQuestion();
+    assert.equal(question.cliName, "entra-app-manifest-file");
+  });
+});
+
+describe("apiKeyQuestion", async () => {
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn = () => {};
+  afterEach(() => {
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("will pop up question", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = apiSpecApiKeyQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, true);
+    const confirmQuesion = question.children![0];
+    assert.equal(confirmQuesion.data.name, "api-key-confirm");
+  });
+
+  it("will not pop up question due to api key exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    inputs.outputEnvVarNames.set("registrationId", "registrationId");
+    mockedEnvRestore = mockedEnv({
+      registrationId: "fake-id",
+    });
+    const question = apiSpecApiKeyQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, false);
+  });
+
+  it("will not pop up question due to secret exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientSecret: "fakeClientSecret",
+    };
+    const question = apiSpecApiKeyQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, false);
+  });
+
+  it("validation passed", async () => {
+    const question = apiSpecApiKeyQuestion();
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("mockedApiKey");
+    assert.equal(result, undefined);
+  });
+
+  it("validation failed due to length", async () => {
+    const question = apiSpecApiKeyQuestion();
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("abc");
+    assert.equal(
+      result,
+      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
+    );
   });
 });

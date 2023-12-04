@@ -38,7 +38,7 @@ describe("Collaboration", function () {
 
       // new a project
       await execAsync(
-        `teamsfx new --interactive false --capability sso-launch-page --app-name ${appName}`,
+        `teamsapp new --interactive false --capability sso-launch-page --app-name ${appName}`,
         {
           cwd: testFolder,
           env: process.env,
@@ -54,7 +54,7 @@ describe("Collaboration", function () {
       const result = await createResourceGroup(resourceGroupName, "eastus");
 
       // provision
-      await execAsyncWithRetry(`teamsfx provision`, {
+      await execAsyncWithRetry(`teamsapp provision`, {
         cwd: projectPath,
         env: {
           ...process.env,
@@ -66,7 +66,7 @@ describe("Collaboration", function () {
 
       // Check Permission
       const checkPermissionResult = await execAsyncWithRetry(
-        `teamsapp collaborator status --env dev --interactive false --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json`,
+        `teamsapp permission status --env dev --interactive false --teams-manifest-file ${projectPath}/appPackage/manifest.json --entra-app-manifest-file ${projectPath}/aad.manifest.json`,
         {
           cwd: projectPath,
           env: process.env,
@@ -82,7 +82,7 @@ describe("Collaboration", function () {
 
       // Grant Permission
       const grantCollaboratorResult = await execAsyncWithRetry(
-        `teamsapp collaborator grant --email ${collaborator} --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
+        `teamsapp permission grant --email ${collaborator} --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --entra-app-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,
@@ -91,7 +91,7 @@ describe("Collaboration", function () {
       );
 
       expect(grantCollaboratorResult.stdout).to.contains(
-        "Owner permission has been granted to Azure AD App"
+        "Owner permission has been granted to Microsoft Entra App"
       );
       expect(grantCollaboratorResult.stdout).to.contains(
         "Administrator permission has been granted to Teams App"
@@ -99,7 +99,7 @@ describe("Collaboration", function () {
       console.log("[Successfully] grant permission");
 
       const listCollaboratorResult = await execAsync(
-        `teamsapp collaborator status --all --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --aad-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
+        `teamsapp permission status --all --env dev --teams-manifest-file ${projectPath}/appPackage/manifest.json --entra-app-manifest-file ${projectPath}/aad.manifest.json --interactive false`,
         {
           cwd: projectPath,
           env: process.env,

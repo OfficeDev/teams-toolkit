@@ -12,6 +12,7 @@ import {
   APIInfo,
   ErrorType,
   GenerateResult,
+  ListAPIResult,
   ParseOptions,
   ValidateResult,
   ValidationStatus,
@@ -20,7 +21,13 @@ import {
 import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
 import { specFilter } from "./specFilter";
-import { convertPathToCamelCase, listSupportedAPIs, validateSpec } from "./utils";
+import {
+  convertPathToCamelCase,
+  getAuthArray,
+  listSupportedAPIs,
+  resolveServerUrl,
+  validateSpec,
+} from "./utils";
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
@@ -31,7 +38,7 @@ import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 export class SpecParser {
   public readonly pathOrSpec: string | OpenAPIV3.Document;
   public readonly parser: SwaggerParser;
-  public readonly options: ParseOptions;
+  public readonly options: Required<ParseOptions>;
 
   private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
   private spec: OpenAPIV3.Document | undefined;
@@ -41,6 +48,9 @@ export class SpecParser {
   private defaultOptions: ParseOptions = {
     allowMissingId: true,
     allowSwagger: true,
+    allowAPIKeyAuth: false,
+    allowMultipleParameters: false,
+    allowOauth2: false,
   };
 
   /**
@@ -54,7 +64,7 @@ export class SpecParser {
     this.options = {
       ...this.defaultOptions,
       ...(options ?? {}),
-    };
+    } as Required<ParseOptions>;
   }
 
   /**
@@ -85,7 +95,15 @@ export class SpecParser {
         };
       }
 
-      return validateSpec(this.spec!, this.parser, !!this.isSwaggerFile);
+      return validateSpec(
+        this.spec!,
+        this.parser,
+        !!this.isSwaggerFile,
+        this.options.allowMissingId,
+        this.options.allowAPIKeyAuth,
+        this.options.allowMultipleParameters,
+        this.options.allowOauth2
+      );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -101,38 +119,59 @@ export class SpecParser {
    * @returns A string array that represents the HTTP method and path of each operation, such as ['GET /pets/{petId}', 'GET /user/{userId}']
    * according to copilot plugin spec, only list get and post method without auth
    */
-  async list(): Promise<string[]> {
+  async list(): Promise<ListAPIResult[]> {
     try {
       await this.loadSpec();
-      const apiMap = this.getAllSupportedAPIs(this.spec!);
-      return Array.from(Object.keys(apiMap));
-    } catch (err) {
-      throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
-    }
-  }
+      const spec = this.spec!;
+      const apiMap = this.getAllSupportedAPIs(spec);
+      const result: ListAPIResult[] = [];
+      for (const apiKey in apiMap) {
+        const apiResult: ListAPIResult = {
+          api: "",
+          server: "",
+          operationId: "",
+        };
+        const [method, path] = apiKey.split(" ");
+        const operation = apiMap[apiKey];
+        const rootServer = spec.servers && spec.servers[0];
+        const methodServer = spec.paths[path]!.servers && spec.paths[path]?.servers![0];
+        const operationServer = operation.servers && operation.servers[0];
 
-  /**
-   * List all the OpenAPI operations in the specification file and return a map of operationId and operation path.
-   * @returns A map of operationId and operation path, such as [{'getPetById': 'GET /pets/{petId}'}, {'getUser': 'GET /user/{userId}'}]
-   */
-  async listOperationMap(): Promise<Map<string, string>> {
-    try {
-      await this.loadSpec();
-      const apiMap = this.getAllSupportedAPIs(this.spec!);
-      const operationMap = new Map<string, string>();
-      for (const key in apiMap) {
-        const pathObjectItem = apiMap[key];
-        let operationId = pathObjectItem.operationId;
-        if (!operationId) {
-          const [method, path] = key.split(" ");
-          const methodName = method.toLowerCase();
-          operationId = `${methodName}${convertPathToCamelCase(path)}`;
+        const serverUrl = operationServer || methodServer || rootServer;
+        if (!serverUrl) {
+          throw new SpecParserError(
+            ConstantString.NoServerInformation,
+            ErrorType.NoServerInformation
+          );
         }
-        operationMap.set(operationId, key);
+
+        apiResult.server = resolveServerUrl(serverUrl.url);
+
+        let operationId = operation.operationId;
+        if (!operationId) {
+          operationId = `${method.toLowerCase()}${convertPathToCamelCase(path)}`;
+        }
+        apiResult.operationId = operationId;
+
+        const authArray = getAuthArray(operation.security, spec);
+
+        for (const auths of authArray) {
+          if (auths.length === 1) {
+            apiResult.auth = auths[0].authSchema;
+            break;
+          }
+        }
+
+        apiResult.api = apiKey;
+        result.push(apiResult);
       }
-      return operationMap;
+
+      return result;
     } catch (err) {
-      throw new SpecParserError((err as Error).toString(), ErrorType.ListOperationMapFailed);
+      if (err instanceof SpecParserError) {
+        throw err;
+      }
+      throw new SpecParserError((err as Error).toString(), ErrorType.ListFailed);
     }
   }
 
@@ -168,8 +207,44 @@ export class SpecParser {
         filter,
         this.unResolveSpec!,
         this.spec!,
-        this.options.allowMissingId!
+        this.options.allowMissingId,
+        this.options.allowAPIKeyAuth,
+        this.options.allowMultipleParameters,
+        this.options.allowOauth2
       );
+
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
+
+      const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+
+      const AuthSet: Set<OpenAPIV3.SecuritySchemeObject> = new Set();
+      let hasMultipleAPIKeyAuth = false;
+
+      for (const url in newSpec.paths) {
+        for (const method in newSpec.paths[url]) {
+          const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
+
+          const authArray = getAuthArray(operation.security, newSpec);
+
+          if (authArray && authArray.length > 0) {
+            AuthSet.add(authArray[0][0].authSchema);
+            if (AuthSet.size > 1) {
+              hasMultipleAPIKeyAuth = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (hasMultipleAPIKeyAuth) {
+        throw new SpecParserError(
+          ConstantString.MultipleAPIKeyNotSupported,
+          ErrorType.MultipleAPIKeyNotSupported
+        );
+      }
+
       let resultStr;
       if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
         resultStr = jsyaml.dump(newUnResolvedSpec);
@@ -178,21 +253,21 @@ export class SpecParser {
       }
       await fs.outputFile(outputSpecPath, resultStr);
 
-      if (signal?.aborted) {
-        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
-      }
-
-      const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
-
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
-          if (method === ConstantString.GetMethod || method === ConstantString.PostMethod) {
-            const operation = newSpec.paths[url]![method] as OpenAPIV3.OperationObject;
+          // paths object may contain description/summary, so we need to check if it is a operation object
+          if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
+            const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
             try {
               const [card, jsonPath] = generateAdaptiveCard(operation);
               const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
               const wrappedCard = wrapAdaptiveCard(card, jsonPath);
               await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
+              const dataFileName = path.join(
+                adaptiveCardFolder,
+                `${operation.operationId!}.data.json`
+              );
+              await fs.outputJSON(dataFileName, {}, { spaces: 2 });
             } catch (err) {
               result.allSuccess = false;
               result.warnings.push({
@@ -209,11 +284,14 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
+      const auth = Array.from(AuthSet)[0];
       const [updatedManifest, warnings] = await updateManifest(
         manifestPath,
         outputSpecPath,
         adaptiveCardFolder,
-        newSpec
+        newSpec,
+        this.options.allowMultipleParameters,
+        auth
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
@@ -250,7 +328,13 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = listSupportedAPIs(spec, this.options.allowMissingId!);
+    const result = listSupportedAPIs(
+      spec,
+      this.options.allowMissingId,
+      this.options.allowAPIKeyAuth,
+      this.options.allowMultipleParameters,
+      this.options.allowOauth2
+    );
     this.apiMap = result;
     return result;
   }

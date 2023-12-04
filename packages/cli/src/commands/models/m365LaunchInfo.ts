@@ -2,11 +2,10 @@
 // Licensed under the MIT license.
 import { CLICommand, LogLevel, err, ok } from "@microsoft/teamsfx-api";
 import { PackageService } from "@microsoft/teamsfx-core";
-import { getTokenAndUpn } from "../../cmds/m365/m365";
 import { logger } from "../../commonlib/logger";
 import { MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { sideloadingServiceEndpoint } from "./m365Sideloading";
+import { m365utils, sideloadingServiceEndpoint } from "./m365Sideloading";
 
 export const m365LaunchInfoCommand: CLICommand = {
   name: "launchinfo",
@@ -25,11 +24,11 @@ export const m365LaunchInfoCommand: CLICommand = {
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Get launch information of the acquired M365 App by Title ID",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Get launch information of the acquired M365 App by Manifest ID",
     },
   ],
@@ -49,7 +48,7 @@ export const m365LaunchInfoCommand: CLICommand = {
         new MissingRequiredOptionError(ctx.command.fullName, `--title-id or --manifest-id`)
       );
     }
-    const tokenAndUpn = await getTokenAndUpn();
+    const tokenAndUpn = await m365utils.getTokenAndUpn();
     if (titleId === undefined) {
       titleId = await packageService.retrieveTitleId(tokenAndUpn[0], manifestId);
     }

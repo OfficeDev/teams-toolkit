@@ -224,13 +224,13 @@ function generateAdaptiveCardColumnSets(arr) {
         {
           type: "Column",
           width: 20,
-          items: items.owners.map((owner) => {
-            return {
+          items: [
+            {
               type: "TextBlock",
-              text: owner,
+              text: items.owners.join("\n\r"),
               wrap: true,
-            };
-          }),
+            },
+          ],
         },
       ],
       separator: true,

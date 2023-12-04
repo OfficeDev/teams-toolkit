@@ -8,7 +8,7 @@
   "scripts": {
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "test:unit": "rimraf out && rimraf coverage && npm run build && nyc mocha --config .mocharc.json ",
+    "test:unit": "nyc mocha \"tests/**/*.test.ts\" ",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

@@ -16,7 +16,7 @@ const mockedVSCode: Partial<VSCode> = {};
 const mockedVSCodeNamespaces: { [P in keyof VSCode]?: TypeMoq.IMock<VSCode[P]> } = {};
 const originalLoad = Module._load;
 
-export function initialize() {
+function initialize() {
   generateMock("languages");
   generateMock("env");
   generateMock("debug");
@@ -194,3 +194,5 @@ class MockClipboard {
     this.text = value;
   }
 }
+
+initialize();

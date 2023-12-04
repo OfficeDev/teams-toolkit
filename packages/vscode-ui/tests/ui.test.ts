@@ -2,10 +2,20 @@
 // Licensed under the MIT license.
 "use strict";
 
+import {
+  err,
+  ok,
+  SelectFileConfig,
+  SelectFolderConfig,
+  SingleFileOrInputConfig,
+  SingleSelectConfig,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import "mocha";
 import * as sinon from "sinon";
 import { stubInterface } from "ts-sinon";
+import "./mocks/vscode-mock";
 import {
   commands,
   Disposable,
@@ -16,19 +26,8 @@ import {
   window,
   workspace,
 } from "vscode";
-
-import {
-  err,
-  ok,
-  SelectFileConfig,
-  SelectFolderConfig,
-  SingleFileOrInputConfig,
-  SingleSelectConfig,
-  UserError,
-} from "@microsoft/teamsfx-api";
-
-import { FxQuickPickItem, sleep, VSCodeUI } from "../src/ui";
 import { UserCancelError } from "../src/error";
+import { FxQuickPickItem, sleep, VSCodeUI } from "../src/ui";
 
 describe("UI Unit Tests", async () => {
   const ui = new VSCodeUI("Test", (e) => {

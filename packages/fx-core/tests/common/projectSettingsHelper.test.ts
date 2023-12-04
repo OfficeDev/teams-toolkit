@@ -24,7 +24,7 @@ describe("ProjectSettingsHelper", () => {
     it("test tool yaml not exist", async () => {
       sandbox.stub(fs, "pathExistsSync").returns(false);
       const res = ProjectSettingsHelper.isTestToolEnabledProject("testPath");
-      assert.isTrue(res);
+      assert.isFalse(res);
     });
   });
 });

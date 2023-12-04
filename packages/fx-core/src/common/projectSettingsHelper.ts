@@ -80,3 +80,11 @@ export function isValidProjectV2(workspacePath: string): boolean {
 export function isVSProject(projectSettings?: any): boolean {
   return projectSettings?.programmingLanguage === "csharp";
 }
+
+export function isTestToolEnabledProject(workspacePath: string): boolean {
+  const testToolYmlPath = path.join(workspacePath, MetadataV3.testToolConfigFile);
+  if (fs.pathExistsSync(testToolYmlPath)) {
+    return true;
+  }
+  return false;
+}

@@ -143,7 +143,7 @@ export async function openExistingProject(folder: string): Promise<void> {
 }
 
 export async function startDebugging(
-  item = "Debug (Chrome)"
+  item = "Debug in Teams (Chrome)"
 ): Promise<boolean> {
   // open terminal to avoid terminal not invisible issue
   console.log("start debugging...");
@@ -155,7 +155,7 @@ export async function startDebugging(
 }
 
 export async function startDebuggingAzure(
-  item = "Debug (Chrome)",
+  item = "Debug in Teams (Chrome)",
   envName = "local",
   appName: string
 ): Promise<boolean> {

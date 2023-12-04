@@ -265,7 +265,7 @@ describe("ValidationUtils", () => {
 
   describe("isAllowedValue", () => {
     it("empty string", async () => {
-      const res = validationUtils.isAllowedValue("test", "", []);
+      const res = validationUtils.isAllowedValue("test", "", ["abc"]);
       assert.isDefined(res);
     });
     it("options is not string array", async () => {
@@ -546,6 +546,9 @@ describe("validate", () => {
       const value5 = undefined;
       const res5 = await validate(validation, value5, inputs);
       assert.isTrue(res5 !== undefined);
+      const value6 = ["abc"];
+      const res6 = await validate({ equals: "abc" }, value6, inputs);
+      assert.isTrue(res6 !== undefined);
     });
 
     it("enum", async () => {
@@ -622,6 +625,13 @@ describe("validate", () => {
       const value5 = undefined;
       const res5 = await validate(validation, value5, inputs);
       assert.isTrue(res5 !== undefined);
+    });
+
+    it("excludes", async () => {
+      const validation: StringArrayValidation = { excludes: "1" };
+      const value1 = ["1", "2", "3"];
+      const res1 = await validate(validation, value1, inputs);
+      assert.isDefined(res1);
     });
   });
 

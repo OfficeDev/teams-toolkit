@@ -211,10 +211,6 @@ export async function validate<T extends string | string[] | OptionItem | Option
     if (strToValidate === undefined || typeof strToValidate === "string") {
       const schema: any = {};
       if (stringValidation.equals && typeof stringValidation.equals === "string") {
-        if (strToValidate === undefined) {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          return `${jsonValue} does not meet equals:'${stringValidation.equals}'`;
-        }
         schema.const = stringValidation.equals;
       }
       if (

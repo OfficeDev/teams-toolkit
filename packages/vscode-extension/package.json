@@ -1363,6 +1363,7 @@
     "@microsoft/dev-tunnels-ssh": "~3.11.31",
     "@microsoft/teamsfx-api": "workspace:*",
     "@microsoft/teamsfx-core": "workspace:*",
+    "@microsoft/vscode-ui": "workspace:*",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^1.2.2",

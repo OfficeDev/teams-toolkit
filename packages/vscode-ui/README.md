@@ -1,6 +1,6 @@
-# TeamsFx Core
+# VS Code UI
 
-The TeamsFx Core package implements shared capabilities for Teams Toolkit IDE Extensions and the CLI through API contracts defined in the [api](/packages/api).
+The package implements shared capabilities for User Interactions of Teams Toolkit IDE Extensions through API contracts defined in the [api](/packages/api).
 
 ## Data Collection.
 

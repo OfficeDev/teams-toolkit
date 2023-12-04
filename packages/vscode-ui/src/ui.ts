@@ -54,9 +54,8 @@ import { ProgressHandler } from "./progressHandler";
 import { EmptyOptionsError, InternalUIError, ScriptTimeoutError, UserCancelError } from "./error";
 import { DefaultLocalizer, Localizer } from "./localize";
 
-async function sleep(ms: number) {
+export async function sleep(ms: number) {
   await new Promise((resolve) => setTimeout(resolve, ms));
-
   await new Promise((resolve) => setTimeout(resolve, 0));
 }
 
@@ -138,7 +137,7 @@ export class VSCodeUI implements UserInteraction {
   terminalName: string;
   assembleError: (e: any) => FxError;
   localizer: Localizer;
-  constructor(terminalName: string, assembleError: (e: any) => FxError, localizer: Localizer) {
+  constructor(terminalName: string, assembleError: (e: any) => FxError, localizer?: Localizer) {
     this.terminalName = terminalName;
     this.assembleError = assembleError;
     this.localizer = localizer || new DefaultLocalizer();

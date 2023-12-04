@@ -205,9 +205,9 @@ export class TestToolChecker implements DepsChecker {
     await this.writeInstallInfoFile(projectPath);
 
     if (symlinkDir) {
-      return await this.getSuccessDepsInfo(versionRes.value, symlinkDir);
+      return await this.getSuccessDepsInfo(actualVersion, symlinkDir);
     } else {
-      return await this.getSuccessDepsInfo(versionRes.value, portablePath);
+      return await this.getSuccessDepsInfo(actualVersion, portablePath);
     }
   }
 

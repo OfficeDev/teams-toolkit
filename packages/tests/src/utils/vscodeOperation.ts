@@ -888,7 +888,9 @@ export async function createNewProject(
   );
   console.log("copy path: ", projectPath, " to: ", projectCopyPath);
   await fs.mkdir(projectCopyPath);
-  await fs.copy(projectPath, projectCopyPath);
+  const filterFunc = (src: string) =>
+    src.indexOf("node_modules") > -1 ? false : true;
+  await fs.copy(projectPath, projectCopyPath, { filter: filterFunc });
   console.log("open project path");
   await openExistingProject(projectCopyPath);
 }

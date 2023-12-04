@@ -262,6 +262,17 @@ describe("ValidationUtils", () => {
       assert.isUndefined(res);
     });
   });
+
+  describe("isAllowedValue", () => {
+    it("empty string", async () => {
+      const res = validationUtils.isAllowedValue("test", "", []);
+      assert.isDefined(res);
+    });
+    it("options is not string array", async () => {
+      const res = validationUtils.isAllowedValue("test", "a", [{ id: "b", label: "b" }]);
+      assert.isDefined(res);
+    });
+  });
 });
 
 describe("validate", () => {
@@ -472,6 +483,11 @@ describe("validate", () => {
       const res4 = await validate(validation, value4, inputs);
       assert.isUndefined(res4);
     });
+
+    it("empty schema", async () => {
+      const res = await validate({}, "abc", inputs);
+      assert.isUndefined(res);
+    });
   });
 
   describe("StringArrayValidation", () => {
@@ -609,39 +625,41 @@ describe("validate", () => {
     });
   });
 
-  it("FuncValidation", async () => {
-    const validation: FuncValidation<string> = {
-      validFunc: function (input: string): string | undefined | Promise<string | undefined> {
-        if ((input as string).length > 5) return "length > 5";
-        return undefined;
-      },
-    };
-    const value1 = "123456";
-    const res1 = await validate(validation, value1, inputs);
-    assert.isTrue(res1 !== undefined);
-    const value2 = "12345";
-    const res2 = await validate(validation, value2, inputs);
-    assert.isTrue(res2 === undefined);
-    const value3 = "";
-    const res3 = await validate(validation, value3, inputs);
-    assert.isTrue(res3 === undefined);
-  });
-  it("FuncValidation 2", async () => {
-    const validation = (inputs: Inputs) => {
-      const input = inputs.input as string;
-      return input.length <= 5;
-    };
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-    };
-    inputs.input = "123456";
-    const res1 = await validate(validation, "", inputs);
-    assert.isTrue(res1 !== undefined);
-    inputs.input = "12345";
-    const res2 = await validate(validation, "", inputs);
-    assert.isTrue(res2 === undefined);
-    inputs.input = "";
-    const res3 = await validate(validation, "", inputs);
-    assert.isTrue(res3 === undefined);
+  describe("FuncValidation", () => {
+    it("FuncValidation", async () => {
+      const validation: FuncValidation<string> = {
+        validFunc: function (input: string): string | undefined | Promise<string | undefined> {
+          if ((input as string).length > 5) return "length > 5";
+          return undefined;
+        },
+      };
+      const value1 = "123456";
+      const res1 = await validate(validation, value1, inputs);
+      assert.isTrue(res1 !== undefined);
+      const value2 = "12345";
+      const res2 = await validate(validation, value2, inputs);
+      assert.isTrue(res2 === undefined);
+      const value3 = "";
+      const res3 = await validate(validation, value3, inputs);
+      assert.isTrue(res3 === undefined);
+    });
+    it("FuncValidation 2", async () => {
+      const validation = (inputs: Inputs) => {
+        const input = inputs.input as string;
+        return input.length <= 5;
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      inputs.input = "123456";
+      const res1 = await validate(validation, "", inputs);
+      assert.isTrue(res1 !== undefined);
+      inputs.input = "12345";
+      const res2 = await validate(validation, "", inputs);
+      assert.isTrue(res2 === undefined);
+      inputs.input = "";
+      const res3 = await validate(validation, "", inputs);
+      assert.isTrue(res3 === undefined);
+    });
   });
 });

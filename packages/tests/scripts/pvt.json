@@ -56,7 +56,8 @@
       "remotedebug-aiassistant-bot-win-only",
       "remotedebug-aiassistant-bot-ts-win-only",
       "remotedebug-msg-newapi-win-only",
-      "remotedebug-msg-newapi-ts-win-only"
+      "remotedebug-msg-newapi-ts-win-only",
+      "remotedebug-msg-openapi-win-only"
     ]
   },
   "ubuntu-latest": {

@@ -636,7 +636,7 @@ describe("validate", () => {
   });
 
   describe("FuncValidation", () => {
-    it("FuncValidation", async () => {
+    it("validFunc", async () => {
       const validation: FuncValidation<string> = {
         validFunc: function (input: string): string | undefined | Promise<string | undefined> {
           if ((input as string).length > 5) return "length > 5";
@@ -653,7 +653,7 @@ describe("validate", () => {
       const res3 = await validate(validation, value3, inputs);
       assert.isTrue(res3 === undefined);
     });
-    it("FuncValidation 2", async () => {
+    it("callback function", async () => {
       const validation = (inputs: Inputs) => {
         const input = inputs.input as string;
         return input.length <= 5;

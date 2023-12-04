@@ -423,16 +423,6 @@ export class QuestionModelEngine {
   }
 }
 
-export function isAutoSkipSelect(q: Question): boolean {
-  if (q.type === "singleSelect" || q.type === "multiSelect") {
-    const select = q;
-    if (select.skipSingleOption && select.staticOptions.length === 1) {
-      return true;
-    }
-  }
-  return false;
-}
-
 export function getSingleOption(
   q: SingleSelectQuestion | MultiSelectQuestion,
   option?: StaticOptions

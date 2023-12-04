@@ -49,8 +49,10 @@ import {
   EmptyOptionsError,
   InputValidationError,
   MissingRequiredInputError,
+  UnhandledError,
   UserCancelError,
 } from "../src/error";
+import { validationUtils } from "../src/validationUtils";
 
 function createInputs(): Inputs {
   return {
@@ -190,7 +192,13 @@ describe("Question Model - Visitor Test", () => {
       }
       assert.sameOrderedMembers(expectedSequence, actualSequence);
     });
-
+    it("fail: defaultVisitor throws Error", async () => {
+      sandbox.stub(engine, "defaultVisotor").rejects(new Error("Test"));
+      const node = { data: createTextQuestion("q1") };
+      const inputs = createInputs();
+      const res = await engine.traverse(node, inputs, mockUI);
+      assert.isTrue(res.isErr() && res.error instanceof UnhandledError);
+    });
     it("success: flat sequence", async () => {
       const actualSequence: string[] = [];
       sandbox.stub(mockUI, "inputText").callsFake(async (config: InputTextConfig) => {
@@ -705,6 +713,89 @@ describe("Question Model - Visitor Test", () => {
 
       assert.sameOrderedMembers(expectedSequence, actualSequence);
     });
+
+    it("condition skip group typed parent", async () => {
+      const actualSequence: string[] = [];
+      sandbox.stub(mockUI, "inputText").callsFake(async (config: InputTextConfig) => {
+        actualSequence.push(config.name);
+        return ok({ type: "success", result: config.name });
+      });
+      const node: IQTreeNode = {
+        data: {
+          type: "text",
+          title: "q1",
+          name: "q1",
+        },
+        children: [
+          {
+            data: {
+              type: "group",
+            },
+            children: [
+              {
+                condition: {
+                  equals: "q1",
+                },
+                data: {
+                  type: "text",
+                  title: "q2",
+                  name: "q2",
+                },
+              },
+            ],
+          },
+        ],
+      };
+      const expectedSequence = ["q1", "q2"];
+      const inputs = createInputs();
+      const res = await engine.traverse(node, inputs, mockUI);
+      assert.isTrue(res.isOk());
+      assert.sameOrderedMembers(expectedSequence, actualSequence);
+    });
+
+    it("condition check when parent is multiple select", async () => {
+      const actualSequence: string[] = [];
+      sandbox.stub(mockUI, "selectOptions").callsFake(async (config: MultiSelectConfig) => {
+        actualSequence.push(config.name);
+        return ok({ type: "success", result: ["1", "2"] });
+      });
+      sandbox.stub(mockUI, "inputText").callsFake(async (config: InputTextConfig) => {
+        actualSequence.push(config.name);
+        return ok({ type: "success", result: config.name });
+      });
+      const node: IQTreeNode = {
+        data: {
+          type: "multiSelect",
+          title: "q1",
+          name: "q1",
+          staticOptions: ["1", "2", "3"],
+        },
+        children: [
+          {
+            data: {
+              type: "group",
+            },
+            children: [
+              {
+                condition: {
+                  contains: "1",
+                },
+                data: {
+                  type: "text",
+                  title: "q2",
+                  name: "q2",
+                },
+              },
+            ],
+          },
+        ],
+      };
+      const expectedSequence = ["q1", "q2"];
+      const inputs = createInputs();
+      const res = await engine.traverse(node, inputs, mockUI);
+      assert.isTrue(res.isOk());
+      assert.sameOrderedMembers(expectedSequence, actualSequence);
+    });
   });
 
   describe("defaultVisotor", () => {
@@ -714,6 +805,71 @@ describe("Question Model - Visitor Test", () => {
     afterEach(() => {
       mockedEnvRestore();
       sandbox.restore();
+    });
+    it("should return error when validate error for preset answer", async () => {
+      sandbox.stub(validationUtils, "validateInputs").resolves("Error");
+      const question: TextInputQuestion = {
+        type: "text",
+        name: "test",
+        title: "test",
+        required: true,
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        test: "value",
+      };
+      const res = await engine.defaultVisotor(question, mockUI, inputs);
+      assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
+    });
+    it("default value for forgetLastValue = false", async () => {
+      sandbox.stub(mockUI, "inputText").resolves(ok({ type: "success", result: "value" }));
+      const question: TextInputQuestion = {
+        type: "text",
+        name: "test",
+        title: "test",
+        required: true,
+        forgetLastValue: false,
+        value: "lastValue",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await engine.defaultVisotor(question, mockUI, inputs);
+      assert.isTrue(res.isOk());
+    });
+    it("default value is a value and forgetLastValue = true", async () => {
+      sandbox.stub(mockUI, "inputText").resolves(ok({ type: "success", result: "value" }));
+      const question: TextInputQuestion = {
+        type: "text",
+        name: "test",
+        title: "test",
+        required: true,
+        forgetLastValue: true,
+        default: "defaultValue",
+        value: "lastValue",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await engine.defaultVisotor(question, mockUI, inputs);
+      assert.isTrue(res.isOk());
+    });
+    it("default value is a function and forgetLastValue = true", async () => {
+      sandbox.stub(mockUI, "inputText").resolves(ok({ type: "success", result: "value" }));
+      const question: TextInputQuestion = {
+        type: "text",
+        name: "test",
+        title: "test",
+        required: true,
+        forgetLastValue: true,
+        default: () => "defaultValue",
+        value: "lastValue",
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await engine.defaultVisotor(question, mockUI, inputs);
+      assert.isTrue(res.isOk());
     });
     it("should return MissingRequiredInputError for non-interactive mode", async () => {
       const question: TextInputQuestion = {

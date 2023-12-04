@@ -3,7 +3,14 @@
 
 import { commands, ExtensionContext, extensions } from "vscode";
 
-import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import {
+  err,
+  FxError,
+  InputResult,
+  ok,
+  Result,
+  SingleFileOrInputConfig,
+} from "@microsoft/teamsfx-api";
 import {
   assembleError,
   loadingDefaultPlaceholder,
@@ -16,6 +23,12 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { sleep } from "../utils/commonUtils";
 import { getDefaultString, localize } from "../utils/localizeUtils";
 import { InternalUIError } from "@microsoft/vscode-ui";
+import {
+  SelectFileOrInputResultType,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../telemetry/extTelemetryEvents";
+import { isValidHttpUrl } from "@microsoft/teamsfx-core";
 
 export class TTKLocalizer implements Localizer {
   loadingOptionsPlaceholder(): string {
@@ -43,10 +56,10 @@ export class TTKLocalizer implements Localizer {
     return localize("teamstoolkit.qm.emptySelection");
   }
   cancelErrorMessage(): string {
-    return getDefaultString("teamstoolkit.qm.userCancel");
+    return "User canceled.";
   }
   cancelErrorDisplayMessage(): string {
-    return localize("teamstoolkit.qm.userCancel");
+    return "User canceled.";
   }
   internalErrorDisplayMessage(action: string): string {
     return "VS Code failed to operate: " + action;
@@ -62,10 +75,12 @@ export class TTKLocalizer implements Localizer {
   }
 }
 
+export const ttkLocalizer = new TTKLocalizer();
+
 export class VsCodeUI extends VSCodeUI {
   context: ExtensionContext;
   constructor(context: ExtensionContext) {
-    super(TerminalName, assembleError, new TTKLocalizer());
+    super(TerminalName, assembleError, ttkLocalizer);
     this.context = context;
   }
   async reload(): Promise<Result<boolean, FxError>> {
@@ -88,14 +103,38 @@ export class VsCodeUI extends VSCodeUI {
     } else {
       return err(
         new InternalUIError(
-          super.localizer.internalErrorMessage(
+          ttkLocalizer.internalErrorMessage(
             `commands.executeCommand("workbench.action.reloadWindow")`
           ),
-          super.localizer.internalErrorDisplayMessage(
+          ttkLocalizer.internalErrorDisplayMessage(
             `commands.executeCommand("workbench.action.reloadWindow")`
           )
         )
       );
     }
+  }
+
+  /**
+   * override selectFileOrInput() to send telemetry event
+   */
+  async selectFileOrInput(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>> {
+    const res = await super.selectFileOrInput(config);
+    if (res.isOk()) {
+      if (res.value.type === "success") {
+        const value = res.value.result as string;
+        if (isValidHttpUrl(value)) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.selectFileOrInputResultType, {
+            [TelemetryProperty.SelectedOption]: SelectFileOrInputResultType.Input,
+          });
+        } else {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.selectFileOrInputResultType, {
+            [TelemetryProperty.SelectedOption]: SelectFileOrInputResultType.LocalFile,
+          });
+        }
+      }
+    }
+    return res;
   }
 }

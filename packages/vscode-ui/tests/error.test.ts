@@ -9,6 +9,7 @@ import {
   InternalUIError,
   ScriptTimeoutError,
   UnhandledError,
+  UnsupportedQuestionTypeError,
   UserCancelError,
   assembleError,
 } from "../src/error";
@@ -56,7 +57,12 @@ describe("Error", () => {
     assert.equal(error.message, "a");
     assert.equal(error.displayMessage, "b");
   });
-
+  it("UnsupportedQuestionTypeError", async () => {
+    const error = new UnsupportedQuestionTypeError("a", "b");
+    assert.equal(error.name, "UnsupportedQuestionTypeError");
+    assert.equal(error.message, "a");
+    assert.equal(error.displayMessage, "b");
+  });
   it("assembleError", async () => {
     const error = assembleError("a", "b", "c") as any;
     assert.equal(error.name, "UnhandledError");

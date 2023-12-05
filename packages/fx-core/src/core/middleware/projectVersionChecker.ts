@@ -39,9 +39,9 @@ function showDialog(ctx: CoreHookContext): Promise<FxError> {
   if (inputs.platform === Platform.VSCode) {
     const messageKey = "core.projectVersionChecker.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then(
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton()).then(
       (res) => {
-        if (res.isOk() && res.value === moreInfoButton) {
+        if (res.isOk() && res.value === moreInfoButton()) {
           void TOOLS.ui.openUrl(MetadataV2.updateToolkitLink);
         }
       },
@@ -55,9 +55,9 @@ function showDialog(ctx: CoreHookContext): Promise<FxError> {
   } else {
     const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then(
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton()).then(
       (res) => {
-        if (res.isOk() && res.value === moreInfoButton) {
+        if (res.isOk() && res.value === moreInfoButton()) {
           void TOOLS.ui.openUrl(learnMoreLink);
         }
       },

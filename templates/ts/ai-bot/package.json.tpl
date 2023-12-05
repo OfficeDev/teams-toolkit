@@ -24,7 +24,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/teams-ai": "^0.1.0-preview.2",
+        "@microsoft/teams-ai": "^1.0.0",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },

@@ -502,7 +502,7 @@ export namespace AppStudioClient {
         return undefined;
       }
     } catch (e: any) {
-      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_PUBLISHED_APP, telemetryProperties);
+      wrapException(e, APP_STUDIO_API_NAMES.GET_PUBLISHED_APP, telemetryProperties);
       return undefined;
     }
   }

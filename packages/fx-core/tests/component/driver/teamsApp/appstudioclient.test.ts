@@ -511,6 +511,49 @@ describe("App Studio API Test", () => {
     });
   });
 
+  describe("get app package", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: "fakeData",
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.getAppPackage(
+        appDef.teamsAppId!,
+        appStudioToken,
+        logProvider
+      );
+      chai.assert.equal(res, "fakeData");
+    });
+
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.getAppPackage(appDef.teamsAppId!, appStudioToken, logProvider);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
   describe("Check exists in tenant", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();

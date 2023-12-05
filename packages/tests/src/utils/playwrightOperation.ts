@@ -50,7 +50,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.ProactiveMessaging]: async () => {
-    await startDebugging();
+    await startDebugging("Debug (Chrome)");
   },
   [TemplateProject.QueryOrg]: async () => {
     await startDebugging();

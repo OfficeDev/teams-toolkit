@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { UserError } from "@microsoft/teamsfx-api";
+import { FxError, SystemError, SystemErrorOptions, UserError } from "@microsoft/teamsfx-api";
 
 export class UserCancelError extends UserError {
   constructor(message: string, displayMessage: string) {
@@ -49,4 +49,54 @@ export class ScriptTimeoutError extends UserError {
       categories: ["external"],
     });
   }
+}
+
+export class UnsupportedQuestionTypeError extends UserError {
+  constructor(message: string, displayMessage: string) {
+    super({
+      source: "UI",
+      name: "UnsupportedQuestionTypeError",
+      message: message,
+      displayMessage: displayMessage,
+      categories: ["internal"],
+    });
+  }
+}
+
+export class InputValidationError extends UserError {
+  constructor(message: string, displayMessage: string) {
+    super({
+      source: "UI",
+      message: message,
+      displayMessage: displayMessage,
+      categories: ["internal"],
+    });
+  }
+}
+
+export class MissingRequiredInputError extends UserError {
+  constructor(message: string, displayMessage: string) {
+    super({
+      source: "UI",
+      message: message,
+      displayMessage: displayMessage,
+      categories: ["internal"],
+    });
+  }
+}
+export class UnhandledError extends SystemError {
+  constructor(e: any, message: string, displayMessage: string) {
+    const option: SystemErrorOptions = {
+      source: "UI",
+      error: e,
+      message: message,
+      displayMessage: displayMessage,
+      categories: ["unhandled"],
+    };
+    super(option);
+  }
+}
+export function assembleError(e: any, message: string, displayMessage: string): FxError {
+  if (e instanceof UserError || e instanceof SystemError) return e;
+  return new UnhandledError(e, message, displayMessage);
 }

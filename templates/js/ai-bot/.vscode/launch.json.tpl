@@ -7,7 +7,7 @@
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
-                "group": "remote",
+                "group": "3-remote",
                 "order": 1
             },
             "internalConsoleOptions": "neverOpen"
@@ -18,7 +18,7 @@
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
             "presentation": {
-                "group": "remote",
+                "group": "3-remote",
                 "order": 2
             },
             "internalConsoleOptions": "neverOpen"
@@ -73,7 +73,12 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+{{#enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
                 "order": 1
             },
             "stopAll": true
@@ -86,8 +91,30 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+{{#enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
                 "order": 2
+            },
+            "stopAll": true
+        },
+        {
+            "name": "Debug in Test Tool",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App (Test Tool)",
+            "presentation": {
+{{#enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+                "order": 1
             },
             "stopAll": true
         }

@@ -69,7 +69,7 @@ describe("Migration Tests", function () {
 
       // local debug with TTK
       try {
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
         await waitForTerminal(
           LocalDebugTaskLabel.StartLocalTunnel,
           LocalDebugTaskResult.StartSuccess

@@ -64,7 +64,7 @@ export async function checkIfAppInDifferentAcountSameTenant(
     await AppStudioClient.getApp(teamsAppId, appStudioToken, logger);
   } catch (error: any) {
     if (error.message && error.message.includes("404")) {
-      const exists = await AppStudioClient.checkExistsInTenant(teamsAppId, appStudioToken, logger);
+      const exists = await AppStudioClient.checkExistsInTenant(teamsAppId, appStudioToken);
 
       return ok(exists);
     }

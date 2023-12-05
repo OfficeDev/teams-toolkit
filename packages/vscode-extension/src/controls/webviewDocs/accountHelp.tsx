@@ -42,8 +42,8 @@ export default function PrepareM365Account() {
             account.
           </li>
           <li>
-            The Microsoft 365 account should be granted with uploading custom apps permission to
-            update the Teams app.
+            The Microsoft 365 account should be granted with custom app upload permission to update
+            the Teams app.
           </li>
         </ol>
       </p>
@@ -105,7 +105,7 @@ export default function PrepareM365Account() {
             Open Teams Toolkit for Visual Studio Code and log into the Teams Toolkit extension using
             your developer account created in step 1.
           </p>
-          <p>The uploading custom apps permission has already been configured.</p>
+          <p>The custom app upload permission has already been configured.</p>
           <p>
             <img src={M365Account} alt="Teams Toolkit Microsoft 365 account" />
           </p>

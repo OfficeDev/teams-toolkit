@@ -46,7 +46,7 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 ## Now you have an instant sandbox.
 
->Note: You can use the newly created *.onmicorosoft.com accounts to log in to Teams Toolkit for VS Code. The uploading custom apps permission has already been configured.
+>Note: You can use the newly created *.onmicorosoft.com accounts to log in to Teams Toolkit for VS Code. The custom app upload permission has already been configured.
 
 ![Instant sandbox](./m365-dev-program-instant-sandbox.png)
 

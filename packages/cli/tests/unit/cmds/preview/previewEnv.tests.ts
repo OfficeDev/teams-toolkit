@@ -393,7 +393,7 @@ describe("PreviewEnv Steps", () => {
     const error = (accountRes as any).error;
     // eslint-disable-next-line no-secrets/no-secrets
     expect(error.name).equals("PrerequisitesValidationM365AccountError");
-    expect(error.message).satisfy((m: string) => m.includes("uploading custom apps permission"));
+    expect(error.message).satisfy((m: string) => m.includes("custom app upload permission"));
   });
 
   it("detectRunCommand - node", async () => {

@@ -31,9 +31,9 @@
     },
     "doctor": {
       "account": {
-        "SideLoadingDisabled": "Your Microsoft 365 tenant admin hasn't enabled uploading custom apps permission for your account. You can't install your app to Teams!",
+        "SideLoadingDisabled": "Your Microsoft 365 tenant admin hasn't enabled custom app upload permission for your account. You can't install your app to Teams!",
         "NotSignIn": "You have not logged in to your Microsoft 365 account yet. Please use teamsapp auth login command to login to your Microsoft 365 account.",
-        "SignInSuccess": "Microsoft 365 Account (%s) is logged in and uploading custom apps permission is enabled."
+        "SignInSuccess": "Microsoft 365 Account (%s) is logged in and custom app upload permission is enabled."
       },
       "node" : {
         "NotFound": "Cannot find Node.js. Node.js used for developing Teams apps with JavaScript or TypeScript using Teams Toolkit for Visual Studio Code. Visit https://nodejs.org/about/releases/ to install the LTS version.",

@@ -16,8 +16,8 @@ export const doctorConstant = {
   NodeNotFound: `Cannot find Node.js. ${InstallNode}`,
   NodeSuccess: `Node.js version (@Version) is installed`,
   SignInCopilotSuccess: `Microsoft 365 Account (@account) is logged in and has Copilot access`,
-  SignInSuccess: `Microsoft 365 Account (@account) is logged in and uploading custom apps permission is enabled`,
-  SignInSuccessWithNewAccount: `You are now using a different Microsoft 365 tenant. Microsoft 365 Account (@account) is logged in and uploading custom apps permission is enabled`,
+  SignInSuccess: `Microsoft 365 Account (@account) is logged in and custom app upload permission is enabled`,
+  SignInSuccessWithNewAccount: `You are now using a different Microsoft 365 tenant. Microsoft 365 Account (@account) is logged in and custom app upload permission is enabled`,
   Cert: "Development certificate for localhost",
   CertSuccess: "Development certificate for localhost is installed",
   NpmInstallSuccess: (displayName: string | undefined, cwd: string) =>

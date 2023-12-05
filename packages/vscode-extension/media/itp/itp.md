@@ -50,7 +50,7 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 ![Instant sandbox](./m365-dev-program-instant-sandbox.png)
 
-## (Optional) Check whether uploading custom apps option is on
+## (Optional) Check whether custom apps upload option is on
 
 - Sign in to [Teams Admin Center](https://admin.teams.microsoft.com) with your admin credentials.
 

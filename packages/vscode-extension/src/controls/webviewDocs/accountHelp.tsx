@@ -48,9 +48,9 @@ export default function PrepareM365Account() {
         </ol>
       </p>
       <p>
-        Uploading custom apps is the permission of your Microsoft 365 account to upload the Teams
-        app to Teams client. You can contact your tenant administrator to turn on the uploading
-        custom apps permission for your organization.{" "}
+        Custom app upload is the permission of your Microsoft 365 account to upload the Teams app to
+        Teams client. You can contact your tenant administrator to turn on the custom app upload
+        permission for your organization.{" "}
       </p>
       <p>
         Or you can create a free qualified Microsoft 365 development account to resolve the above

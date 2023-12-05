@@ -554,6 +554,59 @@ describe("App Studio API Test", () => {
     });
   });
 
+  describe("partner center app validation", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: {
+          status: "Accepted",
+          errors: [],
+          warnings: [],
+          notes: [],
+          addInDetails: {
+            displayName: "fakeApp",
+            developerName: "Teams",
+            version: "0.0.1",
+            manifestVersion: "1.16",
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+
+      const res = await AppStudioClient.partnerCenterAppPackageValidation(
+        Buffer.from(""),
+        appStudioToken
+      );
+      chai.assert.equal(res, response.data);
+    });
+
+    it("422", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "422",
+        message: "Invalid zip",
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.partnerCenterAppPackageValidation(Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
   describe("Check exists in tenant", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
@@ -566,6 +619,30 @@ describe("App Studio API Test", () => {
 
       const res = await AppStudioClient.checkExistsInTenant(appDef.teamsAppId!, appStudioToken);
       chai.assert.isTrue(res);
+    });
+
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.checkExistsInTenant(appDef.teamsAppId!, appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
     });
   });
 

@@ -4,84 +4,30 @@ This template showcases a bot app that responds to user questions like an AI ass
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
-- [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
-  - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
-    - [Deploy to Azure](#deploy-to-azure)
-    - [Use Azure OpenAI](#use-azure-openai)
-  - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
-  - [Additional information and references](#additional-information-and-references)
-  - [Learn more](#learn-more)
-  - [Report an issue](#report-an-issue)
-
-## Get started with the AI Chat Bot template
+## Quick Start
 
 **Prerequisites**
 > To run the AI Chat Bot template in your local dev machine, you will need:
 >
-> - [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
-> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Azure OpenAI](https://aka.ms/oai/access) resource or an account with [OpenAI](https://platform.openai.com).
->
-> **Note**
->
-> Teams AI Library is currently in preview version.
 
-1. Set your [OpenAI API Key](https://openai.com/api/) to *appsettings.Development.json*.
+1. Fill in your OpenAI API Key or Azure OpenAI settings in `env/.env.local.user`
+```
+# If using OpenAI
+SECRET_OPENAI_API_KEY="<your-openai-api-key>"
 
-    ```json
-      "OpenAI": {
-        "ApiKey": "<your-openai-api-key>"
-      },
-    ```
-1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel, set authentication type to Public, or select an existing public dev tunnel.
-1. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies.
-1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
-to install the app to.
-1. Press F5, or select the Debug > Start Debugging menu in Visual Studio.
-1. In the launched browser, select the Add button to load the app in Teams.
-1. In the chat bar, type and send anything to your bot to trigger a response.
+# If using Azure OpenAI
+SECRET_AZURE_OPENAI_API_KEY="<your-azure-openai-api-key>"
+SECRET_AZURE_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
+```
 
-**Congratulations**! You are running an application that can now interact with users in Teams:
-
-![ai chat bot](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
-
-### Deploy to Azure
-
-Note that, this sample requires AI service so you need one more pre-step before deploy to Azure. To configure the Azure resources to have an environment variable for the OpenAI Key:
-
-1. In `./env/.env.dev.user` file, paste your [OpenAI API Key](https://openai.com/api/) to the environment variable `SECRET_OPENAI_API_KEY=`.
-
-The `SECRET_` prefix is a convention used by Teams Toolkit to mask the value in any logging output and is optional.
-
-### Use Azure OpenAI
-
-Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI as AI service.
-
-**As prerequisites**
-> - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
-
-1. Prepare your own Azure OpenAI service and Azure AI Content Safety service.
-1. Modify source code `Program.cs`, comment out the "*#Use OpenAI*" part, and uncomment the "*#Use Azure OpenAI and Azure Content Safety*" part.
-1. Set your Azure OpenAI related settings to *appsettings.Development.json*.
-
-    ```json
-      "Azure": {
-        "OpenAIApiKey": "<your-azure-openai-api-key>",
-        "OpenAIEndpoint": "<your-azure-openai-endpoint>"
-      }
-    ```
-1. In `Program.cs`, update `defaultModel` to your own model deployment name.
-
-**For deployment to Azure**
-
-To configure the Azure resources to have Azure OpenAI environment variables:
-
-1. In `./env/.env.dev.user` file, paste your Azure OpenAI related variables.
-
-    ```bash
-    SECRET_AZURE_OPENAI_API_KEY=
-    SECRET_AZURE_OPENAI_ENDPOINT=
-    ```
+2. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
+3. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
+4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
+to install the app to
+5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+6. In the launched browser, select the Add button to load the app in Teams
+7. In the chat bar, type and send anything to your bot to trigger a response
 
 ## Extend the AI Chat Bot template with more AI capabilities
 

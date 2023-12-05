@@ -4,8 +4,8 @@ namespace {{SafeProjectName}}
     {
         public string BOT_ID { get; set; }
         public string BOT_PASSWORD { get; set; }
-        public OpenAIConfigOptions? OpenAI { get; set; }
-        public AzureConfigOptions? Azure { get; set; }
+        public OpenAIConfigOptions OpenAI { get; set; }
+        public AzureConfigOptions Azure { get; set; }
     }
 
     /// <summary>
@@ -13,7 +13,7 @@ namespace {{SafeProjectName}}
     /// </summary>
     public class OpenAIConfigOptions
     {
-        public string? ApiKey { get; set; }
+        public string ApiKey { get; set; }
     }
 
     /// <summary>
@@ -21,7 +21,7 @@ namespace {{SafeProjectName}}
     /// </summary>
     public class AzureConfigOptions
     {
-        public string? OpenAIApiKey { get; set; }
-        public string? OpenAIEndpoint { get; set; }
+        public string OpenAIApiKey { get; set; }
+        public string OpenAIEndpoint { get; set; }
     }
 }

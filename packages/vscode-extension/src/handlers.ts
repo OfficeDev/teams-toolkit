@@ -75,7 +75,6 @@ import {
   manifestUtils,
   JSONSyntaxError,
   MetadataV3,
-  isTestToolEnabledProject,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -1788,7 +1787,7 @@ export async function showError(e: UserError | SystemError) {
   const recommendTestTool =
     e.recommendedOperation === RecommendedOperations.DebugInTestTool &&
     globalVariables.workspaceUri?.fsPath &&
-    isTestToolEnabledProject(globalVariables.workspaceUri.fsPath);
+    commonUtils.isTestToolEnabledProject(globalVariables.workspaceUri.fsPath);
 
   if (recommendTestTool) {
     const recommendTestToolMessage = openTestToolMessage();

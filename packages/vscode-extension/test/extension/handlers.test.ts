@@ -1470,7 +1470,7 @@ describe("handlers", () => {
         .callsFake((title: string, button: any) => {
           return Promise.resolve(button);
         });
-      sandbox.stub(projectSettingsHelper, "isTestToolEnabledProject").returns(true);
+      sandbox.stub(debugCommonUtils, "isTestToolEnabledProject").returns(true);
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(vscode.commands, "executeCommand");

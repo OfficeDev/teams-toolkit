@@ -364,7 +364,6 @@ export class LocalDebugTaskInfo {
 }
 
 export class DebugItemSelect {
-  static readonly DebugUsingChrome = "Debug (Chrome)";
   static readonly DebugInTeamsUsingChrome = "Debug in Teams (Chrome)";
 }
 

@@ -1,3 +1,6 @@
+# 2.4.0-rc
+- Support to set notification local store file name using environment variable `TEAMSFX_NOTIFICATION_STORE_FILENAME`.
+
 # 2.3.0
 
 - Fix `NotificationMiddleware` reference key generation when bot is added to a Team.

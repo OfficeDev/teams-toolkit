@@ -2,29 +2,25 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 
-namespace {{SafeProjectName}}.Controllers;
-
-// This ASP Controller is created to handle a request. Dependency Injection will provide the Adapter and IBot
-// implementation at runtime. Multiple different IBot implementations running at different endpoints can be
-// achieved by specifying a more specific type for the bot constructor argument.
-[Route("api/messages")]
-[ApiController]
-public class BotController : ControllerBase
+namespace {{SafeProjectName}}.Controllers
 {
-    private readonly CloudAdapter Adapter;
-    private readonly IBot Bot;
-
-    public BotController(CloudAdapter adapter, IBot bot)
+    [Route("api/messages")]
+    [ApiController]
+    public class BotController : ControllerBase
     {
-        Adapter = adapter;
-        Bot = bot;
-    }
+        private readonly CloudAdapter Adapter;
+        private readonly IBot Bot;
 
-    [HttpPost]
-    public async Task PostAsync(CancellationToken cancellationToken = default)
-    {
-        // Delegate the processing of the HTTP POST to the adapter.
-        // The adapter will invoke the bot.
-        await Adapter.ProcessAsync(Request, Response, Bot, cancellationToken);
+        public BotController(CloudAdapter adapter, IBot bot)
+        {
+            Adapter = adapter;
+            Bot = bot;
+        }
+
+        [HttpPost]
+        public async Task PostAsync(CancellationToken cancellationToken = default)
+        {
+            await Adapter.ProcessAsync(Request, Response, Bot, cancellationToken);
+        }
     }
 }

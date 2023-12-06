@@ -68,7 +68,7 @@ describe("Migration Tests", function () {
 
       try {
         // local debug
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
 
         console.log("wait frontend start");
         await waitForTerminal(

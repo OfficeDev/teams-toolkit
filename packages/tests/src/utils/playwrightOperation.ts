@@ -50,7 +50,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.ProactiveMessaging]: async () => {
-    await startDebugging();
+    await startDebugging("Debug (Chrome)");
   },
   [TemplateProject.QueryOrg]: async () => {
     await startDebugging();
@@ -92,7 +92,11 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging("Teams workbench (Chrome)");
   },
   [TemplateProject.TabSSOApimProxy]: async () => {
-    await startDebuggingAzure("Debug (Chrome)", "local", `TabSSOApimProxy`);
+    await startDebuggingAzure(
+      "Debug in Teams (Chrome)",
+      "local",
+      `TabSSOApimProxy`
+    );
   },
   [TemplateProject.LargeScaleBot]: async () => {
     await startDebugging();

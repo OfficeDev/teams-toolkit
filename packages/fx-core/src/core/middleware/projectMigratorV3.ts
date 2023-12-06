@@ -139,9 +139,9 @@ export const errorNames = {
   manifestTemplateInvalid: "ManifestTemplateInvalid",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
-const upgradeButton = getLocalizedString("core.option.upgrade");
-export const moreInfoButton = getLocalizedString("core.option.moreInfo");
-const migrationMessageButtons = [upgradeButton, moreInfoButton];
+const upgradeButton = () => getLocalizedString("core.option.upgrade");
+export const moreInfoButton: () => string = () => getLocalizedString("core.option.moreInfo");
+const migrationMessageButtons = () => [upgradeButton(), moreInfoButton()];
 
 const telemetryProperties = {
   [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
@@ -544,15 +544,15 @@ async function askUserConfirm(
   let answer;
   do {
     answer = await popupMessageModal(versionForMigration);
-    if (answer === moreInfoButton) {
+    if (answer === moreInfoButton()) {
       TOOLS?.ui.openUrl(learnMoreLink);
       sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
         [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
         [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
       });
     }
-  } while (answer === moreInfoButton);
-  if (!answer || !migrationMessageButtons.includes(answer)) {
+  } while (answer === moreInfoButton());
+  if (!answer || !migrationMessageButtons().includes(answer)) {
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
@@ -574,14 +574,14 @@ async function showNonmodalNotification(
 ): Promise<boolean> {
   sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const answer = await popupMessageNonmodal(versionForMigration);
-  if (answer === moreInfoButton) {
+  if (answer === moreInfoButton()) {
     TOOLS?.ui.openUrl(learnMoreLink);
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return false;
-  } else if (answer === upgradeButton) {
+  } else if (answer === upgradeButton()) {
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
@@ -634,7 +634,7 @@ async function popupMessage(
     "warn",
     migrationNotificationMessage(versionForMigration),
     isModal,
-    ...migrationMessageButtons
+    ...migrationMessageButtons()
   );
   return res?.isOk() ? res.value : undefined;
 }

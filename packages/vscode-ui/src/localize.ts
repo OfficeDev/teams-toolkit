@@ -16,6 +16,10 @@ export interface Localizer {
   internalErrorDisplayMessage(action: string): string;
   commandTimeoutErrorMessage(command: string): string;
   commandTimeoutErrorDisplayMessage(command: string): string;
+  invalidInputErrorMessage?(name: string, reason: string): string;
+  invalidInputDisplayMessage?(name: string, reason: string): string;
+  missingInputErrorMessage?(name: string): string;
+  missingInputDisplayMessage?(name: string): string;
 }
 
 export class DefaultLocalizer implements Localizer {
@@ -60,5 +64,17 @@ export class DefaultLocalizer implements Localizer {
   }
   loadingOptionsPlaceholder(): string {
     return "Loading options...";
+  }
+  invalidInputErrorMessage(name: string, reason: string): string {
+    return `Input '${name}' validation failed: ${reason}`;
+  }
+  invalidInputDisplayMessage(name: string, reason: string): string {
+    return `Input '${name}' validation failed: ${reason}`;
+  }
+  missingInputErrorMessage(name: string): string {
+    return `Missing required input: ${name}`;
+  }
+  missingInputDisplayMessage(name: string): string {
+    return `Missing required input: ${name}`;
   }
 }

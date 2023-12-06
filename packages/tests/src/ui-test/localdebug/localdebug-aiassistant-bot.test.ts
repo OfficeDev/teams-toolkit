@@ -53,7 +53,7 @@ describe("Local Debug Tests", function () {
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");
       editDotEnvFile(envPath, "SECRET_OPENAI_ASSISTANT_ID", "fake");
 
-      await startDebugging(DebugItemSelect.DebugUsingChrome);
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");

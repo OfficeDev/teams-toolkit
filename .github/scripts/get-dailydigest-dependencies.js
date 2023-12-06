@@ -56,12 +56,6 @@ async function getTemplatesDependencies() {
       `${repoRoot}/templates`,
       path.dirname(packageJsonFile)
     );
-    if (
-      path.basename(packageJsonDir) === "tab" ||
-      path.basename(packageJsonDir) === "bot"
-    ) {
-      packageJsonDir = packageJsonDir.slice(0, -4);
-    }
     let codeOwners = [];
     for (const [key, value] of codeOwnerMap) {
       if (key.includes(path.basename(packageJsonDir))) {
@@ -72,17 +66,16 @@ async function getTemplatesDependencies() {
     Object.assign(dependencies, packageJson["devDependencies"]);
     for (dependency in dependencies) {
       if (dependenciesMap.has(dependency)) {
-        dependenciesMap.get(dependency).dependencies = [
-          ...new Set(
-            dependenciesMap.get(dependency).dependencies.concat(packageJsonDir)
-          ),
-        ];
+        dependenciesMap.get(dependency).dependencies.push({
+          packageJsonDir,
+          version: dependencies[dependency],
+        });
         dependenciesMap.get(dependency).owners = [
           ...new Set(dependenciesMap.get(dependency).owners.concat(codeOwners)),
         ];
       } else {
         dependenciesMap.set(dependency, {
-          dependencies: [packageJsonDir],
+          dependencies: [{ packageJsonDir, version: dependencies[dependency] }],
           owners: codeOwners,
         });
       }
@@ -101,11 +94,11 @@ function generateAdaptiveCardColumnSets(arr) {
       columns: [
         {
           type: "Column",
-          width: 25,
+          width: 22,
           items: [
             {
               type: "TextBlock",
-              text: "Name",
+              text: "Package",
               wrap: true,
               weight: "Bolder",
             },
@@ -114,24 +107,24 @@ function generateAdaptiveCardColumnSets(arr) {
         },
         {
           type: "Column",
-          width: 15,
-          items: [
-            {
-              type: "TextBlock",
-              text: "Version",
-              wrap: true,
-              weight: "Bolder",
-            },
-          ],
-          verticalContentAlignment: "Center",
-        },
-        {
-          type: "Column",
-          width: 40,
+          width: 38,
           items: [
             {
               type: "TextBlock",
               text: "Templates",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+        {
+          type: "Column",
+          width: 20,
+          items: [
+            {
+              type: "TextBlock",
+              text: "Version",
               wrap: true,
               weight: "Bolder",
             },
@@ -152,7 +145,7 @@ function generateAdaptiveCardColumnSets(arr) {
           verticalContentAlignment: "Center",
         },
       ],
-      separator: true,
+      separator: true
     },
   ];
   for (items of arr) {
@@ -161,36 +154,50 @@ function generateAdaptiveCardColumnSets(arr) {
       columns: [
         {
           type: "Column",
-          width: 25,
+          width: 20,
           items: [
             {
               type: "TextBlock",
-              text: `[${items.name}](https://www.npmjs.com/package/${items.name})`,
+              text: `[${items.name}](https://www.npmjs.com/package/${items.name})` + "\n\r" + `LTS-${items.version}`,
               wrap: true,
+              size: "Small",
             },
           ],
         },
         {
           type: "Column",
-          width: 15,
-          items: [
-            {
-              type: "TextBlock",
-              text: items.version,
-              wrap: true,
-            },
-          ],
-        },
-        {
-          type: "Column",
-          width: 40,
-          items: [
-            {
-              type: "TextBlock",
-              text: items.dependencies.join("\n\r"),
-              wrap: true,
-            },
-          ],
+          width: 60,
+          items: items.dependencies.map((dependency) => {
+            return {
+              type: "ColumnSet",
+              columns: [
+                {
+                  type: "Column",
+                  width: 40,
+                  items: [
+                    {
+                      type: "TextBlock",
+                      text: dependency.packageJsonDir,
+                      wrap: true,
+                      size: "Small",
+                    },
+                  ],
+                },
+                {
+                  type: "Column",
+                  width: 20,
+                  items: [
+                    {
+                      type: "TextBlock",
+                      text: dependency.version,
+                      wrap: true,
+                      size: "Small",
+                    },
+                  ],
+                },
+              ],
+            };
+          }),
         },
         {
           type: "Column",
@@ -200,6 +207,7 @@ function generateAdaptiveCardColumnSets(arr) {
               type: "TextBlock",
               text: items.owners.join("\n\r"),
               wrap: true,
+              size: "Small",
             },
           ],
         },

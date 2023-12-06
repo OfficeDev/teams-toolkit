@@ -495,6 +495,18 @@ export async function initNoAddappPage(
     ".app-bar-items span:has-text('Chat')"
   );
   await chatTab?.click();
+  try {
+    console.log("close dialog");
+    await page?.click("button[data-tid='closeModelDialogBtn']");
+  } catch (error) {
+    console.log("no dialog to close");
+  }
+  try {
+    console.log("dismiss message");
+    await page.click('button:has-text("Dismiss")');
+  } catch (error) {
+    console.log("no message to dismiss");
+  }
   return page;
 }
 

@@ -6,12 +6,19 @@
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout } from "../../utils/constants";
-import { RemoteDebugTestContext, runProvision } from "./remotedebugContext";
+import {
+  CommandPaletteCommands,
+  Timeout,
+  Notification,
+} from "../../utils/constants";
+import { RemoteDebugTestContext } from "./remotedebugContext";
 import {
   execCommandIfExist,
+  getNotification,
   createNewProject,
+  clearNotifications,
 } from "../../utils/vscodeOperation";
+import { cleanUpLocalProject, cleanTeamsApp } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
 import {
   initNoAddappPage,
@@ -42,18 +49,11 @@ describe("Remote debug Tests", function () {
   afterEach(async function () {
     this.timeout(Timeout.finishAzureTestCase);
     await remoteDebugTestContext.after();
-
     //Close the folder and cleanup local sample project
-
     await execCommandIfExist("Workspaces: Close Workspace", Timeout.webView);
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await remoteDebugTestContext.cleanUp(
-      appName,
-      projectPath,
-      false,
-      true,
-      false
-    );
+    // uninstall Teams app
+    cleanTeamsApp(appName), cleanUpLocalProject(projectPath);
   });
 
   it(
@@ -65,7 +65,14 @@ describe("Remote debug Tests", function () {
     async function () {
       const driver = VSBrowser.instance.driver;
       await createNewProject("msgopenapi", appName);
-      await runProvision(appName);
+      await clearNotifications();
+      await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);
+      await driver.sleep(Timeout.openAPIProvision);
+      await getNotification(
+        Notification.ProvisionSucceeded,
+        Timeout.shortTimeWait
+      );
+      await clearNotifications();
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

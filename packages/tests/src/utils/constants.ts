@@ -245,6 +245,9 @@ export class Timeout {
 
   // Add Collaborator
   public static readonly addCollaborator: number = 60 * 1000;
+
+  // open API
+  public static readonly openAPIProvision: number = 20 * 1000;
 }
 
 export class TreeViewCommands {

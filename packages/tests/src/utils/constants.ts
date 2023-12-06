@@ -245,6 +245,9 @@ export class Timeout {
 
   // Add Collaborator
   public static readonly addCollaborator: number = 60 * 1000;
+
+  // open API
+  public static readonly openAPIProvision: number = 20 * 1000;
 }
 
 export class TreeViewCommands {
@@ -311,7 +314,9 @@ export type OptionType =
   | "importaddin"
   | "linkunfurl"
   | "aichat"
-  | "aiassist";
+  | "aiassist"
+  | "msgnewapi"
+  | "msgopenapi";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";

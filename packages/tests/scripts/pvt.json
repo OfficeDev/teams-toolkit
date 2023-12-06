@@ -54,7 +54,10 @@
       "remotedebug-aichat-bot-win-only",
       "remotedebug-aichat-bot-ts-win-only",
       "remotedebug-aiassistant-bot-win-only",
-      "remotedebug-aiassistant-bot-ts-win-only"
+      "remotedebug-aiassistant-bot-ts-win-only",
+      "remotedebug-msg-newapi-win-only",
+      "remotedebug-msg-newapi-ts-win-only",
+      "remotedebug-msg-openapi-win-only"
     ]
   },
   "ubuntu-latest": {
@@ -103,7 +106,9 @@
       "localdebug-aichat-bot",
       "localdebug-aichat-bot-ts",
       "localdebug-aiassistant-bot",
-      "localdebug-aiassistant-bot-ts"
+      "localdebug-aiassistant-bot-ts",
+      "localdebug-msg-newapi",
+      "localdebug-msg-newapi-ts"
     ]
   },
   "macos-latest": {

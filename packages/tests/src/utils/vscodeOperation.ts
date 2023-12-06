@@ -863,6 +863,37 @@ export async function createNewProject(
       }
       break;
     }
+    case "msgnewapi": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with a new API");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
+    case "msgopenapi": {
+      const openapiSpecFilePath =
+        "https://piercerepairsapi.azurewebsites.net/openapi.yml";
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with an OpenAPI Description Document");
+      await input.selectQuickPick(
+        "Enter OpenAPI Description Document Location"
+      );
+      await inputFolderPath(driver, input, openapiSpecFilePath);
+      await input.confirm();
+      await driver.sleep(Timeout.shortTimeWait);
+      const ckAll = await driver.findElement(By.css(".quick-input-check-all"));
+      await ckAll?.click();
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      break;
+    }
     default:
       break;
   }

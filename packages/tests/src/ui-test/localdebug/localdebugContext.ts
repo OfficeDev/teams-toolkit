@@ -31,7 +31,8 @@ export type LocalDebugTestName =
   | "ftNoti" // http and timer trigger notification bot
   | "linkunfurl"
   | "aichat"
-  | "aiassist";
+  | "aiassist"
+  | "msgnewapi";
 
 export class LocalDebugTestContext extends TestContext {
   public testName: LocalDebugTestName;
@@ -221,6 +222,12 @@ export class LocalDebugTestContext extends TestContext {
         await execCommand(
           this.testRootFolder,
           `teamsapp new --app-name ${this.appName} --interactive false --capability ai-assistant-bot --programming-language ${this.lang}`
+        );
+        break;
+      case "msgnewapi":
+        await execCommand(
+          this.testRootFolder,
+          `teamsapp new --app-name ${this.appName} --interactive false --capability search-app  --me-architecture new-api --programming-language ${this.lang}`
         );
         break;
     }

@@ -1741,6 +1741,7 @@ export async function validateSpfx(
     );
     const frame = await frameElementHandle?.contentFrame();
     await frame?.waitForSelector(`text=${options?.displayName}`);
+    console.log(`Found: "${options?.displayName}"`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -1750,9 +1751,9 @@ export async function validateSpfx(
   }
 }
 
-export async function switchToTab(page: Page) {
+export async function switchToTab(page: Page, tabName = "Personal Tab") {
   try {
-    await page.click('a:has-text("Personal Tab")');
+    await page.click(`a:has-text("${tabName}")`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

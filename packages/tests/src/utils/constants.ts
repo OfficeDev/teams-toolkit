@@ -287,6 +287,7 @@ export class CommandPaletteCommands {
     "Teams: Upgrade Project";
   public static readonly InstallTTK: string =
     "Extensions: Install Specific Version of Extension";
+  public static readonly AddSpfxWebPart: string = "Teams: Add SPFx web part";
 }
 
 export type OptionType =

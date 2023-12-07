@@ -743,6 +743,28 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
+    case "gspfxnone": {
+      await input.selectQuickPick(CreateProjectQuestion.Tab);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
+      // Wait for Node version check
+      await driver.sleep(Timeout.longTimeWait);
+      await input.selectQuickPick(
+        CreateProjectQuestion.SpfxSharepointFrameworkGlobalEnvInTtk
+      );
+      await driver.sleep(Timeout.input);
+      // Choose React or None
+      await input.selectQuickPick("None");
+      // Input Web Part Name
+      await input.setText(appName);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      // Input Web Part Description
+      await driver.sleep(Timeout.input);
+      break;
+    }
     case "dashboard": {
       // Choose Dashboard Tab
       // A/B test
@@ -1166,4 +1188,24 @@ export async function getOutPutError(): Promise<void> {
     }
   }
   console.log("[Notification]: No error message found.");
+}
+
+export async function addSpfxWebPart(webPartName = "helloworld") {
+  await execCommandIfExist(CommandPaletteCommands.AddSpfxWebPart);
+  const driver = VSBrowser.instance.driver;
+  const input = await InputBox.create();
+  await input.selectQuickPick("Default folder");
+  await driver.sleep(Timeout.input);
+  await input.setText(webPartName);
+  await driver.sleep(Timeout.input);
+  await input.confirm();
+  await driver.sleep(Timeout.input);
+  await input.selectQuickPick("manifest.json");
+  await driver.sleep(Timeout.input);
+  await input.selectQuickPick("manifest.local.json");
+  await driver.sleep(3 * 60 * 1000);
+  await getNotification(
+    `Web part ${webPartName} was successfully added to project`,
+    30 * 1000
+  );
 }

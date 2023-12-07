@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
  * @author Anne Fu <v-annefu@microsoft.com>
  */
@@ -52,7 +54,7 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
       validateFileExist(projectPath, "src/httpTrigger.js");
       validateFileExist(projectPath, "src/timerTrigger.js");
       const driver = VSBrowser.instance.driver;
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
         await waitForTerminal(
@@ -72,7 +74,7 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
           "Clicked button Cancel for failing to attach to main target"
         );
         await stopDebugging();
-        await startDebugging();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,

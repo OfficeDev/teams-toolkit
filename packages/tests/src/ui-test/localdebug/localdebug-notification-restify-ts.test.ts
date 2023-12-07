@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
  */
@@ -49,7 +51,7 @@ describe("Restify Notification Bot Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/index.ts");
 
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(

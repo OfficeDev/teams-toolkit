@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
  */
@@ -50,7 +52,7 @@ describe("Func Hosted Notification Bot Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/httpTrigger.ts");
       const driver = VSBrowser.instance.driver;
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
         await waitForTerminal(
@@ -70,7 +72,7 @@ describe("Func Hosted Notification Bot Local Debug Tests", function () {
           "Clicked button Cancel for failing to attach to main target"
         );
         await stopDebugging();
-        await startDebugging();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,

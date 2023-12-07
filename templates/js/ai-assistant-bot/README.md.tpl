@@ -16,7 +16,9 @@ It showcases how to build an intelligent chat bot in Teams capable of helping us
 > To run the AI Assistant Bot template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
+{{^enableTestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+{{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
 > - An account with [OpenAI](https://platform.openai.com/).
 >
@@ -60,6 +62,15 @@ Before running or debugging your bot, please follow these steps to setup your ow
 ### Run Teams Bot locally
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableTestToolByDefault}}
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+1. You will receive a welcome message from the bot, or send any message to get a response.
+
+**Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
+
+![ai assistant bot in Teams App Test Tool](https://github.com/OfficeDev/TeamsFx/assets/15644078/90868166-115b-4394-a0d2-272bd985d0aa)
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
@@ -68,6 +79,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
 ![ai assistant bot in Teams](https://github.com/OfficeDev/TeamsFx/assets/7642967/21480d90-307d-4074-84e0-c68a20e38134)
+{{/enableTestToolByDefault}}
 
 ## What's included in the template
 
@@ -94,6 +106,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | - | - |
 |`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+|`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
 ## Extend the AI Assistant Bot template with more AI capabilities
 

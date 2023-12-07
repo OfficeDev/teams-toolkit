@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
  * @author Anne Fu <v-annefu@microsoft.com>
  */
@@ -49,7 +51,7 @@ describe("Time-trigger Notification Bot  Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/timerTrigger.ts");
 
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(

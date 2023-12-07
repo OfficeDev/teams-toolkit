@@ -7,6 +7,8 @@
       "remotedebug-spfxreact-minimal",
       "remotedebug-spfxreact",
       "remotedebug-spfxreact-globalpkg",
+      "remotedebug-spfxreact-globalpkg-addwebpart",
+      "remotedebug-spfxreact-addwebpart",
       "localdebug-tab-nosso",
       "localdebug-bot",
       "localdebug-bot-twice",

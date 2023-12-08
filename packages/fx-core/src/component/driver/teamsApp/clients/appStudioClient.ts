@@ -268,7 +268,8 @@ export namespace AppStudioClient {
    */
   export async function checkExistsInTenant(
     teamsAppId: string,
-    appStudioToken: string
+    appStudioToken: string,
+    logProvider?: LogProvider
   ): Promise<boolean> {
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);

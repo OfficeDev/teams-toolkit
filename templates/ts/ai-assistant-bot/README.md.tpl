@@ -22,7 +22,7 @@ It showcases how to build an intelligent chat bot in Teams capable of helping us
 >
 > **Note**
 >
-> Teams AI Library is currently in preview version.
+> The `AssistantsPlanner` in Teams AI Library is currently in preview version.
 
 ### Create your own OpenAI Assistant
 

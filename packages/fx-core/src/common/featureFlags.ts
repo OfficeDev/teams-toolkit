@@ -53,7 +53,7 @@ export function isCliV3Enabled(): boolean {
 }
 
 export function enableTestToolByDefault(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
+  return isFeatureFlagEnabled(FeatureFlagName.TestTool, false);
 }
 
 export function isApiKeyEnabled(): boolean {

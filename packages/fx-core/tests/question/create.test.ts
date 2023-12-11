@@ -2001,6 +2001,10 @@ describe("scaffold question", () => {
       await validFunc(input, { platform: Platform.VS });
 
       assert.isTrue(warningStub.calledOnce);
+
+      await validFunc(input);
+
+      assert.isTrue(warningStub.calledTwice);
     });
 
     it("app name exceed maxlength of 30", async () => {

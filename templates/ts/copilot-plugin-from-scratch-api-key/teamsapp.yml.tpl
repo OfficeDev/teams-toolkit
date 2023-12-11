@@ -24,22 +24,6 @@ provision:
       run:
         ./keyGen.sh ${{TEAMSFX_ENV}}
 
-  # Register API KEY
-  - uses: apiKey/register
-    with:
-      # Name of the API Key
-      name: x-api-key
-      # Value of the API Key
-      clientSecret: ${{SECRET_API_KEY}}
-      # Teams app ID
-      appId: ${{TEAMS_APP_ID}}
-      # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFiles/repair.yml
-    # Write the registration information of API Key into environment file for
-    # the specified environment variable(s).
-    writeToEnvironmentFile:
-      registrationId: X_API_KEY_REGISTRATION_ID
-
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
     with:
       # AZURE_SUBSCRIPTION_ID is a built-in environment variable,
@@ -64,6 +48,22 @@ provision:
       # Teams Toolkit will download this bicep CLI version from github for you,
       # will use bicep CLI in PATH if you remove this config.
       bicepCliVersion: v0.9.1
+
+  # Register API KEY
+  - uses: apiKey/register
+    with:
+      # Name of the API Key
+      name: x-api-key
+      # Value of the API Key
+      clientSecret: ${{SECRET_API_KEY}}
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+    # Write the registration information of API Key into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
+      registrationId: X_API_KEY_REGISTRATION_ID
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

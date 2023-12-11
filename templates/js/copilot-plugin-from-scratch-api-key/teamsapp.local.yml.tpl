@@ -33,7 +33,7 @@ provision:
       # Teams app ID
       appId: ${{TEAMS_APP_ID}}
       # Path to OpenAPI description document
-      apiSpecPath: ./appPackage/apiSpecificationFiles/repair.yml
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
     # Write the registration information of API Key into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:

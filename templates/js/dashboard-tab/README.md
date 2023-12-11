@@ -40,8 +40,8 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-| `src/services/chartService.js`       | A data retrive implementation for the chart widget |
-| `src/services/listService.js`        | A data retrive implementation for the list widget  |
+| `src/services/chartService.js`       | A data retrieve implementation for the chart widget |
+| `src/services/listService.js`        | A data retrieve implementation for the list widget  |
 | `src/dashboards/SampleDashboard.jsx` | A sample dashboard layout implementation           |
 | `src/styles/ChartWidget.css`         | The chart widget style file                        |
 | `src/styles/ListWidget.css`          | The list widget style file                         |

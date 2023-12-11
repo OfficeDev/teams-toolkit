@@ -1,4 +1,4 @@
-{{#header}} version: 1.0.0 {{/header}}
+{{#header}} version: v1.3 {{/header}}
 
 environmentFolderPath: ./env
 
@@ -8,7 +8,7 @@ provision:
 
 {{#armDeploy}} deploymentName: Create-resources-for-tab {{/armDeploy}}
 
-{{#azureStorageEnableStaticWebsite}} {{/azureStorageEnableStaticWebsite}}
+{{#azureStaticWebAppGetDeploymentToken}} {{/azureStaticWebAppGetDeploymentToken}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
@@ -20,7 +20,7 @@ provision:
 deploy:
 {{#cliRunNpmCommand}} install, args: install --production {{/cliRunNpmCommand}}
 {{#cliRunNpmCommand}} args: run build --if-present, build {{/cliRunNpmCommand}}
-{{#azureStorageDeploy}} artifactFolder: build {{/azureStorageDeploy}}
+{{#azureStaticWebAppDeploy}} artifactFolder: ./build {{/azureStaticWebAppDeploy}}
 
 # Triggered when 'teamsapp publish' is executed
 publish:

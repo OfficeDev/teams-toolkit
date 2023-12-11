@@ -86,20 +86,29 @@ export async function wrapRun(
   try {
     return ok(await exec());
   } catch (error) {
-    if (errorHandler) {
-      await errorHandler();
-    }
-    if (error instanceof BaseComponentInnerError) {
-      if (error.detail) {
-        logProvider?.debug(`Error occurred: ${error.detail}`);
-      }
-      return err(error.toFxError());
-    } else if (error instanceof UserError || error instanceof SystemError) {
-      return err(error);
-    }
-    // always return error as SystemError
-    return err(BaseComponentInnerError.unknownError(errorSource, error).toFxError());
+    return await errorHandle(error, errorSource, logProvider, errorHandler);
   }
+}
+
+export async function errorHandle(
+  error: unknown,
+  errorSource: string,
+  logProvider?: LogProvider,
+  errorHandler?: () => Promise<void>
+): Promise<Result<Map<string, string>, FxError>> {
+  if (errorHandler) {
+    await errorHandler();
+  }
+  if (error instanceof BaseComponentInnerError) {
+    if (error.detail) {
+      logProvider?.debug(`Error occurred: ${error.detail}`);
+    }
+    return err(error.toFxError());
+  } else if (error instanceof UserError || error instanceof SystemError) {
+    return err(error);
+  }
+  // always return error as SystemError
+  return err(BaseComponentInnerError.unknownError(errorSource, error).toFxError());
 }
 
 export async function wrapSummary(

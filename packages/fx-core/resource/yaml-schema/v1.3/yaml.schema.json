@@ -10,7 +10,7 @@
     "environmentFolderPath": {
       "type": "string",
       "description": "The folder path of .env files used for variables and different envrironments."
-    },
+      },
     "version": {
       "type": "string",
       "description": "The version of the yaml file schema",
@@ -71,7 +71,8 @@
           { "$ref": "#/definitions/spfxDeploy" },
           { "$ref": "#/definitions/teamsAppCopyAppPackageToSPFx" },
           { "$ref": "#/definitions/script" },
-          { "$ref": "#/definitions/apiKeyRegister"}
+          { "$ref": "#/definitions/apiKeyRegister"},
+          { "$ref": "#/definitions/azureStaticWebAppGetDeploymentKey"}
         ]
       }
     },
@@ -1536,6 +1537,43 @@
           "properties": {
             "registrationId": {
               "description": "Required. The registration id of created API key.",
+              "$ref": "#/definitions/envVarName"
+            }
+          }
+        }
+      }
+    },
+    "azureStaticWebAppGetDeploymentKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Get deployment key from Azure Static Web App.",
+      "required": ["uses", "with", "writeToEnvironmentFile"],
+      "properties": {
+        "uses": {
+          "type": "string",
+          "description": "Get deployment key. Refer to https://aka.ms/teamsfx-actions/swa-get-deployment-key for more details.",
+          "const": "azureStaticWebApps/getDeploymentToken"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Parameters for this action",
+          "required": ["resourceId"],
+          "properties": {
+            "resourceId": {
+              "type": "string",
+              "description": "The resource ID of Azure Static Web App."
+            }
+          }
+        },
+        "writeToEnvironmentFile": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Write environment variables to environment file",
+          "required": ["deploymentToken"],
+          "properties": {
+            "deploymentToken": {
+              "description": "Required. The deployment token of Azure Static Web App.",
               "$ref": "#/definitions/envVarName"
             }
           }

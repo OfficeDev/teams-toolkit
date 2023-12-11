@@ -23,4 +23,6 @@ export class TelemetryConstant {
   public static readonly PROVISION_COMPONENT_NAME = "provision";
   // the script component name
   public static readonly SCRIPT_COMPONENT = "script";
+  // the component name of the deployment to SWA script
+  public static readonly DEPLOY_TO_SWA_COMPONENT = "deploy_to_swa";
 }

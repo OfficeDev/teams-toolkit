@@ -212,8 +212,8 @@ module.exports = {
         </li>
         <li>
           Press F5 to start debugging which launches your app in Teams using a web browser. Select{" "}
-          <code className="code">Debug (Edge)</code> or <code className="code">Debug (Chrome)</code>
-          .
+          <code className="code">Debug in Teams (Edge)</code> or{" "}
+          <code className="code">Debug in Teams (Chrome)</code>.
         </li>
         <li>
           When Teams launches in the browser, select the Add button in the dialog to install your

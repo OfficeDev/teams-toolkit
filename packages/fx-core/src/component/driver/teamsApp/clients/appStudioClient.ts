@@ -213,29 +213,13 @@ export namespace AppStudioClient {
       let response;
       if (region) {
         requester = createRequesterWithToken(appStudioToken, region);
-        try {
-          logProvider.debug(`Sent API Request: ${region}/api/appdefinitions/v2/import`);
-          telemetryProperties[TelemetryPropertyKey.region] = String(
-            extractRegionFromBaseUrl(region)
-          );
-          response = await RetryHandler.Retry(() =>
-            requester.get(`/api/appdefinitions/${teamsAppId}`)
-          );
-        } catch (e: any) {
-          // Teams apps created by non-regional API cannot be found by regional API
-          if (e.response?.status == 404) {
-            logProvider.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
-            requester = createRequesterWithToken(appStudioToken);
-            telemetryProperties[TelemetryPropertyKey.region] = TelemetryPropertyValue.Global;
-            response = await RetryHandler.Retry(() =>
-              requester.get(`/api/appdefinitions/${teamsAppId}`)
-            );
-          } else {
-            throw e;
-          }
-        }
+        logProvider.debug(`Sent API Request: GET ${region}/api/appdefinitions/${teamsAppId}`);
+        telemetryProperties[TelemetryPropertyKey.region] = String(extractRegionFromBaseUrl(region));
+        response = await RetryHandler.Retry(() =>
+          requester.get(`/api/appdefinitions/${teamsAppId}`)
+        );
       } else {
-        logProvider.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
+        logProvider.debug(`Sent API Request: GET ${baseUrl}/api/appdefinitions/${teamsAppId}`);
         requester = createRequesterWithToken(appStudioToken);
         telemetryProperties[TelemetryPropertyKey.region] = TelemetryPropertyValue.Global;
         response = await RetryHandler.Retry(() =>

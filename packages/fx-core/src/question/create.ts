@@ -382,7 +382,7 @@ export class CapabilityOptions {
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     return [
       ...CapabilityOptions.copilotPlugins(),
-      ...CapabilityOptions.bots(),
+      ...CapabilityOptions.bots(inputs, true),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),

@@ -1166,14 +1166,20 @@ export function appNameQuestion(): TextInputQuestion {
           pattern: AppNamePattern,
           maxLength: 30,
         };
-        if (input.length === 24) {
+        if (input.length === 25) {
           // show warning notification because it may exceed the Teams app name max length after appending suffix
           const context = createContextV3();
-          void context.userInteraction.showMessage(
-            "warn",
-            getLocalizedString("core.QuestionAppName.validation.lengthWarning"),
-            false
-          );
+          if (previousInputs?.platform === Platform.VSCode) {
+            void context.userInteraction.showMessage(
+              "warn",
+              getLocalizedString("core.QuestionAppName.validation.lengthWarning"),
+              false
+            );
+          } else {
+            context.logProvider.warning(
+              getLocalizedString("core.QuestionAppName.validation.lengthWarning")
+            );
+          }
         }
         const appName = input;
         const validateResult = jsonschema.validate(appName, schema);

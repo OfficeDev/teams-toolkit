@@ -6,6 +6,7 @@ import {
   FxError,
   Inputs,
   LocalFunc,
+  LogProvider,
   MultiSelectQuestion,
   OptionItem,
   Platform,
@@ -51,7 +52,7 @@ import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
-import { MockedUserInteraction } from "../plugins/solution/util";
+import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
 import * as utils from "../../src/component/utils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
@@ -1976,17 +1977,30 @@ describe("scaffold question", () => {
       assert.isTrue(validRes === undefined);
     });
 
-    it("app name has 24 length", async () => {
+    it("app name has 25 length - VSC", async () => {
       const mockedUI = new MockedUserInteraction();
       sandbox.stub(utils, "createContextV3").returns({
         userInteraction: mockedUI,
       } as Context);
       const showMessageStub = sandbox.stub(mockedUI, "showMessage");
 
-      const input = "abcdefghijklmnopqrstuvwx";
-      await validFunc(input);
+      const input = "abcdefghijklmnopqrstuvwxy";
+      await validFunc(input, { platform: Platform.VSCode });
 
       assert.isTrue(showMessageStub.calledOnce);
+    });
+
+    it("app name has 25 length - VS", async () => {
+      const mockedLogProvider = new MockedLogProvider();
+      sandbox.stub(utils, "createContextV3").returns({
+        logProvider: mockedLogProvider as LogProvider,
+      } as Context);
+      const warningStub = sandbox.stub(mockedLogProvider, "warning");
+
+      const input = "abcdefghijklmnopqrstuvwxy";
+      await validFunc(input, { platform: Platform.VS });
+
+      assert.isTrue(warningStub.calledOnce);
     });
 
     it("app name exceed maxlength of 30", async () => {

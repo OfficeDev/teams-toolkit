@@ -105,7 +105,6 @@
 /templates/constraints/yml/actions @hund030 @eriolchan @huimiu
 
 /templates/**/copilot-plugin-from-scratch @hund030 @eriolchan @huimiu
-/templates/**/copilot-plugin-from-scratch-api-key @hund030 @eriolchan @huimiu
 /templates/**/dashboard-tab @hund030 @eriolchan @huimiu
 /templates/**/non-sso-tab @hund030 @eriolchan @huimiu @JerryYangKai
 /templates/**/sso-tab @JerryYangKai @eriolchan @hund030 @huimiu

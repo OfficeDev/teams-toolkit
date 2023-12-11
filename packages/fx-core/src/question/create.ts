@@ -1404,6 +1404,25 @@ function getBotOptions(inputs: Inputs): OptionItem[] {
   return options;
 }
 
+export class ApiMessageExtensionAuthOptions {
+  static none(): OptionItem {
+    return {
+      id: "none",
+      label: "None",
+    };
+  }
+  static apiKey(): OptionItem {
+    return {
+      id: "api-key",
+      label: "API Key",
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [ApiMessageExtensionAuthOptions.none(), ApiMessageExtensionAuthOptions.apiKey()];
+  }
+}
+
 function selectBotIdsQuestion(): MultiSelectQuestion {
   // const statcOptions: OptionItem[] = [];
   // statcOptions.push(botOptionItem(false, "000000-0000-0000"));
@@ -1586,6 +1605,20 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   };
 }
 
+export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.ApiMEAuth,
+    title: getLocalizedString("core.createProjectQuestion.apiMessageExtensionAuth.title"),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.apiMessageExtensionAuth.placeholder"
+    ),
+    cliDescription: "The authentication type for the API.",
+    staticOptions: ApiMessageExtensionAuthOptions.all(),
+    default: "none",
+  };
+}
+
 export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
   // export for unit test
   return {
@@ -1743,6 +1776,15 @@ export function capabilitySubTree(): IQTreeNode {
             data: apiOperationQuestion(),
           },
         ],
+      },
+      {
+        condition: (inputs: Inputs) => {
+          return (
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
+            inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id
+          );
+        },
+        data: apiMessageExtensionAuthQuestion(),
       },
       {
         // programming language

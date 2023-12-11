@@ -44,6 +44,7 @@ import {
   NotificationTriggerOptions,
   ProjectTypeOptions,
   ScratchOptions,
+  ApiMessageExtensionAuthOptions,
 } from "../../question/create";
 import { QuestionNames } from "../../question/questionNames";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
@@ -92,6 +93,7 @@ export enum TemplateNames {
   SsoTabObo = "sso-tab-with-obo-flow",
   LinkUnfurling = "link-unfurling",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
+  CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
 }
@@ -127,10 +129,18 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
-    TemplateNames.CopilotPluginFromScratch,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}`]:
-    TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+    ApiMessageExtensionAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+    ApiMessageExtensionAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
 };
@@ -216,6 +226,7 @@ class Coordinator {
       globalVars.isVS = language === "csharp";
       const capability = inputs.capabilities as string;
       const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+      const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -264,6 +275,10 @@ class Coordinator {
 
         if (meArchitecture) {
           feature = `${feature}:${meArchitecture}`;
+        }
+
+        if (apiMEAuthType) {
+          feature = `${feature}:${apiMEAuthType}`;
         }
 
         const templateName = Feature2TemplateName[feature];

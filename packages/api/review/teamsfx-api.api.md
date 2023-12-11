@@ -342,6 +342,7 @@ export interface FxError extends Error {
     // (undocumented)
     categories?: string[];
     innerError?: any;
+    recommendedOperation?: string;
     source: string;
     timestamp: Date;
     // (undocumented)
@@ -852,6 +853,7 @@ export class SystemError extends Error implements FxError {
     displayMessage?: string;
     innerError?: any;
     issueLink?: string;
+    recommendedOperation?: string;
     source: string;
     timestamp: Date;
     userData?: string;
@@ -1045,6 +1047,7 @@ export class UserError extends Error implements FxError {
     displayMessage?: string;
     helpLink?: string;
     innerError?: any;
+    recommendedOperation?: string;
     source: string;
     timestamp: Date;
     userData?: string;

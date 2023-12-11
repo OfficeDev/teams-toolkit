@@ -128,3 +128,17 @@ export function PathAlreadyExistsError(path: string): UserError {
     displayMessage: getLocalizedString("core.QuestionAppName.validation.pathExist", path),
   });
 }
+
+// TODO: msg
+export function SolutionVersionMissingError(): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "SolutionVersionMissing",
+    message: getDefaultString("core.QuestionAppName.validation.pathExist"),
+    displayMessage: getLocalizedString("core.QuestionAppName.validation.pathExist"),
+  });
+}
+
+export function UserCancelError(): UserError {
+  return new UserError(Constants.PLUGIN_NAME, "UserCancel", "UserCancel");
+}

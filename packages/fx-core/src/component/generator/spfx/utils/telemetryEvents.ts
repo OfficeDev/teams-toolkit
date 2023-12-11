@@ -12,6 +12,8 @@ export enum TelemetryEvents {
   EnsureLatestSharepointGeneratorStart = "ensure-latest-sharepoint-start",
   EnsureLatestSharepointGenerator = "ensure-latest-sharepoint",
   UseNotRecommendedVersion = "use-not-recommended-spfx-version",
+  CheckAddWebPartPackage = "check-add-web-part-package",
+  LearnMoreVersionMismatch = "learn-more-version-mismatch",
 }
 
 export enum TelemetryProperty {
@@ -20,4 +22,7 @@ export enum TelemetryProperty {
   EnsureLatestYoReason = "ensure-latest-yo-reason",
   EnsureLatestSharepointGeneratorReason = "ensure-latest-sharepoint-generator-reason",
   SPFxSolution = "spfx-solution",
+  ConfirmAddWebPartResult = "confirm-add-web-part-result",
+  PackageSource = "package-source",
+  UserAction = "user-action",
 }

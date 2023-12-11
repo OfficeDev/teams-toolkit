@@ -34,11 +34,14 @@ export class YoChecker implements DependencyChecker {
     this._logger = logger;
   }
 
-  public async ensureLatestDependency(ctx: Context): Promise<Result<boolean, FxError>> {
+  public async ensureDependency(
+    ctx: Context,
+    targetVersion: string
+  ): Promise<Result<boolean, FxError>> {
     telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYoStart);
     try {
-      void this._logger.info(`${displayName} not found, installing...`);
-      await this.install();
+      void this._logger.info(`${displayName}@${targetVersion} not found, installing...`);
+      await this.install(targetVersion);
       void this._logger.info(`Successfully installed ${displayName}`);
 
       telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYo);
@@ -60,21 +63,30 @@ export class YoChecker implements DependencyChecker {
     return ok(true);
   }
 
-  public async isLatestInstalled(): Promise<boolean> {
+  public async checkLocalInstalledVersion(): Promise<string | undefined> {
     try {
       const yoVersion = await this.queryVersion();
-      const latestYeomanVersion = await this.findLatestVersion(10);
       const hasSentinel = await fs.pathExists(this.getSentinelPath());
-      return !!latestYeomanVersion && yoVersion === latestYeomanVersion && hasSentinel;
+      return hasSentinel ? yoVersion : undefined;
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  public async isLatestInstalled(): Promise<boolean> {
+    try {
+      const yoVersion = await this.checkLocalInstalledVersion();
+      const latestYeomanVersion = await this.findLatestVersion(10);
+      return !!latestYeomanVersion && yoVersion === latestYeomanVersion;
     } catch (error) {
       return false;
     }
   }
 
-  public async install(): Promise<void> {
+  public async install(targetVersion: string): Promise<void> {
     void this._logger.info("Start installing...");
     await this.cleanup();
-    await this.installYo();
+    await this.installYo(targetVersion);
 
     void this._logger.info("Validating package...");
     if (!(await this.validate())) {
@@ -161,9 +173,9 @@ export class YoChecker implements DependencyChecker {
     }
   }
 
-  private async installYo(): Promise<void> {
+  private async installYo(targetVersion: string): Promise<void> {
     try {
-      const version = Constants.LatestVersion;
+      const version = targetVersion ?? Constants.LatestVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,

@@ -34,15 +34,18 @@ export class GeneratorChecker implements DependencyChecker {
     this._logger = logger;
   }
 
-  public async ensureLatestDependency(ctx: Context): Promise<Result<boolean, FxError>> {
-    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart);
+  public async ensureDependency(
+    ctx: Context,
+    targetVersion: string
+  ): Promise<Result<boolean, FxError>> {
+    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart); // TODO: telemetry event
 
     try {
-      void this._logger.info(`${displayName} not found, installing...`);
-      await this.install();
+      void this._logger.info(`${displayName}@${targetVersion} not found, installing...`);
+      await this.install(targetVersion);
       void this._logger.info(`Successfully installed ${displayName}`);
 
-      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator);
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator); // TODO: telemetry event
     } catch (error) {
       telemetryHelper.sendErrorEvent(
         ctx,
@@ -73,10 +76,20 @@ export class GeneratorChecker implements DependencyChecker {
     }
   }
 
-  public async install(): Promise<void> {
+  public async checkLocalInstalledVersion(): Promise<string | undefined> {
+    try {
+      const generatorVersion = await this.queryVersion();
+      const hasSentinel = await fs.pathExists(this.getSentinelPath());
+      return hasSentinel ? generatorVersion : undefined;
+    } catch (error) {
+      return undefined;
+    }
+  }
+
+  public async install(targetVersion: string): Promise<void> {
     void this._logger.info("Start installing...");
     await this.cleanup();
-    await this.installGenerator();
+    await this.installGenerator(targetVersion);
 
     void this._logger.info("Validating package...");
     if (!(await this.validate())) {
@@ -100,9 +113,15 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   public async findGloballyInstalledVersion(
-    timeoutInSeconds?: number
+    timeoutInSeconds?: number,
+    shouldThrowIfNotFind?: boolean
   ): Promise<string | undefined> {
-    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInSeconds ?? 0);
+    return await Utils.findGloballyInstalledVersion(
+      this._logger,
+      name,
+      timeoutInSeconds ?? 0,
+      shouldThrowIfNotFind
+    );
   }
 
   public async findLatestVersion(timeoutInSeconds?: number): Promise<string | undefined> {
@@ -152,9 +171,9 @@ export class GeneratorChecker implements DependencyChecker {
     }
   }
 
-  private async installGenerator(): Promise<void> {
+  private async installGenerator(targetVersion: string): Promise<void> {
     try {
-      const version = Constants.LatestVersion;
+      const version = targetVersion ?? Constants.LatestVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,

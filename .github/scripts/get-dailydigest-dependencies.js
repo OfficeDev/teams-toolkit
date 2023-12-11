@@ -5,50 +5,44 @@ const path = require("path");
 
 const repoRoot = __dirname + "/../..";
 
-const githubUserEmailMap = new Map([
-  ["@hund030", "zhijie.huang@microsoft.com"],
-  ["@eriolchan", "erichen@microsoft.com"],
-  ["@huimiu", "huimiao@microsoft.com"],
-  ["@JerryYangKai", "yang.kai@microsoft.com"],
-  ["@Siglud", "fanhu@microsoft.com"],
-  ["@Yukun-dong", "yukundong@microsoft.com"],
-  ["@yuqizhou77", "yuqzho@microsoft.com"],
-  ["@MSFT-yiz", "yiz@microsoft.com"],
-  ["@jayzhang", "huajiezhang@microsoft.com"],
-  ["@nliu-ms", "nliu@microsoft.com"],
-  ["@Alive-Fish", "zhiyu.you@microsoft.com"],
-  ["@HuihuiWu-Microsoft", "huihuiwu@microsoft.com"],
-  ["@KennethBWSong", "bowen.song@microsoft.com"],
-  ["@adashen", "shenwe@microsoft.com"],
-  ["@SLdragon", "rentu@microsoft.com"],
-  ["@kimizhu", "jasoz@microsoft.com"],
-  ["@dooriya", "dol@microsoft.com"],
-  ["@swatDong", "qidon@microsoft.com"],
-  ["@kuojianlu", "kuojianlu@microsoft.com"],
-]);
-
 async function getTemplatesDependencies() {
   var dependenciesMap = new Map();
   const templatePkgJsonPath = `${repoRoot}/templates/**/package.json.tpl`;
   const packageJsonFiles = await glob.glob(templatePkgJsonPath, {
     ignore: "node_modules/**",
   });
-  const codeOwnerFile = await fs
-    .readFileSync(path.join(repoRoot, ".github/CODEOWNERS"), "utf8")
-    .split("\n")
-    .filter((line) => line.startsWith("/templates/**"));
-  const codeOwnerMap = new Map();
-  codeOwnerFile.forEach((line) => {
-    codeOwnerMap.set(
-      line.substring(0, line.indexOf(" ")),
-      line
-        .substring(line.indexOf(" ") + 1)
-        .split(" ")
-        .map((githubUsername) => {
-          return githubUserEmailMap.get(githubUsername);
-        })
-    );
-  });
+  const codeOwnerMap = new Map([
+    ["copilot-plugin-from-scratch", "huimiao@microsoft.com"],
+    ["dashboard-tab", "huimiao@microsoft.com"],
+    ["non-sso-tab", "zhijie.huang@microsoft.com"],
+    ["sso-tab", "zhijie.huang@microsoft.com"],
+    ["default-bot", "yukundong@microsoft.com"],
+    ["link-unfurling", "yukundong@microsoft.com"],
+    ["message-extension-action", "yukundong@microsoft.com"],
+    ["message-extension-search", "yukundong@microsoft.com"],
+    ["message-extension-copilot", "yukundong@microsoft.com"],
+    ["non-sso-tab-default-bot/tab", "yuqzho@microsoft.com"],
+    ["non-sso-tab-default-bot/bot", "yuqzho@microsoft.com"],
+    ["default-bot-message-extension", "yuqzho@microsoft.com"],
+    ["message-extension", "yuqzho@microsoft.com"],
+    ["office-addin", "huajiezhang@microsoft.com"],
+    ["copilot-plugin-existing-api", "yuqzho@microsoft.com"],
+    ["copilot-plugin-existing-api-api-key", "yuqzho@microsoft.com"],
+    ["spfx-tab", "yuqzho@microsoft.com"],
+    ["spfx-tab-import", "yuqzho@microsoft.com"],
+    ["sso-tab-with-obo-flow", "bowen.song@microsoft.com"],
+    ["command-and-response", "qidon@microsoft.com"],
+    ["notification-http-timer-trigger", "qidon@microsoft.com"],
+    ["notification-http-trigger", "qidon@microsoft.com"],
+    ["notification-restify", "qidon@microsoft.com"],
+    ["notification-timer-trigger", "qidon@microsoft.com"],
+    ["notification-webapi", "qidon@microsoft.com"],
+    ["workflow", "qidon@microsoft.com"],
+    ["m365-message-extension", "kuojianlu@microsoft.com"],
+    ["m365-tab", "kuojianlu@microsoft.com"],
+    ["ai-bot", "kuojianlu@microsoft.com"],
+    ["ai-assistant-bot", "kuojianlu@microsoft.com"],
+  ]);
 
   packageJsonFiles.forEach((packageJsonFile) => {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonFile, "utf8"));
@@ -56,39 +50,195 @@ async function getTemplatesDependencies() {
       `${repoRoot}/templates`,
       path.dirname(packageJsonFile)
     );
-    if (
-      path.basename(packageJsonDir) === "tab" ||
-      path.basename(packageJsonDir) === "bot"
-    ) {
-      packageJsonDir = packageJsonDir.slice(0, -4);
-    }
-    let codeOwners = [];
+    let codeOwners = "";
     for (const [key, value] of codeOwnerMap) {
-      if (key.includes(path.basename(packageJsonDir))) {
+      if (packageJsonDir.includes("non-sso-tab-default-bot")) {
+        codeOwners = "yuqzho@microsoft.com";
+        continue;
+      }
+      if (key === path.basename(packageJsonDir)) {
         codeOwners = value;
       }
     }
     let dependencies = packageJson["dependencies"];
     Object.assign(dependencies, packageJson["devDependencies"]);
     for (dependency in dependencies) {
-      if (dependenciesMap.has(dependency)) {
-        dependenciesMap.get(dependency).dependencies = [
-          ...new Set(
-            dependenciesMap.get(dependency).dependencies.concat(packageJsonDir)
-          ),
-        ];
-        dependenciesMap.get(dependency).owners = [
-          ...new Set(dependenciesMap.get(dependency).owners.concat(codeOwners)),
-        ];
-      } else {
-        dependenciesMap.set(dependency, {
-          dependencies: [packageJsonDir],
-          owners: codeOwners,
+      if (
+        dependenciesMap.has(dependency) &&
+        dependenciesMap.get(dependency).has(codeOwners)
+      ) {
+        dependenciesMap.get(dependency).get(codeOwners).push({
+          packageJsonDir,
+          version: dependencies[dependency],
         });
+      } else if (dependenciesMap.has(dependency)) {
+        dependenciesMap
+          .get(dependency)
+          .set(codeOwners, [
+            { packageJsonDir, version: dependencies[dependency] },
+          ]);
+      } else {
+        const codeOwnerTemplateMap = new Map([
+          [codeOwners, [{ packageJsonDir, version: dependencies[dependency] }]],
+        ]);
+        dependenciesMap.set(dependency, codeOwnerTemplateMap);
       }
     }
   });
   return dependenciesMap;
+}
+
+function generateAdaptiveCardColumnSets(arr) {
+  if (arr.length === 0) {
+    return [];
+  }
+  let columnSets = [
+    {
+      type: "ColumnSet",
+      columns: [
+        {
+          type: "Column",
+          width: 22,
+          items: [
+            {
+              type: "TextBlock",
+              text: "Package",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+        {
+          type: "Column",
+          width: 38,
+          items: [
+            {
+              type: "TextBlock",
+              text: "Templates",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+        {
+          type: "Column",
+          width: 17,
+          items: [
+            {
+              type: "TextBlock",
+              text: "Version",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+        {
+          type: "Column",
+          width: 23,
+          items: [
+            {
+              type: "TextBlock",
+              text: "Owners",
+              wrap: true,
+              weight: "Bolder",
+            },
+          ],
+          verticalContentAlignment: "Center",
+        },
+      ],
+      separator: true,
+    },
+  ];
+  for (package of arr) {
+    let ownerColumnSets = [];
+    package.ownerMap.forEach(function (templatesInfo, owner) {
+      ownerColumnSets.push({
+        type: "ColumnSet",
+        separator: true,
+        columns: [
+          {
+            type: "Column",
+            width: 56,
+            items: templatesInfo.map((templateInfo) => {
+              return {
+                type: "ColumnSet",
+                columns: [
+                  {
+                    type: "Column",
+                    width: 40,
+                    items: [
+                      {
+                        type: "TextBlock",
+                        text: templateInfo.packageJsonDir,
+                        wrap: true,
+                        size: "Small",
+                      },
+                    ],
+                  },
+                  {
+                    type: "Column",
+                    width: 16,
+                    items: [
+                      {
+                        type: "TextBlock",
+                        text: templateInfo.version,
+                        wrap: true,
+                        size: "Small",
+                      },
+                    ],
+                  },
+                ],
+              };
+            }),
+          },
+          {
+            type: "Column",
+            width: 24,
+            items: [
+              {
+                type: "TextBlock",
+                text: owner,
+                wrap: true,
+                size: "Small",
+              },
+            ],
+          },
+        ],
+      });
+    });
+
+    columnSets.push({
+      type: "ColumnSet",
+      columns: [
+        {
+          type: "Column",
+          width: 20,
+          items: [
+            {
+              type: "TextBlock",
+              text:
+                `[${package.name}](https://www.npmjs.com/package/${package.name})` +
+                "\n\r" +
+                `LTS-${package.version}`,
+              wrap: true,
+              size: "Small",
+            },
+          ],
+        },
+        {
+          type: "Column",
+          width: 80,
+          items: ownerColumnSets,
+        },
+      ],
+      separator: true,
+    });
+  }
+
+  return columnSets;
 }
 
 async function main() {
@@ -105,13 +255,14 @@ async function main() {
           arr.push({
             name: entry[0],
             version: ltsVersion,
-            dependencies: entry[1].dependencies,
-            owners: entry[1].owners,
+            ownerMap: entry[1],
           });
         }
       });
   }
-  return arr;
+  const table = generateAdaptiveCardColumnSets(arr);
+  const tableString = JSON.stringify(table);
+  return JSON.stringify(tableString);
 }
 
 main().then((result) => {

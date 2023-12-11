@@ -14,7 +14,12 @@ import { IPublishingAppDenition } from "../interfaces/appdefinitions/IPublishing
 import { AppStudioResultFactory } from ".././results";
 import { Constants, ErrorMessages, APP_STUDIO_API_NAMES } from ".././constants";
 import { RetryHandler } from "../utils/utils";
-import { TelemetryEventName, TelemetryUtils, TelemetryPropertyKey } from "../utils/telemetry";
+import {
+  TelemetryEventName,
+  TelemetryUtils,
+  TelemetryPropertyKey,
+  TelemetryPropertyValue,
+} from "../utils/telemetry";
 import { getAppStudioEndpoint } from ".././constants";
 import { HelpLinks } from "../../../../common/constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
@@ -202,6 +207,7 @@ export namespace AppStudioClient {
   ): Promise<AppDefinition> {
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_APP);
+    const telemetryProperties: { [key: string]: string } = {};
     let requester: AxiosInstance;
     try {
       let response;
@@ -209,6 +215,9 @@ export namespace AppStudioClient {
         requester = createRequesterWithToken(appStudioToken, region);
         try {
           logProvider.debug(`Sent API Request: ${region}/api/appdefinitions/v2/import`);
+          telemetryProperties[TelemetryPropertyKey.region] = String(
+            extractRegionFromBaseUrl(region)
+          );
           response = await RetryHandler.Retry(() =>
             requester.get(`/api/appdefinitions/${teamsAppId}`)
           );
@@ -217,6 +226,7 @@ export namespace AppStudioClient {
           if (e.response?.status == 404) {
             logProvider.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
             requester = createRequesterWithToken(appStudioToken);
+            telemetryProperties[TelemetryPropertyKey.region] = TelemetryPropertyValue.Global;
             response = await RetryHandler.Retry(() =>
               requester.get(`/api/appdefinitions/${teamsAppId}`)
             );
@@ -227,6 +237,7 @@ export namespace AppStudioClient {
       } else {
         logProvider.debug(`Sent API Request: ${baseUrl}/api/appdefinitions/v2/import`);
         requester = createRequesterWithToken(appStudioToken);
+        telemetryProperties[TelemetryPropertyKey.region] = TelemetryPropertyValue.Global;
         response = await RetryHandler.Retry(() =>
           requester.get(`/api/appdefinitions/${teamsAppId}`)
         );
@@ -234,7 +245,7 @@ export namespace AppStudioClient {
       if (response && response.data) {
         const app = <AppDefinition>response.data;
         if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
-          sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP);
+          sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP, telemetryProperties);
           return app;
         } else {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -242,7 +253,7 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP);
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP, telemetryProperties);
       throw error;
     }
     throw new Error(`Cannot get the app definition with app ID ${teamsAppId}`);
@@ -262,6 +273,11 @@ export namespace AppStudioClient {
   ): Promise<boolean> {
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryPropertyKey.region]: region
+        ? String(extractRegionFromBaseUrl(region))
+        : TelemetryPropertyValue.Global,
+    };
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await RetryHandler.Retry(() =>
@@ -269,13 +285,13 @@ export namespace AppStudioClient {
       );
 
       if (response && response.data) {
-        sendSuccessEvent(APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
+        sendSuccessEvent(APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS, telemetryProperties);
         return <boolean>response.data;
       } else {
         return false;
       }
     } catch (e) {
-      wrapException(e, APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS);
+      wrapException(e, APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS, telemetryProperties);
       return false;
     }
   }
@@ -293,6 +309,11 @@ export namespace AppStudioClient {
     appStudioToken: string
   ): Promise<string> {
     sendStartEvent(APP_STUDIO_API_NAMES.PUBLISH_APP);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryPropertyKey.region]: region
+        ? String(extractRegionFromBaseUrl(region))
+        : TelemetryPropertyValue.Global,
+    };
     try {
       const requester = createRequesterWithToken(appStudioToken, region);
 
@@ -336,10 +357,14 @@ export namespace AppStudioClient {
           const error = new Error(response?.data.error.message);
           (error as any).response = response;
           (error as any).request = response.request;
-          const exception = wrapException(error, APP_STUDIO_API_NAMES.PUBLISH_APP);
+          const exception = wrapException(
+            error,
+            APP_STUDIO_API_NAMES.PUBLISH_APP,
+            telemetryProperties
+          );
           throw exception;
         } else {
-          sendSuccessEvent(APP_STUDIO_API_NAMES.PUBLISH_APP);
+          sendSuccessEvent(APP_STUDIO_API_NAMES.PUBLISH_APP, telemetryProperties);
           return response.data.id;
         }
       } else {
@@ -352,7 +377,7 @@ export namespace AppStudioClient {
       if (e instanceof SystemError) {
         throw e;
       } else {
-        const error = wrapException(e, APP_STUDIO_API_NAMES.PUBLISH_APP);
+        const error = wrapException(e, APP_STUDIO_API_NAMES.PUBLISH_APP, telemetryProperties);
         throw error;
       }
     }
@@ -372,6 +397,11 @@ export namespace AppStudioClient {
   ): Promise<string> {
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryPropertyKey.region]: region
+        ? String(extractRegionFromBaseUrl(region))
+        : TelemetryPropertyValue.Global,
+    };
     try {
       // Get App Definition from Teams App Catalog
       const appDefinition = await getAppByTeamsAppId(teamsAppId, appStudioToken);
@@ -402,10 +432,14 @@ export namespace AppStudioClient {
           const error = new Error(response.data.error?.message || response.data.errorMessage);
           (error as any).response = response;
           (error as any).request = response.request;
-          const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
+          const exception = wrapException(
+            error,
+            APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP,
+            telemetryProperties
+          );
           throw exception;
         } else {
-          sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
+          sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP, telemetryProperties);
           return response.data.teamsAppId;
         }
       } else {
@@ -418,7 +452,11 @@ export namespace AppStudioClient {
       if (error instanceof SystemError) {
         throw error;
       } else {
-        const exception = wrapException(error, APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP);
+        const exception = wrapException(
+          error,
+          APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP,
+          telemetryProperties
+        );
         throw exception;
       }
     }
@@ -436,6 +474,11 @@ export namespace AppStudioClient {
   ): Promise<IPublishingAppDenition | undefined> {
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryPropertyKey.region]: region
+        ? String(extractRegionFromBaseUrl(region))
+        : TelemetryPropertyValue.Global,
+    };
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await RetryHandler.Retry(() =>
@@ -454,13 +497,13 @@ export namespace AppStudioClient {
             };
           }
         );
-        sendSuccessEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
+        sendSuccessEvent(APP_STUDIO_API_NAMES.GET_PUBLISHED_APP, telemetryProperties);
         return appdefinitions[appdefinitions.length - 1];
       } else {
         return undefined;
       }
     } catch (e: any) {
-      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_PUBLISHED_APP);
+      wrapException(e, APP_STUDIO_API_NAMES.GET_PUBLISHED_APP, telemetryProperties);
       return undefined;
     }
   }
@@ -591,6 +634,11 @@ export namespace AppStudioClient {
   ): Promise<any> {
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryPropertyKey.region]: region
+        ? String(extractRegionFromBaseUrl(region))
+        : TelemetryPropertyValue.Global,
+    };
     logProvider?.info("Downloading app package for app " + teamsAppId);
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
@@ -600,13 +648,13 @@ export namespace AppStudioClient {
 
       if (response && response.data) {
         logProvider?.info("Download app package successfully");
-        sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
+        sendSuccessEvent(APP_STUDIO_API_NAMES.GET_APP_PACKAGE, telemetryProperties);
         return response.data;
       } else {
         throw new Error(getLocalizedString("plugins.appstudio.emptyAppPackage", teamsAppId));
       }
     } catch (e) {
-      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP_PACKAGE);
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP_PACKAGE, telemetryProperties);
       throw error;
     }
   }
@@ -616,6 +664,11 @@ export namespace AppStudioClient {
     appStudioToken: string
   ): Promise<IValidationResult> {
     sendStartEvent(APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
+    const telemetryProperties: { [key: string]: string } = {
+      [TelemetryPropertyKey.region]: region
+        ? String(extractRegionFromBaseUrl(region))
+        : TelemetryPropertyValue.Global,
+    };
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await RetryHandler.Retry(() =>
@@ -623,10 +676,14 @@ export namespace AppStudioClient {
           headers: { "Content-Type": "application/zip" },
         })
       );
-      sendSuccessEvent(APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
+      sendSuccessEvent(APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE, telemetryProperties);
       return response?.data;
     } catch (e) {
-      const error = wrapException(e, APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
+      const error = wrapException(
+        e,
+        APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE,
+        telemetryProperties
+      );
       throw error;
     }
   }

@@ -60,6 +60,7 @@ import { logger } from "../../src/commonlib/logger";
 import M365TokenProvider from "../../src/commonlib/m365Login";
 import { MissingRequiredOptionError } from "../../src/error";
 import * as utils from "../../src/utils";
+import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
 
@@ -295,7 +296,7 @@ describe("CLI commands", () => {
   describe("envAddCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       const ctx: CLIContext = {
         command: { ...envAddCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -306,9 +307,9 @@ describe("CLI commands", () => {
       const res = await envAddCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("isWorkspaceSupported: false", async () => {
+    it("isValidProjectV3: false", async () => {
       sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
-      sandbox.stub(utils, "isWorkspaceSupported").returns(false);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(false);
       const ctx: CLIContext = {
         command: { ...envAddCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -322,7 +323,7 @@ describe("CLI commands", () => {
   });
   describe("envListCommand", async () => {
     it("success", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
@@ -334,8 +335,8 @@ describe("CLI commands", () => {
       const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("isWorkspaceSupported: false", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(false);
+    it("isValidProjectV3: false", async () => {
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(false);
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -347,7 +348,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isErr());
     });
     it("listEnv error", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       sandbox.stub(envUtil, "listEnv").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },

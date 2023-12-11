@@ -124,6 +124,7 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
+import "../component/feature/sso";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1260,7 +1261,7 @@ export class FxCore {
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
           if (operation) {
-            if (operation.auth) {
+            if (operation.auth && operation.auth.type === "apiKey") {
               authNames.add(operation.auth.name);
               serverUrls.add(operation.server);
             }

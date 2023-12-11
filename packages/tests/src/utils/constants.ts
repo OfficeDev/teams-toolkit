@@ -245,6 +245,9 @@ export class Timeout {
 
   // Add Collaborator
   public static readonly addCollaborator: number = 60 * 1000;
+
+  // open API
+  public static readonly openAPIProvision: number = 20 * 1000;
 }
 
 export class TreeViewCommands {
@@ -284,6 +287,7 @@ export class CommandPaletteCommands {
     "Teams: Upgrade Project";
   public static readonly InstallTTK: string =
     "Extensions: Install Specific Version of Extension";
+  public static readonly AddSpfxWebPart: string = "Teams: Add SPFx web part";
 }
 
 export type OptionType =
@@ -309,7 +313,11 @@ export type OptionType =
   | "functimernoti"
   | "addin"
   | "importaddin"
-  | "linkunfurl";
+  | "linkunfurl"
+  | "aichat"
+  | "aiassist"
+  | "msgnewapi"
+  | "msgopenapi";
 
 export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
@@ -360,7 +368,6 @@ export class LocalDebugTaskInfo {
 }
 
 export class DebugItemSelect {
-  static readonly DebugUsingChrome = "Debug (Chrome)";
   static readonly DebugInTeamsUsingChrome = "Debug in Teams (Chrome)";
 }
 
@@ -404,6 +411,10 @@ export class ValidationContent {
   static readonly BotWelcomeInstruction =
     "Hi there! I'm a Teams bot that will echo what you said to me";
   static readonly GraphBot = "Your Graph Connector Bot is Running";
+  static readonly AiChatBotWelcomeInstruction = "How can I help you today?";
+  static readonly AiAssistantBotWelcomeInstruction =
+    "I'm an assistant bot. How can I help you today?";
+  static readonly AiBotErrorMessage = "The bot encountered an error or bug";
 }
 
 export class CliVersion {

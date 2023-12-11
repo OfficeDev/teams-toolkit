@@ -193,7 +193,7 @@ export class CreateApiKeyDriver implements StepDriver {
     const operations = await parser.list();
     const domains = operations
       .filter((value) => {
-        return value.auth?.name === args.name;
+        return value.auth?.type === "apiKey" && value.auth?.name === args.name;
       })
       .map((value) => {
         return value.server;

@@ -15,10 +15,9 @@ import * as Models from "@azure/arm-appservice/src/models";
 import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import { assert, expect } from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
-import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as uuid from "uuid";
@@ -33,6 +32,21 @@ describe("Azure Function Deploy Driver test", () => {
 
   before(async () => {
     await fs.mkdirs(testFolder);
+    await fs.writeFile(path.join(testFolder, "test.txt"), "test");
+    sandbox
+      .stub(fs, "createReadStream")
+      .withArgs(path.join(sysTmp, ".deployment/deployment.zip"))
+      .returns({
+        pipe: sandbox.stub().returns({
+          pipe: sandbox.stub().returns({
+            pipe: sandbox.stub().returns("responseMock"),
+          }),
+        }),
+        on: sandbox.spy(() => true),
+        destroy: sandbox.spy(() => true),
+      } as any);
+    sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(fs, "remove").resolves();
   });
 
   after(async () => {
@@ -72,7 +86,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").resolves();
@@ -120,7 +134,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").rejects();
@@ -170,7 +184,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").throws(new Error("test"));
@@ -314,7 +328,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").throws(new Error("test"));
@@ -412,7 +426,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").resolves();

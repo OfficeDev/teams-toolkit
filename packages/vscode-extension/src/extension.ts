@@ -13,7 +13,13 @@ import {
   FxError,
   Result,
 } from "@microsoft/teamsfx-api";
-import { AuthSvcScopes, Correlator, VersionState, setRegion } from "@microsoft/teamsfx-core";
+import {
+  AuthSvcScopes,
+  Correlator,
+  VersionState,
+  initializePreviewFeatureFlags,
+  setRegion,
+} from "@microsoft/teamsfx-core";
 
 import {
   AadAppTemplateCodeLensProvider,
@@ -53,22 +59,19 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
-import {
-  delay,
-  hasAdaptiveCardInWorkspace,
-  isM365Project,
-  syncFeatureFlags,
-} from "./utils/commonUtils";
+import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
+import { configMgr } from "./config";
 
 export let VS_CODE_UI: VsCodeUI;
 
 export async function activate(context: vscode.ExtensionContext) {
-  // load the feature flags.
-  syncFeatureFlags();
+  initializePreviewFeatureFlags();
+
+  configMgr.registerConfigChangeCallback();
 
   context.subscriptions.push(new ExtTelemetry.Reporter(context));
 

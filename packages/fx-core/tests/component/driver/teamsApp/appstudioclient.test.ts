@@ -65,6 +65,29 @@ describe("App Studio API Test", () => {
   });
 
   describe("publish Teams app", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      const response = {
+        data: {
+          id: "fakeId",
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      const res = await AppStudioClient.publishTeamsApp(
+        appStudioToken,
+        Buffer.from(""),
+        appStudioToken
+      );
+      chai.assert.equal(res, response.data.id);
+    });
+
     it("API Failure", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -511,6 +534,102 @@ describe("App Studio API Test", () => {
     });
   });
 
+  describe("get app package", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: "fakeData",
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.getAppPackage(
+        appDef.teamsAppId!,
+        appStudioToken,
+        logProvider
+      );
+      chai.assert.equal(res, "fakeData");
+    });
+
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.getAppPackage(appDef.teamsAppId!, appStudioToken, logProvider);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
+  describe("partner center app validation", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: {
+          status: "Accepted",
+          errors: [],
+          warnings: [],
+          notes: [],
+          addInDetails: {
+            displayName: "fakeApp",
+            developerName: "Teams",
+            version: "0.0.1",
+            manifestVersion: "1.16",
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+
+      const res = await AppStudioClient.partnerCenterAppPackageValidation(
+        Buffer.from(""),
+        appStudioToken
+      );
+      chai.assert.equal(res, response.data);
+    });
+
+    it("422", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "422",
+        message: "Invalid zip",
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.partnerCenterAppPackageValidation(Buffer.from(""), appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+  });
+
   describe("Check exists in tenant", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
@@ -523,6 +642,30 @@ describe("App Studio API Test", () => {
 
       const res = await AppStudioClient.checkExistsInTenant(appDef.teamsAppId!, appStudioToken);
       chai.assert.isTrue(res);
+    });
+
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.checkExistsInTenant(appDef.teamsAppId!, appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
     });
   });
 
@@ -573,6 +716,52 @@ describe("App Studio API Test", () => {
         await AppStudioClient.publishTeamsAppUpdate("", Buffer.from(""), appStudioToken);
       } catch (error) {
         chai.assert.include(error.message, xCorrelationId);
+      }
+    });
+
+    it("API Failure", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "error",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      const getResponse = {
+        data: {
+          value: [
+            {
+              appDefinitions: [
+                {
+                  publishingState: PublishingState.submitted,
+                  teamsAppId: "xx",
+                  displayName: "xx",
+                  lastModifiedDateTime: null,
+                },
+              ],
+            },
+          ],
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
+
+      const ctx = {
+        envInfo: newEnvInfo(),
+        root: "fakeRoot",
+      } as any;
+      TelemetryUtils.init(ctx);
+      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
+
+      try {
+        await AppStudioClient.publishTeamsAppUpdate(
+          appStudioToken,
+          Buffer.from(""),
+          appStudioToken
+        );
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
     });
   });

@@ -7,11 +7,7 @@ import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import {
-  checkNpmDependencies,
-  loadPackageJson,
-  loadTeamsFxDevScript,
-} from "../../../src/common/local/packageJsonHelper";
+import { loadPackageJson, loadTeamsFxDevScript } from "../../../src/common/local/packageJsonHelper";
 
 chai.use(chaiAsPromised);
 
@@ -153,133 +149,6 @@ describe("packageJsonHelper", () => {
       const devScript = await loadTeamsFxDevScript(testFolder);
       chai.assert.isDefined(devScript);
       chai.assert.equal(devScript, "npx func start --X");
-    });
-  });
-
-  describe("checkNpmDependencies", () => {
-    beforeEach(() => {
-      fs.ensureDirSync(testFolder);
-      fs.emptyDirSync(testFolder);
-    });
-
-    it("npm installed", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package": "1.0.0"\n\
-          }\n\
-        }`;
-      const packageLockJson = "package-lock.json place holder";
-      await fs.writeFile(path.join(testFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testFolder, "package-lock.json"), packageLockJson);
-      await fs.ensureDir(path.join(testFolder, "node_modules", "my-package"));
-
-      const npmInstalled = await checkNpmDependencies(testFolder);
-      chai.assert.isTrue(npmInstalled);
-    });
-
-    it("yarn installed", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package": "1.0.0"\n\
-          }\n\
-        }`;
-      const yarnLockJson = "yarn.lock place holder";
-      await fs.writeFile(path.join(testFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testFolder, "yarn.lock"), yarnLockJson);
-      await fs.ensureDir(path.join(testFolder, "node_modules", "my-package"));
-
-      const npmInstalled = await checkNpmDependencies(testFolder);
-      chai.assert.isTrue(npmInstalled);
-    });
-
-    it("installing", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package1": "1.0.0",\n\
-            "my-package2": "1.0.0"\n\
-          }\n\
-        }`;
-      await fs.writeFile(path.join(testFolder, "package.json"), packageJson);
-      await fs.ensureDir(path.join(testFolder, "node_modules", "my-package1"));
-
-      const npmInstalled = await checkNpmDependencies(testFolder);
-      chai.assert.isFalse(npmInstalled);
-    });
-
-    it("has dependencies but no node_modules", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package": "1.0.0"\n\
-          }\n\
-        }`;
-      const packageLockJson = "package-lock.json place holder";
-      await fs.writeFile(path.join(testFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testFolder, "package-lock.json"), packageLockJson);
-
-      const npmInstalled = await checkNpmDependencies(testFolder);
-      chai.assert.isFalse(npmInstalled);
-    });
-
-    it("has dependencies but no package installed", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-            "my-package": "1.0.0"\n\
-          }\n\
-        }`;
-      const packageLockJson = "package-lock.json place holder";
-      await fs.writeFile(path.join(testFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testFolder, "package-lock.json"), packageLockJson);
-      await fs.ensureDir(path.join(testFolder, "node_modules", ".staging"));
-
-      const npmInstalled = await checkNpmDependencies(testFolder);
-      chai.assert.isFalse(npmInstalled);
-    });
-
-    it("no dependencies npm installed", async () => {
-      const packageJson = `\
-        {\n\
-          "name": "test",\n\
-          "version": "1.0.0",\n\
-          "scripts": {\n\
-            "build": "tsc --build"\n\
-          },\n\
-          "dependencies": {\n\
-          }\n\
-        }`;
-      await fs.writeFile(path.join(testFolder, "package.json"), packageJson);
-
-      const npmInstalled = await checkNpmDependencies(testFolder);
-      chai.assert.isTrue(npmInstalled);
     });
   });
 });

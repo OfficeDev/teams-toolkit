@@ -11,12 +11,21 @@ import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
 import { getLocalizedString } from "../../localizeUtils";
 import { v3DefaultHelpLink, v3NodeNotFoundHelpLink } from "../constant/helpLink";
 import { Messages } from "../constant/message";
-import { DependencyStatus, DepsChecker, DepsType, TestToolInstallOptions } from "../depsChecker";
+import {
+  DependencyStatus,
+  DepsChecker,
+  DepsType,
+  TestToolInstallOptions,
+  TestToolReleaseType,
+} from "../depsChecker";
 import { DepsCheckerError, NodeNotFoundError } from "../depsError";
 import { createSymlink, rename, unlinkSymlink, cleanup } from "../util/fileHelper";
 import { isWindows } from "../util/system";
 import { TelemetryProperties } from "../constant/telemetry";
 import { cpUtils } from "../util";
+import fetch from "node-fetch";
+import maxSatisfying from "semver/ranges/max-satisfying";
+import { downloadToTempFile, unzip } from "../util/downloadHelper";
 
 enum InstallType {
   Global = "global",
@@ -30,14 +39,17 @@ interface InstallationInfoFile {
   lastCheckTimestamp: number;
 }
 
+const InstallTimeout = 5 * 60 * 1000;
+
 export class TestToolChecker implements DepsChecker {
   private telemetryProperties: { [key: string]: string };
   private readonly name = "Teams App Test Tool";
   private readonly npmPackageName = "@microsoft/teams-app-test-tool";
-  private readonly timeout = 5 * 60 * 1000;
   private readonly checkUpdateTimeout = 10 * 1000;
-  private readonly commandName = isWindows() ? "teamsapptester.cmd" : "teamsapptester";
-  private readonly portableDirName = "testTool";
+  private readonly npmCommandName = isWindows() ? "teamsapptester.cmd" : "teamsapptester";
+  private readonly binaryCommandName = isWindows() ? "teamsapptester.exe" : "teamsapptester";
+  private readonly portableDirNameNpm = "testTool";
+  private readonly portableDirNameBinary = "testToolBinary";
   // 7 days
   private readonly defaultUpdateInterval = 7 * 24 * 60 * 60 * 1000;
 
@@ -48,33 +60,54 @@ export class TestToolChecker implements DepsChecker {
   public async getInstallationInfo(
     installOptions: TestToolInstallOptions
   ): Promise<TestToolDependencyStatus> {
-    const symlinkDir = path.resolve(installOptions.projectPath, installOptions.symlinkDir);
+    this.telemetryProperties[TelemetryProperties.InstallTestToolReleaseType] =
+      installOptions.releaseType;
 
-    // check version in project devTools
-    const versionRes = await this.checkVersion(
-      installOptions.versionRange,
-      this.getBinFolder(symlinkDir)
-    );
-    if (versionRes.isOk()) {
-      this.telemetryProperties[TelemetryProperties.SymlinkTestToolVersion] = versionRes.value;
-      return await this.getSuccessDepsInfo(versionRes.value, symlinkDir);
-    } else {
-      this.telemetryProperties[TelemetryProperties.SymlinkTestToolVersionError] =
-        versionRes.error.message;
-      await unlinkSymlink(symlinkDir);
+    const symlinkDir = installOptions.symlinkDir
+      ? path.resolve(installOptions.projectPath, installOptions.symlinkDir)
+      : undefined;
+
+    // check version in symlink dir
+    if (symlinkDir) {
+      const versionRes = await this.checkVersion(
+        installOptions.releaseType,
+        installOptions.versionRange,
+        this.getBinFolder(installOptions.releaseType, symlinkDir)
+      );
+      if (versionRes.isOk()) {
+        this.telemetryProperties[TelemetryProperties.SymlinkTestToolVersion] = versionRes.value;
+        return await this.getSuccessDepsInfo(versionRes.value, symlinkDir);
+      } else {
+        this.telemetryProperties[TelemetryProperties.SymlinkTestToolVersionError] =
+          versionRes.error.message;
+        await unlinkSymlink(symlinkDir);
+      }
     }
 
-    // check version in ${HOME}/.fx/bin
-    const version = await this.findLatestInstalledPortableVersion(installOptions.versionRange);
+    // check version in ${HOME}/.fx/bin and createSymlink if asked for
+    const version = await this.findLatestInstalledPortableVersion(
+      installOptions.releaseType,
+      installOptions.versionRange
+    );
     if (version) {
-      const portablePath = path.join(this.getPortableVersionsDir(), version);
+      const portablePath = path.join(
+        this.getPortableVersionsDir(installOptions.releaseType),
+        version
+      );
       this.telemetryProperties[TelemetryProperties.SelectedPortableTestToolVersion] = version;
-      await createSymlink(portablePath, symlinkDir);
-      return await this.getSuccessDepsInfo(version, symlinkDir);
+      if (symlinkDir) {
+        await createSymlink(portablePath, symlinkDir);
+        return await this.getSuccessDepsInfo(version, symlinkDir);
+      } else {
+        return await this.getSuccessDepsInfo(version, portablePath);
+      }
     }
 
     // check global version in PATH
-    const globalVersionRes = await this.checkVersion(installOptions.versionRange);
+    const globalVersionRes = await this.checkVersion(
+      installOptions.releaseType,
+      installOptions.versionRange
+    );
     if (globalVersionRes.isOk()) {
       const version = globalVersionRes.value;
       this.telemetryProperties[TelemetryProperties.GlobalTestToolVersion] = version;
@@ -88,15 +121,21 @@ export class TestToolChecker implements DepsChecker {
   }
 
   public async resolve(installOptions: TestToolInstallOptions): Promise<DependencyStatus> {
+    this.telemetryProperties[TelemetryProperties.InstallTestToolReleaseType] =
+      installOptions.releaseType;
+
     let installationInfo: TestToolDependencyStatus;
     try {
-      if (!(await this.hasNode())) {
+      if (installOptions.releaseType === TestToolReleaseType.Npm && !(await this.hasNode())) {
         throw new NodeNotFoundError(Messages.NodeNotFound(), v3NodeNotFoundHelpLink);
       }
       installationInfo = await this.getInstallationInfo(installOptions);
       if (!installationInfo.isInstalled) {
-        const symlinkDir = path.resolve(installOptions.projectPath, installOptions.symlinkDir);
+        const symlinkDir = installOptions.symlinkDir
+          ? path.resolve(installOptions.projectPath, installOptions.symlinkDir)
+          : undefined;
         installationInfo = await this.install(
+          installOptions.releaseType,
           installOptions.projectPath,
           installOptions.versionRange,
           symlinkDir
@@ -123,18 +162,28 @@ export class TestToolChecker implements DepsChecker {
   }
 
   private async install(
+    releaseType: TestToolReleaseType,
     projectPath: string,
     versionRange: string,
-    symlinkDir: string
+    symlinkDir?: string
   ): Promise<TestToolDependencyStatus> {
-    if (!(await this.hasNPM())) {
+    if (releaseType === TestToolReleaseType.Npm && !(await this.hasNPM())) {
       throw new DepsCheckerError(Messages.needInstallNpm(), v3DefaultHelpLink);
     }
 
     const tmpVersion = `tmp-${uuid.v4().slice(0, 6)}`;
-    const tmpPath = this.getPortableInstallPath(tmpVersion);
-    await this.npmInstall(projectPath, tmpPath, versionRange);
-    const versionRes = await this.checkVersion(versionRange, this.getBinFolder(tmpPath));
+    const tmpPath = this.getPortableInstallPath(releaseType, tmpVersion);
+    await fs.ensureDir(tmpPath);
+    if (releaseType === TestToolReleaseType.Npm) {
+      await this.npmInstall(projectPath, tmpPath, versionRange);
+    } else {
+      await this.binaryInstall(tmpPath, versionRange);
+    }
+    const versionRes = await this.checkVersion(
+      releaseType,
+      versionRange,
+      this.getBinFolder(releaseType, tmpPath)
+    );
     if (versionRes.isErr()) {
       await cleanup(tmpPath);
       this.telemetryProperties[TelemetryProperties.InstallTestToolError] = versionRes.error.message;
@@ -146,47 +195,61 @@ export class TestToolChecker implements DepsChecker {
     const actualVersion = versionRes.value;
     this.telemetryProperties[TelemetryProperties.InstalledTestToolVersion] = actualVersion;
 
-    const actualPath = this.getPortableInstallPath(actualVersion);
-    await rename(tmpPath, actualPath);
+    const portablePath = this.getPortableInstallPath(releaseType, actualVersion);
+    await rename(tmpPath, portablePath);
 
-    await createSymlink(actualPath, symlinkDir);
+    if (symlinkDir) {
+      await createSymlink(portablePath, symlinkDir);
+    }
 
     await this.writeInstallInfoFile(projectPath);
 
-    return await this.getSuccessDepsInfo(versionRes.value, symlinkDir);
+    if (symlinkDir) {
+      return await this.getSuccessDepsInfo(actualVersion, symlinkDir);
+    } else {
+      return await this.getSuccessDepsInfo(actualVersion, portablePath);
+    }
   }
 
   private async hasNewVersionReleasedInRange(
+    releaseType: TestToolReleaseType,
     latestInstalledVersion: string,
     versionRange: string
   ): Promise<boolean> {
-    try {
-      const result = await cpUtils.executeCommand(
-        undefined,
-        undefined,
-        // avoid powershell execution policy issue.
-        { shell: isWindows() ? "cmd.exe" : true, timeout: this.checkUpdateTimeout },
-        "npm",
-        "view",
-        `"${this.npmPackageName}@${versionRange}"`,
-        "version",
-        "--json"
-      );
-      // when there are one result, it will return string
-      // when there are multiple results, it will return array of strings
-      let versionList: string[] | string = JSON.parse(result);
-      if (typeof versionList === "string") {
-        versionList = [versionList];
-      }
-      if (!Array.isArray(versionList)) {
-        // do update if npm returned invalid result
+    if (releaseType === TestToolReleaseType.Npm) {
+      try {
+        const result = await cpUtils.executeCommand(
+          undefined,
+          undefined,
+          // avoid powershell execution policy issue.
+          { shell: isWindows() ? "cmd.exe" : true, timeout: this.checkUpdateTimeout },
+          "npm",
+          "view",
+          `"${this.npmPackageName}@${versionRange}"`,
+          "version",
+          "--json"
+        );
+        // when there are one result, it will return string
+        // when there are multiple results, it will return array of strings
+        let versionList: string[] | string = JSON.parse(result);
+        if (typeof versionList === "string") {
+          versionList = [versionList];
+        }
+        if (!Array.isArray(versionList)) {
+          // do update if npm returned invalid result
+          return true;
+        }
+        return versionList.filter((v) => semver.gt(v, latestInstalledVersion)).length > 0;
+      } catch {
+        // just a best effort optimization to save one download if no recent version has been released
+        // do update if check failed
         return true;
       }
+    } else {
+      // get version list
+      const releases = await GitHubHelpers.listGitHubReleases();
+      const versionList = releases.map((release) => release.version);
       return versionList.filter((v) => semver.gt(v, latestInstalledVersion)).length > 0;
-    } catch {
-      // just a best effort optimization to save one download if no recent version has been released
-      // do update if check failed
-      return true;
     }
   }
 
@@ -204,11 +267,13 @@ export class TestToolChecker implements DepsChecker {
     }
 
     const latestInstalledVersion = await this.findLatestInstalledPortableVersion(
+      installOptions.releaseType,
       installOptions.versionRange
     );
     if (
       latestInstalledVersion !== undefined &&
       !(await this.hasNewVersionReleasedInRange(
+        installOptions.releaseType,
         latestInstalledVersion,
         installOptions.versionRange
       ))
@@ -220,10 +285,13 @@ export class TestToolChecker implements DepsChecker {
       installInfo?.lastCheckTimestamp?.toString() || "<never>";
     this.telemetryProperties[TelemetryProperties.TestToolUpdatePreviousVersion] =
       latestInstalledVersion || "<undefined>";
-    const symlinkDir = path.resolve(installOptions.projectPath, installOptions.symlinkDir);
+    const symlinkDir = installOptions.symlinkDir
+      ? path.resolve(installOptions.projectPath, installOptions.symlinkDir)
+      : undefined;
 
     try {
       return await this.install(
+        installOptions.releaseType,
         installOptions.projectPath,
         installOptions.versionRange,
         symlinkDir
@@ -274,11 +342,12 @@ export class TestToolChecker implements DepsChecker {
   }
 
   private async findLatestInstalledPortableVersion(
+    releaseType: TestToolReleaseType,
     versionRange: string
   ): Promise<string | undefined> {
     let portablePath: string | undefined;
     try {
-      const portableVersionsDir = this.getPortableVersionsDir();
+      const portableVersionsDir = this.getPortableVersionsDir(releaseType);
       const dirs = await fs.readdir(portableVersionsDir, { withFileTypes: true });
       const satisfiedVersions = dirs
         .filter(
@@ -294,14 +363,15 @@ export class TestToolChecker implements DepsChecker {
       for (const version of satisfiedVersions) {
         portablePath = path.join(portableVersionsDir, version);
         const checkVersionRes = await this.checkVersion(
+          releaseType,
           versionRange,
-          this.getBinFolder(portablePath)
+          this.getBinFolder(releaseType, portablePath)
         );
         if (checkVersionRes.isOk()) {
           return version;
         }
-        this.telemetryProperties[TelemetryProperties.VersioningFuncVersionError] =
-          (this.telemetryProperties[TelemetryProperties.VersioningFuncVersionError] ?? "") +
+        this.telemetryProperties[TelemetryProperties.VersioningTestToolVersionError] =
+          (this.telemetryProperties[TelemetryProperties.VersioningTestToolVersionError] ?? "") +
           `[${version}] ${checkVersionRes.error.message}`;
       }
     } catch {
@@ -311,11 +381,12 @@ export class TestToolChecker implements DepsChecker {
   }
 
   private async checkVersion(
+    releaseType: TestToolReleaseType,
     versionRange: string,
     binFolder?: string
   ): Promise<Result<string, DepsCheckerError>> {
     try {
-      const actualVersion = await this.queryVersion(binFolder);
+      const actualVersion = await this.queryVersion(releaseType, binFolder);
       if (semver.satisfies(actualVersion, versionRange)) {
         return ok(actualVersion);
       } else {
@@ -331,13 +402,18 @@ export class TestToolChecker implements DepsChecker {
     }
   }
 
-  private async queryVersion(binFolder: string | undefined): Promise<string> {
-    const execPath = binFolder ? path.resolve(binFolder, this.commandName) : this.commandName;
+  private async queryVersion(
+    releaseType: TestToolReleaseType,
+    binFolder: string | undefined
+  ): Promise<string> {
+    const commandName =
+      releaseType === TestToolReleaseType.Npm ? this.npmCommandName : this.binaryCommandName;
+    const execPath = binFolder ? path.resolve(binFolder, commandName) : commandName;
     const output = await cpUtils.executeCommand(
       undefined,
       undefined,
       // avoid powershell execution policy issue.
-      { shell: isWindows() ? "cmd.exe" : true, timeout: this.timeout },
+      { shell: isWindows() ? "cmd.exe" : true, timeout: InstallTimeout },
       `"${execPath}"`,
       "--version"
     );
@@ -380,7 +456,7 @@ export class TestToolChecker implements DepsChecker {
         undefined,
         undefined,
         // avoid powershell execution policy issue.
-        { shell: isWindows() ? "cmd.exe" : true, timeout: this.timeout },
+        { shell: isWindows() ? "cmd.exe" : true, timeout: InstallTimeout },
         `npm`,
         "install",
         `"${pkg}"`,
@@ -425,14 +501,50 @@ export class TestToolChecker implements DepsChecker {
     return undefined;
   }
 
-  private getBinFolder(installPath: string) {
-    return path.join(installPath, "node_modules", ".bin");
+  private async binaryInstall(installPath: string, versionRange: string): Promise<void> {
+    const releases = await GitHubHelpers.listGitHubReleases();
+    const targetVersion = maxSatisfying(
+      releases.map((release) => release.version),
+      versionRange
+    );
+    if (targetVersion === null) {
+      throw new DepsCheckerError(
+        getLocalizedString("error.common.VersionError", versionRange),
+        v3DefaultHelpLink
+      );
+    }
+    const release = releases.find((value) => value.version === targetVersion) as GitHubRelease;
+
+    await downloadToTempFile(
+      release.url,
+      {
+        timeout: InstallTimeout,
+        headers: {
+          Accept: "application/octet-stream",
+        },
+      },
+      async (filePath: string) => {
+        await unzip(filePath, installPath);
+      }
+    );
   }
-  private getPortableVersionsDir(): string {
-    return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", this.portableDirName);
+
+  private getBinFolder(releaseType: TestToolReleaseType, installPath: string) {
+    if (releaseType === TestToolReleaseType.Npm) {
+      return path.join(installPath, "node_modules", ".bin");
+    } else {
+      return path.join(installPath);
+    }
   }
-  private getPortableInstallPath(version: string): string {
-    return path.join(this.getPortableVersionsDir(), version);
+  private getPortableVersionsDir(releaseType: string): string {
+    if (releaseType === TestToolReleaseType.Npm) {
+      return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", this.portableDirNameNpm);
+    } else {
+      return path.join(os.homedir(), `.${ConfigFolderName}`, "bin", this.portableDirNameBinary);
+    }
+  }
+  private getPortableInstallPath(releaseType: TestToolReleaseType, version: string): string {
+    return path.join(this.getPortableVersionsDir(releaseType), version);
   }
   private getInstallInfoPath(projectDir: string): string {
     return path.join(projectDir, "devTools", ".testTool.installInfo.json");
@@ -445,7 +557,7 @@ export class TestToolChecker implements DepsChecker {
       name: this.name,
       type: DepsType.TestTool,
       isInstalled: true,
-      command: this.commandName,
+      command: this.npmCommandName,
       details: {
         isLinuxSupported: true,
         supportedVersions: [], // unused
@@ -465,7 +577,7 @@ export class TestToolChecker implements DepsChecker {
       name: this.name,
       type: DepsType.TestTool,
       isInstalled: false,
-      command: this.commandName,
+      command: this.npmCommandName,
       details: {
         isLinuxSupported: true,
         supportedVersions: [], // unused
@@ -475,5 +587,52 @@ export class TestToolChecker implements DepsChecker {
       telemetryProperties: this.telemetryProperties,
       error: error,
     });
+  }
+}
+
+export interface GitHubRelease {
+  version: string;
+  url: string;
+}
+
+export class GitHubHelpers {
+  private static readonly releasePackageName = "teams-app-test-tool";
+  private static readonly artifactNamePrefix = "teamsapptester";
+  public static async listGitHubReleases(): Promise<GitHubRelease[]> {
+    // GitHub API without auth
+    const response = await fetch(
+      "https://api.github.com/repos/OfficeDev/TeamsAppTestTool/releases",
+      {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "X-Github-Api-Version": "2022-11-28",
+        },
+        timeout: InstallTimeout,
+      }
+    );
+    const releases: {
+      tag_name: string;
+      assets: { name: string; url: string }[];
+    }[] = await response.json();
+
+    const result: GitHubRelease[] = [];
+    for (const release of releases) {
+      const parts = release.tag_name.split("@");
+      const assets = release.assets.filter((asset) =>
+        asset.name.includes(`${this.artifactNamePrefix}-${os.platform()}-${os.arch()}`)
+      );
+      if (parts.length === 2) {
+        const pkgName = parts[0];
+        const version = parts[1];
+        if (pkgName == this.releasePackageName && assets.length > 0) {
+          result.push({
+            version,
+            url: release.assets[0].url,
+          });
+        }
+      }
+    }
+
+    return result;
   }
 }

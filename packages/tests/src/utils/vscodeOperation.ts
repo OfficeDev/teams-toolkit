@@ -143,7 +143,7 @@ export async function openExistingProject(folder: string): Promise<void> {
 }
 
 export async function startDebugging(
-  item = "Debug (Chrome)"
+  item = "Debug in Teams (Chrome)"
 ): Promise<boolean> {
   // open terminal to avoid terminal not invisible issue
   console.log("start debugging...");
@@ -155,7 +155,7 @@ export async function startDebugging(
 }
 
 export async function startDebuggingAzure(
-  item = "Debug (Chrome)",
+  item = "Debug in Teams (Chrome)",
   envName = "local",
   appName: string
 ): Promise<boolean> {
@@ -743,6 +743,28 @@ export async function createNewProject(
       await driver.sleep(Timeout.input);
       break;
     }
+    case "gspfxnone": {
+      await input.selectQuickPick(CreateProjectQuestion.Tab);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("SPFx");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick(CreateProjectQuestion.CreateNewSpfxSolution);
+      // Wait for Node version check
+      await driver.sleep(Timeout.longTimeWait);
+      await input.selectQuickPick(
+        CreateProjectQuestion.SpfxSharepointFrameworkGlobalEnvInTtk
+      );
+      await driver.sleep(Timeout.input);
+      // Choose React or None
+      await input.selectQuickPick("None");
+      // Input Web Part Name
+      await input.setText(appName);
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      // Input Web Part Description
+      await driver.sleep(Timeout.input);
+      break;
+    }
     case "dashboard": {
       // Choose Dashboard Tab
       // A/B test
@@ -839,6 +861,61 @@ export async function createNewProject(
       }
       break;
     }
+    case "aichat": {
+      await input.selectQuickPick(CreateProjectQuestion.Bot);
+      await input.selectQuickPick("AI Chat Bot");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
+    case "aiassist": {
+      await input.selectQuickPick(CreateProjectQuestion.Bot);
+      await input.selectQuickPick("AI Assistant Bot");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
+    case "msgnewapi": {
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with a new API");
+      await driver.sleep(Timeout.input);
+      // Choose programming language
+      if (lang) {
+        await input.selectQuickPick(lang);
+      } else {
+        await input.selectQuickPick("JavaScript");
+      }
+      break;
+    }
+    case "msgopenapi": {
+      const openapiSpecFilePath =
+        "https://piercerepairsapi.azurewebsites.net/openapi.yml";
+      await input.selectQuickPick(CreateProjectQuestion.MessageExtension);
+      await input.selectQuickPick("Custom Search Results");
+      await input.selectQuickPick("Start with an OpenAPI Description Document");
+      await input.selectQuickPick(
+        "Enter OpenAPI Description Document Location"
+      );
+      await inputFolderPath(driver, input, openapiSpecFilePath);
+      await input.confirm();
+      await driver.sleep(Timeout.shortTimeWait);
+      const ckAll = await driver.findElement(By.css(".quick-input-check-all"));
+      await ckAll?.click();
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      break;
+    }
     default:
       break;
   }
@@ -864,7 +941,9 @@ export async function createNewProject(
   );
   console.log("copy path: ", projectPath, " to: ", projectCopyPath);
   await fs.mkdir(projectCopyPath);
-  await fs.copy(projectPath, projectCopyPath);
+  const filterFunc = (src: string) =>
+    src.indexOf("node_modules") > -1 ? false : true;
+  await fs.copy(projectPath, projectCopyPath, { filter: filterFunc });
   console.log("open project path");
   await openExistingProject(projectCopyPath);
 }
@@ -1109,4 +1188,24 @@ export async function getOutPutError(): Promise<void> {
     }
   }
   console.log("[Notification]: No error message found.");
+}
+
+export async function addSpfxWebPart(webPartName = "helloworld") {
+  await execCommandIfExist(CommandPaletteCommands.AddSpfxWebPart);
+  const driver = VSBrowser.instance.driver;
+  const input = await InputBox.create();
+  await input.selectQuickPick("Default folder");
+  await driver.sleep(Timeout.input);
+  await input.setText(webPartName);
+  await driver.sleep(Timeout.input);
+  await input.confirm();
+  await driver.sleep(Timeout.input);
+  await input.selectQuickPick("manifest.json");
+  await driver.sleep(Timeout.input);
+  await input.selectQuickPick("manifest.local.json");
+  await driver.sleep(3 * 60 * 1000);
+  await getNotification(
+    `Web part ${webPartName} was successfully added to project`,
+    30 * 1000
+  );
 }

@@ -531,7 +531,6 @@ export class CapabilityOptions {
       id: "ai-bot",
       label: getLocalizedString("core.aiBotOption.label"),
       detail: getLocalizedString("core.aiBotOption.detail"),
-      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
 

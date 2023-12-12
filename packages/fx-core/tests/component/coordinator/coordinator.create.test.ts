@@ -18,6 +18,7 @@ import { FxCore } from "../../../src/core/FxCore";
 import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
 import {
+  ApiMessageExtensionAuthOptions,
   CapabilityOptions,
   MeArchitectureOptions,
   ProjectTypeOptions,
@@ -559,7 +560,7 @@ describe("coordinator create", () => {
     assert.equal(generator.args[0][2], TemplateNames.Tab);
   });
 
-  it("create API ME from new api sucessfully", async () => {
+  it("create API ME (no auth) from new api sucessfully", async () => {
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
 
@@ -571,12 +572,34 @@ describe("coordinator create", () => {
       [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
+      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.none().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isOk());
     assert.equal(generator.args[0][2], TemplateNames.CopilotPluginFromScratch);
+  });
+
+  it("create API ME (key auth) from new api sucessfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
+      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.apiKey().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.CopilotPluginFromScratchApiKey);
   });
 
   it("create API ME from existing api sucessfully", async () => {

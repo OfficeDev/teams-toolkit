@@ -32,7 +32,7 @@ export class M365AccountNode extends DynamicNode {
     this.label = upn;
     this.contextValue = "signedinM365";
     // refresh
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
   }
 
   public setSigningIn() {
@@ -42,7 +42,7 @@ export class M365AccountNode extends DynamicNode {
     this.status = AccountItemStatus.SigningIn;
     this.contextValue = "";
     // refresh
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
   }
 
   public setSignedOut() {
@@ -52,7 +52,7 @@ export class M365AccountNode extends DynamicNode {
     this.status = AccountItemStatus.SignedOut;
     this.contextValue = "signinM365";
     // refresh
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
   }
 
   public setSwitching() {
@@ -62,7 +62,7 @@ export class M365AccountNode extends DynamicNode {
     this.status = AccountItemStatus.Switching;
     this.contextValue = "";
     // refresh
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
   }
 
   public updateChecks(token: string, sideloading: boolean, copilot: boolean) {

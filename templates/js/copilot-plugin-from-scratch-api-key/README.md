@@ -1,6 +1,6 @@
 # Overview of Custom Search Results app template
 
-## Build a message extension from a new API with Azure Functions
+## Build a message extension from a new API with Azure Function and API key authentication
 
 This app template allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:
 

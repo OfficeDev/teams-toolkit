@@ -23,6 +23,7 @@ import {
   Correlator,
   FxCore,
   environmentManager,
+  getCopilotStatus,
   getSideloadingStatus,
   setRegion,
   listDevTunnels,
@@ -78,6 +79,7 @@ export default class ServerConnection implements IServerConnection {
       this.buildArtifactsRequest.bind(this),
       this.publishApplicationRequest.bind(this),
       this.deployTeamsAppManifestRequest.bind(this),
+      this.getCopilotStatusRequest.bind(this),
       this.getSideloadingStatusRequest.bind(this),
       this.getLaunchUrlRequest.bind(this),
 
@@ -334,6 +336,16 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
     const res = await getSideloadingStatus(accountToken.token);
+    return ok(String(res));
+  }
+
+  public async getCopilotStatusRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<string, FxError>> {
+    const res = await getCopilotStatus(accountToken.token);
     return ok(String(res));
   }
 

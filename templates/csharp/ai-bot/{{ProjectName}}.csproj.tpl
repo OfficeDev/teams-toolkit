@@ -17,7 +17,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.21.1" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.21.1" />
-    <PackageReference Include="Microsoft.Teams.AI" Version="1.0.0-preview-6" />
+    <PackageReference Include="Microsoft.Teams.AI" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>

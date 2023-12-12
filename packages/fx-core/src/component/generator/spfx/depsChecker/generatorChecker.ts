@@ -24,7 +24,7 @@ import { Constants } from "../utils/constants";
 import { getExecCommand, Utils } from "../utils/utils";
 
 const name = Constants.GeneratorPackageName;
-const displayName = `${name}@${Constants.LatestVersion}`;
+const displayName = `${name}`;
 const timeout = 6 * 60 * 1000;
 
 export class GeneratorChecker implements DependencyChecker {
@@ -38,27 +38,26 @@ export class GeneratorChecker implements DependencyChecker {
     ctx: Context,
     targetVersion: string
   ): Promise<Result<boolean, FxError>> {
-    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart); // TODO: telemetry event
+    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGeneratorStart);
 
     try {
       void this._logger.info(`${displayName}@${targetVersion} not found, installing...`);
       await this.install(targetVersion);
-      void this._logger.info(`Successfully installed ${displayName}`);
+      void this._logger.info(`Successfully installed ${displayName}@${targetVersion}`);
 
-      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator); // TODO: telemetry event
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGenerator);
     } catch (error) {
       telemetryHelper.sendErrorEvent(
         ctx,
-        TelemetryEvents.EnsureLatestSharepointGenerator,
+        TelemetryEvents.EnsureSharepointGenerator,
         error as UserError | SystemError,
         {
-          [TelemetryProperty.EnsureLatestSharepointGeneratorReason]: (
-            error as UserError | SystemError
-          ).name,
+          [TelemetryProperty.EnsureSharepointGeneratorReason]: (error as UserError | SystemError)
+            .name,
         }
       );
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      this._logger.error(`Failed to install ${displayName}, error = '${error}'`);
+      this._logger.error(`Failed to install ${displayName}@${targetVersion}, error = '${error}'`);
       return err(error as UserError | SystemError);
     }
 
@@ -67,16 +66,15 @@ export class GeneratorChecker implements DependencyChecker {
 
   public async isLatestInstalled(loadedLatestVersion: string | undefined): Promise<boolean> {
     try {
-      const generatorVersion = await this.queryVersion();
+      const generatorVersion = await this.findLocalInstalledVersion();
       const latestGeneratorVersion = loadedLatestVersion ?? (await this.findLatestVersion(5));
-      const hasSentinel = await fs.pathExists(this.getSentinelPath());
-      return !!latestGeneratorVersion && generatorVersion === latestGeneratorVersion && hasSentinel;
+      return !!latestGeneratorVersion && generatorVersion === latestGeneratorVersion;
     } catch (error) {
       return false;
     }
   }
 
-  public async checkLocalInstalledVersion(): Promise<string | undefined> {
+  public async findLocalInstalledVersion(): Promise<string | undefined> {
     try {
       const generatorVersion = await this.queryVersion();
       const hasSentinel = await fs.pathExists(this.getSentinelPath());
@@ -172,8 +170,8 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   private async installGenerator(targetVersion: string): Promise<void> {
+    const version = targetVersion ?? Constants.LatestVersion;
     try {
-      const version = targetVersion ?? Constants.LatestVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
@@ -190,7 +188,7 @@ export class GeneratorChecker implements DependencyChecker {
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      void this._logger.error(`Failed to execute npm install ${displayName}`);
+      void this._logger.error(`Failed to execute npm install ${displayName}@${version}`);
       throw NpmInstallError(error as Error);
     }
   }

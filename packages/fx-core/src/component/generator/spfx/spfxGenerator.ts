@@ -27,7 +27,7 @@ import * as util from "util";
 import { merge } from "lodash";
 import { cpUtils } from "../../../common/deps-checker";
 import { getDefaultString, getLocalizedString } from "../../../common/localizeUtils";
-import { FileNotFoundError } from "../../../error";
+import { FileNotFoundError, UserCancelError } from "../../../error";
 import { QuestionNames } from "../../../question/questionNames";
 import { SPFxQuestionNames } from "../../constants";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -37,7 +37,6 @@ import { Generator } from "../generator";
 import { GeneratorChecker } from "./depsChecker/generatorChecker";
 import { YoChecker } from "./depsChecker/yoChecker";
 import {
-  UserCancelError,
   CopyExistingSPFxSolutionError,
   ImportSPFxSolutionError,
   LatestPackageInstallError,
@@ -46,6 +45,7 @@ import {
   SolutionVersionMissingError,
   UpdateSPFxTemplateError,
   YoGeneratorScaffoldError,
+  PackageTargetVersionInstallError,
 } from "./error";
 import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
@@ -240,21 +240,28 @@ export class SPFxGenerator {
       let localVersion: string | undefined = undefined;
 
       if (isAddSPFx) {
-        targetVersion = await this.getSolutionVersion(inputs[QuestionNames.SPFxFolder]); // todo: throw if undefined.
-        localVersion = await spGeneratorChecker.checkLocalInstalledVersion();
-        const globalVersion = await spGeneratorChecker.findGloballyInstalledVersion(
-          undefined,
-          false
-        );
+        const yoInfoPath = path.join(inputs[QuestionNames.SPFxFolder], Constants.YO_RC_FILE);
+        targetVersion = await this.getSolutionVersion(yoInfoPath);
+        if (!targetVersion) {
+          context.logProvider.error(
+            getLocalizedString("plugins.spfx.addWebPart.cannotFindSolutionVersion", yoInfoPath)
+          );
+          throw SolutionVersionMissingError(yoInfoPath);
+        }
+
+        const versions = await Promise.all([
+          spGeneratorChecker.findLocalInstalledVersion(),
+          spGeneratorChecker.findGloballyInstalledVersion(undefined, false),
+        ]);
+        localVersion = versions[0];
         shouldInstallLocally = await this.shouldAddWebPartWithLocalDependencies(
           targetVersion,
-          globalVersion,
+          versions[1],
           localVersion,
           context
         );
       }
 
-      // TODO: below is for create only, need to refactor
       if (shouldInstallLocally) {
         await this.ensureLocalDependencies(
           targetVersion,
@@ -268,7 +275,7 @@ export class SPFxGenerator {
       } else {
         const isLowerVersion =
           !!inputs.globalSpfxPackageVersion &&
-          semver.lte(
+          semver.lt(
             inputs.globalSpfxPackageVersion,
             Constants.RecommendedLowestSpfxVersion.substring(1)
           );
@@ -412,8 +419,7 @@ export class SPFxGenerator {
     return undefined;
   }
 
-  private static async getSolutionVersion(spfxFolder: string): Promise<string> {
-    const yoInfoPath = path.join(spfxFolder, Constants.YO_RC_FILE);
+  private static async getSolutionVersion(yoInfoPath: string): Promise<string> {
     if (await fs.pathExists(yoInfoPath)) {
       const yoInfo = await fs.readJson(yoInfoPath);
       if (yoInfo["@microsoft/generator-sharepoint"]) {
@@ -436,19 +442,19 @@ export class SPFxGenerator {
   ) {
     let needInstallYo = false;
     let needInstallGenerator = false;
+    const isAddWebPart = targetSPFxVersion !== Constants.LatestVersion;
 
-    // targetSPFxVersion === Constants.LatestVersion ? scaffold : add web part
     // yo
-    if (targetSPFxVersion === Constants.LatestVersion) {
+    if (!isAddWebPart) {
       const latestYoInstalled = await yoChecker.isLatestInstalled();
       needInstallYo = !latestYoInstalled;
     } else {
-      const localYoVersion = await yoChecker.checkLocalInstalledVersion();
+      const localYoVersion = await yoChecker.findLocalInstalledVersion();
       needInstallYo = !localYoVersion;
     }
 
     // spfx generator
-    if (targetSPFxVersion === Constants.LatestVersion) {
+    if (!isAddWebPart) {
       const latestGeneratorInstalled = await spGeneratorChecker.isLatestInstalled(
         inputs.latestSpfxPackageVersion
       );
@@ -464,7 +470,14 @@ export class SPFxGenerator {
       if (needInstallYo) {
         const yoRes = await yoChecker.ensureDependency(context, Constants.LatestVersion);
         if (yoRes.isErr()) {
-          throw LatestPackageInstallError(); // TODO: error for target version
+          if (isAddWebPart) {
+            throw PackageTargetVersionInstallError(
+              Constants.YeomanPackageName,
+              Constants.LatestVersion
+            );
+          } else {
+            throw LatestPackageInstallError();
+          }
         }
       }
 
@@ -474,7 +487,14 @@ export class SPFxGenerator {
           targetSPFxVersion
         );
         if (spGeneratorRes.isErr()) {
-          throw LatestPackageInstallError(); // TODO: error for target version
+          if (isAddWebPart) {
+            throw PackageTargetVersionInstallError(
+              Constants.GeneratorPackageName,
+              targetSPFxVersion
+            );
+          } else {
+            throw LatestPackageInstallError();
+          }
         }
       }
     }
@@ -482,15 +502,11 @@ export class SPFxGenerator {
 
   // return shouldUseLocal
   private static async shouldAddWebPartWithLocalDependencies(
-    solutionVersion: string | undefined,
+    solutionVersion: string,
     globalVersion: string | undefined,
     localVersion: string | undefined,
     context: Context
   ): Promise<boolean> {
-    if (!solutionVersion) {
-      throw SolutionVersionMissingError();
-    }
-
     if (globalVersion === solutionVersion) {
       // use globally installed pacakge to add web part
       context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.CheckAddWebPartPackage, {
@@ -510,6 +526,7 @@ export class SPFxGenerator {
 
     const displayedSolutionVersion = `v${solutionVersion}`;
     const displayedLocalVersion = localVersion ? `v${localVersion}` : undefined;
+    const displayedGlobalVersion = globalVersion ? `v${globalVersion}` : undefined;
     let userAnswer: string | undefined;
     let continueText: string;
     let defaultContinueText: string;
@@ -528,7 +545,7 @@ export class SPFxGenerator {
         continueText
       );
       userAnswer = res.isOk() ? res.value : undefined;
-    } else if (localVersion < solutionVersion) {
+    } else if (semver.lt(localVersion, solutionVersion)) {
       // ask user to confirm to upgrade local SPFx
       continueText = getLocalizedString("plugins.spfx.addWebPart.upgrade");
       defaultContinueText = getDefaultString("plugins.spfx.addWebPart.upgrade");
@@ -572,10 +589,27 @@ export class SPFxGenerator {
 
       userAnswer = userSelected;
 
-      // TODO: output warning
+      context.logProvider.log(
+        LogLevel.Warning,
+        displayedGlobalVersion
+          ? getLocalizedString(
+              "plugins.spfx.addWebPart.versionMismatch.output",
+              displayedSolutionVersion,
+              displayedGlobalVersion,
+              displayedLocalVersion,
+              displayedLocalVersion,
+              Constants.AddWebpartHelpLink
+            )
+          : getLocalizedString(
+              "plugins.spfx.addWebPart.versionMismatch.localOnly.output",
+              displayedSolutionVersion,
+              displayedLocalVersion,
+              displayedLocalVersion,
+              Constants.AddWebpartHelpLink
+            )
+      );
     }
 
-    // TODO: verify whether cancel returns undefined.
     context.telemetryReporter.sendTelemetryEvent(TelemetryEvents.CheckAddWebPartPackage, {
       [TelemetryProperty.PackageSource]: "local",
       [TelemetryProperty.UserAction]: defaultContinueText,
@@ -583,7 +617,7 @@ export class SPFxGenerator {
     });
 
     if (userAnswer !== continueText) {
-      throw UserCancelError();
+      throw new UserCancelError(Constants.PLUGIN_NAME);
     } else {
       return true;
     }

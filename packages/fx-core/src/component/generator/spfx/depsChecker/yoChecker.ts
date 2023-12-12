@@ -24,7 +24,7 @@ import { getExecCommand, Utils } from "../utils/utils";
 import { Constants } from "../utils/constants";
 
 const name = Constants.YeomanPackageName;
-const displayName = `${name}@${Constants.LatestVersion}`;
+const displayName = `${name}`;
 const timeout = 6 * 60 * 1000;
 
 export class YoChecker implements DependencyChecker {
@@ -38,24 +38,24 @@ export class YoChecker implements DependencyChecker {
     ctx: Context,
     targetVersion: string
   ): Promise<Result<boolean, FxError>> {
-    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYoStart);
+    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureYoStart);
     try {
       void this._logger.info(`${displayName}@${targetVersion} not found, installing...`);
       await this.install(targetVersion);
-      void this._logger.info(`Successfully installed ${displayName}`);
+      void this._logger.info(`Successfully installed ${displayName}@${targetVersion}`);
 
-      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestYo);
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureYo);
     } catch (error) {
       telemetryHelper.sendErrorEvent(
         ctx,
-        TelemetryEvents.EnsureLatestYo,
+        TelemetryEvents.EnsureYo,
         error as UserError | SystemError,
         {
-          [TelemetryProperty.EnsureLatestYoReason]: (error as UserError | SystemError).name,
+          [TelemetryProperty.EnsureYoReason]: (error as UserError | SystemError).name,
         }
       );
       this._logger.error(
-        `Failed to install ${displayName}, error = '${error.toString() as string}'`
+        `Failed to install ${displayName}@${targetVersion}, error = '${error.toString() as string}'`
       );
       return err(error as UserError | SystemError);
     }
@@ -63,7 +63,7 @@ export class YoChecker implements DependencyChecker {
     return ok(true);
   }
 
-  public async checkLocalInstalledVersion(): Promise<string | undefined> {
+  public async findLocalInstalledVersion(): Promise<string | undefined> {
     try {
       const yoVersion = await this.queryVersion();
       const hasSentinel = await fs.pathExists(this.getSentinelPath());
@@ -75,7 +75,7 @@ export class YoChecker implements DependencyChecker {
 
   public async isLatestInstalled(): Promise<boolean> {
     try {
-      const yoVersion = await this.checkLocalInstalledVersion();
+      const yoVersion = await this.findLocalInstalledVersion();
       const latestYeomanVersion = await this.findLatestVersion(10);
       return !!latestYeomanVersion && yoVersion === latestYeomanVersion;
     } catch (error) {
@@ -174,8 +174,8 @@ export class YoChecker implements DependencyChecker {
   }
 
   private async installYo(targetVersion: string): Promise<void> {
+    const version = targetVersion ?? Constants.LatestVersion;
     try {
-      const version = targetVersion ?? Constants.LatestVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
@@ -192,7 +192,7 @@ export class YoChecker implements DependencyChecker {
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      void this._logger.error("Failed to execute npm install yo");
+      void this._logger.error(`Failed to execute npm install ${displayName}@${version}`);
       throw NpmInstallError(error as Error);
     }
   }

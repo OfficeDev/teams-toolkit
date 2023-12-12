@@ -600,16 +600,13 @@ export class GitHubHelpers {
   private static readonly artifactNamePrefix = "teamsapptester";
   public static async listGitHubReleases(): Promise<GitHubRelease[]> {
     // GitHub API without auth
-    const response = await fetch(
-      "https://api.github.com/repos/OfficeDev/TeamsAppTestTool/releases",
-      {
-        headers: {
-          Accept: "application/vnd.github+json",
-          "X-Github-Api-Version": "2022-11-28",
-        },
-        timeout: InstallTimeout,
-      }
-    );
+    const response = await fetch("https://api.github.com/repos/OfficeDev/TeamsFx/releases", {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "X-Github-Api-Version": "2022-11-28",
+      },
+      timeout: InstallTimeout,
+    });
     const releases: {
       tag_name: string;
       assets: { name: string; url: string }[];

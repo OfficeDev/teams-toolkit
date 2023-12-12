@@ -31,21 +31,32 @@ builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(sp => sp.GetService<Clou
 builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
 
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
-OpenAIModel model = null;
+
 if (!string.IsNullOrWhiteSpace(config.OpenAI?.ApiKey))
 {
-    model = new(new OpenAIModelOptions(config.OpenAI.ApiKey, "gpt-3.5-turbo"));
+    builder.Services.AddSingleton<OpenAIModel>(sp => new(
+        new OpenAIModelOptions(config.OpenAI.ApiKey, "gpt-3.5-turbo")
+        {
+            LogRequests = true
+        },
+        sp.GetService<ILoggerFactory>()
+    ));
 }
 else if (!string.IsNullOrWhiteSpace(config.Azure?.OpenAIApiKey) && !string.IsNullOrWhiteSpace(config.Azure.OpenAIEndpoint))
 {
-    model = new(new AzureOpenAIModelOptions(
-        config.Azure.OpenAIApiKey,
-        "gpt-35-turbo",
-        config.Azure.OpenAIEndpoint
+    builder.Services.AddSingleton<OpenAIModel>(sp => new(
+        new AzureOpenAIModelOptions(
+            config.Azure.OpenAIApiKey,
+            "gpt-35-turbo",
+            config.Azure.OpenAIEndpoint
+        )
+        {
+            LogRequests = true
+        },
+        sp.GetService<ILoggerFactory>()
     ));
 }
-
-if (model == null)
+else
 {
     throw new Exception("Missing configuration, please configure settings for either OpenAI or Azure");
 }
@@ -65,7 +76,7 @@ builder.Services.AddTransient<IBot>(sp =>
     // Create ActionPlanner
     ActionPlanner<TurnState> planner = new(
         options: new(
-            model: model,
+            model: sp.GetService<OpenAIModel>(),
             prompts: prompts,
             defaultPrompt: async (context, state, planner) =>
             {

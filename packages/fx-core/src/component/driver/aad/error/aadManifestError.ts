@@ -42,6 +42,30 @@ export class UnknownResourceAppIdUserError extends UserError {
   }
 }
 
+export class MissingResourceAppIdUserError extends UserError {
+  constructor(actionName: string) {
+    super({
+      source: actionName,
+      name: "MissingResourceAppId",
+      message: getDefaultString("error.aad.manifest.ResourceAppIdIsMissing"),
+      displayMessage: getLocalizedString("error.aad.manifest.ResourceAppIdIsMissing"),
+      helpLink: "https://aka.ms/teamsfx-aad-manifest",
+    });
+  }
+}
+
+export class MissingResourceAccessIdUserError extends UserError {
+  constructor(actionName: string) {
+    super({
+      source: actionName,
+      name: "MissingResourceAccessId",
+      message: getDefaultString("error.aad.manifest.ResourceAccessIdIsMissing"),
+      displayMessage: getLocalizedString("error.aad.manifest.ResourceAccessIdIsMissing"),
+      helpLink: "https://aka.ms/teamsfx-aad-manifest",
+    });
+  }
+}
+
 export class UnknownResourceAccessIdUserError extends UserError {
   constructor(actionName: string, unknownId: string) {
     super({

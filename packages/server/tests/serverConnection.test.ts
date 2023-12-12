@@ -308,6 +308,18 @@ describe("serverConnections", () => {
     });
   });
 
+  it("getCopilotStatusRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const accountToken = {
+      token: "test token",
+    };
+    const cancelToken = {};
+    const res = connection.getCopilotStatusRequest(accountToken, cancelToken as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok("undefined"));
+    });
+  });
+
   it("addSsoRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");

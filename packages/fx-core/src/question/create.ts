@@ -1615,7 +1615,7 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
     ),
     cliDescription: "The authentication type for the API.",
     staticOptions: ApiMessageExtensionAuthOptions.all(),
-    default: "none",
+    default: ApiMessageExtensionAuthOptions.none().id,
   };
 }
 

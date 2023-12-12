@@ -52,7 +52,7 @@ export function addStartAndEndTelemetry(eventName: string, componentName: string
   };
 }
 
-function isExecutionResult(
+export function isExecutionResult(
   result: Result<Map<string, string>, FxError> | ExecutionResult
 ): result is ExecutionResult {
   return (result as ExecutionResult).result !== undefined;

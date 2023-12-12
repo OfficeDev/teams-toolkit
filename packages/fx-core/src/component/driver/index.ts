@@ -19,6 +19,7 @@ import "./deploy/azure/azureFunctionDeployDriver";
 import "./deploy/azure/azureStorageDeployDriver";
 import "./deploy/azure/azureStorageStaticWebsiteConfigDriver";
 import "./deploy/spfx/deployDriver";
+import "./deploy/azure/azureStaticWebAppGetDeploymentTokenDriver";
 import "./script/dotnetBuildDriver";
 import "./script/npmBuildDriver";
 import "./script/npxBuildDriver";

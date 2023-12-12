@@ -16,7 +16,7 @@ import { ScriptExecutionError, ScriptTimeoutError } from "../../../error/script"
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { ProgressMessages } from "../../messages";
 import { getSystemEncoding } from "../../utils/charsetUtils";
-import { DotenvOutput } from "../../utils/envUtil";
+import { DotenvOutput, maskSecretValues } from "../../utils/envUtil";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
@@ -222,18 +222,6 @@ export function parseSetOutputCommand(stdout: string): DotenvOutput {
     }
   }
   return output;
-}
-
-export function maskSecretValues(stdout: string): string {
-  for (const key of Object.keys(process.env)) {
-    if (key.startsWith("SECRET_")) {
-      const value = process.env[key];
-      if (value) {
-        stdout = stdout.replace(value, "***");
-      }
-    }
-  }
-  return stdout;
 }
 
 export function capitalizeFirstLetter(raw: string): string {

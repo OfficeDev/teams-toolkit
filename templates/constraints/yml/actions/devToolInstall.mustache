@@ -7,7 +7,12 @@
 {{/devCert}}
 {{#func}}
       func:
+        {{#funcToolsVersion}}
+        version: {{{funcToolsVersion}}}
+        {{/funcToolsVersion}}
+        {{^funcToolsVersion}}
         version: ~4.0.5174
+        {{/funcToolsVersion}}
         symlinkDir: ./devTools/func
 {{/func}}
 {{#dotnet}}

@@ -79,11 +79,11 @@ export class M365AccountNode extends DynamicNode {
 
     // partial refresh
     if (refreshSideloading && refreshCopilot) {
-      this.eventEmitter.fire(this);
+      this.eventEmitter.fire(undefined);
     } else if (refreshSideloading && !refreshCopilot) {
-      this.eventEmitter.fire(this.sideloadingNode);
+      this.eventEmitter.fire(undefined);
     } else if (!refreshSideloading && refreshCopilot) {
-      this.eventEmitter.fire(this.copilotNode);
+      this.eventEmitter.fire(undefined);
     }
   }
 

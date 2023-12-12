@@ -9,7 +9,10 @@ import { getLocalizedString } from "../../../../common/localizeUtils";
 import { AadOwner } from "../../../../common/permissionInterface";
 import { GraphScopes } from "../../../../common/tools";
 import { ErrorContextMW } from "../../../../core/globalVars";
-import { DeleteOrUpdatePermissionFailedError } from "../error/aadManifestError";
+import {
+  DeleteOrUpdatePermissionFailedError,
+  HostNameNotOnVerifiedDomainError,
+} from "../error/aadManifestError";
 import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import { IAADDefinition } from "../interface/IAADDefinition";
@@ -125,13 +128,16 @@ export class AadAppClient {
         },
       });
     } catch (err) {
-      if (
-        axios.isAxiosError(err) &&
-        err.response &&
-        err.response.status === 400 &&
-        err.response.data.error.code === aadErrorCode.permissionErrorCode
-      ) {
-        throw new DeleteOrUpdatePermissionFailedError(AadAppClient.name);
+      if (axios.isAxiosError(err) && err.response && err.response.status === 400) {
+        if (err.response.data.error?.code === aadErrorCode.permissionErrorCode) {
+          throw new DeleteOrUpdatePermissionFailedError(AadAppClient.name);
+        }
+        if (err.response.data.error?.code === aadErrorCode.hostNameNotOnVerifiedDomain) {
+          throw new HostNameNotOnVerifiedDomainError(
+            AadAppClient.name,
+            err.response.data.error?.message ?? ""
+          );
+        }
       }
       throw err;
     }

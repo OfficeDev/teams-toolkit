@@ -80,3 +80,18 @@ export class DeleteOrUpdatePermissionFailedError extends UserError {
     });
   }
 }
+
+export class HostNameNotOnVerifiedDomainError extends UserError {
+  constructor(actionName: string, errorMessage: string) {
+    super({
+      source: actionName,
+      name: "HostNameNotOnVerifiedDomain",
+      message: getDefaultString("error.aad.manifest.HostNameNotOnVerifiedDomain", errorMessage),
+      displayMessage: getLocalizedString(
+        "error.aad.manifest.HostNameNotOnVerifiedDomain",
+        errorMessage
+      ),
+      helpLink: "https://aka.ms/teamsfx-aad-manifest",
+    });
+  }
+}

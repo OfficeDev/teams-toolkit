@@ -23,6 +23,7 @@ import {
   getTestFolder,
   getUniqueAppName,
   removeTeamsAppExtendToM365,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 
 describe("Create single tab", function () {
@@ -60,6 +61,9 @@ describe("Create single tab", function () {
       async () => {
         // remove teamsApp/extendToM365 in case it fails
         removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
+
+        // workaround free tier quota
+        await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
 
         const result = await createResourceGroup(resourceGroupName, "eastus");
         assert.isTrue(result);

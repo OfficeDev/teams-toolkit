@@ -17,6 +17,7 @@ import {
   setProvisionParameterValueV3,
   removeTeamsAppExtendToM365,
   createResourceGroup,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 import { EnvConstants } from "../../commonlib/constants";
 import { Capability } from "../../utils/constants";

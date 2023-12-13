@@ -20,6 +20,7 @@ import {
   readContextMultiEnvV3,
   setAadManifestIdentifierUrisV3,
   createResourceGroup,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
 
@@ -65,6 +66,8 @@ describe("SSO Tab with aad manifest enabled", () => {
         const result = await createResourceGroup(appName + "-rg", "eastus");
         expect(result).to.be.true;
         process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+        // workaround free tier quota
+        await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
         const { success } = await Executor.provision(projectPath);
         expect(success).to.be.true;
         console.log(`[Successfully] provision for ${projectPath}`);

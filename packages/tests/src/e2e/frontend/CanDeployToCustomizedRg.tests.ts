@@ -22,6 +22,7 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   removeTeamsAppExtendToM365,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
@@ -51,6 +52,9 @@ describe("Deploy to customized resource group", function () {
       // Create empty resource group
       const customizedRgName = `${appName}-customized-rg`;
       await createResourceGroup(customizedRgName, "eastus");
+
+      // workaround free tier quota
+      await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
 
       await CliHelper.provisionProject(projectPath, undefined, "dev", {
         ...process.env,

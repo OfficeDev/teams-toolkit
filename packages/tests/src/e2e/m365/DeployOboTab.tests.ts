@@ -23,6 +23,7 @@ import {
   getTestFolder,
   getUniqueAppName,
   readContextMultiEnvV3,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 import {
   deleteAadAppByObjectId,
@@ -64,6 +65,9 @@ describe("Deploy V3 m365-tab template", () => {
       // provision
       const result = await createResourceGroup(resourceGroupName, "eastus");
       chai.assert.isTrue(result);
+
+      // workaround free tier quota
+      await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
 
       await CliHelper.provisionProject(projectPath, "", "dev", {
         ...process.env,

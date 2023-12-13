@@ -695,7 +695,7 @@
   "driver.apiKey.log.skipCreateApiKey": "Environment variable %s exists. Skip creating API key.",
   "driver.apiKey.log.apiKeyNotFound": "Environment variable %s exists but failed to retrieve API key from Developer Portal. Check manually if API key exists.",
   "driver.apiKey.error.nameTooLong": "The name for API key is too long. The maximum length is 128.",
-  "driver.apiKey.error.clientSecretInvalid": "Client secret is invalid. Client secret should follow: 1. Max %d secrets per API key. 2. Use comma to separate secrets. 3. Length of every secret >= 10 and <= 128",
+  "driver.apiKey.error.clientSecretInvalid": "Client secret is invalid. Length of client secret >= 10 and <= 128",
   "driver.apiKey.error.domainInvalid": "Domain is invalid. Domain for API key should follow: 1. Max %d domain per API key. 2. Use comma to separate domains",
   "driver.apiKey.error.failedToGetDomain": "Failed to get domain from API specification. Please make sure your API specification is valid.",
   "driver.apiKey.log.successCreateApiKey": "Created API key with id %s",

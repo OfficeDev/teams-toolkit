@@ -79,7 +79,42 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret, mockedClientSecret2",
+      clientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
+    if (result.result.isOk()) {
+      expect(result.result.value.get(outputKeys.registrationId)).to.equal("mockedRegistrationId");
+      expect(result.summaries.length).to.equal(1);
+    }
+  });
+
+  it("happy path: create registraionid, read domain from api spec, clientSecret and secondaryClientSecret from input", async () => {
+    sinon.stub(AppStudioClient, "createApiKeyRegistration").resolves({
+      id: "mockedRegistrationId",
+      clientSecrets: [],
+      targetUrlsShouldStartWith: [],
+      applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves([
+      {
+        api: "api",
+        server: "https://test",
+        operationId: "get",
+        auth: {
+          type: "apiKey",
+          name: "test",
+          in: "header",
+        },
+      },
+    ]);
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      clientSecret: "mockedClientSecret",
+      secondaryClientSecret: "mockedSecondaryClientSecret",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
@@ -243,24 +278,13 @@ describe("CreateApiKeyDriver", () => {
   });
 
   it("should throw error if invalid clientSecret", async () => {
-    let args: any = {
+    const args: any = {
       name: "test",
       appId: "",
       clientSecret: "secret",
       apiSpecPath: "mockedPath",
     };
-    let result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
-    expect(result.result.isErr()).to.be.true;
-    if (result.result.isErr()) {
-      expect(result.result.error.name).to.equal("ApiKeyClientSecretInvalid");
-    }
-
-    args = {
-      name: "test",
-      appId: "",
-      clientSecret: "mockedSecret, mockedSecret2, mockedSecret3",
-    };
-    result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.name).to.equal("ApiKeyClientSecretInvalid");

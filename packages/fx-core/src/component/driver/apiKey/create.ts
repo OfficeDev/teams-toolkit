@@ -8,7 +8,12 @@ import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
 import { DriverContext } from "../interface/commonArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { hooks } from "@feathersjs/hooks";
-import { logMessageKeys, maxDomainPerApiKey, maxSecretPerApiKey } from "./utility/constants";
+import {
+  logMessageKeys,
+  maxDomainPerApiKey,
+  maxSecretLength,
+  minSecretLength,
+} from "./utility/constants";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
@@ -157,26 +162,12 @@ export class CreateApiKeyDriver implements StepDriver {
     return clientSecret;
   }
 
-  // Allowed secrets: secret or secret1, secret2
-  // Need to validate secrets outside of the function
-  private parseSecret(apiKeyClientSecret: string): string[] {
-    const secrets = apiKeyClientSecret.trim().split(",");
-    return secrets.map((secret) => secret.trim());
-  }
-
   private validateSecret(apiKeySecret: string): boolean {
     if (typeof apiKeySecret !== "string") {
       return false;
     }
 
-    const regExp = /^(\w){10,128}(,\s*\w{10,128})*/g;
-    const regResult = regExp.exec(apiKeySecret);
-    if (!regResult) {
-      return false;
-    }
-
-    const secrets = this.parseSecret(apiKeySecret);
-    if (secrets.length > maxSecretPerApiKey) {
+    if (apiKeySecret.length > maxSecretLength || apiKeySecret.length < minSecretLength) {
       return false;
     }
 
@@ -232,6 +223,10 @@ export class CreateApiKeyDriver implements StepDriver {
       throw new ApiKeyClientSecretInvalidError(actionName);
     }
 
+    if (args.secondaryClientSecret && !this.validateSecret(args.secondaryClientSecret)) {
+      throw new ApiKeyClientSecretInvalidError(actionName);
+    }
+
     if (typeof args.apiSpecPath !== "string" || !args.apiSpecPath) {
       invalidParameters.push("apiSpecPath");
     }
@@ -253,14 +248,20 @@ export class CreateApiKeyDriver implements StepDriver {
     const currentUser = currentUserRes.value;
     const userId = currentUser["oid"] as string;
 
-    const secrets = this.parseSecret(args.clientSecret!);
+    const secrets = [];
+    if (args.clientSecret) {
+      secrets.push(args.clientSecret);
+    }
+    if (args.secondaryClientSecret) {
+      secrets.push(args.secondaryClientSecret);
+    }
     let isPrimary = true;
     const clientSecrets = secrets.map((secret) => {
       const clientSecret: ApiSecretRegistrationClientSecret = {
         value: secret,
         description: args.name,
         priority: isPrimary ? 0 : 1,
-        isValueRedacted: true,
+        isValueRedacted: false,
       };
       isPrimary = false;
       return clientSecret;

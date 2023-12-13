@@ -9,5 +9,6 @@ export const logMessageKeys = {
   failedExecuteDriver: "driver.apiKey.log.failedExecuteDriver",
 };
 
-export const maxSecretPerApiKey = 2;
 export const maxDomainPerApiKey = 1;
+export const maxSecretLength = 128;
+export const minSecretLength = 10;

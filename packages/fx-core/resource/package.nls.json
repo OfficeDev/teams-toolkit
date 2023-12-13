@@ -434,6 +434,8 @@
   "error.aad.manifest.RequiredResourceAccessIsMissing": "requiredResourceAccess is missing\n",
   "error.aad.manifest.Oauth2PermissionsIsMissing": "oauth2Permissions is missing\n",
   "error.aad.manifest.PreAuthorizedApplicationsIsMissing": "preAuthorizedApplications is missing\n",
+  "error.aad.manifest.ResourceAppIdIsMissing": "Some item(s) in requiredResourceAccess misses resourceAppId property.",
+  "error.aad.manifest.ResourceAccessIdIsMissing": "Some item(s) in resourceAccess misses id property.",
   "error.aad.manifest.AccessTokenAcceptedVersionIs1": "accessTokenAcceptedVersion is 1\n",
   "error.aad.manifest.OptionalClaimsIsMissing": "optionalClaims is missing\n",
   "error.aad.manifest.OptionalClaimsMissingIdtypClaim": "optionalClaims access token doesn't contain idtyp claim\n",

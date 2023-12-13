@@ -238,6 +238,7 @@ jobs:
           retry_on: error
           command: |
             sleep 20
+            npm run build
             pnpm --filter @microsoft/teamsfx-server run package
             [ -d ./packages/server/lib ] && find ./packages/server/lib -type f -name '*.exe' -exec mv {} server.exe \;
 

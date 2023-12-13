@@ -449,7 +449,7 @@ export class TeamsAppManifest implements AppManifest {
     notificationUrl?: string;
     connectionId: string;
     connectionName: string;
-    description: string;
+    description?: string;
     authenticationEntity: {
       path: string;
       authenticationKind: string;

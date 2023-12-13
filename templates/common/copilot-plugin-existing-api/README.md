@@ -1,17 +1,17 @@
-# Overview of Graph connectors OpenAPI Plugin app template
+# Overview of Graph connectors OpenAPI app template
 
-## Build Graph connectors OpenAPI Plugin from OpenAPI Spec
+## Build Graph connection from OpenAPI Spec
 
 The plugin allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. Plugins allow Teams to:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.
 
-## Get started with Graph connectors OpenAPI Plugin template
+## Get started with Graph connectors OpenAPI app template
 
 > **Prerequisites**
 >
-> To run the Graph connectors OpenAPI Plugin app template in your local dev machine, you will need:
+> To run the Graph connectors OpenAPI app template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).

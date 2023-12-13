@@ -6,9 +6,9 @@
     "version": "1.0.0",
     "developer": {
         "name": "Teams App, Inc.",
-        "websiteUrl": "https://www.example.com",
-        "privacyUrl": "https://www.example.com/privacy",
-        "termsOfUseUrl": "https://www.example.com/termsofuse"
+        "websiteUrl": "https://www.contoso.com",
+        "privacyUrl": "https://www.contoso.com/privacy",
+        "termsOfUseUrl": "https://www.contoso.com/termsofuse"
     },
     "icons": {
         "color": "color.png",

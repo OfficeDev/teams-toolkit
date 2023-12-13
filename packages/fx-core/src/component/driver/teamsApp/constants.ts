@@ -261,9 +261,9 @@ export const DEFAULT_OUTLINE_PNG_FILENAME = "outline.png";
 // Default values for the developer fields in manifest.
 export const DEFAULT_DEVELOPER = {
   name: "Teams App, Inc.",
-  websiteUrl: "https://www.example.com",
-  privacyUrl: "https://www.example.com/termofuse",
-  termsOfUseUrl: "https://www.example.com/privacy",
+  websiteUrl: "https://www.contoso.com",
+  privacyUrl: "https://www.contoso.com/termofuse",
+  termsOfUseUrl: "https://www.contoso.com/privacy",
 };
 
 // Default values for the description fields in manifest.

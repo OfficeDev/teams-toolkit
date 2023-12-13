@@ -6,9 +6,9 @@
     "packageName": "com.microsoft.teams.extension",
     "developer": {
         "name": "Teams App, Inc.",
-        "websiteUrl": "https://www.example.com",
-        "privacyUrl": "https://www.example.com/privacy",
-        "termsOfUseUrl": "https://www.example.com/termofuse"
+        "websiteUrl": "https://www.contoso.com",
+        "privacyUrl": "https://www.contoso.com/privacy",
+        "termsOfUseUrl": "https://www.contoso.com/termofuse"
     },
     "icons": {
         "color": "color.png",

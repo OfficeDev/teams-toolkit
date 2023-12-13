@@ -6,7 +6,7 @@ import * as sinon from "sinon";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, isAxiosError } from "axios";
 import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
 import MockAdapter from "axios-mock-adapter";
@@ -352,6 +352,23 @@ describe("AadAppClient", async () => {
             "Unable to set identifierUri because the value is not on verified domain: Mocked error message"
           );
           expect(err.helpLink).equals("https://aka.ms/teamsfx-multi-tenant");
+        }
+      );
+    });
+
+    it("should throw error when request failed with no error property", async () => {
+      const expectedError = {};
+
+      sinon.stub(axiosInstance, "patch").rejects({
+        isAxiosError: true,
+        response: {
+          status: 400,
+          data: expectedError,
+        },
+      });
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.rejected.then(
+        (err) => {
+          expect(isAxiosError(err)).to.be.true;
         }
       );
     });

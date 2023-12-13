@@ -135,7 +135,7 @@ export class AadAppClient {
         if (err.response.data.error?.code === aadErrorCode.hostNameNotOnVerifiedDomain) {
           throw new HostNameNotOnVerifiedDomainError(
             AadAppClient.name,
-            err.response.data.error?.message ?? ""
+            err.response.data.error.message
           );
         }
       }

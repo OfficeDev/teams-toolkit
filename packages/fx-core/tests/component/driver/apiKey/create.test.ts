@@ -291,6 +291,21 @@ describe("CreateApiKeyDriver", () => {
     }
   });
 
+  it("should throw error if invalid secondaryClientSecret", async () => {
+    const args: any = {
+      name: "test",
+      appId: "",
+      clientSecret: "mockedClientSecret",
+      secondaryClientSecret: "secret",
+      apiSpecPath: "mockedPath",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("ApiKeyClientSecretInvalid");
+    }
+  });
+
   it("should throw error if missing apiSpecPath", async () => {
     const args: any = {
       name: "test",

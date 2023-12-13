@@ -91,7 +91,7 @@ export class HostNameNotOnVerifiedDomainError extends UserError {
         "error.aad.manifest.HostNameNotOnVerifiedDomain",
         errorMessage
       ),
-      helpLink: "https://aka.ms/teamsfx-aad-manifest",
+      helpLink: "https://aka.ms/teamsfx-multi-tenant",
     });
   }
 }

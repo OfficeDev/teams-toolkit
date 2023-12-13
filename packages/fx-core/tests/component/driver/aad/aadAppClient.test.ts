@@ -351,6 +351,7 @@ describe("AadAppClient", async () => {
           expect(err.message).equals(
             "Unable to set identifierUri because the value is not on verified domain: Mocked error message"
           );
+          expect(err.helpLink).equals("https://aka.ms/teamsfx-multi-tenant");
         }
       );
     });

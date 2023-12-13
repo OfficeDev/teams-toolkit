@@ -29,13 +29,13 @@ if (string.IsNullOrWhiteSpace(config.OpenAI.AssistantId))
     {
         Name = "Math Tutor",
         Instructions = "You are a personal math tutor. Write and run code to answer math questions.",
-        Tools =
-        [
+        Tools = new()
+        {
             new()
             {
                 Type = Tool.CODE_INTERPRETER_TYPE
             }
-        ],
+        },
         Model = "gpt-3.5-turbo"
     }).Result.Id;
     Console.WriteLine($"Created a new assistant with an ID of: {newAssistantId}");

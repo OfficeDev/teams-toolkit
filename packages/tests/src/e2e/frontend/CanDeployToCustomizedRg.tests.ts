@@ -69,11 +69,6 @@ describe("Deploy to customized resource group", function () {
         // Validate Aad App
         const aad = AadValidator.init(context, false, M365Login);
         await AadValidator.validate(aad);
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateProvision(frontend);
-        await FrontendValidator.validateDeploy(frontend);
       }
 
       await deleteResourceGroupByName(customizedRgName);

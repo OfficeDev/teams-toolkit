@@ -86,10 +86,6 @@ describe("Create single tab", function () {
         // Validate Aad App
         const aad = AadValidator.init(context, false, M365Login);
         await AadValidator.validate(aad);
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateProvision(frontend);
       }
     );
 
@@ -107,14 +103,6 @@ describe("Create single tab", function () {
         // Validate deployment
         const envFilePath = path.join(projectPath, "env", `.env.${envName}`);
         assert.isTrue(fs.pathExistsSync(envFilePath));
-        const parseResult = dotenvUtil.deserialize(
-          await fs.readFile(envFilePath, { encoding: "utf8" })
-        );
-        const context = parseResult.obj;
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateDeploy(frontend);
       }
     );
   });

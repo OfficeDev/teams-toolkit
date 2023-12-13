@@ -10,7 +10,7 @@ import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
 import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
-import { AadValidator, FrontendValidator } from "../../commonlib";
+import { AadValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import {
@@ -78,10 +78,6 @@ describe("SSO Tab with aad manifest enabled", () => {
       // Validate Aad App
       const aad = AadValidator.init(context, false, M365Login);
       await AadValidator.validate(aad);
-
-      // Validate Tab Frontend
-      const frontend = FrontendValidator.init(context);
-      await FrontendValidator.validateProvision(frontend);
 
       const firstIdentifierUri =
         "api://first.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";

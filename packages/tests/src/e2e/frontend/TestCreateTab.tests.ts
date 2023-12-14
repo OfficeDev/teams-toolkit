@@ -13,7 +13,11 @@ import fs from "fs-extra";
 import { describe } from "mocha";
 import path from "path";
 import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
-import { AadValidator, FrontendValidator } from "../../commonlib";
+import {
+  AadValidator,
+  FrontendValidator,
+  StaticSiteValidator,
+} from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import { Cleaner } from "../../commonlib/cleaner";
@@ -103,6 +107,13 @@ describe("Create single tab", function () {
         // Validate deployment
         const envFilePath = path.join(projectPath, "env", `.env.${envName}`);
         assert.isTrue(fs.pathExistsSync(envFilePath));
+        const parseResult = dotenvUtil.deserialize(
+          await fs.readFile(envFilePath, { encoding: "utf8" })
+        );
+        const context = parseResult.obj;
+        assert.isNotEmpty(context);
+        const staticSite = StaticSiteValidator.init(context);
+        await StaticSiteValidator.validateDeploy(staticSite);
       }
     );
   });

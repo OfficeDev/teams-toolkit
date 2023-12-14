@@ -10,7 +10,7 @@ import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
 import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
-import { AadValidator } from "../../commonlib";
+import { AadValidator, StaticSiteValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import {
@@ -101,6 +101,10 @@ describe("SSO Tab with aad manifest enabled", () => {
       // Only deploy aad manifest
       await CliHelper.updateAadManifest(projectPath, "--env dev", env);
       await AadValidator.validate(aad, secondIdentifierUri);
+
+      // Validate deployment
+      const staticSite = StaticSiteValidator.init(context);
+      await StaticSiteValidator.validateDeploy(staticSite);
     }
   );
 });

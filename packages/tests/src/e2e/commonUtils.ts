@@ -191,6 +191,14 @@ export async function setSimpleAuthSkuNameToB1Bicep(
   return setProvisionParameterValueV3(projectPath, envName, parameters);
 }
 
+export async function setStaticWebAppSkuNameToStandardBicep(
+  projectPath: string,
+  envName: string
+): Promise<void> {
+  const paramerters = { key: "staticWebAppSku", value: "Standard" };
+  return setProvisionParameterValueV3(projectPath, envName, paramerters);
+}
+
 export async function getProvisionParameterValueByKey(
   projectPath: string,
   envName: string,
@@ -655,24 +663,6 @@ export async function customizeBicepFilesToCustomizedRg(
       `[Successfully] customize ${configFilePath} content to deploy cloud resources to ${customizedRgName}.`
     );
   }
-}
-
-export async function validateTabAndBotProjectProvision(
-  projectPath: string,
-  env: string
-) {
-  const context = await readContextMultiEnvV3(projectPath, env);
-  // Validate Aad App
-  const aad = AadValidator.init(context, false, m365Login);
-  await AadValidator.validate(aad);
-
-  // Validate Tab Frontend
-  const frontend = FrontendValidator.init(context);
-  await FrontendValidator.validateProvision(frontend);
-
-  // Validate Bot Provision
-  const bot = new BotValidator(context, projectPath, env);
-  await bot.validateProvisionV3();
 }
 
 export async function getRGAfterProvision(

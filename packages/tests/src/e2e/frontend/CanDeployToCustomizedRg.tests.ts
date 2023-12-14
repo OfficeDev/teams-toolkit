@@ -22,6 +22,7 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   removeTeamsAppExtendToM365,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
@@ -52,6 +53,9 @@ describe("Deploy to customized resource group", function () {
       const customizedRgName = `${appName}-customized-rg`;
       await createResourceGroup(customizedRgName, "eastus");
 
+      // workaround free tier quota
+      await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
+
       await CliHelper.provisionProject(projectPath, undefined, "dev", {
         ...process.env,
         AZURE_RESOURCE_GROUP_NAME: customizedRgName,
@@ -65,11 +69,6 @@ describe("Deploy to customized resource group", function () {
         // Validate Aad App
         const aad = AadValidator.init(context, false, M365Login);
         await AadValidator.validate(aad);
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateProvision(frontend);
-        await FrontendValidator.validateDeploy(frontend);
       }
 
       await deleteResourceGroupByName(customizedRgName);

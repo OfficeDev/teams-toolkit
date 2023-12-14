@@ -76,14 +76,14 @@ export function PackageTargetVersionInstallError(
     getDefaultString(
       "plugins.spfx.error.installDependencyError",
       fxFolderPath,
-      packageInfo,
-      Constants.AddWebpartHelpLink
+      Constants.AddWebpartHelpLink,
+      packageInfo
     ),
     getLocalizedString(
-      "plugins.spfx.error.installLatestDependencyError",
+      "plugins.spfx.error.installDependencyError",
       fxFolderPath,
-      packageInfo,
-      Constants.AddWebpartHelpLink
+      Constants.AddWebpartHelpLink,
+      packageInfo
     )
   );
 }

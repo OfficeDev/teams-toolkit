@@ -11,7 +11,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { describe } from "mocha";
 import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
-import { AadValidator, FrontendValidator } from "../../commonlib";
+import { AadValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import {

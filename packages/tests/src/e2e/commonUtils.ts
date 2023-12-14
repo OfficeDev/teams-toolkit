@@ -665,6 +665,24 @@ export async function customizeBicepFilesToCustomizedRg(
   }
 }
 
+export async function validateTabAndBotProjectProvision(
+  projectPath: string,
+  env: string
+) {
+  const context = await readContextMultiEnvV3(projectPath, env);
+  // Validate Aad App
+  const aad = AadValidator.init(context, false, m365Login);
+  await AadValidator.validate(aad);
+
+  // Validate Tab Frontend
+  const frontend = FrontendValidator.init(context);
+  await FrontendValidator.validateProvision(frontend);
+
+  // Validate Bot Provision
+  const bot = new BotValidator(context, projectPath, env);
+  await bot.validateProvisionV3();
+}
+
 export async function getRGAfterProvision(
   projectPath: string,
   env: string

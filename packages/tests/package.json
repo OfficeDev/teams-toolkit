@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-test",
-  "version": "0.0.3-rc-hotfix.1",
+  "version": "0.0.3-rc-hotfix.2",
   "description": "A UI Test Project of Teams Toolkit Extension",
   "private": true,
   "author": "Microsoft Corporation",
@@ -20,7 +20,7 @@
     "@microsoft/dev-tunnels-management": "~1.0.7445",
     "@microsoft/dev-tunnels-ssh": "~3.11.31",
     "@microsoft/extra-shot-mocha": "0.0.1",
-    "@microsoft/teamsfx-core": "^2.0.6-rc-hotfix.1",
+    "@microsoft/teamsfx-core": "^2.0.6-rc-hotfix.2",
     "@types/chai": "^4.2.19",
     "@types/fs-extra": "^7.0.0",
     "@types/glob": "^7.1.3",

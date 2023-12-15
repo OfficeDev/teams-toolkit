@@ -1778,7 +1778,7 @@ importers:
         specifier: 0.0.1
         version: 0.0.1(mocha@10.2.0)(mochawesome@7.0.1)
       '@microsoft/teamsfx-core':
-        specifier: ^2.0.6-rc-hotfix.1
+        specifier: ^2.0.6-rc-hotfix.2
         version: link:../fx-core
       '@types/chai':
         specifier: ^4.2.19

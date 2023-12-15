@@ -168,7 +168,7 @@ export class Utils {
         return undefined;
       }
     } catch (error) {
-      logger?.error(`Failed to execute "npm ls ${packageName}"`);
+      logger?.debug(`Failed to execute "npm ls ${packageName}"`);
       if (shouldThrowIfNotFound) {
         throw error;
       }

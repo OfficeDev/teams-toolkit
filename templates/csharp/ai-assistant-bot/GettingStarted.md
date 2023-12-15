@@ -14,38 +14,44 @@ It showcases how to build an intelligent chat bot in Teams capable of helping us
 >
 > The `AssistantsPlanner` in `Microsoft.Teams.AI` is currently experimental.
 
-### If you already have an Assistant created
+### Create your own OpenAI Assistant
+
+Before running or debugging your bot, please follow these steps to setup your own [OpenAI Assistant](https://platform.openai.com/docs/assistants/overview).
+
+**If you haven't setup any Assistant yet**
+
+> This app template provides script `Create-Assistant.ps1` to help create assistant. You can change the instructions and settings in the script to customize the assistant.
+> 
+> After creation, you can change and manage your assistants on [OpenAI](https://platform.openai.com/assistants).
+
+1. Open PowerShell, change the current working directory to this project root and run command `. ./Create-Assistant.ps1 -OPENAI_API_KEY <your-openai-api-key>`
+   ```
+   > . ./Create-Assistant.ps1 -OPENAI_API_KEY -- xxxxxx
+   ```
+1. The above command will output the properties of the new created assistant, including the ID like "id: asst_xxx..."
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.local.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
    SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
-2. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
-3. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
-4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
-to install the app to
-5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-6. In the launched browser, select the Add button to load the app in Teams
-7. In the chat bar, type and send anything to your bot to trigger a response
 
-### If you haven't setup any Assistant yet
+**If you already have an Assistant created**
 
-Before running or debugging your bot, please follow these steps to setup your own [OpenAI Assistant](https://platform.openai.com/docs/assistants/overview).
-
-> This app template provides code snippets in `Program.cs` to help create assistant. You can change the instructions and settings in the code snippets to customize the assistant.
-> 
-> After creation, you can change and manage your assistants on [OpenAI](https://platform.openai.com/assistants).
-
-1. Fill in your OpenAI API Key into `env/.env.local.user`
+1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.local.user`
    ```
-   SECRET_OPENAI_API_KEY="<your-openai-api-key>"
+   SECRET_OPENAI_API_KEY=<your-openai-api-key>
+   SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
-2. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
-3. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
-4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
+
+### Run Teams Bot locally
+
+1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
+1. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
+1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
 to install the app to
-5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-6. The debug window will output something like "*Created a new assistant with an ID of: **asst_xxx...***". Copy the Assistant ID and then follow [If you already have an Assistant created](#if-you-already-have-an-assistant-created)
+1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+1. In the launched browser, select the Add button to load the app in Teams
+1. In the chat bar, type and send anything to your bot to trigger a response
 
 ## Extend the AI Assistant Bot template with more AI capabilities
 

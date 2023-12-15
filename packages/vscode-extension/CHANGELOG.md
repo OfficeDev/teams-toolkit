@@ -2,7 +2,7 @@
 
 ## 5.4.0 - Dec 12, 2023
 
-This minor version update of Teams Toolkit includes new features and bug fixes based on customers feedback. The new features include the integrated Adaptive Cards Previewer, the Teams app test tool for Teams Bot app and new project templates for AI Assistant Bot, and refreshed Sample Gallery look. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
+This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include the Adaptive Card Previewer, Teams App Test Tool, new project templates for AI Assistant Bot, and a refreshed Sample Gallery. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
 
 - [October Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-update-october-2023): Search sample app, new Contoso Retail Dashboard sample app, Teams Toolkit CLI improvement.
 - [November Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-november-2023): Brand-new AI Assistant Bot App template, Teams app test tool, integrated Adaptive Card Previewer, Refreshed look for Sample Gallery etc.
@@ -11,20 +11,20 @@ We've listened to your feedback and included these additional new features, enha
 
 New features:
 
-- AI Assistant Bot App template is powered by the Teams AI library and the OpenAI Assistants API, this template demonstrates how to build an intelligent chatbot within Teams.
+- AI Assistant Bot App template using Teams AI library and the OpenAI Assistants API. This template demonstrates how to build an intelligent chatbot within Teams.
   ![AI-assistant-bot](https://github.com/OfficeDev/TeamsFx/assets/113089977/13877e7b-cffb-4717-9d1e-587478a43e5d)
-- Teams App Test Tool empowers developers to debug, test, and iterate on the Teams Bot app design within a web-based chat environment.
+- Teams App Test Tool removes the need for a lot of the setup to run and debug a Teams bot in a web-based chat environment that is similar to Teams.
   ![Teams app test tool](https://github.com/OfficeDev/TeamsFx/assets/113089977/7f6bcf56-27b3-4a7b-a160-64ab847efd92)
-- Preview and edit Adaptive Cards effortlessly with the integrated Adaptive Card Previewer directly within Teams Toolkit.
+- Preview and edit Adaptive Cards effortlessly using the Adaptive Card Previewer now included in Teams Toolkit.
   ![Adaptive Card Previwer](https://github.com/OfficeDev/TeamsFx/assets/113089977/8062f237-d640-45b2-a7b2-81a0a4b0aa10)
-- Sample Gallery new design offers grid view and list view, making it easy to navigate among samples. You can also search samples or filter samples by type, capability, and programming language.
+- Navigate quickly through samples using list or grid views. You can also search samples or filter samples by type, capability, and programming language.
   ![New sample gallery UI](https://github.com/OfficeDev/TeamsFx/assets/113089977/cbb18477-1f6d-4ab5-a947-1840d3290e40)
 - Developing with Microsoft Copilot? We’ve added a helpful license check UI to ensure that your account has the necessary Microsoft Copilot licenses.
   ![Copilot license check](https://github.com/OfficeDev/TeamsFx/assets/113089977/78fa1fc5-0e19-40f0-b324-65583485f743)
 
 Enhancement:
 
-- New samples arrivals at Sample Gallery:
+- New samples in the Sample Gallery:
     ![new samples](https://github.com/OfficeDev/TeamsFx/assets/113089977/2af41ec4-ee19-4b66-a58a-d2d8bdbbbd60)
 
   - Large Scale Notification Bot: send individual chat messages to a large number of users in a tenant

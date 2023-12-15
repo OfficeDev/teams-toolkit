@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.4.0 - Dec 15, 2023
+## 5.4.0 - Dec 18, 2023
 
 This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include the Adaptive Card Previewer, Teams App Test Tool, new project templates for AI Assistant Bot, and a refreshed Sample Gallery. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
 

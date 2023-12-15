@@ -77,10 +77,10 @@ To add additional web part in an existing SPFx solution, it is recommended to ke
   2. After the web part is added, you could upgrade your SPFx solution.
      1. Install CLI for Microsoft 365 following [CLI for Microsoft 365](https://pnp.github.io/cli-microsoft365/)
      2. Upgrade the project to the new version.
-        1. If you didn't know the version, you could find the new version from the value of dependencies (for example: the version of @microsoft/sp-core-library)in `src/package.json`.
+        1. You could find the new version from the value of dependencies (for example: the version of @microsoft/sp-core-library)in `src/package.json`.
         2. Run upgrade command.
-          ```
-          m365 spfx project upgrade --toVersion {version} --output md > "upgrade-report.md"
-          ```  
-          You could learn more about this command from [spfx project upgrade](https://pnp.github.io/cli-microsoft365/cmd/spfx/project/project-upgrade)
+            ```
+            m365 spfx project upgrade --toVersion {version} --output md > "upgrade-report.md"
+            ```  
+            You could learn more about this command from [spfx project upgrade](https://pnp.github.io/cli-microsoft365/cmd/spfx/project/project-upgrade)     
         3. Follow the steps in the generated report to upgrade the project.

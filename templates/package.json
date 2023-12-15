@@ -43,7 +43,8 @@
         "ts/notification-restify",
         "ts/notification-timer-trigger",
         "ts/workflow",
-        "ts/sso-tab-with-obo-flow"
+        "ts/sso-tab-with-obo-flow",
+        "ts/teams-ai-bot"
     ],
     "devDependencies": {
         "@typescript-eslint/eslint-plugin": "^4.19.0",

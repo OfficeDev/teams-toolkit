@@ -1719,11 +1719,11 @@ importers:
         specifier: 1.17.3
         version: 1.17.3
       '@microsoft/teamsfx-api':
-        specifier: ^0.22.6-rc-hotfix.1
+        specifier: ^0.22.6
         version: link:../api
       '@microsoft/teamsfx-cli':
         specifier: ^2.0.2
-        version: 2.0.2
+        version: link:../cli
       '@types/semver':
         specifier: ^7.3.8
         version: 7.3.8
@@ -1778,7 +1778,7 @@ importers:
         specifier: 0.0.1
         version: 0.0.1(mocha@10.2.0)(mochawesome@7.0.1)
       '@microsoft/teamsfx-core':
-        specifier: ^2.0.6-rc-hotfix.2
+        specifier: ^2.0.6
         version: link:../fx-core
       '@types/chai':
         specifier: ^4.2.19
@@ -6726,133 +6726,6 @@ packages:
       - debug
     dev: false
 
-  /@microsoft/teams-manifest@0.1.2:
-    resolution: {integrity: sha512-Wg61Xhi6nyciukaX1owAb/9+0iG6dwZ5+T9vZ6S9H4B7znIxf7AP6OJOKDE1w1x7AoUfXxuxnM9potQYXWD1gw==}
-    dependencies:
-      ajv: 8.12.0
-      ajv-draft-04: 1.0.0(ajv@8.12.0)
-      axios: 0.21.4(debug@4.3.4)
-      fs-extra: 9.1.0
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
-  /@microsoft/teamsfx-api@0.22.5:
-    resolution: {integrity: sha512-R+MKngjFi3fs+jjM7h58L9x8hHmaWzpRLwsr1LXy2fE4jZm7dHwdhg9CsiyqAzp8p74gcZbRfW/ZAabvbfk0MA==}
-    dependencies:
-      '@azure/core-auth': 1.5.0
-      '@microsoft/teams-manifest': 0.1.2
-      axios: 0.21.4(debug@4.3.4)
-      chai: 4.3.4
-      jsonschema: 1.4.0
-      neverthrow: 3.2.0
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
-  /@microsoft/teamsfx-cli@2.0.2:
-    resolution: {integrity: sha512-NfkPLQW+ikt+7WQ9Ocs+4NzePd37RbmpmclDcsnAnqvgp/Po0/JxNJeMByWb/uwx8LABR0pkUJmq/ySM1idJOA==}
-    engines: {node: '>=12'}
-    hasBin: true
-    requiresBuild: true
-    dependencies:
-      '@azure/arm-subscriptions': 5.0.0
-      '@azure/core-auth': 1.5.0
-      '@azure/identity': 3.1.3
-      '@microsoft/teamsfx-api': 0.22.5
-      '@microsoft/teamsfx-core': 2.0.5
-      applicationinsights: 1.8.10
-      async-mutex: 0.3.1
-      chalk: 4.1.2
-      dotenv: 8.2.0
-      express: 4.18.2
-      fs-extra: 9.1.0
-      inquirer: 8.2.6
-      node-machine-id: 1.1.12
-      open: 8.4.2
-      tree-kill: 1.2.2
-      underscore: 1.13.6
-      yaml: 2.3.1
-      yargs: 17.7.2
-    optionalDependencies:
-      keytar: 7.9.0
-    transitivePeerDependencies:
-      - bluebird
-      - debug
-      - encoding
-      - supports-color
-    dev: false
-
-  /@microsoft/teamsfx-core@2.0.5:
-    resolution: {integrity: sha512-dZ7lk08e9frZQs343ZLO/hDw028MCplcl0xN87q+q6lp9VOkUX0NHmZhLqqp0T1Y3SGs6RDDk7Hc+m7q593y8w==}
-    dependencies:
-      '@apidevtools/swagger-parser': 10.1.0(openapi-types@7.2.3)
-      '@azure/arm-apimanagement': 8.0.0
-      '@azure/arm-appservice': 13.0.0
-      '@azure/arm-resources': 5.0.1
-      '@azure/arm-sql': 9.0.0
-      '@azure/arm-storage': 17.2.1
-      '@azure/arm-subscriptions': 5.0.0
-      '@azure/core-auth': 1.5.0
-      '@azure/identity': 3.1.3
-      '@azure/ms-rest-js': 2.7.0
-      '@azure/msal-node': 1.17.3
-      '@azure/storage-blob': 12.7.0
-      '@feathersjs/hooks': 0.6.5
-      '@microsoft/dev-tunnels-contracts': 1.0.7445
-      '@microsoft/dev-tunnels-management': 1.0.7445
-      '@microsoft/teamsfx-api': 0.22.5
-      '@npmcli/arborist': 4.2.0
-      '@types/proper-lockfile': 4.1.1
-      adm-zip: 0.5.10
-      ajv: 8.12.0
-      axios: 0.21.4(debug@4.3.4)
-      axios-retry: 3.3.1
-      comment-json: 4.2.3
-      cryptr: 6.0.2
-      detect-port: 1.3.0
-      dotenv: 8.2.0
-      form-data: 4.0.0
-      fs-extra: 9.1.0
-      glob: 7.2.3
-      got: 11.8.2
-      handlebars: 4.7.7
-      http-close: 1.0.0
-      iconv-lite: 0.6.3
-      ignore: 5.2.4
-      js-base64: 3.6.0
-      js-yaml: 4.1.0
-      jsonschema: 1.4.0
-      jwt-decode: 3.1.2
-      klaw: 3.0.0
-      md5: 2.3.0
-      mime: 2.6.0
-      mustache: 4.2.0
-      node-forge: 1.3.1
-      node-ts-uuid: 1.0.8
-      office-addin-manifest: 1.12.4
-      office-addin-project: 0.7.0
-      openapi-types: 7.2.3
-      proper-lockfile: 4.1.2
-      read-package-json-fast: 2.0.3
-      reflect-metadata: 0.1.13
-      semver: 7.5.4
-      strip-bom: 4.0.0
-      tedious: 15.1.3
-      typedi: 0.10.0
-      unzipper: 0.10.14
-      url-parse: 1.5.9
-      uuid: 8.3.2
-      validator: 13.11.0
-      xml2js: 0.5.0
-      yaml: 2.3.1
-    transitivePeerDependencies:
-      - bluebird
-      - debug
-      - encoding
-      - supports-color
-    dev: false
-
   /@microsoft/tsdoc-config@0.15.2:
     resolution: {integrity: sha512-mK19b2wJHSdNf8znXSMYVShAHktVr/ib0Ck2FA3lsVBSEhSI/TfXT7DJQkAYgcztTuwazGcg58ZjYdk0hTCVrA==}
     dependencies:
@@ -10501,6 +10374,7 @@ packages:
   /adm-zip@0.5.10:
     resolution: {integrity: sha512-x0HvcHqVJNTPk/Bw8JbLWlWoo6Wwnsug0fnYYro1HBrjxZ3G7/AZk7Ahv8JwDe1uIcz8eBqvu86FuF1POiG7vQ==}
     engines: {node: '>=6.0'}
+    dev: true
 
   /adm-zip@0.5.9:
     resolution: {integrity: sha512-s+3fXLkeeLjZ2kLjCBwQufpI5fuN+kIGBxu6530nVQZGVol0d7Y/M88/xw9HGGUcJjKf8LutN3VPRUBq6N7Ajg==}
@@ -12230,6 +12104,7 @@ packages:
   /clone@1.0.4:
     resolution: {integrity: sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==}
     engines: {node: '>=0.8'}
+    dev: true
 
   /cls-hooked@4.2.2:
     resolution: {integrity: sha512-J4Xj5f5wq/4jAvcdgoGsL3G103BtWpZrMo8NEinRltN+xpTZdI+M38pyQqhuFU/P792xkMFvnKSf+Lm81U1bxw==}
@@ -13309,6 +13184,7 @@ packages:
     resolution: {integrity: sha512-eFuaLoy/Rxalv2kr+lqMlUnrDWV+3j4pljOIJgLIhI058IQfWJ7vXhyEIHu+HtC738klGALYxOKDO0bQP3tg8A==}
     dependencies:
       clone: 1.0.4
+    dev: true
 
   /defer-to-connect@2.0.1:
     resolution: {integrity: sha512-4tvttepXG1VaYGrRibk5EwJd1t4udunSOVMdLSAL6mId1ix438oPwPZMALY41FCijukO1L0twNcGsdzS7dHgDg==}
@@ -16767,6 +16643,7 @@ packages:
   /ignore@5.2.4:
     resolution: {integrity: sha512-MAb38BcSbH0eHNBxn7ql2NH/kX33OkB3lZ1BNdh7ENeRChHTYsTvWrMubiIAMNS2llXEEgZ1MUOBtXChP3kaFQ==}
     engines: {node: '>= 4'}
+    dev: true
 
   /image2uri@1.0.5:
     resolution: {integrity: sha512-y0BKZgnoDLRIF2J0Pg/Wa6uhY5i6SqR7Wfagghf0UHRpnWJ5jm1IS0bZjAV5ADOxHAM2zdzYWmw8EbQgEUlvmw==}
@@ -16909,6 +16786,7 @@ packages:
       strip-ansi: 6.0.1
       through: 2.3.8
       wrap-ansi: 6.2.0
+    dev: true
 
   /internal-slot@1.0.5:
     resolution: {integrity: sha512-Y+R5hJrzs52QCG2laLn4udYVnxsfny9CpOhNhUvk/SSSVyF6T27FzRbF0sroPidSu3X8oEAkOn2K804mjpt6UQ==}
@@ -17158,6 +17036,7 @@ packages:
   /is-interactive@1.0.0:
     resolution: {integrity: sha512-2HvIEKRoqS62guEC+qBjpvRubdX910WCMuJTZ+I9yvqKU2/12eSL549HMwtabb4oupdj2sMP50k+XJfB/8JE6w==}
     engines: {node: '>=8'}
+    dev: true
 
   /is-lambda@1.0.1:
     resolution: {integrity: sha512-z7CMFGNrENq5iFB9Bqo64Xk6Y9sg+epq1myIcdHaGnbMTYOxvzsEtdYqQUylB7LxfkvgrrjP32T6Ywciio9UIQ==}
@@ -17332,6 +17211,7 @@ packages:
   /is-unicode-supported@0.1.0:
     resolution: {integrity: sha512-knxG2q4UC3u8stRGyAVJCOdxFmv5DZiRcdlIaAQXAbSfJya+OhopNotLQrstBhququ4ZpuKbDc/8S6mgXgPFPw==}
     engines: {node: '>=10'}
+    dev: true
 
   /is-utf8@0.2.1:
     resolution: {integrity: sha512-rMYPYvCzsXywIsldgLaSoPlw5PfoB/ssr7hY4pLfcodrA5M/eArza1a9VmTiNIBNMjOGr1Ow9mTyU2o69U6U9Q==}
@@ -19213,6 +19093,7 @@ packages:
     dependencies:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
+    dev: true
 
   /log-update@4.0.0:
     resolution: {integrity: sha512-9fkkDevMefjg0mmzWFBW8YkFP91OrizzkW3diF7CpG+S2EYdy4+TVfGwz1zeF8x7hCx1ovSPTOE9Ngib74qqUg==}
@@ -19660,6 +19541,7 @@ packages:
     resolution: {integrity: sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==}
     engines: {node: '>=4.0.0'}
     hasBin: true
+    dev: true
 
   /mime@3.0.0:
     resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
@@ -21214,6 +21096,7 @@ packages:
       log-symbols: 4.1.0
       strip-ansi: 6.0.1
       wcwidth: 1.0.1
+    dev: true
 
   /os-tmpdir@1.0.2:
     resolution: {integrity: sha512-D2FR03Vir7FIu45XBY20mTb+/ZSWB00sjU9jdQXt83gDrI4Ztz5Fs7/yy74g2N5SVQY4xY1qDr4rNddwYRVX0g==}
@@ -23178,6 +23061,7 @@ packages:
     resolution: {integrity: sha512-AA3TVj+0A2iuIoQkWEK/tqFjBq2j+6PO6Y0zJcvzLAFhEFIO3HL0vls9hWLncZbAAbK0mar7oZ4V079I/qPMxg==}
     dependencies:
       tslib: 2.6.1
+    dev: true
 
   /safe-array-concat@1.0.0:
     resolution: {integrity: sha512-9dVEFruWIsnie89yym+xWTAYASdpw3CJV7Li/6zBewGf9z2i1j31rP6jnY0pHEO4QZh6N0K11bFjWmdR8UGdPQ==}
@@ -24585,6 +24469,7 @@ packages:
       sprintf-js: 1.1.2
     transitivePeerDependencies:
       - supports-color
+    dev: true
 
   /teeny-request@7.1.1:
     resolution: {integrity: sha512-iwY6rkW5DDGq8hE2YgNQlKbptYpY5Nn2xecjQiNjOXWbKzPGUfmeUBCSQbbr306d7Z7U2N0TPl+/SwYRfua1Dg==}
@@ -25868,6 +25753,7 @@ packages:
       listenercount: 1.0.1
       readable-stream: 2.3.8
       setimmediate: 1.0.5
+    dev: true
 
   /upath2@3.1.19:
     resolution: {integrity: sha512-d23dQLi8nDWSRTIQwXtaYqMrHuca0As53fNiTLLFDmsGBbepsZepISaB2H1x45bDFN/n3Qw9bydvyZEacTrEWQ==}
@@ -26052,6 +25938,7 @@ packages:
   /validator@13.11.0:
     resolution: {integrity: sha512-Ii+sehpSfZy+At5nPdnyMhx78fEoPDkR2XW/zimHEL3MyGJQOCQ7WeP20jPYRz7ZCpcKLB21NxuXHF3bxjStBQ==}
     engines: {node: '>= 0.10'}
+    dev: true
 
   /validator@13.7.0:
     resolution: {integrity: sha512-nYXQLCBkpJ8X6ltALua9dRrZDHVYxjJ1wgskNt1lH9fzGjs3tgojGSCBjmEPwkWS1y29+DrizMTW19Pr9uB2nw==}
@@ -26249,6 +26136,7 @@ packages:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
     dependencies:
       defaults: 1.0.4
+    dev: true
 
   /webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -26771,6 +26659,7 @@ packages:
   /yaml@2.3.1:
     resolution: {integrity: sha512-2eHWfjaoXgTBC2jNM1LRef62VQa0umtvRiDSk6HSzW7RvS5YtkabJrwYLLEKWBc8a5U2PTSCs+dJjUTJdlHsWQ==}
     engines: {node: '>= 14'}
+    dev: true
 
   /yargs-parser@18.1.3:
     resolution: {integrity: sha512-o50j0JeToy/4K6OZcaQmW6lyXXKhq7csREXcDwk2omFPJEwUNOVtJKvmDr9EI1fAJZUyZcRF7kxGBWmRXudrCQ==}

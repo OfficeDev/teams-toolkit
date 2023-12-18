@@ -51,6 +51,7 @@ import {
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
+import { convertToLangKey } from "../utils";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
@@ -58,6 +59,7 @@ const fromApiSpecWithApiKeyComponentName = "copilot-plugin-existing-api-api-key"
 const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
+const fromApiSpecToTeamsAI = "teams-ai-bot";
 const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
@@ -124,17 +126,42 @@ export class CopilotPluginGenerator {
     );
   }
 
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: fromOpenAIPlugincomponentName,
+      telemetryEventName: TelemetryEvents.Generate,
+      errorSource: fromOpenAIPlugincomponentName,
+    }),
+  ])
+  public static async generateForTeamsAI(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    return await this.generateForME(
+      context,
+      inputs,
+      destinationPath,
+      fromApiSpecToTeamsAI,
+      fromApiSpecToTeamsAI,
+      undefined,
+      inputs[QuestionNames.ProgrammingLanguage] ?? undefined
+    );
+  }
+
   private static async generateForME(
     context: Context,
     inputs: Inputs,
     destinationPath: string,
     templateName: string,
     componentName: string,
-    apiKeyAuthData?: ApiKeyAuthInfo
+    apiKeyAuthData?: ApiKeyAuthInfo,
+    defaultLanguage?: ProgrammingLanguage
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
-      const language = inputs[QuestionNames.ProgrammingLanguage];
+      const language = defaultLanguage ?? inputs[QuestionNames.ProgrammingLanguage];
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
 
@@ -186,7 +213,11 @@ export class CopilotPluginGenerator {
         context,
         destinationPath,
         templateName,
-        language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
+        language === ProgrammingLanguage.CSharp
+          ? ProgrammingLanguage.CSharp
+          : defaultLanguage
+          ? convertToLangKey(defaultLanguage)
+          : undefined
       );
       if (templateRes.isErr()) return err(templateRes.error);
 

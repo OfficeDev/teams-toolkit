@@ -52,7 +52,7 @@ export interface CreateProjectInputs extends Inputs {
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
   /** @description Architecture of Search Based Message Extension */
-  "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
+  "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot" | "api-spec-teams-ai";
   /** @description OpenAPI Description Document */
   "openapi-spec-location"?: string;
   /** @description OpenAI Plugin Manifest */

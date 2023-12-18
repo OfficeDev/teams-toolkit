@@ -252,6 +252,13 @@ class Coordinator {
         } else {
           warnings = res.value.warnings;
         }
+      } else if (meArchitecture === MeArchitectureOptions.teamsAiProject().id) {
+        const res = await CopilotPluginGenerator.generateForTeamsAI(context, inputs, projectPath);
+        if (res.isErr()) {
+          return err(res.error);
+        } else {
+          warnings = res.value.warnings;
+        }
       } else {
         if (
           capability === CapabilityOptions.m365SsoLaunchPage().id ||

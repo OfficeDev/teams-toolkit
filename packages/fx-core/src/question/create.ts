@@ -53,6 +53,7 @@ import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
   copilotPluginApiSpecOptionId,
+  copilotPluginApiSpecTeamsAI,
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
 } from "./constants";
@@ -514,6 +515,18 @@ export class CapabilityOptions {
     };
   }
 
+  static copilotPluginApiSpecTeamsAI(): OptionItem {
+    return {
+      id: copilotPluginApiSpecTeamsAI,
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecTeamsAIOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecTeamsAIOption.detail"
+      ),
+    };
+  }
+
   static copilotPluginOpenAIPlugin(): OptionItem {
     return {
       id: copilotPluginOpenAIPluginOptionId,
@@ -671,11 +684,24 @@ export class MeArchitectureOptions {
     };
   }
 
+  static teamsAiProject(): OptionItem {
+    return {
+      id: "api-spec-teams-ai",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecTeamsAIOption.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.copilotPluginApiSpecTeamsAIOption.detail"
+      ),
+    };
+  }
+
   static all(): OptionItem[] {
     return [
       MeArchitectureOptions.newApi(),
       MeArchitectureOptions.apiSpec(),
       isCopilotPluginEnabled() ? MeArchitectureOptions.botPlugin() : MeArchitectureOptions.botMe(),
+      MeArchitectureOptions.teamsAiProject(),
     ];
   }
 
@@ -685,6 +711,7 @@ export class MeArchitectureOptions {
       MeArchitectureOptions.apiSpec(),
       MeArchitectureOptions.botPlugin(),
       MeArchitectureOptions.botMe(),
+      MeArchitectureOptions.teamsAiProject(),
     ];
   }
 }
@@ -1726,7 +1753,8 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
             inputs[QuestionNames.Capabilities] ===
               CapabilityOptions.copilotPluginOpenAIPlugin().id ||
-            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
+            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.teamsAiProject().id
           );
         },
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
@@ -1736,7 +1764,9 @@ export function capabilitySubTree(): IQTreeNode {
               return (
                 inputs[QuestionNames.Capabilities] ===
                   CapabilityOptions.copilotPluginApiSpec().id ||
-                inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
+                inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id ||
+                inputs[QuestionNames.MeArchitectureType] ==
+                  MeArchitectureOptions.teamsAiProject().id
               );
             },
             data: apiSpecLocationQuestion(),

@@ -26,7 +26,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 1. Open PowerShell, change the current working directory to this project root and run command `. ./Create-Assistant.ps1 -OPENAI_API_KEY <your-openai-api-key>`
    ```
-   > . ./Create-Assistant.ps1 -OPENAI_API_KEY -- xxxxxx
+   > . ./Create-Assistant.ps1 -OPENAI_API_KEY xxxxxx
    ```
 1. The above command will output the properties of the new created assistant, including the ID like "id: asst_xxx..."
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.local.user`

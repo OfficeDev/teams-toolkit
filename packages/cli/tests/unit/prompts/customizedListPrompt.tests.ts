@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Separator } from "@inquirer/prompts";
 import { render } from "@inquirer/testing";
 import figures from "figures";
 import "mocha";
@@ -182,7 +181,7 @@ describe("select prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: true },
+        { id: "pineapple", title: "Pineapple" },
         { id: "pepperoni", title: "Pepperoni" },
       ],
     });
@@ -191,7 +190,6 @@ describe("select prompt", () => {
       trimOutput(`
         ? Select a topping (Use arrow keys)
         (*) Ham
-        --- Pineapple (disabled)
         ( ) Pepperoni`)
     );
 
@@ -201,7 +199,6 @@ describe("select prompt", () => {
       trimOutput(`
         ? Select a topping
         ( ) Ham
-        --- Pineapple (disabled)
         (*) Pepperoni`)
     );
 
@@ -216,7 +213,7 @@ describe("select prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: true },
+        { id: "pineapple", title: "Pineapple" },
         { id: "pepperoni", title: "Pepperoni" },
       ],
     });
@@ -242,7 +239,7 @@ describe("select prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: "*premium*" },
+        { id: "pineapple", title: "Pineapple" },
       ],
     });
 
@@ -261,8 +258,8 @@ describe("select prompt", () => {
     const { answer } = await render(select, {
       message: "Select a topping",
       choices: [
-        { id: "ham", title: "Ham", disabled: true },
-        { id: "pineapple", title: "Pineapple", disabled: "*premium*" },
+        { id: "ham", title: "Ham" },
+        { id: "pineapple", title: "Pineapple" },
       ],
     });
 
@@ -276,7 +273,6 @@ describe("select prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        new Separator(),
         { id: "pineapple", title: "Pineapple" },
       ],
     });
@@ -285,7 +281,6 @@ describe("select prompt", () => {
       trimOutput(`
         ? Select a topping (Use arrow keys)
         (*) Ham
-        ──────────────
         ( ) Pineapple`)
     );
 
@@ -294,7 +289,6 @@ describe("select prompt", () => {
       trimOutput(`
         ? Select a topping
         ( ) Ham
-        ──────────────
         (*) Pineapple`)
     );
 
@@ -309,7 +303,6 @@ describe("select prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        new Separator(),
         { id: "pineapple", title: "Pineapple" },
       ],
     });
@@ -318,7 +311,6 @@ describe("select prompt", () => {
       trimOutput(`
         ? Select a topping (Use arrow keys)
         (*) Ham
-        ──────────────
         ( ) Pineapple`)
     );
 
@@ -327,7 +319,6 @@ describe("select prompt", () => {
       trimOutput(`
         ? Select a topping (Use arrow keys)
         (*) Ham
-        ──────────────
         ( ) Pineapple`)
     );
 

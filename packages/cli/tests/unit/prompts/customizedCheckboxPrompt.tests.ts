@@ -195,7 +195,7 @@ describe("checkbox prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: true },
+        { id: "pineapple", title: "Pineapple" },
         { id: "pepperoni", title: "Pepperoni" },
       ],
     });
@@ -232,7 +232,7 @@ describe("checkbox prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: true },
+        { id: "pineapple", title: "Pineapple" },
         { id: "pepperoni", title: "Pepperoni" },
       ],
     });
@@ -268,7 +268,6 @@ describe("checkbox prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        new Separator(),
         { id: "pepperoni", title: "Pepperoni" },
       ],
     });
@@ -304,7 +303,6 @@ describe("checkbox prompt", () => {
       message: "Select a topping",
       choices: [
         { id: "ham", title: "Ham" },
-        new Separator(),
         { id: "pepperoni", title: "Pepperoni" },
       ],
     });

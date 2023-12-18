@@ -7,7 +7,6 @@ import {
   createPrompt,
   isDownKey,
   isEnterKey,
-  isNumberKey,
   isUpKey,
   useKeypress,
   usePagination,
@@ -32,6 +31,7 @@ export type Config = AsyncPromptConfig & {
   choices: ReadonlyArray<Choice | Separator>;
   defaultValue?: string;
   pageSize?: number;
+  loop?: boolean;
 };
 
 function isSelectableChoice(choice: undefined | Separator | Choice): choice is Choice {
@@ -70,73 +70,67 @@ export const select = createPrompt((config: Config, done: (value: string) => voi
       let selectedOption;
 
       while (!isSelectableChoice(selectedOption)) {
-        newCursorPosition = (newCursorPosition + offset + choices.length) % choices.length;
+        if (config.loop) {
+          newCursorPosition = (newCursorPosition + offset + choices.length) % choices.length;
+        } else {
+          newCursorPosition = newCursorPosition + offset;
+          if (newCursorPosition < 0) {
+            newCursorPosition = 0;
+          } else if (newCursorPosition >= choices.length) {
+            newCursorPosition = choices.length - 1;
+          }
+        }
         selectedOption = choices[newCursorPosition];
-      }
-
-      setCursorPos(newCursorPosition);
-    } else if (isNumberKey(key)) {
-      // Adjust index to start at 1
-      const newCursorPosition = Number(key.name) - 1;
-
-      // Abort if the choice doesn't exists or if disabled
-      if (!isSelectableChoice(choices[newCursorPosition])) {
-        return;
       }
 
       setCursorPos(newCursorPosition);
     }
   });
 
-  let message: string = chalk.bold(config.message);
+  const message: string = chalk.bold(config.message);
   if (firstRender.current) {
-    message += chalk.dim(" (Use arrow keys)");
+    // message += chalk.dim(" (Use arrow keys)");
     firstRender.current = false;
   }
 
-  const allChoices = choices
-    .map((choice, index): string => {
-      if (Separator.isSeparator(choice)) {
-        return choice.separator;
-      }
+  const renderChoice = (choice: Choice, index: number) => {
+    if (Separator.isSeparator(choice)) {
+      return choice.separator;
+    }
 
-      if (choice.disabled) {
-        const disabledLabel = typeof choice.disabled === "string" ? choice.disabled : "(disabled)";
-        return chalk.dim(`--- ${choice.title} ${disabledLabel}`);
-      }
+    if (choice.disabled) {
+      const disabledLabel = typeof choice.disabled === "string" ? choice.disabled : "(disabled)";
+      return chalk.dim(`--- ${choice.title} ${disabledLabel}`);
+    }
 
-      let prefixWidth = 1;
-      (choices as Choice[]).forEach((choice) => {
-        prefixWidth = Math.max(
-          prefixWidth,
-          choice.disabled || !choice.title ? 0 : choice.title.length + 1
-        );
-      });
-
-      let output = "";
-      if (index === cursorPosition) {
-        output += chalk.cyan(`${figures.radioOn} ${choice.title}`);
-      } else {
-        output += `${chalk.blueBright(figures.radioOff)} ${choice.title}`;
-      }
-
-      if (choice.detail) {
-        output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
-      }
-
-      return output;
-    })
-    .join("\n");
-  /// not infinit
-  if (cursorPosition === 0) {
-    usePagination(allChoices, {
-      active: cursorPosition,
-      pageSize: config.pageSize,
+    let prefixWidth = 1;
+    (choices as Choice[]).forEach((choice) => {
+      prefixWidth = Math.max(
+        prefixWidth,
+        choice.disabled || !choice.title ? 0 : choice.title.length + 1
+      );
     });
-  }
-  const windowedChoices = usePagination(allChoices, {
+
+    let output = "";
+    if (index === cursorPosition) {
+      output += chalk.cyan(`${figures.radioOn} ${choice.title}`);
+    } else {
+      output += `${chalk.blueBright(figures.radioOff)} ${choice.title}`;
+    }
+
+    if (choice.detail) {
+      output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
+    }
+
+    return output;
+  };
+
+  const windowedChoices = usePagination({
+    items: choices,
     active: cursorPosition,
     pageSize: config.pageSize,
+    loop: false,
+    renderItem: (item) => renderChoice(item.item as Choice, item.index),
   });
 
   if (status === "done") {

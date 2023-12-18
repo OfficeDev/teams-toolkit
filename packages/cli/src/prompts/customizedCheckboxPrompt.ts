@@ -36,6 +36,7 @@ export type Config = AsyncPromptConfig & {
   choices: ReadonlyArray<Choice | Separator>;
   defaultValues?: ReadonlyArray<string>;
   validateValues?: (value: string[]) => string | Promise<string | undefined> | undefined;
+  loop?: boolean;
 };
 
 function isSelectableChoice(choice: undefined | Separator | Choice): choice is Choice {
@@ -43,7 +44,7 @@ function isSelectableChoice(choice: undefined | Separator | Choice): choice is C
 }
 
 export const checkbox = createPrompt(
-  (config: Config, done: (value: Array<string>) => void): [string, string | undefined] => {
+  (config: Config, done: (value: Array<string>) => void): string => {
     const {
       prefix = usePrefix(),
       instructions,
@@ -87,7 +88,16 @@ export const checkbox = createPrompt(
         let selectedOption;
 
         while (!isSelectableChoice(selectedOption)) {
-          newCursorPosition = (newCursorPosition + offset + choices.length) % choices.length;
+          if (config.loop) {
+            newCursorPosition = (newCursorPosition + offset + choices.length) % choices.length;
+          } else {
+            newCursorPosition = newCursorPosition + offset;
+            if (newCursorPosition < 0) {
+              newCursorPosition = 0;
+            } else if (newCursorPosition >= choices.length) {
+              newCursorPosition = choices.length - 1;
+            }
+          }
           selectedOption = choices[newCursorPosition];
         }
 
@@ -145,50 +155,54 @@ export const checkbox = createPrompt(
     });
 
     const message = chalk.bold(config.message);
-    const allChoices = choices
-      .map((choice, index) => {
-        if (Separator.isSeparator(choice)) {
-          return choice.separator;
-        }
 
-        if (choice.disabled) {
-          const disabledLabel =
-            typeof choice.disabled === "string" ? choice.disabled : "(disabled)";
-          return chalk.dim(`--- ${choice.title} ${disabledLabel}`);
-        }
+    const renderChoice = (choice: Choice, index: number) => {
+      if (Separator.isSeparator(choice)) {
+        return choice.separator;
+      }
 
-        let prefixWidth = 1;
-        (choices as Choice[]).forEach((choice) => {
-          prefixWidth = Math.max(
-            prefixWidth,
-            choice.disabled || !choice.title ? 0 : choice.title.length + 1
-          );
-        });
+      if (choice.disabled) {
+        const disabledLabel = typeof choice.disabled === "string" ? choice.disabled : "(disabled)";
+        return chalk.dim(`--- ${choice.title} ${disabledLabel}`);
+      }
 
-        let output = "";
-        if (index === cursorPosition) {
-          output += `${getCheckbox(!!choice.checked)} ${chalk.blueBright(choice.title)}`;
-        } else {
-          output += `${getCheckbox(!!choice.checked)} ${choice.title}`;
-        }
+      let prefixWidth = 1;
+      (choices as Choice[]).forEach((choice) => {
+        prefixWidth = Math.max(
+          prefixWidth,
+          choice.disabled || !choice.title ? 0 : choice.title.length + 1
+        );
+      });
 
-        if (choice.detail) {
-          output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
-        }
+      let output = "";
+      if (index === cursorPosition) {
+        output += `${getCheckbox(!!choice.checked)} ${chalk.blueBright(choice.title)}`;
+      } else {
+        output += `${getCheckbox(!!choice.checked)} ${choice.title}`;
+      }
 
-        return output;
-      })
-      .join("\n");
-    /// not infinit
+      if (choice.detail) {
+        output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
+      }
+
+      return output;
+    };
+
     if (cursorPosition === 0) {
-      usePagination(allChoices, {
+      usePagination({
+        items: choices,
         active: cursorPosition,
         pageSize: config.pageSize,
+        loop: false,
+        renderItem: (item) => renderChoice(item.item as Choice, item.index),
       });
     }
-    const windowedChoices = usePagination(allChoices, {
+    const windowedChoices = usePagination({
+      items: choices,
       active: cursorPosition,
       pageSize: config.pageSize,
+      loop: false,
+      renderItem: (item) => renderChoice(item.item as Choice, item.index),
     });
 
     let error = "";
@@ -199,7 +213,7 @@ export const checkbox = createPrompt(
       const selection = choices
         .filter((choice) => isSelectableChoice(choice) && choice.checked)
         .map((choice) => (choice as Choice).title);
-      return [`${prefix} ${message} ${chalk.cyan(selection.join(", "))}`, error];
+      return `${prefix} ${message}${error ? "\n" + error : ""} ${chalk.cyan(selection.join(", "))}`;
     }
 
     let helpTip = "";
@@ -216,8 +230,9 @@ export const checkbox = createPrompt(
         helpTip = ` (Press ${keys.join(", ")})`;
       }
     }
-
-    return [`${prefix} ${message}${helpTip}\n${windowedChoices}${ansiEscapes.cursorHide}`, error];
+    return `${prefix} ${message}${helpTip}${error ? "\n" + error : ""}\n${windowedChoices}${
+      ansiEscapes.cursorHide
+    }`;
   }
 );
 

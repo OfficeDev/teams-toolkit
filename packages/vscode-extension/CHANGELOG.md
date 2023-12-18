@@ -1,6 +1,6 @@
 # Changelog
 
-## 5.4.0 - Dec 15, 2023
+## 5.4.0 - Dec 18, 2023
 
 This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include the Adaptive Card Previewer, Teams App Test Tool, new project templates for AI Assistant Bot, and a refreshed Sample Gallery. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
 
@@ -11,15 +11,15 @@ We've listened to your feedback and included these additional new features, enha
 
 New features:
 
-- AI Assistant Bot App template using Teams AI library and the OpenAI Assistants API. This template demonstrates how to build an intelligent chatbot within Teams.
+- [Preview Feature] AI Assistant Bot App template using Teams AI library and the OpenAI Assistants API. This template demonstrates how to build an intelligent chatbot within Teams.
   ![AI-assistant-bot](https://github.com/OfficeDev/TeamsFx/assets/113089977/13877e7b-cffb-4717-9d1e-587478a43e5d)
-- Teams App Test Tool removes the need for a lot of the setup to run and debug a Teams bot in a web-based chat environment that is similar to Teams.
+- [Preview Feature] Teams App Test Tool removes the need for a lot of the setup to run and debug a Teams bot in a web-based chat environment that is similar to Teams.
   ![Teams app test tool](https://github.com/OfficeDev/TeamsFx/assets/113089977/7f6bcf56-27b3-4a7b-a160-64ab847efd92)
-- Preview and edit Adaptive Cards effortlessly using the Adaptive Card Previewer now included in Teams Toolkit.
+- [Preview Feature] Preview and edit Adaptive Cards effortlessly using the Adaptive Card Previewer now included in Teams Toolkit.
   ![Adaptive Card Previwer](https://github.com/OfficeDev/TeamsFx/assets/113089977/8062f237-d640-45b2-a7b2-81a0a4b0aa10)
-- Navigate quickly through samples using list or grid views. You can also search samples or filter samples by type, capability, and programming language.
+- [Generally Available] Navigate quickly through samples using list or grid views. You can also search samples or filter samples by type, capability, and programming language.
   ![New sample gallery UI](https://github.com/OfficeDev/TeamsFx/assets/113089977/cbb18477-1f6d-4ab5-a947-1840d3290e40)
-- Developing with Microsoft Copilot? We’ve added a helpful license check UI to ensure that your account has the necessary Microsoft Copilot licenses.
+- [Preview Feature] Developing with Microsoft Copilot? We’ve added a helpful license check UI to ensure that your account has the necessary Microsoft Copilot licenses.
   ![Copilot license check](https://github.com/OfficeDev/TeamsFx/assets/113089977/78fa1fc5-0e19-40f0-b324-65583485f743)
 
 Enhancement:

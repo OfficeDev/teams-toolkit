@@ -72,6 +72,8 @@ import { convertToAlphanumericOnly } from "../../common/utils";
 export enum TemplateNames {
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
+  TabSSR = "non-sso-tab-ssr",
+  SsoTabSSR = "sso-tab-ssr",
   M365Tab = "m365-tab",
   DashboardTab = "dashboard-tab",
   NotificationRestify = "notification-restify",
@@ -133,6 +135,8 @@ const Feature2TemplateName: any = {
     TemplateNames.CopilotPluginFromScratch,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
+  [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
+  [`${CapabilityOptions.nonSsoTab().id}:ssr`]: TemplateNames.TabSSR,
 };
 
 const M365Actions = [
@@ -264,6 +268,13 @@ class Coordinator {
 
         if (meArchitecture) {
           feature = `${feature}:${meArchitecture}`;
+        }
+        if (
+          (capability === CapabilityOptions.nonSsoTab().id ||
+            capability === CapabilityOptions.tab().id) &&
+          inputs["targetFramework"] === "net8.0"
+        ) {
+          feature = `${capability}:ssr`;
         }
 
         const templateName = Feature2TemplateName[feature];

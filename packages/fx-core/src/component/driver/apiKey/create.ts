@@ -92,7 +92,7 @@ export class CreateApiKeyDriver implements StepDriver {
       } else {
         const clientSecret = this.loadClientSecret();
         if (clientSecret) {
-          args.clientSecret = clientSecret;
+          args.primaryClientSecret = clientSecret;
         }
 
         this.validateArgs(args);
@@ -219,7 +219,7 @@ export class CreateApiKeyDriver implements StepDriver {
       invalidParameters.push("appId");
     }
 
-    if (args.clientSecret && !this.validateSecret(args.clientSecret)) {
+    if (args.primaryClientSecret && !this.validateSecret(args.primaryClientSecret)) {
       throw new ApiKeyClientSecretInvalidError(actionName);
     }
 
@@ -249,8 +249,8 @@ export class CreateApiKeyDriver implements StepDriver {
     const userId = currentUser["oid"] as string;
 
     const secrets = [];
-    if (args.clientSecret) {
-      secrets.push(args.clientSecret);
+    if (args.primaryClientSecret) {
+      secrets.push(args.primaryClientSecret);
     }
     if (args.secondaryClientSecret) {
       secrets.push(args.secondaryClientSecret);

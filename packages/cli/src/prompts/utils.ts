@@ -38,3 +38,20 @@ export function addChoiceDetail(
   }
   return output;
 }
+
+export function computePrefixWidth(
+  current: number,
+  pageSize: number,
+  choices: ReadonlyArray<{ title: string; disabled?: boolean }>
+): number {
+  const middle = Math.floor(pageSize / 2);
+  let pageStart;
+  if (current < middle) pageStart = 0;
+  else if (current > choices.length - middle) pageStart = choices.length - pageSize;
+  else pageStart = current - middle;
+  let prefixWidth = 1;
+  choices.slice(pageStart, pageStart + pageSize).forEach((choice) => {
+    prefixWidth = Math.max(prefixWidth, !choice.title ? 0 : choice.title.length + 1);
+  });
+  return prefixWidth;
+}

@@ -3,7 +3,6 @@
 
 import {
   AsyncPromptConfig,
-  Separator,
   createPrompt,
   isDownKey,
   isEnterKey,
@@ -19,29 +18,24 @@ import type {} from "@inquirer/type";
 import ansiEscapes from "ansi-escapes";
 import chalk from "chalk";
 import figures from "figures";
-import { addChoiceDetail } from "./utils";
+import { addChoiceDetail, computePrefixWidth } from "./utils";
 
 export type Choice = {
   id: string;
   title: string;
   detail?: string;
   checked?: boolean;
-  disabled?: boolean | string;
 };
 
 export type Config = AsyncPromptConfig & {
   prefix?: string;
   pageSize?: number;
   instructions?: string | boolean;
-  choices: ReadonlyArray<Choice | Separator>;
+  choices: ReadonlyArray<Choice>;
   defaultValues?: ReadonlyArray<string>;
   validateValues?: (value: string[]) => string | Promise<string | undefined> | undefined;
   loop?: boolean;
 };
-
-function isSelectableChoice(choice: undefined | Separator | Choice): choice is Choice {
-  return choice != null && !Separator.isSeparator(choice) && !choice.disabled;
-}
 
 export const checkbox = createPrompt(
   (config: Config, done: (value: Array<string>) => void): string => {
@@ -53,13 +47,9 @@ export const checkbox = createPrompt(
     } = config;
 
     const [status, setStatus] = useState("pending");
-    const [choices, setChoices] = useState<Array<Separator | Choice>>(() =>
+    const [choices, setChoices] = useState<Array<Choice>>(() =>
       config.choices.map((choice) => {
-        if (!Separator.isSeparator(choice)) {
-          return { ...choice, checked: defaultValues.includes(choice.id) };
-        }
-
-        return choice;
+        return { ...choice, checked: defaultValues.includes(choice.id) };
       })
     );
     const [cursorPosition, setCursorPosition] = useState(0);
@@ -71,7 +61,7 @@ export const checkbox = createPrompt(
       let newCursorPosition = cursorPosition;
       if (isEnterKey(key)) {
         const answer = choices
-          .filter((choice) => isSelectableChoice(choice) && choice.checked)
+          .filter((choice) => choice.checked)
           .map((choice) => (choice as Choice).id);
 
         const validationRes = await validateValues(answer);
@@ -87,7 +77,7 @@ export const checkbox = createPrompt(
         const offset = isUpKey(key) ? -1 : 1;
         let selectedOption;
 
-        while (!isSelectableChoice(selectedOption)) {
+        while (!selectedOption) {
           if (config.loop) {
             newCursorPosition = (newCursorPosition + offset + choices.length) % choices.length;
           } else {
@@ -107,7 +97,7 @@ export const checkbox = createPrompt(
         setShowHelpTip(false);
         setChoices(
           choices.map((choice, i) => {
-            if (i === cursorPosition && isSelectableChoice(choice)) {
+            if (i === cursorPosition && !!choice) {
               return { ...choice, checked: !choice.checked };
             }
 
@@ -116,20 +106,12 @@ export const checkbox = createPrompt(
         );
       } else if (key.name === "a") {
         setError(undefined);
-        const selectAll = Boolean(
-          choices.find((choice) => isSelectableChoice(choice) && !choice.checked)
-        );
-        setChoices(
-          choices.map((choice) =>
-            isSelectableChoice(choice) ? { ...choice, checked: selectAll } : choice
-          )
-        );
+        const selectAll = Boolean(choices.find((choice) => choice && !choice.checked));
+        setChoices(choices.map((choice) => (choice ? { ...choice, checked: selectAll } : choice)));
       } else if (key.name === "i") {
         setError(undefined);
         setChoices(
-          choices.map((choice) =>
-            isSelectableChoice(choice) ? { ...choice, checked: !choice.checked } : choice
-          )
+          choices.map((choice) => (choice ? { ...choice, checked: !choice.checked } : choice))
         );
       } else if (isNumberKey(key)) {
         setError(undefined);
@@ -137,17 +119,16 @@ export const checkbox = createPrompt(
         const position = Number(key.name) - 1;
 
         // Abort if the choice doesn't exists or if disabled
-        if (!isSelectableChoice(choices[position])) {
+        if (!choices[position]) {
           return;
         }
 
         setCursorPosition(position);
         setChoices(
           choices.map((choice, i) => {
-            if (i === position && isSelectableChoice(choice)) {
+            if (i === position && choice) {
               return { ...choice, checked: !choice.checked };
             }
-
             return choice;
           })
         );
@@ -155,25 +136,9 @@ export const checkbox = createPrompt(
     });
 
     const message = chalk.bold(config.message);
-
+    const pageSize = config.pageSize || 7;
+    const prefixWidth = computePrefixWidth(cursorPosition, pageSize, choices);
     const renderChoice = (choice: Choice, index: number) => {
-      if (Separator.isSeparator(choice)) {
-        return choice.separator;
-      }
-
-      if (choice.disabled) {
-        const disabledLabel = typeof choice.disabled === "string" ? choice.disabled : "(disabled)";
-        return chalk.dim(`--- ${choice.title} ${disabledLabel}`);
-      }
-
-      let prefixWidth = 1;
-      (choices as Choice[]).forEach((choice) => {
-        prefixWidth = Math.max(
-          prefixWidth,
-          choice.disabled || !choice.title ? 0 : choice.title.length + 1
-        );
-      });
-
       let output = "";
       if (index === cursorPosition) {
         output += `${getCheckbox(!!choice.checked)} ${chalk.blueBright(choice.title)}`;
@@ -188,15 +153,6 @@ export const checkbox = createPrompt(
       return output;
     };
 
-    if (cursorPosition === 0) {
-      usePagination({
-        items: choices,
-        active: cursorPosition,
-        pageSize: config.pageSize,
-        loop: false,
-        renderItem: (item) => renderChoice(item.item as Choice, item.index),
-      });
-    }
     const windowedChoices = usePagination({
       items: choices,
       active: cursorPosition,
@@ -211,7 +167,7 @@ export const checkbox = createPrompt(
     }
     if (status === "done") {
       const selection = choices
-        .filter((choice) => isSelectableChoice(choice) && choice.checked)
+        .filter((choice) => choice && choice.checked)
         .map((choice) => (choice as Choice).title);
       return `${prefix} ${message}${error ? "\n" + error : ""} ${chalk.cyan(selection.join(", "))}`;
     }

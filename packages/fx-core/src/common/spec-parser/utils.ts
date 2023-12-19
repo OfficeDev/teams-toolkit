@@ -138,17 +138,14 @@ export function isSupportedApi(
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
   if (pathObj) {
-    if (
-      (method === ConstantString.PostMethod || method === ConstantString.GetMethod) &&
-      pathObj[method]
-    ) {
-      const securities = pathObj[method]!.security;
+    if (ConstantString.SupportedMethods.includes(method) && (pathObj as any)[method]) {
+      const securities = ((pathObj as any)[method] as OpenAPIV3.OperationObject).security;
       const authArray = getAuthArray(securities, spec);
       if (!isSupportedAuth(authArray, allowAPIKeyAuth, allowOauth2)) {
         return false;
       }
 
-      const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
+      const operationObject = (pathObj as any)[method] as OpenAPIV3.OperationObject;
       if (!allowMissingId && !operationObject.operationId) {
         return false;
       }

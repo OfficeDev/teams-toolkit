@@ -40,6 +40,7 @@ export class ConstantString {
 
   static readonly GetMethod = "get";
   static readonly PostMethod = "post";
+  static readonly SupportedMethods = ["get"]; // For Teams AI project, we only support GET method
   static readonly AdaptiveCardVersion = "1.5";
   static readonly AdaptiveCardSchema = "http://adaptivecards.io/schemas/adaptive-card.json";
   static readonly AdaptiveCardType = "AdaptiveCard";

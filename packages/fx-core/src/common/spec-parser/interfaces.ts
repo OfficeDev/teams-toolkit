@@ -90,6 +90,7 @@ export enum ErrorType {
   UpdateManifestFailed = "update-manifest-failed",
   GenerateAdaptiveCardFailed = "generate-adaptive-card-failed",
   GenerateFailed = "generate-failed",
+  UpdateTeamsAiAppFailed = "update-teams-ai-app-failed",
   ValidateFailed = "validate-failed",
 
   Cancelled = "cancelled",

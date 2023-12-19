@@ -13,3 +13,4 @@ export const copilotPluginOptionIds = [
   copilotPluginApiSpecOptionId,
   copilotPluginOpenAIPluginOptionId,
 ];
+export const copilotPluginApiSpecTeamsAI = "copilot-plugin-existing-api-teams-ai";

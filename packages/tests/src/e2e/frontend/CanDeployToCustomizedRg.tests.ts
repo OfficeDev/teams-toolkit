@@ -11,7 +11,7 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { describe } from "mocha";
 import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
-import { AadValidator } from "../../commonlib";
+import { AadValidator, StaticSiteValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import {
@@ -69,6 +69,10 @@ describe("Deploy to customized resource group", function () {
         // Validate Aad App
         const aad = AadValidator.init(context, false, M365Login);
         await AadValidator.validate(aad);
+
+        // Validate deployment
+        const staticSite = StaticSiteValidator.init(context);
+        await StaticSiteValidator.validateDeploy(staticSite);
       }
 
       await deleteResourceGroupByName(customizedRgName);

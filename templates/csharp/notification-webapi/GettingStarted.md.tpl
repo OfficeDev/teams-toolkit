@@ -2,6 +2,15 @@
 
 ## Quick Start
 
+{{#enableTestToolByDefault}}
+1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+2. Teams App Test Tool will be opened in the launched browser 
+3. Open Windows PowerShell and post a HTTP request to trigger the notification:
+
+   Invoke-WebRequest -Uri "http://localhost:5130/api/notification" -Method Post
+   
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
 2. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
 3. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
@@ -12,6 +21,7 @@ to install the app to
 
    Invoke-WebRequest -Uri "http://localhost:5130/api/notification" -Method Post
 
+{{/enableTestToolByDefault}}
 ## Learn more
 
 New to Teams app development or Teams Toolkit? Learn more about 

@@ -11,6 +11,25 @@ The app template is built using the Teams AI library, which provides the capabil
 >
 > - [Azure OpenAI](https://aka.ms/oai/access) resource or an account with [OpenAI](https://platform.openai.com).
 
+{{#enableTestToolByDefault}}
+1. Fill in your OpenAI API Key or Azure OpenAI settings in `appsettings.TestTool.json`
+```
+# If using OpenAI
+"OpenAI": {
+  "ApiKey": "<your-openai-api-key>"
+},
+
+# If using Azure OpenAI
+"Azure": {
+  "OpenAIApiKey": "<your-azure-openai-api-key>",
+  "OpenAIEndpoint": "<your-azure-openai-endpoint>"
+}
+```
+
+2. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+3. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. Fill in your OpenAI API Key or Azure OpenAI settings in `env/.env.local.user`
 ```
 # If using OpenAI
@@ -28,6 +47,7 @@ to install the app to
 5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 6. In the launched browser, select the Add button to load the app in Teams
 7. In the chat bar, type and send anything to your bot to trigger a response
+{{/enableTestToolByDefault}}
 
 ## Extend the AI Chat Bot template with more AI capabilities
 

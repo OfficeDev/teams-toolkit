@@ -29,6 +29,7 @@ import {
   deleteTeamsApp,
   getTeamsApp,
 } from "../debug/utility";
+import { StaticSiteValidator } from "../../commonlib";
 
 describe("Deploy V3 m365-tab template", () => {
   const testFolder = getTestFolder();
@@ -100,6 +101,10 @@ describe("Deploy V3 m365-tab template", () => {
 
       context = await readContextMultiEnvV3(projectPath, "dev");
       chai.assert.isDefined(context);
+
+      // Validate deployment
+      const staticSite = StaticSiteValidator.init(context);
+      await StaticSiteValidator.validateDeploy(staticSite);
     }
   );
 });

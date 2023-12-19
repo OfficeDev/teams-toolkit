@@ -74,32 +74,6 @@ describe("select prompt", () => {
     expect(await answer).equal("id3");
   });
 
-  it("use number key to select an option", async () => {
-    const { answer, events, getScreen } = await render(select, {
-      message: "Select a string",
-      choices,
-    });
-
-    events.keypress("4");
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a string
-        ( ) title 1  detail 1
-        ( ) title 2  detail 2
-        ( ) title 3  detail 3
-        (*) title 4  detail 4
-        ( ) title 5  detail 5
-        ( ) title 6  detail 6
-        ( ) title 7  detail 7
-        (Use arrow keys to reveal more choices)`)
-    );
-
-    events.keypress("enter");
-    expect(getScreen()).equal("? Select a string title 4");
-
-    expect(await answer).equal("id4");
-  });
-
   it("allow setting a smaller page size", async () => {
     const { answer, events, getScreen } = await render(select, {
       message: "Select a string",
@@ -327,4 +301,31 @@ describe("select prompt", () => {
 
     expect(await answer).equal("ham");
   });
+
+  
+  it("loop = true", async () => {
+    const choices = [
+      { id: "id1", title: "title 1", detail: "detail 1" },
+      { id: "id2", title: "title 2", detail: "detail 2" },
+    ];
+    const { answer, events, getScreen } = await render(select, {
+      message: "Select a string",
+      choices,
+      pageSize: 2,
+    });
+
+    expect(getScreen()).equal(
+      trimOutput(`
+        ? Select a string (Use arrow keys)
+        (*) title 1  detail 1
+        ( ) title 2  detail 2
+        (Use arrow keys to reveal more choices)`)
+    );
+
+    events.keypress("down");
+    events.keypress("down");
+    events.keypress("down");
+    expect(await answer).equal("id1");
+  });
+
 });

@@ -301,6 +301,33 @@ describe("Core basic APIs", () => {
     assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "build")));
     await deleteTestProject(appName);
   });
+
+  it("deploy aad manifest happy path without click learn more", async () => {
+    const core = new FxCore(tools);
+    sandbox.stub(tools.ui, "showMessage").resolves(err(new UserError("test", "test", "test")));
+    sandbox.stub(tools.ui, "openUrl").resolves(ok(true));
+    const appName = await mockV3Project();
+    sandbox
+      .stub(UpdateAadAppDriver.prototype, "execute")
+      .resolves({ result: new Ok(new Map()), summaries: [] });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.AppName]: appName,
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.Capabilities]: ["Tab", "TabSSO"],
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.AadAppManifestFilePath]: path.join(os.tmpdir(), appName, "aad.manifest.json"),
+      env: "dev",
+      stage: Stage.deployAad,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const res = await core.deployAadManifest(inputs);
+    assert.isTrue(res.isOk());
+    if (res.isErr()) console.error(res.error);
+    assert.isTrue(await fs.pathExists(path.join(os.tmpdir(), appName, "build")));
+    await deleteTestProject(appName);
+  });
   it("deploy aad manifest happy path on cli", async () => {
     const core = new FxCore(tools);
     const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<

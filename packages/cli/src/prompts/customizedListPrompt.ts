@@ -56,7 +56,7 @@ export const select = createPrompt((config: Config, done: (value: string) => voi
     } else if (isUpKey(key) || isDownKey(key)) {
       let newCursorPosition = cursorPosition;
       const offset = isUpKey(key) ? -1 : 1;
-      let selectedOption;
+      let selectedOption = undefined;
 
       while (!selectedOption) {
         if (config.loop) {

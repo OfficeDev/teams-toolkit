@@ -55,3 +55,22 @@ export function computePrefixWidth(
   });
   return prefixWidth;
 }
+
+export function nextPosition(
+  current: number,
+  offset: number,
+  length: number,
+  loop: boolean
+): number {
+  if (loop) {
+    current = (current + offset + length) % length;
+  } else {
+    current = current + offset;
+    if (current < 0) {
+      current = 0;
+    } else if (current >= length) {
+      current = length - 1;
+    }
+  }
+  return current;
+}

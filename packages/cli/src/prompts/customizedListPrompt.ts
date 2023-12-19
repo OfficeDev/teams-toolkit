@@ -17,7 +17,7 @@ import type {} from "@inquirer/type";
 import ansiEscapes from "ansi-escapes";
 import chalk from "chalk";
 import figures from "figures";
-import { addChoiceDetail, computePrefixWidth } from "./utils";
+import { addChoiceDetail, computePrefixWidth, nextPosition } from "./utils";
 
 export type Choice = {
   id: string;
@@ -58,16 +58,12 @@ export const select = createPrompt((config: Config, done: (value: string) => voi
       let selectedOption = undefined;
 
       while (!selectedOption) {
-        if (config.loop) {
-          newCursorPosition = (newCursorPosition + offset + choices.length) % choices.length;
-        } else {
-          newCursorPosition = newCursorPosition + offset;
-          if (newCursorPosition < 0) {
-            newCursorPosition = 0;
-          } else if (newCursorPosition >= choices.length) {
-            newCursorPosition = choices.length - 1;
-          }
-        }
+        newCursorPosition = nextPosition(
+          newCursorPosition,
+          offset,
+          choices.length,
+          config.loop === true
+        );
         selectedOption = choices[newCursorPosition];
       }
 

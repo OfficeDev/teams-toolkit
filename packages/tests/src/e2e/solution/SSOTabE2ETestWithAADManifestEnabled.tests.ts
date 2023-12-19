@@ -10,7 +10,7 @@ import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
 import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
-import { AadValidator, StaticSiteValidator } from "../../commonlib";
+import { AadValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import {

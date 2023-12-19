@@ -105,8 +105,8 @@ export async function generateCommands(
 
         // Currently only support GET and POST method
         for (const method in operations) {
-          if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
-            const operationItem = operations[method];
+          if (ConstantString.SupportedMethods.includes(method)) {
+            const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
             if (operationItem) {
               const [command, warning] = parseApiInfo(operationItem, allowMultipleParameters);
 

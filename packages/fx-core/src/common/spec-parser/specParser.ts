@@ -31,6 +31,7 @@ import {
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
+import { Action, ActionCode, Config, generateTeamsAiMaterial } from "./generateTeamsAiMaterial";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -176,6 +177,68 @@ export class SpecParser {
   }
 
   /**
+   * Updates the Teams AI App template based on the provided specifications.
+   *
+   * @param {string[]} filter - The filter criteria to apply on the specifications.
+   * @param {string} outputSpecPath - The path where the output specification file will be written.
+   * @param {AbortSignal} [signal] - An optional AbortSignal to cancel the operation.
+   *
+   * @returns {Promise<[Action[], Config, string, ActionCode[]]>} - A promise that resolves with an array containing Actions, Config, a string, and ActionCodes.
+   * Action[] represent actions.json file
+   * Config represent config.json file
+   * string represent skprompt.txt file
+   * ActionCode represents ts code for all actions
+   */
+
+  async updateTeamsAiApp(
+    filter: string[],
+    outputSpecPath: string,
+    signal?: AbortSignal
+  ): Promise<[Action[], Config, string, ActionCode[]]> {
+    try {
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
+
+      await this.loadSpec();
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
+
+      const newUnResolvedSpec = specFilter(
+        filter,
+        this.unResolveSpec!,
+        this.spec!,
+        this.options.allowMissingId,
+        this.options.allowAPIKeyAuth,
+        this.options.allowMultipleParameters,
+        this.options.allowOauth2
+      );
+
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
+
+      const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+
+      let resultStr;
+      if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
+        resultStr = jsyaml.dump(newUnResolvedSpec);
+      } else {
+        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
+      }
+      await fs.outputFile(outputSpecPath, resultStr);
+
+      return generateTeamsAiMaterial(newSpec);
+    } catch (err) {
+      if (err instanceof SpecParserError) {
+        throw err;
+      }
+      throw new SpecParserError((err as Error).toString(), ErrorType.UpdateTeamsAiAppFailed);
+    }
+  }
+
+  /**
    * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
    * @param manifestPath A file path of the Teams app manifest file to update.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
@@ -256,7 +319,7 @@ export class SpecParser {
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
           // paths object may contain description/summary, so we need to check if it is a operation object
-          if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
+          if (ConstantString.SupportedMethods.includes(method)) {
             const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
             try {
               const [card, jsonPath] = generateAdaptiveCard(operation);

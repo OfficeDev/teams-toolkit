@@ -1211,7 +1211,7 @@ export async function addSpfxWebPart(webPartName = "helloworld") {
   );
 }
 
-export async function getOutputLogs(): Promise<string> {
+export async function getOutputLogs(): Promise<string | undefined> {
   const driver = VSBrowser.instance.driver;
   console.log("openTerminalView");
   await openTerminalView();
@@ -1228,12 +1228,17 @@ export async function getOutputLogs(): Promise<string> {
   } catch {
     console.log("already maximized");
   }
-  // This api is not work on macos, it will throw: Error: Channel Teams Toolkit not found
-  await output.selectChannel("Teams Toolkit");
-  // Get output
-  console.log("Get output");
-  const text = await output.getText();
+  try {
+    // This api is not work on macos, it will throw: Error: Channel Teams Toolkit not found
+    await output.selectChannel("Teams Toolkit");
+    // Get output
+    console.log("Get output");
+    const text = await output.getText();
 
-  console.log("Output: " + text);
-  return text;
+    console.log("Output: " + text);
+    return text;
+  } catch {
+    console.log("Can't get output log");
+  }
+  return;
 }

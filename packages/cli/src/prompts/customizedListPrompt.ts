@@ -3,7 +3,6 @@
 
 import {
   AsyncPromptConfig,
-  Separator,
   createPrompt,
   isDownKey,
   isEnterKey,
@@ -83,9 +82,6 @@ export const select = createPrompt((config: Config, done: (value: string) => voi
   const pageSize = config.pageSize || 7;
   const prefixWidth = computePrefixWidth(cursorPosition, pageSize, choices);
   const renderChoice = (choice: Choice, index: number) => {
-    if (Separator.isSeparator(choice)) {
-      return choice.separator;
-    }
     let output = "";
     if (index === cursorPosition) {
       output += chalk.cyan(`${figures.radioOn} ${choice.title}`);
@@ -96,7 +92,6 @@ export const select = createPrompt((config: Config, done: (value: string) => voi
     if (choice.detail) {
       output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
     }
-
     return output;
   };
 

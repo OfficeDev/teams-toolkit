@@ -145,11 +145,9 @@ export const checkbox = createPrompt(
       } else {
         output += `${getCheckbox(!!choice.checked)} ${choice.title}`;
       }
-
       if (choice.detail) {
         output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
       }
-
       return output;
     };
 
@@ -169,7 +167,7 @@ export const checkbox = createPrompt(
       const selection = choices
         .filter((choice) => choice && choice.checked)
         .map((choice) => (choice as Choice).title);
-      return `${prefix} ${message}${error ? "\n" + error : ""} ${chalk.cyan(selection.join(", "))}`;
+      return `${prefix} ${message} ${chalk.cyan(selection.join(", "))}${error ? "\n" + error : ""}`;
     }
 
     let helpTip = "";
@@ -186,8 +184,8 @@ export const checkbox = createPrompt(
         helpTip = ` (Press ${keys.join(", ")})`;
       }
     }
-    return `${prefix} ${message}${helpTip}${error ? "\n" + error : ""}\n${windowedChoices}${
-      ansiEscapes.cursorHide
+    return `${prefix} ${message}${helpTip}\n${windowedChoices}${ansiEscapes.cursorHide}${
+      error ? "\n" + error : ""
     }`;
   }
 );

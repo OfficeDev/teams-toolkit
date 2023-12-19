@@ -58,10 +58,7 @@ The following are project-related files. You generally will not need to customiz
 | - | - |
 | `src/index.css`                    | The style of application entry point                         |
 | `src/index.tsx`                    | Application entry point                                      |
-| `src/internal/addNewScopes.ts`     | Implementation of new scopes add                             |
 | `src/internal/context.ts`          | TeamsFx Context                                              |
-| `src/internal/login.ts`            | Implementation of login                                      |
-| `src/internal/singletonContext.ts` | Implementation of the TeamsUserCredential instance singleton |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

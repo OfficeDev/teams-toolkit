@@ -1,7 +1,7 @@
 import { MemoryStorage } from "botbuilder";
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-import { Application, AssistantsPlanner, AI } from "@microsoft/teams-ai";
+import { Application, AI, preview } from "@microsoft/teams-ai";
 
 import config from "./config";
 
@@ -14,7 +14,7 @@ if (!config.openAIKey || !config.openAIAssistantId) {
 
 // Create AI components
 // Use OpenAI
-const planner = new AssistantsPlanner({
+const planner = new preview.AssistantsPlanner({
   apiKey: config.openAIKey,
   assistant_id: config.openAIAssistantId,
 });
@@ -26,10 +26,6 @@ const app = new Application({
   ai: {
     planner,
   },
-});
-
-app.conversationUpdate("membersAdded", async (context) => {
-  await context.sendActivity("I'm an assistant bot. How can I help you today?");
 });
 
 app.message("/reset", async (context, state) => {

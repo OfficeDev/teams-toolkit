@@ -22,7 +22,7 @@ A bot interaction can be a quick question and answer, or it can be a complex con
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
-2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 3. The browser will pop up to open Teams App Test Tool.
 4. You will receive a welcome message from the bot, and you can send anything to the bot to get an echoed response.
 

@@ -600,7 +600,7 @@ describe("coordinator create", () => {
     assert.isTrue(res.isOk());
   });
 
-  it("create tab from .NET 8", async () => {
+  it("create non-sso tab from .NET 8", async () => {
     const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
 
     // non-sso tab
@@ -615,13 +615,16 @@ describe("coordinator create", () => {
       [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
     };
     const fxCore = new FxCore(tools);
-    let res = await fxCore.createProject(inputs);
+    const res = await fxCore.createProject(inputs);
 
     assert.isTrue(res.isOk());
     assert.equal(generator.args[0][2], TemplateNames.TabSSR);
+  });
 
-    // sso tab
-    const inputs2: Inputs = {
+  it("create sso tab from .NET 8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
       platform: Platform.VS,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
@@ -631,10 +634,11 @@ describe("coordinator create", () => {
       [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
       [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
     };
-    res = await fxCore.createProject(inputs2);
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
 
     assert.isTrue(res.isOk());
-    assert.equal(generator.args[1][2], TemplateNames.SsoTabSSR);
+    assert.equal(generator.args[0][2], TemplateNames.SsoTabSSR);
   });
 });
 

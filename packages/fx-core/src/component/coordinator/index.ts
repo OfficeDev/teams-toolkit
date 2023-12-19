@@ -270,9 +270,9 @@ class Coordinator {
           feature = `${feature}:${meArchitecture}`;
         }
         if (
+          inputs.targetFramework === "net8.0" &&
           (capability === CapabilityOptions.nonSsoTab().id ||
-            capability === CapabilityOptions.tab().id) &&
-          inputs["targetFramework"] === "net8.0"
+            capability === CapabilityOptions.tab().id)
         ) {
           feature = `${capability}:ssr`;
         }

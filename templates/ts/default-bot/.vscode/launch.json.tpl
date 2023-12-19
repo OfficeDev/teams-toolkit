@@ -66,7 +66,7 @@
     ],
     "compounds": [
         {
-            "name": "Debug (Edge)",
+            "name": "Debug in Teams (Edge)",
             "configurations": [
                 "Launch App (Edge)",
                 "Attach to Local Service"
@@ -84,7 +84,7 @@
             "stopAll": true
         },
         {
-            "name": "Debug (Chrome)",
+            "name": "Debug in Teams (Chrome)",
             "configurations": [
                 "Launch App (Chrome)",
                 "Attach to Local Service"
@@ -102,7 +102,7 @@
             "stopAll": true
         },
         {
-            "name": "Debug in Test Tool",
+            "name": "Debug in Test Tool (Preview)",
             "configurations": [
                 "Attach to Local Service"
             ],

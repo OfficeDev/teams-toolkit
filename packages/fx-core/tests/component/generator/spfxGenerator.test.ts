@@ -556,3 +556,28 @@ describe("SPFxGenerator", function () {
     chai.expect(writeAppManifestStub.calledTwice).to.eq(true);
   });
 });
+
+describe("Utils", () => {
+  it("truncate name with app name suffix", () => {
+    const appName = "thisisasuperlongappNameWithSuffix${{APP_NAME_SUFFIX}}";
+    const res = Utils.truncateAppShortName(appName);
+    chai.expect(res).equals("thisisasuperlongappNameWi${{APP_NAME_SUFFIX}}");
+  });
+  it("no need to truncate name with app name with suffix", () => {
+    const appName = "appNameWithSuffix${{APP_NAME_SUFFIX}}";
+    const res = Utils.truncateAppShortName(appName);
+    chai.expect(res).equals("appNameWithSuffix${{APP_NAME_SUFFIX}}");
+  });
+
+  it("truncate name with app name without suffix", () => {
+    const appName = "thisisasuperlongappNameWithoutSuffix";
+    const res = Utils.truncateAppShortName(appName);
+    chai.expect(res).equals("thisisasuperlongappNameWithout");
+  });
+
+  it("no need to truncate name with app name without suffix", () => {
+    const appName = "appNameWithoutSuffix";
+    const res = Utils.truncateAppShortName(appName);
+    chai.expect(res).equals("appNameWithoutSuffix");
+  });
+});

@@ -1213,7 +1213,6 @@ export async function addSpfxWebPart(webPartName = "helloworld") {
 
 export async function getOutputLogs(): Promise<string> {
   const driver = VSBrowser.instance.driver;
-  await clearNotifications();
   console.log("openTerminalView");
   await openTerminalView();
   console.log("openOutputView");

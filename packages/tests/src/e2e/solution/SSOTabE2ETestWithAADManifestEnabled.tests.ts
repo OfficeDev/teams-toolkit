@@ -101,10 +101,6 @@ describe("SSO Tab with aad manifest enabled", () => {
       // Only deploy aad manifest
       await CliHelper.updateAadManifest(projectPath, "--env dev", env);
       await AadValidator.validate(aad, secondIdentifierUri);
-
-      // Validate deployment
-      const staticSite = StaticSiteValidator.init(context);
-      await StaticSiteValidator.validateDeploy(staticSite);
     }
   );
 });

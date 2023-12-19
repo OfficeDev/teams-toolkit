@@ -21,6 +21,7 @@ import {
   Timeout,
   LocalDebugTaskLabel,
   LocalDebugTaskInfo,
+  DebugItemSelect,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -58,7 +59,7 @@ describe("Workflow Bot Local Debug Tests", function () {
       validateFileExist(projectPath, "src/index.ts");
       const driver = VSBrowser.instance.driver;
 
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(
         LocalDebugTaskLabel.StartBotApp,
@@ -88,7 +89,7 @@ describe("Workflow Bot Local Debug Tests", function () {
         } catch (error) {
           console.log(`close port 3978 failed`);
         }
-        await startDebugging();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,

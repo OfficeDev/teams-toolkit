@@ -35,7 +35,6 @@ const codeOwnerMap = new Map([
   ["notification-webapi", "qidon@microsoft.com"],
   ["workflow", "qidon@microsoft.com"],
   ["m365-message-extension", "kuojianlu@microsoft.com"],
-  ["m365-tab", "kuojianlu@microsoft.com"],
   ["ai-bot", "kuojianlu@microsoft.com"],
   ["ai-assistant-bot", "kuojianlu@microsoft.com"],
 ]);

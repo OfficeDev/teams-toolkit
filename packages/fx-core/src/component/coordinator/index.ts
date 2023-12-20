@@ -74,7 +74,6 @@ export enum TemplateNames {
   SsoTab = "sso-tab",
   TabSSR = "non-sso-tab-ssr",
   SsoTabSSR = "sso-tab-ssr",
-  M365Tab = "m365-tab",
   DashboardTab = "dashboard-tab",
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",

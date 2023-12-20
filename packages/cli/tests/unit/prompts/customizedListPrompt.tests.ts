@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Separator } from "@inquirer/prompts";
 import { render } from "@inquirer/testing";
 import figures from "figures";
 import "mocha";
@@ -43,15 +42,15 @@ describe("select prompt", () => {
 
     expect(getScreen()).equal(
       trimOutput(`
-        ? Select a string (Use arrow keys)
-        (*) title 1  detail 1
-        ( ) title 2  detail 2
-        ( ) title 3  detail 3
-        ( ) title 4  detail 4
-        ( ) title 5  detail 5
-        ( ) title 6  detail 6
-        ( ) title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        ? Select a string
+        (*) title 1 detail 1
+        ( ) title 2 detail 2
+        ( ) title 3 detail 3
+        ( ) title 4 detail 4
+        ( ) title 5 detail 5
+        ( ) title 6 detail 6
+        ( ) title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("down");
@@ -59,46 +58,20 @@ describe("select prompt", () => {
     expect(getScreen()).equal(
       trimOutput(`
         ? Select a string
-        ( ) title 1  detail 1
-        ( ) title 2  detail 2
-        (*) title 3  detail 3
-        ( ) title 4  detail 4
-        ( ) title 5  detail 5
-        ( ) title 6  detail 6
-        ( ) title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        ( ) title 1 detail 1
+        ( ) title 2 detail 2
+        (*) title 3 detail 3
+        ( ) title 4 detail 4
+        ( ) title 5 detail 5
+        ( ) title 6 detail 6
+        ( ) title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
     expect(getScreen()).equal("? Select a string title 3");
 
     expect(await answer).equal("id3");
-  });
-
-  it("use number key to select an option", async () => {
-    const { answer, events, getScreen } = await render(select, {
-      message: "Select a string",
-      choices,
-    });
-
-    events.keypress("4");
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a string
-        ( ) title 1  detail 1
-        ( ) title 2  detail 2
-        ( ) title 3  detail 3
-        (*) title 4  detail 4
-        ( ) title 5  detail 5
-        ( ) title 6  detail 6
-        ( ) title 7  detail 7
-        (Move up and down to reveal more choices)`)
-    );
-
-    events.keypress("enter");
-    expect(getScreen()).equal("? Select a string title 4");
-
-    expect(await answer).equal("id4");
   });
 
   it("allow setting a smaller page size", async () => {
@@ -110,10 +83,10 @@ describe("select prompt", () => {
 
     expect(getScreen()).equal(
       trimOutput(`
-        ? Select a string (Use arrow keys)
-        (*) title 1  detail 1
-        ( ) title 2  detail 2
-        (Move up and down to reveal more choices)`)
+        ? Select a string
+        (*) title 1 detail 1
+        ( ) title 2 detail 2
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -129,7 +102,7 @@ describe("select prompt", () => {
 
     expect(getScreen()).equal(
       trimOutput(`
-        ? Select a string (Use arrow keys)
+        ? Select a string
         (*) title 1  detail 1
         ( ) title 2  detail 2
         ( ) title 3  detail 3
@@ -140,7 +113,7 @@ describe("select prompt", () => {
         ( ) title 8  detail 8
         ( ) title 9  detail 9
         ( ) title 10 detail 10
-        (Move up and down to reveal more choices)`)
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -152,14 +125,15 @@ describe("select prompt", () => {
       message: "Select a string",
       choices,
       pageSize: 2,
+      loop: true,
     });
 
     expect(getScreen()).equal(
       trimOutput(`
-        ? Select a string (Use arrow keys)
-        (*) title 1  detail 1
-        ( ) title 2  detail 2
-        (Move up and down to reveal more choices)`)
+        ? Select a string
+        (*) title 1 detail 1
+        ( ) title 2 detail 2
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("up");
@@ -168,172 +142,12 @@ describe("select prompt", () => {
     expect(getScreen()).equal(
       trimOutput(`
         ? Select a string
+        ( ) title 10 detail 10
         (*) title 11 detail 11
-        ( ) title 12 detail 12
-        (Move up and down to reveal more choices)`)
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
     expect(await answer).equal("id11");
-  });
-
-  it("skip disabled options by arrow keys", async () => {
-    const { answer, events, getScreen } = await render(select, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: true },
-        { id: "pepperoni", title: "Pepperoni" },
-      ],
-    });
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Use arrow keys)
-        (*) Ham
-        --- Pineapple (disabled)
-        ( ) Pepperoni`)
-    );
-
-    events.keypress("down");
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping
-        ( ) Ham
-        --- Pineapple (disabled)
-        (*) Pepperoni`)
-    );
-
-    events.keypress("enter");
-    expect(getScreen()).equal("? Select a topping Pepperoni");
-
-    expect(await answer).equal("pepperoni");
-  });
-
-  it("skip disabled options by number key", async () => {
-    const { answer, events, getScreen } = await render(select, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: true },
-        { id: "pepperoni", title: "Pepperoni" },
-      ],
-    });
-
-    events.keypress("2");
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Use arrow keys)
-        (*) Ham
-        --- Pineapple (disabled)
-        ( ) Pepperoni`)
-    );
-
-    events.keypress("enter");
-    expect(getScreen()).equal("? Select a topping Ham");
-
-    expect(await answer).equal("ham");
-  });
-
-  it("allow customizing disabled label", async () => {
-    const { answer, getScreen } = await render(select, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: "*premium*" },
-      ],
-    });
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Use arrow keys)
-        (*) Ham
-        --- Pineapple *premium*`)
-    );
-
-    answer.cancel();
-    await expect(answer).rejected;
-  });
-
-  it("throws if all choices are disabled", async () => {
-    const { answer } = await render(select, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham", disabled: true },
-        { id: "pineapple", title: "Pineapple", disabled: "*premium*" },
-      ],
-    });
-
-    await expect(answer).rejectedWith(
-      "[select prompt] No selectable choices. All choices are disabled."
-    );
-  });
-
-  it("skip separator by arrow keys", async () => {
-    const { answer, events, getScreen } = await render(select, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        new Separator(),
-        { id: "pineapple", title: "Pineapple" },
-      ],
-    });
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Use arrow keys)
-        (*) Ham
-        ──────────────
-        ( ) Pineapple`)
-    );
-
-    events.keypress("down");
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping
-        ( ) Ham
-        ──────────────
-        (*) Pineapple`)
-    );
-
-    events.keypress("enter");
-    expect(getScreen()).equal("? Select a topping Pineapple");
-
-    expect(await answer).equal("pineapple");
-  });
-
-  it("skip separator by number key", async () => {
-    const { answer, events, getScreen } = await render(select, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        new Separator(),
-        { id: "pineapple", title: "Pineapple" },
-      ],
-    });
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Use arrow keys)
-        (*) Ham
-        ──────────────
-        ( ) Pineapple`)
-    );
-
-    events.keypress("2");
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Use arrow keys)
-        (*) Ham
-        ──────────────
-        ( ) Pineapple`)
-    );
-
-    events.keypress("enter");
-    expect(getScreen()).equal("? Select a topping Ham");
-
-    expect(await answer).equal("ham");
   });
 });

@@ -17,9 +17,7 @@ provision:
   # Set required variables for local launch
   - uses: script
     with:
-      shell: bash
       run:
-        ./keyGen.sh ${{TEAMSFX_ENV}};
         echo "::set-teamsfx-env FUNC_NAME=repair";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
 

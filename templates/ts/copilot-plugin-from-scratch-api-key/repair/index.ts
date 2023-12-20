@@ -61,7 +61,10 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
 }
 
 /**
- * Check if the request is authorized.
+ * The reason for this implementation is that Azure Function Core Tools does not support authentication when running locally.
+ * This template is designed to demonstrate and facilitate local debugging of authentication functionalities in the API-based
+ * message extension. Therefore, this approach was taken. If you prefer to leverage the Azure Functions' built-in API key
+ * authentication, please refer to https://aka.ms/functionkey for guidance.
  * @param {HttpRequest} req - The HTTP request.
  * @returns {boolean} - True if the request is authorized, false otherwise.
  */

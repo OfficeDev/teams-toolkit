@@ -17,13 +17,6 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Generate API KEY
-  - uses: script
-    with:
-      shell: bash
-      run:
-        ./keyGen.sh ${{TEAMSFX_ENV}}
-
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
     with:
       # AZURE_SUBSCRIPTION_ID is a built-in environment variable,
@@ -113,9 +106,7 @@ deploy:
       args: install
 
   - uses: cli/runNpmCommand
-    name: build app
-    env:
-      API_KEY: ${{SECRET_API_KEY}}
+    name: build app    
     with:
       args: run build --if-present
 

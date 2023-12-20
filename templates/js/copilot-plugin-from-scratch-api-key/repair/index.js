@@ -52,7 +52,10 @@ module.exports = async function (context, req) {
 };
 
 /**
- * Check if the request is authorized.
+ * The reason for this implementation is that Azure Function Core Tools does not support authentication when running locally.
+ * This template is designed to demonstrate and facilitate local debugging of authentication functionalities in the API-based
+ * message extension. Therefore, this approach was taken. If you prefer to leverage the Azure Functions' built-in API key
+ * authentication, please refer to https://aka.ms/functionkey for guidance.
  * @param req - The HTTP request.
  */
 function isApiKeyValid(req) {

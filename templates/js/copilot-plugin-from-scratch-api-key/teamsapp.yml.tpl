@@ -17,13 +17,6 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Generate API KEY
-  - uses: script
-    with:
-      shell: bash
-      run:
-        ./keyGen.sh ${{TEAMSFX_ENV}}
-
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
     with:
       # AZURE_SUBSCRIPTION_ID is a built-in environment variable,
@@ -111,13 +104,6 @@ deploy:
     name: install dependencies
     with:
       args: install --production
-
-  - uses: cli/runNpmCommand
-    name: build app
-    env:
-      API_KEY: ${{SECRET_API_KEY}}
-    with:
-      args: run build --if-present
 
   # Deploy your application to Azure Functions using the zip deploy feature.
   # For additional details, see at https://aka.ms/zip-deploy-to-azure-functions

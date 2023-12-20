@@ -24,7 +24,21 @@ This app template allows Teams to interact directly with third-party data, apps,
 
 ### How to add your own API Key
 
-The Teams Toolkit will generate an API Key for you automatically when you debug or provision your app. You can find the API Key in either the `.env.local.user` or `.env.dev.user` file. If you prefer to use your own API Key, you can replace the value of `SECRET_API_KEY` in the `.env.local.user` or `.env.dev.user` file with your own API Key. Alternatively, you can modify the `keyGen.sh` file to generate your own API Key.
+1. Open terminal and run command `npm install` to install all dependency packages
+
+   ```
+   > npm install
+   ```
+
+2. After `npm install` completed, run command `npm run key:gen`
+   ```
+   > npm run key:gen
+   ```
+3. The above command will output something like "Generated a new API Key: xxx..."
+4. Fill in API Key into `env/.env.*.user`
+   ```
+   SECRET_API_KEY=<your-api-key>
+   ```
 
 ## What's included in the template
 
@@ -45,7 +59,7 @@ The following files can be customized and demonstrate an example implementation 
 | `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.          |
 | `appPackage/responseTemplates/repair.json`   | A template file for rendering API response.                                  |
 | `repairsData.json`                           | The data source for the repair API.                                          |
-| `keyGen.sh`                                  | The shell script designed to generate a API key used for authorization.      |
+| `keyGen.js`                                  | Designed to generate a API key used for authorization.                       |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

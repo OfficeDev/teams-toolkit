@@ -133,7 +133,6 @@
 /templates/**/notification-webapi @kimizhu @dooriya @swatDong
 /templates/**/workflow @kimizhu @dooriya @swatDong
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/**/m365-tab @kimizhu @swatDong @kuojianlu
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
 

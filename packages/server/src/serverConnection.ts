@@ -345,7 +345,7 @@ export default class ServerConnection implements IServerConnection {
     },
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
-    const res = await getCopilotStatus(accountToken.token);
+    const res = await getCopilotStatus(accountToken.token, true);
     return ok(String(res));
   }
 

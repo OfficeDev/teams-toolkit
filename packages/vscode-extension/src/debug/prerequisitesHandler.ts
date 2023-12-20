@@ -446,7 +446,7 @@ async function ensureCopilotAccess(
       });
       let hasCopilotAccess: boolean | undefined = undefined;
       if (copilotTokenRes.isOk()) {
-        hasCopilotAccess = await getCopilotStatus(copilotTokenRes.value);
+        hasCopilotAccess = await getCopilotStatus(copilotTokenRes.value, false);
       }
 
       // true, false or undefined for error

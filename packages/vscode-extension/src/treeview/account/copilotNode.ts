@@ -37,7 +37,7 @@ export class CopilotNode extends DynamicNode {
       if (m365TokenStatus.isOk()) {
         const m365TokenResult = m365TokenStatus.value;
         if (m365TokenResult !== undefined && m365TokenResult !== "") {
-          return await getCopilotStatus(m365TokenResult);
+          return await getCopilotStatus(m365TokenResult, true);
         }
       }
     } catch (error) {

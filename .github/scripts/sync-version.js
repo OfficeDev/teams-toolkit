@@ -73,7 +73,7 @@ function main() {
     const pathInput = process.argv[2];
     console.log('================= syncup templates', __filename)
     const templateDir = path.join(__dirname, "../../templates");
-    const templateList = require(path.join(templateDir, "package.json")).templates;
+    const templateList = require(path.join(templateDir, "package.json")).templatesDependOnSDK;
     updateTemplatesDeps(templateDir, templateList);
 }
 

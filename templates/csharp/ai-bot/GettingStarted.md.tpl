@@ -13,40 +13,42 @@ The app template is built using the Teams AI library, which provides the capabil
 
 {{#enableTestToolByDefault}}
 1. Fill in your OpenAI API Key or Azure OpenAI settings in `appsettings.TestTool.json`
-```
-# If using OpenAI
-"OpenAI": {
-  "ApiKey": "<your-openai-api-key>"
-},
+    ```
+    # If using OpenAI
+    "OpenAI": {
+      "ApiKey": "<your-openai-api-key>"
+    },
 
-# If using Azure OpenAI
-"Azure": {
-  "OpenAIApiKey": "<your-azure-openai-api-key>",
-  "OpenAIEndpoint": "<your-azure-openai-endpoint>"
-}
-```
+    # If using Azure OpenAI
+    "Azure": {
+      "OpenAIApiKey": "<your-azure-openai-api-key>",
+      "OpenAIEndpoint": "<your-azure-openai-endpoint>"
+    }
+    ```
 
-2. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-3. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
+2. If using Azure OpenAI, update "gpt-35-turbo" in `Program.cs` to your own model deployment name.
+3. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+4. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 1. Fill in your OpenAI API Key or Azure OpenAI settings in `env/.env.local.user`
-```
-# If using OpenAI
-SECRET_OPENAI_API_KEY="<your-openai-api-key>"
+    ```
+    # If using OpenAI
+    SECRET_OPENAI_API_KEY="<your-openai-api-key>"
 
-# If using Azure OpenAI
-SECRET_AZURE_OPENAI_API_KEY="<your-azure-openai-api-key>"
-SECRET_AZURE_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
-```
+    # If using Azure OpenAI
+    SECRET_AZURE_OPENAI_API_KEY="<your-azure-openai-api-key>"
+    SECRET_AZURE_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
+    ```
 
-2. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
-3. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
-4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
+2. If using Azure OpenAI, update "gpt-35-turbo" in `Program.cs` to your own model deployment name.
+3. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
+4. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
+5. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
 to install the app to
-5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-6. In the launched browser, select the Add button to load the app in Teams
-7. In the chat bar, type and send anything to your bot to trigger a response
+6. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+7. In the launched browser, select the Add button to load the app in Teams
+8. In the chat bar, type and send anything to your bot to trigger a response
 {{/enableTestToolByDefault}}
 
 ## Extend the AI Chat Bot template with more AI capabilities

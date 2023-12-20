@@ -23,15 +23,11 @@ The app template is built using the Teams AI library, which provides the capabil
 {{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
 > - An account with [OpenAI](https://platform.openai.com/).
->
-> **Note**
->
-> Teams AI Library is currently in preview version.
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
-1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 1. You will receive a welcome message from the bot, or send any message to get a response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
@@ -61,25 +57,21 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
 1. In `src/app.ts`, comment out *"Use OpenAI"* part and uncomment *"use Azure OpenAI"* part, e.g.
     ```typescript
-    // Use OpenAI
-    /**
-    const planner = new OpenAIPlanner({
-      apiKey: config.openAIKey,
-      defaultModel: "gpt-3.5-turbo",
-      useSystemMessage: true,
-      logRequests: true
-    });
-    */
-    // Uncomment the following lines to use Azure OpenAI
-    const planner = new AzureOpenAIPlanner({
-      apiKey: config.azureOpenAIKey,
-      endpoint: config.azureOpenAIEndpoint,
-      defaultModel: "gpt-35-turbo",
-      useSystemMessage: true,
+    const model = new OpenAIModel({
+      // Use OpenAI
+      // apiKey: config.openAIKey,
+      // defaultModel: "gpt-3.5-turbo",
+
+      // Uncomment the following lines to use Azure OpenAI
+      azureApiKey: config.azureOpenAIKey,
+      azureDefaultDeployment: "gpt-35-turbo",
+      azureEndpoint: config.azureOpenAIEndpoint,
+
+      useSystemMessages: true,
       logRequests: true,
     });
     ```
-1. In `src/app.ts`, update `defaultModel` to your own model deployment name.
+1. In `src/app.ts`, update `azureDefaultDeployment` to your own model deployment name.
 
 ## What's included in the template
 

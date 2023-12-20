@@ -24,7 +24,7 @@ export class AzureAccountNode extends DynamicNode {
     this.status = AccountItemStatus.SignedIn;
     this.label = upn;
     this.contextValue = "signedinAzure";
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
     return false;
   }
 
@@ -35,7 +35,7 @@ export class AzureAccountNode extends DynamicNode {
     this.status = AccountItemStatus.SigningIn;
     this.contextValue = "";
     // refresh
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
   }
 
   public setSignedOut() {
@@ -45,7 +45,7 @@ export class AzureAccountNode extends DynamicNode {
     this.status = AccountItemStatus.SignedOut;
     this.contextValue = "signinAzure";
     // refresh
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
   }
 
   public override getChildren(): vscode.ProviderResult<DynamicNode[]> {

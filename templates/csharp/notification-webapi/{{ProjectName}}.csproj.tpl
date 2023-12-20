@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <None Include=".notification.local*.json" />
+    <None Include=".notification.testtool*.json" />
   </ItemGroup>
 
   <ItemGroup>

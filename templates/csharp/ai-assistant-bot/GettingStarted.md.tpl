@@ -29,6 +29,26 @@ Before running or debugging your bot, please follow these steps to setup your ow
    > . ./Create-Assistant.ps1 -OPENAI_API_KEY xxxxxx
    ```
 1. The above command will output the properties of the new created assistant, including the ID like "id: asst_xxx..."
+{{#enableTestToolByDefault}}
+1. Fill in both OpenAI API Key and the created Assistant ID into `appsettings.TestTool.json`
+   ```
+   "OpenAI": {
+      "ApiKey": "<your-openai-api-key>",
+      "AssistantId": "<your-openai-assistant-id>"
+   }
+   ```
+
+**If you already have an Assistant created**
+
+1. Fill in both OpenAI API Key and the created Assistant ID into `appsettings.TestTool.json`
+   ```
+   "OpenAI": {
+      "ApiKey": "<your-openai-api-key>",
+      "AssistantId": "<your-openai-assistant-id>"
+   }
+   ```
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.local.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
@@ -42,9 +62,15 @@ Before running or debugging your bot, please follow these steps to setup your ow
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
    SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
+{{/enableTestToolByDefault}}
 
 ### Run Teams Bot locally
 
+{{#enableTestToolByDefault}}
+1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+1. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
 1. Right-click your project and select Teams Toolkit > Prepare Teams App Dependencies
 1. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
@@ -52,6 +78,7 @@ to install the app to
 1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 1. In the launched browser, select the Add button to load the app in Teams
 1. In the chat bar, type and send anything to your bot to trigger a response
+{{/enableTestToolByDefault}}
 
 ## Extend the AI Assistant Bot template with more AI capabilities
 

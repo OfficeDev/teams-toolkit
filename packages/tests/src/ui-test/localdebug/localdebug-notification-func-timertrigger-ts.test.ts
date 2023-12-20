@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
  * @author Anne Fu <v-annefu@microsoft.com>
  */
@@ -13,7 +15,11 @@ import {
   validateNotificationTimeBot,
 } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
+import {
+  Timeout,
+  LocalDebugTaskLabel,
+  DebugItemSelect,
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
@@ -52,7 +58,7 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
       validateFileExist(projectPath, "src/httpTrigger.ts");
       validateFileExist(projectPath, "src/timerTrigger.ts");
       const driver = VSBrowser.instance.driver;
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
         await waitForTerminal(
@@ -72,7 +78,7 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
           "Clicked button Cancel for failing to attach to main target"
         );
         await stopDebugging();
-        await startDebugging();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,

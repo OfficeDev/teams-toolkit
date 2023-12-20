@@ -190,7 +190,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         const value = event.data.data.value;
         if (key === GlobalKey.SampleGalleryLayout) {
           this.setState({
-            layout: value,
+            layout: value || "grid",
           });
         }
         break;

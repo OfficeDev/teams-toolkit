@@ -10,7 +10,8 @@
       "launchTestTool": true,
       "launchUrl": "http://localhost:56150",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "TestTool",
+        "AZURE_FUNCTIONS_ENVIRONMENT": "TestTool",
+        "TEAMSFX_NOTIFICATION_STORE_FILENAME": ".notification.testtoolstore.json",
         "TEAMSFX_NOTIFICATION_LOCALSTORE_DIR": "../../.." // Path to project folder $(MSBuildProjectDirectory)
       }
     },
@@ -23,7 +24,7 @@
       "launchBrowser": true,
       "launchUrl": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
         "TEAMSFX_NOTIFICATION_LOCALSTORE_DIR": "../../.." // Path to project folder $(MSBuildProjectDirectory)
       }
     },
@@ -37,7 +38,8 @@
       "launchTestTool": true,
       "launchUrl": "http://localhost:56150",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "TestTool",
+        "AZURE_FUNCTIONS_ENVIRONMENT": "TestTool",
+        "TEAMSFX_NOTIFICATION_STORE_FILENAME": ".notification.testtoolstore.json",
         "TEAMSFX_NOTIFICATION_LOCALSTORE_DIR": "../../.." // Path to project folder $(MSBuildProjectDirectory)
       }
     },

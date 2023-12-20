@@ -1,4 +1,4 @@
-const { AssistantsPlanner } = require("@microsoft/teams-ai");
+const { preview } = require("@microsoft/teams-ai");
 
 const openAIKey = process.argv[2];
 if (!openAIKey) {
@@ -7,7 +7,7 @@ if (!openAIKey) {
 
 // Create new Assistant
 (async () => {
-  const assistant = await AssistantsPlanner.createAssistant(openAIKey, {
+  const assistant = await preview.AssistantsPlanner.createAssistant(openAIKey, {
     name: "Math Tutor",
     instructions: "You are a personal math tutor. Write and run code to answer math questions.",
     tools: [{ type: "code_interpreter" }],

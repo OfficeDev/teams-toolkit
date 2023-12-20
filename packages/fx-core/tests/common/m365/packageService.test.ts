@@ -867,11 +867,22 @@ describe("Package Service", () => {
         nextInterval: 1,
       },
     };
-    const debugStub = sandbox.stub(logger, "debug").returns();
 
-    const packageService = new PackageService("https://test-endpoint", logger);
+    let packageService = new PackageService("https://test-endpoint");
     let actualError: Error | undefined;
     let result: string[] | undefined;
+    try {
+      result = await packageService.getActiveExperiences("test-token", true);
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.deepEqual(result, ["foo", "bar"]);
+
+    const debugStub = sandbox.stub(logger, "debug").returns();
+
+    packageService = new PackageService("https://test-endpoint", logger);
     try {
       result = await packageService.getActiveExperiences("test-token", true);
     } catch (error: any) {

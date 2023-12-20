@@ -18,7 +18,10 @@
       "value": "LightBotInfra"
     },
     "openAIKey": {
-      "value": "${{SECRET_OPENAI_KEY}}"
+      "value": "${{SECRET_AZURE_OPENAI_KEY}}"
+    },
+    "openAIEndpoint": {
+      "value": "${{AZURE_OPENAI_ENDPOINT}}"
     }
   }
 }

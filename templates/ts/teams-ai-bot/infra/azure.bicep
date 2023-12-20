@@ -12,6 +12,11 @@ param botAadAppClientSecret string
 
 param webAppSKU string
 
+param openAIEndpoint string
+
+@secure()
+param openAIKey string
+
 @maxLength(42)
 param botDisplayName string
 
@@ -59,6 +64,14 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'MicrosoftAppPassword'
           value: botAadAppClientSecret
+        }
+        {
+          name: 'AZURE_OPENAI_KEY'
+          value: openAIKey
+        }
+        {
+          name: 'AZURE_OPENAI_ENDPOINT'
+          value: openAIEndpoint
         }
       ]
       ftpsState: 'FtpsOnly'

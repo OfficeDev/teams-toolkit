@@ -13,7 +13,9 @@
 
   <ItemGroup>
     <None Remove="build/**/*" />
+    <None Remove="devTools/**" />
     <Content Remove="build/**/*" />
+    <Content Remove="devTools/**/*" />
   </ItemGroup>
 
   <ItemGroup>

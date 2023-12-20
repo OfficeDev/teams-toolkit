@@ -270,6 +270,7 @@ class Coordinator {
           feature = `${feature}:${meArchitecture}`;
         }
         if (
+          inputs.targetFramework &&
           inputs.targetFramework !== "net6.0" &&
           inputs.targetFramework !== "net7.0" &&
           (capability === CapabilityOptions.nonSsoTab().id ||

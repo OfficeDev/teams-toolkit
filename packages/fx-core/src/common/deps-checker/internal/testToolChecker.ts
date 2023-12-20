@@ -50,8 +50,9 @@ export class TestToolChecker implements DepsChecker {
   private readonly binaryCommandName = isWindows() ? "teamsapptester.exe" : "teamsapptester";
   private readonly portableDirNameNpm = "testTool";
   private readonly portableDirNameBinary = "testToolBinary";
-  // 7 days
-  private readonly defaultUpdateInterval = 7 * 24 * 60 * 60 * 1000;
+  // Limit 1 hour check update internval because of GitHub API throttling limitation
+  // https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28#primary-rate-limit-for-unauthenticated-users
+  private readonly defaultUpdateInterval = 1 * 60 * 60 * 1000;
 
   constructor() {
     this.telemetryProperties = {};

@@ -86,6 +86,9 @@ describe("Remote debug Tests", function () {
       );
       await driver.sleep(Timeout.longTimeWait);
       await validateWelcomeAndReplyBot(page, {
+        hasWelcomeMessage: false,
+        hasCommandReplyValidation: true,
+        botCommand: "helloWorld",
         expectedWelcomeMessage:
           ValidationContent.AiAssistantBotWelcomeInstruction,
         expectedReplyMessage: ValidationContent.AiBotErrorMessage,

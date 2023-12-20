@@ -15,6 +15,7 @@ import {
   Timeout,
   LocalDebugTaskLabel,
   DebugItemSelect,
+  ValidationContent,
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
@@ -62,7 +63,13 @@ describe("Local Debug Tests", function () {
         Env.password
       );
       await localDebugTestContext.validateLocalStateForBot();
-      await validateWelcomeAndReplyBot(page);
+      await validateWelcomeAndReplyBot(page, {
+        hasWelcomeMessage: false,
+        hasCommandReplyValidation: true,
+        botCommand: "helloWorld",
+        expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+        expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+      });
     }
   );
 });

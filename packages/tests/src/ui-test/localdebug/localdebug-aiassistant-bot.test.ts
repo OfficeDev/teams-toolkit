@@ -67,6 +67,9 @@ describe("Local Debug Tests", function () {
       );
       await localDebugTestContext.validateLocalStateForBot();
       await validateWelcomeAndReplyBot(page, {
+        hasWelcomeMessage: false,
+        hasCommandReplyValidation: true,
+        botCommand: "helloWorld",
         expectedWelcomeMessage:
           ValidationContent.AiAssistantBotWelcomeInstruction,
         expectedReplyMessage: ValidationContent.AiBotErrorMessage,

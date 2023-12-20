@@ -17,6 +17,7 @@ import {
   ConvertTokenToJson,
   getFixedCommonProjectSettings,
   getSPFxToken,
+  getCopilotStatus,
   getSideloadingStatus,
   isVideoFilterProject,
   listDevTunnels,
@@ -130,6 +131,41 @@ describe("tools", () => {
       chai.assert.isUndefined(result);
       chai.assert.equal(events, 0);
       chai.assert.equal(errors, 3);
+    });
+  });
+
+  describe("getCopilotStatus", () => {
+    let mockGet: () => AxiosResponse;
+    let errors: number;
+    beforeEach(() => {
+      sinon.restore();
+
+      const mockInstance = axios.create();
+      sinon.stub(mockInstance, "get").callsFake(async () => mockGet());
+      sinon.stub(axios, "create").returns(mockInstance);
+
+      errors = 0;
+      sinon.stub(telemetry, "sendTelemetryErrorEvent").callsFake(() => {
+        ++errors;
+      });
+    });
+
+    it("copilot status unknown", async () => {
+      mockGet = () => {
+        return {
+          status: 200,
+          data: {
+            value: {
+              foo: "bar",
+            },
+          },
+        } as AxiosResponse;
+      };
+
+      const result = await getCopilotStatus("fake-token");
+
+      chai.assert.isUndefined(result);
+      chai.assert.equal(errors, 1);
     });
   });
 

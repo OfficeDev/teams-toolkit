@@ -129,7 +129,7 @@ jobs:
           echo "EXTENSION_VERSION=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)" >> $GITHUB_OUTPUT
           if git tag --points-at HEAD | grep templates | grep rc;
           then
-              git push -d origin $TEMPLATE_VERSION
+              (git ls-remote --tags origin | grep $TEMPLATE_VERSION) && git push -d origin $TEMPLATE_VERSION
           fi
 
       - name: update template rc tag

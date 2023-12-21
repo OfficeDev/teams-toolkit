@@ -14,6 +14,9 @@ New to Teams app development or Teams Toolkit? Learn more about
 Teams app manifests, deploying to the cloud, and more in the documentation 
 at https://aka.ms/teams-toolkit-vs-docs
 
+This sample is configured as interactive server-side rendering.
+For more details about Blazor render mode, please refer to [ASP.NET Core Blazor render modes | Microsoft Learn](https://learn.microsoft.com/aspnet/core/blazor/components/render-modes).
+
 Note: This sample will only provision single tenant Microsoft Entra app.
 For multi-tenant support, please refer to https://aka.ms/teamsfx-multi-tenant.
 

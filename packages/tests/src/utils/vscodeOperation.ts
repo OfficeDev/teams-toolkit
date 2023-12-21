@@ -279,6 +279,7 @@ export async function getNotification(
       const message = await notification.getMessage();
       for (const errorFlag of errorFlags) {
         if (message.includes(errorFlag)) {
+          await getOutputLogs();
           await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
           throw new Error(`Get error message: ${message}`);
         }
@@ -1208,4 +1209,36 @@ export async function addSpfxWebPart(webPartName = "helloworld") {
     `Web part ${webPartName} was successfully added to project`,
     30 * 1000
   );
+}
+
+export async function getOutputLogs(): Promise<string | undefined> {
+  const driver = VSBrowser.instance.driver;
+  console.log("openTerminalView");
+  await openTerminalView();
+  console.log("openOutputView");
+  const pannel = new BottomBarPanel();
+  const output = await pannel.openOutputView();
+  console.log("Teams Toolkit");
+  try {
+    const maximize = await pannel.findElement(
+      By.css("a.action-label.codicon.codicon-panel-maximize")
+    );
+    await maximize.click();
+    await driver.sleep(Timeout.shortTimeWait);
+  } catch {
+    console.log("already maximized");
+  }
+  try {
+    // This api is not work on macos, it will throw: Error: Channel Teams Toolkit not found
+    await output.selectChannel("Teams Toolkit");
+    // Get output
+    console.log("Get output");
+    const text = await output.getText();
+
+    console.log("Output: " + text);
+    return text;
+  } catch {
+    console.log("Can't get output log");
+  }
+  return;
 }

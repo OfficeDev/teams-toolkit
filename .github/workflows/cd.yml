@@ -124,6 +124,7 @@ jobs:
       - name: version change
         id: version-change
         run: |
+          sleep 60
           echo "CHANGED=$(git tag --points-at HEAD | xargs)" >> $GITHUB_OUTPUT
           echo "TEMPLATE_VERSION=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_OUTPUT
           echo "EXTENSION_VERSION=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)" >> $GITHUB_OUTPUT

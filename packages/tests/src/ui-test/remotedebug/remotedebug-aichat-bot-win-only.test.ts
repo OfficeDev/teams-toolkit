@@ -6,7 +6,7 @@
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout } from "../../utils/constants";
+import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
@@ -82,7 +82,13 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      await validateWelcomeAndReplyBot(page);
+      await validateWelcomeAndReplyBot(page, {
+        hasWelcomeMessage: false,
+        hasCommandReplyValidation: true,
+        botCommand: "helloWorld",
+        expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+        expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+      });
     }
   );
 });

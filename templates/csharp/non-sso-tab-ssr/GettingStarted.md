@@ -14,6 +14,9 @@ New to Teams app development or Teams Toolkit? Learn more about
 Teams app manifests, deploying to the cloud, and more in the documentation 
 at https://aka.ms/teams-toolkit-vs-docs
 
+This sample is configured as interactive server-side rendering.
+For more details about Blazor render mode, please refer to https://learn.microsoft.com/aspnet/core/blazor/components/render-modes.
+
 ## Report an issue
 
 Select Visual Studio > Help > Send Feedback > Report a Problem. 

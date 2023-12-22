@@ -11,7 +11,6 @@ export const accountLoginM365Command: CLICommand = {
   telemetry: {
     event: TelemetryEvent.AccountLoginM365,
   },
-  defaultInteractiveOption: false,
   handler: async () => {
     await M365TokenProvider.signout();
     await accountUtils.outputM365Info("login");

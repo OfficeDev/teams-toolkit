@@ -483,6 +483,11 @@ class CLIEngine {
       }
     }
 
+    // read CI_ENABLED from env
+    if (process.env.CI_ENABLED === "true") {
+      context.globalOptionValues.interactive = false;
+    }
+
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
     context.optionValues.correlationId = uuid.v4();

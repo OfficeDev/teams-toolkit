@@ -59,6 +59,7 @@ export const accountLoginAzureCommand: CLICommand = {
   telemetry: {
     event: TelemetryEvent.AccountLoginAzure,
   },
+  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const args = ctx.optionValues;
     const isSP = args["service-principal"] as boolean;

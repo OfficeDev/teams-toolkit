@@ -187,8 +187,7 @@ class CLIEngine {
       ) {
         logger.info(
           `Some arguments/options are useless because the interactive mode is opened.` +
-            ` If you want to run the command non-interactively, add '--interactive false' after your command` +
-            ` or set the global setting by '${process.env.TEAMSFX_CLI_BIN_NAME} config set interactive false'.`
+            ` If you want to run the command non-interactively, add '--interactive false' after your command.`
         );
         context.optionValues = trimOptionValues;
         context.argumentValues = [];

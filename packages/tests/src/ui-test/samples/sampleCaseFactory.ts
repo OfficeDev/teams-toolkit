@@ -31,8 +31,6 @@ import fs from "fs-extra";
 import path from "path";
 import { Executor } from "../../utils/executor";
 import { ChildProcessWithoutNullStreams } from "child_process";
-import { execAsync } from "../../utils/commonUtils";
-import os from "os";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -238,6 +236,7 @@ export abstract class CaseFactory {
       let devtunnelProcess: ChildProcessWithoutNullStreams;
       let debugProcess: ChildProcessWithoutNullStreams;
       let tunnelName = "";
+      let successFlag = true;
 
       beforeEach(async function () {
         // ensure workbench is ready
@@ -279,7 +278,8 @@ export abstract class CaseFactory {
           );
         }
         await onAfter(sampledebugContext, env);
-        process.exit(0);
+        if (successFlag) process.exit(0);
+        else process.exit(1);
       });
 
       it(
@@ -291,168 +291,174 @@ export abstract class CaseFactory {
           author,
         },
         async function () {
-          // create project
-          await sampledebugContext.openResourceFolder();
+          try {
+            // create project
+            await sampledebugContext.openResourceFolder();
+            // use 1st middleware to process typical sample
+            await onAfterCreate(sampledebugContext, env, azSqlHelper);
 
-          // use 1st middleware to process typical sample
-          await onAfterCreate(sampledebugContext, env, azSqlHelper);
+            const envFile = path.resolve(
+              sampledebugContext.projectPath,
+              "env",
+              ".env.local"
+            );
+            let envContent = fs.readFileSync(envFile, "utf-8");
+            // if bot project setup devtunnel
+            const botFlag = envContent.includes("BOT_DOMAIN");
 
-          const envFile = path.resolve(
-            sampledebugContext.projectPath,
-            "env",
-            ".env.local"
-          );
-          let envContent = fs.readFileSync(envFile, "utf-8");
-          // if bot project setup devtunnel
-          const botFlag = envContent.includes("BOT_DOMAIN");
-
-          const debugEnvMap: Record<"local" | "dev", () => Promise<void>> = {
-            local: async () => {
-              // local debug
-              if (options?.debug === "cli") {
-                // cli preview
-                console.log("botFlag: ", botFlag);
-                if (botFlag) {
-                  devtunnelProcess = Executor.startDevtunnel(
-                    (data) => {
-                      if (data) {
-                        // start devtunnel
-                        const domainRegex =
-                          /Connect via browser: https:\/\/(\S+)/;
-                        const endpointRegex = /Connect via browser: (\S+)/;
-                        const tunnelNameRegex =
-                          /Ready to accept connections for tunnel: (\S+)/;
-                        console.log(data);
-                        const domainFound = data.match(domainRegex);
-                        const endpointFound = data.match(endpointRegex);
-                        const tunnelNameFound = data.match(tunnelNameRegex);
-                        if (domainFound && endpointFound) {
-                          if (domainFound[1] && endpointFound[1]) {
-                            const domain = domainFound[1];
-                            const endpoint = endpointFound[1];
-                            try {
-                              console.log(endpoint);
-                              console.log(tunnelName);
-                              envContent += `\nBOT_ENDPOINT=${endpoint}`;
-                              envContent += `\nBOT_DOMAIN=${domain}`;
-                              fs.writeFileSync(envFile, envContent);
-                            } catch (error) {
-                              console.log(error);
+            const debugEnvMap: Record<"local" | "dev", () => Promise<void>> = {
+              local: async () => {
+                // local debug
+                if (options?.debug === "cli") {
+                  // cli preview
+                  console.log("botFlag: ", botFlag);
+                  if (botFlag) {
+                    devtunnelProcess = Executor.startDevtunnel(
+                      (data) => {
+                        if (data) {
+                          // start devtunnel
+                          const domainRegex =
+                            /Connect via browser: https:\/\/(\S+)/;
+                          const endpointRegex = /Connect via browser: (\S+)/;
+                          const tunnelNameRegex =
+                            /Ready to accept connections for tunnel: (\S+)/;
+                          console.log(data);
+                          const domainFound = data.match(domainRegex);
+                          const endpointFound = data.match(endpointRegex);
+                          const tunnelNameFound = data.match(tunnelNameRegex);
+                          if (domainFound && endpointFound) {
+                            if (domainFound[1] && endpointFound[1]) {
+                              const domain = domainFound[1];
+                              const endpoint = endpointFound[1];
+                              try {
+                                console.log(endpoint);
+                                console.log(tunnelName);
+                                envContent += `\nBOT_ENDPOINT=${endpoint}`;
+                                envContent += `\nBOT_DOMAIN=${domain}`;
+                                fs.writeFileSync(envFile, envContent);
+                              } catch (error) {
+                                console.log(error);
+                              }
+                            }
+                          }
+                          if (tunnelNameFound) {
+                            if (tunnelNameFound[1]) {
+                              tunnelName = tunnelNameFound[1];
                             }
                           }
                         }
-                        if (tunnelNameFound) {
-                          if (tunnelNameFound[1]) {
-                            tunnelName = tunnelNameFound[1];
-                          }
-                        }
+                      },
+                      (error) => {
+                        console.log(error);
+                      }
+                    );
+                  }
+                  await new Promise((resolve) =>
+                    setTimeout(resolve, 60 * 1000)
+                  );
+                  {
+                    const { success } = await Executor.provision(
+                      sampledebugContext.projectPath,
+                      "local"
+                    );
+                    expect(success).to.be.true;
+                  }
+                  {
+                    const { success } = await Executor.deploy(
+                      sampledebugContext.projectPath,
+                      "local"
+                    );
+                    expect(success).to.be.true;
+                  }
+                  debugProcess = Executor.debugProject(
+                    sampledebugContext.projectPath,
+                    "local",
+                    true,
+                    process.env,
+                    (data) => {
+                      if (data) {
+                        console.log(data);
                       }
                     },
                     (error) => {
                       console.log(error);
                     }
                   );
-                }
-                await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
-                {
-                  const { success } = await Executor.provision(
-                    sampledebugContext.projectPath,
-                    "local"
+                  await new Promise((resolve) =>
+                    setTimeout(resolve, 2 * 30 * 1000)
                   );
-                  expect(success).to.be.true;
-                }
-                {
-                  const { success } = await Executor.deploy(
-                    sampledebugContext.projectPath,
-                    "local"
-                  );
-                  expect(success).to.be.true;
-                }
-                debugProcess = Executor.debugProject(
-                  sampledebugContext.projectPath,
-                  "local",
-                  true,
-                  process.env,
-                  (data) => {
-                    if (data) {
-                      console.log(data);
+                } else {
+                  try {
+                    await debugInitMap[sampleName]();
+                    for (const label of validate) {
+                      await debugMap[label]();
                     }
-                  },
-                  (error) => {
-                    console.log(error);
+                  } catch (error) {
+                    await VSBrowser.instance.takeScreenshot(
+                      getScreenshotName("debug")
+                    );
+                    console.log("[Skip Error]: ", error);
+                    await VSBrowser.instance.driver.sleep(
+                      Timeout.playwrightDefaultTimeout
+                    );
                   }
-                );
-                await new Promise((resolve) =>
-                  setTimeout(resolve, 2 * 30 * 1000)
-                );
-              } else {
-                try {
-                  await debugInitMap[sampleName]();
-                  for (const label of validate) {
-                    await debugMap[label]();
-                  }
-                } catch (error) {
-                  await VSBrowser.instance.takeScreenshot(
-                    getScreenshotName("debug")
-                  );
-                  console.log("[Skip Error]: ", error);
-                  await VSBrowser.instance.driver.sleep(
-                    Timeout.playwrightDefaultTimeout
-                  );
                 }
-              }
-            },
-            dev: async () => {
-              await runProvision(
-                sampledebugContext.appName,
-                env,
-                false,
-                options?.type === "spfx"
-              );
-              try {
-                await runDeploy(Timeout.tabDeploy, options?.type === "spfx");
-              } catch (error) {
-                await reRunDeploy(Timeout.tabDeploy);
-              }
-            },
-          };
+              },
+              dev: async () => {
+                await runProvision(
+                  sampledebugContext.appName,
+                  env,
+                  false,
+                  options?.type === "spfx"
+                );
+                try {
+                  await runDeploy(Timeout.tabDeploy, options?.type === "spfx");
+                } catch (error) {
+                  await reRunDeploy(Timeout.tabDeploy);
+                }
+              },
+            };
 
-          if (options?.skipInit) {
-            console.log("skip ui skipInit...");
-            console.log("debug finish!");
-            return;
+            if (options?.skipInit) {
+              console.log("skip ui skipInit...");
+              console.log("debug finish!");
+              return;
+            }
+            await debugEnvMap[env]();
+
+            const teamsAppId = await sampledebugContext.getTeamsAppId(env);
+            expect(teamsAppId).to.not.be.empty;
+
+            // use 2nd middleware to process typical sample
+            await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
+
+            // init
+            const page = await onInitPage(sampledebugContext, teamsAppId, {
+              includeFunction: options?.includeFunction ?? false,
+              npmName: options?.npmName ?? "",
+              dashboardFlag: options?.dashboardFlag ?? false,
+              type: options?.type ?? "",
+              teamsAppName: options?.teamsAppName ?? "",
+            });
+
+            if (options?.skipValidation) {
+              console.log("skip ui skipValidation...");
+              console.log("debug finish!");
+              return;
+            }
+
+            // validate
+            await onValidate(page, {
+              context: sampledebugContext,
+              displayName: Env.displayName,
+              includeFunction: options?.includeFunction ?? false,
+              npmName: options?.npmName ?? "",
+              env: env,
+            });
+          } catch (error) {
+            console.log(error);
+            successFlag = false;
           }
-          await debugEnvMap[env]();
-
-          const teamsAppId = await sampledebugContext.getTeamsAppId(env);
-          expect(teamsAppId).to.not.be.empty;
-
-          // use 2nd middleware to process typical sample
-          await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
-
-          // init
-          const page = await onInitPage(sampledebugContext, teamsAppId, {
-            includeFunction: options?.includeFunction ?? false,
-            npmName: options?.npmName ?? "",
-            dashboardFlag: options?.dashboardFlag ?? false,
-            type: options?.type ?? "",
-            teamsAppName: options?.teamsAppName ?? "",
-          });
-
-          if (options?.skipValidation) {
-            console.log("skip ui skipValidation...");
-            console.log("debug finish!");
-            return;
-          }
-
-          // validate
-          await onValidate(page, {
-            context: sampledebugContext,
-            displayName: Env.displayName,
-            includeFunction: options?.includeFunction ?? false,
-            npmName: options?.npmName ?? "",
-            env: env,
-          });
 
           console.log("debug finish!");
         }

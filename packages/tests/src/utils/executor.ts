@@ -385,6 +385,7 @@ export class Executor {
         onError(dataString);
       }
     });
+    return child;
   }
 
   static deleteAllTunnel(

@@ -31,6 +31,8 @@ import fs from "fs-extra";
 import path from "path";
 import { Executor } from "../../utils/executor";
 import { ChildProcessWithoutNullStreams } from "child_process";
+import { execAsync } from "../../utils/commonUtils";
+import os from "os";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -253,14 +255,16 @@ export abstract class CaseFactory {
       afterEach(async function () {
         this.timeout(Timeout.finishAzureTestCase);
         if (debugProcess) {
-          debugProcess.kill("SIGTERM");
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          const isClose = debugProcess.kill("SIGTERM");
+          await new Promise((resolve) => setTimeout(resolve, 10000));
+          expect(isClose).to.be.true;
           console.log("kill debug process successfully");
         }
 
         if (tunnelName) {
-          devtunnelProcess.kill("SIGTERM");
-          await new Promise((resolve) => setTimeout(resolve, 2000));
+          const isClose = devtunnelProcess.kill("SIGTERM");
+          await new Promise((resolve) => setTimeout(resolve, 10000));
+          expect(isClose).to.be.true;
           console.log("kill devtunnel process successfully");
           Executor.deleteTunnel(
             tunnelName,
@@ -275,6 +279,7 @@ export abstract class CaseFactory {
           );
         }
         await onAfter(sampledebugContext, env);
+        process.exit(1);
       });
 
       it(

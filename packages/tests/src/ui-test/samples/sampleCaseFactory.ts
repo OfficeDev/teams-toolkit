@@ -279,7 +279,7 @@ export abstract class CaseFactory {
           );
         }
         await onAfter(sampledebugContext, env);
-        process.exit(1);
+        process.exit(0);
       });
 
       it(

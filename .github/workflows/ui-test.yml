@@ -61,6 +61,9 @@ jobs:
       ADO_TOKEN: ${{ secrets.ADO_PAT }}
       AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
       TARGET_TEST_PLAN_NAME: ${{ github.event.inputs.target-testplan-name }}
+      AZURE_CLIENT_ID: ${{ secrets.TEST_AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.TEST_AZURE_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
 
     steps:
       - name: Init GitHub CLI
@@ -161,6 +164,12 @@ jobs:
           name: testplan
           path: |
             ./packages/tests/testplan.json
+      
+      - name: clean devtunnel
+        run: |
+          curl -sL https://aka.ms/DevTunnelCliInstall | bash
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ~/bin/devtunnel delete-all -f
 
     outputs:
       npm-tag: ${{ steps.bvt.outputs.npm-tag || steps.pvt.outputs.npm-tag }}
@@ -262,8 +271,25 @@ jobs:
           Start-Process powershell -verb RunAs -ArgumentList "C:\ProgramData\Chocolatey\choco.exe install openssl -y --force" -wait 
           Write-Host "Finish Installing openssl."
 
+      - name: Install devtunnel (ubuntu)
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+        run: |
+          curl -sL https://aka.ms/DevTunnelCliInstall | bash
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+  
+      - name: Install devtunnel (windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          powershell Invoke-WebRequest -Uri https://aka.ms/TunnelsCliDownload/win-x64 -OutFile devtunnel.exe
+          $currentDirectory = (Get-Location).Path
+          $executablePath = Join-Path $currentDirectory "devtunnel.exe"
+          [System.Environment]::SetEnvironmentVariable("Path", "$currentPath;$executablePath", [System.EnvironmentVariableTarget]::Machine)
+          ./devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+
       - name: Set cert (win)
         if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
         run: |
           Write-Host $home
           $filePath = Join-Path -Path $home -ChildPath "certinstall.ps1"

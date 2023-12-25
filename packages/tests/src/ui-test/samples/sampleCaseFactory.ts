@@ -5,7 +5,6 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Timeout,
   TemplateProject,
@@ -28,6 +27,9 @@ import {
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { expect } from "chai";
 import { Page } from "playwright";
+import fs from "fs-extra";
+import path from "path";
+import { Executor } from "../../utils/executor";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -110,6 +112,7 @@ export abstract class CaseFactory {
     npmName?: string;
     skipInit?: boolean;
     skipValidation?: boolean;
+    debug?: "cli" | "ttk";
   };
 
   public constructor(
@@ -127,6 +130,7 @@ export abstract class CaseFactory {
       npmName?: string;
       skipInit?: boolean;
       skipValidation?: boolean;
+      debug?: "cli" | "ttk";
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -188,7 +192,6 @@ export abstract class CaseFactory {
     }
   ): Promise<Page> {
     return await initPage(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       sampledebugContext.context!,
       teamsAppId,
       Env.username,
@@ -257,28 +260,103 @@ export abstract class CaseFactory {
           author,
         },
         async function () {
+          let tunnelName = "";
           // create project
           await sampledebugContext.openResourceFolder();
 
           // use 1st middleware to process typical sample
           await onAfterCreate(sampledebugContext, env, azSqlHelper);
 
+          const envFile = path.resolve(
+            sampledebugContext.projectPath,
+            "env",
+            ".env.local"
+          );
+          let envContent = fs.readFileSync(envFile, "utf-8");
+          // if bot project setup devtunnel
+          const botFlag = envContent.includes("BOT_DOMAIN");
+
           const debugEnvMap: Record<"local" | "dev", () => Promise<void>> = {
             local: async () => {
-              try {
-                // local debug
-                await debugInitMap[sampleName]();
-                for (const label of validate) {
-                  await debugMap[label]();
+              // local debug
+              if (options?.debug === "cli") {
+                // cli preview
+                console.log("botFlag: ", botFlag);
+                if (botFlag) {
+                  Executor.startDevtunnel(
+                    (data) => {
+                      if (data) {
+                        // start devtunnel
+                        const domainRegex =
+                          /Connect via browser: https:\/\/(\S+)/;
+                        const endpointRegex = /Connect via browser: (\S+)/;
+                        const tunnelNameRegex =
+                          /Ready to accept connections for tunnel: (\S+)/;
+                        console.log(data);
+                        const domainFound = data.match(domainRegex);
+                        const endpointFound = data.match(endpointRegex);
+                        const tunnelNameFound = data.match(tunnelNameRegex);
+                        if (domainFound && endpointFound) {
+                          if (domainFound[1] && endpointFound[1]) {
+                            const domain = domainFound[1];
+                            const endpoint = endpointFound[1];
+                            try {
+                              console.log(endpoint);
+                              console.log(tunnelName);
+                              envContent += `\nBOT_ENDPOINT=${endpoint}`;
+                              envContent += `\nBOT_DOMAIN=${domain}`;
+                              fs.writeFileSync(envFile, envContent);
+                            } catch (error) {
+                              console.log(error);
+                            }
+                          }
+                        }
+                        if (tunnelNameFound) {
+                          if (tunnelNameFound[1]) {
+                            tunnelName = tunnelNameFound[1];
+                          }
+                        }
+                      }
+                    },
+                    (error) => {
+                      console.log(error);
+                    }
+                  );
                 }
-              } catch (error) {
-                await VSBrowser.instance.takeScreenshot(
-                  getScreenshotName("debug")
+                await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+                {
+                  const { success } = await Executor.provision(
+                    sampledebugContext.projectPath,
+                    "local"
+                  );
+                  expect(success).to.be.true;
+                }
+                {
+                  const { success } = await Executor.deploy(
+                    sampledebugContext.projectPath,
+                    "local"
+                  );
+                  expect(success).to.be.true;
+                }
+                Executor.debugProject(sampledebugContext.projectPath, "local");
+                await new Promise((resolve) =>
+                  setTimeout(resolve, 2 * 30 * 1000)
                 );
-                console.log("[Skip Error]: ", error);
-                await VSBrowser.instance.driver.sleep(
-                  Timeout.playwrightDefaultTimeout
-                );
+              } else {
+                try {
+                  await debugInitMap[sampleName]();
+                  for (const label of validate) {
+                    await debugMap[label]();
+                  }
+                } catch (error) {
+                  await VSBrowser.instance.takeScreenshot(
+                    getScreenshotName("debug")
+                  );
+                  console.log("[Skip Error]: ", error);
+                  await VSBrowser.instance.driver.sleep(
+                    Timeout.playwrightDefaultTimeout
+                  );
+                }
               }
             },
             dev: async () => {
@@ -295,13 +373,13 @@ export abstract class CaseFactory {
               }
             },
           };
-          await debugEnvMap[env]();
 
           if (options?.skipInit) {
             console.log("skip ui skipInit...");
             console.log("debug finish!");
             return;
           }
+          await debugEnvMap[env]();
 
           const teamsAppId = await sampledebugContext.getTeamsAppId(env);
           expect(teamsAppId).to.not.be.empty;
@@ -332,6 +410,20 @@ export abstract class CaseFactory {
             npmName: options?.npmName ?? "",
             env: env,
           });
+
+          if (tunnelName) {
+            Executor.deleteTunnel(
+              tunnelName,
+              (data) => {
+                if (data) {
+                  console.log(data);
+                }
+              },
+              (error) => {
+                console.log(error);
+              }
+            );
+          }
           console.log("debug finish!");
         }
       );

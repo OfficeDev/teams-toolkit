@@ -289,7 +289,6 @@ jobs:
 
       - name: Set cert (win)
         if: matrix.os == 'windows-latest'
-        working-directory: packages/tests
         run: |
           Write-Host $home
           $filePath = Join-Path -Path $home -ChildPath "certinstall.ps1"

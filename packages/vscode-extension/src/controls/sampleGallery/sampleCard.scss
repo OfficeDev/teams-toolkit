@@ -31,7 +31,6 @@
     }
 
     .unavailableSampleImage {
-      min-width: 234px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -52,34 +51,6 @@
       display: flex;
       flex-wrap: wrap;
       padding: 0px 10px 0px 10px;
-    }
-
-    .triangle {
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 16px;
-      border-color: #007ACC transparent transparent #007ACC;
-      float: left;
-      position: absolute;
-      top: 0px;
-      border-radius: 6px 0px 0px 0px;
-      z-index: 1;
-    }
-
-    .star {
-      display: block;
-      text-align: center;
-      height: 12px;
-      width: 12px;
-      position: absolute;
-      margin: 2px;
-      top: -16px;
-      left: -16px;
-      right: 0;
-      bottom: 0;
-      z-index: 2;
-      color: #CCCCCC;
     }
 
     .ms-Image {

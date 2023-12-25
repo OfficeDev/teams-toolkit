@@ -57,7 +57,8 @@
     "workspaceContains:/.fx/**/*",
     "workspaceContains:teamsapp.yml",
     "onView:teamsfx-empty-project",
-    "onUri"
+    "onUri",
+    "workspaceContains:/**/manifest.json"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -1236,6 +1237,12 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Visit [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin) to learn more."
+        },
+        "fx-extension.logLevel": {
+          "type": "string",
+          "enum": ["Debug", "Verbose", "Info"],
+          "default": "Info",
+          "markdownDescription": "Set the log level of Teams Toolkit. The default value is `Info`. The available values are `Debug`, `Verbose`, `Info`. The definitions of the log levels are:\n\n`Debug`:\n\n- HTTP request and response details from Teams Toolkit to external services such as Azure, Microsoft 365, and Teams Developer Portal.\n- Information related to Microsoft 365 and Azure accounts and access permissions.\n- Debugging information for each Teams Toolkit command execution, such as stack trace, ARM deployment information, etc.\n\n`Verbose`:\n\n- Progress information when executing lifecycle commands defined in the YAML file.\n- Execution details of each action that defined in the YAML file, including outcomes, result summaries, diagnostic information, etc.\n\n`Info`: Teams Toolkit command execution summaries.\n"
         }
       }
     }
@@ -1350,12 +1357,13 @@
     "@azure/identity": "^3.1.3",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.14.6",
-    "@microsoft/dev-tunnels-connections": "~1.0.7445",
-    "@microsoft/dev-tunnels-contracts": "~1.0.7445",
-    "@microsoft/dev-tunnels-management": "~1.0.7445",
-    "@microsoft/dev-tunnels-ssh": "~3.11.31",
+    "@microsoft/dev-tunnels-connections": "1.0.7445",
+    "@microsoft/dev-tunnels-contracts": "1.0.7445",
+    "@microsoft/dev-tunnels-management": "1.0.7445",
+    "@microsoft/dev-tunnels-ssh": "3.11.31",
     "@microsoft/teamsfx-api": "workspace:*",
     "@microsoft/teamsfx-core": "workspace:*",
+    "@microsoft/vscode-ui": "workspace:*",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
     "@vscode/webview-ui-toolkit": "^1.2.2",

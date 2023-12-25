@@ -63,19 +63,19 @@ export async function createSampleProject(
   await webView.switchToFrame();
   let foundSample = false;
   console.log("finding sample...");
-  const elements = await webView.findWebElements(
-    By.xpath('//div[@class="sample-gallery"]//div[@class="sample-list-item"]')
-  );
+
+  const elements = await webView.findWebElements(By.css("h3"));
   for (const element of elements) {
-    const sampleItem = await element.findElement(By.css("h3"));
-    const SampleItemName = await sampleItem.getText();
+    const SampleItemName = await element.getText();
     if (SampleItemName === sample) {
       foundSample = true;
       await element.click();
       break;
     }
   }
+
   if (!foundSample) {
+    await VSBrowser.instance.takeScreenshot(getScreenshotName("no-sample-"));
     throw new Error(`Not found sample ${sample}`);
   }
   const button = await webView.findWebElement(

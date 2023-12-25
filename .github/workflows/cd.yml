@@ -18,7 +18,7 @@ on:
       pkgs:
         type: string
         required: false
-        description: "Please enter the package names you want to publish, such as cli, vscode, sdk, server and template. Please separate multiple entries with spaces"
+        description: "Please enter the package names you want to publish, such as cli, vscode, ui, sdk, server and template. Please separate multiple entries with spaces"
   schedule:
     - cron: "0 16 * * *"
 
@@ -127,10 +127,7 @@ jobs:
           echo "CHANGED=$(git tag --points-at HEAD | xargs)" >> $GITHUB_OUTPUT
           echo "TEMPLATE_VERSION=$(git tag --points-at HEAD | grep templates)" >> $GITHUB_OUTPUT
           echo "EXTENSION_VERSION=$(git tag --points-at HEAD | grep ms-teams-vscode-extension@)" >> $GITHUB_OUTPUT
-          if git tag --points-at HEAD | grep templates | grep rc;
-          then
-              git push -d origin $TEMPLATE_VERSION
-          fi
+          git tag --points-at HEAD | grep templates | grep rc | xargs -r git push -d origin
 
       - name: update template rc tag
         uses: richardsimko/update-tag@v1.0.7

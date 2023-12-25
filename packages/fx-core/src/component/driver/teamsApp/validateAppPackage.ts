@@ -185,14 +185,17 @@ export class ValidateAppPackageDriver implements StepDriver {
           }
         });
         validationResult.notes.map((note) => {
-          outputMessage.push({
-            content: `${SummaryConstant.Succeeded} `,
-            color: Colors.BRIGHT_GREEN,
-          });
-          outputMessage.push({
-            content: `${note.content}\n`,
-            color: Colors.BRIGHT_WHITE,
-          });
+          // It might be undefined in some cases
+          if (note.content) {
+            outputMessage.push({
+              content: `${SummaryConstant.Succeeded} `,
+              color: Colors.BRIGHT_GREEN,
+            });
+            outputMessage.push({
+              content: `${note.content}\n`,
+              color: Colors.BRIGHT_WHITE,
+            });
+          }
         });
         context.ui?.showMessage("info", outputMessage, false);
         if (validationResult.errors.length > 0) {
@@ -235,6 +238,9 @@ export class ValidateAppPackageDriver implements StepDriver {
           })
           .join(EOL);
         const notes = validationResult.notes
+          .filter((note) => {
+            return note.content !== undefined;
+          })
           .map((note) => {
             return `${SummaryConstant.Succeeded} ${note.content}`;
           })

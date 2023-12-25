@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Context, err, Inputs, ok, Platform, SystemError } from "@microsoft/teamsfx-api";
+import {
+  Context,
+  err,
+  Inputs,
+  ok,
+  Platform,
+  Stage,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -21,6 +30,8 @@ import { envUtil } from "../../../src/component/utils/envUtil";
 import { setTools } from "../../../src/core/globalVars";
 import { QuestionNames, SPFxVersionOptionIds } from "../../../src/question";
 import { MockTools } from "../../core/utils";
+import { getLocalizedString } from "../../../src/common/localizeUtils";
+import { FileNotFoundError } from "../../../src/error";
 
 describe("SPFxGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -65,7 +76,12 @@ describe("SPFxGenerator", function () {
           configurableTabs: [],
         };
       } else if (directory.includes(".yo-rc.json")) {
-        return { "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } };
+        return {
+          "@microsoft/generator-sharepoint": {
+            solutionName: "fakedSolutionName",
+            version: "1.17.4",
+          },
+        };
       } else {
         return { id: "fakedid", preconfiguredEntries: [{ title: { default: "helloworld" } }] };
       }
@@ -214,11 +230,9 @@ describe("SPFxGenerator", function () {
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").resolves("succeed");
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(false);
-    const yoInstaller = sinon
-      .stub(YoChecker.prototype, "ensureLatestDependency")
-      .resolves(ok(true));
+    const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
     const generatorInstaller = sinon
-      .stub(GeneratorChecker.prototype, "ensureLatestDependency")
+      .stub(GeneratorChecker.prototype, "ensureDependency")
       .resolves(ok(true));
 
     const generateTemplateStub = sinon
@@ -245,11 +259,9 @@ describe("SPFxGenerator", function () {
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").resolves("succeed");
-    const yoInstaller = sinon
-      .stub(YoChecker.prototype, "ensureLatestDependency")
-      .resolves(ok(true));
+    const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
     const generatorInstaller = sinon
-      .stub(GeneratorChecker.prototype, "ensureLatestDependency")
+      .stub(GeneratorChecker.prototype, "ensureDependency")
       .resolves(ok(true));
 
     const generateTemplateStub = sinon
@@ -275,9 +287,9 @@ describe("SPFxGenerator", function () {
     };
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(false);
-    sinon.stub(YoChecker.prototype, "ensureLatestDependency").resolves(ok(true));
+    sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
     sinon
-      .stub(GeneratorChecker.prototype, "ensureLatestDependency")
+      .stub(GeneratorChecker.prototype, "ensureDependency")
       .resolves(err(new SystemError("source", "name", "msg", "msg")));
 
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
@@ -299,7 +311,7 @@ describe("SPFxGenerator", function () {
     sinon.stub(YoChecker.prototype, "isLatestInstalled").resolves(false);
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
     sinon
-      .stub(YoChecker.prototype, "ensureLatestDependency")
+      .stub(YoChecker.prototype, "ensureDependency")
       .resolves(err(new SystemError("source", "name", "msg", "msg")));
 
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
@@ -340,7 +352,7 @@ describe("SPFxGenerator", function () {
     sinon.stub(GeneratorChecker.prototype, "isLatestInstalled").resolves(true);
     sinon.stub(cpUtils, "executeCommand").throws(new Error("errorMessage"));
     sinon.stub(Generator, "generateTemplate" as any).resolves(ok(undefined));
-    sinon.stub(YoChecker.prototype, "ensureLatestDependency").throws(new Error("unknown"));
+    sinon.stub(YoChecker.prototype, "ensureDependency").throws(new Error("unknown"));
 
     const result = await SPFxGenerator.generate(context, inputs, testFolder);
 
@@ -554,6 +566,434 @@ describe("SPFxGenerator", function () {
     chai.expect(writeEnvStub.calledOnce).to.eq(true);
     chai.expect(readAppManifestStub.calledTwice).to.eq(true);
     chai.expect(writeAppManifestStub.calledTwice).to.eq(true);
+  });
+
+  describe("doYeomanScaffold: add web part", async () => {
+    it("add web part with global package", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.4");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves(undefined);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(ok(true));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+      if (result.isErr()) {
+        console.log(result.error);
+      }
+
+      chai.expect(result.isOk()).to.eq(true);
+
+      chai.expect(yoInstaller.called).to.be.false;
+      chai.expect(generatorInstaller.called).to.be.false;
+    });
+
+    it("add web part with local package", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves(undefined);
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves("1.17.4");
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves("4.3.1");
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(ok(true));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+      if (result.isErr()) {
+        console.log(result.error);
+      }
+
+      chai.expect(result.isOk()).to.eq(true);
+
+      chai.expect(yoInstaller.called).to.be.false;
+      chai.expect(generatorInstaller.called).to.be.false;
+      chai.expect(localYoChecker.called).to.be.true;
+    });
+
+    it("add web part with installing yo and SPFx locally", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.0");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves(undefined);
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves(undefined);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(ok(true));
+      const userConfirm = sinon
+        .stub(context.userInteraction, "showMessage")
+        .resolves(ok(getLocalizedString("plugins.spfx.addWebPart.install")));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+      if (result.isErr()) {
+        console.log(result.error);
+      }
+
+      chai.expect(result.isOk()).to.eq(true);
+
+      chai.expect(yoInstaller.called).to.be.true;
+      chai.expect(generatorInstaller.called).to.be.true;
+      chai.expect(localYoChecker.called).to.be.true;
+      chai.expect(userConfirm.called).to.be.true;
+    });
+
+    it("add web part with upgrading SPFx locally", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.0");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves("1.16.1");
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves("4.3.1");
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(ok(true));
+      const userConfirm = sinon
+        .stub(context.userInteraction, "showMessage")
+        .resolves(ok(getLocalizedString("plugins.spfx.addWebPart.upgrade")));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+
+      chai.expect(result.isOk()).to.eq(true);
+
+      chai.expect(yoInstaller.called).to.be.false;
+      chai.expect(generatorInstaller.called).to.be.true;
+      chai.expect(localYoChecker.called).to.be.true;
+      chai.expect(userConfirm.called).to.be.true;
+    });
+
+    it("add web part with mismatch SPFx version locally. click 'help' first and then 'continue'", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.0");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves("1.18.2");
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves("4.3.1");
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(ok(true));
+      const userConfirm = sinon
+        .stub(context.userInteraction, "showMessage")
+        .onFirstCall()
+        .resolves(ok(getLocalizedString("plugins.spfx.addWebPart.versionMismatch.help")))
+        .onSecondCall()
+        .resolves(ok(getLocalizedString("plugins.spfx.addWebPart.versionMismatch.continue")));
+      const openUrl = sinon.stub(context.userInteraction, "openUrl").resolves(ok(true));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+
+      chai.expect(result.isOk()).to.eq(true);
+
+      chai.expect(yoInstaller.called).to.be.false;
+      chai.expect(generatorInstaller.called).to.be.false;
+      chai.expect(localYoChecker.called).to.be.true;
+      chai.expect(userConfirm.called).to.be.true;
+      chai.expect(openUrl.called).to.be.true;
+    });
+
+    it("add web part with installing SPFx cancel", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.0");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves("1.16.1");
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves("4.3.1");
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(ok(true));
+      const userConfirm = sinon
+        .stub(context.userInteraction, "showMessage")
+        .resolves(ok(undefined));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+
+      chai.expect(result.isErr()).to.eq(true);
+
+      chai.expect(yoInstaller.called).to.be.false;
+      chai.expect(generatorInstaller.called).to.be.false;
+      chai.expect(localYoChecker.called).to.be.false;
+      chai.expect(userConfirm.called).to.be.true;
+    });
+
+    it("add web part with upgrading SPFx cancel", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.0");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves("1.16.1");
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves("4.3.1");
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(ok(true));
+      const userConfirm = sinon
+        .stub(context.userInteraction, "showMessage")
+        .resolves(ok(undefined));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+
+      chai.expect(result.isErr()).to.eq(true);
+
+      chai.expect(yoInstaller.called).to.be.false;
+      chai.expect(generatorInstaller.called).to.be.false;
+      chai.expect(localYoChecker.called).to.be.false;
+      chai.expect(userConfirm.called).to.be.true;
+    });
+
+    it("Cancel adding web part due to mismatch SPFx version locally. ", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.0");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves("1.18.2");
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves("4.3.1");
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon.stub(YoChecker.prototype, "ensureDependency").resolves(ok(true));
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(ok(true));
+      const userConfirm = sinon
+        .stub(context.userInteraction, "showMessage")
+        .resolves(ok(undefined));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+
+      chai.expect(result.isErr()).to.eq(true);
+
+      if (result.isErr()) {
+        chai.expect(result.error.name).equal("UserCancel");
+      }
+
+      chai.expect(yoInstaller.called).to.be.false;
+      chai.expect(generatorInstaller.called).to.be.false;
+      chai.expect(localYoChecker.called).to.be.false;
+      chai.expect(userConfirm.called).to.be.true;
+    });
+
+    it("failed to install yo", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.0");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves(undefined);
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves(undefined);
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const yoInstaller = sinon
+        .stub(YoChecker.prototype, "ensureDependency")
+        .resolves(err(new SystemError("error", "error", "", "")));
+      const userConfirm = sinon
+        .stub(context.userInteraction, "showMessage")
+        .resolves(ok(getLocalizedString("plugins.spfx.addWebPart.install")));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+
+      chai.expect(result.isOk()).to.eq(false);
+
+      chai.expect(yoInstaller.called).to.be.true;
+      chai.expect(localYoChecker.called).to.be.true;
+      chai.expect(userConfirm.called).to.be.true;
+    });
+
+    it("failed to install SPFx generator", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+
+      sinon.stub(GeneratorChecker.prototype, "findGloballyInstalledVersion").resolves("1.17.0");
+      sinon.stub(GeneratorChecker.prototype, "findLocalInstalledVersion").resolves("1.16.1");
+      const localYoChecker = sinon
+        .stub(YoChecker.prototype, "findLocalInstalledVersion")
+        .resolves("4.3.1");
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const generatorInstaller = sinon
+        .stub(GeneratorChecker.prototype, "ensureDependency")
+        .resolves(err(new SystemError("error", "error", "", "")));
+      const userConfirm = sinon
+        .stub(context.userInteraction, "showMessage")
+        .resolves(ok(getLocalizedString("plugins.spfx.addWebPart.upgrade")));
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+      chai.expect(result.isOk()).to.eq(false);
+      chai.expect(generatorInstaller.called).to.be.true;
+      chai.expect(localYoChecker.called).to.be.true;
+      chai.expect(userConfirm.called).to.be.true;
+    });
+
+    it("Cannot find version in .yo-rc.json file", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+      sinon.restore();
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readJson").resolves({
+        "@microsoft/generator-sharepoint": {
+          solutionName: "fakedSolutionName",
+        },
+      });
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+      chai.expect(result.isErr()).to.eq(true);
+      if (result.isErr()) {
+        chai.expect(result.error.name).equals("SolutionVersionMissing");
+      }
+    });
+
+    it("Empty content in .yo-rc.json file", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+      sinon.restore();
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readJson").resolves({});
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+      chai.expect(result.isErr()).to.eq(true);
+      if (result.isErr()) {
+        chai.expect(result.error.name).equals("SolutionVersionMissing");
+      }
+    });
+
+    it("Cannot find .yo-rc.json file", async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.AppName]: "spfxTestApp",
+        [QuestionNames.SPFxSolution]: "new",
+        [QuestionNames.SPFxFolder]: "folder",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        stage: Stage.addWebpart,
+      };
+      sinon.restore();
+      sinon.stub(fs, "pathExists").resolves(false);
+
+      const result = await SPFxGenerator.doYeomanScaffold(context, inputs, testFolder);
+      chai.expect(result.isErr()).to.eq(true);
+      if (result.isErr()) {
+        chai.expect(result.error instanceof FileNotFoundError).to.eq(true);
+      }
+    });
   });
 });
 

@@ -6,3 +6,7 @@ export type AzureStorageStaticWebsiteConfigArgs = {
   indexPage?: string;
   errorPage?: string;
 };
+
+export type AzureStaticWebAppConfigArgs = {
+  resourceId: string;
+};

@@ -1,4 +1,4 @@
-const { TeamsActivityHandler, CardFactory, TurnContext } = require("botbuilder");
+const { TeamsActivityHandler, TurnContext } = require("botbuilder");
 
 class TeamsBot extends TeamsActivityHandler {
   constructor() {

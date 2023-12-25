@@ -4,7 +4,6 @@
 import { FxError, Inputs } from "@microsoft/teamsfx-api";
 import { fillInTelemetryPropsForFxError, getHashedEnv } from "@microsoft/teamsfx-core";
 import { CliTelemetryReporter } from "../commonlib/telemetry";
-import { getSettingsVersion } from "../utils";
 import { TelemetryComponentType, TelemetryProperty, TelemetrySuccess } from "./cliTelemetryEvents";
 
 export function makeEnvRelatedProperty(
@@ -49,11 +48,6 @@ class CliTelemetry {
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
 
-    const settingsVersion = getSettingsVersion(this.rootFolder);
-    if (settingsVersion !== undefined) {
-      properties[TelemetryProperty.SettingsVersion] = settingsVersion;
-    }
-
     this.reporter
       ?.withRootFolder(this.rootFolder)
       .sendTelemetryEvent(eventName, properties, measurements);
@@ -73,11 +67,6 @@ class CliTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    const settingsVersion = getSettingsVersion(this.rootFolder);
-    if (settingsVersion !== undefined) {
-      properties[TelemetryProperty.SettingsVersion] = settingsVersion;
-    }
-
     fillInTelemetryPropsForFxError(properties, error);
 
     this.reporter
@@ -95,11 +84,6 @@ class CliTelemetry {
     }
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
-    }
-
-    const settingsVersion = getSettingsVersion(this.rootFolder);
-    if (settingsVersion !== undefined) {
-      properties[TelemetryProperty.SettingsVersion] = settingsVersion;
     }
 
     this.reporter

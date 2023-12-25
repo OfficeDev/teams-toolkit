@@ -5,48 +5,43 @@ import "./sampleDetailPage.scss";
 
 import * as React from "react";
 
-import { ActionButton, Image } from "@fluentui/react";
-import { VSCodeButton, VSCodeTag } from "@vscode/webview-ui-toolkit/react";
+import { ActionButton } from "@fluentui/react";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetryTriggerFrom,
-} from "../../telemetry/extTelemetryEvents";
+import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { Commands } from "../Commands";
-import { Setting, Watch } from "../resources";
-import { SampleProps } from "./ISamples";
+import { SampleDetailState, SampleProps } from "./ISamples";
+import OfflinePage from "./offlinePage";
 
-export default class SampleDetailPage extends React.Component<SampleProps, any> {
+export default class SampleDetailPage extends React.Component<SampleProps, SampleDetailState> {
   constructor(props: SampleProps) {
     super(props);
+    this.state = {
+      loading: true,
+      readme: "",
+    };
   }
 
-  render() {
+  public componentDidMount() {
+    window.addEventListener("message", this.messageHandler, false);
+    vscode.postMessage({
+      command: Commands.LoadSampleReadme,
+      data: this.props.sample,
+    });
+  }
+
+  public render() {
     const sample = this.props.sample;
-    return (
-      <div className="sampleDetail">
-        <ActionButton iconProps={{ iconName: "ChevronLeft" }} onClick={this.onBack}>
-          Back
-        </ActionButton>
+    const header = (
+      <>
         <div className="header">
-          <div className="contents">
-            <h2>{sample.title}</h2>
-            <div className="tags">
-              {sample.tags.map((value: string) => {
-                return (
-                  <VSCodeTag className="tag" key={value}>
-                    {value}
-                  </VSCodeTag>
-                );
-              })}
-            </div>
-          </div>
+          <h2>{sample.title}</h2>
           <div className="buttons">
             <VSCodeButton
               onClick={() =>
                 this.props.createSample(this.props.sample, TelemetryTriggerFrom.SampleDetailPage)
               }
+              disabled={sample.versionComparisonResult !== 0}
             >
               Create
             </VSCodeButton>
@@ -60,53 +55,85 @@ export default class SampleDetailPage extends React.Component<SampleProps, any> 
             </VSCodeButton>
           </div>
         </div>
-        <div className="estimation-time info">
-          <div className="watch">
-            <Watch></Watch>
-          </div>
-          <label style={{ paddingLeft: 4 }}>{sample.time}</label>
+        <div className="tags">
+          {sample.tags.map((value: string) => {
+            return (
+              <div className="tag" key={value}>
+                <span>{value}</span>
+              </div>
+            );
+          })}
         </div>
-        <div className="configuration info">
-          <div className="setting">
-            <Setting></Setting>
-          </div>
-          <label style={{ paddingLeft: 4 }}>{sample.configuration}</label>
+      </>
+    );
+    if (this.state.loading) {
+      return (
+        <div className="sample-detail-page">
+          <ActionButton iconProps={{ iconName: "ChevronLeft" }} onClick={this.onBack}>
+            Back
+          </ActionButton>
+          {header}
         </div>
-        <Image src={sample.gifUrl || sample.thumbnailUrl} />
-        <div className="description">{sample.fullDescription}</div>
+      );
+    }
+    return (
+      <div className="sample-detail-page">
+        <ActionButton iconProps={{ iconName: "ChevronLeft" }} onClick={this.onBack}>
+          Back
+        </ActionButton>
+        {sample.versionComparisonResult !== 0 && this.getBanner()}
+        {header}
+        {this.state.error ? (
+          <OfflinePage />
+        ) : (
+          <div className="readme" dangerouslySetInnerHTML={{ __html: this.state.readme }}></div>
+        )}
       </div>
     );
   }
 
-  onBack = () => {
+  private messageHandler = (event: any) => {
+    const message = event.data.message;
+    switch (message) {
+      case Commands.LoadSampleReadme:
+        const error = event.data.error;
+        const readme = event.data.readme;
+        this.setState({
+          loading: false,
+          readme,
+          error,
+        });
+        break;
+      default:
+        break;
+    }
+  };
+
+  private onBack = () => {
     this.props.selectSample("", TelemetryTriggerFrom.SampleDetailPage);
   };
 
-  onCreate = () => {
-    vscode.postMessage({
-      command: Commands.CloneSampleApp,
-      data: {
-        appName: this.props.sample.title,
-        appFolder: this.props.sample.id,
-      },
-    });
-  };
-
-  onViewGithub = () => {
-    vscode.postMessage({
-      command: Commands.SendTelemetryEvent,
-      data: {
-        eventName: TelemetryEvent.ViewSampleInGitHub,
-        properties: {
-          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-          [TelemetryProperty.SampleAppName]: this.props.sample.id,
-        },
-      },
-    });
-    const sampleInfo = this.props.sample.downloadUrlInfo;
-    vscode.postMessage({
-      command: Commands.OpenExternalLink,
-      data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
-    });
+  private getBanner = () => {
+    let message = "Coming soon";
+    if (this.props.sample.versionComparisonResult < 0) {
+      message = `This sample is upgraded to only work with newer version of Teams Toolkit, please install v${this.props.sample.minimumToolkitVersion} to run it.`;
+    }
+    return (
+      <div className="upgrade-banner">
+        <div className="tooltip">
+          <span className="codicon codicon-info"></span>
+          <span>{message}</span>
+        </div>
+        {this.props.sample.versionComparisonResult < 0 && (
+          <VSCodeButton
+            onClick={() =>
+              this.props.upgradeToolkit(this.props.sample, TelemetryTriggerFrom.SampleDetailPage)
+            }
+          >
+            Upgrade Teams Toolkit
+          </VSCodeButton>
+        )}
+      </div>
+    );
   };
 }

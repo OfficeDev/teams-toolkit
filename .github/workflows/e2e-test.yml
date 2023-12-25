@@ -31,7 +31,7 @@ on:
 
 jobs:
   setup:
-    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !github.event.inputs.get-coverage) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'false' ) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
     runs-on: ubuntu-latest
     outputs:
       cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
@@ -265,7 +265,7 @@ jobs:
           npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}
+    if: ${{ always() }}
     needs: execute-case
     runs-on: ubuntu-latest
     env:
@@ -459,7 +459,7 @@ jobs:
           MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
 
   e2e-coverage:
-    if: ${{github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage }}
+    if: ${{github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

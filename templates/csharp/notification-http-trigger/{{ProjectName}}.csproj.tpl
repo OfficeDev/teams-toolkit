@@ -13,11 +13,14 @@
 
   <ItemGroup>
     <None Remove="build/**/*" />
+    <None Remove="devTools/**" />
     <Content Remove="build/**/*" />
+    <Content Remove="devTools/**/*" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include=".notification.local*.json" />
+    <None Include=".notification.testtool*.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,7 +29,7 @@
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.21.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.1.3" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="2.3.*">
+    <PackageReference Include="Microsoft.TeamsFx" Version="2.4.*">
       <!-- Exclude TeamsFx wwwroot static files which are for frontend only. -->
       <ExcludeAssets>contentFiles</ExcludeAssets>
     </PackageReference>
@@ -52,6 +55,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="appsettings.Development.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <None Update="appsettings.TestTool.json">
       <DependentUpon>appsettings.json</DependentUpon>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>

@@ -31,6 +31,7 @@ import { SpecParser } from "../../../common/spec-parser";
 import { getAbsolutePath } from "../../utils/common";
 import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
+import { TelemetryUtils } from "../teamsApp/utils/telemetry";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
@@ -51,6 +52,7 @@ export class CreateApiKeyDriver implements StepDriver {
 
     try {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
+      TelemetryUtils.init(context);
 
       if (!outputEnvVarNames) {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
@@ -191,7 +193,7 @@ export class CreateApiKeyDriver implements StepDriver {
     const operations = await parser.list();
     const domains = operations
       .filter((value) => {
-        return value.auth?.name === args.name;
+        return value.auth?.type === "apiKey" && value.auth?.name === args.name;
       })
       .map((value) => {
         return value.server;

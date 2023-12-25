@@ -50,7 +50,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.ProactiveMessaging]: async () => {
-    await startDebugging();
+    await startDebugging("Debug (Chrome)");
   },
   [TemplateProject.QueryOrg]: async () => {
     await startDebugging();
@@ -92,7 +92,14 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging("Teams workbench (Chrome)");
   },
   [TemplateProject.TabSSOApimProxy]: async () => {
-    await startDebuggingAzure("Debug (Chrome)", "local", `TabSSOApimProxy`);
+    await startDebuggingAzure(
+      "Debug in Teams (Chrome)",
+      "local",
+      `TabSSOApimProxy`
+    );
+  },
+  [TemplateProject.LargeScaleBot]: async () => {
+    await startDebugging();
   },
 };
 
@@ -436,6 +443,71 @@ export async function initTeamsPage(
     });
     throw error;
   }
+}
+
+export async function initNoAddappPage(
+  context: BrowserContext,
+  teamsAppId: string,
+  username: string,
+  password: string,
+  options?: {
+    teamsAppName?: string;
+    dashboardFlag?: boolean;
+  }
+): Promise<Page> {
+  const page = await context.newPage();
+  page.setDefaultTimeout(Timeout.playwrightDefaultTimeout);
+  // open teams app page
+  // https://github.com/puppeteer/puppeteer/issues/3338
+  await Promise.all([
+    page.goto(
+      // `https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true`
+      `https://teams.microsoft.com`
+    ),
+    page.waitForNavigation(),
+  ]);
+  // input username
+  await RetryHandler.retry(async () => {
+    await page.fill("input.input[type='email']", username);
+    console.log(`fill in username ${username}`);
+    // next
+    await Promise.all([
+      page.click("input.button[type='submit']"),
+      page.waitForNavigation(),
+    ]);
+  });
+  // input password
+  console.log(`fill in password`);
+  await page.fill("input.input[type='password'][name='passwd']", password);
+  // sign in
+  await Promise.all([
+    page.click("input.button[type='submit']"),
+    page.waitForNavigation(),
+  ]);
+  // stay signed in confirm page
+  console.log(`stay signed confirm`);
+  await Promise.all([
+    page.click("input.button[type='submit'][value='Yes']"),
+    page.waitForNavigation(),
+  ]);
+  await page.waitForTimeout(Timeout.shortTimeLoading);
+  const chatTab = await page?.waitForSelector(
+    ".app-bar-items span:has-text('Chat')"
+  );
+  await chatTab?.click();
+  try {
+    console.log("close dialog");
+    await page?.click("button[data-tid='closeModelDialogBtn']");
+  } catch (error) {
+    console.log("no dialog to close");
+  }
+  try {
+    console.log("dismiss message");
+    await page.click('button:has-text("Dismiss")');
+  } catch (error) {
+    console.log("no message to dismiss");
+  }
+  return page;
 }
 
 export async function validateOneProducitvity(
@@ -904,6 +976,84 @@ export async function validateEchoBot(
       await frame?.waitForSelector(`p:has-text("${expectedContent}")`);
       console.log(`verify bot successfully with content ${expectedContent}!!!`);
     }, 2);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateWelcomeAndReplyBot(
+  page: Page,
+  options: {
+    hasWelcomeMessage?: boolean;
+    hasCommandReplyValidation: boolean;
+    botCommand?: string;
+    expectedWelcomeMessage?: string;
+    expectedReplyMessage?: string;
+  } = {
+    hasWelcomeMessage: true,
+    hasCommandReplyValidation: true,
+    botCommand: "helloWorld",
+    expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
+    expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+  }
+) {
+  try {
+    console.log("start to verify bot");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    try {
+      console.log("dismiss message");
+      await frame?.waitForSelector("div.ui-box");
+      await page
+        .click('button:has-text("Dismiss")', {
+          timeout: Timeout.playwrightDefaultTimeout,
+        })
+        .catch(() => {});
+    } catch (error) {
+      console.log("no message to dismiss");
+    }
+
+    if (options.hasWelcomeMessage) {
+      await RetryHandler.retry(async () => {
+        await frame?.waitForSelector(
+          `p:has-text("${
+            options?.expectedWelcomeMessage ||
+            ValidationContent.AiChatBotWelcomeInstruction
+          }")`
+        );
+        console.log(
+          options?.expectedWelcomeMessage ||
+            ValidationContent.AiChatBotWelcomeInstruction
+        );
+        console.log("verified bot that it has sent welcome!!!");
+      }, 2);
+    }
+
+    if (options.hasCommandReplyValidation) {
+      await RetryHandler.retry(async () => {
+        console.log("sending message ", options?.botCommand || "helloWorld");
+        await frame?.fill(
+          'div.ck-content[role="textbox"]',
+          options?.botCommand || "helloWorld"
+        );
+        await frame?.click('button[name="send"]');
+        await frame?.waitForSelector(
+          `p:has-text("${options?.expectedReplyMessage}")`
+        );
+        console.log(
+          `verify bot successfully with content ${options?.expectedReplyMessage}!!!`
+        );
+      }, 2);
+    }
+
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({
@@ -1600,6 +1750,7 @@ export async function validateSpfx(
     );
     const frame = await frameElementHandle?.contentFrame();
     await frame?.waitForSelector(`text=${options?.displayName}`);
+    console.log(`Found: "${options?.displayName}"`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -1609,9 +1760,9 @@ export async function validateSpfx(
   }
 }
 
-export async function switchToTab(page: Page) {
+export async function switchToTab(page: Page, tabName = "Personal Tab") {
   try {
-    await page.click('a:has-text("Personal Tab")');
+    await page.click(`a:has-text("${tabName}")`);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -1672,7 +1823,7 @@ export async function validateContact(
 
         await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       });
-      page.waitForTimeout(1000);
+      await page.waitForTimeout(10000);
 
       // verify add person
       await addPerson(frame, options?.displayName || "");
@@ -1912,10 +2063,12 @@ export async function addPerson(
   displayName: string
 ): Promise<void> {
   console.log(`add person: ${displayName}`);
-  const input = await frame?.waitForSelector("input#people-picker-input");
+  const input = await frame?.waitForSelector("input#control");
   await input?.click();
   await input?.type(displayName);
-  const item = await frame?.waitForSelector(`span:has-text("${displayName}")`);
+  const item = await frame?.waitForSelector(
+    `ul#suggestions-list div:has-text("${displayName}")`
+  );
   await item?.click();
   await frame?.waitForSelector(
     `div.table-area div.line1:has-text("${displayName}")`
@@ -1928,7 +2081,7 @@ export async function delPerson(
 ): Promise<void> {
   console.log(`delete person: ${displayName}`);
   await frame?.waitForSelector(
-    `li div.details.small div:has-text("${displayName}")`
+    `li.selected-list-item div:has-text("${displayName}")`
   );
 
   const closeBtn = await frame?.waitForSelector('li div[role="button"]');
@@ -2045,6 +2198,44 @@ export async function validateTabApim(
     });
 
     await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateSearchCmdResult(
+  page: Page,
+  teamsAppName: string,
+  envName: string
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    console.log("start to validate search command");
+    await frame?.click('button[name="message-extension-flyout-command"]');
+    const input = await frame?.waitForSelector("div.ui-box input.ui-box");
+    const appName = teamsAppName + envName;
+    await input?.type(appName);
+    await frame?.click(`span:has-text("${appName}")`);
+    const searchcmdInput = await frame?.waitForSelector(
+      "div.ui-box input.ui-box"
+    );
+    await searchcmdInput?.type("Karin");
+    try {
+      await frame?.waitForSelector('ul[datatid="app-picker-list"]');
+      console.log("verify search successfully!!!");
+    } catch (error) {
+      await frame?.waitForSelector(
+        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
+      );
+      assert.fail("Unable to reach app. Please try again.");
+    }
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

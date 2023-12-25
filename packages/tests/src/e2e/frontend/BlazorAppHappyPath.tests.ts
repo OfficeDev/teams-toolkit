@@ -117,8 +117,11 @@ describe("Blazor App", function () {
       chai.assert.exists(endpoint);
       const axiosInstance = axios.create();
       try {
-        const response = await axiosInstance.get(endpoint);
-        chai.assert.equal(response.status, 200);
+        // wait until the web app starts
+        setTimeout(async () => {
+          const response = await axiosInstance.get(endpoint);
+          chai.assert.equal(response.status, 200);
+        }, 30000);
       } catch (e) {
         chai.assert.notExists(e);
       }

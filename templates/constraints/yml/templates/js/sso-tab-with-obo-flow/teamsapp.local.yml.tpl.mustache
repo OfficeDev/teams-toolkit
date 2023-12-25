@@ -20,13 +20,11 @@ provision:
 {{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 deploy:
-{{#devToolInstall}} devCert, func, dotnet {{/devToolInstall}}
+{{#devToolInstall}} devCert, func, dotnet, funcToolsVersion: ~4.0.5455 {{/devToolInstall}}
 
 {{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}
 
 {{#cliRunNpmCommand}} install, workingDirectory: api, args: install --no-audit {{/cliRunNpmCommand}}
-
-{{#cliRunDotnetCommand}} extensions, workingDirectory: api {{/cliRunDotnetCommand}}
 
   # Generate runtime environment variables for tab
 {{#fileCreateOrUpdateEnvironmentFile}} target: ./.localConfigs, TAB, noComment {{/fileCreateOrUpdateEnvironmentFile}}

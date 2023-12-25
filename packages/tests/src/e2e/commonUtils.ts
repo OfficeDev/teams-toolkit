@@ -191,6 +191,14 @@ export async function setSimpleAuthSkuNameToB1Bicep(
   return setProvisionParameterValueV3(projectPath, envName, parameters);
 }
 
+export async function setStaticWebAppSkuNameToStandardBicep(
+  projectPath: string,
+  envName: string
+): Promise<void> {
+  const paramerters = { key: "staticWebAppSku", value: "Standard" };
+  return setProvisionParameterValueV3(projectPath, envName, paramerters);
+}
+
 export async function getProvisionParameterValueByKey(
   projectPath: string,
   envName: string,

@@ -147,6 +147,48 @@ describe("Microsoft Entra manifest helper Test", () => {
       .to.throw("Unknown resourceAppId Invalid Id");
   });
 
+  it("processRequiredResourceAccessInManifest with no resourceAppId", async () => {
+    const manifestWithInvalidSting: any = {
+      requiredResourceAccess: [
+        {
+          resourceAccess: [
+            {
+              id: "User.Read",
+              type: "Scope",
+            },
+          ],
+        },
+      ],
+    };
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithInvalidSting);
+      })
+      .to.throw("Some item(s) in requiredResourceAccess misses resourceAppId property.");
+  });
+
+  it("processRequiredResourceAccessInManifest with no resourceAccess id", async () => {
+    const manifestWithInvalidSting: any = {
+      requiredResourceAccess: [
+        {
+          resourceAppId: "Microsoft Graph",
+          resourceAccess: [
+            {
+              type: "Scope",
+            },
+          ],
+        },
+      ],
+    };
+
+    chai
+      .expect(() => {
+        AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithInvalidSting);
+      })
+      .to.throw("Some item(s) in resourceAccess misses id property.");
+  });
+
   it("processRequiredResourceAccessInManifest with no requiredResourceAccess", async () => {
     const manifest: any = {};
 

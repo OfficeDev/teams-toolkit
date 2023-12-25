@@ -5,7 +5,7 @@ import "./sampleCard.scss";
 
 import * as React from "react";
 
-import { FontIcon, Image } from "@fluentui/react";
+import { Image } from "@fluentui/react";
 
 import Turtle from "../../../img/webview/sample/turtle.svg";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
@@ -19,16 +19,7 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
   render() {
     const sample = this.props.sample;
     const unavailable = sample.versionComparisonResult != 0;
-    const previewImage = (
-      <>
-        {sample.suggested && (
-          <div className="triangle">
-            <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
-          </div>
-        )}
-        <Image className="thumbnail" src={sample.thumbnailUrl} />
-      </>
-    );
+    const previewImage = <Image className="thumbnail" src={sample.thumbnailUrl} />;
     const legacySampleImage = (
       <div className="unavailableSampleImage">
         <Turtle className="turtle" />
@@ -95,9 +86,6 @@ export default class SampleCard extends React.Component<SampleProps, unknown> {
   }
 
   onSampleCardClicked = () => {
-    if (this.props.sample.versionComparisonResult != 0) {
-      return;
-    }
     this.props.selectSample(this.props.sample.id, TelemetryTriggerFrom.SampleGallery);
   };
 }

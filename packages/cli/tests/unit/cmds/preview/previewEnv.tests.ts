@@ -22,6 +22,7 @@ import cliTelemetry from "../../../../src/telemetry/cliTelemetry";
 import CLIUIInstance from "../../../../src/userInteraction";
 import * as Utils from "../../../../src/utils";
 import { expect } from "../../utils";
+import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 
 describe("Preview --env", () => {
   const sandbox = sinon.createSandbox();
@@ -74,7 +75,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - Default", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
@@ -88,7 +89,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - outlook", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
@@ -106,7 +107,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - office", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
@@ -126,7 +127,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - workspace not supported error", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(false);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(false);
 
     const cmd = new PreviewEnv();
     const result = await cmd.runCommand(defaultOptions);
@@ -136,7 +137,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - load envs error", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(err({ foo: "bar" } as any));
 
     const cmd = new PreviewEnv();
@@ -147,7 +148,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - check account error", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox
       .stub(PreviewEnv.prototype, <any>"checkM365Account")
@@ -161,7 +162,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - previewWithManifest error", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox
@@ -176,7 +177,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - detect run command error", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
@@ -192,7 +193,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - run task error", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
@@ -210,7 +211,7 @@ describe("Preview --env", () => {
   });
 
   it("Preview Command Running - launch browser error", async () => {
-    sandbox.stub(Utils, "isWorkspaceSupported").returns(true);
+    sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"checkM365Account").resolves(ok({}));
     sandbox.stub(PreviewEnv.prototype, <any>"previewWithManifest").resolves(ok("test-url"));
@@ -392,7 +393,7 @@ describe("PreviewEnv Steps", () => {
     const error = (accountRes as any).error;
     // eslint-disable-next-line no-secrets/no-secrets
     expect(error.name).equals("PrerequisitesValidationM365AccountError");
-    expect(error.message).satisfy((m: string) => m.includes("sideloading permission"));
+    expect(error.message).satisfy((m: string) => m.includes("custom app upload permission"));
   });
 
   it("detectRunCommand - node", async () => {

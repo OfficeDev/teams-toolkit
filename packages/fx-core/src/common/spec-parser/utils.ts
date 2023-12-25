@@ -6,6 +6,7 @@ import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { ConstantString } from "./constants";
 import {
+  AuthSchema,
   CheckParamResult,
   ErrorResult,
   ErrorType,
@@ -131,7 +132,8 @@ export function isSupportedApi(
   spec: OpenAPIV3.Document,
   allowMissingId: boolean,
   allowAPIKeyAuth: boolean,
-  allowMultipleParameters: boolean
+  allowMultipleParameters: boolean,
+  allowOauth2: boolean
 ): boolean {
   const pathObj = spec.paths[path];
   method = method.toLocaleLowerCase();
@@ -141,18 +143,8 @@ export function isSupportedApi(
       pathObj[method]
     ) {
       const securities = pathObj[method]!.security;
-      const apiKeyAuthArr = getAPIKeyAuthArray(securities, spec);
-
-      if (!allowAPIKeyAuth && securities) {
-        return false;
-      }
-
-      if (allowAPIKeyAuth && securities && apiKeyAuthArr.length === 0) {
-        return false;
-      }
-
-      // Currently we don't support multiple apiKey auth
-      if (apiKeyAuthArr.length > 0 && apiKeyAuthArr.every((auths) => auths.length > 1)) {
+      const authArray = getAuthArray(securities, spec);
+      if (!isSupportedAuth(authArray, allowAPIKeyAuth, allowOauth2)) {
         return false;
       }
 
@@ -216,29 +208,74 @@ export function isSupportedApi(
   return false;
 }
 
-export function getAPIKeyAuthArray(
+export function isSupportedAuth(
+  authSchemaArray: AuthSchema[][],
+  allowAPIKeyAuth: boolean,
+  allowOauth2: boolean
+): boolean {
+  if (authSchemaArray.length === 0) {
+    return true;
+  }
+
+  if (allowAPIKeyAuth || allowOauth2) {
+    // Currently we don't support multiple auth in one operation
+    if (authSchemaArray.length > 0 && authSchemaArray.every((auths) => auths.length > 1)) {
+      return false;
+    }
+
+    for (const auths of authSchemaArray) {
+      if (auths.length === 1) {
+        if (!allowOauth2 && allowAPIKeyAuth && isAPIKeyAuth(auths[0].authSchema)) {
+          return true;
+        } else if (!allowAPIKeyAuth && allowOauth2 && isBearerTokenAuth(auths[0].authSchema)) {
+          return true;
+        } else if (
+          allowAPIKeyAuth &&
+          allowOauth2 &&
+          (isAPIKeyAuth(auths[0].authSchema) || isBearerTokenAuth(auths[0].authSchema))
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+export function isAPIKeyAuth(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
+  return authSchema.type === "apiKey";
+}
+
+export function isBearerTokenAuth(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
+  return (
+    authSchema.type === "oauth2" ||
+    authSchema.type === "openIdConnect" ||
+    (authSchema.type === "http" && authSchema.scheme === "bearer")
+  );
+}
+
+export function getAuthArray(
   securities: OpenAPIV3.SecurityRequirementObject[] | undefined,
   spec: OpenAPIV3.Document
-): OpenAPIV3.ApiKeySecurityScheme[][] {
-  const result: OpenAPIV3.ApiKeySecurityScheme[][] = [];
+): AuthSchema[][] {
+  const result: AuthSchema[][] = [];
   const securitySchemas = spec.components?.securitySchemes;
   if (securities && securitySchemas) {
     for (let i = 0; i < securities.length; i++) {
       const security = securities[i];
 
-      let apiKeyAuthArray: OpenAPIV3.ApiKeySecurityScheme[] = [];
+      const authArray: AuthSchema[] = [];
       for (const name in security) {
         const auth = securitySchemas[name] as OpenAPIV3.SecuritySchemeObject;
-        if (auth.type === "apiKey") {
-          apiKeyAuthArray.push(auth);
-        } else {
-          apiKeyAuthArray = [];
-          break;
-        }
+        authArray.push({
+          authSchema: auth,
+          name: name,
+        });
       }
 
-      if (apiKeyAuthArray.length > 0) {
-        result.push(apiKeyAuthArray);
+      if (authArray.length > 0) {
+        result.push(authArray);
       }
     }
   }
@@ -344,7 +381,8 @@ export function validateServer(
   spec: OpenAPIV3.Document,
   allowMissingId: boolean,
   allowAPIKeyAuth: boolean,
-  allowMultipleParameters: boolean
+  allowMultipleParameters: boolean,
+  allowOauth2: boolean
 ): ErrorResult[] {
   const errors: ErrorResult[] = [];
 
@@ -373,7 +411,15 @@ export function validateServer(
     for (const method in methods) {
       const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
       if (
-        isSupportedApi(method, path, spec, allowMissingId, allowAPIKeyAuth, allowMultipleParameters)
+        isSupportedApi(
+          method,
+          path,
+          spec,
+          allowMissingId,
+          allowAPIKeyAuth,
+          allowMultipleParameters,
+          allowOauth2
+        )
       ) {
         if (operationObject?.servers && operationObject.servers.length >= 1) {
           hasOperationLevelServers = true;
@@ -564,7 +610,8 @@ export function listSupportedAPIs(
   spec: OpenAPIV3.Document,
   allowMissingId: boolean,
   allowAPIKeyAuth: boolean,
-  allowMultipleParameters: boolean
+  allowMultipleParameters: boolean,
+  allowOauth2: boolean
 ): {
   [key: string]: OpenAPIV3.OperationObject;
 } {
@@ -575,7 +622,15 @@ export function listSupportedAPIs(
     for (const method in methods) {
       // For developer preview, only support GET operation with only 1 parameter without auth
       if (
-        isSupportedApi(method, path, spec, allowMissingId, allowAPIKeyAuth, allowMultipleParameters)
+        isSupportedApi(
+          method,
+          path,
+          spec,
+          allowMissingId,
+          allowAPIKeyAuth,
+          allowMultipleParameters,
+          allowOauth2
+        )
       ) {
         const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
         result[`${method.toUpperCase()} ${path}`] = operationObject;
@@ -591,7 +646,8 @@ export function validateSpec(
   isSwaggerFile: boolean,
   allowMissingId: boolean,
   allowAPIKeyAuth: boolean,
-  allowMultipleParameters: boolean
+  allowMultipleParameters: boolean,
+  allowOauth2: boolean
 ): ValidateResult {
   const errors: ErrorResult[] = [];
   const warnings: WarningResult[] = [];
@@ -608,7 +664,8 @@ export function validateSpec(
     spec,
     allowMissingId,
     allowAPIKeyAuth,
-    allowMultipleParameters
+    allowMultipleParameters,
+    allowOauth2
   );
   errors.push(...serverErrors);
 
@@ -625,7 +682,13 @@ export function validateSpec(
   }
 
   // No supported API
-  const apiMap = listSupportedAPIs(spec, allowMissingId, allowAPIKeyAuth, allowMultipleParameters);
+  const apiMap = listSupportedAPIs(
+    spec,
+    allowMissingId,
+    allowAPIKeyAuth,
+    allowMultipleParameters,
+    allowOauth2
+  );
   if (Object.keys(apiMap).length === 0) {
     errors.push({
       type: ErrorType.NoSupportedApi,

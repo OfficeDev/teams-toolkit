@@ -855,6 +855,45 @@ describe("Package Service", () => {
     chai.assert.deepEqual(result, ["foo", "bar"]);
   });
 
+  it("getActiveExperiences stale", async () => {
+    axiosGetResponses["/config/v1/environment"] = {
+      data: {
+        titlesServiceUrl: "https://test-url",
+      },
+    };
+    axiosGetResponses["/catalog/v1/users/uitypes"] = {
+      data: {
+        activeExperiences: ["foo", "bar"],
+        nextInterval: 1,
+      },
+    };
+
+    let packageService = new PackageService("https://test-endpoint");
+    let actualError: Error | undefined;
+    let result: string[] | undefined;
+    try {
+      result = await packageService.getActiveExperiences("test-token", true);
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.deepEqual(result, ["foo", "bar"]);
+
+    const debugStub = sandbox.stub(logger, "debug").returns();
+
+    packageService = new PackageService("https://test-endpoint", logger);
+    try {
+      result = await packageService.getActiveExperiences("test-token", true);
+    } catch (error: any) {
+      actualError = error;
+    }
+
+    chai.assert.isUndefined(actualError);
+    chai.assert.deepEqual(result, ["foo", "bar"]);
+    chai.assert.equal(5, debugStub.getCalls().length);
+  });
+
   it("getActiveExperiences throws expected error", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {

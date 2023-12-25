@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  Context,
   FuncValidation,
   FxError,
   Inputs,
   LocalFunc,
+  LogProvider,
   MultiSelectQuestion,
   OptionItem,
   Platform,
@@ -50,6 +52,8 @@ import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
+import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
+import * as utils from "../../src/component/utils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -1971,6 +1975,36 @@ describe("scaffold question", () => {
       sandbox.stub<any, any>(fs, "pathExists").resolves(false);
       validRes = await validFunc(inputs.appName, inputs);
       assert.isTrue(validRes === undefined);
+    });
+
+    it("app name has 25 length - VSC", async () => {
+      const mockedUI = new MockedUserInteraction();
+      sandbox.stub(utils, "createContextV3").returns({
+        userInteraction: mockedUI,
+      } as Context);
+      const showMessageStub = sandbox.stub(mockedUI, "showMessage");
+
+      const input = "abcdefghijklmnopqrstuvwxy";
+      await validFunc(input, { platform: Platform.VSCode });
+
+      assert.isTrue(showMessageStub.calledOnce);
+    });
+
+    it("app name has 25 length - VS", async () => {
+      const mockedLogProvider = new MockedLogProvider();
+      sandbox.stub(utils, "createContextV3").returns({
+        logProvider: mockedLogProvider as LogProvider,
+      } as Context);
+      const warningStub = sandbox.stub(mockedLogProvider, "warning");
+
+      const input = "abcdefghijklmnopqrstuvwxy";
+      await validFunc(input, { platform: Platform.VS });
+
+      assert.isTrue(warningStub.calledOnce);
+
+      await validFunc(input);
+
+      assert.isTrue(warningStub.calledTwice);
     });
 
     it("app name exceed maxlength of 30", async () => {

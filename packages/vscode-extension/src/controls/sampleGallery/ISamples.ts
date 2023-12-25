@@ -15,6 +15,12 @@ export type SampleGalleryState = {
   filterTags: string[];
 };
 
+export type SampleDetailState = {
+  loading: boolean;
+  readme: string;
+  error?: Error;
+};
+
 export interface SampleInfo {
   id: string;
   title: string;
@@ -44,6 +50,7 @@ export type SampleProps = {
   selectSample: (id: string, triggerFrom: TelemetryTriggerFrom) => void;
   createSample: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
   viewGitHub: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
+  upgradeToolkit: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
 };
 
 export type SampleFilterOptionType = {

@@ -80,6 +80,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           selectSample={this.onSampleSelected}
           createSample={this.onCreateSample}
           viewGitHub={this.onViewGithub}
+          upgradeToolkit={this.onUpgradeToolkit}
         />
       );
     } else {
@@ -120,6 +121,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                             selectSample={this.onSampleSelected}
                             createSample={this.onCreateSample}
                             viewGitHub={this.onViewGithub}
+                            upgradeToolkit={this.onUpgradeToolkit}
                           />
                         );
                       })
@@ -131,6 +133,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                             selectSample={this.onSampleSelected}
                             createSample={this.onCreateSample}
                             viewGitHub={this.onViewGithub}
+                            upgradeToolkit={this.onUpgradeToolkit}
                           />
                         );
                       })}
@@ -146,6 +149,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                           selectSample={this.onSampleSelected}
                           createSample={this.onCreateSample}
                           viewGitHub={this.onViewGithub}
+                          upgradeToolkit={this.onUpgradeToolkit}
                         />
                       );
                     })
@@ -157,6 +161,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                           selectSample={this.onSampleSelected}
                           createSample={this.onCreateSample}
                           viewGitHub={this.onViewGithub}
+                          upgradeToolkit={this.onUpgradeToolkit}
                         />
                       );
                     })}
@@ -317,6 +322,25 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     vscode.postMessage({
       command: Commands.OpenExternalLink,
       data: `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`,
+    });
+  };
+
+  private onUpgradeToolkit = (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => {
+    vscode.postMessage({
+      command: Commands.SendTelemetryEvent,
+      data: {
+        eventName: TelemetryEvent.UpgradeToolkitForSample,
+        properties: {
+          [TelemetryProperty.TriggerFrom]: triggerFrom,
+          [TelemetryProperty.SampleAppName]: sample.id,
+        },
+      },
+    });
+    vscode.postMessage({
+      command: Commands.UpgradeToolkit,
+      data: {
+        version: sample.minimumToolkitVersion,
+      },
     });
   };
 }

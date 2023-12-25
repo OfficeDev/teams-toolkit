@@ -60,6 +60,7 @@ import { logger } from "../../src/commonlib/logger";
 import M365TokenProvider from "../../src/commonlib/m365Login";
 import { MissingRequiredOptionError } from "../../src/error";
 import * as utils from "../../src/utils";
+import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
 
@@ -295,7 +296,7 @@ describe("CLI commands", () => {
   describe("envAddCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       const ctx: CLIContext = {
         command: { ...envAddCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -306,9 +307,9 @@ describe("CLI commands", () => {
       const res = await envAddCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("isWorkspaceSupported: false", async () => {
+    it("isValidProjectV3: false", async () => {
       sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
-      sandbox.stub(utils, "isWorkspaceSupported").returns(false);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(false);
       const ctx: CLIContext = {
         command: { ...envAddCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -322,7 +323,7 @@ describe("CLI commands", () => {
   });
   describe("envListCommand", async () => {
     it("success", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
@@ -334,8 +335,8 @@ describe("CLI commands", () => {
       const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("isWorkspaceSupported: false", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(false);
+    it("isValidProjectV3: false", async () => {
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(false);
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -347,7 +348,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isErr());
     });
     it("listEnv error", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       sandbox.stub(envUtil, "listEnv").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
@@ -1316,7 +1317,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and sideloading permission is enabled");
+        assert.include(account, "is logged in and custom app upload permission is enabled");
       });
       it("checkM365Account - error", async () => {
         sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
@@ -1360,10 +1361,10 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and sideloading permission is enabled");
+        assert.include(account, "is logged in and custom app upload permission is enabled");
       });
 
-      it("checkM365Account - no sideloading permission", async () => {
+      it("checkM365Account - no custom app upload permission", async () => {
         const token = "test-token";
         const tenantId = "test-tenant-id";
         const upn = "test-user";
@@ -1386,7 +1387,7 @@ describe("CLI read-only commands", () => {
         const value = (accountRes as any).value;
         assert.include(
           value,
-          "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account"
+          "Your Microsoft 365 tenant admin hasn't enabled custom app upload permission for your account"
         );
       });
     });

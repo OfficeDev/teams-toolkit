@@ -2,7 +2,7 @@
   "name": "{{SafeProjectNameLowerCase}}",
   "version": "0.1.0",
   "engines": {
-    "node": "16 || 18"
+    "node": "18 || 20"
   },
   "private": true,
   "dependencies": {

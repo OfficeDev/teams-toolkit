@@ -104,7 +104,7 @@ deploy:
       devCert:
         trust: true
       func:
-        version: ~4.0.5174
+        version: ~4.0.5455
         symlinkDir: ./devTools/func
       dotnet: true
     # Write the information of installed development tool(s) into environment
@@ -127,13 +127,6 @@ deploy:
     with:
       workingDirectory: api
       args: install --no-audit
-
-  # TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
-  - uses: cli/runDotnetCommand
-    with:
-      workingDirectory: api
-      args: build extensions.csproj -o bin --ignore-failed-sources
-      execPath: ${{DOTNET_PATH}}
 
   # Generate runtime environment variables for tab
   - uses: file/createOrUpdateEnvironmentFile

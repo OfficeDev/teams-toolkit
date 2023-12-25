@@ -233,7 +233,7 @@ function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
       },
     };
 
-    if (operation.auth) {
+    if (operation.auth && operation.auth.type === "apiKey") {
       result.data.authName = operation.auth.name;
     }
     operationsWithSeparator.push(result);

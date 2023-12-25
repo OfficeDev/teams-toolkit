@@ -19,7 +19,7 @@ This template showcases an app that embeds a canvas containing multiple cards th
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
-3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug (Edge)` or `Debug (Chrome)`.
+3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 
 **Congratulations**! You are running an application that can now show a dashboard in Teams:
@@ -40,8 +40,8 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-| `src/services/chartService.js`       | A data retrive implementation for the chart widget |
-| `src/services/listService.js`        | A data retrive implementation for the list widget  |
+| `src/services/chartService.js`       | A data retrieve implementation for the chart widget |
+| `src/services/listService.js`        | A data retrieve implementation for the list widget  |
 | `src/dashboards/SampleDashboard.jsx` | A sample dashboard layout implementation           |
 | `src/styles/ChartWidget.css`         | The chart widget style file                        |
 | `src/styles/ListWidget.css`          | The list widget style file                         |

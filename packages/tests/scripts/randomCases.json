@@ -18,7 +18,10 @@
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
             "sample-localdebug-proactive-message",
-            "sample-localdebug-assistant-dashboard"
+            "sample-localdebug-assistant-dashboard",
+            "basic-tab-debug-upgrade-debug",
+            "bot-debug-upgrade-debug",
+            "bot-upgrade-debug"
         ]
     },
     {
@@ -62,7 +65,9 @@
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
-            "sample-localdebug-chef-bot"
+            "sample-localdebug-chef-bot",
+            "sample-localdebug-large-scale-notification",
+            "basic-tab-upgrade-debug"
         ]
     },
     {
@@ -90,7 +95,11 @@
             "sample-remotedebug-assistant-dashboard",
             "sample-remotedebug-hello-world-tab-outlook",
             "sample-remotedebug-bot-sso",
-            "sample-remotedebug-sso-tab-via-apim-proxy"
+            "sample-remotedebug-sso-tab-via-apim-proxy",
+            "basic-tab-provision-upgrade-provision-debug",
+            "bot-provision-upgrade-provision-debug",
+            "basic-tab-upgrade-provision-debug",
+            "bot-upgrade-provision-debug"
         ]
     },
     {

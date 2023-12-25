@@ -3,6 +3,8 @@
 
 import { BaseComponentInnerError } from "../error/componentError";
 import { errorSource } from "./constant";
+import axios from "axios";
+import { simplifyAxiosError } from "./utils";
 
 export class CancelDownloading extends Error {}
 
@@ -50,25 +52,51 @@ export class UnzipError extends BaseComponentInnerError {
 }
 
 export class DownloadSampleNetworkError extends BaseComponentInnerError {
-  constructor(url: string) {
+  constructor(url: string, error: Error) {
+    const innerError = axios.isAxiosError(error) ? simplifyAxiosError(error) : error;
     super(
       errorSource,
       "UserError",
       "DownloadSampleNetworkError",
       "error.generator.DownloadSampleNetworkError",
-      [url]
+      [url],
+      undefined,
+      undefined,
+      undefined,
+      innerError
+    );
+  }
+}
+export class FetchSampleInfoError extends BaseComponentInnerError {
+  constructor(error: Error) {
+    const innerError = axios.isAxiosError(error) ? simplifyAxiosError(error) : error;
+    super(
+      errorSource,
+      "UserError",
+      "FetchSampleInfoError",
+      "error.generator.FetchSampleInfoError",
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      innerError
     );
   }
 }
 
 export class DownloadSampleApiLimitError extends BaseComponentInnerError {
-  constructor(url: string) {
+  constructor(url: string, error: Error) {
+    const innerError = axios.isAxiosError(error) ? simplifyAxiosError(error) : error;
     super(
       errorSource,
       "UserError",
       "DownloadSampleApiLimitError",
       "error.generator.DownloadSampleApiLimitError",
-      [url]
+      [url],
+      undefined,
+      undefined,
+      undefined,
+      innerError
     );
   }
 }

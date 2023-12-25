@@ -456,10 +456,9 @@ export abstract class CaseFactory {
               env: env,
             });
           } catch (error) {
-            console.log(error);
             successFlag = false;
+            expect.fail(error);
           }
-
           console.log("debug finish!");
         }
       );

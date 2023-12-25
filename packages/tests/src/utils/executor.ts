@@ -213,12 +213,7 @@ export class Executor {
       }
     );
     await Promise.all([timeout, childProcess]);
-    try {
-      // close process & port
-      childProcess.kill("SIGKILL");
-    } catch (error) {
-      console.log(`kill process failed, cause by: `, error);
-    }
+    // close process & port
     try {
       const result = await killPort(53000);
       console.log(`close port 53000 successfully, `, result.stdout);
@@ -248,6 +243,12 @@ export class Executor {
       console.log(`close port 9239 successfully, `, result.stdout);
     } catch (error) {
       console.log(`close port 9239 failed, cause by: `, error);
+    }
+    try {
+      childProcess.kill("SIGKILL");
+      console.log("kill debug process successfully");
+    } catch (error) {
+      console.log(`kill process failed, cause by: `, error);
     }
     console.log("[success] debug successfully !!!");
   }
@@ -395,6 +396,7 @@ export class Executor {
     try {
       // close process
       child.kill("SIGKILL");
+      console.log("kill devtunnel proocess successfully");
     } catch (error) {
       console.log(`kill process failed, cause by: `, error);
     }

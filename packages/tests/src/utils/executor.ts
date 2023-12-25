@@ -180,16 +180,16 @@ export class Executor {
     return this.executeCmd(workspace, "preview", env);
   }
 
-  static async debugProject(
+  static debugProject(
     projectPath: string,
     env: "local" | "dev" = "local",
     v3 = true,
     processEnv: NodeJS.ProcessEnv = process.env,
-    delay: number = 8 * 60 * 1000
+    onData?: (data: string) => void,
+    onError?: (data: string) => void
   ) {
     console.log(`[start] ${env} debug ... `);
-    const timeout = timeoutPromise(delay);
-    const childProcess = spawnCommand(
+    const childProcess = spawn(
       os.type() === "Windows_NT"
         ? v3
           ? "teamsapp.cmd"
@@ -201,56 +201,21 @@ export class Executor {
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
-      },
-      (data) => {
-        console.log(data);
-      },
-      (error) => {
-        console.log(error);
-        if (error.includes("Error:")) {
-          chai.assert.fail(error);
-        }
       }
     );
-    await Promise.all([timeout, childProcess]);
-    // close process & port
-    try {
-      const result = await killPort(53000);
-      console.log(`close port 53000 successfully, `, result.stdout);
-    } catch (error) {
-      console.log(`close port 53000 failed, cause by: `, error);
-    }
-    try {
-      const result = await killPort(7071);
-      console.log(`close port 7071 successfully, `, result.stdout);
-    } catch (error) {
-      console.log(`close port 7071 failed, cause by: `, error);
-    }
-    try {
-      const result = await killPort(9229);
-      console.log(`close port 9229 successfully, `, result.stdout);
-    } catch (error) {
-      console.log(`close port 9229 failed, cause by: `, error);
-    }
-    try {
-      const result = await killPort(3978);
-      console.log(`close port 3978 successfully, `, result.stdout);
-    } catch (error) {
-      console.log(`close port 3978 failed, cause by: `, error);
-    }
-    try {
-      const result = await killPort(9239);
-      console.log(`close port 9239 successfully, `, result.stdout);
-    } catch (error) {
-      console.log(`close port 9239 failed, cause by: `, error);
-    }
-    try {
-      childProcess.kill("SIGKILL");
-      console.log("kill debug process successfully");
-    } catch (error) {
-      console.log(`kill process failed, cause by: `, error);
-    }
-    console.log("[success] debug successfully !!!");
+    childProcess.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    childProcess.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
+    return childProcess;
   }
 
   static async previewWithCustomizedProcessEnv(
@@ -366,7 +331,7 @@ export class Executor {
     );
   }
 
-  static async startDevtunnel(
+  static startDevtunnel(
     onData?: (data: string) => void,
     onError?: (data: string) => void
   ) {
@@ -391,15 +356,7 @@ export class Executor {
         onError(dataString);
       }
     });
-    const timeout = timeoutPromise(60 * 1000 * 10);
-    await Promise.all([timeout, child]);
-    try {
-      // close process
-      child.kill("SIGKILL");
-      console.log("kill devtunnel proocess successfully");
-    } catch (error) {
-      console.log(`kill process failed, cause by: `, error);
-    }
+    return child;
   }
 
   static deleteTunnel(

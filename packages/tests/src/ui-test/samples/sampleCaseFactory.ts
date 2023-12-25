@@ -30,6 +30,7 @@ import { Page } from "playwright";
 import fs from "fs-extra";
 import path from "path";
 import { Executor } from "../../utils/executor";
+import { ChildProcessWithoutNullStreams } from "child_process";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -232,6 +233,8 @@ export abstract class CaseFactory {
       this.timeout(Timeout.testAzureCase);
       let sampledebugContext: SampledebugContext;
       let azSqlHelper: AzSqlHelper | undefined;
+      let devtunnelProcess: ChildProcessWithoutNullStreams;
+      let debugProcess: ChildProcessWithoutNullStreams;
 
       beforeEach(async function () {
         // ensure workbench is ready
@@ -283,7 +286,7 @@ export abstract class CaseFactory {
                 // cli preview
                 console.log("botFlag: ", botFlag);
                 if (botFlag) {
-                  Executor.startDevtunnel(
+                  devtunnelProcess = Executor.startDevtunnel(
                     (data) => {
                       if (data) {
                         // start devtunnel
@@ -338,7 +341,20 @@ export abstract class CaseFactory {
                   );
                   expect(success).to.be.true;
                 }
-                Executor.debugProject(sampledebugContext.projectPath, "local");
+                debugProcess = Executor.debugProject(
+                  sampledebugContext.projectPath,
+                  "local",
+                  true,
+                  process.env,
+                  (data) => {
+                    if (data) {
+                      console.log(data);
+                    }
+                  },
+                  (error) => {
+                    console.log(error);
+                  }
+                );
                 await new Promise((resolve) =>
                   setTimeout(resolve, 2 * 30 * 1000)
                 );
@@ -411,7 +427,14 @@ export abstract class CaseFactory {
             env: env,
           });
 
+          if (debugProcess) {
+            debugProcess.kill("SIGTERM");
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+          }
+
           if (tunnelName) {
+            devtunnelProcess.kill("SIGTERM");
+            await new Promise((resolve) => setTimeout(resolve, 2000));
             Executor.deleteTunnel(
               tunnelName,
               (data) => {

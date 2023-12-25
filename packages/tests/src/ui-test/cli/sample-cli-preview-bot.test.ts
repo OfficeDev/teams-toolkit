@@ -26,5 +26,5 @@ new BotSSOTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartApplication],
-  { debug: "cli", skipValidation: true }
+  { debug: "cli" }
 ).test();

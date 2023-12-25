@@ -235,6 +235,7 @@ export abstract class CaseFactory {
       let azSqlHelper: AzSqlHelper | undefined;
       let devtunnelProcess: ChildProcessWithoutNullStreams;
       let debugProcess: ChildProcessWithoutNullStreams;
+      let tunnelName = "";
 
       beforeEach(async function () {
         // ensure workbench is ready
@@ -251,6 +252,28 @@ export abstract class CaseFactory {
 
       afterEach(async function () {
         this.timeout(Timeout.finishAzureTestCase);
+        if (debugProcess) {
+          debugProcess.kill("SIGTERM");
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          console.log("kill debug process successfully");
+        }
+
+        if (tunnelName) {
+          devtunnelProcess.kill("SIGTERM");
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          console.log("kill devtunnel process successfully");
+          Executor.deleteTunnel(
+            tunnelName,
+            (data) => {
+              if (data) {
+                console.log(data);
+              }
+            },
+            (error) => {
+              console.log(error);
+            }
+          );
+        }
         await onAfter(sampledebugContext, env);
       });
 
@@ -263,7 +286,6 @@ export abstract class CaseFactory {
           author,
         },
         async function () {
-          let tunnelName = "";
           // create project
           await sampledebugContext.openResourceFolder();
 
@@ -427,26 +449,6 @@ export abstract class CaseFactory {
             env: env,
           });
 
-          if (debugProcess) {
-            debugProcess.kill("SIGTERM");
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-          }
-
-          if (tunnelName) {
-            devtunnelProcess.kill("SIGTERM");
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            Executor.deleteTunnel(
-              tunnelName,
-              (data) => {
-                if (data) {
-                  console.log(data);
-                }
-              },
-              (error) => {
-                console.log(error);
-              }
-            );
-          }
           console.log("debug finish!");
         }
       );

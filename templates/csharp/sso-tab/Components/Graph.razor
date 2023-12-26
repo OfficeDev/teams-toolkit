@@ -13,7 +13,8 @@
     @if (NeedConsent)
     {
         <p>Click below to authorize this app to read your profile photo using Microsoft Graph.</p>
-        <FluentButton Appearance="Appearance.Accent" Disabled="@IsLoading" @onclick="ConsentAndShow">Authorize</FluentButton>
+        <FluentButton Appearance="Appearance.Accent" Disabled="@IsLoading" @onclick="ConsentAndShow">Authorize
+        </FluentButton>
     }
     @if (IsLoading)
     {
@@ -105,16 +106,16 @@
     private async Task<OnBehalfOfCredential> GetOnBehalfOfCredential()
     {
         var config = Configuration.Get<ConfigOptions>();
-        var tenantId = config.TeamsFx.Authentication.OAuthAuthority.TrimStart("https://login.microsoftonline.com/".ToCharArray());
-        AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
+        var tenantId = config.TeamsFx.Authentication.OAuthAuthority.Remove(0, "https://login.microsoftonline.com/".Length)
+    AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
         return new OnBehalfOfCredential(
-            tenantId,
-            config.TeamsFx.Authentication.ClientId,
-            config.TeamsFx.Authentication.ClientSecret,
-            ssoToken.Token
+        tenantId,
+        config.TeamsFx.Authentication.ClientId,
+        config.TeamsFx.Authentication.ClientSecret,
+        ssoToken.Token
         );
     }
-    
+
     private GraphServiceClient GetGraphServiceClient(TokenCredential tokenCredential)
     {
         var client = new GraphServiceClient(tokenCredential, new string[] { _scope });

@@ -17,7 +17,7 @@ const SampleConfigRepo = "TeamsFx-Samples";
 const SampleConfigFile = ".config/samples-config-v3.json";
 export const SampleConfigTag = "v2.4.0";
 // prerelease tag is always using a branch.
-export const SampleConfigBranchForPrerelease = "v3";
+export const SampleConfigBranchForPrerelease = "main";
 
 export interface SampleConfig {
   id: string;

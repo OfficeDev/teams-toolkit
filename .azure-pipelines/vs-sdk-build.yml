@@ -28,7 +28,7 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     pool:
-      vmImage: windows-2019
+      name: MSEngSS-MicroBuild2022-1ES
     customBuildTags:
       - MigrationTooling-mseng-VSIoT-11984-Tool
     stages:

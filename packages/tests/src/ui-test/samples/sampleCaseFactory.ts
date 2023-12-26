@@ -238,6 +238,9 @@ export abstract class CaseFactory {
       let debugProcess: ChildProcessWithoutNullStreams;
       let tunnelName = "";
       let successFlag = true;
+      let envContent = "";
+      let botFlag = false;
+      let envFile = "";
 
       beforeEach(async function () {
         // ensure workbench is ready
@@ -301,15 +304,18 @@ export abstract class CaseFactory {
             // use 1st middleware to process typical sample
             await onAfterCreate(sampledebugContext, env, azSqlHelper);
 
-            const envFile = path.resolve(
-              sampledebugContext.projectPath,
-              "env",
-              ".env.local"
-            );
-            let envContent = fs.readFileSync(envFile, "utf-8");
-            // if bot project setup devtunnel
-            const botFlag = envContent.includes("BOT_DOMAIN");
-
+            try {
+              envFile = path.resolve(
+                sampledebugContext.projectPath,
+                "env",
+                ".env.local"
+              );
+              envContent = fs.readFileSync(envFile, "utf-8");
+              // if bot project setup devtunnel
+              botFlag = envContent.includes("BOT_DOMAIN");
+            } catch (error) {
+              console.log("read file error", error);
+            }
             const debugEnvMap: Record<"local" | "dev", () => Promise<void>> = {
               local: async () => {
                 // local debug

@@ -63,7 +63,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "npm run start:tab",
+            "command": "npm run dev-tab:teamsfx",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}"

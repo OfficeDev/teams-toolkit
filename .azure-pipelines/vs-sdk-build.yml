@@ -1,0 +1,142 @@
+# This pipeline was generated from the classic pipeline "Build Dotnet SDK Release Artifacts" on 2023-12-26 with https://aka.ms/1ESPTMigration (v1.1.0): https://dev.azure.com/mseng/VSIoT/_build?definitionId=11984
+#
+# The following items require attention:
+# Variables were exported from the classic pipeline, confirm that `variables` values do not contain private information. If a variable contains private information, follow the guidance on handling secret variables: https://learn.microsoft.com/en-us/azure/devops/pipelines/process/set-secret-variables
+# No trigger found, defaulting to 'none'. Update the trigger as needed.
+# No name found, setting the default value '$(Date:yyyyMMdd).$(Rev:r)'. This value determines how your pipeline runs are numbered. Update the name as needed: https://learn.microsoft.com/en-us/azure/devops/pipelines/process/run-number?view=azure-devops&tabs=yaml
+# The pipeline uses service connection "TeamsFx Nuget", you will need to grant the new pipeline access: https://dev.azure.com/mseng/VSIoT/_settings/adminservices?resourceId=ab0f26f6-d242-48e6-be26-4ad22b04a983
+
+name: $(Date:yyyyMMdd).$(Rev:r)
+variables:
+  - name: BuildConfiguration
+    value: Release
+  - name: CodeSign
+    value: true
+  - name: skipComponentGovernanceDetection
+    value: true
+resources:
+  repositories:
+    - repository: self
+      type: git
+      ref: refs/heads/dev
+    - repository: 1esPipelines
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+trigger: none
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    pool:
+      os: windows
+      image: windows-2019
+      name: Azure Pipelines
+    customBuildTags:
+      - MigrationTooling-mseng-VSIoT-11984-Tool
+    stages:
+      - stage: Stage
+        jobs:
+          - job: Job_1
+            displayName: Agent job 1
+            templateContext:
+              outputs:
+                - output: pipelineArtifact
+                  artifactName: drop
+                  targetPath: $(Build.ArtifactStagingDirectory)
+                  displayName: "Publish Artifact: drop"
+            steps:
+              - checkout: self
+                fetchDepth: 1
+                fetchTags: true
+              - task: UseDotNet@2
+                displayName: Use .NET Core 2.1
+                inputs:
+                  version: 2.1.x
+              - task: UseDotNet@2
+                displayName: Use .NET 6.0
+                inputs:
+                  version: 6.0.x
+              - task: DotNetCoreCLI@2
+                displayName: dotnet build
+                inputs:
+                  projects: packages/dotnet-sdk/src/TeamsFx/Microsoft.TeamsFx.csproj
+                  arguments: /p:Configuration=$(BuildConfiguration)
+              - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+                displayName: ESRP CodeSigning
+                condition: and(succeeded(), eq(variables['CodeSign'], 'true'))
+                inputs:
+                  ConnectedServiceName: TeamsFx Nuget
+                  FolderPath: packages/dotnet-sdk/src/TeamsFx/bin/$(BuildConfiguration)/net6.0
+                  Pattern: Microsoft.TeamsFx.dll
+                  signConfigType: inlineSignParams
+                  inlineOperation: |-
+                    [
+                      {
+                        "KeyCode": "CP-230012",
+                        "OperationCode": "SigntoolSign",
+                        "Parameters": {
+                          "OpusName": "Microsoft",
+                          "OpusInfo": "http://www.microsoft.com",
+                          "FileDigest": "/fd \"SHA256\"",
+                          "PageHash": "/NPH",
+                          "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                        },
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                      },
+                      {
+                        "KeyCode": "CP-230012",
+                        "OperationCode": "SigntoolVerify",
+                        "Parameters": {},
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                      }
+                    ]
+              - task: DotNetCoreCLI@2
+                displayName: dotnet pack
+                inputs:
+                  command: pack
+                  searchPatternPack: packages/dotnet-sdk/src/TeamsFx/Microsoft.TeamsFx.csproj
+                  nobuild: true
+              - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+                displayName: ESRP CodeSigning
+                condition: and(succeeded(), eq(variables['CodeSign'], 'true'))
+                inputs:
+                  ConnectedServiceName: TeamsFx Nuget
+                  FolderPath: $(Build.ArtifactStagingDirectory)
+                  Pattern: "*.nupkg"
+                  signConfigType: inlineSignParams
+                  inlineOperation: |-
+                    [ 
+                       {
+                           "keyCode": "CP-401405",
+                           "operationSetCode": "NuGetSign",
+                           "parameters": [ ],
+                           "toolName": "sign",
+                           "toolVersion": "1.0"
+                       },
+                       {
+                           "keyCode": "CP-401405",
+                           "operationSetCode": "NuGetVerify",
+                           "parameters": [ ],
+                           "toolName": "sign",
+                           "toolVersion": "1.0"
+                       }
+                    ]
+              - task: PowerShell@2
+                displayName: "PowerShell Script : verify code sign"
+                inputs:
+                  targetType: inline
+                  script: |-
+                    # Verify signature of binary
+                    $dllSignatures = Get-AuthenticodeSignature $(Build.SourcesDirectory)/packages/dotnet-sdk/src/TeamsFx/bin/$(BuildConfiguration)/net6.0/*.dll
+                    $dllSignatures
+                    foreach ($dllSig in $dllSignatures) {
+                        if ($dllSig.Status -ne 'Valid') {
+                            exit 1
+                        }
+                    }
+
+                    # Verify signature of NuGet package
+                    NuGet.exe verify -Signatures $(Build.ArtifactStagingDirectory)\*.nupkg -CertificateFingerprint '566A31882BE208BE4422F7CFD66ED09F5D4524A5994F50CCC8B05EC0528C1353'
+                    if ($LASTEXITCODE -ne 0) {exit 1}

@@ -31,6 +31,7 @@ import fs from "fs-extra";
 import path from "path";
 import { Executor } from "../../utils/executor";
 import { ChildProcessWithoutNullStreams } from "child_process";
+import os from "os";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -278,8 +279,11 @@ export abstract class CaseFactory {
           );
         }
         await onAfter(sampledebugContext, env);
-        if (successFlag) process.exit(0);
-        else process.exit(1);
+        // windows in cli can't stop debug
+        if (options?.debug === "cli" && os.type() === "Windows_NT") {
+          if (successFlag) process.exit(0);
+          else process.exit(1);
+        }
       });
 
       it(
@@ -457,8 +461,9 @@ export abstract class CaseFactory {
             });
           } catch (error) {
             successFlag = false;
-            expect.fail(error);
+            console.log(error);
           }
+          expect(successFlag).to.be.true;
           console.log("debug finish!");
         }
       );

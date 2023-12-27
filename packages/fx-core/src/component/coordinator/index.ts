@@ -78,8 +78,11 @@ export enum TemplateNames {
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
   NotificationHttpTrigger = "notification-http-trigger",
+  NotificationHttpTriggerIsolated = "notification-http-trigger-isolated",
   NotificationTimerTrigger = "notification-timer-trigger",
+  NotificationTimerTriggerIsolated = "notification-timer-trigger-isolated",
   NotificationHttpTimerTrigger = "notification-http-timer-trigger",
+  NotificationHttpTimerTriggerIsolated = "notification-http-timer-trigger-isolated",
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
   DefaultBot = "default-bot",
@@ -106,11 +109,20 @@ const Feature2TemplateName: any = {
     NotificationTriggerOptions.functionsHttpTrigger().id
   }`]: TemplateNames.NotificationHttpTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpTrigger().id
+  }`]: TemplateNames.NotificationHttpTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsTimerTrigger().id
   }`]: TemplateNames.NotificationTimerTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsTimerTrigger().id
+  }`]: TemplateNames.NotificationTimerTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
   }`]: TemplateNames.NotificationHttpTimerTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
+  }`]: TemplateNames.NotificationHttpTimerTriggerIsolated,
   [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
   [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,

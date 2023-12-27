@@ -277,7 +277,11 @@ class Coordinator {
         const trigger = inputs[QuestionNames.BotTrigger] as string;
         let feature = `${capability}:${trigger}`;
 
-        if (capability == CapabilityOptions.notificationBot().id && inputs.isIsolated == true) {
+        if (
+          language === "csharp" &&
+          capability === CapabilityOptions.notificationBot().id &&
+          inputs.isIsolated === true
+        ) {
           feature += "-isolated";
         }
 

@@ -26,6 +26,11 @@ jobs:
         run: |
           echo "result=$(node ./.github/scripts/get-dailydigest-dependencies.js)" >> $GITHUB_OUTPUT
 
+      - name: Get All Updated SDK Dependencies
+        id: getUpdatedSDKDependencies
+        run: |
+          echo "result=$(node ./.github/scripts/get-sdk-dependencies.js)" >> $GITHUB_OUTPUT
+
       - name: Get Date
         id: getDate
         run: |
@@ -33,7 +38,7 @@ jobs:
 
       - name: Setup Email and Recipient
         if: ${{ always() }}
-        id: email
+        id: template-email
         run: |
           emails="yiqingzhao@microsoft.com"
           subject="Templates Dependencies Daily Check ${{ steps.getDate.outputs.date }}"
@@ -46,9 +51,31 @@ jobs:
       - name: Send E-mail Notifications
         uses: ./.github/actions/send-email-report
         env:
-          TO: ${{ steps.email.outputs.to }}
-          BODY: ${{ steps.email.outputs.body }}
-          SUBJECT: ${{ steps.email.outputs.subject }}
+          TO: ${{ steps.template-email.outputs.to }}
+          BODY: ${{ steps.template-email.outputs.body }}
+          SUBJECT: ${{ steps.template-email.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
+      
+      - name: Setup Email and Recipient
+        if: ${{ always() }}
+        id: sdk-email
+        run: |
+          emails="yiqingzhao@microsoft.com"
+          subject="SDK Dependencies Daily Check ${{ steps.getDate.outputs.date }}"
+          body=${{steps.getUpdatedSDKDependencies.outputs.result}}
+
+          echo "to=$emails" >> $GITHUB_OUTPUT
+          echo "subject=$subject" >> $GITHUB_OUTPUT
+          echo "body=$body" >> $GITHUB_OUTPUT
+
+      - name: Send E-mail Notifications
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.sdk-email.outputs.to }}
+          BODY: ${{ steps.sdk-email.outputs.body }}
+          SUBJECT: ${{ steps.sdk-email.outputs.subject }}
           MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
           MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
           MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

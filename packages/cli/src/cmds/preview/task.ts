@@ -73,6 +73,7 @@ export class Task {
         // TODO: log
         stderr.push(data.toString());
       });
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       this.task?.on("exit", async () => {
         const result: TaskResult = {
           command: this.command,
@@ -93,7 +94,7 @@ export class Task {
   }
 
   /**
-   * wait until stdout of the task matches the pattern or the task ends
+   * wait until stdout/stderr of the task matches the pattern or the task ends
    */
   public async waitFor(
     pattern: RegExp,
@@ -121,6 +122,7 @@ export class Task {
     const stderr: string[] = [];
     return new Promise((resolve) => {
       if (timeout !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         setTimeout(async () => {
           if (!this.resolved) {
             this.resolved = true;
@@ -142,6 +144,7 @@ export class Task {
         }, timeout);
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       this.task?.stdout?.on("data", async (data) => {
         const dataStr = data.toString();
         await serviceLogWriter?.write(this.taskTitle, dataStr);
@@ -170,6 +173,7 @@ export class Task {
           }
         }
       });
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       this.task?.stderr?.on("data", async (data) => {
         const dataStr = data.toString();
         await serviceLogWriter?.write(this.taskTitle, dataStr);
@@ -177,8 +181,29 @@ export class Task {
           logProvider.necessaryLog(LogLevel.Info, dataStr.trim(), true);
         }
         stderr.push(dataStr);
+        if (!this.resolved) {
+          const match = pattern.test(dataStr);
+          if (match) {
+            this.resolved = true;
+            const result: TaskResult = {
+              command: this.command,
+              options: this.options,
+              success: false,
+              stdout: stdout,
+              stderr: stderr,
+              exitCode: null,
+            };
+            const error = await stopCallback(this.taskTitle, this.background, result);
+            if (error) {
+              resolve(err(error));
+            } else {
+              resolve(ok(result));
+            }
+          }
+        }
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
       this.task?.on("exit", async () => {
         if (!this.resolved) {
           this.resolved = true;

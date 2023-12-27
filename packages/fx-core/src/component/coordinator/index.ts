@@ -109,19 +109,19 @@ const Feature2TemplateName: any = {
     NotificationTriggerOptions.functionsHttpTrigger().id
   }`]: TemplateNames.NotificationHttpTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsHttpTrigger().id
+    NotificationTriggerOptions.functionsHttpTriggerIsolated().id
   }`]: TemplateNames.NotificationHttpTriggerIsolated,
   [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsTimerTrigger().id
   }`]: TemplateNames.NotificationTimerTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsTimerTrigger().id
+    NotificationTriggerOptions.functionsTimerTriggerIsolated().id
   }`]: TemplateNames.NotificationTimerTriggerIsolated,
   [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
   }`]: TemplateNames.NotificationHttpTimerTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
-    NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
+    NotificationTriggerOptions.functionsHttpAndTimerTriggerIsolated().id
   }`]: TemplateNames.NotificationHttpTimerTriggerIsolated,
   [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
@@ -276,6 +276,10 @@ class Coordinator {
         }
         const trigger = inputs[QuestionNames.BotTrigger] as string;
         let feature = `${capability}:${trigger}`;
+
+        if (capability == CapabilityOptions.notificationBot().id && inputs.isIsolated == true) {
+          feature += "-isolated";
+        }
 
         if (meArchitecture) {
           feature = `${feature}:${meArchitecture}`;

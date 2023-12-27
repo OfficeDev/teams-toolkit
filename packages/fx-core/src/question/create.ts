@@ -756,6 +756,17 @@ export class NotificationTriggerOptions {
     };
   }
 
+  static functionsTimerTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "timer-functions-isolated",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.TIMER],
+      label: getLocalizedString("plugins.bot.triggers.timer-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.timer-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.timer-functions.detail"),
+    };
+  }
+
   static functionsHttpAndTimerTrigger(): HostTypeTriggerOptionItem {
     return {
       id: "http-and-timer-functions",
@@ -767,9 +778,31 @@ export class NotificationTriggerOptions {
     };
   }
 
+  static functionsHttpAndTimerTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "http-and-timer-functions-isolated",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
+      label: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.detail"),
+    };
+  }
+
   static functionsHttpTrigger(): HostTypeTriggerOptionItem {
     return {
       id: "http-functions",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.HTTP],
+      label: getLocalizedString("plugins.bot.triggers.http-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.http-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.http-functions.detail"),
+    };
+  }
+
+  static functionsHttpTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "http-functions-isolated",
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.HTTP],
       label: getLocalizedString("plugins.bot.triggers.http-functions.label"),

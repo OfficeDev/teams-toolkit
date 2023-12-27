@@ -16,7 +16,7 @@
       },
       "openAIAssistantId": {
         "value": "${{SECRET_OPENAI_ASSISTANT_ID}}"
-      }
+      },
       "webAppSKU": {
         "value": "B1"
       },

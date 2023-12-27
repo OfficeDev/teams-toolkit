@@ -316,7 +316,7 @@ async function main() {
 
   const table = generateAdaptiveCardColumnSets(arr);
   const tableString = JSON.stringify(table);
-  return tableString;
+  return JSON.stringify(tableString);
 }
 
 main().then((result) => {

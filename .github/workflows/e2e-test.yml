@@ -535,22 +535,8 @@ jobs:
             packages/fx-core/out2.zip
 
       - name: CodeCov report attempt 1
+        if: ${{always()}}
         id: codecov1
-        continue-on-error: true
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
-          verbose: true
-
-      - name: delay 10s for attempt 2
-        if: steps.codecov1.outcome == 'failure'
-        run: |
-          sleep 10s
-
-      - name: CodeCov report attempt 2
-        id: codecov2
-        if: steps.codecov1.outcome == 'failure'
         continue-on-error: true
         uses: codecov/codecov-action@v3
         with:

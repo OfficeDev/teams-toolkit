@@ -266,7 +266,7 @@ jobs:
 
   tear-down:
     if: ${{ always() }}
-    needs: execute-case
+    needs: [execute-case, e2e-coverage]
     runs-on: ubuntu-latest
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}

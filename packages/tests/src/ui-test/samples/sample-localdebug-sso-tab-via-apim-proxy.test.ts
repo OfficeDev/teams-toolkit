@@ -28,5 +28,6 @@ new SsotabApimTestCase(
   25190654,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartFrontend]
+  [LocalDebugTaskLabel.StartFrontend],
+  { debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
 ).test();

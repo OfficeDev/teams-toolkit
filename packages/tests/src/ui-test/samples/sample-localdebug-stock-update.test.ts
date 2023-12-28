@@ -53,5 +53,6 @@ new StockUpdateTestCase(
     LocalDebugTaskLabel.Azurite,
     LocalDebugTaskLabel.Compile,
     LocalDebugTaskLabel.StartBotApp,
-  ]
+  ],
+  { debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
 ).test();

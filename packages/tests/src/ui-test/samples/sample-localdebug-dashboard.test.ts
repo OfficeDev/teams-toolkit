@@ -26,5 +26,8 @@ new DashboardTestCase(
     LocalDebugTaskLabel.WatchBackend,
     LocalDebugTaskLabel.StartBackend,
   ],
-  { dashboardFlag: true }
+  {
+    dashboardFlag: true,
+    debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk",
+  }
 ).test();

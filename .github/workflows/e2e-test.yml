@@ -533,3 +533,12 @@ jobs:
           path: |
             packages/fx-core/out1.zip
             packages/fx-core/out2.zip
+
+      - name: CodeCov report attempt
+        if: ${{always()}}
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true

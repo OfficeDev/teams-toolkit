@@ -28,8 +28,8 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     sdl:
-      customCheckout:
-        scanDirectory: packages\dotnet-sdk
+      credscan:
+        suppressionsFile: .azure-pipelines/CredScanSuppressions.json
     pool:
       name: $(PoolName)
     customBuildTags:

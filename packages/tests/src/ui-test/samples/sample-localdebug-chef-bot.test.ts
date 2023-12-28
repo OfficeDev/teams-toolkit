@@ -33,5 +33,6 @@ new ChefBotTestCase(
   24409837,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp]
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
+  { debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
 ).test();

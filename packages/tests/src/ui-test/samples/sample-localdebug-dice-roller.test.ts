@@ -16,5 +16,5 @@ new DiceRollerTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartWebServer],
-  { skipInit: true }
+  { skipInit: true, debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
 ).test();

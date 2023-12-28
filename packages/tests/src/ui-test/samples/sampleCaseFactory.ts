@@ -321,6 +321,7 @@ export abstract class CaseFactory {
                 // local debug
                 if (options?.debug === "cli") {
                   // cli preview
+                  console.log("======= debug with cli ========");
                   console.log("botFlag: ", botFlag);
                   if (botFlag) {
                     devtunnelProcess = Executor.startDevtunnel(
@@ -398,6 +399,7 @@ export abstract class CaseFactory {
                     setTimeout(resolve, 2 * 30 * 1000)
                   );
                 } else {
+                  console.log("======= debug with ttk ========");
                   try {
                     await debugInitMap[sampleName]();
                     for (const label of validate) {

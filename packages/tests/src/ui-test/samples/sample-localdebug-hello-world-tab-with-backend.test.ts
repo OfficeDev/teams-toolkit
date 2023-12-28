@@ -32,5 +32,6 @@ new HelloWorldTabBackEndTestCase(
     LocalDebugTaskLabel.StartFrontend,
     LocalDebugTaskLabel.WatchBackend,
     LocalDebugTaskLabel.StartBackend,
-  ]
+  ],
+  { debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
 ).test();

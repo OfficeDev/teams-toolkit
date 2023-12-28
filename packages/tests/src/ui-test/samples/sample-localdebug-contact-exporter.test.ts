@@ -25,5 +25,6 @@ new ContactExporterTestCase(
   12599484,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartFrontend]
+  [LocalDebugTaskLabel.StartFrontend],
+  { debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
 ).test();

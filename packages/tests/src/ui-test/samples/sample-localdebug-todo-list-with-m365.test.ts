@@ -40,5 +40,6 @@ new TodoListM365TestCase(
   {
     teamsAppName: "toDoList-local",
     skipValidation: true,
+    debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk",
   }
 ).test();

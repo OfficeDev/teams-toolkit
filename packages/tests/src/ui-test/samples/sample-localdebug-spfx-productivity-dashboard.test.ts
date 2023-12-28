@@ -44,5 +44,6 @@ new SpfxProductivityTestCase(
     teamsAppName: "SPFx productivity dashboard",
     type: "spfx",
     skipValidation: true,
+    debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk",
   }
 ).test();

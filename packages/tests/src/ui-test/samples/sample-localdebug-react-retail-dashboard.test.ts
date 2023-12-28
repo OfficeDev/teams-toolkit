@@ -44,5 +44,6 @@ new RetailDashboardTestCase(
     teamsAppName: "react-retail-dashboard-local",
     type: "spfx",
     skipValidation: true,
+    debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk",
   }
 ).test();

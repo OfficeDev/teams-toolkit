@@ -26,5 +26,8 @@ new QueryOrgTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
-  { skipValidation: true }
+  {
+    skipValidation: true,
+    debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk",
+  }
 ).test();

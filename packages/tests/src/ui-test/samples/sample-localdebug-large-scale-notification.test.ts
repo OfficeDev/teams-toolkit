@@ -43,5 +43,5 @@ new BotSSOTestCase(
     LocalDebugTaskLabel.Azurite,
     LocalDebugTaskLabel.StartApplication,
   ],
-  { skipInit: true }
+  { skipInit: true, debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
 ).test();

@@ -1,37 +1,37 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Service } from "typedi";
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
-import { DriverContext } from "../interface/commonArgs";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { hooks } from "@feathersjs/hooks";
-import { logMessageKeys, maxDomainPerApiKey, maxSecretPerApiKey } from "./utility/constants";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
-import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
+import { Service } from "typedi";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { SpecParser } from "../../../common/spec-parser";
 import { AppStudioScopes, GraphScopes } from "../../../common/tools";
+import { InvalidActionInputError, assembleError } from "../../../error";
+import { QuestionNames } from "../../../question";
+import { QuestionMW } from "../../middleware/questionMW";
+import { getAbsolutePath } from "../../utils/common";
+import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
-import { ApiSecretRegistrationClientSecret } from "../teamsApp/interfaces/ApiSecretRegistrationClientSecret";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
   ApiSecretRegistrationTargetAudience,
   ApiSecretRegistrationUserAccessType,
 } from "../teamsApp/interfaces/ApiSecretRegistration";
-import { InvalidActionInputError, UnhandledError } from "../../../error";
-import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
+import { ApiSecretRegistrationClientSecret } from "../teamsApp/interfaces/ApiSecretRegistrationClientSecret";
+import { TelemetryUtils } from "../teamsApp/utils/telemetry";
 import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvalid";
 import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
-import { QuestionMW } from "../../middleware/questionMW";
-import { QuestionNames } from "../../../question";
-import { SpecParser } from "../../../common/spec-parser";
-import { getAbsolutePath } from "../../utils/common";
 import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
-import { TelemetryUtils } from "../teamsApp/utils/telemetry";
+import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
+import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
+import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
+import { logMessageKeys, maxDomainPerApiKey, maxSecretPerApiKey } from "./utility/constants";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
@@ -135,7 +135,7 @@ export class CreateApiKeyDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failedExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledError(error as Error, actionName)),
+        result: err(assembleError(error as Error, actionName)),
         summaries: summaries,
       };
     }

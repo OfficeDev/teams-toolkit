@@ -265,7 +265,7 @@ jobs:
           npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
-    if: ${{ ! (needs.execute-case.result == skipped || needs.e2e-coverage.result == skipped) }}
+    if: ${{ ! (needs.execute-case.result == skipped && needs.e2e-coverage.result == skipped) }}
     needs: [execute-case, e2e-coverage]
     runs-on: ubuntu-latest
     env:
@@ -281,6 +281,11 @@ jobs:
       M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     steps:
+      - name: echo needs result
+        run: |
+          echo ${{needs.setup.result}}
+          echo ${{(needs.execute-case.result}}
+          echo ${{needs.e2e-coverage.result}}
       - name: Checkout (dev)
         uses: actions/checkout@v3
 

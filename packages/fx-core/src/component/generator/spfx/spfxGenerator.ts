@@ -849,7 +849,7 @@ export class SPFxGenerator {
     }
   }
 
-  private static async getNodeVersion(solutionPath: string, context: Context): Promise<string> {
+  public static async getNodeVersion(solutionPath: string, context: Context): Promise<string> {
     const packageJsonPath = path.join(solutionPath, Constants.PACKAGE_JSON_FILE);
 
     if (await fs.pathExists(packageJsonPath)) {

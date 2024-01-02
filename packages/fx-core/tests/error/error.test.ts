@@ -19,12 +19,14 @@ import {
   assembleError,
   FilePermissionError,
   InternalError,
+  matchDnsError,
   UnhandledError,
   UnhandledUserError,
   UserCancelError,
 } from "../../src/error/common";
 import { BaseComponentInnerError } from "../../src/component/error/componentError";
 import { InvalidYamlSchemaError } from "../../src/error/yml";
+import { getLocalizedString } from "../../src/common/localizeUtils";
 
 describe("Middleware - ErrorHandlerMW", () => {
   const inputs: Inputs = { platform: Platform.VSCode };
@@ -219,5 +221,20 @@ describe("assembleError", function () {
     assert.isTrue(fxError instanceof UnhandledError);
     assert.isTrue(fxError.message.includes(JSON.stringify(raw, Object.getOwnPropertyNames(raw))));
     assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
+  });
+});
+
+describe("matchDnsError", function () {
+  it("match", () => {
+    const res = matchDnsError("getaddrinfo EAI_AGAIN dev.teams.microsoft.com");
+    assert.equal(
+      res,
+      getLocalizedString("error.common.NetworkError.EAI_AGAIN", "dev.teams.microsoft.com")
+    );
+  });
+
+  it("match", () => {
+    const res = matchDnsError("ABC dev.teams.microsoft.com");
+    assert.equal(res, undefined);
   });
 });

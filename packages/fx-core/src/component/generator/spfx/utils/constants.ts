@@ -72,10 +72,3 @@ export class ManifestTemplate {
   static readonly WEB_APP_INFO_RESOURCE = "https://{teamSiteDomain}";
   static readonly WEB_APP_INFO_ID = "00000003-0000-0ff1-ce00-000000000000";
 }
-
-export class GetNodeVersionFailedReson {
-  static readonly CannotFindFile = "cannotFindFile";
-  static readonly CannotFindEngines = "cannotFindEngines";
-  static readonly CannotFindEnginesVersion = "cannotFindEnginesVersion";
-  static readonly ReadContentError = "readContentError";
-}

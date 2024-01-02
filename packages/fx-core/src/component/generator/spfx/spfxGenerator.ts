@@ -46,6 +46,7 @@ import {
   UpdateSPFxTemplateError,
   YoGeneratorScaffoldError,
   PackageTargetVersionInstallError,
+  CannotFindPropertyfromJsonError,
 } from "./error";
 import { Constants, ManifestTemplate } from "./utils/constants";
 import { ProgressHelper } from "./utils/progress-helper";
@@ -53,6 +54,8 @@ import { SPFxVersionOptionIds } from "../../../question/create";
 import { TelemetryEvents, TelemetryProperty } from "./utils/telemetryEvents";
 import { Utils } from "./utils/utils";
 import semver from "semver";
+import { jsonUtils } from "../../../common/jsonUtils";
+import { telemetryHelper } from "./utils/telemetry-helper";
 
 export class SPFxGenerator {
   @hooks([
@@ -149,6 +152,9 @@ export class SPFxGenerator {
       if (!context.templateVariables) {
         context.templateVariables = Generator.getDefaultVariables(inputs[QuestionNames.AppName]);
       }
+
+      const nodeVersion = await this.getNodeVersion(destSpfxFolder, context);
+      context.templateVariables["SpfxNodeVersion"] = nodeVersion;
       context.templateVariables["componentId"] = webpartManifest["id"];
       context.templateVariables["webpartName"] =
         webpartManifest["preconfiguredEntries"][0].title.default;
@@ -376,6 +382,9 @@ export class SPFxGenerator {
         }
         context.templateVariables["componentId"] = componentId;
         context.templateVariables["webpartName"] = webpartName;
+
+        const nodeVersion = await this.getNodeVersion(newPath, context);
+        context.templateVariables["SpfxNodeVersion"] = nodeVersion;
       }
 
       // remove dataVersion() function, related issue: https://github.com/SharePoint/sp-dev-docs/issues/6469
@@ -838,5 +847,47 @@ export class SPFxGenerator {
     } catch (e) {
       throw UpdateSPFxTemplateError(e as any);
     }
+  }
+
+  private static async getNodeVersion(solutionPath: string, context: Context): Promise<string> {
+    const packageJsonPath = path.join(solutionPath, Constants.PACKAGE_JSON_FILE);
+
+    if (await fs.pathExists(packageJsonPath)) {
+      const jsonContentRes = await jsonUtils.readJSONFile(packageJsonPath);
+      if (jsonContentRes.isErr()) {
+        telemetryHelper.sendErrorEvent(
+          context,
+          TelemetryEvents.GetSpfxNodeVersionFailed,
+          jsonContentRes.error
+        );
+      } else {
+        const packageJson = jsonContentRes.value;
+        if (!packageJson.engines) {
+          telemetryHelper.sendErrorEvent(
+            context,
+            TelemetryEvents.GetSpfxNodeVersionFailed,
+            CannotFindPropertyfromJsonError("engines")
+          );
+        } else {
+          if (!packageJson.engines.node) {
+            telemetryHelper.sendErrorEvent(
+              context,
+              TelemetryEvents.GetSpfxNodeVersionFailed,
+              CannotFindPropertyfromJsonError("engines.node")
+            );
+          } else {
+            return packageJson.engines.node as string;
+          }
+        }
+      }
+    } else {
+      telemetryHelper.sendErrorEvent(
+        context,
+        TelemetryEvents.GetSpfxNodeVersionFailed,
+        new FileNotFoundError(Constants.PLUGIN_NAME, packageJsonPath)
+      );
+    }
+
+    return Constants.DEFAULT_NODE_VERSION;
   }
 }

@@ -64,6 +64,30 @@ export function LatestPackageInstallError(): SystemError {
   );
 }
 
+export function PackageTargetVersionInstallError(
+  packageName: string,
+  version: string
+): SystemError {
+  const fxFolderPath = "HOME/.fx";
+  const packageInfo = `${packageName}@${version}`;
+  return new SystemError(
+    Constants.PLUGIN_NAME,
+    "PackageTargetVersionInstallError",
+    getDefaultString(
+      "plugins.spfx.error.installDependencyError",
+      fxFolderPath,
+      Constants.AddWebpartHelpLink,
+      packageInfo
+    ),
+    getLocalizedString(
+      "plugins.spfx.error.installDependencyError",
+      fxFolderPath,
+      Constants.AddWebpartHelpLink,
+      packageInfo
+    )
+  );
+}
+
 export function YoGeneratorScaffoldError(): UserError {
   return new UserError({
     source: Constants.PLUGIN_NAME,
@@ -126,5 +150,14 @@ export function PathAlreadyExistsError(path: string): UserError {
     name: "PathAlreadyExists",
     message: getDefaultString("core.QuestionAppName.validation.pathExist", path),
     displayMessage: getLocalizedString("core.QuestionAppName.validation.pathExist", path),
+  });
+}
+
+export function SolutionVersionMissingError(path: string): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "SolutionVersionMissing",
+    message: getDefaultString("plugins.spfx.addWebPart.cannotFindSolutionVersion", path),
+    displayMessage: getLocalizedString("plugins.spfx.addWebPart.cannotFindSolutionVersion", path),
   });
 }

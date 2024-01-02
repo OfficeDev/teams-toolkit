@@ -13,7 +13,11 @@ import fs from "fs-extra";
 import { describe } from "mocha";
 import path from "path";
 import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
-import { AadValidator, FrontendValidator } from "../../commonlib";
+import {
+  AadValidator,
+  FrontendValidator,
+  StaticSiteValidator,
+} from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import { Cleaner } from "../../commonlib/cleaner";
@@ -23,6 +27,7 @@ import {
   getTestFolder,
   getUniqueAppName,
   removeTeamsAppExtendToM365,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 
 describe("Create single tab", function () {
@@ -61,6 +66,9 @@ describe("Create single tab", function () {
         // remove teamsApp/extendToM365 in case it fails
         removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
+        // workaround free tier quota
+        await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
+
         const result = await createResourceGroup(resourceGroupName, "eastus");
         assert.isTrue(result);
 
@@ -82,10 +90,6 @@ describe("Create single tab", function () {
         // Validate Aad App
         const aad = AadValidator.init(context, false, M365Login);
         await AadValidator.validate(aad);
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateProvision(frontend);
       }
     );
 
@@ -107,10 +111,9 @@ describe("Create single tab", function () {
           await fs.readFile(envFilePath, { encoding: "utf8" })
         );
         const context = parseResult.obj;
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateDeploy(frontend);
+        assert.isNotEmpty(context);
+        const staticSite = StaticSiteValidator.init(context);
+        await StaticSiteValidator.validateDeploy(staticSite);
       }
     );
   });

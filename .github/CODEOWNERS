@@ -106,8 +106,10 @@
 
 /templates/**/copilot-plugin-from-scratch @hund030 @eriolchan @huimiu
 /templates/**/dashboard-tab @hund030 @eriolchan @huimiu
-/templates/**/non-sso-tab @hund030 @eriolchan @huimiu @JerryYangKai
-/templates/**/sso-tab @JerryYangKai @eriolchan @hund030 @huimiu
+/templates/**/non-sso-tab @hund030 @eriolchan @Yimin-Jin
+/templates/**/non-sso-tab-ssr @Yimin-Jin @eriolchan @hund030
+/templates/**/sso-tab @hund030 @eriolchan @Yimin-Jin
+/templates/**/sso-tab-ssr @Yimin-Jin @eriolchan @hund030
 /templates/**/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/link-unfurling @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/message-extension-action @JerryYangKai @eriolchan @Siglud @Yukun-dong
@@ -133,7 +135,6 @@
 /templates/**/notification-webapi @kimizhu @dooriya @swatDong
 /templates/**/workflow @kimizhu @dooriya @swatDong
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/**/m365-tab @kimizhu @swatDong @kuojianlu
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
 

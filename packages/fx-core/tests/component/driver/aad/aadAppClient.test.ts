@@ -6,15 +6,17 @@ import * as sinon from "sinon";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, isAxiosError } from "axios";
 import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
 import MockAdapter from "axios-mock-adapter";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
-import { IAADDefinition } from "../../../../src/component/driver/aad/interface/IAADDefinition";
 import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
-import { DeleteOrUpdatePermissionFailedError } from "../../../../src/component/driver/aad/error/aadManifestError";
+import {
+  DeleteOrUpdatePermissionFailedError,
+  HostNameNotOnVerifiedDomainError,
+} from "../../../../src/component/driver/aad/error/aadManifestError";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -322,6 +324,51 @@ describe("AadAppClient", async () => {
           expect(err.message).equals(
             "Unable to update or delete an existing permission when it's enabled. One possible reason is that the ACCESS_AS_USER_PERMISSION_ID environment variable is changed for selected environment. Ensure your permission id(s) are identical with the actual Microsoft Entra application and try again.\n"
           );
+        }
+      );
+    });
+
+    it("should throw error when request failed with HostNameNotOnVerifiedDomain", async () => {
+      const expectedError = {
+        error: {
+          code: "HostNameNotOnVerifiedDomain",
+          message: "Mocked error message",
+        },
+      };
+
+      sinon.stub(axiosInstance, "patch").rejects({
+        isAxiosError: true,
+        response: {
+          status: 400,
+          data: expectedError,
+        },
+      });
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.rejected.then(
+        (err) => {
+          expect(err instanceof HostNameNotOnVerifiedDomainError).to.be.true;
+          expect(err.source).equals("AadAppClient");
+          expect(err.name).equals("HostNameNotOnVerifiedDomain");
+          expect(err.message).equals(
+            "Unable to set identifierUri because the value is not on verified domain: Mocked error message"
+          );
+          expect(err.helpLink).equals("https://aka.ms/teamsfx-multi-tenant");
+        }
+      );
+    });
+
+    it("should throw error when request failed with no error property", async () => {
+      const expectedError = {};
+
+      sinon.stub(axiosInstance, "patch").rejects({
+        isAxiosError: true,
+        response: {
+          status: 400,
+          data: expectedError,
+        },
+      });
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.rejected.then(
+        (err) => {
+          expect(isAxiosError(err)).to.be.true;
         }
       );
     });

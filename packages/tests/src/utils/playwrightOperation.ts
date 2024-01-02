@@ -989,10 +989,14 @@ export async function validateEchoBot(
 export async function validateWelcomeAndReplyBot(
   page: Page,
   options: {
+    hasWelcomeMessage?: boolean;
+    hasCommandReplyValidation: boolean;
     botCommand?: string;
     expectedWelcomeMessage?: string;
     expectedReplyMessage?: string;
   } = {
+    hasWelcomeMessage: true,
+    hasCommandReplyValidation: true,
     botCommand: "helloWorld",
     expectedWelcomeMessage: ValidationContent.AiChatBotWelcomeInstruction,
     expectedReplyMessage: ValidationContent.AiBotErrorMessage,
@@ -1017,34 +1021,39 @@ export async function validateWelcomeAndReplyBot(
       console.log("no message to dismiss");
     }
 
-    await RetryHandler.retry(async () => {
-      await frame?.waitForSelector(
-        `p:has-text("${
+    if (options.hasWelcomeMessage) {
+      await RetryHandler.retry(async () => {
+        await frame?.waitForSelector(
+          `p:has-text("${
+            options?.expectedWelcomeMessage ||
+            ValidationContent.AiChatBotWelcomeInstruction
+          }")`
+        );
+        console.log(
           options?.expectedWelcomeMessage ||
-          ValidationContent.AiChatBotWelcomeInstruction
-        }")`
-      );
-      console.log(
-        options?.expectedWelcomeMessage ||
-          ValidationContent.AiChatBotWelcomeInstruction
-      );
-      console.log("verified bot that it has sent welcome!!!");
-    }, 2);
+            ValidationContent.AiChatBotWelcomeInstruction
+        );
+        console.log("verified bot that it has sent welcome!!!");
+      }, 2);
+    }
 
-    await RetryHandler.retry(async () => {
-      console.log("sending message ", options?.botCommand || "helloWorld");
-      await frame?.fill(
-        'div.ck-content[role="textbox"]',
-        options?.botCommand || "helloWorld"
-      );
-      await frame?.click('button[name="send"]');
-      await frame?.waitForSelector(
-        `p:has-text("${options?.expectedReplyMessage}")`
-      );
-      console.log(
-        `verify bot successfully with content ${options?.expectedReplyMessage}!!!`
-      );
-    }, 2);
+    if (options.hasCommandReplyValidation) {
+      await RetryHandler.retry(async () => {
+        console.log("sending message ", options?.botCommand || "helloWorld");
+        await frame?.fill(
+          'div.ck-content[role="textbox"]',
+          options?.botCommand || "helloWorld"
+        );
+        await frame?.click('button[name="send"]');
+        await frame?.waitForSelector(
+          `p:has-text("${options?.expectedReplyMessage}")`
+        );
+        console.log(
+          `verify bot successfully with content ${options?.expectedReplyMessage}!!!`
+        );
+      }, 2);
+    }
+
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({

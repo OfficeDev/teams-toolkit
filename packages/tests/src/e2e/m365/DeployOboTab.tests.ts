@@ -15,7 +15,6 @@ import m365Provider from "@microsoft/teamsapp-cli/src/commonlib/m365LoginUserPas
 import { AadValidator } from "../../commonlib/aadValidate";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
-import { FrontendValidator } from "../../commonlib/frontendValidator";
 import {
   cleanUpLocalProject,
   createResourceGroup,
@@ -23,12 +22,14 @@ import {
   getTestFolder,
   getUniqueAppName,
   readContextMultiEnvV3,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 import {
   deleteAadAppByObjectId,
   deleteTeamsApp,
   getTeamsApp,
 } from "../debug/utility";
+import { StaticSiteValidator } from "../../commonlib";
 
 describe("Deploy V3 m365-tab template", () => {
   const testFolder = getTestFolder();
@@ -65,6 +66,9 @@ describe("Deploy V3 m365-tab template", () => {
       const result = await createResourceGroup(resourceGroupName, "eastus");
       chai.assert.isTrue(result);
 
+      // workaround free tier quota
+      await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
+
       await CliHelper.provisionProject(projectPath, "", "dev", {
         ...process.env,
         AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
@@ -85,10 +89,6 @@ describe("Deploy V3 m365-tab template", () => {
       const teamsApp = await getTeamsApp(context.TEAMS_APP_ID);
       chai.assert.equal(teamsApp?.teamsAppId, context.TEAMS_APP_ID);
 
-      // validate tab
-      let frontend = FrontendValidator.init(context);
-      await FrontendValidator.validateProvision(frontend);
-
       // validate m365
       chai.assert.isDefined(context.M365_TITLE_ID);
       chai.assert.isNotEmpty(context.M365_TITLE_ID);
@@ -102,10 +102,9 @@ describe("Deploy V3 m365-tab template", () => {
       context = await readContextMultiEnvV3(projectPath, "dev");
       chai.assert.isDefined(context);
 
-      // validate tab
-      frontend = FrontendValidator.init(context);
-      await FrontendValidator.validateProvision(frontend);
-      await FrontendValidator.validateDeploy(frontend);
+      // Validate deployment
+      const staticSite = StaticSiteValidator.init(context);
+      await StaticSiteValidator.validateDeploy(staticSite);
     }
   );
 });

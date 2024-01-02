@@ -42,7 +42,7 @@ import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
-import { IServerConnection, Namespaces } from "./apis";
+import { DependencyStatusRPC, IServerConnection, Namespaces } from "./apis";
 import { callFunc } from "./customizedFuncAdapter";
 import LogProvider from "./providers/logger";
 import TelemetryReporter from "./providers/telemetry";
@@ -345,7 +345,7 @@ export default class ServerConnection implements IServerConnection {
     },
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
-    const res = await getCopilotStatus(accountToken.token);
+    const res = await getCopilotStatus(accountToken.token, true);
     return ok(String(res));
   }
 
@@ -477,29 +477,34 @@ export default class ServerConnection implements IServerConnection {
   public async checkAndInstallTestTool(
     options: TestToolInstallOptions & { correlationId: string },
     token: CancellationToken
-  ): Promise<Result<DependencyStatus, FxError>> {
+  ): Promise<Result<DependencyStatusRPC, FxError>> {
     const corrId = options.correlationId || "";
-
     const depsManager = new DepsManager(
       new CoreDepsLoggerAdapter(this.tools.logProvider),
       this.tools.telemetryReporter
         ? new CoreDepsTelemetryAdapter(this.tools.telemetryReporter)
         : new EmptyTelemetry()
     );
-
     const res = await Correlator.runWithId(
       corrId,
-      async (): Promise<Result<DependencyStatus, FxError>> => {
+      async (): Promise<Result<DependencyStatusRPC, FxError>> => {
         try {
-          const status = await depsManager.ensureDependency(DepsType.TestTool, false, options);
-          return ok(status);
+          const depStatus = await depsManager.ensureDependency(DepsType.TestTool, false, options);
+          // convert DependencyStatus to pure JSON because after the default JSON.stringify and error message will be lost
+          return ok({
+            isInstalled: depStatus.isInstalled,
+            command: depStatus.command,
+            details: depStatus.details,
+            ...(depStatus.error !== undefined
+              ? { error: { message: depStatus.error.message, helpLink: depStatus.error.helpLink } }
+              : {}),
+          });
         } catch (error: unknown) {
           const fxError = assembleError(error, "Fx-VS");
           return err(fxError);
         }
       }
     );
-
     return standardizeResult(res);
   }
 }

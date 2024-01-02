@@ -1,10 +1,4 @@
-import {
-  TeamsActivityHandler,
-  CardFactory,
-  TurnContext,
-  AdaptiveCardInvokeValue,
-  AdaptiveCardInvokeResponse,
-} from "botbuilder";
+import { TeamsActivityHandler, TurnContext } from "botbuilder";
 
 export class TeamsBot extends TeamsActivityHandler {
   constructor() {

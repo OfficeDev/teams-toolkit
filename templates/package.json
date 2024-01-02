@@ -1,6 +1,6 @@
 {
     "name": "templates",
-    "version": "4.1.0-alpha",
+    "version": "4.2.0-alpha",
     "private": "true",
     "license": "MIT",
     "scripts": {
@@ -14,15 +14,11 @@
         "version": "bash ../.github/scripts/pkg-version.sh template-sync && bash ../.github/scripts/pkg-version.sh core-template",
         "postversion": "npm run build"
     },
-    "templates": [
-        "common",
+    "templatesDependOnSDK": [
         "js/command-and-response",
         "js/dashboard-tab",
-        "js/default-bot",
         "js/default-bot-message-extension",
-        "js/m365-tab",
         "js/message-extension",
-        "js/non-sso-tab",
         "js/non-sso-tab-default-bot",
         "js/notification-http-timer-trigger",
         "js/notification-http-trigger",
@@ -32,11 +28,8 @@
         "js/sso-tab-with-obo-flow",
         "ts/command-and-response",
         "ts/dashboard-tab",
-        "ts/default-bot",
         "ts/default-bot-message-extension",
-        "ts/m365-tab",
         "ts/message-extension",
-        "ts/non-sso-tab",
         "ts/non-sso-tab-default-bot",
         "ts/notification-http-timer-trigger",
         "ts/notification-http-trigger",

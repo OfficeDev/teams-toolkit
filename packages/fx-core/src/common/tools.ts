@@ -229,8 +229,11 @@ export function getAllowedAppMaps(): Record<string, string> {
   };
 }
 
-export function getCopilotStatus(token: string): Promise<boolean | undefined> {
-  return PackageService.GetSharedInstance().getCopilotStatus(token);
+export function getCopilotStatus(
+  token: string,
+  ensureUpToDate = false
+): Promise<boolean | undefined> {
+  return PackageService.GetSharedInstance().getCopilotStatus(token, ensureUpToDate);
 }
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {

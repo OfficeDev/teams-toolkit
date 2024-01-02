@@ -265,8 +265,8 @@ jobs:
           npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
-    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')  }}
-    needs: execute-case
+    if: ${{ always() }}
+    needs: [execute-case, e2e-coverage]
     runs-on: ubuntu-latest
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
@@ -533,3 +533,12 @@ jobs:
           path: |
             packages/fx-core/out1.zip
             packages/fx-core/out2.zip
+
+      - name: CodeCov report attempt
+        if: ${{always()}}
+        continue-on-error: true
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          verbose: true

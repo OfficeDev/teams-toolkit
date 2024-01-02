@@ -300,16 +300,17 @@ export class FxCore {
       void Context.ui!.showMessage("info", msg, false);
     } else {
       const msg = getLocalizedString("core.deploy.aadManifestSuccessNotice");
-      const result = await Context.ui!.showMessage(
+      void Context.ui!.showMessage(
         "info",
         msg,
         false,
         getLocalizedString("core.deploy.aadManifestLearnMore")
-      );
-      const userSelected = result.isOk() ? result.value : undefined;
-      if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
-        void Context.ui!.openUrl(ViewAadAppHelpLinkV5);
-      }
+      ).then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === getLocalizedString("core.deploy.aadManifestLearnMore")) {
+          void Context.ui!.openUrl(ViewAadAppHelpLinkV5);
+        }
+      });
     }
     return ok(undefined);
   }

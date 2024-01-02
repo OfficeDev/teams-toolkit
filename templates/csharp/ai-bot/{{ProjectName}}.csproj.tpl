@@ -11,7 +11,10 @@
 
   <ItemGroup>
     <None Remove="build/**/*" />
+    <None Remove="devTools/**" />
     <Content Remove="build/**/*" />
+    <Content Remove="devTools/**/*" />
+    <None Include="env/**/*" />
   </ItemGroup>
 
   <ItemGroup>

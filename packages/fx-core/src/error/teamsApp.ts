@@ -25,7 +25,7 @@ export class DeveloperPortalAPIFailedError extends SystemError {
         extraData
       ),
       displayMessage: getLocalizedString("error.appstudio.apiFailed"),
-      categories: [ErrorCategory.Unhandled],
+      categories: [ErrorCategory.Unhandled, apiName],
     };
     super(errorOptions);
   }

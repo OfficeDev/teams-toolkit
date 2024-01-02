@@ -13,3 +13,4 @@ export * from "./botValidator";
 export * from "./frontendValidator";
 export * from "./appStudioValidator";
 export * from "./sharepointValidator";
+export * from "./staticSiteValidator";

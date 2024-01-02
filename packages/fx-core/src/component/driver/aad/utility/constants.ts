@@ -29,6 +29,7 @@ export const permissionsKeys = {
 
 export const aadErrorCode = {
   permissionErrorCode: "CannotDeleteOrUpdateEnabledEntitlement",
+  hostNameNotOnVerifiedDomain: "HostNameNotOnVerifiedDomain", // Using unverified domain in multi tenant scenario
 };
 
 export const constants = {

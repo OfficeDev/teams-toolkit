@@ -599,6 +599,86 @@ describe("coordinator create", () => {
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isOk());
   });
+
+  it("create non-sso tab earlier than .Net8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      ["targetFramework"]: "net6.0",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.Tab);
+  });
+
+  it("create sso tab earlier than .Net8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      ["targetFramework"]: "net6.0",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.SsoTab);
+  });
+
+  it("create non-sso tab from .NET 8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      ["targetFramework"]: "net8.0",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.TabSSR);
+  });
+
+  it("create sso tab from .NET 8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      ["targetFramework"]: "net8.0",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.SsoTabSSR);
+  });
 });
 
 describe("Office Addin", async () => {

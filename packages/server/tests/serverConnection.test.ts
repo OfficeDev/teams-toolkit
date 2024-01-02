@@ -10,7 +10,12 @@ import { Duplex } from "stream";
 import { CancellationToken, createMessageConnection } from "vscode-jsonrpc";
 import { setFunc } from "../src/customizedFuncAdapter";
 import ServerConnection from "../src/serverConnection";
-import { DependencyStatus, DepsManager, TestToolInstallOptions } from "@microsoft/teamsfx-core";
+import {
+  DependencyStatus,
+  DepsManager,
+  NodeNotFoundError,
+  TestToolInstallOptions,
+} from "@microsoft/teamsfx-core";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -469,12 +474,44 @@ describe("serverConnections", () => {
 
   it("checkAndInstallTestTool", async () => {
     const connection = new ServerConnection(msgConn);
-    sandbox.stub(DepsManager.prototype, "ensureDependency").resolves({} as DependencyStatus);
+    sandbox.stub(DepsManager.prototype, "ensureDependency").resolves({
+      isInstalled: true,
+      command: "mock command",
+      details: { installVersion: "mock version", binFolders: ["mock bin folders"] },
+    } as DependencyStatus);
     const res = await connection.checkAndInstallTestTool(
       {} as TestToolInstallOptions & { correlationId: string },
       {} as CancellationToken
     );
     assert.isTrue(res.isOk());
+    assert.deepEqual(res._unsafeUnwrap(), {
+      isInstalled: true,
+      command: "mock command",
+      details: { installVersion: "mock version", binFolders: ["mock bin folders"] },
+    });
+  });
+  it("checkAndInstallTestTool DepenendencyStatus error", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox.stub(DepsManager.prototype, "ensureDependency").resolves({
+      isInstalled: true,
+      command: "mock command",
+      details: {},
+      error: new NodeNotFoundError("mock message", "mock help link"),
+    } as DependencyStatus);
+    const res = await connection.checkAndInstallTestTool(
+      {} as TestToolInstallOptions & { correlationId: string },
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+    assert.deepEqual(res._unsafeUnwrap(), {
+      isInstalled: true,
+      command: "mock command",
+      details: {},
+      error: {
+        message: "mock message",
+        helpLink: "mock help link",
+      },
+    });
   });
   it("checkAndInstallTestTool error", async () => {
     const connection = new ServerConnection(msgConn);

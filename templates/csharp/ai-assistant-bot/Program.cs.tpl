@@ -4,9 +4,7 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.AI.Planners.Experimental;
-using Microsoft.Teams.AI.AI.OpenAI.Models;
 using Microsoft.Teams.AI.AI.Planners;
-using Microsoft.Teams.AI.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,38 +12,8 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient("WebClient", client => client.Timeout = TimeSpan.FromSeconds(600));
 builder.Services.AddHttpContextAccessor();
 
-// Load configuration
-var config = builder.Configuration.Get<ConfigOptions>();
-if (string.IsNullOrWhiteSpace(config.OpenAI.ApiKey))
-{
-    throw new Exception("Missing configuration, please configure settings for OpenAI");
-}
-
-// Missing Assistant ID, create new Assistant
-if (string.IsNullOrWhiteSpace(config.OpenAI.AssistantId))
-{
-    Console.WriteLine("No Assistant ID configured, creating new Assistant...");
-    string newAssistantId = AssistantsPlanner<AssistantsState>.CreateAssistantAsync(config.OpenAI.ApiKey, null, new()
-    {
-        Name = "Math Tutor",
-        Instructions = "You are a personal math tutor. Write and run code to answer math questions.",
-        Tools =
-        [
-            new()
-            {
-                Type = Tool.CODE_INTERPRETER_TYPE
-            }
-        ],
-        Model = "gpt-3.5-turbo"
-    }).Result.Id;
-    Console.WriteLine($"Created a new assistant with an ID of: {newAssistantId}");
-    Console.WriteLine("Copy and save above ID, and set `SECRET_OPENAI_ASSISTANT_ID` in .env.*.user.");
-    Console.WriteLine("Press any key to exit.");
-    Console.ReadLine();
-    Environment.Exit(0);
-}
-
 // Prepare Configuration for ConfigurationBotFrameworkAuthentication
+var config = builder.Configuration.Get<ConfigOptions>();
 builder.Configuration["MicrosoftAppType"] = "MultiTenant";
 builder.Configuration["MicrosoftAppId"] = config.BOT_ID;
 builder.Configuration["MicrosoftAppPassword"] = config.BOT_PASSWORD;
@@ -61,6 +29,11 @@ builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(sp => sp.GetService<Clou
 builder.Services.AddSingleton<BotAdapter>(sp => sp.GetService<CloudAdapter>());
 
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
+
+if (string.IsNullOrWhiteSpace(config.OpenAI.ApiKey) || string.IsNullOrWhiteSpace(config.OpenAI.AssistantId))
+{
+    throw new Exception("Missing configuration OpenAI.ApiKey or OpenAI.AssistantId. See GettingStarted.md to prepare your own OpenAI Assistant.");
+}
 
 builder.Services.AddSingleton(_ => new AssistantsPlannerOptions(config.OpenAI.ApiKey, config.OpenAI.AssistantId));
 

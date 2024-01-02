@@ -182,7 +182,7 @@ export interface IServerConnection {
   checkAndInstallTestTool: (
     options: TestToolInstallOptions & { correlationId: string },
     token: CancellationToken
-  ) => Promise<Result<DependencyStatus, FxError>>;
+  ) => Promise<Result<DependencyStatusRPC, FxError>>;
 }
 
 /**
@@ -309,4 +309,18 @@ export interface IServerFxError {
   helpLink?: string;
   issueLink?: string;
   displayMessage?: string;
+  recommendedOperation?: string;
+}
+
+export interface DependencyStatusRPC {
+  isInstalled: boolean;
+  command: string;
+  details: {
+    installVersion?: string;
+    binFolders?: string[];
+  };
+  error?: {
+    message: string;
+    helpLink: string;
+  };
 }

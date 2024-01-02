@@ -2,9 +2,19 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import { execAsync, editDotEnvFile } from "./commonUtils";
+import {
+  execAsync,
+  editDotEnvFile,
+  timeoutPromise,
+  killPort,
+  spawnCommand,
+  killNgrok,
+} from "./commonUtils";
 import { TemplateProjectFolder, Capability } from "./constants";
 import path from "path";
+import * as os from "os";
+import * as chai from "chai";
+import { spawn } from "child_process";
 
 export class Executor {
   static async execute(
@@ -123,7 +133,7 @@ export class Executor {
   static async validate(workspace: string, env = "dev") {
     return this.executeCmd(
       workspace,
-      "validate -t ./appPackage/manifest.json",
+      "validate --manifest-file ./appPackage/manifest.json",
       env
     );
   }
@@ -167,7 +177,45 @@ export class Executor {
   }
 
   static async preview(workspace: string, env = "dev") {
-    return this.executeCmd(workspace, "prevew", env);
+    return this.executeCmd(workspace, "preview", env);
+  }
+
+  static debugProject(
+    projectPath: string,
+    env: "local" | "dev" = "local",
+    v3 = true,
+    processEnv: NodeJS.ProcessEnv = process.env,
+    onData?: (data: string) => void,
+    onError?: (data: string) => void
+  ) {
+    console.log(`[start] ${env} debug ... `);
+    const childProcess = spawn(
+      os.type() === "Windows_NT"
+        ? v3
+          ? "teamsapp.cmd"
+          : "teamsfx.cmd"
+        : v3
+        ? "teamsapp"
+        : "teamsfx",
+      ["preview", v3 ? "--env" : "", v3 ? `${env}` : `--${env}`],
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+      }
+    );
+    childProcess.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    childProcess.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
+    return childProcess;
   }
 
   static async previewWithCustomizedProcessEnv(
@@ -278,8 +326,92 @@ export class Executor {
   static async package(workspace: string, env = "dev") {
     return this.executeCmd(
       workspace,
-      "package -t ./appPackage/manifest.json",
+      "package --manifest-file ./appPackage/manifest.json",
       env
     );
+  }
+
+  static startDevtunnel(
+    onData?: (data: string) => void,
+    onError?: (data: string) => void
+  ) {
+    const child = spawn(
+      os.type() === "Windows_NT"
+        ? "devtunnel"
+        : `${os.homedir()}/bin/devtunnel`,
+      ["host", "-p", "3978", "--allow-anonymous"],
+      {
+        env: process.env,
+      }
+    );
+    child.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    child.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
+    return child;
+  }
+
+  static deleteTunnel(
+    tunnelName: string,
+    onData?: (data: string) => void,
+    onError?: (data: string) => void
+  ) {
+    const child = spawn(
+      os.type() === "Windows_NT"
+        ? "devtunnel"
+        : `${os.homedir()}/bin/devtunnel`,
+      ["delete", tunnelName, "-f"],
+      {
+        env: process.env,
+      }
+    );
+    child.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    child.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
+    return child;
+  }
+
+  static deleteAllTunnel(
+    onData?: (data: string) => void,
+    onError?: (data: string) => void
+  ) {
+    const child = spawn(
+      os.type() === "Windows_NT"
+        ? "devtunnel"
+        : `${os.homedir()}/bin/devtunnel`,
+      ["delete-all", "-f"],
+      {
+        env: process.env,
+      }
+    );
+    child.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    child.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
   }
 }

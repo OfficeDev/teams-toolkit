@@ -60,7 +60,7 @@ describe("Migration Tests", function () {
       }
 
       // local debug
-      await mirgationDebugTestContext.debugWithCLI("local");
+      await mirgationDebugTestContext.debugWithCLI("local", false);
 
       // upgrade
       await upgradeByCommandPalette();

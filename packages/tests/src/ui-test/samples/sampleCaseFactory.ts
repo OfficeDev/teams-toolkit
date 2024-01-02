@@ -346,6 +346,7 @@ export abstract class CaseFactory {
                                 console.log(tunnelName);
                                 envContent += `\nBOT_ENDPOINT=${endpoint}`;
                                 envContent += `\nBOT_DOMAIN=${domain}`;
+                                envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
                                 fs.writeFileSync(envFile, envContent);
                               } catch (error) {
                                 console.log(error);
@@ -400,19 +401,9 @@ export abstract class CaseFactory {
                   );
                 } else {
                   console.log("======= debug with ttk ========");
-                  try {
-                    await debugInitMap[sampleName]();
-                    for (const label of validate) {
-                      await debugMap[label]();
-                    }
-                  } catch (error) {
-                    await VSBrowser.instance.takeScreenshot(
-                      getScreenshotName("debug")
-                    );
-                    console.log("[Skip Error]: ", error);
-                    await VSBrowser.instance.driver.sleep(
-                      Timeout.playwrightDefaultTimeout
-                    );
+                  await debugInitMap[sampleName]();
+                  for (const label of validate) {
+                    await debugMap[label]();
                   }
                 }
               },
@@ -458,7 +449,6 @@ export abstract class CaseFactory {
               console.log("debug finish!");
               return;
             }
-
             // validate
             await onValidate(page, {
               context: sampledebugContext,
@@ -469,7 +459,11 @@ export abstract class CaseFactory {
             });
           } catch (error) {
             successFlag = false;
-            console.log(error);
+            await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
+            console.log("[Error]: ", error);
+            await VSBrowser.instance.driver.sleep(
+              Timeout.playwrightDefaultTimeout
+            );
           }
           expect(successFlag).to.be.true;
           console.log("debug finish!");

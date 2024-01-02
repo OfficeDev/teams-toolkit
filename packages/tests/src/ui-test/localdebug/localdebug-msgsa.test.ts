@@ -6,7 +6,7 @@
  */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
-import { initPage, validateBot } from "../../utils/playwrightOperation";
+import { initPage, validateNpm } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
 import { Env } from "../../utils/env";
@@ -41,21 +41,18 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.appName
       );
       validateFileExist(projectPath, "src/index.js");
-
       await startDebugging("Debug in Teams (Chrome)");
-
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
-
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
-      //   const page = await initPage(
-      //     localDebugTestContext.context!,
-      //     teamsAppId,
-      //     Env.username,
-      //     Env.password
-      //   );
-      //   await localDebugTestContext.validateLocalStateForBot();
-      //   await validateBot(page);
+      const page = await initPage(
+        localDebugTestContext.context!,
+        teamsAppId,
+        Env.username,
+        Env.password
+      );
+      await localDebugTestContext.validateLocalStateForBot();
+      await validateNpm(page, { npmName: "axios" });
     }
   );
 });

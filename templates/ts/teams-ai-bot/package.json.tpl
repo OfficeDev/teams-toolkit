@@ -1,8 +1,6 @@
 {
-    "name": "lightbot-demo",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
-    "description": "A simple chat bot that can turn a light on and off",
-    "author": "Microsoft",
     "license": "MIT",
     "main": "./lib/index.js",
     "scripts": {

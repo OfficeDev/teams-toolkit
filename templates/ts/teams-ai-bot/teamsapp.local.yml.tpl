@@ -1,11 +1,11 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.3/yaml.schema.json
 #
 # The teamsapp.local.yml composes automation tasks for Teams Toolkit when running locally.
 # This file is used when running Start Debugging (F5) from Visual Studio Code or with the TeamsFx CLI commands.
 # i.e. `teamsfx provision --env local` or `teamsfx deploy --env local`.
 #
 # You can customize this file. Visit https://aka.ms/teamsfx-v5.0-guide for more info about Teams Toolkit project files.
-version: 1.0.0
+version: v1.3
 
 environmentFolderPath: ./env
 
@@ -16,7 +16,7 @@ provision:
   # Automates the creation of a Teams app registration and saves the App ID to an environment file.
   - uses: teamsApp/create
     with:
-      name: EchoBot-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
@@ -24,7 +24,7 @@ provision:
   # The Bot ID (AAD app client ID) and Bot Password (AAD app client secret) are saved to an environment file.
   - uses: botAadApp/create
     with:
-      name: EchoBot-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     writeToEnvironmentFile:
       botId: BOT_ID
       botPassword: SECRET_BOT_PASSWORD
@@ -70,5 +70,5 @@ deploy:
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
-        AZURE_OPENAI_KEY: ${{AZURE_OPENAI_KEY}}
+        AZURE_OPENAI_KEY: ${{SECRET_AZURE_OPENAI_KEY}}
         AZURE_OPENAI_ENDPOINT: ${{AZURE_OPENAI_ENDPOINT}}

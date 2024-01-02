@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.3/yaml.schema.json
 #
 # The teamsapp.yml composes automation tasks for Teams Toolkit when running other environment configurations.
 # This file is used when selecting the Provision, Deploy, or Publish menu items in the Teams Toolkit for Visual Studio Code window
@@ -6,7 +6,7 @@
 # i.e. `teamsfx provision --env {environment name}` or `teamsfx deploy --env {environment name}`.
 #
 # You can customize this file. Visit https://aka.ms/teamsfx-v5.0-guide for more info about Teams Toolkit project files.
-version: 1.0.0
+version: v1.3
 
 environmentFolderPath: ./env
 
@@ -17,7 +17,7 @@ provision:
   # Automates the creation of a Teams app registration and saves the App ID to an environment file.
   - uses: teamsApp/create
     with:
-      name: EchoBot-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
@@ -25,7 +25,7 @@ provision:
   # The Bot ID (AAD app client ID) and Bot Password (AAD app client secret) are saved to an environment file.
   - uses: botAadApp/create
     with:
-      name: EchoBot-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     writeToEnvironmentFile:
       botId: BOT_ID
       botPassword: SECRET_BOT_PASSWORD

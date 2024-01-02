@@ -265,7 +265,7 @@ jobs:
           npx ts-node src/scripts/testPlan.ts report ./testplan.json src/e2e/mochawesome-report/mochawesome.json
 
   tear-down:
-    if: ${{ always() }}
+    if: ${{ ! (needs.execute-case.result == skipped || needs.e2e-coverage.result == skipped) }}
     needs: [execute-case, e2e-coverage]
     runs-on: ubuntu-latest
     env:

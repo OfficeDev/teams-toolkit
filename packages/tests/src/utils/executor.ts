@@ -31,7 +31,7 @@ export class Executor {
       if (result.stderr) {
         /// the command exit with 0
         console.log(
-          `[Success] "${command}" in ${cwd} with some stderr: ${result.stderr}`
+          `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
         );
         return { ...result, success: false };
       } else {

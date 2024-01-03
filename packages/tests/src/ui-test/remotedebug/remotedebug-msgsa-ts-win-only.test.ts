@@ -76,7 +76,7 @@ describe("Remote debug Tests", function () {
         Env.username,
         Env.password
       );
-      validateMsg(page);
+      await validateMsg(page);
     }
   );
 });

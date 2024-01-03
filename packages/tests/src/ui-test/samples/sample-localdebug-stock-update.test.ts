@@ -53,6 +53,5 @@ new StockUpdateTestCase(
     LocalDebugTaskLabel.Azurite,
     LocalDebugTaskLabel.Compile,
     LocalDebugTaskLabel.StartBotApp,
-  ],
-  { debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk" }
+  ]
 ).test();

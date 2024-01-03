@@ -210,18 +210,25 @@ export async function execCommandIfExist(
 ): Promise<void> {
   const driver = VSBrowser.instance.driver;
   await VSBrowser.instance.waitForWorkbench();
-  if (os.type() === "Darwin") {
-    // command + P
-    await driver.actions().keyDown(Key.COMMAND).keyDown("P").perform();
-    await driver.actions().keyUp(Key.COMMAND).keyUp("P").perform();
-  } else {
-    await driver.actions().keyDown(Key.CONTROL).keyDown("P").perform();
-    await driver.actions().keyUp(Key.CONTROL).keyUp("P").perform();
+  try {
+    if (os.type() === "Darwin") {
+      // command + P
+      await driver.actions().keyDown(Key.COMMAND).keyDown("P").perform();
+      await driver.actions().keyUp(Key.COMMAND).keyUp("P").perform();
+    } else {
+      await driver.actions().keyDown(Key.CONTROL).keyDown("P").perform();
+      await driver.actions().keyUp(Key.CONTROL).keyUp("P").perform();
+    }
+    const input = await driver.findElement(
+      By.css(".quick-input-and-message .input")
+    );
+    await input.sendKeys(commandName);
+  } catch (error) {
+    console.log("Can't open input box, use another way...");
+    const input = await InputBox.create();
+    await input.setText(commandName);
+    await input.confirm();
   }
-  const input = await driver.findElement(
-    By.css(".quick-input-and-message .input")
-  );
-  await input.sendKeys(commandName);
   await driver.sleep(Timeout.input);
   const lists =
     (await driver.findElements(By.css(".quick-input-list .monaco-list-row"))) ??

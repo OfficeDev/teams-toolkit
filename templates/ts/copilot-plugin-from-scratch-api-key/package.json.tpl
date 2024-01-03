@@ -10,7 +10,7 @@
         "prestart": "npm run build",
         "start": "npx func start",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "key:gen": "node -r ts-node/register keyGen.ts"
+        "keygen": "node -r ts-node/register keyGen.ts"
     },
     "dependencies": {
         "@azure/functions": "^1.2.2"

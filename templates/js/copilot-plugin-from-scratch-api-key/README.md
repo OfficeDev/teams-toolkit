@@ -30,9 +30,9 @@ This app template allows Teams to interact directly with third-party data, apps,
    > npm install
    ```
 
-2. After `npm install` completed, run command `npm run key:gen`
+2. After `npm install` completed, run command `npm run keygen`
    ```
-   > npm run key:gen
+   > npm run keygen
    ```
 3. The above command will output something like "Generated a new API Key: xxx..."
 4. Fill in API Key into `env/.env.*.user`

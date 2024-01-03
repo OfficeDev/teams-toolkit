@@ -511,7 +511,6 @@ export class FxCore {
       return err(appStudioTokenRes.error);
     }
     const appStudioToken = appStudioTokenRes.value;
-    await setRegion(appStudioToken);
     TelemetryUtils.init(createDriverContext(inputs));
     const apps = await AppStudioClient.listApps(appStudioToken, TOOLS.logProvider);
     return ok(apps);
@@ -532,7 +531,6 @@ export class FxCore {
       return err(appStudioTokenRes.error);
     }
     const appStudioToken = appStudioTokenRes.value;
-    await setRegion(appStudioToken);
     TelemetryUtils.init(createDriverContext(inputs));
     for (const appId of inputs.teamsAppIds as string[]) {
       await AppStudioClient.deleteApp(appId, appStudioToken, TOOLS.logProvider);

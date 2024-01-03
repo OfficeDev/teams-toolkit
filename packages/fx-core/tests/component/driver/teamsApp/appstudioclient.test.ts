@@ -1043,4 +1043,19 @@ describe("App Studio API Test", () => {
       }
     });
   });
+
+  describe("list Teams app", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: [appDef],
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+
+      const res = await AppStudioClient.listApps(appStudioToken, logProvider);
+      chai.assert.deepEqual(res, [appDef]);
+    });
+  });
 });

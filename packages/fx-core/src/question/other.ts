@@ -963,7 +963,8 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
       return (
         inputs.outputEnvVarNames &&
         !process.env[inputs.outputEnvVarNames.get("registrationId")] &&
-        !inputs.clientSecret
+        !inputs.primaryClientSecret &&
+        !inputs.secondaryClientSecret
       );
     },
     children: [

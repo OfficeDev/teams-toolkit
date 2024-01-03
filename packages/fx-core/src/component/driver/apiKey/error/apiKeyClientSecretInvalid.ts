@@ -3,7 +3,6 @@
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { maxSecretPerApiKey } from "../utility/constants";
 
 const errorCode = "ApiKeyClientSecretInvalid";
 const messageKey = "driver.apiKey.error.clientSecretInvalid";
@@ -13,8 +12,8 @@ export class ApiKeyClientSecretInvalidError extends UserError {
     super({
       source: actionName,
       name: errorCode,
-      message: getDefaultString(messageKey, maxSecretPerApiKey),
-      displayMessage: getLocalizedString(messageKey, maxSecretPerApiKey),
+      message: getDefaultString(messageKey),
+      displayMessage: getLocalizedString(messageKey),
     });
   }
 }

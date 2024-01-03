@@ -13,7 +13,6 @@ import {
 import { TemplateProjectFolder, Capability } from "./constants";
 import path from "path";
 import * as os from "os";
-import * as chai from "chai";
 import { spawn } from "child_process";
 
 export class Executor {
@@ -32,12 +31,13 @@ export class Executor {
       if (result.stderr) {
         /// the command exit with 0
         console.log(
-          `[Success] "${command}" in ${cwd} with some stderr: ${result.stderr}`
+          `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
         );
+        return { ...result, success: false };
       } else {
         console.log(`[Success] "${command}" in ${cwd}.`);
+        return { ...result, success: true };
       }
-      return { ...result, success: true };
     } catch (e: any) {
       if (e.killed && e.signal == "SIGTERM") {
         console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);

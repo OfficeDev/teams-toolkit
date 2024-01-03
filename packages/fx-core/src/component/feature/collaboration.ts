@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   Context,
   FxError,
@@ -10,20 +11,19 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+import axios from "axios";
 import { Service } from "typedi";
-import { hooks } from "@feathersjs/hooks/lib";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";
+import { AppIdNotExist } from "../../core/error";
+import { ErrorContextMW } from "../../core/globalVars";
+import { HttpClientError, HttpServerError, assembleError } from "../../error/common";
 import { AadAppClient } from "../driver/aad/utility/aadAppClient";
 import { permissionsKeys } from "../driver/aad/utility/constants";
 import { addStartAndEndTelemetry } from "../driver/middleware/addStartAndEndTelemetry";
-import axios from "axios";
-import { HttpClientError, HttpServerError, UnhandledError } from "../../error/common";
-import { TelemetryUtils } from "../driver/teamsApp/utils/telemetry";
-import { AppUser } from "../driver/teamsApp/interfaces/appdefinitions/appUser";
-import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { AppStudioClient } from "../driver/teamsApp/clients/appStudioClient";
-import { AppIdNotExist } from "../../core/error";
-import { ErrorContextMW } from "../../core/globalVars";
+import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
+import { AppUser } from "../driver/teamsApp/interfaces/appdefinitions/appUser";
+import { TelemetryUtils } from "../driver/teamsApp/utils/telemetry";
 
 const EventName = {
   grantPermission: "grant-permission",
@@ -122,7 +122,7 @@ export class AadCollaboration {
 
     const message = JSON.stringify(error);
     ctx.logProvider?.error(message);
-    return new UnhandledError(error as Error, componentNameAad);
+    return assembleError(error as Error, componentNameAad);
   }
 }
 
@@ -263,6 +263,6 @@ export class TeamsCollaboration {
 
     const message = JSON.stringify(error);
     ctx.logProvider?.error(message);
-    return new UnhandledError(error as Error, componentNameTeams);
+    return assembleError(error as Error, componentNameTeams);
   }
 }

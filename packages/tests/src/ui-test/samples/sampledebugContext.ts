@@ -331,8 +331,8 @@ export class SampledebugContext extends TestContext {
     await CliHelper.publishProject(this.projectPath, env);
   }
 
-  public async debugWithCLI(env: "local" | "dev"): Promise<void> {
-    await CliHelper.debugProject(this.projectPath, env);
+  public async debugWithCLI(env: "local" | "dev", v3?: boolean): Promise<void> {
+    await CliHelper.debugProject(this.projectPath, env, v3);
   }
 
   public async getTeamsAppId(env: "local" | "dev" = "local"): Promise<string> {

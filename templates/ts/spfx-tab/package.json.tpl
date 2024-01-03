@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "description": "",
     "engines": {
-        "node": "16"
+        "node": "{{{SpfxNodeVersion}}}"
     },
     "author": "",
     "scripts": {

@@ -161,3 +161,13 @@ export function SolutionVersionMissingError(path: string): UserError {
     displayMessage: getLocalizedString("plugins.spfx.addWebPart.cannotFindSolutionVersion", path),
   });
 }
+
+export function CannotFindPropertyfromJsonError(field: string): UserError {
+  const message = `Cannot find property "${field}" from json.`;
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "CannotFindPropertyfromJson",
+    message,
+    displayMessage: message, // This message won't be shown to users. No need to localize.
+  });
+}

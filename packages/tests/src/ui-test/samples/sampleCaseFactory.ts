@@ -409,9 +409,11 @@ export abstract class CaseFactory {
                     } catch (error) {
                       const errorMsg = error.toString();
                       if (
+                        // skip can't find element
                         errorMsg.includes(
                           LocalDebugError.ElementNotInteractableError
                         ) ||
+                        // skip timeout
                         errorMsg.includes(LocalDebugError.TimeoutError)
                       ) {
                         console.log("[skip error] ", error);

@@ -16,17 +16,6 @@ import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironm
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { hooks } from "@feathersjs/hooks";
-import {
-  logMessageKeys,
-  maxDomainPerApiKey,
-  maxSecretLength,
-  minSecretLength,
-} from "./utility/constants";
-import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
-import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
-import { AppStudioScopes, GraphScopes } from "../../../common/tools";
 import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import {
   ApiSecretRegistration,
@@ -42,7 +31,12 @@ import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
 import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
 import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
 import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
-import { logMessageKeys, maxDomainPerApiKey, maxSecretPerApiKey } from "./utility/constants";
+import {
+  logMessageKeys,
+  maxDomainPerApiKey,
+  maxSecretLength,
+  minSecretLength,
+} from "./utility/constants";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";

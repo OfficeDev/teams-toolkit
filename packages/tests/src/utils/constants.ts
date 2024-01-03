@@ -363,6 +363,7 @@ export enum LocalDebugTaskLabel2 {
 
 export enum LocalDebugError {
   ElementNotInteractableError = "ElementNotInteractableError",
+  TimeoutError = "TimeoutError",
 }
 
 export class LocalDebugTaskInfo {

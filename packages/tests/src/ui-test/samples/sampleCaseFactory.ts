@@ -411,7 +411,8 @@ export abstract class CaseFactory {
                       if (
                         errorMsg.includes(
                           LocalDebugError.ElementNotInteractableError
-                        )
+                        ) ||
+                        errorMsg.includes(LocalDebugError.TimeoutError)
                       ) {
                         console.log("[skip error] ", error);
                       } else {

@@ -25,5 +25,6 @@ new BotSSOTestCase(
   12462156,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartApplication]
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartApplication],
+  { debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk" }
 ).test();

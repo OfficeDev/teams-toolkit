@@ -1519,9 +1519,13 @@
               "type": "string",
               "description": "The app ID of Teams app."
             },
-            "clientSecret": {
+            "primaryClientSecret": {
               "type": "string",
-              "description": "Client secret of API key. Client secret should follow: 1. Max %d secrets per API key. 2. Use comma to separate secrets. 3. Length of every secret >= 10 and <= 128"
+              "description": "Primary client secret of API key. Length of client secret >= 10 and <= 128"
+            },
+            "secondaryClientSecret": {
+              "type": "string",
+              "description": "Secondary callingWebhook secret of API key. Length of client secret >= 10 and <= 128"
             },
             "apiSpecPath": {
               "type": "string",

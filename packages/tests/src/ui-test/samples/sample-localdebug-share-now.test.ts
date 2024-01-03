@@ -85,6 +85,5 @@ new ShareNowTestCase(
   9958523,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartFrontend, LocalDebugTaskLabel.StartBackend],
-  { debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
+  [LocalDebugTaskLabel.StartFrontend, LocalDebugTaskLabel.StartBackend]
 ).test();

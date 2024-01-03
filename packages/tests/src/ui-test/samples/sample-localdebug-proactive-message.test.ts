@@ -25,6 +25,5 @@ new ProactiveMessagingTestCase(
   {
     testRootFolder: "./resource/samples",
     skipValidation: true,
-    debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk",
   }
 ).test();

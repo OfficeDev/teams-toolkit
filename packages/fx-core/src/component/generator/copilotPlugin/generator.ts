@@ -317,6 +317,46 @@ export class CopilotPluginGenerator {
         if (updateManifestRes.isErr()) return err(updateManifestRes.error);
       }
 
+      // update teams ai bot
+      if (componentName == fromApiSpecToTeamsAI) {
+        const content = await specParser.updateTeamsAiApp(filters, openapiSpecPath);
+        if (!content || content.length != 4) {
+          return err(
+            new UserError(
+              componentName,
+              "update-teams-ai-bot",
+              "Failed to update teams ai bot",
+              "Failed to update teams ai bot"
+            )
+          );
+        }
+
+        // generate files
+        const sequenceFolderPath = path.join(destinationPath, "src", "prompts", "sequence");
+        await fs.ensureDir(sequenceFolderPath);
+
+        const actions = content[0];
+        const actionsFilePath = path.join(sequenceFolderPath, "actions.json");
+        await fs.writeFile(actionsFilePath, JSON.stringify(actions, null, 2));
+
+        const config = content[1];
+        const configFilePath = path.join(sequenceFolderPath, "config.json");
+        await fs.writeFile(configFilePath, JSON.stringify(config, null, 2));
+
+        const prompt = content[2];
+        const promptFilePath = path.join(sequenceFolderPath, "skprompy.txt");
+        await fs.writeFile(promptFilePath, prompt);
+
+        const code = content[3].map((value) => value.code).join("\n");
+        const indexFilePath = path.join(destinationPath, "src", "index.ts");
+        const indexFileContent = (await fs.readFile(indexFilePath)).toString();
+        const updateIndexFile = indexFileContent.replace(
+          "// TODO: add function to add ai action.",
+          code
+        );
+        await fs.writeFile(indexFilePath, updateIndexFile);
+      }
+
       // log warnings
       if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
         const warnSummary = generateScaffoldingSummary(warnings, teamsManifest, destinationPath);

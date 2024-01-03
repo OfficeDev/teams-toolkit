@@ -44,6 +44,6 @@ new MyFirstMettingTestCase(
     teamsAppName: "hello-world-in-meetinglocal",
     type: "meeting",
     skipValidation: true,
-    debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk",
+    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
   }
 ).test();

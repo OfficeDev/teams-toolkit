@@ -26,5 +26,5 @@ new ContactExporterTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartFrontend],
-  { debug: ["cli", "ttk"][Date.now() % 2] as "cli" | "ttk" }
+  { debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk" }
 ).test();

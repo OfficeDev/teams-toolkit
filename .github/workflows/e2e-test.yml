@@ -283,7 +283,6 @@ jobs:
     steps:
       - name: echo needs result
         run: |
-          echo ${{needs.setup.result}}
           echo ${{(needs.execute-case.result}}
           echo ${{needs.e2e-coverage.result}}
       - name: Checkout (dev)

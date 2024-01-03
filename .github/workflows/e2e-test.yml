@@ -266,7 +266,7 @@ jobs:
 
   tear-down:
     needs: [execute-case, e2e-coverage]
-    if: ! (needs.execute-case.result == 'skipped' && needs.e2e-coverage.result == 'skipped')
+    if: (needs.execute-case.result != 'skipped' || needs.e2e-coverage.result != 'skipped')
     runs-on: ubuntu-latest
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}

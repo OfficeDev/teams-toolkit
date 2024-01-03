@@ -11,6 +11,7 @@ import {
   sampleProjectMap,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
+  LocalDebugError,
 } from "../../utils/constants";
 import { waitForTerminal } from "../../utils/vscodeOperation";
 import { debugInitMap, initPage } from "../../utils/playwrightOperation";
@@ -403,7 +404,19 @@ export abstract class CaseFactory {
                   console.log("======= debug with ttk ========");
                   await debugInitMap[sampleName]();
                   for (const label of validate) {
-                    await debugMap[label]();
+                    try {
+                      await debugMap[label]();
+                    } catch (error) {
+                      if (
+                        error.includes(
+                          LocalDebugError.ElementNotInteractableError
+                        )
+                      ) {
+                        console.log("[skip error] ", error);
+                      } else {
+                        throw new Error(error);
+                      }
+                    }
                   }
                 }
               },

@@ -361,6 +361,10 @@ export enum LocalDebugTaskLabel2 {
   StartBot2 = "Start Bot",
 }
 
+export enum LocalDebugError {
+  ElementNotInteractableError = "ElementNotInteractableError",
+}
+
 export class LocalDebugTaskInfo {
   static readonly StartBotAppInfo = "App Started";
   static readonly StartBotInfo = "Bot Started";

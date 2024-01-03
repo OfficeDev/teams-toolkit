@@ -407,14 +407,15 @@ export abstract class CaseFactory {
                     try {
                       await debugMap[label]();
                     } catch (error) {
+                      const errorMsg = error.toString();
                       if (
-                        error.includes(
+                        errorMsg.includes(
                           LocalDebugError.ElementNotInteractableError
                         )
                       ) {
                         console.log("[skip error] ", error);
                       } else {
-                        throw new Error(error);
+                        expect.fail(errorMsg);
                       }
                     }
                   }

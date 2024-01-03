@@ -18,9 +18,15 @@ export default class OfflinePage extends React.Component<unknown, unknown> {
         <div className="offlineImage">
           <OfflineImage height="118px" width="118px" />
         </div>
-        <div className="offlineTitle">You're offline.</div>
+        <div className="offlineTitle">The sample gallery can't be reached.</div>
         <div className="offlineMessage">
-          Connect to the internet to browse Teams Toolkit samples.
+          Github.com takes too long to respond.
+          <br />
+          Try:
+          <ul>
+            <li>Checking the connection.</li>
+            <li>Checking the proxy and the firewall.</li>
+          </ul>
         </div>
       </div>
     );

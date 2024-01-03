@@ -658,7 +658,7 @@
   "error.common.AccessGithubError": "Access GitHub (%s) Error: %s",
   "error.common.ConcurrentError": "Previous task is still running. Wait until your previous task is finished and try again.",
   "error.common.NetworkError": "Network error: %s",
-  "error.common.NetworkError.EAI_AGAIN": "DNS resolution for domain %s is unavailable.",
+  "error.common.NetworkError.EAI_AGAIN": "DNS cannot resolve domain %s.",
   "error.upgrade.NoNeedUpgrade": "This project is already the latest, no need to upgrade.",
   "error.collaboration.InvalidManifestError": "Unable to process your manifest file ('%s') due to the absence of the 'id' key. To identify your application correctly, please make sure that the 'id' key is present in the manifest file.",
   "error.collaboration.FailedToLoadManifest": "Unable to load manifest file. Reason: %s.",

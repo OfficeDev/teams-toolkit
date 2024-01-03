@@ -285,6 +285,7 @@ jobs:
         run: |
           echo ${{(needs.execute-case.result}}
           echo ${{needs.e2e-coverage.result}}
+          echo "test"
       - name: Checkout (dev)
         uses: actions/checkout@v3
 

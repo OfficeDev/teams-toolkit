@@ -290,7 +290,8 @@ export class NetworkError extends UserError {
   }
 }
 
-export function matchDnsError(message: string): string | undefined {
+export function matchDnsError(message?: string): string | undefined {
+  if (!message) return undefined;
   const domainPattern = /(?:getaddrinfo\s(?:EAI_AGAIN)\s)([^\s,]+)/;
   // Use the regular expression to extract the domain from the error message
   const match = message.match(domainPattern);

@@ -237,4 +237,9 @@ describe("matchDnsError", function () {
     const res = matchDnsError("ABC dev.teams.microsoft.com");
     assert.equal(res, undefined);
   });
+
+  it("undefined", () => {
+    const res = matchDnsError();
+    assert.equal(res, undefined);
+  });
 });

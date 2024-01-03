@@ -1091,4 +1091,52 @@ describe("App Studio API Test", () => {
       }
     });
   });
+
+  describe("delete Teams app", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: true,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+      const res = await AppStudioClient.deleteApp("testid", appStudioToken, logProvider);
+      chai.assert.isTrue(res);
+    });
+    it("Error - no region", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: [appDef],
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      AppStudioClient.setRegion("");
+      try {
+        await AppStudioClient.deleteApp("testid", appStudioToken, logProvider);
+        chai.assert.fail("should throw error");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+      }
+    });
+
+    it("Error - no data", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: undefined,
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+      try {
+        await AppStudioClient.deleteApp("testid", appStudioToken, logProvider);
+        chai.assert.fail("should throw error");
+      } catch (e) {
+        chai.assert.equal(e.message, "Cannot delete the app: " + "testid");
+      }
+    });
+  });
 });

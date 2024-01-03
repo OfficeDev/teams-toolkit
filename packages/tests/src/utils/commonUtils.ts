@@ -133,14 +133,22 @@ export async function updateAadTemplate(
 export function spawnCommand(
   command: string,
   args?: string[],
-  options?: SpawnOptionsWithoutStdio | undefined
+  options?: SpawnOptionsWithoutStdio | undefined,
+  onData?: (data: string) => void,
+  onError?: (data: string) => void
 ) {
   const child = spawn(command, args, options);
   child.stdout.on("data", (data) => {
-    console.log(`${data}`);
+    const dataString = data.toString();
+    if (onData) {
+      onData(dataString);
+    }
   });
   child.stderr.on("data", (data) => {
-    console.error(`${data}`);
+    const dataString = data.toString();
+    if (onError) {
+      onError(dataString);
+    }
   });
   return child;
 }
@@ -154,24 +162,34 @@ export function timeoutPromise(timeout: number) {
   });
 }
 
-export function killPort(port: number): Promise<any> {
+export async function killPort(
+  port: number
+): Promise<{ stdout: string; stderr: string }> {
   // windows
   if (process.platform === "win32") {
-    const command = `FOR /F "tokens=5 delims= " %P IN ('netstat -a -n -o ^| findstr :${port}') DO TaskKill.exe /F /PID %P`;
-    return execAsync(command);
+    const command = `for /f "tokens=5" %a in ('netstat -ano ^| find "${port}"') do @taskkill /f /pid %a`;
+    console.log("run command: ", command);
+    const result = await execAsync(command);
+    return result;
   } else {
     const command = `kill -9 $(lsof -t -i:${port})`;
-    return execAsync(command);
+    console.log("run command: ", command);
+    const result = await execAsync(command);
+    return result;
   }
 }
 
-export function killNgrok(): Promise<any> {
+export async function killNgrok(): Promise<{ stdout: string; stderr: string }> {
   if (process.platform === "win32") {
     const command = `taskkill /f /im ngrok.exe`;
-    return execAsync(command);
+    console.log("run command: ", command);
+    const result = await execAsync(command);
+    return result;
   } else {
     const command = `kill -9 $(lsof -i | grep ngrok | awk '{print $2}')`;
-    return execAsync(command);
+    console.log("run command: ", command);
+    const result = await execAsync(command);
+    return result;
   }
 }
 

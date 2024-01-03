@@ -55,13 +55,14 @@ export class CliHelper {
     projectPath: string,
     env: "local" | "dev" = "local",
     v3 = true,
-    processEnv: NodeJS.ProcessEnv = process.env
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 10 * 60 * 1000
   ) {
     if (!isV3Enabled() && env === "local") {
       chai.assert.fail("local env is not supported in v2");
     }
     console.log(`[Provision] ${projectPath}`);
-    const timeout = timeoutPromise(1000 * 60 * 10);
+    const timeout = timeoutPromise(delay);
     let command = "";
     if (v3) {
       command = `npx teamsapp -v`;
@@ -85,6 +86,12 @@ export class CliHelper {
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,
+        },
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          console.log(error);
         }
       );
       await Promise.all([timeout, childProcess]);
@@ -109,6 +116,12 @@ export class CliHelper {
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,
+        },
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          console.log(error);
         }
       );
       await Promise.all([timeout, childProcess]);
@@ -181,36 +194,77 @@ export class CliHelper {
   static async deploy(
     projectPath: string,
     env: "local" | "dev" = "local",
-    option = "",
-    processEnv?: NodeJS.ProcessEnv,
-    retries?: number,
-    newCommand?: string
+    v3 = true,
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 10 * 60 * 1000
   ) {
     if (!isV3Enabled() && env === "local") {
       chai.assert.fail(`[error] provision local only support in V3 project`);
     }
     console.log(`[Deploy] ${projectPath}`);
-    const timeout = timeoutPromise(1000 * 60 * 10);
+    const timeout = timeoutPromise(delay);
 
-    const childProcess = spawnCommand(
-      os.type() === "Windows_NT" ? "npx.cmd" : "npx",
-      [
-        "teamsfx",
-        "deploy",
-        "--env",
-        env,
-        "--verbose",
-        "--interactive",
-        "false",
-      ],
+    let command = "";
+    if (v3) {
+      command = `npx teamsapp -v`;
+    } else {
+      command = `npx teamsfx -v`;
+    }
+    const version = await execAsyncWithRetry(
+      command,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
-      }
+      },
+      1
     );
-    await Promise.all([timeout, childProcess]);
-    // close process
-    childProcess.kill("SIGKILL");
+    console.log(`[Deploy] cli version: ${version.stdout}`);
+
+    if (v3) {
+      const childProcess = spawnCommand(
+        os.type() === "Windows_NT" ? "npx.cmd" : "npx",
+        ["teamsapp", "deploy", "--env", env, "--verbose"],
+        {
+          cwd: projectPath,
+          env: processEnv ? processEnv : process.env,
+        },
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+      await Promise.all([timeout, childProcess]);
+      // close process
+      childProcess.kill("SIGKILL");
+    } else {
+      const childProcess = spawnCommand(
+        os.type() === "Windows_NT" ? "npx.cmd" : "npx",
+        [
+          "teamsfx",
+          "deploy",
+          "--env",
+          env,
+          "--verbose",
+          "--interactive",
+          "false",
+        ],
+        {
+          cwd: projectPath,
+          env: processEnv ? processEnv : process.env,
+        },
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+      await Promise.all([timeout, childProcess]);
+      // close process
+      childProcess.kill("SIGKILL");
+    }
   }
 
   static async deployProject(
@@ -449,20 +503,34 @@ export class CliHelper {
 
   static async debugProject(
     projectPath: string,
-    env: "local" | "dev",
-    option = "",
-    processEnv?: NodeJS.ProcessEnv,
-    retries?: number,
-    newCommand?: string
+    env: "local" | "dev" = "local",
+    v3 = true,
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 8 * 60 * 1000
   ) {
     console.log(`[start] ${env} debug ... `);
-    const timeout = timeoutPromise(1000 * 60 * 10);
+    const timeout = timeoutPromise(delay);
     const childProcess = spawnCommand(
-      os.type() === "Windows_NT" ? "teamsfx.cmd" : "teamsfx",
-      ["preview", `--${env}`],
+      os.type() === "Windows_NT"
+        ? v3
+          ? "teamsapp.cmd"
+          : "teamsfx.cmd"
+        : v3
+        ? "teamsapp"
+        : "teamsfx",
+      v3 ? ["preview", "--env", env] : ["preview", `--${env}`],
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
+      },
+      (data) => {
+        console.log(data);
+      },
+      (error) => {
+        console.log(error);
+        if (error.includes("Error:")) {
+          chai.assert.fail(error);
+        }
       }
     );
     await Promise.all([timeout, childProcess]);
@@ -470,43 +538,37 @@ export class CliHelper {
       // close process & port
       childProcess.kill("SIGKILL");
     } catch (error) {
-      console.log(`kill process failed`);
+      console.log(`kill process failed, cause by: `, error);
     }
     try {
-      await killPort(53000);
-      console.log(`close port 53000 successfully`);
+      const result = await killPort(53000);
+      console.log(`close port 53000 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 53000 failed`);
+      console.log(`close port 53000 failed, cause by: `, error);
     }
     try {
-      await killPort(7071);
-      console.log(`close port 7071 successfully`);
+      const result = await killPort(7071);
+      console.log(`close port 7071 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 7071 failed`);
+      console.log(`close port 7071 failed, cause by: `, error);
     }
     try {
-      await killPort(9229);
-      console.log(`close port 9229 successfully`);
+      const result = await killPort(9229);
+      console.log(`close port 9229 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 9229 failed`);
+      console.log(`close port 9229 failed, cause by: `, error);
     }
     try {
-      await killPort(3978);
-      console.log(`close port 3978 successfully`);
+      const result = await killPort(3978);
+      console.log(`close port 3978 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 3978 failed`);
+      console.log(`close port 3978 failed, cause by: `, error);
     }
     try {
-      await killPort(9239);
-      console.log(`close port 9239 successfully`);
+      const result = await killPort(9239);
+      console.log(`close port 9239 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 9239 failed`);
-    }
-    try {
-      await killNgrok();
-      console.log(`close Ngrok successfully`);
-    } catch (error) {
-      console.log(`close Ngrok failed`);
+      console.log(`close port 9239 failed, cause by: `, error);
     }
     console.log("[success] debug successfully !!!");
   }

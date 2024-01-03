@@ -8,14 +8,7 @@
 @inject NavigationManager MyNavigationManager
 @rendermode InteractiveServer
 
-@if(isLoading)
-{
-    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
-        <FluentProgressRing/>
-    </div>
-}
-else
-{
+<Loading>
     <div class="welcome page">
         <div class="narrow page-padding">
             <img src="hello.png" />
@@ -47,12 +40,11 @@ else
             </FluentTabs>
         </div>
     </div>
-}
+</Loading>
 
 @code {
     string userName;
     string errorMessage;
-    bool isLoading = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -62,7 +54,6 @@ else
             var user = await teamsUserCredential.GetUserInfoAsync();
             userName = user.DisplayName;
         }
-        isLoading = false;
         StateHasChanged();
     }
 

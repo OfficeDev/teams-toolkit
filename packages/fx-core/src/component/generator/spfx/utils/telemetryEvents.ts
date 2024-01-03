@@ -10,6 +10,7 @@ export enum TelemetryEvents {
   UseNotRecommendedVersion = "use-not-recommended-spfx-version",
   CheckAddWebPartPackage = "check-add-web-part-package",
   LearnMoreVersionMismatch = "learn-more-version-mismatch",
+  GetSpfxNodeVersionFailed = "get-spfx-node-version-failed",
 }
 
 export enum TelemetryProperty {

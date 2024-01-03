@@ -568,6 +568,86 @@ describe("SPFxGenerator", function () {
     chai.expect(writeAppManifestStub.calledTwice).to.eq(true);
   });
 
+  describe("get node versions from SPFx package.json", async () => {
+    it("found node version", async () => {
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readJSON").callsFake((directory: string) => {
+        if (directory.includes("package.json")) {
+          return { engines: { node: ">= 10.13.0 < 11.0.0" } };
+        } else {
+          return "";
+        }
+      });
+      sinon.stub(Generator, "generateTemplate" as any).resolves(ok(undefined));
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.SPFxFramework]: "none",
+        [QuestionNames.SPFxWebpartDesc]: "test",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        "app-name": "spfxTestApp",
+        "spfx-solution": "new",
+      };
+      const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+      chai.expect(context.templateVariables!.SpfxNodeVersion).eq(">= 10.13.0 < 11.0.0");
+      chai.expect(result.isOk()).to.eq(true);
+    });
+
+    it("cannot found engine", async () => {
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readJSON").callsFake((directory: string) => {
+        if (directory.includes("package.json")) {
+          return {};
+        } else {
+          return "";
+        }
+      });
+      sinon.stub(Generator, "generateTemplate" as any).resolves(ok(undefined));
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.SPFxFramework]: "none",
+        [QuestionNames.SPFxWebpartDesc]: "test",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        "app-name": "spfxTestApp",
+        "spfx-solution": "new",
+      };
+      const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+      chai.expect(context.templateVariables!.SpfxNodeVersion).eq("16 || 18");
+      chai.expect(result.isOk()).to.eq(true);
+    });
+
+    it("cannot found engines.node", async () => {
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readJSON").callsFake((directory: string) => {
+        if (directory.includes("package.json")) {
+          return { engines: {} };
+        } else {
+          return "";
+        }
+      });
+      sinon.stub(Generator, "generateTemplate" as any).resolves(ok(undefined));
+      sinon.stub(cpUtils, "executeCommand").resolves("succeed");
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: testFolder,
+        [QuestionNames.SPFxFramework]: "none",
+        [QuestionNames.SPFxWebpartDesc]: "test",
+        [QuestionNames.SPFxWebpartName]: "hello",
+        "app-name": "spfxTestApp",
+        "spfx-solution": "new",
+      };
+      const result = await SPFxGenerator.generate(context, inputs, testFolder);
+
+      chai.expect(context.templateVariables!.SpfxNodeVersion).eq("16 || 18");
+      chai.expect(result.isOk()).to.eq(true);
+    });
+  });
+
   describe("doYeomanScaffold: add web part", async () => {
     it("add web part with global package", async () => {
       const inputs: Inputs = {

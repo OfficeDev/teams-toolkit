@@ -344,7 +344,7 @@ export class CopilotPluginGenerator {
         await fs.writeFile(configFilePath, JSON.stringify(config, null, 2));
 
         const prompt = content[2];
-        const promptFilePath = path.join(sequenceFolderPath, "skprompy.txt");
+        const promptFilePath = path.join(sequenceFolderPath, "skprompt.txt");
         await fs.writeFile(promptFilePath, prompt);
 
         const code = content[3].map((value) => value.code).join("\n");
@@ -355,6 +355,11 @@ export class CopilotPluginGenerator {
           code
         );
         await fs.writeFile(indexFilePath, updateIndexFile);
+
+        const manifestContent = await fs.readFile(manifestPath);
+        const manifest = JSON.parse(manifestContent.toString());
+        delete manifest.composeExtensions;
+        await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
       }
 
       // log warnings

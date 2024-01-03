@@ -138,9 +138,9 @@ planner.prompts.addFunction("getAction", async (context: TurnContext, memory: Me
 });
 
 // TODO: determine the file name of spec file.
-const yamlPath = path.join(__dirname, "../openapi.yaml");
-const yaml_doc = yaml.load(fs.readFileSync(yamlPath, "utf8")) as Document;
-const api = new OpenAPIClientAxios({ definition: yaml_doc });
+const specPath = path.join(__dirname, "../appPackage/apiSpecificationFile/openapi.json");
+const specContent = yaml.load(fs.readFileSync(specPath, "utf8")) as Document;
+const api = new OpenAPIClientAxios({ definition: specContent });
 api.init();
 
 // TODO: add function to add ai action.

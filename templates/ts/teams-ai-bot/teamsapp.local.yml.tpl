@@ -63,6 +63,12 @@ provision:
 # Defines what the `deploy` lifecycle step does with Teams Toolkit.
 # Runs after `provision` during Start Debugging (F5) or run manually using `teamsfx deploy --env local`.
 deploy:
+  # Run npm command
+  - uses: cli/runNpmCommand
+    name: install dependencies
+    with:
+      args: install --no-audit
+
   # Provides the Teams Toolkit .env file values to the apps runtime so they can be accessed with `process.env`.
   - uses: file/createOrUpdateEnvironmentFile
     with:

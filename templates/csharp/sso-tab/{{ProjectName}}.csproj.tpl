@@ -10,16 +10,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="build/**/*" />
-    <Content Remove="build/**/*" />
+    <None Remove="appPackage/**/*" />
+    <Content Remove="appPackage/**/*" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.10.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.6.0" />
-    <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.2.0" />
-    <PackageReference Include="Microsoft.TeamsFx" Version="2.3.*" />
+    <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.5.0" />
+    <PackageReference Include="Microsoft.TeamsFx" Version="2.4.*" />
   </ItemGroup>
 
 </Project>

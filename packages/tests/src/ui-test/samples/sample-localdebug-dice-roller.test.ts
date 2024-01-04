@@ -15,6 +15,5 @@ new DiceRollerTestCase(
   21320394,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartWebServer],
-  { skipInit: true }
+  [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartWebServer]
 ).test();

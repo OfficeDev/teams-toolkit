@@ -29,6 +29,7 @@
     "devDependencies": {
         "@types/dotenv": "6.1.1",
         "@types/js-yaml": "^4.0.9",
+        "@types/jsonwebtoken": "^9.0.5",
         "@types/restify": "8.5.11",
         "nodemon": "~1.19.4",
         "shx": "^0.3.4",

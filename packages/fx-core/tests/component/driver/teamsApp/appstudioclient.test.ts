@@ -1096,11 +1096,10 @@ describe("App Studio API Test", () => {
     it("Happy path", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
-
       const response = {
         data: true,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sinon.stub(fakeAxiosInstance, "delete").resolves(response);
       AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
       const res = await AppStudioClient.deleteApp("testid", appStudioToken, logProvider);
       chai.assert.isTrue(res);
@@ -1112,7 +1111,7 @@ describe("App Studio API Test", () => {
       const response = {
         data: [appDef],
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sinon.stub(fakeAxiosInstance, "delete").resolves(response);
       AppStudioClient.setRegion("");
       try {
         await AppStudioClient.deleteApp("testid", appStudioToken, logProvider);
@@ -1129,7 +1128,7 @@ describe("App Studio API Test", () => {
       const response = {
         data: undefined,
       };
-      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      sinon.stub(fakeAxiosInstance, "delete").resolves(response);
       AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
       try {
         await AppStudioClient.deleteApp("testid", appStudioToken, logProvider);

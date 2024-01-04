@@ -129,7 +129,6 @@ import { AppStudioScopes } from "../component/driver/teamsApp/constants";
 import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
 import { AppDefinition } from "../component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { TelemetryUtils } from "../component/driver/teamsApp/utils/telemetry";
-import { setRegion } from "../common/tools";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 

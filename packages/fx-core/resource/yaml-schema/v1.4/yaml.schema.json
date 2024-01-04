@@ -10,11 +10,11 @@
     "environmentFolderPath": {
       "type": "string",
       "description": "The folder path of .env files used for variables and different envrironments."
-    },
+      },
     "version": {
       "type": "string",
       "description": "The version of the yaml file schema",
-      "const": "v1.3"
+      "const": "v1.4"
     },
     "additionalMetadata": {
       "type": "object",
@@ -71,7 +71,8 @@
           { "$ref": "#/definitions/spfxDeploy" },
           { "$ref": "#/definitions/teamsAppCopyAppPackageToSPFx" },
           { "$ref": "#/definitions/script" },
-          { "$ref": "#/definitions/apiKeyRegister"}
+          { "$ref": "#/definitions/apiKeyRegister"},
+          { "$ref": "#/definitions/azureStaticWebAppGetDeploymentKey"}
         ]
       }
     },
@@ -1434,12 +1435,11 @@
             },
             "workingDirectory": {
               "type": "string",
-              "description": "current working directory. Defaults to the directory of this file."
+              "description": "Current working directory. Defaults to the directory of this file."
             },
             "shell": {
               "type": "string",
-              "enum": ["bash", "sh", "powershell", "pwsh", "cmd"],
-              "description": "The shell type. Can be omitted. If omitted, it defaults to bash on Linux/MacOS, defaults to pwsh on windows."
+              "description": "Shell command. If not specified, use default shell for current platform. The rule is: 1) use the value of the 'SHELL' environment variable if it is set. Otherwise the shell depends on operation system: 2) on macOS, use '/bin/zsh' if it exists, otherwise use '/bin/bash'; 3) On Windows, use the value of the 'ComSpec' environment variable if it exists, otherwise use 'cmd.exe'; 4) On Linux or other OS, use '/bin/sh' if it extis."
             },
             "timeout": {
               "type": "number",
@@ -1519,9 +1519,13 @@
               "type": "string",
               "description": "The app ID of Teams app."
             },
-            "clientSecret": {
+            "primaryClientSecret": {
               "type": "string",
-              "description": "Client secret of API key. Client secret should follow: 1. Max %d secrets per API key. 2. Use comma to separate secrets. 3. Length of every secret >= 10 and <= 128"
+              "description": "Primary client secret of API key. Length of client secret >= 10 and <= 128"
+            },
+            "secondaryClientSecret": {
+              "type": "string",
+              "description": "Secondary callingWebhook secret of API key. Length of client secret >= 10 and <= 128"
             },
             "apiSpecPath": {
               "type": "string",
@@ -1537,6 +1541,43 @@
           "properties": {
             "registrationId": {
               "description": "Required. The registration id of created API key.",
+              "$ref": "#/definitions/envVarName"
+            }
+          }
+        }
+      }
+    },
+    "azureStaticWebAppGetDeploymentKey": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Get deployment key from Azure Static Web App.",
+      "required": ["uses", "with", "writeToEnvironmentFile"],
+      "properties": {
+        "uses": {
+          "type": "string",
+          "description": "Get deployment key. Refer to https://aka.ms/teamsfx-actions/swa-get-deployment-key for more details.",
+          "const": "azureStaticWebApps/getDeploymentToken"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Parameters for this action",
+          "required": ["resourceId"],
+          "properties": {
+            "resourceId": {
+              "type": "string",
+              "description": "The resource ID of Azure Static Web App."
+            }
+          }
+        },
+        "writeToEnvironmentFile": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Write environment variables to environment file",
+          "required": ["deploymentToken"],
+          "properties": {
+            "deploymentToken": {
+              "description": "Required. The deployment token of Azure Static Web App.",
               "$ref": "#/definitions/envVarName"
             }
           }

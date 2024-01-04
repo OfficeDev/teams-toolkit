@@ -11,6 +11,7 @@ import {
   sampleProjectMap,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
+  LocalDebugError,
 } from "../../utils/constants";
 import { waitForTerminal } from "../../utils/vscodeOperation";
 import { debugInitMap, initPage } from "../../utils/playwrightOperation";
@@ -321,6 +322,7 @@ export abstract class CaseFactory {
                 // local debug
                 if (options?.debug === "cli") {
                   // cli preview
+                  console.log("======= debug with cli ========");
                   console.log("botFlag: ", botFlag);
                   if (botFlag) {
                     devtunnelProcess = Executor.startDevtunnel(
@@ -345,6 +347,7 @@ export abstract class CaseFactory {
                                 console.log(tunnelName);
                                 envContent += `\nBOT_ENDPOINT=${endpoint}`;
                                 envContent += `\nBOT_DOMAIN=${domain}`;
+                                envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
                                 fs.writeFileSync(envFile, envContent);
                               } catch (error) {
                                 console.log(error);
@@ -398,19 +401,26 @@ export abstract class CaseFactory {
                     setTimeout(resolve, 2 * 30 * 1000)
                   );
                 } else {
-                  try {
-                    await debugInitMap[sampleName]();
-                    for (const label of validate) {
+                  console.log("======= debug with ttk ========");
+                  await debugInitMap[sampleName]();
+                  for (const label of validate) {
+                    try {
                       await debugMap[label]();
+                    } catch (error) {
+                      const errorMsg = error.toString();
+                      if (
+                        // skip can't find element
+                        errorMsg.includes(
+                          LocalDebugError.ElementNotInteractableError
+                        ) ||
+                        // skip timeout
+                        errorMsg.includes(LocalDebugError.TimeoutError)
+                      ) {
+                        console.log("[skip error] ", error);
+                      } else {
+                        expect.fail(errorMsg);
+                      }
                     }
-                  } catch (error) {
-                    await VSBrowser.instance.takeScreenshot(
-                      getScreenshotName("debug")
-                    );
-                    console.log("[Skip Error]: ", error);
-                    await VSBrowser.instance.driver.sleep(
-                      Timeout.playwrightDefaultTimeout
-                    );
                   }
                 }
               },
@@ -456,7 +466,6 @@ export abstract class CaseFactory {
               console.log("debug finish!");
               return;
             }
-
             // validate
             await onValidate(page, {
               context: sampledebugContext,
@@ -467,7 +476,11 @@ export abstract class CaseFactory {
             });
           } catch (error) {
             successFlag = false;
-            console.log(error);
+            await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
+            console.log("[Error]: ", error);
+            await VSBrowser.instance.driver.sleep(
+              Timeout.playwrightDefaultTimeout
+            );
           }
           expect(successFlag).to.be.true;
           console.log("debug finish!");

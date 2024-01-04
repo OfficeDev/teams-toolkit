@@ -62,7 +62,7 @@ async function getTemplatesDependencies() {
         codeOwners = value;
       }
     }
-    let dependencies = packageJson["dependencies"];
+    let dependencies = packageJson["dependencies"] ?? {};
     Object.assign(dependencies, packageJson["devDependencies"]);
     for (dependency in dependencies) {
       if (

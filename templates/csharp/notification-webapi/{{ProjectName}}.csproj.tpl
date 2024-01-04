@@ -10,9 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="build/**/*" />
+    <None Remove="appPackage/**/*" />
     <None Remove="devTools/**" />
-    <Content Remove="build/**/*" />
+    <Content Remove="appPackage/**/*" />
     <Content Remove="devTools/**/*" />
   </ItemGroup>
 

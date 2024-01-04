@@ -138,7 +138,7 @@ planner.prompts.addFunction("getAction", async (context: TurnContext, memory: Me
 });
 
 // TODO: determine the file name of spec file.
-const specPath = path.join(__dirname, "../appPackage/apiSpecificationFile/openapi.json");
+const specPath = path.join(__dirname, "../appPackage/apiSpecificationFile/{{OPENAPI_SPEC_PATH}}");
 const specContent = yaml.load(fs.readFileSync(specPath, "utf8")) as Document;
 const api = new OpenAPIClientAxios({ definition: specContent });
 api.init();

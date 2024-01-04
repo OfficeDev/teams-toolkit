@@ -350,10 +350,9 @@ export class CopilotPluginGenerator {
         const code = content[3].map((value) => value.code).join("\n");
         const indexFilePath = path.join(destinationPath, "src", "index.ts");
         const indexFileContent = (await fs.readFile(indexFilePath)).toString();
-        const updateIndexFile = indexFileContent.replace(
-          "// TODO: add function to add ai action.",
-          code
-        );
+        const updateIndexFile = indexFileContent
+          .replace("// TODO: add function to add ai action.", code)
+          .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName);
         await fs.writeFile(indexFilePath, updateIndexFile);
 
         const manifestContent = await fs.readFile(manifestPath);

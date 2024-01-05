@@ -6,7 +6,14 @@
 @inject IConfiguration Configuration
 @inject NavigationManager MyNavigationManager
 
-<Loading loading="loading is true">
+@if (isLoading)
+{
+    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+        <FluentProgressRing />
+    </div>
+}
+else
+{
     <div class="welcome page">
         <div class="narrow page-padding">
             <img src="hello.png" />
@@ -38,12 +45,12 @@
             </FluentTabs>
         </div>
     </div>
-</Loading>
+}
 
 @code {
     string userName;
     string errorMessage;
-    bool loading = true;
+    bool isLoading = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -58,7 +65,7 @@
         }
         finally
         {
-            loading = false;
+            isLoading = false;
             StateHasChanged();
         }
     }

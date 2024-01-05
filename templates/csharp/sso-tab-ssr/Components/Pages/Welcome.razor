@@ -49,13 +49,19 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (firstRender)
+        try
         {
-            var user = await teamsUserCredential.GetUserInfoAsync();
-            userName = user.DisplayName;
+            if (firstRender)
+            {
+                var user = await teamsUserCredential.GetUserInfoAsync();
+                userName = user.DisplayName;
+            }
         }
-        loading = false;
-        StateHasChanged();
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
     }
 
     private string GetEnvironmentName()

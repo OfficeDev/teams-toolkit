@@ -148,7 +148,7 @@ export function generateCardFromResponse(
         return [
           {
             type: "Image",
-            url: `\${${name}}`,
+            url: `\${if(startsWith(${name}, 'http'), ${name}, concat('https://', ${name}))}`,
             $when: `\${${name} != null}`,
           },
         ];
@@ -156,7 +156,7 @@ export function generateCardFromResponse(
         return [
           {
             type: "Image",
-            url: "${$data}",
+            url: "${if(startsWith($data, 'http'), $data, concat('https://', $data))}",
             $when: "${$data != null}",
           },
         ];

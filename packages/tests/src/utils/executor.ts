@@ -2,14 +2,7 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import {
-  execAsync,
-  editDotEnvFile,
-  timeoutPromise,
-  killPort,
-  spawnCommand,
-  killNgrok,
-} from "./commonUtils";
+import { execAsync, editDotEnvFile } from "./commonUtils";
 import { TemplateProjectFolder, Capability } from "./constants";
 import path from "path";
 import * as os from "os";
@@ -413,5 +406,35 @@ export class Executor {
         onError(dataString);
       }
     });
+  }
+
+  static spawnCommand(
+    projectPath: string,
+    command: string,
+    args: string[],
+    onData?: (data: string) => void,
+    onError?: (data: string) => void
+  ) {
+    const childProcess = spawn(
+      os.type() === "Windows_NT" ? command + ".cmd" : command,
+      args,
+      {
+        cwd: projectPath,
+        env: process.env,
+      }
+    );
+    childProcess.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    childProcess.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
+    return childProcess;
   }
 }

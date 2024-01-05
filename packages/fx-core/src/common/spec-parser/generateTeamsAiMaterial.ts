@@ -3,9 +3,10 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import { ErrorType } from "./interfaces";
+import { AdaptiveCard, ErrorType } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
+import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 
 export interface Action {
   name: string;
@@ -45,13 +46,25 @@ export interface Augmentation {
   augmentation_type: string;
 }
 
+export interface AdaptiveCardResult {
+  name: string;
+  pathUrl: string;
+  data: AdaptiveCard;
+}
+
 const codeTemplate = `
 app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
+  const adaptiveCardTemplate = require("./adaptiveCards/{{operationId}}.json");  
   const client = await api.getClient();
   const path = await client.paths["{{pathUrl}}"];
   if (path && path.get) {
       const result = await path.get(parameter);
-      await context.sendActivity(JSON.stringify(result.data));
+      const template = new ACData.Template(adaptiveCardTemplate);
+      const cardContent = template.expand({
+        $root: result.data
+      });
+      const card = CardFactory.adaptiveCard(cardContent);
+      await context.sendActivity({ attachments: [card] });
   } else {
       await context.sendActivity("no result");
   }
@@ -60,11 +73,12 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
 
 export function generateTeamsAiMaterial(
   spec: OpenAPIV3.Document
-): [Action[], Config, string, ActionCode[]] {
+): [Action[], Config, string, ActionCode[], AdaptiveCardResult[]] {
   try {
     const paths = spec.paths;
     const actions: Action[] = [];
     const actionCodes: ActionCode[] = [];
+    const adaptiveCardsResult: AdaptiveCardResult[] = [];
     if (paths) {
       for (const pathUrl in paths) {
         const pathItem = paths[pathUrl];
@@ -77,6 +91,14 @@ export function generateTeamsAiMaterial(
                 const operationId = operationItem.operationId!;
                 const description = operationItem.description ?? "";
                 const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
+
+                const [card] = generateAdaptiveCard(operationItem);
+                adaptiveCardsResult.push({
+                  name: operationItem.operationId!,
+                  pathUrl: pathUrl,
+                  data: card,
+                });
+
                 const parameters: any = {
                   type: "object",
                   properties: {} as OpenAPIV3.SchemaObject,
@@ -141,7 +163,7 @@ export function generateTeamsAiMaterial(
       spec.info.description ? ". " + spec.info.description : "."
     }\n\ncontext:\nAvailable actions: {{getAction}}.`;
 
-    return [actions, configObject, prompt, actionCodes];
+    return [actions, configObject, prompt, actionCodes, adaptiveCardsResult];
   } catch (err) {
     throw new SpecParserError((err as Error).toString(), ErrorType.UpdateTeamsAiAppFailed);
   }

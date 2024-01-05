@@ -31,7 +31,13 @@ import {
 import { updateManifest } from "./manifestUpdater";
 import { generateAdaptiveCard } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
-import { Action, ActionCode, Config, generateTeamsAiMaterial } from "./generateTeamsAiMaterial";
+import {
+  Action,
+  ActionCode,
+  AdaptiveCardResult,
+  Config,
+  generateTeamsAiMaterial,
+} from "./generateTeamsAiMaterial";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -194,7 +200,7 @@ export class SpecParser {
     filter: string[],
     outputSpecPath: string,
     signal?: AbortSignal
-  ): Promise<[Action[], Config, string, ActionCode[]]> {
+  ): Promise<[Action[], Config, string, ActionCode[], AdaptiveCardResult[]]> {
     try {
       if (signal?.aborted) {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);

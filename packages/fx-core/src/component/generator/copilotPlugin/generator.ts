@@ -320,7 +320,7 @@ export class CopilotPluginGenerator {
       // update teams ai bot
       if (componentName == fromApiSpecToTeamsAI) {
         const content = await specParser.updateTeamsAiApp(filters, openapiSpecPath);
-        if (!content || content.length != 4) {
+        if (!content || content.length != 5) {
           return err(
             new UserError(
               componentName,

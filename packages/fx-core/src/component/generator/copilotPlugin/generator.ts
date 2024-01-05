@@ -355,6 +355,14 @@ export class CopilotPluginGenerator {
           .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName);
         await fs.writeFile(indexFilePath, updateIndexFile);
 
+        const adaptiveCards = content[4];
+        const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+        await fs.ensureDir(adaptiveCardsFolderPath);
+        for (const card of adaptiveCards) {
+          const cardFilePath = path.join(adaptiveCardsFolderPath, `${card.name}.json`);
+          await fs.writeFile(cardFilePath, JSON.stringify(card.data, null, 2));
+        }
+
         const manifestContent = await fs.readFile(manifestPath);
         const manifest = JSON.parse(manifestContent.toString());
         delete manifest.composeExtensions;

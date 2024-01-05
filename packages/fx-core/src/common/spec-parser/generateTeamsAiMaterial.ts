@@ -127,7 +127,7 @@ export function generateTeamsAiMaterial(
                   name: operationId,
                   pathUrl: pathUrl,
                   code: codeTemplate
-                    .replace("{{operationId}}", operationId)
+                    .replace(/{{operationId}}/g, operationId)
                     .replace("{{pathUrl}}", pathUrl),
                 });
               }

@@ -18,6 +18,7 @@
     },
     "dependencies": {
         "@microsoft/teams-ai": "1.0.1",
+        "adaptivecards-templating": "^2.3.1",
         "botbuilder": "^4.21.3",
         "dotenv": "^16.3.1",
         "fs-extra": "^11.2.0",

@@ -21,6 +21,7 @@ const fs = require("fs-extra");
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import {
+  CardFactory,
   CloudAdapter,
   ConfigurationBotFrameworkAuthentication,
   ConfigurationServiceClientCredentialFactory,
@@ -28,6 +29,7 @@ import {
   TurnContext,
 } from "botbuilder";
 import yaml from "js-yaml";
+const ACData = require("adaptivecards-templating");
 
 // Read botFilePath and botFileSecret from .env file.
 const ENV_FILE = path.join(__dirname, "..", ".env");

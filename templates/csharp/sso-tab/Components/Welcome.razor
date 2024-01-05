@@ -1,13 +1,12 @@
 ﻿@using Microsoft.Extensions.Configuration
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
-@inject TeamsFx teamsfx
 @inject TeamsUserCredential teamsUserCredential
 @inject IWebHostEnvironment HostEnvironment
 @inject IConfiguration Configuration
 @inject NavigationManager MyNavigationManager
 
-<Loading>
+<Loading loading="loading is true">
     <div class="welcome page">
         <div class="narrow page-padding">
             <img src="hello.png" />
@@ -44,6 +43,7 @@
 @code {
     string userName;
     string errorMessage;
+    bool loading = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -53,6 +53,7 @@
             var user = await teamsUserCredential.GetUserInfoAsync();
             userName = user.DisplayName;
         }
+        loading = false;
         StateHasChanged();
     }
 

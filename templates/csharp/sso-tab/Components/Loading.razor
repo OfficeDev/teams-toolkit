@@ -1,32 +1,18 @@
-﻿@if (isLoaded)
+﻿@if (loading)
 {
-    @ChildContent
+	<div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+		<FluentProgressRing />
+	</div>
 }
 else
 {
-	<div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
-		<FluentProgressRing/>
-	</div>
+	@ChildContent
 }
 
 @code {
-	bool isLoaded;
+	[Parameter]
+	public bool loading { get; set; }
 
 	[Parameter]
-    public RenderFragment ChildContent { get; set; }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-	{
-		await base.OnAfterRenderAsync(firstRender);
-
-		try
-		{
-			if (firstRender)
-			{
-				isLoaded = true;
-				StateHasChanged();
-			}
-		}
-		catch (Exception) { }	
-	}
+	public RenderFragment ChildContent { get; set; }
 }

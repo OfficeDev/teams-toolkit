@@ -51,7 +51,7 @@ describe("Collaboration", function () {
 
       // provision
       const resourceGroupName = `${appName}-rg`;
-      const result = await createResourceGroup(resourceGroupName, "eastus");
+      const result = await createResourceGroup(resourceGroupName, "westus");
 
       // provision
       await execAsyncWithRetry(`teamsapp provision`, {

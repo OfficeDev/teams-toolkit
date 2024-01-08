@@ -63,7 +63,7 @@ describe("Deploy V3 m365-tab template", () => {
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
       // provision
-      const result = await createResourceGroup(resourceGroupName, "eastus");
+      const result = await createResourceGroup(resourceGroupName, "ewestus");
       chai.assert.isTrue(result);
 
       // workaround free tier quota

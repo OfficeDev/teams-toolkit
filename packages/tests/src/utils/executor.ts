@@ -123,10 +123,14 @@ export class Executor {
     return this.executeCmd(workspace, "provision", env, processEnv, npx, isV3);
   }
 
-  static async validate(workspace: string, env = "dev") {
+  static async validate(
+    workspace: string,
+    env = "dev",
+    manifestFolderName = "appPackage"
+  ) {
     return this.executeCmd(
       workspace,
-      "validate --manifest-file ./appPackage/manifest.json",
+      `validate --manifest-file ./${manifestFolderName}/manifest.json`,
       env
     );
   }
@@ -316,10 +320,14 @@ export class Executor {
     console.log(`successfully open project: ${newPath}`);
   }
 
-  static async package(workspace: string, env = "dev") {
+  static async package(
+    workspace: string,
+    env = "dev",
+    manifestFolderName = "appPackage"
+  ) {
     return this.executeCmd(
       workspace,
-      "package --manifest-file ./appPackage/manifest.json",
+      `package --manifest-file ./${manifestFolderName}/manifest.json`,
       env
     );
   }

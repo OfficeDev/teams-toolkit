@@ -66,7 +66,7 @@ describe("Blazor App", function () {
     `Provision Resource`,
     { testPlanCaseId: 15686030, author: "zhijie.huang@microsoft.com" },
     async () => {
-      const result = await createResourceGroup(resourceGroupName, "eastus");
+      const result = await createResourceGroup(resourceGroupName, "westus");
       chai.assert.isTrue(result);
 
       await setProvisionParameterValueV3(projectPath, envName, {

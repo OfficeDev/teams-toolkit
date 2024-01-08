@@ -28,6 +28,24 @@
         {
             "botId": "${{BOT_ID}}",
             "commands": [
+                {
+                    "id": "searchQuery",
+                    "context": [
+                        "compose",
+                        "commandBox"
+                    ],
+                    "description": "Test command to run query",
+                    "title": "Search",
+                    "type": "query",
+                    "parameters": [
+                        {
+                            "name": "searchQuery",
+                            "title": "Search Query",
+                            "description": "Your search query",
+                            "inputType": "text"
+                        }
+                    ]
+                }
             ],
             "messageHandlers": [
                 {

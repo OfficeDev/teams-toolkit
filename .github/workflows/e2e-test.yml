@@ -268,7 +268,7 @@ jobs:
 
   tear-down:
     needs: [execute-case, e2e-coverage]
-    if: (toJSON(needs.execute-case.outputs.cases) != 'null' || needs.e2e-coverage.result != 'skipped')
+    if: ${{always() && (toJSON(needs.execute-case.outputs.cases) != 'null' || needs.e2e-coverage.result != 'skipped' )}}
     runs-on: ubuntu-latest
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}

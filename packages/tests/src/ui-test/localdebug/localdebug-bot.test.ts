@@ -16,10 +16,20 @@ import {
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
+import { ChildProcessWithoutNullStreams } from "child_process";
+import { Executor } from "../../utils/executor";
+import { expect } from "chai";
+import fs from "fs-extra";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
+  let devtunnelProcess: ChildProcessWithoutNullStreams;
+  let debugProcess: ChildProcessWithoutNullStreams;
+  let botFlag = false;
+  let tunnelName = "";
+  let envContent = "";
+  let envFile = "";
 
   beforeEach(async function () {
     // ensure workbench is ready
@@ -46,12 +56,93 @@ describe("Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "index.js");
 
-      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
-
-      await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-      await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
+      // local debug
+      try {
+        envFile = path.resolve(projectPath, "env", ".env.local");
+        envContent = fs.readFileSync(envFile, "utf-8");
+        // if bot project setup devtunnel
+        botFlag = envContent.includes("BOT_DOMAIN");
+      } catch (error) {
+        console.log("read file error", error);
+      }
+      const debugMethod = ["cli", "ttk"][0] as "cli" | "ttk";
+      if (debugMethod === "cli") {
+        // cli preview
+        console.log("======= debug with cli ========");
+        if (botFlag) {
+          devtunnelProcess = Executor.startDevtunnel(
+            (data) => {
+              if (data) {
+                // start devtunnel
+                const domainRegex = /Connect via browser: https:\/\/(\S+)/;
+                const endpointRegex = /Connect via browser: (\S+)/;
+                const tunnelNameRegex =
+                  /Ready to accept connections for tunnel: (\S+)/;
+                console.log(data);
+                const domainFound = data.match(domainRegex);
+                const endpointFound = data.match(endpointRegex);
+                const tunnelNameFound = data.match(tunnelNameRegex);
+                if (domainFound && endpointFound) {
+                  if (domainFound[1] && endpointFound[1]) {
+                    const domain = domainFound[1];
+                    const endpoint = endpointFound[1];
+                    try {
+                      console.log(endpoint);
+                      console.log(tunnelName);
+                      envContent += `\nBOT_ENDPOINT=${endpoint}`;
+                      envContent += `\nBOT_DOMAIN=${domain}`;
+                      envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
+                      fs.writeFileSync(envFile, envContent);
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                }
+                if (tunnelNameFound) {
+                  if (tunnelNameFound[1]) {
+                    tunnelName = tunnelNameFound[1];
+                  }
+                }
+              }
+            },
+            (error) => {
+              console.log(error);
+            }
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+        {
+          const { success } = await Executor.provision(projectPath, "local");
+          expect(success).to.be.true;
+        }
+        {
+          const { success } = await Executor.deploy(projectPath, "local");
+          expect(success).to.be.true;
+        }
+        debugProcess = Executor.debugProject(
+          projectPath,
+          "local",
+          true,
+          process.env,
+          (data) => {
+            if (data) {
+              console.log(data);
+            }
+          },
+          (error) => {
+            console.log(error);
+          }
+        );
+        await new Promise((resolve) => setTimeout(resolve, 2 * 30 * 1000));
+      } else {
+        console.log("======= debug with ttk ========");
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+        await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
+        await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
+      }
 
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
+      expect(teamsAppId).to.not.be.empty;
       const page = await initPage(
         localDebugTestContext.context!,
         teamsAppId,

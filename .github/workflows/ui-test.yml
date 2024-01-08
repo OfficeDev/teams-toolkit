@@ -244,9 +244,6 @@ jobs:
         with:
           ref: ${{ needs.setup.outputs.branch }}
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Setup node
         uses: actions/setup-node@v3
         with:

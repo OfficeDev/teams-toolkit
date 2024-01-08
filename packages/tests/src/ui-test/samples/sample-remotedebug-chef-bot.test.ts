@@ -10,6 +10,7 @@ import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
 import * as path from "path";
 import * as fs from "fs";
+import * as os from "os";
 
 class ChefBotTestCase extends CaseFactory {
   public override async onAfterCreate(
@@ -32,5 +33,7 @@ new ChefBotTestCase(
   TemplateProject.ChefBot,
   24409842,
   "v-ivanchen@microsoft.com",
-  "dev"
+  "dev",
+  [],
+  { testRootFolder: path.resolve(os.homedir(), "resourse") } // fix yarn error
 ).test();

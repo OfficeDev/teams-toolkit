@@ -16,6 +16,7 @@ import {
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
+import { ChildProcessWithoutNullStreams } from "child_process";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import fs from "fs-extra";
@@ -23,6 +24,8 @@ import fs from "fs-extra";
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
+  let devtunnelProcess: ChildProcessWithoutNullStreams;
+  let debugProcess: ChildProcessWithoutNullStreams;
   let botFlag = false;
   let tunnelName = "";
   let envContent = "";
@@ -67,7 +70,7 @@ describe("Local Debug Tests", function () {
         // cli preview
         console.log("======= debug with cli ========");
         if (botFlag) {
-          Executor.startDevtunnel(
+          devtunnelProcess = Executor.startDevtunnel(
             (data) => {
               if (data) {
                 // start devtunnel
@@ -116,7 +119,7 @@ describe("Local Debug Tests", function () {
           const { success } = await Executor.deploy(projectPath, "local");
           expect(success).to.be.true;
         }
-        Executor.debugProject(
+        debugProcess = Executor.debugProject(
           projectPath,
           "local",
           true,
@@ -148,6 +151,18 @@ describe("Local Debug Tests", function () {
       );
       await localDebugTestContext.validateLocalStateForBot();
       await validateEchoBot(page);
+      if (debugMethod === "cli") {
+        try {
+          devtunnelProcess.kill(0);
+        } catch (error) {
+          console.log("[Failed] close devtunnel process.");
+        }
+        try {
+          debugProcess.kill(0);
+        } catch (error) {
+          console.log("[Failed] close debug process.");
+        }
+      }
     }
   );
 });

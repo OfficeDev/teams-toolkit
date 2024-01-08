@@ -54,7 +54,7 @@ export function happyPathTest(runtime: Runtime): void {
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
       // provision
-      const result = await createResourceGroup(appName + "-rg", "eastus");
+      const result = await createResourceGroup(appName + "-rg", "westus");
       expect(result).to.be.true;
       process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
       const { success } = await Executor.provision(projectPath, envName);

@@ -72,7 +72,7 @@ describe("Basic Tab", function () {
         removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
         // Provision
-        const result = await createResourceGroup(resourceGroupName, "eastus");
+        const result = await createResourceGroup(resourceGroupName, "westus");
         assert.isTrue(result);
 
         await setProvisionParameterValueV3(projectPath, envName, {

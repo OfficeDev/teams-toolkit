@@ -6,6 +6,12 @@ on:
       cases:
         description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
+
+      sample-branch:
+        description: "default is 'dev', options: 'main'"
+        required: true
+        type: string
+        default: 'dev'
       
       target-testplan-id:
         description: "target testplan id: 24569079. If not set, will not archive ado testplan"
@@ -205,7 +211,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
-          ref: v3
+          ref: ${{ github.event.inputs.sample-branch }}
           path: packages/tests/src/e2e/resource
 
       - name: Download samples from another repo
@@ -268,7 +274,7 @@ jobs:
 
   tear-down:
     needs: [execute-case, e2e-coverage]
-    if: (toJSON(needs.execute-case.outputs.cases) != 'null' || needs.e2e-coverage.result != 'skipped')
+    if: ${{always() && (toJSON(needs.execute-case.outputs.cases) != 'null' || needs.e2e-coverage.result != 'skipped' )}}
     runs-on: ubuntu-latest
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}

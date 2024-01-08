@@ -2,14 +2,7 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import {
-  execAsync,
-  editDotEnvFile,
-  timeoutPromise,
-  killPort,
-  spawnCommand,
-  killNgrok,
-} from "./commonUtils";
+import { execAsync, editDotEnvFile } from "./commonUtils";
 import { TemplateProjectFolder, Capability } from "./constants";
 import path from "path";
 import * as os from "os";
@@ -130,10 +123,14 @@ export class Executor {
     return this.executeCmd(workspace, "provision", env, processEnv, npx, isV3);
   }
 
-  static async validate(workspace: string, env = "dev") {
+  static async validate(
+    workspace: string,
+    env = "dev",
+    manifestFolderName = "appPackage"
+  ) {
     return this.executeCmd(
       workspace,
-      "validate --manifest-file ./appPackage/manifest.json",
+      `validate --manifest-file ./${manifestFolderName}/manifest.json`,
       env
     );
   }
@@ -323,10 +320,14 @@ export class Executor {
     console.log(`successfully open project: ${newPath}`);
   }
 
-  static async package(workspace: string, env = "dev") {
+  static async package(
+    workspace: string,
+    env = "dev",
+    manifestFolderName = "appPackage"
+  ) {
     return this.executeCmd(
       workspace,
-      "package --manifest-file ./appPackage/manifest.json",
+      `package --manifest-file ./${manifestFolderName}/manifest.json`,
       env
     );
   }
@@ -413,5 +414,35 @@ export class Executor {
         onError(dataString);
       }
     });
+  }
+
+  static spawnCommand(
+    projectPath: string,
+    command: string,
+    args: string[],
+    onData?: (data: string) => void,
+    onError?: (data: string) => void
+  ) {
+    const childProcess = spawn(
+      os.type() === "Windows_NT" ? command + ".cmd" : command,
+      args,
+      {
+        cwd: projectPath,
+        env: process.env,
+      }
+    );
+    childProcess.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    childProcess.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
+    return childProcess;
   }
 }

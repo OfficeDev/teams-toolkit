@@ -47,6 +47,7 @@ export abstract class CaseFactory {
     skipDeploy?: boolean;
     skipValidate?: boolean;
     skipPackage?: boolean;
+    manifestFolderName?: string;
   };
 
   public constructor(
@@ -68,6 +69,7 @@ export abstract class CaseFactory {
       skipDeploy?: boolean;
       skipValidate?: boolean;
       skipPackage?: boolean;
+      manifestFolderName?: string;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -144,7 +146,7 @@ export abstract class CaseFactory {
 
           await onBeforeProvision(projectPath);
 
-          const result = await createResourceGroup(appName + "-rg", "eastus");
+          const result = await createResourceGroup(appName + "-rg", "westus");
           expect(result).to.be.true;
           process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
 
@@ -209,7 +211,11 @@ export abstract class CaseFactory {
             console.log("debug finish!");
             return;
           }
-          const { success } = await Executor.validate(projectPath);
+          const { success } = await Executor.validate(
+            projectPath,
+            "dev",
+            options?.manifestFolderName
+          );
           expect(success).to.be.true;
         }
 
@@ -220,7 +226,11 @@ export abstract class CaseFactory {
             console.log("debug finish!");
             return;
           }
-          const { success } = await Executor.package(projectPath);
+          const { success } = await Executor.package(
+            projectPath,
+            "dev",
+            options?.manifestFolderName
+          );
           expect(success).to.be.true;
         }
       });

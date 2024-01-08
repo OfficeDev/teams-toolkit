@@ -58,7 +58,8 @@
       "remotedebug-aiassistant-bot-ts-win-only",
       "remotedebug-msg-newapi-win-only",
       "remotedebug-msg-newapi-ts-win-only",
-      "remotedebug-msg-openapi-win-only"
+      "remotedebug-msg-openapi-win-only",
+      "localdebug-command-and-response-ts"
     ],
     "node-20": [
       "localdebug-obo-tab"
@@ -85,7 +86,6 @@
       "treeview-samples",
       "telemetry@open-vscode",
       "localdebug-bot-ts",
-      "localdebug-command-and-response-ts",
       "localdebug-obo-tab-ts",
       "localdebug-msg-ts",
       "localdebug-msg",

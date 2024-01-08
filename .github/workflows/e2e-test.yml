@@ -9,7 +9,7 @@ on:
 
       sample-branch:
         description: "default is 'dev', options: 'v3', 'alpha'"
-        required: false
+        required: true
         type: string
         default: 'dev'
       

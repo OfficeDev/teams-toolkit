@@ -8,7 +8,7 @@ on:
         required: false
 
       sample-branch:
-        description: "default is 'dev', options: 'v3', 'alpha'"
+        description: "default is 'dev', options: 'main'"
         required: true
         type: string
         default: 'dev'

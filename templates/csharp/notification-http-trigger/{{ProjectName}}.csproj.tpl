@@ -12,9 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="appPackage/**/*" />
+    <None Include="appPackage/**/*" />
+    <None Include="infra/**/*" />
     <None Remove="devTools/**" />
-    <Content Remove="appPackage/**/*" />
     <Content Remove="devTools/**/*" />
   </ItemGroup>
 

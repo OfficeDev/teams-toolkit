@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="appPackage/**/*" />
-    <Content Remove="appPackage/**/*" />
+    <None Include="appPackage/**/*" />
   </ItemGroup>
 
 </Project>

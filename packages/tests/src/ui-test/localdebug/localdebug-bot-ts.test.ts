@@ -47,13 +47,13 @@ describe("Local Debug Tests", function () {
     this.timeout(Timeout.finishTestCase);
     if (debugProcess) {
       setTimeout(() => {
-        debugProcess.kill("SIGKILL");
+        debugProcess.kill("SIGINT");
       }, 2000);
     }
 
     if (tunnelName) {
       setTimeout(() => {
-        devtunnelProcess.kill("SIGKILL");
+        devtunnelProcess.kill("SIGINT");
       }, 2000);
       Executor.deleteTunnel(
         tunnelName,
@@ -70,10 +70,10 @@ describe("Local Debug Tests", function () {
     await localDebugTestContext.after(false, true);
     this.timeout(Timeout.finishAzureTestCase);
     // windows in cli can't stop debug
-    // if (debugMethod === "cli" && os.type() === "Windows_NT") {
-    //   if (successFlag) process.exit(0);
-    //   else process.exit(1);
-    // }
+    if (debugMethod === "cli" && os.type() === "Windows_NT") {
+      if (successFlag) process.exit(0);
+      else process.exit(1);
+    }
   });
 
   it(

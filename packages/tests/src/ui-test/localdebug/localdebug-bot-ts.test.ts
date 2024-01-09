@@ -90,7 +90,7 @@ describe("Local Debug Tests", function () {
           localDebugTestContext.testRootFolder,
           localDebugTestContext.appName
         );
-        validateFileExist(projectPath, "index.js");
+        validateFileExist(projectPath, "index.ts");
 
         // local debug
         try {

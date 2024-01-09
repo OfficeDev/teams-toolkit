@@ -67,7 +67,7 @@ describe("Local Debug Tests", function () {
           localDebugTestContext.testRootFolder,
           localDebugTestContext.appName
         );
-        validateFileExist(projectPath, "src/app.js");
+        validateFileExist(projectPath, "src/app.ts");
 
         // local debug
         debugMethod = ["cli", "ttk"][Math.floor(Math.random() * 2)] as

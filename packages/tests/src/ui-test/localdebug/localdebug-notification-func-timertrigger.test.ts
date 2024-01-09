@@ -55,21 +55,15 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
     if (debugProcess) {
-      let isClose = false;
       setTimeout(() => {
-        isClose = debugProcess.kill("SIGKILL");
+        debugProcess.kill("SIGKILL");
       }, 2000);
-      expect(isClose).to.be.true;
-      console.log("kill debug process successfully");
     }
 
     if (tunnelName) {
-      let isClose = false;
       setTimeout(() => {
-        isClose = devtunnelProcess.kill("SIGKILL");
+        devtunnelProcess.kill("SIGKILL");
       }, 2000);
-      expect(isClose).to.be.true;
-      console.log("kill devtunnel process successfully");
       Executor.deleteTunnel(
         tunnelName,
         (data) => {

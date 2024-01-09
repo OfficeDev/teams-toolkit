@@ -41,12 +41,9 @@ describe("Local Debug Tests", function () {
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
     if (debugProcess) {
-      let isClose = false;
       setTimeout(() => {
-        isClose = debugProcess.kill("SIGKILL");
+        debugProcess.kill("SIGKILL");
       }, 2000);
-      expect(isClose).to.be.true;
-      console.log("kill debug process successfully");
     }
 
     await localDebugTestContext.after(false, true);

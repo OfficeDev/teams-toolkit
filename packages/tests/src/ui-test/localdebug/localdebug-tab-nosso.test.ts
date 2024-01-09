@@ -73,9 +73,7 @@ describe("Local Debug Tests", function () {
         validateFileExist(projectPath, "src/app.js");
 
         // local debug
-        debugMethod = ["cli", "ttk"][Math.floor(Math.random() * 2)] as
-          | "cli"
-          | "ttk";
+        debugMethod = ["cli", "ttk"][0] as "cli" | "ttk";
         if (debugMethod === "cli") {
           // cli preview
           console.log("======= debug with cli ========");

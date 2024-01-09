@@ -13,7 +13,11 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, TemplateProjectFolder } from "../../utils/constants";
 import { Cleaner } from "../../commonlib/cleaner";
 import { Executor } from "../../utils/executor";
-import { getTestFolder, getUniqueAppName } from "../commonUtils";
+import {
+  createResourceGroup,
+  getTestFolder,
+  getUniqueAppName,
+} from "../commonUtils";
 import { checkYmlHeader } from "./utils";
 
 describe("upgrade", () => {
@@ -60,6 +64,9 @@ describe("upgrade", () => {
 
       {
         // provision
+        const rgResult = await createResourceGroup(appName + "-rg", "westus");
+        chai.assert.isTrue(rgResult);
+        process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
         const result = await Executor.provision(projectPath);
         chai.assert.isTrue(result.success);
       }

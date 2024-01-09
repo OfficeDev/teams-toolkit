@@ -48,7 +48,7 @@ describe("Local Debug Tests", function () {
     if (debugProcess) {
       let isClose = false;
       setTimeout(() => {
-        isClose = debugProcess.kill("SIGINT");
+        isClose = debugProcess.kill("SIGKILL");
       }, 2000);
       expect(isClose).to.be.true;
       console.log("kill debug process successfully");
@@ -57,7 +57,7 @@ describe("Local Debug Tests", function () {
     if (tunnelName) {
       let isClose = false;
       setTimeout(() => {
-        isClose = devtunnelProcess.kill("SIGINT");
+        isClose = devtunnelProcess.kill("SIGKILL");
       }, 2000);
       expect(isClose).to.be.true;
       console.log("kill devtunnel process successfully");

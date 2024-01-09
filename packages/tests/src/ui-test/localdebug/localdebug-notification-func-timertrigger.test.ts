@@ -42,7 +42,7 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
   let tunnelName = "";
   let envContent = "";
   let envFile = "";
-  const successFlag = true;
+  let successFlag = true;
 
   const oldEnv = Object.assign({}, process.env);
   beforeEach(async function () {
@@ -210,7 +210,12 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
         );
         await validateNotificationBot(page);
         await validateNotificationTimeBot(page);
-      } catch (error) {}
+      } catch (error) {
+        successFlag = false;
+        await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
+        console.log("[Error]: ", error);
+        await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
+      }
     }
   );
 });

@@ -53,18 +53,21 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
   });
 
   afterEach(async function () {
-    process.env = oldEnv;
     this.timeout(Timeout.finishTestCase);
     if (debugProcess) {
-      const isClose = debugProcess.kill("SIGTERM");
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      let isClose = false;
+      setTimeout(() => {
+        isClose = debugProcess.kill("SIGINT");
+      }, 2000);
       expect(isClose).to.be.true;
       console.log("kill debug process successfully");
     }
 
     if (tunnelName) {
-      const isClose = devtunnelProcess.kill("SIGTERM");
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      let isClose = false;
+      setTimeout(() => {
+        isClose = devtunnelProcess.kill("SIGINT");
+      }, 2000);
       expect(isClose).to.be.true;
       console.log("kill devtunnel process successfully");
       Executor.deleteTunnel(
@@ -80,10 +83,12 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
       );
     }
     await localDebugTestContext.after(false, true);
-    if (debugMethod === "cli" && os.type() === "Windows_NT") {
-      if (successFlag) process.exit(0);
-      else process.exit(1);
-    }
+    this.timeout(Timeout.finishAzureTestCase);
+    // windows in cli can't stop debug
+    // if (debugMethod === "cli" && os.type() === "Windows_NT") {
+    //   if (successFlag) process.exit(0);
+    //   else process.exit(1);
+    // }
   });
 
   it(

@@ -41,18 +41,21 @@ describe("Local Debug Tests", function () {
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
     if (debugProcess) {
-      const isClose = debugProcess.kill("SIGTERM");
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      let isClose = false;
+      setTimeout(() => {
+        isClose = debugProcess.kill("SIGINT");
+      }, 2000);
       expect(isClose).to.be.true;
       console.log("kill debug process successfully");
     }
-    await localDebugTestContext.after(false);
+
+    await localDebugTestContext.after(false, true);
     this.timeout(Timeout.finishAzureTestCase);
     // windows in cli can't stop debug
-    if (debugMethod === "cli" && os.type() === "Windows_NT") {
-      if (successFlag) process.exit(0);
-      else process.exit(1);
-    }
+    // if (debugMethod === "cli" && os.type() === "Windows_NT") {
+    //   if (successFlag) process.exit(0);
+    //   else process.exit(1);
+    // }
   });
 
   it(

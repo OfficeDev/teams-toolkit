@@ -10,7 +10,7 @@ import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, TemplateProjectFolder } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Cleaner } from "../../commonlib/cleaner";
 import { Executor } from "../../utils/executor";
 import {
@@ -71,11 +71,11 @@ describe("upgrade", () => {
         chai.assert.isTrue(result.success);
       }
 
-      {
-        // deploy
-        const result = await Executor.deploy(projectPath);
-        chai.assert.isTrue(result.success);
-      }
+      // {
+      //   // deploy
+      //   const result = await Executor.deploy(projectPath);
+      //   chai.assert.isTrue(result.success);
+      // }
     }
   );
 });

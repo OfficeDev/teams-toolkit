@@ -101,7 +101,9 @@ describe("Local Debug Tests", function () {
         } catch (error) {
           console.log("read file error", error);
         }
-        debugMethod = ["cli", "ttk"][0] as "cli" | "ttk";
+        debugMethod = ["cli", "ttk"][Math.floor(Math.random() * 2)] as
+          | "cli"
+          | "ttk";
         if (debugMethod === "cli") {
           // cli preview
           console.log("======= debug with cli ========");

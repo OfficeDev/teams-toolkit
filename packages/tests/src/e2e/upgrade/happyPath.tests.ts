@@ -71,11 +71,11 @@ describe("upgrade", () => {
         chai.assert.isTrue(result.success);
       }
 
-      // {
-      //   // deploy
-      //   const result = await Executor.deploy(projectPath);
-      //   chai.assert.isTrue(result.success);
-      // }
+      {
+        // deploy
+        const result = await Executor.deploy(projectPath);
+        chai.assert.isTrue(result.success);
+      }
     }
   );
 });

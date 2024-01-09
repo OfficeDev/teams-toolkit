@@ -21,7 +21,6 @@ const fs = require("fs-extra");
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import {
-  CardFactory,
   CloudAdapter,
   ConfigurationBotFrameworkAuthentication,
   ConfigurationServiceClientCredentialFactory,
@@ -29,7 +28,7 @@ import {
   TurnContext,
 } from "botbuilder";
 import yaml from "js-yaml";
-const ACData = require("adaptivecards-templating");
+import { generateAdaptiveCard, getClient } from "./utility";
 
 // Read botFilePath and botFileSecret from .env file.
 const ENV_FILE = path.join(__dirname, "..", ".env");
@@ -68,8 +67,7 @@ const onTurnErrorHandler = async (context: TurnContext, error: Error) => {
   );
 
   // Send a message to the user
-  await context.sendActivity("The bot encountered an error or bug.");
-  await context.sendActivity("To continue to run this bot, please fix the bot source code.");
+  await context.sendActivity(`The bot encountered an error or bug: ${error.message}`);
 };
 
 // Set the onTurnError for the singleton CloudAdapter.
@@ -139,7 +137,6 @@ planner.prompts.addFunction("getAction", async (context: TurnContext, memory: Me
   return specFileContent.toString();
 });
 
-// TODO: determine the file name of spec file.
 const specPath = path.join(__dirname, "../appPackage/apiSpecificationFile/{{OPENAPI_SPEC_PATH}}");
 const specContent = yaml.load(fs.readFileSync(specPath, "utf8")) as Document;
 const api = new OpenAPIClientAxios({ definition: specContent });

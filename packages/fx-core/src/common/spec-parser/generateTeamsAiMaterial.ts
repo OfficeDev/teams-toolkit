@@ -54,16 +54,11 @@ export interface AdaptiveCardResult {
 
 const codeTemplate = `
 app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
-  const adaptiveCardTemplate = require("./adaptiveCards/{{operationId}}.json");  
-  const client = await api.getClient();
+  const client = await getClient(api, context);
   const path = await client.paths["{{pathUrl}}"];
   if (path && path.get) {
       const result = await path.get(parameter);
-      const template = new ACData.Template(adaptiveCardTemplate);
-      const cardContent = template.expand({
-        $root: result.data
-      });
-      const card = CardFactory.adaptiveCard(cardContent);
+      const card = generateAdaptiveCard("./adaptiveCards/{{operationId}}.json", result);
       await context.sendActivity({ attachments: [card] });
   } else {
       await context.sendActivity("no result");

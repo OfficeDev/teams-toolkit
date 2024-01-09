@@ -1,11 +1,11 @@
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector.Authentication;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.TeamsFx.Conversation;
 using {{SafeProjectName}};
-using Microsoft.Extensions.Configuration;
 
 
 var host = new HostBuilder()

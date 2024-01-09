@@ -55,6 +55,30 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
   afterEach(async function () {
     process.env = oldEnv;
     this.timeout(Timeout.finishTestCase);
+    if (debugProcess) {
+      const isClose = debugProcess.kill("SIGTERM");
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+      expect(isClose).to.be.true;
+      console.log("kill debug process successfully");
+    }
+
+    if (tunnelName) {
+      const isClose = devtunnelProcess.kill("SIGTERM");
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+      expect(isClose).to.be.true;
+      console.log("kill devtunnel process successfully");
+      Executor.deleteTunnel(
+        tunnelName,
+        (data) => {
+          if (data) {
+            console.log(data);
+          }
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+    }
     await localDebugTestContext.after(false, true);
     if (debugMethod === "cli" && os.type() === "Windows_NT") {
       if (successFlag) process.exit(0);
@@ -161,30 +185,11 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
           console.log("======= debug with ttk ========");
           await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
           await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-          await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
-        }
-        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
-        await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-        try {
-          await waitForTerminal(
-            "Start Azurite emulator",
-            "Azurite Blob service is successfully listening"
-          );
-          await waitForTerminal(
-            LocalDebugTaskLabel.StartBotApp,
-            "Worker process started and initialized"
-          );
-        } catch {
-          const dialog = new ModalDialog();
-          console.log("click Cancel button for error dialog");
-          await dialog.pushButton("Cancel");
-          await driver.sleep(Timeout.shortTimeLoading);
-          console.log(
-            "Clicked button Cancel for failing to attach to main target"
-          );
-          await stopDebugging();
-          await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
           try {
+            await waitForTerminal(
+              "Start Azurite emulator",
+              "Azurite Blob service is successfully listening"
+            );
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
               "Worker process started and initialized"
@@ -192,16 +197,34 @@ describe("Func Hosted and Timer-trigger Notification Bot Local Debug Tests", fun
           } catch {
             const dialog = new ModalDialog();
             console.log("click Cancel button for error dialog");
-            await dialog.pushButton("Debug Anyway");
-            console.log("Clicked button Debug Anyway");
+            await dialog.pushButton("Cancel");
             await driver.sleep(Timeout.shortTimeLoading);
-            await waitForTerminal(
-              LocalDebugTaskLabel.StartBotApp,
-              "Worker process started and initialized"
+            console.log(
+              "Clicked button Cancel for failing to attach to main target"
             );
+            await stopDebugging();
+            await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+            try {
+              await waitForTerminal(
+                LocalDebugTaskLabel.StartBotApp,
+                "Worker process started and initialized"
+              );
+            } catch {
+              const dialog = new ModalDialog();
+              console.log("click Cancel button for error dialog");
+              await dialog.pushButton("Debug Anyway");
+              console.log("Clicked button Debug Anyway");
+              await driver.sleep(Timeout.shortTimeLoading);
+              await waitForTerminal(
+                LocalDebugTaskLabel.StartBotApp,
+                "Worker process started and initialized"
+              );
+            }
           }
         }
+
         const teamsAppId = await localDebugTestContext.getTeamsAppId();
+        expect(teamsAppId).to.not.be.empty;
         const page = await initPage(
           localDebugTestContext.context!,
           teamsAppId,

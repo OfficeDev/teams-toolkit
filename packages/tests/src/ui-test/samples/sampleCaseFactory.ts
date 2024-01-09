@@ -259,17 +259,15 @@ export abstract class CaseFactory {
       afterEach(async function () {
         this.timeout(Timeout.finishAzureTestCase);
         if (debugProcess) {
-          const isClose = debugProcess.kill("SIGTERM");
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-          expect(isClose).to.be.true;
-          console.log("kill debug process successfully");
+          setTimeout(() => {
+            debugProcess.kill("SIGINT");
+          }, 2000);
         }
 
         if (tunnelName) {
-          const isClose = devtunnelProcess.kill("SIGTERM");
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-          expect(isClose).to.be.true;
-          console.log("kill devtunnel process successfully");
+          setTimeout(() => {
+            devtunnelProcess.kill("SIGINT");
+          }, 2000);
           Executor.deleteTunnel(
             tunnelName,
             (data) => {

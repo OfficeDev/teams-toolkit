@@ -297,9 +297,9 @@ export class Executor {
     const timeout = 100000;
     let oldPath = "";
     if (subFolder) {
-      oldPath = path.resolve("./resource", subFolder, template);
+      oldPath = path.resolve(__dirname, "..", "e2e/resource", subFolder, template);
     } else {
-      oldPath = path.resolve("./resource", template);
+      oldPath = path.resolve(__dirname, "..", "e2e/resource", template);
     }
     const newPath = path.resolve(testFolder, appName);
     try {

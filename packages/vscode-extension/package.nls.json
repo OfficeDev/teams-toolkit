@@ -375,6 +375,7 @@
     "teamstoolkit.taskDefinitions.args.prerequisites.portsTitle": "Check ports availability for debug use.",
     "teamstoolkit.taskDefinitions.args.portOccupancy.title": "The port numbers to validate",
     "teamstoolkit.taskDefinitions.args.env.title": "The environment name.",
+    "teamstoolkit.taskDefinitions.args.expiration.title": "The tunnel will be deleted automatically if it has been inactive for 3600 seconds.",
     "teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.title": "The keys of the environment variables of tunnel domain and tunnel endpoint.",
     "teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.domain.title": "The key of the environment variable for tunnel domain.",
     "teamstoolkit.taskDefinitions.args.writeToEnvironmentFile.endpoint.title": "The key of the environment variable for tunnel endpoint.",

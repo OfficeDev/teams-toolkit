@@ -303,7 +303,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
           };
         }),
         labels: [DevTunnelTag],
-        customExpiration: args.expiration,
+        customExpiration: args.expiration ?? 3600, // 1 hour
       };
       const tunnelRequestOptions: TunnelRequestOptions = {
         tokenScopes: ["host"],

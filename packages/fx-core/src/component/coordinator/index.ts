@@ -78,8 +78,11 @@ export enum TemplateNames {
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
   NotificationHttpTrigger = "notification-http-trigger",
+  NotificationHttpTriggerIsolated = "notification-http-trigger-isolated",
   NotificationTimerTrigger = "notification-timer-trigger",
+  NotificationTimerTriggerIsolated = "notification-timer-trigger-isolated",
   NotificationHttpTimerTrigger = "notification-http-timer-trigger",
+  NotificationHttpTimerTriggerIsolated = "notification-http-timer-trigger-isolated",
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
   DefaultBot = "default-bot",
@@ -106,11 +109,20 @@ const Feature2TemplateName: any = {
     NotificationTriggerOptions.functionsHttpTrigger().id
   }`]: TemplateNames.NotificationHttpTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpTriggerIsolated().id
+  }`]: TemplateNames.NotificationHttpTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsTimerTrigger().id
   }`]: TemplateNames.NotificationTimerTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsTimerTriggerIsolated().id
+  }`]: TemplateNames.NotificationTimerTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
   }`]: TemplateNames.NotificationHttpTimerTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpAndTimerTriggerIsolated().id
+  }`]: TemplateNames.NotificationHttpTimerTriggerIsolated,
   [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
   [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
@@ -264,6 +276,14 @@ class Coordinator {
         }
         const trigger = inputs[QuestionNames.BotTrigger] as string;
         let feature = `${capability}:${trigger}`;
+
+        if (
+          language === "csharp" &&
+          capability === CapabilityOptions.notificationBot().id &&
+          inputs.isIsolated === true
+        ) {
+          feature += "-isolated";
+        }
 
         if (meArchitecture) {
           feature = `${feature}:${meArchitecture}`;

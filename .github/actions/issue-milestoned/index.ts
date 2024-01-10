@@ -34,8 +34,8 @@ class Milestoned extends Action {
 			if (!asignee) {
 				safeLog(`the issue ${content.number} assignee:${content.assignee} is not associated with email address, ignore.`);
 				const subject = '[Github Issue Alert] missing associated email address for assignee';
-				const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/" + content.number;
-				const fileLink = "https://github.com/OfficeDev/TeamsFx/blob/dev/.github/accounts.json";
+				const issueLink = 'https://github.com/OfficeDev/TeamsFx/issues/' + content.number;
+				const fileLink = 'https://github.com/OfficeDev/TeamsFx/blob/dev/.github/accounts.json';
 				const message = `There is a <a href="${issueLink}"> github issue </a>milestoned with account <b>${content.assignee}</b> which is not associated with company email. Please check it and update the account mapping in <a href="${fileLink}"> accounts file</a>.`
 				safeLog(issueLink);
 				safeLog(fileLink);

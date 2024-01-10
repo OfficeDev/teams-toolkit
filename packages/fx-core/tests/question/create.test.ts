@@ -47,6 +47,7 @@ import {
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
+  ApiMessageExtensionAuthOptions,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
@@ -235,7 +236,7 @@ describe("scaffold question", () => {
       ]);
     });
 
-    it("traverse in vscode me from new api", async () => {
+    it("traverse in vscode me from new api (none auth)", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -290,6 +291,11 @@ describe("scaffold question", () => {
             MeArchitectureOptions.apiSpec(),
           ]);
           return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
+        } else if (question.name === QuestionNames.ApiMEAuth) {
+          const select = question as SingleSelectQuestion;
+          const options = select.staticOptions;
+          assert.isTrue(options.length === 2);
+          return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
         }
         return ok({ type: "success", result: undefined });
       };
@@ -298,6 +304,82 @@ describe("scaffold question", () => {
         QuestionNames.ProjectType,
         QuestionNames.Capabilities,
         QuestionNames.MeArchitectureType,
+        QuestionNames.ApiMEAuth,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
+    });
+
+    it("traverse in vscode me from new api (key auth)", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: ProjectTypeOptions.me().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 3);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
+          );
+          return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
+        } else if (question.name === QuestionNames.MeArchitectureType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 3);
+          return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          return ok({ type: "success", result: "javascript" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.MeArchitectureType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.staticOptions;
+          // Assert
+          assert.equal(options.length, 2);
+          // Assert
+          assert.equal(options.length, 2);
+          assert.deepEqual(options, [
+            MeArchitectureOptions.newApi(),
+            MeArchitectureOptions.apiSpec(),
+          ]);
+          return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
+        } else if (question.name === QuestionNames.ApiMEAuth) {
+          const select = question as SingleSelectQuestion;
+          const options = select.staticOptions;
+          assert.isTrue(options.length === 2);
+          return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.MeArchitectureType,
+        QuestionNames.ApiMEAuth,
         QuestionNames.ProgrammingLanguage,
         QuestionNames.Folder,
         QuestionNames.AppName,
@@ -817,7 +899,7 @@ describe("scaffold question", () => {
           mockedEnvRestore();
         }
       });
-      it("traverse in vscode Copilot Plugin from new API", async () => {
+      it("traverse in vscode Copilot Plugin from new API (no auth)", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -841,6 +923,11 @@ describe("scaffold question", () => {
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 3);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
+          } else if (question.name === QuestionNames.ApiMEAuth) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.staticOptions;
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -857,6 +944,59 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
+          QuestionNames.ApiMEAuth,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("traverse in vscode Copilot Plugin from new API (key auth)", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: "copilot-plugin-type" });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 3);
+            return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
+          } else if (question.name === QuestionNames.ApiMEAuth) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.staticOptions;
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "typescript" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.ApiMEAuth,
           QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,
@@ -997,6 +1137,8 @@ describe("scaffold question", () => {
           await callFuncs(question, inputs);
           if (question.name === QuestionNames.Capabilities) {
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
+          } else if (question.name === QuestionNames.ApiMEAuth) {
+            return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.AppName) {
@@ -1010,6 +1152,7 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
+          QuestionNames.ApiMEAuth,
           QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,

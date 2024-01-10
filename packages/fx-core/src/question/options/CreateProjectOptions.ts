@@ -122,6 +122,13 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Select Operation(s) Teams Can Interact with.",
   },
   {
+    name: "api-me-auth",
+    type: "string",
+    description: "The authentication type for the API.",
+    default: "none",
+    choices: ["none", "api-key"],
+  },
+  {
     name: "programming-language",
     type: "string",
     shortName: "l",

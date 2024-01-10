@@ -1,8 +1,8 @@
 name: Check Assignee
 
 on: 
-  issues:
-    types: [assigned]
+  # issues:
+  #   types: [assigned]
   workflow_dispatch: # allows to run manually for testing
     inputs:
       assignee:

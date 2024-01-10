@@ -106,7 +106,7 @@ deploy:
       args: install
 
   - uses: cli/runNpmCommand
-    name: build app    
+    name: build app
     with:
       args: run build --if-present
 

@@ -66,7 +66,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'dotnet' // Set runtime to .NET
+          value: 'dotnet-isolated' // Set runtime to .NET
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'

@@ -505,7 +505,15 @@ jobs:
       - name: setup
         run: |
           npm run setup
-      
+
+      - name: Download samples(daily)
+        working-directory: packages/tests/src/e2e/resource
+        run: |
+          wget https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip
+          unzip dev.zip -d .
+          mv TeamsFx-Samples-dev/* .
+          rm -rf dev.zip TeamsFx-Samples-dev
+
       - name: run test for coverage
         working-directory: packages/fx-core
         env:
@@ -527,7 +535,7 @@ jobs:
           SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
           ADO_TOKEN: ${{ secrets.ADO_PAT }}
         run: |
-          npx nyc mocha --parallel ../tests/src/e2e/**/*.tests.ts
+          npx nyc mocha --parallel ../tests/src/e2e/*/*.tests.ts
       
       - name: pack zip
         if: ${{always()}}

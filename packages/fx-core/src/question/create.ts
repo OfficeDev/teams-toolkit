@@ -1785,8 +1785,9 @@ export function capabilitySubTree(): IQTreeNode {
       {
         condition: (inputs: Inputs) => {
           return (
-            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-            inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id
+            isApiKeyEnabled() &&
+            (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
+              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
           );
         },
         data: apiMessageExtensionAuthQuestion(),

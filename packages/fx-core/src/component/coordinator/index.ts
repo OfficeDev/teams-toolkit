@@ -69,6 +69,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { isApiKeyEnabled } from "../../common/featureFlags";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -291,6 +292,8 @@ class Coordinator {
 
         if (apiMEAuthType) {
           feature = `${feature}:${apiMEAuthType}`;
+        } else if (!isApiKeyEnabled()) {
+          feature = `${feature}:${ApiMessageExtensionAuthOptions.none().id}`;
         }
 
         const templateName = Feature2TemplateName[feature];

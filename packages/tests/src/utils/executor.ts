@@ -297,7 +297,13 @@ export class Executor {
     const timeout = 100000;
     let oldPath = "";
     if (subFolder) {
-      oldPath = path.resolve(__dirname, "..", "e2e/resource", subFolder, template);
+      oldPath = path.resolve(
+        __dirname,
+        "..",
+        "e2e/resource",
+        subFolder,
+        template
+      );
     } else {
       oldPath = path.resolve(__dirname, "..", "e2e/resource", template);
     }

@@ -11,16 +11,18 @@ class Checker extends Action {
 
 	async onAssigned(issue: OctoKitIssue, assignee: string) {
 		safeLog(`the assignee is ${assignee}`);
-		const content = await issue.getIssue();
 		const msAccount = getEmail(assignee);
 		if (!msAccount) {
 			safeLog(`the ${assignee} has no associated Microsoft account.`);
 			const subject = '[Github Issue Alert] missing associated email address for assignee';
-			const issueLink = `https://github.com/OfficeDev/TeamsFx/issues/${content.number}`;
 			const fileLink = "https://github.com/OfficeDev/TeamsFx/blob/dev/.github/accounts.json";
 			let message = `<b>${assignee}</b> is not associated with company email. Please check it and update the account mapping in the file <a>${fileLink}</a>. `;
-			if (content.number != 0) {
-				message += `It is triggered by issue assigned <a>${issueLink}</a>.`;
+			if (process.env.ASSIGNEE == '') {
+				const content = await issue.getIssue();
+				const issueLink = `https://github.com/OfficeDev/TeamsFx/issues/${content.number}`;
+				message += `It is triggered by issue assigned event for <a>${issueLink}</a>.`;
+			} else {
+				message += `It is triggered manually by workflow.`;
 			}
 			safeLog(message);
 			sendAlert(subject, message);

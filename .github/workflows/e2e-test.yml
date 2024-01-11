@@ -507,26 +507,13 @@ jobs:
           npm run setup
 
       - name: Download samples(daily)
-        uses: actions/checkout@v3
-        with:
-          repository: OfficeDev/TeamsFx-Samples
-          ref: dev
-          path: packages/tests/src/e2e/resource
+        working-directory: packages/tests/src/e2e/resource
+        run: |
+          wget https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip
+          unzip dev.zip -d .
+          mv TeamsFx-Samples-dev/* .
+          rm -rf dev.zip TeamsFx-Samples-dev
 
-      # - name: Download samples from another repo
-      #   uses: actions/checkout@v3
-      #   with:
-      #     repository: OfficeDev/Microsoft-Teams-Samples
-      #     ref: main
-      #     path: packages/tests/src/e2e/resource
-      
-      # - name: Download samples from office repo
-      #   uses: actions/checkout@v3
-      #   with:
-      #     repository: OfficeDev/Office-Add-in-samples
-      #     ref: main
-      #     path: packages/tests/src/e2e/resource
-      
       - name: run test for coverage
         working-directory: packages/fx-core
         env:
@@ -548,7 +535,7 @@ jobs:
           SIDELOADING_SERVICE_SCOPE: ${{ secrets.SIDELOADING_SERVICE_SCOPE }}
           ADO_TOKEN: ${{ secrets.ADO_PAT }}
         run: |
-          npx nyc mocha --parallel ../tests/src/e2e/samples/*.tests.ts
+          npx nyc mocha --parallel ../tests/src/e2e/*/*.tests.ts
       
       - name: pack zip
         if: ${{always()}}

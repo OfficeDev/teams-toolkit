@@ -9,7 +9,7 @@ export async function getClient(api: OpenAPIClientAxios) {
       return response;
     },
     async function (error) {
-      throw new Error(`Failed to call API. Error: ${error.message}`);
+      throw new Error(`Failed to call API. Error: ${JSON.stringify(error.message)}`);
     }
   );
   return client;

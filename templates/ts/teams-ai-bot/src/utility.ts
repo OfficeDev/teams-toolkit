@@ -2,14 +2,14 @@ import { CardFactory, TurnContext } from "botbuilder";
 import OpenAPIClientAxios from "openapi-client-axios";
 const ACData = require("adaptivecards-templating");
 
-export async function getClient(api: OpenAPIClientAxios, context: TurnContext) {
+export async function getClient(api: OpenAPIClientAxios) {
   const client = await api.getClient();
   client.interceptors.response.use(
     function (response) {
       return response;
     },
     async function (error) {
-      await context.sendActivity(`axios error: ${JSON.stringify(error.message)}`);
+      throw new Error(`Failed to call API. Error: ${error.message}`);
     }
   );
   return client;

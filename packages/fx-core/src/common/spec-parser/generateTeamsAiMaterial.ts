@@ -54,7 +54,7 @@ export interface AdaptiveCardResult {
 
 const codeTemplate = `
 app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
-  const client = await getClient(api, context);
+  const client = await getClient(api);
   const path = await client.paths["{{pathUrl}}"];
   if (path && path.get) {
       const result = await path.get(parameter);

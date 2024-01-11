@@ -507,8 +507,9 @@ jobs:
           npm run setup
 
       - name: Download samples(daily)
-        working-directory: packages/tests/src/e2e/resource
+        working-directory: packages/tests/src/e2e
         run: |
+          mkdir resource && cd resource
           wget https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/dev.zip
           unzip dev.zip -d .
           mv TeamsFx-Samples-dev/* .

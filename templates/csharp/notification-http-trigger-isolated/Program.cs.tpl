@@ -9,6 +9,7 @@ using {{SafeProjectName}};
 
 
 var host = new HostBuilder()
+    .ConfigureFunctionsWebApplication()
     .ConfigureAppConfiguration((hostContext, builder) => {
         var context = hostContext.HostingEnvironment;
         var configuration = new ConfigurationBuilder()
@@ -24,7 +25,6 @@ var host = new HostBuilder()
             { "MicrosoftAppPassword", config.BOT_PASSWORD },
         });
     })
-    .ConfigureFunctionsWebApplication()
     .ConfigureServices((hostContext, services) =>
     {
         var configuration = hostContext.Configuration;

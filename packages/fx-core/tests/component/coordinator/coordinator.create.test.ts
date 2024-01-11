@@ -3,12 +3,16 @@ import "mocha";
 import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
+import { glob } from "glob";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { CreateSampleProjectInputs } from "../../../src";
+import { FeatureFlagName } from "../../../src/common/constants";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator, TemplateNames } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { Generator } from "../../../src/component/generator/generator";
 import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
@@ -27,11 +31,10 @@ import {
 import { QuestionNames } from "../../../src/question/questionNames";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
-import { glob } from "glob";
 
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator create", () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
@@ -40,6 +43,7 @@ describe("coordinator create", () => {
   });
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("create project from sample", async () => {
@@ -561,6 +565,9 @@ describe("coordinator create", () => {
   });
 
   it("create API ME (no auth) from new api sucessfully", async () => {
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.ApiKey]: "true",
+    });
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
 
@@ -582,6 +589,9 @@ describe("coordinator create", () => {
   });
 
   it("create API ME (key auth) from new api sucessfully", async () => {
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.ApiKey]: "true",
+    });
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
 

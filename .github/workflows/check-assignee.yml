@@ -1,12 +1,12 @@
-name: Issue-milestoned
+name: Check Assignee
 
 on: 
-  issues:
-    types: [milestoned]
+  # issues:
+  #   types: [assigned]
   workflow_dispatch: # allows to run manually for testing
     inputs:
-      issueNumber:
-        description: 'specific issue number to test issue-milestoned action'
+      assignee:
+        description: 'specific the github account to check'
         required: true  
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
       
       - name: Copy action
         run: |
-          cp -r .github/actions/issue-milestoned ./action-base/issue-milestoned
+          cp -r .github/actions/asignee-account-check ./action-base/asignee-account-check
           cp -r .github/actions/teamsfx-utils ./action-base/teamsfx-utils
 
       - name: Npm install dependencies
@@ -37,19 +37,11 @@ jobs:
       
       - name: Create AZDO Item 
         id: create
-        uses: ./action-base/issue-milestoned
+        uses: ./action-base/asignee-account-check
         with:
           token: ${{secrets.GITHUB_TOKEN}}
-          milestone-prefix: "CY"
-          devops-token: ${{secrets.ADO_PAT}}
-          devops-org: "msazure"
-          devops-projectId: "Microsoft Teams Extensibility"
-          title-prefix: "[Github]"
-          bug-label: "bug"
-          bug-area-path: "Microsoft Teams Extensibility"
-          bug-iteration-path: "Microsoft Teams Extensibility"
         env:
-          ISSUE_NUMBER: ${{github.event.inputs.issueNumber}}
+          ASSIGNEE: ${{github.event.inputs.assignee}}
 
       - name: Send Alert Email
         uses: ./.github/actions/send-email-report

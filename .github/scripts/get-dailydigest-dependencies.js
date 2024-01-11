@@ -24,6 +24,7 @@ const codeOwnerMap = new Map([
   ["office-addin", "huajiezhang@microsoft.com"],
   ["copilot-plugin-existing-api", "yuqzho@microsoft.com"],
   ["copilot-plugin-existing-api-api-key", "yuqzho@microsoft.com"],
+  ["copilot-plugin-from-scratch-api-key", "huimiao@microsoft.com"],
   ["spfx-tab", "yuqzho@microsoft.com"],
   ["spfx-tab-import", "yuqzho@microsoft.com"],
   ["sso-tab-with-obo-flow", "bowen.song@microsoft.com"],

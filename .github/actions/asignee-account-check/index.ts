@@ -20,7 +20,9 @@ class Checker extends Action {
 			if (process.env.ASSIGNEE == '') {
 				const content = await issue.getIssue();
 				const issueLink = `https://github.com/OfficeDev/TeamsFx/issues/${content.number}`;
-				message += `It is triggered by issue assigned <a>${issueLink}</a>.`;
+				message += `It is triggered by issue assigned event for <a>${issueLink}</a>.`;
+			} else {
+				message += `It is triggered manually by workflow.`;
 			}
 			safeLog(message);
 			sendAlert(subject, message);

@@ -109,7 +109,7 @@ export function happyPathTest(runtime: Runtime): void {
 
       // publish only run on node
       if (runtime !== Runtime.Dotnet) {
-        await execAsyncWithRetry(`teamsapp publish`, {
+        await execAsyncWithRetry(`teamsapp publish --env ${envName}`, {
           cwd: projectPath,
           env: process.env,
           timeout: 0,

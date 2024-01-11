@@ -355,3 +355,6 @@ packages/manifest/ @jayzhang @MSFT-yiz
 
 packages/fx-core/src/common/spec-parser/ @SLdragon @adashen
 packages/fx-core/tests/common/spec-parser/ @SLdragon @adashen
+
+./lerna.json @wenytang-ms @qinezh @Siglud @LongOddCode
+./pnpm-workspace.yaml @wenytang-ms @qinezh @Siglud @LongOddCode

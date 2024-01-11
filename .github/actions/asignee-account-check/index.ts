@@ -2,7 +2,6 @@ import { OctoKit, OctoKitIssue } from '../api/octokit';
 import { Action } from '../common/Action';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { context } from '@actions/github';
-import { getInput } from '@actions/core';
 import { getEmail, sendAlert } from '../teamsfx-utils/utils';
 
 const githubToken = getRequiredInput('token');
@@ -21,7 +20,7 @@ class Checker extends Action {
 			const fileLink = "https://github.com/OfficeDev/TeamsFx/blob/dev/.github/accounts.json";
 			let message = `<b>${assignee}</b> is not associated with company email. Please check it and update the account mapping in the file <a>${fileLink}</a>. `;
 			if (content.number != 0) {
-				message += `It is triggered by issue assigned <a>${issueLink}</a>.`
+				message += `It is triggered by issue assigned <a>${issueLink}</a>.`;
 			}
 			safeLog(message);
 			sendAlert(subject, message);

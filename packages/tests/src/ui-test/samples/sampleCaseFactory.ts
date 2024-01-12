@@ -324,8 +324,9 @@ export abstract class CaseFactory {
                   console.log("======= debug with cli ========");
                   console.log("botFlag: ", botFlag);
                   if (botFlag) {
-                    const tunnel =
-                      Executor.debugBotFunctionPreparation(envFile);
+                    const tunnel = Executor.debugBotFunctionPreparation(
+                      sampledebugContext.projectPath
+                    );
                     tunnelName = tunnel.tunnelName;
                     devtunnelProcess = tunnel.devtunnelProcess;
                   }

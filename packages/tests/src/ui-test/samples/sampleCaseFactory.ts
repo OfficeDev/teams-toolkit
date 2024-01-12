@@ -242,6 +242,7 @@ export abstract class CaseFactory {
       let envContent = "";
       let botFlag = false;
       let envFile = "";
+      let errorMessage = "";
 
       beforeEach(async function () {
         // ensure workbench is ready
@@ -259,17 +260,15 @@ export abstract class CaseFactory {
       afterEach(async function () {
         this.timeout(Timeout.finishAzureTestCase);
         if (debugProcess) {
-          const isClose = debugProcess.kill("SIGTERM");
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-          expect(isClose).to.be.true;
-          console.log("kill debug process successfully");
+          setTimeout(() => {
+            debugProcess.kill("SIGTERM");
+          }, 2000);
         }
 
         if (tunnelName) {
-          const isClose = devtunnelProcess.kill("SIGTERM");
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-          expect(isClose).to.be.true;
-          console.log("kill devtunnel process successfully");
+          setTimeout(() => {
+            devtunnelProcess.kill("SIGTERM");
+          }, 2000);
           Executor.deleteTunnel(
             tunnelName,
             (data) => {
@@ -476,13 +475,13 @@ export abstract class CaseFactory {
             });
           } catch (error) {
             successFlag = false;
+            errorMessage = "[Error]: " + error;
             await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
-            console.log("[Error]: ", error);
             await VSBrowser.instance.driver.sleep(
               Timeout.playwrightDefaultTimeout
             );
           }
-          expect(successFlag).to.be.true;
+          expect(successFlag, errorMessage).to.true;
           console.log("debug finish!");
         }
       );

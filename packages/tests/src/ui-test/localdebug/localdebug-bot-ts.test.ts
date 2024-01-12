@@ -107,46 +107,11 @@ describe("Local Debug Tests", function () {
           // cli preview
           console.log("======= debug with cli ========");
           if (botFlag) {
-            devtunnelProcess = Executor.startDevtunnel(
-              (data) => {
-                if (data) {
-                  // start devtunnel
-                  const domainRegex = /Connect via browser: https:\/\/(\S+)/;
-                  const endpointRegex = /Connect via browser: (\S+)/;
-                  const tunnelNameRegex =
-                    /Ready to accept connections for tunnel: (\S+)/;
-                  console.log(data);
-                  const domainFound = data.match(domainRegex);
-                  const endpointFound = data.match(endpointRegex);
-                  const tunnelNameFound = data.match(tunnelNameRegex);
-                  if (domainFound && endpointFound) {
-                    if (domainFound[1] && endpointFound[1]) {
-                      const domain = domainFound[1];
-                      const endpoint = endpointFound[1];
-                      try {
-                        console.log(endpoint);
-                        console.log(tunnelName);
-                        envContent += `\nBOT_ENDPOINT=${endpoint}`;
-                        envContent += `\nBOT_DOMAIN=${domain}`;
-                        envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
-                        fs.writeFileSync(envFile, envContent);
-                      } catch (error) {
-                        console.log(error);
-                      }
-                    }
-                  }
-                  if (tunnelNameFound) {
-                    if (tunnelNameFound[1]) {
-                      tunnelName = tunnelNameFound[1];
-                    }
-                  }
-                }
-              },
-              (error) => {
-                console.log(error);
-              }
-            );
+            const tunnel = Executor.debugBotFunctionPreparation(envFile);
+            tunnelName = tunnel.tunnelName;
+            devtunnelProcess = tunnel.devtunnelProcess;
           }
+
           await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
           {
             const { success } = await Executor.provision(projectPath, "local");

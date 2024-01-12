@@ -21,7 +21,6 @@ import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
-import fs from "fs-extra";
 import os from "os";
 
 describe("Local Debug Tests", function () {
@@ -30,10 +29,7 @@ describe("Local Debug Tests", function () {
   let devtunnelProcess: ChildProcessWithoutNullStreams;
   let debugProcess: ChildProcessWithoutNullStreams;
   let debugMethod: "cli" | "ttk";
-  let botFlag = false;
   let tunnelName = "";
-  let envContent = "";
-  let envFile = "";
   let successFlag = true;
   let errorMessage = "";
 
@@ -92,25 +88,15 @@ describe("Local Debug Tests", function () {
         validateFileExist(projectPath, "index.ts");
 
         // local debug
-        try {
-          envFile = path.resolve(projectPath, "env", ".env.local");
-          envContent = fs.readFileSync(envFile, "utf-8");
-          // if bot project setup devtunnel
-          botFlag = envContent.includes("BOT_DOMAIN");
-        } catch (error) {
-          console.log("read file error", error);
-        }
         debugMethod = ["cli", "ttk"][Math.floor(Math.random() * 2)] as
           | "cli"
           | "ttk";
         if (debugMethod === "cli") {
           // cli preview
           console.log("======= debug with cli ========");
-          if (botFlag) {
-            const tunnel = Executor.debugBotFunctionPreparation(envFile);
-            tunnelName = tunnel.tunnelName;
-            devtunnelProcess = tunnel.devtunnelProcess;
-          }
+          const tunnel = Executor.debugBotFunctionPreparation(projectPath);
+          tunnelName = tunnel.tunnelName;
+          devtunnelProcess = tunnel.devtunnelProcess;
 
           await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
           {

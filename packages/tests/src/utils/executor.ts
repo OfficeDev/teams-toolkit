@@ -453,9 +453,16 @@ export class Executor {
     return childProcess;
   }
 
-  static debugBotFunctionPreparation(envFile: string) {
+  static debugBotFunctionPreparation(projectPath: string) {
+    let envFile = "";
     let tunnelName = "";
     let envContent = "";
+    try {
+      envFile = path.resolve(projectPath, "env", ".env.local");
+      envContent = fs.readFileSync(envFile, "utf-8");
+    } catch (error) {
+      console.log("read file error", error);
+    }
     const devtunnelProcess = Executor.startDevtunnel(
       (data) => {
         if (data) {

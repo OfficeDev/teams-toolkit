@@ -131,18 +131,28 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
-    ApiMessageExtensionAuthOptions.none().id
-  }`]: TemplateNames.CopilotPluginFromScratch,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
-    ApiMessageExtensionAuthOptions.apiKey().id
-  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.none().id
-  }`]: TemplateNames.CopilotPluginFromScratch,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-    ApiMessageExtensionAuthOptions.apiKey().id
-  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  ...(isApiKeyEnabled()
+    ? {
+        [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+          ApiMessageExtensionAuthOptions.none().id
+        }`]: TemplateNames.CopilotPluginFromScratch,
+        [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+          ApiMessageExtensionAuthOptions.apiKey().id
+        }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+        [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+          ApiMessageExtensionAuthOptions.none().id
+        }`]: TemplateNames.CopilotPluginFromScratch,
+        [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+          ApiMessageExtensionAuthOptions.apiKey().id
+        }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+      }
+    : {
+        [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
+          TemplateNames.CopilotPluginFromScratch,
+        [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}`]:
+          TemplateNames.CopilotPluginFromScratch,
+      }),
+
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,

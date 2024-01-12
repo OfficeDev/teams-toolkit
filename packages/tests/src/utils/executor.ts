@@ -5,6 +5,7 @@ import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "./commonUtils";
 import { TemplateProjectFolder, Capability } from "./constants";
 import path from "path";
+import fs from "fs-extra";
 import * as os from "os";
 import { spawn } from "child_process";
 
@@ -450,5 +451,57 @@ export class Executor {
       }
     });
     return childProcess;
+  }
+
+  static debugBotFunctionPreparation(projectPath: string) {
+    let envFile = "";
+    let tunnelName = "";
+    let envContent = "";
+    try {
+      envFile = path.resolve(projectPath, "env", ".env.local");
+      envContent = fs.readFileSync(envFile, "utf-8");
+    } catch (error) {
+      console.log("read file error", error);
+    }
+    const devtunnelProcess = Executor.startDevtunnel(
+      (data) => {
+        if (data) {
+          // start devtunnel
+          const domainRegex = /Connect via browser: https:\/\/(\S+)/;
+          const endpointRegex = /Connect via browser: (\S+)/;
+          const tunnelNameRegex =
+            /Ready to accept connections for tunnel: (\S+)/;
+          console.log(data);
+          const domainFound = data.match(domainRegex);
+          const endpointFound = data.match(endpointRegex);
+          const tunnelNameFound = data.match(tunnelNameRegex);
+          if (domainFound && endpointFound) {
+            if (domainFound[1] && endpointFound[1]) {
+              const domain = domainFound[1];
+              const endpoint = endpointFound[1];
+              try {
+                console.log(endpoint);
+                console.log(tunnelName);
+                envContent += `\nBOT_ENDPOINT=${endpoint}`;
+                envContent += `\nBOT_DOMAIN=${domain}`;
+                envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
+                fs.writeFileSync(envFile, envContent);
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          }
+          if (tunnelNameFound) {
+            if (tunnelNameFound[1]) {
+              tunnelName = tunnelNameFound[1];
+            }
+          }
+        }
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+    return { devtunnelProcess, tunnelName };
   }
 }

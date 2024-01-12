@@ -242,6 +242,7 @@ export abstract class CaseFactory {
       let envContent = "";
       let botFlag = false;
       let envFile = "";
+      let errorMessage = "";
 
       beforeEach(async function () {
         // ensure workbench is ready
@@ -259,17 +260,15 @@ export abstract class CaseFactory {
       afterEach(async function () {
         this.timeout(Timeout.finishAzureTestCase);
         if (debugProcess) {
-          const isClose = debugProcess.kill("SIGTERM");
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-          expect(isClose).to.be.true;
-          console.log("kill debug process successfully");
+          setTimeout(() => {
+            debugProcess.kill("SIGTERM");
+          }, 2000);
         }
 
         if (tunnelName) {
-          const isClose = devtunnelProcess.kill("SIGTERM");
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-          expect(isClose).to.be.true;
-          console.log("kill devtunnel process successfully");
+          setTimeout(() => {
+            devtunnelProcess.kill("SIGTERM");
+          }, 2000);
           Executor.deleteTunnel(
             tunnelName,
             (data) => {
@@ -325,46 +324,11 @@ export abstract class CaseFactory {
                   console.log("======= debug with cli ========");
                   console.log("botFlag: ", botFlag);
                   if (botFlag) {
-                    devtunnelProcess = Executor.startDevtunnel(
-                      (data) => {
-                        if (data) {
-                          // start devtunnel
-                          const domainRegex =
-                            /Connect via browser: https:\/\/(\S+)/;
-                          const endpointRegex = /Connect via browser: (\S+)/;
-                          const tunnelNameRegex =
-                            /Ready to accept connections for tunnel: (\S+)/;
-                          console.log(data);
-                          const domainFound = data.match(domainRegex);
-                          const endpointFound = data.match(endpointRegex);
-                          const tunnelNameFound = data.match(tunnelNameRegex);
-                          if (domainFound && endpointFound) {
-                            if (domainFound[1] && endpointFound[1]) {
-                              const domain = domainFound[1];
-                              const endpoint = endpointFound[1];
-                              try {
-                                console.log(endpoint);
-                                console.log(tunnelName);
-                                envContent += `\nBOT_ENDPOINT=${endpoint}`;
-                                envContent += `\nBOT_DOMAIN=${domain}`;
-                                envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
-                                fs.writeFileSync(envFile, envContent);
-                              } catch (error) {
-                                console.log(error);
-                              }
-                            }
-                          }
-                          if (tunnelNameFound) {
-                            if (tunnelNameFound[1]) {
-                              tunnelName = tunnelNameFound[1];
-                            }
-                          }
-                        }
-                      },
-                      (error) => {
-                        console.log(error);
-                      }
+                    const tunnel = Executor.debugBotFunctionPreparation(
+                      sampledebugContext.projectPath
                     );
+                    tunnelName = tunnel.tunnelName;
+                    devtunnelProcess = tunnel.devtunnelProcess;
                   }
                   await new Promise((resolve) =>
                     setTimeout(resolve, 60 * 1000)
@@ -476,13 +440,13 @@ export abstract class CaseFactory {
             });
           } catch (error) {
             successFlag = false;
+            errorMessage = "[Error]: " + error;
             await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
-            console.log("[Error]: ", error);
             await VSBrowser.instance.driver.sleep(
               Timeout.playwrightDefaultTimeout
             );
           }
-          expect(successFlag).to.be.true;
+          expect(successFlag, errorMessage).to.true;
           console.log("debug finish!");
         }
       );

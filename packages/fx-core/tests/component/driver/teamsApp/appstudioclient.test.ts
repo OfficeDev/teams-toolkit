@@ -1073,7 +1073,18 @@ describe("App Studio API Test", () => {
         chai.assert.isTrue(e instanceof Error);
       }
     });
-
+    it("Error - api failure", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sinon.stub(fakeAxiosInstance, "get").rejects(new Error());
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+      try {
+        await AppStudioClient.listApps(appStudioToken, logProvider);
+        chai.assert.fail("should throw error");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+      }
+    });
     it("Error - no data", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
@@ -1120,7 +1131,18 @@ describe("App Studio API Test", () => {
         chai.assert.isTrue(e instanceof Error);
       }
     });
-
+    it("Error - api failure", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      sinon.stub(fakeAxiosInstance, "delete").rejects(new Error());
+      AppStudioClient.setRegion("https://dev.teams.microsoft.com/amer");
+      try {
+        await AppStudioClient.deleteApp("testid", appStudioToken, logProvider);
+        chai.assert.fail("should throw error");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+      }
+    });
     it("Error - no data", async () => {
       const fakeAxiosInstance = axios.create();
       sinon.stub(axios, "create").returns(fakeAxiosInstance);

@@ -4,7 +4,7 @@ import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsf
 import { getFxCore } from "../../activate";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { EnvOption, ProjectFolderOption } from "../common";
+import { EnvOption, IgnoreLoadEnvOption, ProjectFolderOption } from "../common";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { newResourceGroupOption } from "@microsoft/teamsfx-core/build/question/other";
 
@@ -26,6 +26,7 @@ export const provisionCommand: CLICommand = {
       type: "string",
       hidden: true,
     },
+    IgnoreLoadEnvOption,
   ],
   telemetry: {
     event: TelemetryEvent.Provision,

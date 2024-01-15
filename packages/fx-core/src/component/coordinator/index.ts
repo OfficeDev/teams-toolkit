@@ -295,10 +295,8 @@ class Coordinator {
           (capability === CapabilityOptions.m365SearchMe().id &&
             meArchitecture === MeArchitectureOptions.newApi().id)
         ) {
-          if (isApiKeyEnabled()) {
-            if (apiMEAuthType) {
-              feature = `${feature}:${apiMEAuthType}`;
-            }
+          if (isApiKeyEnabled() && apiMEAuthType) {
+            feature = `${feature}:${apiMEAuthType}`;
           } else {
             feature = `${feature}:none`;
           }

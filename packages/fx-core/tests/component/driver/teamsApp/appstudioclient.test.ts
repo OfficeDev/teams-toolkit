@@ -1070,7 +1070,7 @@ describe("App Studio API Test", () => {
         await AppStudioClient.listApps(appStudioToken, logProvider);
         chai.assert.fail("should throw error");
       } catch (e) {
-        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+        chai.assert.isTrue(e instanceof Error);
       }
     });
 
@@ -1117,7 +1117,7 @@ describe("App Studio API Test", () => {
         await AppStudioClient.deleteApp("testid", appStudioToken, logProvider);
         chai.assert.fail("should throw error");
       } catch (e) {
-        chai.assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+        chai.assert.isTrue(e instanceof Error);
       }
     });
 

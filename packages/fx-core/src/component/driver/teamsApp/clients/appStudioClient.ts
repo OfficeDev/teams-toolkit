@@ -208,18 +208,14 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider: LogProvider
   ): Promise<AppDefinition[]> {
+    if (!region) throw new Error("Failed to get region");
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.LIST_APPS);
     let requester: AxiosInstance;
     try {
-      let response;
-      if (region) {
-        requester = createRequesterWithToken(appStudioToken, region);
-        logProvider.debug(`Sent API Request: GET ${region}/api/appdefinitions`);
-        response = await RetryHandler.Retry(() => requester.get(`/api/appdefinitions`));
-      } else {
-        throw new Error("Failed to get region");
-      }
+      requester = createRequesterWithToken(appStudioToken, region);
+      logProvider.debug(`Sent API Request: GET ${region}/api/appdefinitions`);
+      const response = await RetryHandler.Retry(() => requester.get(`/api/appdefinitions`));
       if (response && response.data) {
         const apps = <AppDefinition[]>response.data;
         if (apps) {
@@ -240,20 +236,16 @@ export namespace AppStudioClient {
     appStudioToken: string,
     logProvider: LogProvider
   ): Promise<boolean> {
+    if (!region) throw new Error("Failed to get region");
     setErrorContext({ source: "Teams" });
     sendStartEvent(APP_STUDIO_API_NAMES.DELETE_APP);
     let requester: AxiosInstance;
     try {
-      let response;
-      if (region) {
-        requester = createRequesterWithToken(appStudioToken, region);
-        logProvider.debug(`Sent API Request: DELETE ${region}/api/appdefinitions/${teamsAppId}`);
-        response = await RetryHandler.Retry(() =>
-          requester.delete(`/api/appdefinitions/${teamsAppId}`)
-        );
-      } else {
-        throw new Error("Failed to get region");
-      }
+      requester = createRequesterWithToken(appStudioToken, region);
+      logProvider.debug(`Sent API Request: DELETE ${region}/api/appdefinitions/${teamsAppId}`);
+      const response = await RetryHandler.Retry(() =>
+        requester.delete(`/api/appdefinitions/${teamsAppId}`)
+      );
       if (response && response.data) {
         const success = <boolean>response.data;
         if (success) {

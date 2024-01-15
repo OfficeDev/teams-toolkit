@@ -143,7 +143,14 @@ export const fetchZipFromUrlAction: GeneratorAction = {
     if (!context.url) {
       throw new MissKeyError("url");
     }
-    context.zip = await fetchZipFromUrl(context.url, context.tryLimits, context.timeoutInMs);
+
+    let parts = context.url.split("/");
+    const selectedTag = parts[parts.length - 2];
+    parts = selectedTag.split(".");
+    // Get the last digit of the selected tag
+    if (parts[parts.length - 1] !== "0") {
+      context.zip = await fetchZipFromUrl(context.url, context.tryLimits, context.timeoutInMs);
+    }
   },
 };
 

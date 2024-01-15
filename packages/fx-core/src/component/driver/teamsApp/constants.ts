@@ -248,6 +248,8 @@ export class APP_STUDIO_API_NAMES {
   public static readonly VALIDATE_APP_PACKAGE = "validate-app-package";
   public static readonly CREATE_BOT = "create-bot";
   public static readonly GET_BOT = "get-bot";
+  public static readonly LIST_BOT = "list-bot";
+  public static readonly DELETE_BOT = "delete-bot";
   public static readonly UPDATE_BOT = "update-bot";
   public static readonly CREATE_API_KEY = "create-api-key";
   public static readonly GET_API_KEY = "get-api-key";

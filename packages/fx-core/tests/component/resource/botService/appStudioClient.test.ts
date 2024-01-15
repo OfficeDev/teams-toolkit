@@ -421,4 +421,94 @@ describe("AppStudio Client", () => {
       }
     });
   });
+
+  describe("listBots", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "get").resolves({
+        status: 200,
+        data: [sampleBot],
+      });
+      sandbox.stub(AppStudio, "sendStartEvent").returns();
+      sandbox.stub(AppStudio, "sendSuccessEvent").returns();
+      // Act & Assert
+      try {
+        const res = await AppStudioClient.listBots("anything");
+        assert.deepEqual(res, [sampleBot]);
+      } catch (e) {
+        assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+    it("invalid response", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "get").resolves({
+        status: 200,
+      });
+      sandbox.stub(AppStudio, "sendStartEvent").returns();
+      sandbox.stub(AppStudio, "sendSuccessEvent").returns();
+      // Act & Assert
+      try {
+        await AppStudioClient.listBots("anything");
+        assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {}
+    });
+    it("api failure", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "get").resolves({ response: { status: 404 } });
+      sandbox.stub(AppStudio, "sendStartEvent").returns();
+      sandbox.stub(AppStudio, "sendSuccessEvent").returns();
+      // Act & Assert
+      try {
+        await AppStudioClient.listBots("anything");
+        assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+      }
+    });
+  });
+  describe("deleteBot", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+    it("happy", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "delete").resolves({
+        status: 200,
+      });
+      sandbox.stub(AppStudio, "sendStartEvent").returns();
+      sandbox.stub(AppStudio, "sendSuccessEvent").returns();
+      // Act & Assert
+      try {
+        await AppStudioClient.deleteBot("anything", "anything");
+      } catch (e) {
+        assert.fail(Messages.ShouldNotReachHere);
+      }
+    });
+    it("api failure", async () => {
+      // Arrange
+      const mockAxiosInstance = axios.create();
+      sandbox.stub(AppStudioClient, "newAxiosInstance").returns(mockAxiosInstance);
+      sandbox.stub(mockAxiosInstance, "delete").resolves({ response: { status: 404 } });
+      sandbox.stub(AppStudio, "sendStartEvent").returns();
+      sandbox.stub(AppStudio, "sendSuccessEvent").returns();
+      // Act & Assert
+      try {
+        await AppStudioClient.deleteBot("anything", "anything");
+        assert.fail(Messages.ShouldNotReachHere);
+      } catch (e) {
+        assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+      }
+    });
+  });
 });

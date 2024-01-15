@@ -237,6 +237,9 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (none auth)", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.ApiKey]: "true",
+      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -312,6 +315,9 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (key auth)", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.ApiKey]: "true",
+      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -900,6 +906,9 @@ describe("scaffold question", () => {
         }
       });
       it("traverse in vscode Copilot Plugin from new API (no auth)", async () => {
+        mockedEnvRestore = mockedEnv({
+          [FeatureFlagName.ApiKey]: "true",
+        });
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -952,6 +961,9 @@ describe("scaffold question", () => {
       });
 
       it("traverse in vscode Copilot Plugin from new API (key auth)", async () => {
+        mockedEnvRestore = mockedEnv({
+          [FeatureFlagName.ApiKey]: "true",
+        });
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -1121,6 +1133,9 @@ describe("scaffold question", () => {
       });
 
       it("traverse in cli", async () => {
+        mockedEnvRestore = mockedEnv({
+          [FeatureFlagName.ApiKey]: "true",
+        });
         mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
         const inputs: Inputs = {
           platform: Platform.CLI,

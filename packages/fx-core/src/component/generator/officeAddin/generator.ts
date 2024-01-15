@@ -115,13 +115,20 @@ export class OfficeAddinGenerator {
             projectRepoBranchInfo.branch
           );
 
+          // todo test
+          await OfficeAddinGenerator.childProcessExec("npm install");
+
           let host;
           if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
             host = jsonData.getHostTemplateNames(template);
             //for (let i = 0; i < host.length; i++) {
             const hostName = host[0];
             // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(hostName)}`;
+            const manifestType = "json";
+            const projectName = "TeamsFx";
+            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(
+              hostName
+            )} ${manifestType} ${projectName}`;
             await OfficeAddinGenerator.childProcessExec(cmdLine);
             // }
           } else {
@@ -176,7 +183,7 @@ export class OfficeAddinGenerator {
 
 // TODO: update to handle different hosts when support for them is implemented
 // TODO: handle multiple scopes
-type OfficeHost = "Outlook"; // | "Word" | "OneNote" | "PowerPoint" | "Project" | "Excel"
+type OfficeHost = "Outlook" | "Word" | "PowerPoint" | "Excel"; // | "Project" | "OneNote"
 async function getHost(addinManifestPath: string): Promise<OfficeHost> {
   // Read add-in manifest file
   const addinManifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
@@ -184,7 +191,7 @@ async function getHost(addinManifestPath: string): Promise<OfficeHost> {
   );
   let host: OfficeHost = "Outlook";
   switch (addinManifest.extensions?.[0].requirements?.scopes?.[0]) {
-    // case "document":
+    // case "document":  // TODO yueli
     //   host = "Word";
     case "mail":
       host = "Outlook";

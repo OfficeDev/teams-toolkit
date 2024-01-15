@@ -127,7 +127,7 @@ export class ProjectTypeOptions {
   static officeAddin(platform?: Platform): OptionItem {
     return {
       id: "office-addin-type",
-      label: `${platform === Platform.VSCode ? "$(office) " : ""}${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(extensions) " : ""}${getLocalizedString(
         "core.createProjectQuestion.projectType.officeAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),

@@ -16,13 +16,13 @@ export const projectProperties = {
           frameworks: {
             default: {
               repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane",
-              branch: "yueli/json-preview-toolkit",
-              prerelease: "yueli/json-preview-toolkit",
+              branch: "yueli/wxp-json-toolkit",
+              prerelease: "yueli/wxp-json-toolkit",
             },
             react: {
-              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
-              branch: "json-preview-yo-office",
-              prerelease: "json-preview-yo-office-prerelease",
+              repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane-React",
+              branch: "yueli/json-preview-toolkit",
+              prerelease: "yueli/json-preview-toolkit",
             },
           },
         },
@@ -34,14 +34,14 @@ export const projectProperties = {
 
           frameworks: {
             default: {
-              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
-              branch: "json-preview-yo-office",
-              prerelease: "json-preview-yo-office-prerelease",
+              repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane-JS",
+              branch: "yueli/json-preview-toolkit",
+              prerelease: "yueli/json-preview-toolkit",
             },
             react: {
-              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
-              branch: "json-preview-yo-office",
-              prerelease: "json-preview-yo-office-prerelease",
+              repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane-React-JS",
+              branch: "yueli/json-preview-toolkit",
+              prerelease: "yueli/json-preview-toolkit",
             },
           },
         },

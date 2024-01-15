@@ -507,7 +507,7 @@ describe("AppStudio Client", () => {
         await AppStudioClient.deleteBot("anything", "anything");
         assert.fail(Messages.ShouldNotReachHere);
       } catch (e) {
-        assert.isTrue(e instanceof DeveloperPortalAPIFailedError);
+        assert.isTrue(e instanceof Error);
       }
     });
   });

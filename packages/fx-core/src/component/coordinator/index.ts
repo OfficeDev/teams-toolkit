@@ -131,28 +131,18 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
-  ...(isApiKeyEnabled()
-    ? {
-        [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
-          ApiMessageExtensionAuthOptions.none().id
-        }`]: TemplateNames.CopilotPluginFromScratch,
-        [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
-          ApiMessageExtensionAuthOptions.apiKey().id
-        }`]: TemplateNames.CopilotPluginFromScratchApiKey,
-        [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-          ApiMessageExtensionAuthOptions.none().id
-        }`]: TemplateNames.CopilotPluginFromScratch,
-        [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
-          ApiMessageExtensionAuthOptions.apiKey().id
-        }`]: TemplateNames.CopilotPluginFromScratchApiKey,
-      }
-    : {
-        [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
-          TemplateNames.CopilotPluginFromScratch,
-        [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}`]:
-          TemplateNames.CopilotPluginFromScratch,
-      }),
-
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+    ApiMessageExtensionAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+    ApiMessageExtensionAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
@@ -300,12 +290,19 @@ class Coordinator {
           feature = `${capability}:ssr`;
         }
 
-        if (apiMEAuthType) {
-          feature = `${feature}:${apiMEAuthType}`;
-        } else if (!isApiKeyEnabled()) {
-          feature = `${feature}:${ApiMessageExtensionAuthOptions.none().id}`;
+        if (
+          capability === CapabilityOptions.copilotPluginNewApi().id ||
+          (capability === CapabilityOptions.m365SearchMe().id &&
+            meArchitecture === MeArchitectureOptions.newApi().id)
+        ) {
+          if (isApiKeyEnabled()) {
+            if (apiMEAuthType) {
+              feature = `${feature}:${apiMEAuthType}`;
+            }
+          } else {
+            feature = `${feature}:none`;
+          }
         }
-
         const templateName = Feature2TemplateName[feature];
 
         if (templateName) {

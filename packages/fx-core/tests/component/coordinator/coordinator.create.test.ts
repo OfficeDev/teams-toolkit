@@ -566,7 +566,7 @@ describe("coordinator create", () => {
 
   it("create API ME (no auth) from new api sucessfully", async () => {
     mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.ApiKey]: "true",
+      API_COPILOT_API_KEY: "true",
     });
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
@@ -590,7 +590,7 @@ describe("coordinator create", () => {
 
   it("create API ME (key auth) from new api sucessfully", async () => {
     mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.ApiKey]: "true",
+      API_COPILOT_API_KEY: "true",
     });
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();

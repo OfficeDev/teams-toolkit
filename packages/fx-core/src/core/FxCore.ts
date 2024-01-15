@@ -511,6 +511,7 @@ export class FxCore {
     }
     const appStudioToken = appStudioTokenRes.value;
     TelemetryUtils.init(createDriverContext(inputs));
+    console.log(appStudioToken);
     const apps = await AppStudioClient.listApps(appStudioToken, TOOLS.logProvider);
     return ok(apps);
   }

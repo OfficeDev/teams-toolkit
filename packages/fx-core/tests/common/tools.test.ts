@@ -409,7 +409,8 @@ projectId: 00000000-0000-0000-0000-000000000000`;
 
   describe("isUserCancelError()", () => {
     it("should return true if error is UserCancelError", () => {
-      const error = new UserCancelError("test");
+      const error = new Error();
+      error.name = "UserCancelError";
       chai.expect(isUserCancelError(error)).is.true;
     });
   });

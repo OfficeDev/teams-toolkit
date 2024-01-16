@@ -5,11 +5,7 @@
  * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
  */
 import * as path from "path";
-import {
-  startDebugging,
-  waitForTerminal,
-  stopDebugging,
-} from "../../utils/vscodeOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import {
   initPage,
   reopenPage,
@@ -23,7 +19,7 @@ import {
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
-import { killPort, validateFileExist } from "../../utils/commonUtils";
+import { validateFileExist } from "../../utils/commonUtils";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
@@ -90,7 +86,6 @@ describe("Local Debug Tests", function () {
         );
         validateFileExist(projectPath, "index.ts");
 
-        const driver = VSBrowser.instance.driver;
         // local debug
         console.log("======= debug with ttk ========");
         await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
@@ -108,14 +103,6 @@ describe("Local Debug Tests", function () {
           );
           await localDebugTestContext.validateLocalStateForBot();
           await validateEchoBot(page);
-        }
-        await stopDebugging();
-        await driver.sleep(Timeout.stopdebugging);
-        try {
-          await killPort(3978);
-          console.log(`close port 3978 successfully`);
-        } catch (error) {
-          console.log(`close port 3978 failed`);
         }
 
         // cli preview

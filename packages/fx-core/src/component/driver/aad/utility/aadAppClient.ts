@@ -99,7 +99,7 @@ export class AadAppClient {
       response = await this.axios.get(path);
       if (response.data?.value) {
         results.push(...response.data.value);
-        if (response.data?.["@odata.nextLink"]) {
+        if (response.data["@odata.nextLink"]) {
           path = response.data["@odata.nextLink"].split(this.baseUrl)[1];
         } else {
           break;

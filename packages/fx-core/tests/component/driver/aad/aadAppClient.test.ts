@@ -213,13 +213,18 @@ describe("AadAppClient", async () => {
       ]);
     });
 
-    it("happy with no data", async () => {
+    it("happy with no data 1", async () => {
       const mock = new MockAdapter(axiosInstance);
       mock.onGet(`https://graph.microsoft.com/v1.0/applications`).reply(200, {});
       const res = await aadAppClient.listAadApp();
       expect(res).to.deep.equal([]);
     });
-
+    it("happy with no data 2", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onGet(`https://graph.microsoft.com/v1.0/applications`).reply(200);
+      const res = await aadAppClient.listAadApp();
+      expect(res).to.deep.equal([]);
+    });
     it("happy with multiple pages", async () => {
       const mock = new MockAdapter(axiosInstance);
       mock.onGet(`https://graph.microsoft.com/v1.0/applications`).reply(200, {

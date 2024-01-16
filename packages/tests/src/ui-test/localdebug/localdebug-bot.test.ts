@@ -29,14 +29,12 @@ import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
-import os from "os";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
   let devtunnelProcess: ChildProcessWithoutNullStreams;
   let debugProcess: ChildProcessWithoutNullStreams;
-  let debugMethod: "cli" | "ttk";
   let tunnelName = "";
   let successFlag = true;
   let errorMessage = "";
@@ -74,11 +72,8 @@ describe("Local Debug Tests", function () {
     }
     await localDebugTestContext.after(false, true);
     this.timeout(Timeout.finishAzureTestCase);
-    // windows in cli can't stop debug
-    if (debugMethod === "cli" && os.type() === "Windows_NT") {
-      if (successFlag) process.exit(0);
-      else process.exit(1);
-    }
+    if (successFlag) process.exit(0);
+    else process.exit(1);
   });
 
   it(

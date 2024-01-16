@@ -85,60 +85,58 @@ describe("Local Debug Tests", function () {
           localDebugTestContext.testRootFolder,
           localDebugTestContext.appName
         );
-        validateFileExist(projectPath, "index.ts");
+        validateFileExist(projectPath, "index.js");
 
         // local debug
-        debugMethod = ["cli", "ttk"][Math.floor(Math.random() * 2)] as
-          | "cli"
-          | "ttk";
-        if (debugMethod === "cli") {
-          // cli preview
-          console.log("======= debug with cli ========");
-          const tunnel = Executor.debugBotFunctionPreparation(projectPath);
-          tunnelName = tunnel.tunnelName;
-          devtunnelProcess = tunnel.devtunnelProcess;
-
-          await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
-          {
-            const { success } = await Executor.provision(projectPath, "local");
-            expect(success).to.be.true;
-          }
-          {
-            const { success } = await Executor.deploy(projectPath, "local");
-            expect(success).to.be.true;
-          }
-          debugProcess = Executor.debugProject(
-            projectPath,
-            "local",
-            true,
-            process.env,
-            (data) => {
-              if (data) {
-                console.log(data);
-              }
-            },
-            (error) => {
-              console.log(error);
-            }
-          );
-          await new Promise((resolve) => setTimeout(resolve, 2 * 30 * 1000));
-        } else {
-          console.log("======= debug with ttk ========");
-          await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
-          await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-          await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
-        }
+        console.log("======= debug with ttk ========");
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+        await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
+        await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
 
         const teamsAppId = await localDebugTestContext.getTeamsAppId();
         expect(teamsAppId).to.not.be.empty;
-        const page = await initPage(
-          localDebugTestContext.context!,
-          teamsAppId,
-          Env.username,
-          Env.password
+        {
+          const page = await initPage(
+            localDebugTestContext.context!,
+            teamsAppId,
+            Env.username,
+            Env.password
+          );
+          await localDebugTestContext.validateLocalStateForBot();
+          await validateEchoBot(page);
+        }
+
+        // cli preview
+        console.log("======= debug with cli ========");
+        const tunnel = Executor.debugBotFunctionPreparation(projectPath);
+        tunnelName = tunnel.tunnelName;
+        devtunnelProcess = tunnel.devtunnelProcess;
+        await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+        debugProcess = Executor.debugProject(
+          projectPath,
+          "local",
+          true,
+          process.env,
+          (data) => {
+            if (data) {
+              console.log(data);
+            }
+          },
+          (error) => {
+            console.log(error);
+          }
         );
-        await localDebugTestContext.validateLocalStateForBot();
-        await validateEchoBot(page);
+        await new Promise((resolve) => setTimeout(resolve, 2 * 30 * 1000));
+        {
+          const page = await initPage(
+            localDebugTestContext.context!,
+            teamsAppId,
+            Env.username,
+            Env.password
+          );
+          await localDebugTestContext.validateLocalStateForBot();
+          await validateEchoBot(page);
+        }
       } catch (error) {
         successFlag = false;
         errorMessage = "[Error]: " + error;

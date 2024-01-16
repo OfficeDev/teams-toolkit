@@ -5,7 +5,11 @@
  * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  startDebugging,
+  waitForTerminal,
+  stopDebugging,
+} from "../../utils/vscodeOperation";
 import { initPage, validateEchoBot } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
@@ -15,7 +19,7 @@ import {
 } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
-import { validateFileExist } from "../../utils/commonUtils";
+import { killPort, validateFileExist } from "../../utils/commonUtils";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
@@ -87,6 +91,7 @@ describe("Local Debug Tests", function () {
         );
         validateFileExist(projectPath, "index.js");
 
+        const driver = VSBrowser.instance.driver;
         // local debug
         console.log("======= debug with ttk ========");
         await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
@@ -104,6 +109,14 @@ describe("Local Debug Tests", function () {
           );
           await localDebugTestContext.validateLocalStateForBot();
           await validateEchoBot(page);
+        }
+        await stopDebugging();
+        await driver.sleep(Timeout.stopdebugging);
+        try {
+          await killPort(3978);
+          console.log(`close port 3978 successfully`);
+        } catch (error) {
+          console.log(`close port 3978 failed`);
         }
 
         // cli preview
@@ -126,7 +139,7 @@ describe("Local Debug Tests", function () {
             console.log(error);
           }
         );
-        await new Promise((resolve) => setTimeout(resolve, 2 * 30 * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 5 * 30 * 1000));
         {
           const page = await initPage(
             localDebugTestContext.context!,

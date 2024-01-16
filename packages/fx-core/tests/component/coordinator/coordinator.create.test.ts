@@ -284,6 +284,27 @@ describe("coordinator create", () => {
     assert.isTrue(res2.isOk());
   });
 
+  it("create project from VS", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      isolated: true,
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isOk());
+  });
+
   it("create m365 project from scratch", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));

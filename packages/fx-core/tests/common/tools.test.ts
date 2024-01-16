@@ -23,10 +23,12 @@ import {
   listDevTunnels,
   setRegion,
   deepCopy,
+  isUserCancelError,
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
 import { isV3Enabled } from "../../src/common/featureFlags";
+import { UserCancelError } from "../../src/error";
 
 chai.use(chaiAsPromised);
 
@@ -402,6 +404,13 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const obj = {};
       const copy = deepCopy(obj);
       chai.expect(copy).equal(obj);
+    });
+  });
+
+  describe("isUserCancelError()", () => {
+    it("should return true if error is UserCancelError", () => {
+      const error = new UserCancelError("test");
+      chai.expect(isUserCancelError(error)).is.true;
     });
   });
 });

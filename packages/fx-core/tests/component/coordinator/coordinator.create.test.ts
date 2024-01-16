@@ -284,7 +284,7 @@ describe("coordinator create", () => {
     assert.isTrue(res2.isOk());
   });
 
-  it("create project from VS", async () => {
+  it("create notification bot project from VS", async () => {
     sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
     sandbox
@@ -296,9 +296,10 @@ describe("coordinator create", () => {
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
+      [QuestionNames.BotTrigger]: "http-functions",
       [QuestionNames.ProgrammingLanguage]: "csharp",
       [QuestionNames.SafeProjectName]: "safeprojectname",
-      isolated: true,
+      isIsolated: true,
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);

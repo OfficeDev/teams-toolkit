@@ -61,4 +61,5 @@ export class FeatureFlagName {
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly ApiKey = "API_COPILOT_API_KEY";
   static readonly MultipleParameters = "API_COPILOT_MULTIPLE_PARAMETERS";
+  static readonly WXPExtension = "TEAMSFX_WXP_EXTENSION";
 }

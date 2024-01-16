@@ -134,7 +134,7 @@ describe("OfficeAddinGenerator", function () {
     };
     inputs["capabilities"] = ["taskpane"];
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
-    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
@@ -286,7 +286,7 @@ describe("OfficeAddinGenerator", function () {
       platform: Platform.CLI,
       projectPath: testFolder,
       "app-name": "office-addin-test",
-      "programming-language": "TypeScript",
+      "programming-language": "typescript",
     };
     sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
     const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -624,9 +624,14 @@ describe("projectsJsonData", () => {
     const data = new projectsJsonData();
     chai.assert.equal(data.getHostDisplayName("outlook"), "Outlook");
     chai.assert.isUndefined(data.getHostDisplayName("xxx"));
-    chai.assert.deepEqual(data.getHostTemplateNames("taskpane"), ["Outlook"]);
+    chai.assert.deepEqual(data.getHostTemplateNames("taskpane"), [
+      "Outlook",
+      "Word",
+      "Excel",
+      "PowerPoint",
+    ]);
     chai.assert.isEmpty(data.getHostTemplateNames("xxx"));
-    chai.assert.deepEqual(data.getSupportedScriptTypes("taskpane"), ["TypeScript"]);
+    chai.assert.deepEqual(data.getSupportedScriptTypes("taskpane"), ["typescript", "javascript"]);
     chai.assert.equal(
       data.getProjectTemplateRepository("taskpane", "typescript"),
       "https://github.com/OfficeDev/Office-Addin-TaskPane"
@@ -636,12 +641,12 @@ describe("projectsJsonData", () => {
       "json-preview-yo-office"
     );
 
-    chai.assert.deepEqual(data.getProjectRepoAndBranch("taskpane", "TypeScript", false), {
+    chai.assert.deepEqual(data.getProjectRepoAndBranch("taskpane", "typescript", false), {
       repo: "https://github.com/OfficeDev/Office-Addin-TaskPane",
       branch: "json-preview-yo-office",
     });
 
     chai.assert.isDefined(data.getParsedProjectJsonData());
-    chai.assert.isFalse(data.projectBothScriptTypes("taskpane"));
+    chai.assert.isTrue(data.projectBothScriptTypes("taskpane"));
   });
 });

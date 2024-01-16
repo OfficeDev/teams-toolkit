@@ -14,7 +14,7 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Teams Toolkit: select runtime for your app */
   runtime?: "node" | "dotnet";
   /** @description New Project */
-  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type";
+  "project-type"?: "bot-type" | "tab-type" | "me-type" | "office-addin-type" | "outlook-addin-type";
   /** @description Capabilities */
   capabilities?:
     | "bot"
@@ -51,6 +51,8 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
+  /** @description Add-in Host */
+  "addin-host"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
   /** @description OpenAPI Description Document */
@@ -63,6 +65,8 @@ export interface CreateProjectInputs extends Inputs {
   "api-me-auth"?: "none" | "api-key";
   /** @description Programming Language */
   "programming-language"?: "javascript" | "typescript" | "csharp";
+  /** @description Framework */
+  "office-addin-framework-type"?: "default" | "react";
   /** @description Application name */
   "app-name"?: string;
 }

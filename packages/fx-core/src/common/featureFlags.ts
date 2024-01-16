@@ -21,6 +21,7 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.AadManifest] = "true";
   process.env[FeatureFlagName.ApiConnect] = "true";
   process.env[FeatureFlagName.DeployManifest] = "true";
+  process.env[FeatureFlagName.WXPExtension] = "true";
 }
 
 export function isCLIDotNetEnabled(): boolean {
@@ -54,4 +55,8 @@ export function isApiKeyEnabled(): boolean {
 
 export function isMultipleParametersEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
+}
+
+export function isWXPExtensionEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.WXPExtension, false);
 }

@@ -116,7 +116,7 @@ export const downloadDirectoryAction: GeneratorAction = {
   },
 };
 
-export const fetchTemplateUrlWithTagAction: GeneratorAction = {
+export const fetchUrlForHotfixOnlyAction: GeneratorAction = {
   name: GeneratorActionName.FetchTemplateUrlWithTag,
   run: async (context: GeneratorContext) => {
     if (context.zip || context.url || context.cancelDownloading) {
@@ -124,11 +124,21 @@ export const fetchTemplateUrlWithTagAction: GeneratorAction = {
     }
 
     context.logProvider.debug(`Fetching template url with tag: ${JSON.stringify(context)}`);
-    context.url = await fetchTemplateZipUrl(
+    const url = await fetchTemplateZipUrl(
       context.language!,
       context.tryLimits,
       context.timeoutInMs
     );
+    let parts = url.split("/");
+    const selectedTag = parts[parts.length - 2];
+    parts = selectedTag.split(".");
+    // hotfix generates template based on url
+    if (parts[parts.length - 1] !== "0") {
+      context.url = url;
+    } else {
+      // stable generates templates based on the fallback
+      context.cancelDownloading = true;
+    }
   },
 };
 
@@ -144,13 +154,24 @@ export const fetchZipFromUrlAction: GeneratorAction = {
       throw new MissKeyError("url");
     }
 
-    let parts = context.url.split("/");
-    const selectedTag = parts[parts.length - 2];
-    parts = selectedTag.split(".");
-    // Get the last digit of the selected tag
-    if (parts[parts.length - 1] !== "0") {
-      context.zip = await fetchZipFromUrl(context.url, context.tryLimits, context.timeoutInMs);
+    context.zip = await fetchZipFromUrl(context.url, context.tryLimits, context.timeoutInMs);
+  },
+};
+
+export const unzipAction: GeneratorAction = {
+  name: GeneratorActionName.Unzip,
+  run: async (context: GeneratorContext) => {
+    if (!context.zip) {
+      return;
     }
+    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
+    context.outputs = await unzip(
+      context.zip,
+      context.destination,
+      context.fileNameReplaceFn,
+      context.fileDataReplaceFn,
+      context.filterFn
+    );
   },
 };
 
@@ -181,26 +202,9 @@ export const fetchTemplateFromLocalAction: GeneratorAction = {
   },
 };
 
-export const unzipAction: GeneratorAction = {
-  name: GeneratorActionName.Unzip,
-  run: async (context: GeneratorContext) => {
-    if (!context.zip) {
-      return;
-    }
-    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
-    context.outputs = await unzip(
-      context.zip,
-      context.destination,
-      context.fileNameReplaceFn,
-      context.fileDataReplaceFn,
-      context.filterFn
-    );
-  },
-};
-
 export const TemplateActionSeq: GeneratorAction[] = [
   fetchTemplateZipFromSourceCodeAction,
-  fetchTemplateUrlWithTagAction,
+  fetchUrlForHotfixOnlyAction,
   fetchZipFromUrlAction,
   unzipAction,
   fetchTemplateFromLocalAction,

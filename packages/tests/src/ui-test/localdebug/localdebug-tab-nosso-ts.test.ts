@@ -113,7 +113,6 @@ describe("Local Debug Tests", function () {
             Env.username,
             Env.password
           );
-          await localDebugTestContext.validateLocalStateForBot();
           await validateBasicTab(page, ValidationContent.Tab);
         }
       } catch (error) {

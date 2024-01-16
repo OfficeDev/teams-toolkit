@@ -220,7 +220,37 @@ describe("AadAppClient", async () => {
       expect(res).to.deep.equal([]);
     });
 
-    it("happy with multiple pages", async () => {});
+    it("happy with multiple pages", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onGet(`https://graph.microsoft.com/v1.0/applications`).reply(200, {
+        value: [
+          {
+            id: "1",
+            displayName: "app1",
+          },
+        ],
+        "@odata.nextLink": "https://graph.microsoft.com/v1.0/applications?$skip=1",
+      });
+      mock.onGet(`https://graph.microsoft.com/v1.0/applications?$skip=1`).reply(200, {
+        value: [
+          {
+            id: "2",
+            displayName: "app2",
+          },
+        ],
+      });
+      const res = await aadAppClient.listAadApp();
+      expect(res).to.deep.equal([
+        {
+          id: "1",
+          displayName: "app1",
+        },
+        {
+          id: "2",
+          displayName: "app2",
+        },
+      ]);
+    });
   });
   describe("generateClientSecret", async () => {
     let aadAppClient: AadAppClient;

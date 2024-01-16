@@ -206,8 +206,4 @@ export const TemplateActionSeq: GeneratorAction[] = [
   fetchTemplateFromLocalAction,
 ];
 
-export const SampleActionSeq: GeneratorAction[] = [fetchZipFromUrlAction, unzipAction];
-export const DownloadDirectoryActionSeq: GeneratorAction[] = [
-  fetchSampleInfoAction,
-  downloadDirectoryAction,
-];
+export const SampleActionSeq: GeneratorAction[] = [fetchSampleInfoAction, downloadDirectoryAction];

@@ -91,7 +91,7 @@ describe("Local Debug Tests", function () {
         console.log("======= debug with ttk ========");
         await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-        await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
+        await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
 
         const teamsAppId = await localDebugTestContext.getTeamsAppId();
         expect(teamsAppId).to.not.be.empty;

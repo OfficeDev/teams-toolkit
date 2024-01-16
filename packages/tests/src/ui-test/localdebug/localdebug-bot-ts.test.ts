@@ -85,13 +85,13 @@ describe("Local Debug Tests", function () {
           localDebugTestContext.testRootFolder,
           localDebugTestContext.appName
         );
-        validateFileExist(projectPath, "index.js");
+        validateFileExist(projectPath, "index.ts");
 
         // local debug
         console.log("======= debug with ttk ========");
         await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-        await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
+        await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
 
         const teamsAppId = await localDebugTestContext.getTeamsAppId();
         expect(teamsAppId).to.not.be.empty;

@@ -162,6 +162,66 @@ describe("AadAppClient", async () => {
     });
   });
 
+  describe("deleteAadApp", async () => {
+    let aadAppClient: AadAppClient;
+    let axiosInstance: AxiosInstance;
+    beforeEach(() => {
+      axiosInstance = mockAxiosCreate();
+      doNotWaitBetweenEachRetry();
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onDelete(`https://graph.microsoft.com/v1.0/applications/test-id`).reply(200);
+      await aadAppClient.deleteAadApp("test-id");
+    });
+  });
+  describe("listAadApp", async () => {
+    let aadAppClient: AadAppClient;
+    let axiosInstance: AxiosInstance;
+    beforeEach(() => {
+      axiosInstance = mockAxiosCreate();
+      doNotWaitBetweenEachRetry();
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy with one page", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onGet(`https://graph.microsoft.com/v1.0/applications`).reply(200, {
+        value: [
+          {
+            id: expectedObjectId,
+            displayName: expectedDisplayName,
+          },
+        ],
+      });
+      const res = await aadAppClient.listAadApp();
+      expect(res).to.deep.equal([
+        {
+          id: expectedObjectId,
+          displayName: expectedDisplayName,
+        },
+      ]);
+    });
+
+    it("happy with no data", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onGet(`https://graph.microsoft.com/v1.0/applications`).reply(200, {});
+      const res = await aadAppClient.listAadApp();
+      expect(res).to.deep.equal([]);
+    });
+
+    it("happy with multiple pages", async () => {});
+  });
   describe("generateClientSecret", async () => {
     let aadAppClient: AadAppClient;
     let axiosInstance: AxiosInstance;

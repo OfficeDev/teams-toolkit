@@ -10,7 +10,11 @@ import {
   waitForTerminal,
   stopDebugging,
 } from "../../utils/vscodeOperation";
-import { initPage, validateEchoBot } from "../../utils/playwrightOperation";
+import {
+  initPage,
+  reopenPage,
+  validateEchoBot,
+} from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
@@ -139,9 +143,9 @@ describe("Local Debug Tests", function () {
             console.log(error);
           }
         );
-        await new Promise((resolve) => setTimeout(resolve, 5 * 30 * 1000));
+        await new Promise((resolve) => setTimeout(resolve, 5 * 60 * 1000));
         {
-          const page = await initPage(
+          const page = await reopenPage(
             localDebugTestContext.context!,
             teamsAppId,
             Env.username,

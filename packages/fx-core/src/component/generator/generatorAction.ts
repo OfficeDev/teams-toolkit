@@ -19,6 +19,7 @@ import {
   unzip,
   zipFolder,
 } from "./utils";
+import semver from "semver";
 
 export interface GeneratorContext {
   name: string;
@@ -129,11 +130,11 @@ export const fetchUrlForHotfixOnlyAction: GeneratorAction = {
       context.tryLimits,
       context.timeoutInMs
     );
-    let parts = url.split("/");
+    const parts = url.split("/");
     const selectedTag = parts[parts.length - 2];
-    parts = selectedTag.split(".");
     // hotfix generates template based on url
-    if (parts[parts.length - 1] !== "0") {
+    const version = selectedTag.split("@")[1];
+    if (semver.patch(version) !== 0) {
       context.url = url;
     } else {
       // stable generates templates based on the fallback

@@ -178,6 +178,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
+    sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
@@ -232,6 +233,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
+    sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));

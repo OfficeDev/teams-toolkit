@@ -27,7 +27,7 @@ import {
   isCopilotPluginEnabled,
   isApiCopilotPluginEnabled,
   isApiKeyEnabled,
-  isWXPExtensionEnabled,
+  isOfficeAddinEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -183,7 +183,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
         }
       } else {
         staticOptions.push(
-          isWXPExtensionEnabled()
+          isOfficeAddinEnabled()
             ? ProjectTypeOptions.officeAddin(inputs.platform)
             : ProjectTypeOptions.outlookAddin(inputs.platform)
         );

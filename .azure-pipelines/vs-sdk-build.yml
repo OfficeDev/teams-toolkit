@@ -31,10 +31,6 @@ extends:
   parameters:
     sdl:
       sourceAnalysisPool: $(PoolName)
-      baseline:
-        baselineFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnbaselines
-      suppression:
-        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
       credscan:
         suppressionsFile: .azure-pipelines/CredScanSuppressions.json
     stages:

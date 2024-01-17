@@ -61,16 +61,6 @@ class TeamsBot extends TeamsActivityHandler {
     };
   }
 
-  async handleTeamsMessagingExtensionSelectItem(context, obj) {
-    return {
-      composeExtension: {
-        type: "result",
-        attachmentLayout: "list",
-        attachments,
-      },
-    };
-  }
-
   // Link Unfurling.
   handleTeamsAppBasedLinkQuery(context, query) {
     const previewCard = CardFactory.thumbnailCard("Preview Card", query.url, [

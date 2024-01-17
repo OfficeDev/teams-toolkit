@@ -14,36 +14,41 @@ variables:
     value: true
   - name: NUGET_PACKAGES
     value: $(Pipeline.Workspace)/.nuget/packages
+  - name: TeamName
+    value: MetaOS China
 resources:
   repositories:
     - repository: self
       type: git
       ref: refs/heads/dev
-    - repository: 1esPipelines
+    - repository: MicroBuildTemplate
       type: git
-      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      name: 1ESPipelineTemplates/MicroBuildTemplate
       ref: refs/tags/release
 trigger: none
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
     sdl:
+      sourceAnalysisPool: $(PoolName)
       baseline:
         baselineFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnbaselines
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
       credscan:
         suppressionsFile: .azure-pipelines/CredScanSuppressions.json
-    pool:
-      name: $(PoolName)
-    customBuildTags:
-      - MigrationTooling-mseng-VSIoT-11984-Tool
     stages:
       - stage: Stage
         jobs:
           - job: Job_1
+            pool: $(PoolName)
             displayName: Agent job 1
             templateContext:
+              # mb:
+              #   signing:
+              #     enabled: true
+              #     signType: $(SignType)
+              #     zipSources: false
               outputs:
                 - output: pipelineArtifact
                   artifactName: drop

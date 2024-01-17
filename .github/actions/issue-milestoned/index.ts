@@ -4,7 +4,7 @@ import { DevopsClient } from './azdo';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { context } from '@actions/github';
 import { getInput } from '@actions/core';
-import { getEmail } from '../teamsfx-utils/utils';
+import { getEmail, sendAlert } from '../teamsfx-utils/utils';
 import * as WorkItemTrackingInterfaces from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
 
 
@@ -33,6 +33,12 @@ class Milestoned extends Action {
 			const asignee = getEmail(content.assignee);
 			if (!asignee) {
 				safeLog(`the issue ${content.number} assignee:${content.assignee} is not associated with email address, ignore.`);
+				const subject = '[Github Issue Alert] missing associated email address for assignee';
+				const issueLink = `https://github.com/OfficeDev/TeamsFx/issues/${content.number}`;
+				const fileLink = "https://github.com/OfficeDev/TeamsFx/blob/dev/.github/accounts.json";
+				const message = `There is a github issue <a>${issueLink}</a> milestoned with account <b>${content.assignee}</b> which is not associated with company email. Please check it and update the account mapping in the file <a>${fileLink}</a>.`;
+				safeLog(message);
+				sendAlert(subject, message);
 			}
 			const url = this.issueUrl(content.number);
 			const title = titlePreix + `[${milestoneTitle}]` + content.title;

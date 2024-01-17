@@ -63,7 +63,7 @@ describe("SSO Tab with aad manifest enabled", () => {
 
       {
         // provision
-        const result = await createResourceGroup(appName + "-rg", "eastus");
+        const result = await createResourceGroup(appName + "-rg", "westus");
         expect(result).to.be.true;
         process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
         // workaround free tier quota

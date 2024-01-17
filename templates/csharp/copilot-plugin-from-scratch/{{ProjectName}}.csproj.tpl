@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="build/**/*" />
-    <Content Remove="build/**/*" />
+    <None Include="appPackage/**/*" />
+    <None Include="infra/**/*" />
   </ItemGroup>
 
   <ItemGroup>

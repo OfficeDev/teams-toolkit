@@ -1,13 +1,19 @@
 ﻿@using Microsoft.Extensions.Configuration
 @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
-@inject TeamsFx teamsfx
 @inject TeamsUserCredential teamsUserCredential
 @inject IWebHostEnvironment HostEnvironment
 @inject IConfiguration Configuration
 @inject NavigationManager MyNavigationManager
 
-<Loading>
+@if (isLoading)
+{
+    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+        <FluentProgressRing />
+    </div>
+}
+else
+{
     <div class="welcome page">
         <div class="narrow page-padding">
             <img src="hello.png" />
@@ -39,21 +45,29 @@
             </FluentTabs>
         </div>
     </div>
-</Loading>
+}
 
 @code {
     string userName;
     string errorMessage;
+    bool isLoading = true;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
-        if (firstRender)
+        try
         {
-            var user = await teamsUserCredential.GetUserInfoAsync();
-            userName = user.DisplayName;
+            if (firstRender)
+            {
+                var user = await teamsUserCredential.GetUserInfoAsync();
+                userName = user.DisplayName;
+            }
         }
-        StateHasChanged();
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private string GetEnvironmentName()

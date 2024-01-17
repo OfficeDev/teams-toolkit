@@ -22,6 +22,6 @@ provision:
 deploy:
 {{#cliRunDotnetCommand}} publish {{/cliRunDotnetCommand}}
 {{#azureFunctionsZipDeploy}}
-  artifactFolder: bin/Release/{{TargetFramework}}/win-x86/publish,
+  artifactFolder: bin/Release/{{TargetFramework}}/publish,
   resourceId: ${{API_FUNCTION_RESOURCE_ID}}
 {{/azureFunctionsZipDeploy}}

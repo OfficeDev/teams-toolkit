@@ -37,4 +37,5 @@ packages/fx-core/templates/plugins/resource/cicd/azdo/*.yml
 packages/fx-core/templates/plugins/resource/cicd_v2/azdo/*.yml
 packages/vscode-extension/src/debug/teamsfxDebugProvider.ts
 packages/fx-core/tests/core/samples_v3.zip
+packages/fx-core/tests/core/samples_v2.zip
 .azure-pipelines\CredScanSuppressions.json

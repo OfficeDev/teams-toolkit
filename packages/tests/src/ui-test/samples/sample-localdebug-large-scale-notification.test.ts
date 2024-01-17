@@ -43,5 +43,8 @@ new BotSSOTestCase(
     LocalDebugTaskLabel.Azurite,
     LocalDebugTaskLabel.StartApplication,
   ],
-  { skipInit: true }
+  {
+    skipInit: true,
+    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
+  }
 ).test();

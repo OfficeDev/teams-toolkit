@@ -21,5 +21,6 @@ new OutlookTabTestCase(
   17451443,
   "v-ivanchen@microsoft.com",
   "local",
-  [LocalDebugTaskLabel.StartFrontend]
+  [LocalDebugTaskLabel.StartFrontend],
+  { debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk" }
 ).test();

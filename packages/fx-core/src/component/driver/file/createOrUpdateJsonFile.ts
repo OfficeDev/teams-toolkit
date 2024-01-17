@@ -7,16 +7,16 @@ import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
+import * as commentJson from "comment-json";
+import { CommentJSONValue } from "comment-json";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { InvalidActionInputError, assembleError } from "../../../error/common";
 import { getAbsolutePath, wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { GenerateJsonArgs } from "./interface/generateJsonArgs";
-import { InvalidActionInputError, UnhandledError } from "../../../error/common";
-import * as commentJson from "comment-json";
-import { CommentJSONValue } from "comment-json";
 
 const actionName = "file/createOrUpdateJsonFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
@@ -84,7 +84,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledError(error as Error, actionName);
+      throw assembleError(error as Error, actionName);
     }
   }
 

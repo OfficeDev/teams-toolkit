@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
+
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";
@@ -14,6 +18,8 @@ import {
   createNewProject,
 } from "../../utils/vscodeOperation";
 import { it } from "../../utils/it";
+import { initPage, validateMsg } from "../../utils/playwrightOperation";
+import { Env } from "../../utils/env";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -62,7 +68,16 @@ describe("Remote debug Tests", function () {
       await createNewProject("msgsa", appName);
       await runProvision(appName);
       await runDeploy();
-      //TODO: Validation
+      const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
+        projectPath
+      );
+      const page = await initPage(
+        remoteDebugTestContext.context!,
+        teamsAppId,
+        Env.username,
+        Env.password
+      );
+      await validateMsg(page);
     }
   );
 });

@@ -69,7 +69,7 @@ describe("Create single tab", function () {
         // workaround free tier quota
         await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
 
-        const result = await createResourceGroup(resourceGroupName, "eastus");
+        const result = await createResourceGroup(resourceGroupName, "westus");
         assert.isTrue(result);
 
         await CliHelper.provisionProject(projectPath, "", envName as "dev", {

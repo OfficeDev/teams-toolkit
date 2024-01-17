@@ -53,7 +53,7 @@ export async function execAsync(
 ): Promise<{ stdout: string; stderr: string }> {
   opts || (opts = {});
   return new Promise((resolve, reject) => {
-    let cmdUpdate = "";
+    let cmdUpdate = cmd;
     if (cmd.includes("teamsfx")) {
       const cmdStr = cmd.replace("teamsfx ", "");
       const filePath = path.resolve(__dirname, "./../../../cli/cliold.js");

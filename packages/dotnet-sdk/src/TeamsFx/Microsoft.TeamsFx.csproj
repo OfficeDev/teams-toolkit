@@ -53,9 +53,4 @@
     </FilesToSign>
   </ItemGroup>
 
-	<Target Name="ConosleLog" AfterTargets="Build;Pack">
-		<Message Importance="high" Text="$(OutDir)\$(AssemblyName).dll" />
-		<Message Importance="high" Text="$(OutDir)\..\*.nupkg" />
-	</Target>
-
 </Project>

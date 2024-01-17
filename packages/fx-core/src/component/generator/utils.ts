@@ -105,7 +105,7 @@ async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number)
   return res.data;
 }
 
-export async function fetchTemplateZipUrl(
+export async function getTemplateLatestVersion(
   name: string,
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
@@ -117,6 +117,15 @@ export async function fetchTemplateZipUrl(
   if (!selectedTag) {
     throw new Error(`Failed to find valid template for ${name}`);
   }
+  return selectedTag;
+}
+
+export async function fetchTemplateZipUrl(
+  name: string,
+  tryLimits = defaultTryLimits,
+  timeoutInMs = defaultTimeoutInMs
+): Promise<string> {
+  const selectedTag = await getTemplateLatestVersion(name, tryLimits, timeoutInMs);
   return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
 }
 

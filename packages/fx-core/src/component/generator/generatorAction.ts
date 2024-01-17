@@ -18,6 +18,7 @@ import {
   SampleUrlInfo,
   unzip,
   zipFolder,
+  getTemplateLatestVersion,
 } from "./utils";
 import semver from "semver";
 
@@ -55,7 +56,7 @@ export interface GeneratorAction {
 
 export enum GeneratorActionName {
   FetchTemplateZipFromSourceCode = "FetchTemplateZipFromSourceCodeAction",
-  FetchTemplateUrlWithTag = "FetchTemplatesUrlWithTag",
+  FetchUrlForHotfixOnly = "FetchUrlForHotfixOnly",
   FetchZipFromUrl = "FetchZipFromUrl",
   FetchTemplateZipFromLocal = "FetchTemplateZipFromLocal",
   FetchSampleInfo = "FetchSampleInfo",
@@ -118,24 +119,26 @@ export const downloadDirectoryAction: GeneratorAction = {
 };
 
 export const fetchUrlForHotfixOnlyAction: GeneratorAction = {
-  name: GeneratorActionName.FetchTemplateUrlWithTag,
+  name: GeneratorActionName.FetchUrlForHotfixOnly,
   run: async (context: GeneratorContext) => {
-    if (context.zip || context.url || context.cancelDownloading) {
+    if (context.zip || context.cancelDownloading) {
       return;
     }
 
     context.logProvider.debug(`Fetching template url with tag: ${JSON.stringify(context)}`);
-    const url = await fetchTemplateZipUrl(
+    const latestVer = await getTemplateLatestVersion(
       context.language!,
       context.tryLimits,
       context.timeoutInMs
     );
-    const parts = url.split("/");
-    const selectedTag = parts[parts.length - 2];
     // hotfix generates template based on url
-    const version = selectedTag.split("@")[1];
+    const version = latestVer.split("@")[1];
     if (semver.patch(version) !== 0) {
-      context.url = url;
+      context.url = await fetchTemplateZipUrl(
+        context.language!,
+        context.tryLimits,
+        context.timeoutInMs
+      );
     } else {
       // stable generates templates based on the fallback
       context.cancelDownloading = true;

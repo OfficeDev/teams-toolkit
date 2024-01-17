@@ -177,7 +177,7 @@ export function templateDefaultOnActionError(
   error: Error
 ): Promise<void> {
   switch (action.name) {
-    case GeneratorActionName.FetchTemplateUrlWithTag:
+    case GeneratorActionName.FetchUrlForHotfixOnly:
     case GeneratorActionName.FetchZipFromUrl:
       context.cancelDownloading = true;
       if (!(error instanceof CancelDownloading)) {

@@ -252,6 +252,125 @@ export async function initPage(
   return page;
 }
 
+export async function reopenPage(
+  context: BrowserContext,
+  teamsAppId: string,
+  username: string,
+  password: string,
+  options?: {
+    teamsAppName?: string;
+    dashboardFlag?: boolean;
+  }
+): Promise<Page> {
+  let page = await context.newPage();
+  page.setDefaultTimeout(Timeout.playwrightDefaultTimeout);
+
+  // open teams app page
+  // https://github.com/puppeteer/puppeteer/issues/3338
+  await Promise.all([
+    page.goto(
+      `https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true`
+    ),
+    page.waitForNavigation(),
+  ]);
+
+  // add app
+  await RetryHandler.retry(async (retries: number) => {
+    if (retries > 0) {
+      console.log(`Retried to run adding app for ${retries} times.`);
+    }
+    await page.close();
+    console.log(`open teams page`);
+    page = await context.newPage();
+    await Promise.all([
+      page.goto(
+        `https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true`
+      ),
+      page.waitForNavigation(),
+    ]);
+    await page.waitForTimeout(Timeout.longTimeWait);
+    console.log("click add button");
+
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    const addBtn = await frame?.waitForSelector("button>span:has-text('Add')");
+
+    // dashboard template will have a popup
+    if (options?.dashboardFlag) {
+      console.log("Before popup");
+      const [popup] = await Promise.all([
+        page
+          .waitForEvent("popup")
+          .then((popup) =>
+            popup
+              .waitForEvent("close", {
+                timeout: Timeout.playwrightConsentPopupPage,
+              })
+              .catch(() => popup)
+          )
+          .catch(() => {}),
+        addBtn?.click(),
+      ]);
+      console.log("after popup");
+
+      if (popup && !popup?.isClosed()) {
+        // input password
+        console.log(`fill in password`);
+        await popup.fill(
+          "input.input[type='password'][name='passwd']",
+          password
+        );
+        // sign in
+        await Promise.all([
+          popup.click("input.button[type='submit'][value='Sign in']"),
+          popup.waitForNavigation(),
+        ]);
+        await popup.click("input.button[type='submit'][value='Accept']");
+      }
+    } else {
+      await addBtn?.click();
+    }
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+    // verify add page is closed
+    await frame?.waitForSelector("button>span:has-text('Add')", {
+      state: "detached",
+    });
+    try {
+      try {
+        await page?.waitForSelector(".team-information span:has-text('About')");
+      } catch (error) {
+        try {
+          await page?.waitForSelector(
+            ".ts-messages-header span:has-text('About')"
+          );
+        } catch (error) {
+          try {
+            await page?.waitForSelector(
+              ".team-information span:has-text('Chat')"
+            );
+          } catch (error) {
+            await page?.waitForSelector(
+              ".ts-messages-header span:has-text('Chat')"
+            );
+          }
+        }
+      }
+      console.log("[success] app loaded");
+    } catch (error) {
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("error"),
+        fullPage: true,
+      });
+      assert.fail("[Error] add app failed");
+    }
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+  });
+
+  return page;
+}
+
 export async function initTeamsPage(
   context: BrowserContext,
   teamsAppId: string,

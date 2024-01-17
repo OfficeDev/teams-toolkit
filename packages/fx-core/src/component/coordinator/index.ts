@@ -69,6 +69,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { isApiKeyEnabled } from "../../common/featureFlags";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -309,10 +310,17 @@ class Coordinator {
           feature = `${capability}:ssr`;
         }
 
-        if (apiMEAuthType) {
-          feature = `${feature}:${apiMEAuthType}`;
+        if (
+          capability === CapabilityOptions.copilotPluginNewApi().id ||
+          (capability === CapabilityOptions.m365SearchMe().id &&
+            meArchitecture === MeArchitectureOptions.newApi().id)
+        ) {
+          if (isApiKeyEnabled() && apiMEAuthType) {
+            feature = `${feature}:${apiMEAuthType}`;
+          } else {
+            feature = `${feature}:none`;
+          }
         }
-
         const templateName = Feature2TemplateName[feature];
 
         if (templateName) {

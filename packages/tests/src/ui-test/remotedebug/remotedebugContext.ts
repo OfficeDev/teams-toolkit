@@ -212,8 +212,10 @@ export async function runProvision(
     await provisionConfirmInput.setText(rgName);
     await provisionConfirmInput.confirm();
     await driver.sleep(Timeout.shortTimeWait);
-    await provisionConfirmInput.selectQuickPick("East US");
-    console.log("location: East US");
+    // await provisionConfirmInput.selectQuickPick("East US");
+    await provisionConfirmInput.setText("West US");
+    await provisionConfirmInput.confirm();
+    console.log("location: West US");
     await driver.sleep(Timeout.shortTimeWait);
     const dialog = new ModalDialog();
     console.log("click provision button");

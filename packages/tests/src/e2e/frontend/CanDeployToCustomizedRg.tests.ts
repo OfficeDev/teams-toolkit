@@ -51,7 +51,7 @@ describe("Deploy to customized resource group", function () {
 
       // Create empty resource group
       const customizedRgName = `${appName}-customized-rg`;
-      await createResourceGroup(customizedRgName, "eastus");
+      await createResourceGroup(customizedRgName, "westus");
 
       // workaround free tier quota
       await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");

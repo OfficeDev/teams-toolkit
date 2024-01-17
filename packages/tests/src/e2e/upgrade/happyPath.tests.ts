@@ -10,10 +10,14 @@ import * as chai from "chai";
 import { describe } from "mocha";
 import * as path from "path";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability } from "../../utils/constants";
+import { TemplateProjectFolder } from "../../utils/constants";
 import { Cleaner } from "../../commonlib/cleaner";
 import { Executor } from "../../utils/executor";
-import { getTestFolder, getUniqueAppName } from "../commonUtils";
+import {
+  createResourceGroup,
+  getTestFolder,
+  getUniqueAppName,
+} from "../commonUtils";
 import { checkYmlHeader } from "./utils";
 
 describe("upgrade", () => {
@@ -33,12 +37,13 @@ describe("upgrade", () => {
         await Executor.installCLI(testFolder, "1.2.5", false);
         const env = Object.assign({}, process.env);
         // new a project ( tab only )
-        await CliHelper.createProjectWithCapability(
+        await CliHelper.createTemplateProject(
           appName,
           testFolder,
-          Capability.TabNonSso,
+          TemplateProjectFolder.HelloWorldTabBackEnd,
           env,
-          "",
+          true,
+          true,
           false
         );
       }
@@ -59,6 +64,9 @@ describe("upgrade", () => {
 
       {
         // provision
+        const rgResult = await createResourceGroup(appName + "-rg", "westus");
+        chai.assert.isTrue(rgResult);
+        process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
         const result = await Executor.provision(projectPath);
         chai.assert.isTrue(result.success);
       }

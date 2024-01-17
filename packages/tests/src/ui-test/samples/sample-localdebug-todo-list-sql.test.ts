@@ -18,6 +18,7 @@ import { expect } from "chai";
 import * as path from "path";
 import { editDotEnvFile } from "../../utils/commonUtils";
 import { Env } from "../../utils/env";
+import * as os from "os";
 
 class TodoListBackendTestCase extends CaseFactory {
   public override async onBefore(
@@ -99,5 +100,7 @@ new TodoListBackendTestCase(
   {
     teamsAppName: "toDoList-local",
     skipValidation: true,
+    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
+    testRootFolder: path.resolve(os.homedir(), "resourse"), // fix eslint error
   }
 ).test();

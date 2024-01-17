@@ -300,6 +300,9 @@ export class WebviewPanel {
     const codiconsUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "codicon.css")
     );
+    const dompurifyUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "purify.min.js")
+    );
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
@@ -318,7 +321,8 @@ export class WebviewPanel {
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
             </script>
-            <script nonce="${nonce}"  type="module" src="${scriptUri.toString()}"></script>
+            <script nonce="${nonce}" type="module" src="${scriptUri.toString()}"></script>
+            <script nonce="${nonce}" type="text/javascript" src="${dompurifyUri.toString()}"></script>
           </body>
         </html>`;
   }

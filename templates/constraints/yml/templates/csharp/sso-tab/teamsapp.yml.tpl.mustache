@@ -25,4 +25,4 @@ provision:
 # Triggered when 'teamsapp deploy' is executed
 deploy:
 {{#cliRunDotnetCommand}} publish {{/cliRunDotnetCommand}}
-{{#azureAppServiceZipDeploy}} artifactFolder: bin/Release/{{TargetFramework}}/win-x86/publish, resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}} {{/azureAppServiceZipDeploy}}
+{{#azureAppServiceZipDeploy}} artifactFolder: bin/Release/{{TargetFramework}}/publish, resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}} {{/azureAppServiceZipDeploy}}

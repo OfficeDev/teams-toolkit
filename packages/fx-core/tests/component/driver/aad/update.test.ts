@@ -500,7 +500,7 @@ describe("aadAppUpdate", async () => {
       .is.instanceOf(UnhandledError)
       .and.property("message")
       .equals(
-        'An unexpected error has occurred while performing the aadApp/update task. {"isAxiosError":true}'
+        'An unexpected error has occurred while performing the aadAppUpdate task. {"isAxiosError":true}'
       );
   });
 

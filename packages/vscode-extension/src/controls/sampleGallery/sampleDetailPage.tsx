@@ -86,26 +86,31 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
         {this.state.error ? (
           <OfflinePage />
         ) : (
-          <div className="readme" dangerouslySetInnerHTML={{ __html: this.state.readme }}></div>
+          <div
+            className="readme"
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(this.state.readme) }}
+          ></div>
         )}
       </div>
     );
   }
 
   private messageHandler = (event: any) => {
-    const message = event.data.message;
-    switch (message) {
-      case Commands.LoadSampleReadme:
-        const error = event.data.error;
-        const readme = event.data.readme;
-        this.setState({
-          loading: false,
-          readme,
-          error,
-        });
-        break;
-      default:
-        break;
+    if ((event.origin as string).startsWith("vscode-webview")) {
+      const message = event.data.message;
+      switch (message) {
+        case Commands.LoadSampleReadme:
+          const error = event.data.error;
+          const readme = event.data.readme;
+          this.setState({
+            loading: false,
+            readme,
+            error,
+          });
+          break;
+        default:
+          break;
+      }
     }
   };
 

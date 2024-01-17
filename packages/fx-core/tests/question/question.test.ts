@@ -995,7 +995,7 @@ describe("apiKeyQuestion", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       outputEnvVarNames: new Map<string, string>(),
-      clientSecret: "fakeClientSecret",
+      primaryClientSecret: "fakeClientSecret",
     };
     const question = apiSpecApiKeyQuestion();
     const condition = question.condition;

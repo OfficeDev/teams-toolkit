@@ -44,6 +44,7 @@ import {
   NotificationTriggerOptions,
   ProjectTypeOptions,
   ScratchOptions,
+  ApiMessageExtensionAuthOptions,
 } from "../../question/create";
 import { QuestionNames } from "../../question/questionNames";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
@@ -68,6 +69,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { isApiKeyEnabled } from "../../common/featureFlags";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -78,8 +80,11 @@ export enum TemplateNames {
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
   NotificationHttpTrigger = "notification-http-trigger",
+  NotificationHttpTriggerIsolated = "notification-http-trigger-isolated",
   NotificationTimerTrigger = "notification-timer-trigger",
+  NotificationTimerTriggerIsolated = "notification-timer-trigger-isolated",
   NotificationHttpTimerTrigger = "notification-http-timer-trigger",
+  NotificationHttpTimerTriggerIsolated = "notification-http-timer-trigger-isolated",
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
   DefaultBot = "default-bot",
@@ -93,6 +98,7 @@ export enum TemplateNames {
   SsoTabObo = "sso-tab-with-obo-flow",
   LinkUnfurling = "link-unfurling",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
+  CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
 }
@@ -106,11 +112,20 @@ const Feature2TemplateName: any = {
     NotificationTriggerOptions.functionsHttpTrigger().id
   }`]: TemplateNames.NotificationHttpTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpTriggerIsolated().id
+  }`]: TemplateNames.NotificationHttpTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsTimerTrigger().id
   }`]: TemplateNames.NotificationTimerTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsTimerTriggerIsolated().id
+  }`]: TemplateNames.NotificationTimerTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
   }`]: TemplateNames.NotificationHttpTimerTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpAndTimerTriggerIsolated().id
+  }`]: TemplateNames.NotificationHttpTimerTriggerIsolated,
   [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
   [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
@@ -128,10 +143,18 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
-    TemplateNames.CopilotPluginFromScratch,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}`]:
-    TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+    ApiMessageExtensionAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+    ApiMessageExtensionAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
@@ -219,6 +242,7 @@ class Coordinator {
       globalVars.isVS = language === "csharp";
       const capability = inputs.capabilities as string;
       const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+      const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -265,6 +289,14 @@ class Coordinator {
         const trigger = inputs[QuestionNames.BotTrigger] as string;
         let feature = `${capability}:${trigger}`;
 
+        if (
+          language === "csharp" &&
+          capability === CapabilityOptions.notificationBot().id &&
+          inputs.isIsolated === true
+        ) {
+          feature += "-isolated";
+        }
+
         if (meArchitecture) {
           feature = `${feature}:${meArchitecture}`;
         }
@@ -278,6 +310,17 @@ class Coordinator {
           feature = `${capability}:ssr`;
         }
 
+        if (
+          capability === CapabilityOptions.copilotPluginNewApi().id ||
+          (capability === CapabilityOptions.m365SearchMe().id &&
+            meArchitecture === MeArchitectureOptions.newApi().id)
+        ) {
+          if (isApiKeyEnabled() && apiMEAuthType) {
+            feature = `${feature}:${apiMEAuthType}`;
+          } else {
+            feature = `${feature}:none`;
+          }
+        }
         const templateName = Feature2TemplateName[feature];
 
         if (templateName) {

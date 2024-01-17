@@ -61,7 +61,7 @@ describe("Deploy Link Unfurling template", () => {
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
       // provision
-      const result = await createResourceGroup(resourceGroupName, "eastus");
+      const result = await createResourceGroup(resourceGroupName, "westus");
       chai.assert.isTrue(result);
 
       await CliHelper.provisionProject(projectPath, "", "dev", {

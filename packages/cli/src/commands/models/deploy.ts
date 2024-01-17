@@ -4,12 +4,12 @@ import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsf
 import { getFxCore } from "../../activate";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { EnvOption, ProjectFolderOption } from "../common";
+import { EnvOption, IgnoreLoadEnvOption, ProjectFolderOption } from "../common";
 
 export const deployCommand: CLICommand = {
   name: "deploy",
   description: strings.command.deploy.description,
-  options: [EnvOption, ProjectFolderOption],
+  options: [EnvOption, ProjectFolderOption, IgnoreLoadEnvOption],
   telemetry: {
     event: TelemetryEvent.Deploy,
   },

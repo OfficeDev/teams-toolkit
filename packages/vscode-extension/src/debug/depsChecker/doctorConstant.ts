@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-const InstallNode = "Go to https://nodejs.org/about/releases/ to install LTS Node.js.";
+const InstallNode = "Go to https://nodejs.org to install LTS Node.js.";
 const InstallNodeV3 =
-  "The supported node versions are specified in the package.json. Go to https://nodejs.org/about/releases/ to install a supported Node.js.";
+  "The supported node versions are specified in the package.json. Go to https://nodejs.org to install a supported Node.js.";
 
 export const doctorConstant = {
   Tick: "(√) Done:",

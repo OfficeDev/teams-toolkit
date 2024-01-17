@@ -372,6 +372,27 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   return result;
 }
 
+export async function createTeamsAiProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
+  const inputs: Inputs = {
+    platform: Platform.VSCode,
+    capabilities: "search-app",
+    scratch: "no",
+    "me-architecture": "api-spec-teams-ai",
+    "project-type": "me-type",
+  };
+
+  const result = await runCommand(Stage.create, inputs);
+  if (result.isErr()) {
+    return err(result.error);
+  }
+
+  const res = result.value as CreateProjectResult;
+  const projectPathUri = Uri.file(res.projectPath);
+  // show local debug button by default
+  await openFolder(projectPathUri, true, res.warnings, args);
+  return result;
+}
+
 export async function openFolder(
   folderPath: Uri,
   showLocalDebugMessage: boolean,

@@ -191,6 +191,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     handlers.createNewProjectHandler,
     "createProject"
   );
+  registerInCommandController(
+    context,
+    "fx-extension.createTeamsAiProject",
+    handlers.createTeamsAiProjectHandler,
+    "createTeamsAiProject"
+  );
   context.subscriptions.push(
     vscode.commands.registerCommand("fx-extension.createFromWalkthrough", async (...args) => {
       const res: Result<CreateProjectResult, FxError> = await Correlator.run(

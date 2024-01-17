@@ -18,7 +18,8 @@ import {
   SampleUrlInfo,
   unzip,
   zipFolder,
-  getTemplateLatestVersion,
+  getTemplateLatestTag,
+  getTemplateZipUrlByTag,
 } from "./utils";
 import semver from "semver";
 
@@ -126,19 +127,15 @@ export const fetchUrlForHotfixOnlyAction: GeneratorAction = {
     }
 
     context.logProvider.debug(`Fetching template url with tag: ${JSON.stringify(context)}`);
-    const latestVer = await getTemplateLatestVersion(
+    const latestTag = await getTemplateLatestTag(
       context.language!,
       context.tryLimits,
       context.timeoutInMs
     );
     // hotfix generates template based on url
-    const version = latestVer.split("@")[1];
-    if (semver.patch(version) !== 0) {
-      context.url = await fetchTemplateZipUrl(
-        context.language!,
-        context.tryLimits,
-        context.timeoutInMs
-      );
+    const latestVer = latestTag.split("@")[1];
+    if (semver.patch(latestVer) !== 0) {
+      context.url = getTemplateZipUrlByTag(context.language!, latestVer);
     } else {
       // stable generates templates based on the fallback
       context.cancelDownloading = true;

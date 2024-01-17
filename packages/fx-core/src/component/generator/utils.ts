@@ -105,7 +105,7 @@ async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number)
   return res.data;
 }
 
-export async function getTemplateLatestVersion(
+export async function getTemplateLatestTag(
   name: string,
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
@@ -125,7 +125,11 @@ export async function fetchTemplateZipUrl(
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
 ): Promise<string> {
-  const selectedTag = await getTemplateLatestVersion(name, tryLimits, timeoutInMs);
+  const selectedTag = await getTemplateLatestTag(name, tryLimits, timeoutInMs);
+  return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
+}
+
+export function getTemplateZipUrlByTag(name: string, selectedTag: string): string {
   return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
 }
 

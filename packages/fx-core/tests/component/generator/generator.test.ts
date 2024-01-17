@@ -47,6 +47,7 @@ import {
   DownloadSampleNetworkError,
   FetchSampleInfoError,
 } from "../../../src/component/generator/error";
+import { ActionContext } from "../../../src/component/middleware/actionExecutionMW";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -716,6 +717,7 @@ describe("Generator happy path", async () => {
     const templateZip = new AdmZip();
     templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
     templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
+    return templateZip;
   }
 
   afterEach(async () => {
@@ -856,14 +858,26 @@ describe("Generator happy path", async () => {
     const mockFileName = "test.txt";
     const language = "ts";
     const foobarTemplateZip = new AdmZip();
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
     await buildFakeTemplateZip(templateName, mockFileName);
 
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
-    const spyCall = sandbox.spy(fetchTemplateFromLocalAction, "run");
 
-    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
-    assert.isTrue(spyCall.calledOnce);
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    // template with fallback
+    const isFallback = actionContext?.telemetryProps?.fallback === "true";
+    assert.isTrue(isFallback);
+
     if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
       assert.fail("template creation failure");
     }
@@ -875,11 +889,25 @@ describe("Generator happy path", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
     await buildFakeTemplateZip(templateName, mockFileName);
 
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
 
-    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    // template with fallback
+    const isFallback = actionContext?.telemetryProps?.fallback === "true";
+    assert.isTrue(isFallback);
+
     if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
       assert.fail("local template creation failure");
     }
@@ -890,12 +918,57 @@ describe("Generator happy path", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
     await buildFakeTemplateZip(templateName, mockFileName);
 
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
     sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("fooUrl/templates@0.1.0/test.zip");
 
-    const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    // template with fallback
+    const isFallback = actionContext?.telemetryProps?.fallback === "true";
+    assert.isTrue(isFallback);
+
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("local template creation failure");
+    }
+    assert.isTrue(result.isOk());
+  });
+
+  it("template from downloading when hotfix release", async () => {
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const language = "ts";
+    const zip = await buildFakeTemplateZip(templateName, mockFileName);
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("fooUrl/templates@0.1.1/test.zip");
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(zip);
+
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    // template without fallback
+    const isFallback = actionContext?.telemetryProps?.fallback === "true";
+    assert.isFalse(isFallback);
+
     if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
       assert.fail("local template creation failure");
     }

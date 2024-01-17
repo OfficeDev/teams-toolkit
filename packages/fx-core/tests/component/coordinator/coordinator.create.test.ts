@@ -787,7 +787,7 @@ describe("coordinator create", () => {
   });
 });
 
-describe("Office Addin", async () => {
+describe("Outlook Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   tools.ui = new MockedUserInteraction();
@@ -867,6 +867,92 @@ describe("Office Addin", async () => {
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "mockedError");
+  });
+});
+
+describe("Office Addin", async () => {
+  const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  tools.ui = new MockedUserInteraction();
+  setTools(tools);
+
+  beforeEach(() => {
+    sandbox.stub(fs, "ensureDir").resolves();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should scaffold taskpane successfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    sandbox.stub(OfficeAddinGenerator, "generate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("should return error if app name is invalid", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.AppName]: "__invalid__",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+    };
+
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
+  });
+
+  it("should return error if app name is undefined", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.AppName]: undefined,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+    };
+
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
+  });
+
+  it("should return error if OfficeAddinGenerator returns error", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+    sandbox.stub(OfficeAddinGenerator, "generate").resolves(err(mockedError));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");

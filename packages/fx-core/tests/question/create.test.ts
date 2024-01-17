@@ -2147,7 +2147,7 @@ describe("scaffold question", () => {
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });
 
-    it("office addin", async () => {
+    it("outlook addin", async () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,
         [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
@@ -2155,6 +2155,16 @@ describe("scaffold question", () => {
       });
       assert.isTrue(options.length === 1 && options[0].id === "typescript");
     });
+    it("office addin", async () => {
+      const options = getLanguageOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+        [QuestionNames.OfficeAddinFramework]: "default",
+      });
+      assert.isTrue(options.length === 2 && options[0].id === "typescript");
+    });
+
     it("SPFx", async () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,
@@ -2439,7 +2449,7 @@ describe("scaffold question", () => {
   });
   describe("programmingLanguageQuestion", () => {
     const question = programmingLanguageQuestion();
-    it("office addin: should have typescript as options", async () => {
+    it("outlook addin: should have typescript as options", async () => {
       const inputs: Inputs = { platform: Platform.CLI };
       inputs[QuestionNames.Capabilities] = ["taskpane"];
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
@@ -2450,10 +2460,35 @@ describe("scaffold question", () => {
       }
     });
 
-    it("office addin: should default to TypeScript for taskpane projects", async () => {
+    it("outlook addin: should default to TypeScript for taskpane projects", async () => {
       const inputs: Inputs = { platform: Platform.CLI };
       inputs[QuestionNames.Capabilities] = ["taskpane"];
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+      assert.isDefined(question.default);
+      const lang = await (question.default as LocalFunc<string | undefined>)(inputs);
+      assert.equal(lang, "typescript");
+    });
+
+    it("office addin: should have typescript as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.OfficeAddinFramework] = "default";
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [
+          { label: "TypeScript", id: "typescript" },
+          { label: "JavaScript", id: "javascript" },
+        ]);
+      }
+    });
+
+    it("office addin: should default to TypeScript for taskpane projects", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.OfficeAddinFramework] = "default";
       assert.isDefined(question.default);
       const lang = await (question.default as LocalFunc<string | undefined>)(inputs);
       assert.equal(lang, "typescript");

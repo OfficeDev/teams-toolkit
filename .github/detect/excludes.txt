@@ -39,3 +39,4 @@ packages/vscode-extension/src/debug/teamsfxDebugProvider.ts
 packages/fx-core/tests/core/samples_v3.zip
 packages/fx-core/tests/core/samples_v2.zip
 .azure-pipelines/CredScanSuppressions.json
+.azure-pipelines/vs-sdk-build.yml

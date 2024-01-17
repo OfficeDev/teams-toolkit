@@ -44,6 +44,7 @@ import {
   DeveloperPortalAPIFailedError,
 } from "../../../../error/teamsApp";
 import { ApiSecretRegistration } from "../interfaces/ApiSecretRegistration";
+import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -65,7 +66,7 @@ export namespace AppStudioClient {
    * @returns {AxiosInstance}
    */
   function createRequesterWithToken(appStudioToken: string, _regionalUrl?: string): AxiosInstance {
-    const instance = axios.create({
+    const instance = WrappedAxiosClient.create(TelemetryUtils.ctx.telemetryReporter, {
       baseURL: _regionalUrl ?? baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;

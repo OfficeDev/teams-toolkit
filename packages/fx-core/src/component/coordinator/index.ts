@@ -69,6 +69,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { isApiKeyEnabled } from "../../common/featureFlags";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -79,8 +80,11 @@ export enum TemplateNames {
   NotificationRestify = "notification-restify",
   NotificationWebApi = "notification-webapi",
   NotificationHttpTrigger = "notification-http-trigger",
+  NotificationHttpTriggerIsolated = "notification-http-trigger-isolated",
   NotificationTimerTrigger = "notification-timer-trigger",
+  NotificationTimerTriggerIsolated = "notification-timer-trigger-isolated",
   NotificationHttpTimerTrigger = "notification-http-timer-trigger",
+  NotificationHttpTimerTriggerIsolated = "notification-http-timer-trigger-isolated",
   CommandAndResponse = "command-and-response",
   Workflow = "workflow",
   DefaultBot = "default-bot",
@@ -108,11 +112,20 @@ const Feature2TemplateName: any = {
     NotificationTriggerOptions.functionsHttpTrigger().id
   }`]: TemplateNames.NotificationHttpTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpTriggerIsolated().id
+  }`]: TemplateNames.NotificationHttpTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsTimerTrigger().id
   }`]: TemplateNames.NotificationTimerTrigger,
   [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsTimerTriggerIsolated().id
+  }`]: TemplateNames.NotificationTimerTriggerIsolated,
+  [`${CapabilityOptions.notificationBot().id}:${
     NotificationTriggerOptions.functionsHttpAndTimerTrigger().id
   }`]: TemplateNames.NotificationHttpTimerTrigger,
+  [`${CapabilityOptions.notificationBot().id}:${
+    NotificationTriggerOptions.functionsHttpAndTimerTriggerIsolated().id
+  }`]: TemplateNames.NotificationHttpTimerTriggerIsolated,
   [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
   [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
@@ -281,6 +294,14 @@ class Coordinator {
         const trigger = inputs[QuestionNames.BotTrigger] as string;
         let feature = `${capability}:${trigger}`;
 
+        if (
+          language === "csharp" &&
+          capability === CapabilityOptions.notificationBot().id &&
+          inputs.isIsolated === true
+        ) {
+          feature += "-isolated";
+        }
+
         if (meArchitecture) {
           feature = `${feature}:${meArchitecture}`;
         }
@@ -294,10 +315,17 @@ class Coordinator {
           feature = `${capability}:ssr`;
         }
 
-        if (apiMEAuthType) {
-          feature = `${feature}:${apiMEAuthType}`;
+        if (
+          capability === CapabilityOptions.copilotPluginNewApi().id ||
+          (capability === CapabilityOptions.m365SearchMe().id &&
+            meArchitecture === MeArchitectureOptions.newApi().id)
+        ) {
+          if (isApiKeyEnabled() && apiMEAuthType) {
+            feature = `${feature}:${apiMEAuthType}`;
+          } else {
+            feature = `${feature}:none`;
+          }
         }
-
         const templateName = Feature2TemplateName[feature];
 
         if (templateName) {
@@ -811,22 +839,10 @@ class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      //check whether deploy to azure
-      let containsAzure = false;
-      projectModel.deploy.driverDefs?.forEach((def) => {
-        if (AzureDeployActions.includes(def.uses)) {
-          containsAzure = true;
-        }
-      });
-
-      //consent
-      if (containsAzure) {
-        const consent = await deployUtils.askForDeployConsentV3(ctx);
-        if (consent.isErr()) {
-          return err(consent.error);
-        }
+      const consent = await deployUtils.askForDeployConsentV3(ctx);
+      if (consent.isErr()) {
+        return err(consent.error);
       }
-
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
       let hasError = false;
       try {

@@ -6,7 +6,11 @@
  */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
-import { initPage, validateEchoBot } from "../../utils/playwrightOperation";
+import {
+  initPage,
+  reopenPage,
+  validateEchoBot,
+} from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
@@ -21,14 +25,12 @@ import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
-import os from "os";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
   let devtunnelProcess: ChildProcessWithoutNullStreams;
   let debugProcess: ChildProcessWithoutNullStreams;
-  let debugMethod: "cli" | "ttk";
   let tunnelName = "";
   let successFlag = true;
   let errorMessage = "";
@@ -66,11 +68,8 @@ describe("Local Debug Tests", function () {
     }
     await localDebugTestContext.after(false, true);
     this.timeout(Timeout.finishAzureTestCase);
-    // windows in cli can't stop debug
-    if (debugMethod === "cli" && os.type() === "Windows_NT") {
-      if (successFlag) process.exit(0);
-      else process.exit(1);
-    }
+    if (successFlag) process.exit(0);
+    else process.exit(1);
   });
 
   it(
@@ -88,56 +87,55 @@ describe("Local Debug Tests", function () {
         validateFileExist(projectPath, "index.js");
 
         // local debug
-        debugMethod = ["cli", "ttk"][Math.floor(Math.random() * 2)] as
-          | "cli"
-          | "ttk";
-        if (debugMethod === "cli") {
-          // cli preview
-          console.log("======= debug with cli ========");
-          const tunnel = Executor.debugBotFunctionPreparation(projectPath);
-          tunnelName = tunnel.tunnelName;
-          devtunnelProcess = tunnel.devtunnelProcess;
-          await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
-          {
-            const { success } = await Executor.provision(projectPath, "local");
-            expect(success).to.be.true;
-          }
-          {
-            const { success } = await Executor.deploy(projectPath, "local");
-            expect(success).to.be.true;
-          }
-          debugProcess = Executor.debugProject(
-            projectPath,
-            "local",
-            true,
-            process.env,
-            (data) => {
-              if (data) {
-                console.log(data);
-              }
-            },
-            (error) => {
-              console.log(error);
-            }
-          );
-          await new Promise((resolve) => setTimeout(resolve, 2 * 30 * 1000));
-        } else {
-          console.log("======= debug with ttk ========");
-          await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
-          await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
-          await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
-        }
+        console.log("======= debug with ttk ========");
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+        await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
+        await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot Started");
 
         const teamsAppId = await localDebugTestContext.getTeamsAppId();
         expect(teamsAppId).to.not.be.empty;
-        const page = await initPage(
-          localDebugTestContext.context!,
-          teamsAppId,
-          Env.username,
-          Env.password
+        {
+          const page = await initPage(
+            localDebugTestContext.context!,
+            teamsAppId,
+            Env.username,
+            Env.password
+          );
+          await localDebugTestContext.validateLocalStateForBot();
+          await validateEchoBot(page);
+        }
+
+        // cli preview
+        console.log("======= debug with cli ========");
+        const tunnel = Executor.debugBotFunctionPreparation(projectPath);
+        tunnelName = tunnel.tunnelName;
+        devtunnelProcess = tunnel.devtunnelProcess;
+        await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+        debugProcess = Executor.debugProject(
+          projectPath,
+          "local",
+          true,
+          process.env,
+          (data) => {
+            if (data) {
+              console.log(data);
+            }
+          },
+          (error) => {
+            console.log(error);
+          }
         );
-        await localDebugTestContext.validateLocalStateForBot();
-        await validateEchoBot(page);
+        await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
+        {
+          const page = await reopenPage(
+            localDebugTestContext.context!,
+            teamsAppId,
+            Env.username,
+            Env.password
+          );
+          await localDebugTestContext.validateLocalStateForBot();
+          await validateEchoBot(page);
+        }
       } catch (error) {
         successFlag = false;
         errorMessage = "[Error]: " + error;

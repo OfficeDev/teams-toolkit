@@ -3,12 +3,16 @@ import "mocha";
 import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
+import { glob } from "glob";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
 import { CreateSampleProjectInputs } from "../../../src";
+import { FeatureFlagName } from "../../../src/common/constants";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator, TemplateNames } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { Generator } from "../../../src/component/generator/generator";
 import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
@@ -27,11 +31,10 @@ import {
 import { QuestionNames } from "../../../src/question/questionNames";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
-import { glob } from "glob";
 
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator create", () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
@@ -40,6 +43,7 @@ describe("coordinator create", () => {
   });
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("create project from sample", async () => {
@@ -310,6 +314,28 @@ describe("coordinator create", () => {
       [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
       [QuestionNames.ProgrammingLanguage]: "csharp",
       [QuestionNames.SafeProjectName]: "safeprojectname",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isOk());
+  });
+
+  it("create notification bot project from VS", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
+      [QuestionNames.BotTrigger]: "http-functions",
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      isIsolated: true,
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
@@ -591,7 +617,30 @@ describe("coordinator create", () => {
     assert.equal(generator.args[0][2], TemplateNames.Tab);
   });
 
+  it("create API ME (without api auth options) from new api sucessfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.CopilotPluginFromScratch);
+  });
+
   it("create API ME (no auth) from new api sucessfully", async () => {
+    mockedEnvRestore = mockedEnv({
+      API_COPILOT_API_KEY: "true",
+    });
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
 
@@ -613,6 +662,9 @@ describe("coordinator create", () => {
   });
 
   it("create API ME (key auth) from new api sucessfully", async () => {
+    mockedEnvRestore = mockedEnv({
+      API_COPILOT_API_KEY: "true",
+    });
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
 

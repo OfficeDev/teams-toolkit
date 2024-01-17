@@ -57,6 +57,9 @@ export function isMultipleParametersEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
 }
 
+export function isTeamsFxRebrandingEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.TeamsFxRebranding, false);
+  
 export function isWXPExtensionEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.WXPExtension, false);
 }

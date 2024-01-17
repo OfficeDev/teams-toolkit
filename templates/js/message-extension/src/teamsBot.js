@@ -3,14 +3,14 @@ const querystring = require("querystring");
 const { TeamsActivityHandler, CardFactory } = require("botbuilder");
 const ACData = require("adaptivecards-templating");
 const searchResultCard = require("./adaptiveCards/searchResultCard.json");
-const actionResultCard = require("./adaptiveCards/actionCard.json");
-const linkUnfurlResultCard = require("./adaptiveCards/linkUnfurlCard.json");
+const actionCard = require("./adaptiveCards/actionCard.json");
+const linkUnfurlingCard = require("./adaptiveCards/linkUnfurlingCard.json");
 
 class TeamsBot extends TeamsActivityHandler {
   // Action.
   handleTeamsMessagingExtensionSubmitAction(context, action) {
     // The user has chosen to create a card by choosing the 'Create Card' context menu command.
-    const template = new ACData.Template(actionResultCard);
+    const template = new ACData.Template(actionCard);
     const card = template.expand({
       $root: {
         title: action.data.title ?? "",
@@ -67,7 +67,7 @@ class TeamsBot extends TeamsActivityHandler {
       "https://raw.githubusercontent.com/microsoft/botframework-sdk/master/icon.png",
     ]);
 
-    const attachment = { ...CardFactory.adaptiveCard(linkUnfurlResultCard), preview: previewCard };
+    const attachment = { ...CardFactory.adaptiveCard(linkUnfurlingCard), preview: previewCard };
 
     return {
       composeExtension: {

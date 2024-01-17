@@ -28,6 +28,7 @@ import { setTools } from "../../../src/core/globalVars";
 import * as v3MigrationUtils from "../../../src/core/middleware/utils/v3MigrationUtils";
 import { MockTools } from "../../core/utils";
 import { mockedResolveDriverInstances } from "./coordinator.test";
+import { UserCancelError } from "../../../src/error";
 
 const versionInfo: VersionInfo = {
   version: MetadataV3.projectVersion,
@@ -126,6 +127,7 @@ describe("component coordinator test", () => {
     assert.isTrue(res.isOk());
   });
   it("deploy cancel", async () => {
+    const sbox = sinon.createSandbox();
     const mockProjectModel: ProjectModel = {
       version: "1.0.0",
       deploy: {
@@ -140,28 +142,22 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
-    sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
-    sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
-    sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-    sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
-      if (config.name === "env") {
-        return ok({ type: "success", result: "dev" });
-      } else {
-        return ok({ type: "success", result: "" });
-      }
-    });
-    sandbox
-      .stub(deployUtils, "askForDeployConsentV3")
-      .resolves(err(new UserError(SolutionSource, "UserCancel", "UserCancel")));
+    sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
+    sbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
+    sbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
+    sbox.stub(envUtil, "readEnv").resolves(ok({}));
+    sbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
+    sbox.stub(deployUtils, "askForDeployConsentV3").resolves(err(new UserCancelError()));
     const inputs: Inputs = {
       platform: Platform.VSCode,
       projectPath: ".",
       ignoreLockByUT: true,
+      env: "dev",
     };
     const fxCore = new FxCore(tools);
     const res = await fxCore.deployArtifacts(inputs);
-    assert.isTrue(res.isErr());
+    assert.isTrue(res.isErr() && res.error instanceof UserCancelError);
+    sbox.restore();
   });
   it("deploy happy path (debug)", async () => {
     const mockProjectModel: ProjectModel = {
@@ -178,6 +174,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
+    sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     sandbox
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
@@ -232,6 +229,7 @@ describe("component coordinator test", () => {
         resolveDriverInstances: mockedResolveDriverInstances,
       },
     };
+    sandbox.stub(deployUtils, "askForDeployConsentV3").resolves(ok(Void));
     sandbox.stub(pathUtils, "getYmlFilePath").resolves(ok("teamsapp.yml"));
     sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));

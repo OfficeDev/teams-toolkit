@@ -3,6 +3,10 @@
     with:
       # Name of the API Key
       name: {{ApiSpecAuthName}}
+      {{#primaryClientSecret}}
+      # Value of the API Key
+      primaryClientSecret: {{{primaryClientSecret}}}
+      {{/primaryClientSecret}}
       # Teams app ID
       appId: ${{TEAMS_APP_ID}}
       {{#apiSpecPath}}

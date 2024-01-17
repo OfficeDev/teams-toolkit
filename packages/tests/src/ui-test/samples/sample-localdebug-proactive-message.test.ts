@@ -22,5 +22,8 @@ new ProactiveMessagingTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
-  { testRootFolder: "./resource/samples", skipValidation: true }
+  {
+    testRootFolder: "./resource/samples",
+    skipValidation: true,
+  }
 ).test();

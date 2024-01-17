@@ -24,6 +24,8 @@ export class Constants {
   public static readonly TEAMS_APP_NAME_MAX_LENGTH = 30;
   public static readonly YO_RC_VERSION = "version";
   public static readonly YO_RC_FILE = ".yo-rc.json";
+  public static readonly DEFAULT_NODE_VERSION = "16 || 18";
+  public static readonly PACKAGE_JSON_FILE = "package.json";
 }
 
 export class TelemetryKey {

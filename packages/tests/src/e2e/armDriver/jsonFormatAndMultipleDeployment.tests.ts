@@ -17,7 +17,11 @@ import {
   updateYml,
 } from "../../utils/armDriverUtils";
 import { Executor } from "../../utils/executor";
-import { getTestFolder, getUniqueAppName } from "../commonUtils";
+import {
+  createResourceGroup,
+  getTestFolder,
+  getUniqueAppName,
+} from "../commonUtils";
 
 describe("version check", () => {
   const testFolder = getTestFolder();
@@ -45,6 +49,9 @@ describe("version check", () => {
       await updateYml(projectPath);
       {
         // provision
+        const rgResult = await createResourceGroup(appName + "-rg", "westus");
+        chai.assert.isTrue(rgResult);
+        process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
         const result = await Executor.provision(projectPath);
         chai.assert.isTrue(result.success);
       }

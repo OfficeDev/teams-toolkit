@@ -43,5 +43,9 @@ new AssistDashboardTestCase(
     LocalDebugTaskLabel.WatchBackend,
     LocalDebugTaskLabel.StartBackend,
   ],
-  { dashboardFlag: true, skipInit: true } // [TODO] skipInit browser security block
+  {
+    dashboardFlag: true,
+    skipInit: true,
+    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
+  } // [TODO] skipInit browser security block
 ).test();

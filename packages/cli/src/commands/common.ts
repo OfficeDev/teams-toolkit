@@ -48,7 +48,11 @@ export const EnvOption: CLICommandOption = {
   description:
     "Specifies the environment name for the project scaffolded by Microsoft Teams Toolkit.",
 };
-
+export const IgnoreLoadEnvOption: CLICommandOption = {
+  name: "ignore-env-file",
+  type: "boolean",
+  description: "Whether to skip loading .env file when --env is not specified.",
+};
 export const EnvFileOption: CLICommandOption = {
   name: "env-file",
   type: "string",

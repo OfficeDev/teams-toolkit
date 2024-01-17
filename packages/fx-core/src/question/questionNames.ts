@@ -38,6 +38,7 @@ export enum QuestionNames {
   MeArchitectureType = "me-architecture",
   ApiSpecApiKey = "api-key",
   ApiSpecApiKeyConfirm = "api-key-confirm",
+  ApiMEAuth = "api-me-auth",
 
   Features = "features",
   Env = "env",

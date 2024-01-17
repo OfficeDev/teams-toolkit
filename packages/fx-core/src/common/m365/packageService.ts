@@ -236,6 +236,7 @@ export class PackageService {
               "ConfigurableTabs",
               "Activities",
               "MeetingExtensionDefinition",
+              "OpenAIPlugins",
             ],
           },
         },
@@ -315,7 +316,7 @@ export class PackageService {
           params: {
             SupportedElementTypes:
               // eslint-disable-next-line no-secrets/no-secrets
-              "Extensions,OfficeAddIns,ExchangeAddIns,FirstPartyPages,Dynamics,AAD,LineOfBusiness,StaticTabs,ComposeExtensions,Bots,GraphConnector,ConfigurableTabs,Activities,MeetingExtensionDefinition",
+              "Extensions,OfficeAddIns,ExchangeAddIns,FirstPartyPages,Dynamics,AAD,LineOfBusiness,StaticTabs,ComposeExtensions,Bots,GraphConnector,ConfigurableTabs,Activities,MeetingExtensionDefinition,OpenAIPlugins",
           },
           headers: {
             Authorization: `Bearer ${token}`,

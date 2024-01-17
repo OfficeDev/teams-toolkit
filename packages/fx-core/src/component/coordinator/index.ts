@@ -44,6 +44,7 @@ import {
   NotificationTriggerOptions,
   ProjectTypeOptions,
   ScratchOptions,
+  ApiMessageExtensionAuthOptions,
 } from "../../question/create";
 import { QuestionNames } from "../../question/questionNames";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
@@ -68,6 +69,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { convertToAlphanumericOnly } from "../../common/utils";
+import { isApiKeyEnabled } from "../../common/featureFlags";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -96,6 +98,7 @@ export enum TemplateNames {
   SsoTabObo = "sso-tab-with-obo-flow",
   LinkUnfurling = "link-unfurling",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
+  CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
 }
@@ -140,10 +143,18 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]:
-    TemplateNames.CopilotPluginFromScratch,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}`]:
-    TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+    ApiMessageExtensionAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
+    ApiMessageExtensionAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.none().id
+  }`]: TemplateNames.CopilotPluginFromScratch,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.apiKey().id
+  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
@@ -231,6 +242,7 @@ class Coordinator {
       globalVars.isVS = language === "csharp";
       const capability = inputs.capabilities as string;
       const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
+      const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
       delete inputs.folder;
 
       merge(actionContext?.telemetryProps, {
@@ -298,6 +310,17 @@ class Coordinator {
           feature = `${capability}:ssr`;
         }
 
+        if (
+          capability === CapabilityOptions.copilotPluginNewApi().id ||
+          (capability === CapabilityOptions.m365SearchMe().id &&
+            meArchitecture === MeArchitectureOptions.newApi().id)
+        ) {
+          if (isApiKeyEnabled() && apiMEAuthType) {
+            feature = `${feature}:${apiMEAuthType}`;
+          } else {
+            feature = `${feature}:none`;
+          }
+        }
         const templateName = Feature2TemplateName[feature];
 
         if (templateName) {
@@ -811,22 +834,10 @@ class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      //check whether deploy to azure
-      let containsAzure = false;
-      projectModel.deploy.driverDefs?.forEach((def) => {
-        if (AzureDeployActions.includes(def.uses)) {
-          containsAzure = true;
-        }
-      });
-
-      //consent
-      if (containsAzure) {
-        const consent = await deployUtils.askForDeployConsentV3(ctx);
-        if (consent.isErr()) {
-          return err(consent.error);
-        }
+      const consent = await deployUtils.askForDeployConsentV3(ctx);
+      if (consent.isErr()) {
+        return err(consent.error);
       }
-
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
       let hasError = false;
       try {

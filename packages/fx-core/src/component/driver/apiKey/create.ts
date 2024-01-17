@@ -1,37 +1,42 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Service } from "typedi";
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { getLocalizedString } from "../../../common/localizeUtils";
-import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
-import { DriverContext } from "../interface/commonArgs";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { hooks } from "@feathersjs/hooks";
-import { logMessageKeys, maxDomainPerApiKey, maxSecretPerApiKey } from "./utility/constants";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
-import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
-import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
+import { Service } from "typedi";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { SpecParser } from "../../../common/spec-parser";
 import { AppStudioScopes, GraphScopes } from "../../../common/tools";
+import { InvalidActionInputError, assembleError } from "../../../error";
+import { QuestionNames } from "../../../question";
+import { QuestionMW } from "../../middleware/questionMW";
+import { getAbsolutePath } from "../../utils/common";
+import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
-import { ApiSecretRegistrationClientSecret } from "../teamsApp/interfaces/ApiSecretRegistrationClientSecret";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
   ApiSecretRegistrationTargetAudience,
   ApiSecretRegistrationUserAccessType,
 } from "../teamsApp/interfaces/ApiSecretRegistration";
-import { InvalidActionInputError, UnhandledError } from "../../../error";
-import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
+import { ApiSecretRegistrationClientSecret } from "../teamsApp/interfaces/ApiSecretRegistrationClientSecret";
+import { TelemetryUtils } from "../teamsApp/utils/telemetry";
 import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvalid";
 import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
-import { QuestionMW } from "../../middleware/questionMW";
-import { QuestionNames } from "../../../question";
-import { SpecParser } from "../../../common/spec-parser";
-import { getAbsolutePath } from "../../utils/common";
 import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
-import { TelemetryUtils } from "../teamsApp/utils/telemetry";
+import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
+import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
+import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
+import {
+  logMessageKeys,
+  maxDomainPerApiKey,
+  maxSecretLength,
+  minSecretLength,
+} from "./utility/constants";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
@@ -87,7 +92,7 @@ export class CreateApiKeyDriver implements StepDriver {
       } else {
         const clientSecret = this.loadClientSecret();
         if (clientSecret) {
-          args.clientSecret = clientSecret;
+          args.primaryClientSecret = clientSecret;
         }
 
         this.validateArgs(args);
@@ -135,7 +140,7 @@ export class CreateApiKeyDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failedExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledError(error as Error, actionName)),
+        result: err(assembleError(error as Error, actionName)),
         summaries: summaries,
       };
     }
@@ -157,26 +162,12 @@ export class CreateApiKeyDriver implements StepDriver {
     return clientSecret;
   }
 
-  // Allowed secrets: secret or secret1, secret2
-  // Need to validate secrets outside of the function
-  private parseSecret(apiKeyClientSecret: string): string[] {
-    const secrets = apiKeyClientSecret.trim().split(",");
-    return secrets.map((secret) => secret.trim());
-  }
-
   private validateSecret(apiKeySecret: string): boolean {
     if (typeof apiKeySecret !== "string") {
       return false;
     }
 
-    const regExp = /^(\w){10,128}(,\s*\w{10,128})*/g;
-    const regResult = regExp.exec(apiKeySecret);
-    if (!regResult) {
-      return false;
-    }
-
-    const secrets = this.parseSecret(apiKeySecret);
-    if (secrets.length > maxSecretPerApiKey) {
+    if (apiKeySecret.length > maxSecretLength || apiKeySecret.length < minSecretLength) {
       return false;
     }
 
@@ -228,7 +219,11 @@ export class CreateApiKeyDriver implements StepDriver {
       invalidParameters.push("appId");
     }
 
-    if (args.clientSecret && !this.validateSecret(args.clientSecret)) {
+    if (args.primaryClientSecret && !this.validateSecret(args.primaryClientSecret)) {
+      throw new ApiKeyClientSecretInvalidError(actionName);
+    }
+
+    if (args.secondaryClientSecret && !this.validateSecret(args.secondaryClientSecret)) {
       throw new ApiKeyClientSecretInvalidError(actionName);
     }
 
@@ -253,14 +248,20 @@ export class CreateApiKeyDriver implements StepDriver {
     const currentUser = currentUserRes.value;
     const userId = currentUser["oid"] as string;
 
-    const secrets = this.parseSecret(args.clientSecret!);
+    const secrets = [];
+    if (args.primaryClientSecret) {
+      secrets.push(args.primaryClientSecret);
+    }
+    if (args.secondaryClientSecret) {
+      secrets.push(args.secondaryClientSecret);
+    }
     let isPrimary = true;
     const clientSecrets = secrets.map((secret) => {
       const clientSecret: ApiSecretRegistrationClientSecret = {
         value: secret,
         description: args.name,
         priority: isPrimary ? 0 : 1,
-        isValueRedacted: true,
+        isValueRedacted: false,
       };
       isPrimary = false;
       return clientSecret;

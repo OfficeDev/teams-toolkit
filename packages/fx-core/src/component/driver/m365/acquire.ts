@@ -10,13 +10,12 @@ import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api"
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { PackageService } from "../../../common/m365/packageService";
 import { serviceEndpoint, serviceScope } from "../../../common/m365/serviceConstant";
+import { FileNotFoundError, InvalidActionInputError, assembleError } from "../../../error/common";
 import { getAbsolutePath, wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
-import { UnhandledError } from "../../../error/common";
 
 interface AcquireArgs {
   appPackagePath?: string; // The path of the app package
@@ -114,7 +113,7 @@ export class M365TitleAcquireDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledError(error as Error, actionName);
+      throw assembleError(error as Error, actionName);
     }
   }
 

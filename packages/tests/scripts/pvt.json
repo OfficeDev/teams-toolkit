@@ -12,7 +12,6 @@
       "localdebug-tab-nosso",
       "localdebug-bot",
       "localdebug-bot-twice",
-      "localdebug-obo-tab",
       "localdebug-command-and-response",
       "localdebug-notification-func",
       "localdebug-notification-restify",
@@ -59,7 +58,11 @@
       "remotedebug-aiassistant-bot-ts-win-only",
       "remotedebug-msg-newapi-win-only",
       "remotedebug-msg-newapi-ts-win-only",
-      "remotedebug-msg-openapi-win-only"
+      "remotedebug-msg-openapi-win-only",
+      "localdebug-command-and-response-ts"
+    ],
+    "node-20": [
+      "localdebug-obo-tab"
     ]
   },
   "ubuntu-latest": {
@@ -72,7 +75,6 @@
       "localdebug-spfx",
       "localdebug-tab-nosso",
       "localdebug-bot",
-      "localdebug-obo-tab",
       "localdebug-command-and-response",
       "localdebug-notification-func",
       "localdebug-notification-restify"
@@ -84,7 +86,6 @@
       "treeview-samples",
       "telemetry@open-vscode",
       "localdebug-bot-ts",
-      "localdebug-command-and-response-ts",
       "localdebug-obo-tab-ts",
       "localdebug-msg-ts",
       "localdebug-msg",
@@ -111,6 +112,9 @@
       "localdebug-aiassistant-bot-ts",
       "localdebug-msg-newapi",
       "localdebug-msg-newapi-ts"
+    ],
+    "node-20": [
+      "localdebug-obo-tab"
     ]
   },
   "macos-latest": {

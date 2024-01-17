@@ -9,7 +9,7 @@ export const functionDepsVersionsLink = "https://aka.ms/functions-node-versions"
 
 // TODO: remove this link after clean the useless code.
 export const nodeNotFoundHelpLink = `https://aka.ms/teamsfx-node`;
-export const nodeInstallationLink = "https://nodejs.org/about/releases/";
+export const nodeInstallationLink = "https://nodejs.org";
 
 export const dotnetDefaultHelpLink = "https://aka.ms/teamsfx-actions/devtool-install";
 export const dotnetExplanationHelpLink = dotnetDefaultHelpLink;

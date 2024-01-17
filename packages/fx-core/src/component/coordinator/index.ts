@@ -834,22 +834,10 @@ class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      //check whether deploy to azure
-      let containsAzure = false;
-      projectModel.deploy.driverDefs?.forEach((def) => {
-        if (AzureDeployActions.includes(def.uses)) {
-          containsAzure = true;
-        }
-      });
-
-      //consent
-      if (containsAzure) {
-        const consent = await deployUtils.askForDeployConsentV3(ctx);
-        if (consent.isErr()) {
-          return err(consent.error);
-        }
+      const consent = await deployUtils.askForDeployConsentV3(ctx);
+      if (consent.isErr()) {
+        return err(consent.error);
       }
-
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
       let hasError = false;
       try {

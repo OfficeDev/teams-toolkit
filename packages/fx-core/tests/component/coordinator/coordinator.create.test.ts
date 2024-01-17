@@ -178,7 +178,7 @@ describe("coordinator create", () => {
       assert.isTrue(res.error instanceof InputValidationError);
     }
   });
-  it("create project for new office Addin MissingRequiredInputError missing App name", async () => {
+  it("create project for new outlook Addin MissingRequiredInputError missing App name", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       ignoreLockByUT: true,
@@ -193,13 +193,44 @@ describe("coordinator create", () => {
       assert.isTrue(res.error instanceof MissingRequiredInputError);
     }
   });
-  it("create project for new office Addin MissingRequiredInputError invalid App name", async () => {
+  it("create project for new outlook Addin MissingRequiredInputError invalid App name", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       ignoreLockByUT: true,
       folder: ".",
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
+      "app-name": "__#$%___",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof InputValidationError);
+    }
+  });
+  it("create project for new office Addin MissingRequiredInputError missing App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+  });
+  it("create project for new office Addin MissingRequiredInputError invalid App name", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
       "app-name": "__#$%___",
     };
     const context = createContextV3();

@@ -46,6 +46,7 @@ new CreateMilestone().run(); // eslint-disable-line
 type MilestoneInfo = {
 	title: string;
 	due_on?: Date;
+	path: string;
 };
 
 
@@ -55,7 +56,7 @@ async function createMilestone(info: MilestoneInfo): Promise<void> {
 		repo: repo,
 		title: info.title,
 		due_on: info.due_on!.toISOString(),
-		description: 'created by action',
+		description: `Do not change the description. Created by action. Sprint path is:${info.path}`,
 	});
 }
 
@@ -91,6 +92,7 @@ async function checkAndCreateMilestone(sprint: any, existingMilestones: any[]): 
 	const milestoneInfo: MilestoneInfo = {
 		title: `${prefix}-${name}`,
 		due_on: new Date(sprint.attributes.finishDate),
+		path: sprint.path,
 	}
 	safeLog(`create milestone ${milestoneInfo.title}`);
 	await createMilestone(milestoneInfo);

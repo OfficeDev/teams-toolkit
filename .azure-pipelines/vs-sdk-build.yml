@@ -27,10 +27,12 @@ resources:
       ref: refs/tags/release
 trigger: none
 extends:
-  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
+  template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
   parameters:
     sdl:
       sourceAnalysisPool: $(PoolName)
+      eslint:
+        enabled: false
       credscan:
         suppressionsFile: .azure-pipelines/CredScanSuppressions.json
     stages:

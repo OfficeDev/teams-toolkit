@@ -7,7 +7,7 @@ import { EnvFileOption, EnvOption, IgnoreKeysOption, ProjectFolderOption } from 
 
 export const envResetCommand: CLICommand = {
   name: "reset",
-  description: "Reset an environment or an environment file.",
+  description: "Reset environment file.",
   options: [EnvOption, EnvFileOption, IgnoreKeysOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.ResetEnvironment,

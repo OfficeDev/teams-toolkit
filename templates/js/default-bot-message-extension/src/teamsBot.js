@@ -6,7 +6,6 @@ const rawLearnCard = require("./adaptiveCards/learn.json");
 const searchResultCard = require("./adaptiveCards/searchResultCard.json");
 const actionCard = require("./adaptiveCards/actionCard.json");
 const linkUnfurlingCard = require("./adaptiveCards/linkUnfurlingCard.json");
-const cardTools = require("@microsoft/adaptivecards-tools");
 const ACData = require("adaptivecards-templating");
 
 class TeamsBot extends TeamsActivityHandler {
@@ -28,14 +27,16 @@ class TeamsBot extends TeamsActivityHandler {
       // Trigger command by IM text
       switch (txt) {
         case "welcome": {
-          const card = cardTools.AdaptiveCards.declareWithoutData(rawWelcomeCard).render();
-          await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
+          const welcomeAttachement = CardFactory.adaptiveCard(rawWelcomeCard);
+          await context.sendActivity({ attachments: [welcomeAttachement] });
           break;
         }
         case "learn": {
           this.likeCountObj.likeCount = 0;
-          const card = cardTools.AdaptiveCards.declare(rawLearnCard).render(this.likeCountObj);
-          await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
+          const template = new ACData.Template(rawLearnCard);
+          const learnCard = template.expand({ $root: this.likeCountObj });
+          const learnAttachment = CardFactory.adaptiveCard(learnCard);
+          await context.sendActivity({ attachments: [learnAttachment] });
           break;
         }
         /**
@@ -55,8 +56,8 @@ class TeamsBot extends TeamsActivityHandler {
       const membersAdded = context.activity.membersAdded;
       for (let cnt = 0; cnt < membersAdded.length; cnt++) {
         if (membersAdded[cnt].id) {
-          const card = cardTools.AdaptiveCards.declareWithoutData(rawWelcomeCard).render();
-          await context.sendActivity({ attachments: [CardFactory.adaptiveCard(card)] });
+          const welcomeAttachement = CardFactory.adaptiveCard(rawWelcomeCard);
+          await context.sendActivity({ attachments: [welcomeAttachement] });
           break;
         }
       }
@@ -70,11 +71,14 @@ class TeamsBot extends TeamsActivityHandler {
     // The verb "userlike" is sent from the Adaptive Card defined in adaptiveCards/learn.json
     if (invokeValue.action.verb === "userlike") {
       this.likeCountObj.likeCount++;
-      const card = cardTools.AdaptiveCards.declare(rawLearnCard).render(this.likeCountObj);
+      const template = new ACData.Template(rawLearnCard);
+      const learnCard = template.expand({ $root: this.likeCountObj });
+      const learnAttachment = CardFactory.adaptiveCard(learnCard);
+
       await context.updateActivity({
         type: "message",
         id: context.activity.replyToId,
-        attachments: [CardFactory.adaptiveCard(card)],
+        attachments: [learnAttachment],
       });
       return { statusCode: 200 };
     }

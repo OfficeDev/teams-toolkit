@@ -18,8 +18,10 @@
         "watch": "nodemon ./src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "dependencies": {
-        "@microsoft/adaptivecards-tools": "^1.0.0",
+   "dependencies": {
+        "adaptive-expressions": "^4.20.0",
+        "adaptivecards-templating": "^2.3.1",
+        "adaptivecards": "^3.0.1",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },

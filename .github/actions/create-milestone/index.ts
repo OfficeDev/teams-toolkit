@@ -56,7 +56,7 @@ async function createMilestone(info: MilestoneInfo): Promise<void> {
 		repo: repo,
 		title: info.title,
 		due_on: info.due_on!.toISOString(),
-		description: `Do not change the description. Created by action. Sprint path is:${info.path}`,
+		description: `Please do not change the description. Created by action. Sprint path is:${info.path}`,
 	});
 }
 

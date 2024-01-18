@@ -59,6 +59,11 @@ export const EnvFileOption: CLICommandOption = {
   description:
     "Specifies the .env file that defines the variables to replace in the Teams app manifest template file.",
 };
+export const IgnoreKeysOption: CLICommandOption = {
+  name: "ignore-keys",
+  type: "array",
+  description: "Specifies the keys to ignore in the .env file.",
+};
 
 export const ListFormatOption: CLICommandOption = {
   name: "format",

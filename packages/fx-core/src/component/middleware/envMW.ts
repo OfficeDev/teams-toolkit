@@ -54,6 +54,7 @@ const envLoaderMWImpl = async (
   }
   if (!inputs.env) {
     if (skipLoadIfNoEnvInput || inputs["ignore-env-file"] === true) {
+      process.env.TEAMSFX_ENV = "dev"; // set TEAMSFX_ENV = dev is to avoid unexpected error in other components that depends on this env variable
       await next();
       return;
     }

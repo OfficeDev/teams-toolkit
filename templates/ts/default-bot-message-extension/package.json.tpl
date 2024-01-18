@@ -7,12 +7,12 @@
     },
     "author": "Microsoft",
     "license": "MIT",
-    "main": "./lib/index.js",
+    "main": "./lib/src/index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
-        "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
-        "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
-        "start": "node ./lib/index.js",
+        "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
+        "build": "tsc --build",
+        "start": "node ./lib/src/index.js",
         "watch": "nodemon --exec \"npm run start\"",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

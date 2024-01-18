@@ -863,6 +863,7 @@ describe("Generator happy path", async () => {
     };
     await buildFakeTemplateZip(templateName, mockFileName);
 
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
 
@@ -887,7 +888,6 @@ describe("Generator happy path", async () => {
   });
 
   it("template from fallback when using local template tag", async () => {
-    sandbox.replace(templateConfig, "useLocalTemplate", true);
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
@@ -896,6 +896,7 @@ describe("Generator happy path", async () => {
     };
     await buildFakeTemplateZip(templateName, mockFileName);
 
+    sandbox.replace(templateConfig, "useLocalTemplate", true);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
 
     const result = await Generator.generateTemplate(
@@ -927,6 +928,7 @@ describe("Generator happy path", async () => {
     };
     await buildFakeTemplateZip(templateName, mockFileName);
 
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
     sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("fooUrl/templates@0.1.0/test.zip");
 

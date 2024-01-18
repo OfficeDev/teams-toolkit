@@ -487,6 +487,12 @@
         "category": "Teams"
       },
       {
+        "command": "fx-extension.createTeamsAiProject",
+        "title": "Start an AI app with existing OpenAPI specification",
+        "enablement": "!fx-extension.commandLocked",
+        "category": "Teams"
+      },
+      {
         "command": "fx-extension.createFromWalkthrough",
         "title": "Teams - Create Project",
         "enablement": "never"

@@ -959,6 +959,7 @@ describe("Generator happy path", async () => {
       telemetryProps: {},
     };
 
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
     sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("fooUrl/templates@0.1.1/test.zip");
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(zip);

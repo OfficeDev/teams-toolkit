@@ -370,7 +370,7 @@ class CLIEngine {
                 if (option.value === undefined) {
                   option.value = [];
                 }
-                const values = nextToken.split(",");
+                const values = nextToken.split(/[,\s]+/);
                 for (const v of values) {
                   option.value.push(v);
                 }

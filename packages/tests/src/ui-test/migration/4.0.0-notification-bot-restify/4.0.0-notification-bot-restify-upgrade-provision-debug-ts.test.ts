@@ -23,9 +23,11 @@ import {
 import {
   CLIVersionCheck,
   getBotSiteEndpoint,
+  updateDeverloperInManifestFile,
 } from "../../../utils/commonUtils";
 import path from "path";
 import { updatePakcageJson } from "./helper";
+import { runDeploy, runProvision } from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -83,11 +85,13 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
-      // remote provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      // remote deploy
-      await CLIVersionCheck("V3", mirgationDebugTestContext.testRootFolder);
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
+
+      // v3 provision
+      await runProvision(mirgationDebugTestContext.appName);
+      await runDeploy(Timeout.botDeploy * 2);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
 

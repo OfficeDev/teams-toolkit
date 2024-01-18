@@ -564,13 +564,14 @@ export async function cleanUpResourceGroup(
 
 export async function createResourceGroup(
   appName: string,
-  envName?: string
+  envName?: string,
+  location?: string
 ): Promise<boolean> {
   if (!appName) {
     return false;
   }
   const name = `${appName}-${envName}-rg`;
-  return await createResourceGroupByName(name);
+  return await createResourceGroupByName(name, location);
 }
 
 export async function createResourceGroupByName(

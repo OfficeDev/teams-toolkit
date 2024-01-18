@@ -15,7 +15,6 @@ export const envResetCommand: CLICommand = {
   defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues;
-    console.log(inputs["ignore-keys"]);
     if (inputs.env) {
       await envUtil.resetEnv(
         inputs.projectPath as string,

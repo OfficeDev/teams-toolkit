@@ -70,7 +70,6 @@ import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { isApiKeyEnabled } from "../../common/featureFlags";
-import { environmentManager } from "../../core/environment";
 import { environmentNameManager } from "../../core/environmentName";
 
 export enum TemplateNames {

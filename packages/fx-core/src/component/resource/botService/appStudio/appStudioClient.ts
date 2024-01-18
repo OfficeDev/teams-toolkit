@@ -28,6 +28,8 @@ import { CommonStrings, ConfigNames } from "../strings";
 import { ErrorContextMW } from "../../../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
 import { TelemetryProperty } from "../../../../common/telemetry";
+import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
+import { TelemetryUtils } from "../../../driver/teamsApp/utils/telemetry";
 
 function handleBotFrameworkError(
   e: any,
@@ -53,7 +55,7 @@ export class AppStudioClient {
 
   public static newAxiosInstance(accessToken: string): AxiosInstance {
     accessToken = CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, accessToken);
-    const instance = axios.create({
+    const instance = WrappedAxiosClient.create(TelemetryUtils.ctx.telemetryReporter, {
       headers: {
         post: {
           Authorization: `Bearer ${accessToken}`,
@@ -108,36 +110,30 @@ export class AppStudioClient {
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])
   public static async listBots(token: string): Promise<IBotRegistration[] | undefined> {
-    const telemetryProperties: { [key: string]: string } = {};
-    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.LIST_BOT, telemetryProperties);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
     try {
       const response = await RetryHandler.Retry(() =>
         axiosInstance.get(`${AppStudioClient.baseUrl}/api/botframework`)
       );
       if (isHappyResponse(response)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.LIST_BOT, telemetryProperties);
         return <IBotRegistration[]>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
         throw new Error("Failed to get data");
       }
     } catch (e) {
-      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT, telemetryProperties);
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
     }
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])
   public static async deleteBot(token: string, botId: string): Promise<void> {
-    const telemetryProperties: { [key: string]: string } = {};
-    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.DELETE_BOT, telemetryProperties);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
     try {
       await RetryHandler.Retry(() =>
         axiosInstance.delete(`${AppStudioClient.baseUrl}/api/botframework/${botId}`)
       );
     } catch (e) {
-      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.DELETE_BOT, telemetryProperties);
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.DELETE_BOT);
     }
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])

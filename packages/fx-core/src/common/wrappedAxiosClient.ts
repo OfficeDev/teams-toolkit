@@ -7,9 +7,10 @@ import {
   TelemetryPropertyKey,
   TelemetryPropertyValue,
 } from "../component/driver/teamsApp/utils/telemetry";
-import { TelemetryEvent } from "./telemetry";
+import { TelemetryEvent, TelemetryProperty } from "./telemetry";
 import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
 import { Constants } from "../component/driver/teamsApp/constants";
+import { HttpMethod } from "../component/constant/commonConstant";
 
 /**
  * This client will send telemetries to record API request trace
@@ -23,19 +24,18 @@ export class WrappedAxiosClient {
 
     // Send API start telemetry
     instance.interceptors.request.use((request) => {
-      const baseUrl = request.baseURL!;
       const method = request.method!;
-      const path = request.url!;
-      const apiName = this.convertUrlToApiName(baseUrl, path, method);
+      const fullPath = `${request.baseURL ?? ""}${request.url ?? ""}`;
+      const apiName = this.convertUrlToApiName(fullPath, method);
 
       const properties: { [key: string]: string } = {
         url: `<${apiName}-url>`,
         method: method,
+        ...this.generateExtraProperties(fullPath, request.data),
       };
 
       let eventName: string;
-      if (this.isTDPApi(baseUrl)) {
-        properties[TelemetryPropertyKey.region] = String(this.extractRegion(baseUrl, path));
+      if (this.isTDPApi(fullPath)) {
         eventName = TelemetryEvent.AppStudioApi;
       } else {
         eventName = TelemetryEvent.DependencyApi;
@@ -49,22 +49,22 @@ export class WrappedAxiosClient {
     instance.interceptors.response.use(
       // Send API success telemetry
       (response) => {
-        const baseUrl = response.request.host;
         const method = response.request.method;
-        const path = response.request.path;
-        const apiName = this.convertUrlToApiName(baseUrl, response.request.path, method);
+        const fullPath = `${(response.request.host as string) ?? ""}${
+          (response.request.path as string) ?? ""
+        }`;
+        const apiName = this.convertUrlToApiName(fullPath, method);
 
         const properties: { [key: string]: string } = {
           url: `<${apiName}-url>`,
           method: method,
           [TelemetryPropertyKey.success]: TelemetryPropertyValue.success,
           "status-code": response.status.toString(),
+          ...this.generateExtraProperties(fullPath, response.data),
         };
 
         let eventName: string;
-        if (this.isTDPApi(baseUrl)) {
-          // TDP API with region property
-          properties[TelemetryPropertyKey.region] = String(this.extractRegion(baseUrl, path));
+        if (this.isTDPApi(fullPath)) {
           eventName = TelemetryEvent.AppStudioApi;
         } else {
           eventName = TelemetryEvent.DependencyApi;
@@ -74,21 +74,26 @@ export class WrappedAxiosClient {
       },
       // Send API failure telemetry
       (error) => {
-        const baseUrl = error.response.request.host;
-        const path = error.response.request.path;
-        const method = error.response.request.method;
-        const apiName = this.convertUrlToApiName(baseUrl, path, method);
+        const method = error.request.method;
+        const fullPath = `${(error.request.host as string) ?? ""}${
+          (error.request.path as string) ?? ""
+        }`;
+        const apiName = this.convertUrlToApiName(fullPath, method);
 
+        let requestData: any;
+        if (error.config.data) {
+          requestData = JSON.parse(error.config.data);
+        }
         const properties: { [key: string]: string } = {
           url: `<${apiName}-url>`,
           method: method,
           [TelemetryPropertyKey.success]: TelemetryPropertyValue.failure,
           "status-code": error.response.status.toString(),
+          ...this.generateExtraProperties(fullPath, requestData),
         };
 
         let eventName: string;
-        if (this.isTDPApi(baseUrl)) {
-          properties[TelemetryPropertyKey.region] = String(this.extractRegion(baseUrl, path));
+        if (this.isTDPApi(fullPath)) {
           const correlationId = error.response.headers[Constants.CORRELATION_ID];
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           const extraData = error.response.data
@@ -110,7 +115,7 @@ export class WrappedAxiosClient {
         }
 
         telemetryReporter.sendTelemetryErrorEvent(eventName, properties);
-        return error;
+        return Promise.reject(error);
       }
     );
 
@@ -119,33 +124,118 @@ export class WrappedAxiosClient {
 
   /**
    * Convert request URL to API name, otherwise it will be redacted in telemetry
+   * This function should be extended when new API is added
    * @param baseUrl
    * @param path
    * @param method
    * @returns
    */
-  private static convertUrlToApiName(baseUrl: string, path: string, method: string): string {
-    if (this.isTDPApi(baseUrl)) {
-      if (path.match(new RegExp("/api/appdefinitions/partnerCenterAppPackageValidation"))) {
+  private static convertUrlToApiName(fullPath: string, method: string): string {
+    if (this.isTDPApi(fullPath)) {
+      if (fullPath.match(new RegExp("/api/appdefinitions/partnerCenterAppPackageValidation"))) {
         return APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE;
       }
-      if (path.match(new RegExp("/api/appdefinitions/v2/import"))) {
+      if (fullPath.match(new RegExp("/api/appdefinitions/v2/import"))) {
         return APP_STUDIO_API_NAMES.CREATE_APP;
       }
-      if (path.match(new RegExp("/api/appdefinitions/manifest"))) {
+      if (fullPath.match(new RegExp("/api/appdefinitions/manifest"))) {
         return APP_STUDIO_API_NAMES.EXISTS_IN_TENANTS;
       }
-      if (path.match(new RegExp("/api/appdefinitions/.*/manifest"))) {
+      if (fullPath.match(new RegExp("/api/appdefinitions/.*/manifest"))) {
         return APP_STUDIO_API_NAMES.GET_APP_PACKAGE;
       }
-      if (path.match(new RegExp("/api/appdefinitions/.*/owner"))) {
+      if (fullPath.match(new RegExp("/api/appdefinitions/.*/owner"))) {
         return APP_STUDIO_API_NAMES.UPDATE_OWNER;
       }
-      if (path.match(new RegExp("/api/appdefinitions/.*"))) {
-        return APP_STUDIO_API_NAMES.GET_APP;
+      if (
+        fullPath.match(
+          new RegExp(
+            /\/api\/appdefinitions\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/
+          )
+        )
+      ) {
+        if (method.toUpperCase() === HttpMethod.GET) {
+          return APP_STUDIO_API_NAMES.GET_APP;
+        }
+        if (method.toUpperCase() === HttpMethod.DELETE) {
+          return APP_STUDIO_API_NAMES.DELETE_APP;
+        }
+      }
+      if (fullPath.match(new RegExp("/api/appdefinitions/"))) {
+        return APP_STUDIO_API_NAMES.LIST_APPS;
+      }
+      if (fullPath.match(new RegExp("/api/publishing/.*/appdefinitions"))) {
+        return APP_STUDIO_API_NAMES.UPDATE_PUBLISHED_APP;
+      }
+      if (fullPath.match(new RegExp("/api/publishing/.*"))) {
+        if (method.toUpperCase() === HttpMethod.GET) {
+          return APP_STUDIO_API_NAMES.GET_PUBLISHED_APP;
+        }
+        if (method.toUpperCase() === HttpMethod.POST) {
+          return APP_STUDIO_API_NAMES.PUBLISH_APP;
+        }
+      }
+      if (fullPath.match(new RegExp("/api/v1.0/apiSecretRegistrations/.*"))) {
+        if (method.toUpperCase() === HttpMethod.GET) {
+          return APP_STUDIO_API_NAMES.GET_API_KEY;
+        }
+        if (method.toUpperCase() === HttpMethod.POST) {
+          return APP_STUDIO_API_NAMES.CREATE_API_KEY;
+        }
+      }
+      if (
+        fullPath.match(
+          new RegExp(
+            /\/api\/botframework\/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/
+          )
+        )
+      ) {
+        if (method.toUpperCase() === HttpMethod.GET) {
+          return APP_STUDIO_API_NAMES.GET_BOT;
+        }
+        if (method.toUpperCase() === HttpMethod.POST) {
+          return APP_STUDIO_API_NAMES.UPDATE_BOT;
+        }
+        if (method.toUpperCase() === HttpMethod.DELETE) {
+          return APP_STUDIO_API_NAMES.DELETE_BOT;
+        }
+      }
+      if (fullPath.match(new RegExp("/api/botframework"))) {
+        if (method.toUpperCase() === HttpMethod.GET) {
+          return APP_STUDIO_API_NAMES.LIST_BOT;
+        }
+        if (method.toUpperCase() === HttpMethod.POST) {
+          return APP_STUDIO_API_NAMES.CREATE_BOT;
+        }
       }
     }
-    return baseUrl + path;
+    return fullPath;
+  }
+
+  /**
+   * Generate extra properties for specific requirements
+   * @param baseUrl
+   * @param path
+   * @param method
+   */
+  private static generateExtraProperties(fullPath: string, data?: any): { [key: string]: string } {
+    const properties: { [key: string]: string } = {};
+    if (this.isTDPApi(fullPath)) {
+      // Add region property
+      properties[TelemetryPropertyKey.region] = String(this.extractRegion(fullPath));
+
+      // Add bot id property
+      if (fullPath.match(new RegExp("/api/botframework"))) {
+        const regex = new RegExp(/\/api\/botframework\/([0-9a-fA-F-]+)/);
+        const matches = regex.exec(fullPath);
+        if (matches != null && matches.length > 1) {
+          properties[TelemetryProperty.BotId] = matches[1];
+        } else if (data?.botId) {
+          properties[TelemetryProperty.BotId] = data.botId;
+        }
+      }
+    }
+    return properties;
   }
 
   /**
@@ -153,15 +243,14 @@ export class WrappedAxiosClient {
    * @param url
    * @returns
    */
-  private static extractRegion(url: string, path: string): string | undefined {
-    const fullPath = url + path;
+  private static extractRegion(fullPath: string): string | undefined {
     const regex = /dev(-int)?\.teams\.microsoft\.com\/([a-zA-Z-_]+)/;
     const matches = regex.exec(fullPath);
     if (matches != null && matches.length > 1) {
       return matches[2];
     }
 
-    return undefined;
+    return TelemetryPropertyValue.Global;
   }
 
   /**

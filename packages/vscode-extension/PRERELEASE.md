@@ -2,6 +2,34 @@
 
 ## Changelog
 
+### January 23, 2024
+
+#### New Features
+
+- **Deploy Tab Apps to Static Web App**: Azure Static Web Apps is a service that automatically builds and deploys full stack web apps to Azure from a code repository. Teams Toolkit now makes it the default solution for deploying Tab based applications.
+
+### Enhancements
+
+- **Clean up `.deployment` folder in between deployments**: Teams Toolkit now cleans up the `.deployment` folder in the build directory before each deployment to reduce deployment time and address a [known issue](https://github.com/OfficeDev/TeamsFx/issues/10075).
+- **Optimized Dev Tunnel Expiration**: Now inactive Dev Tunnel instances will be automatically cleaned up after an hour to reduce Dev Tunnel instance limitation error.
+- **Log Level Settings**: Added a log level settings so that you can control the verbosity of Teams Toolkit logs. You can find the settings in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) under `Teams Toolkit` section.
+![Logs](https://github.com/OfficeDev/TeamsFx/assets/11220663/3a1fc3a0-d69b-446e-8db2-0c756a18f95e)
+- **Richer Information in Sample App Detail Page**: The Sample app detail page now includes more details from the project README file, such as the project description, prerequisites, and steps to run the project.
+- **Improved Troubleshooting for Multi-tenant Scenario**: Teams Toolkit now provides a [troubleshooting guide](https://aka.ms/teamsfx-multi-tenant) when `aadApp/update` action failed with `HostNameNotOnVerifiedDomain` error in multi-tenant scenarios.
+- **Optimized SPFx Solution Version Handling**: Teams Toolkit now compares the SPFx solution version between global installations and the one used by Teams Toolkit when developers add additional web parts. Teams Toolkit will prompt developers if there's a need to install or upgrade the solution version when the versions are different.
+
+#### New Additions to the Sample App Gallery
+
+- **Format Reddit Link into Adaptive Card**: This sample application demonstrates how to format a Reddit link into an Adaptive Card in Microsoft Teams conversations.
+![Link Unfurling Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/0d44f8c3-d02e-4912-bfa2-6ed3fdb29c1b)
+
+#### Teams Toolkit CLI ([`@microsoft/teamsapp-cli`](https://www.npmjs.com/package/@microsoft/teamsapp-cli)) `v3.0.0@beta`
+![Teams Toolkit CLI](https://camo.githubusercontent.com/67608a468cbd406d6ff18585c8bc3b34d3d97d0a8ef525bdf516ca23fd5e32dd/68747470733a2f2f616b612e6d732f636c692d6865726f2d696d616765)
+Teams Toolkit CLI version 3 is now in public preview. Major changes including:
+- **New Command Signature**: Teams Toolkit CLI now starts with `teamsapp` as root command signature for more clarity. We recommend you to start changing your scripts to use `teamsapp` as the command prefix.
+- **New Command Structure**: Teams Toolkit CLI now has a new command structure that is more intuitive and easier to use. You can find the new command structure in the [Teams Toolkit CLI Command Reference](https://aka.ms/teamsfx-toolkit-cli).
+- **New Doctor Command**: `teamsapp doctor` command is a new command that helps you diagnose and fix common issues with Teams Toolkit and Teams application development.
+
 ### November 15, 2023
 
 This is a hot fix version that contains a bug fix:

@@ -22,7 +22,7 @@ export function addSWADeployTelemetry(eventName: string): Middleware {
     const name = ctx.arguments[4] as string | undefined;
     const command = maskSecretValues(ctx.arguments[0].args as string);
     // only add telemetry for script
-    if (name?.indexOf("deploy to Azure Static Web Apps") ?? -1 < 0) {
+    if (!name?.includes("deploy to Azure Static Web Apps")) {
       await next();
       return;
     }

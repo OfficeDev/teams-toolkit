@@ -48,18 +48,17 @@ This app template allows Teams to interact directly with third-party data, apps,
 | `appPackage` | Templates for the Teams application manifest, the API specification and response template for API responses |
 | `env`        | Environment files                                                                                           |
 | `infra`      | Templates for provisioning Azure resources                                                                  |
-| `repair`     | The source code for the repair API                                                                          |
+| `src`        | The source code for the repair API                                                                          |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                         | Contents                                                                     |
-| -------------------------------------------- | ---------------------------------------------------------------------------- |
-| `repair/function.json`                       | A configuration file that defines the function’s trigger and other settings. |
-| `repair/index.js`                            | The main file of a function in Azure Functions.                              |
-| `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.          |
-| `appPackage/responseTemplates/repair.json`   | A template file for rendering API response.                                  |
-| `repairsData.json`                           | The data source for the repair API.                                          |
-| `keyGen.js`                                  | Designed to generate a API key used for authorization.                       |
+| File                                         | Contents                                                            |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| `src/functions/repair.js`                    | The main file of a function in Azure Functions.                     |
+| `src/repairsData.json`                       | The data source for the repair API.                                 |
+| `src/keyGen.js`                              | Designed to generate a API key used for authorization.              |
+| `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API. |
+| `appPackage/responseTemplates/repair.json`   | A template file for rendering API response.                         |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

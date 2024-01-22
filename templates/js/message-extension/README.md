@@ -37,8 +37,8 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`teamsBot.js`| Handles the business logic for this app template to query npm registry and return result list to Teams.|
-|`index.js`| `index.js` is used to setup and configure the Message Extension.|
+|`src/teamsBot.js`| Handles the business logic for this app template to query npm registry and return result list to Teams.|
+|`src/index.js`| `index.js` is used to setup and configure the Message Extension.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

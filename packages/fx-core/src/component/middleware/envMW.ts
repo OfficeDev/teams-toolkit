@@ -53,7 +53,8 @@ const envLoaderMWImpl = async (
     inputs.env = environmentNameManager.getDefaultEnvName();
   }
   if (!inputs.env) {
-    if (skipLoadIfNoEnvInput) {
+    if (skipLoadIfNoEnvInput || inputs["ignore-env-file"] === true) {
+      process.env.TEAMSFX_ENV = "dev"; // set TEAMSFX_ENV = dev is to avoid unexpected error in other components that depends on this env variable
       await next();
       return;
     }
@@ -65,12 +66,14 @@ const envLoaderMWImpl = async (
       return;
     }
   }
-  const res = await envUtil.readEnv(projectPath, inputs.env!);
-  if (res.isErr()) {
-    ctx.result = err(res.error);
-    return;
+  if (inputs.env) {
+    const res = await envUtil.readEnv(projectPath, inputs.env);
+    if (res.isErr()) {
+      ctx.result = err(res.error);
+      return;
+    }
+    ctx.envVars = res.value;
   }
-  ctx.envVars = res.value;
   await next();
 };
 

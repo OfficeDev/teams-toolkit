@@ -44,6 +44,19 @@
     },
     {
         "os": {
+            "windows-latest": {
+                "node-18": []
+            },
+            "ubuntu-latest": {
+                "node-18": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-chef-bot"
+        ]
+    },
+    {
+        "os": {
             "ubuntu-latest": {
                 "node-16": [],
                 "node-18": []
@@ -65,7 +78,6 @@
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
-            "sample-localdebug-chef-bot",
             "sample-localdebug-large-scale-notification",
             "basic-tab-upgrade-debug"
         ]

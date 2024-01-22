@@ -2,18 +2,11 @@
 // Licensed under the MIT license.
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
-import {
-  execAsync,
-  editDotEnvFile,
-  timeoutPromise,
-  killPort,
-  spawnCommand,
-  killNgrok,
-} from "./commonUtils";
+import { execAsync, editDotEnvFile } from "./commonUtils";
 import { TemplateProjectFolder, Capability } from "./constants";
 import path from "path";
+import fs from "fs-extra";
 import * as os from "os";
-import * as chai from "chai";
 import { spawn } from "child_process";
 
 export class Executor {
@@ -32,12 +25,13 @@ export class Executor {
       if (result.stderr) {
         /// the command exit with 0
         console.log(
-          `[Success] "${command}" in ${cwd} with some stderr: ${result.stderr}`
+          `[Pending] "${command}" in ${cwd} with some stderr: ${result.stderr}`
         );
+        return { ...result, success: false };
       } else {
         console.log(`[Success] "${command}" in ${cwd}.`);
+        return { ...result, success: true };
       }
-      return { ...result, success: true };
     } catch (e: any) {
       if (e.killed && e.signal == "SIGTERM") {
         console.error(`[Failed] "${command}" in ${cwd}. Timeout and killed.`);
@@ -130,10 +124,14 @@ export class Executor {
     return this.executeCmd(workspace, "provision", env, processEnv, npx, isV3);
   }
 
-  static async validate(workspace: string, env = "dev") {
+  static async validate(
+    workspace: string,
+    env = "dev",
+    manifestFolderName = "appPackage"
+  ) {
     return this.executeCmd(
       workspace,
-      "validate --manifest-file ./appPackage/manifest.json",
+      `validate --manifest-file ./${manifestFolderName}/manifest.json`,
       env
     );
   }
@@ -300,9 +298,15 @@ export class Executor {
     const timeout = 100000;
     let oldPath = "";
     if (subFolder) {
-      oldPath = path.resolve("./resource", subFolder, template);
+      oldPath = path.resolve(
+        __dirname,
+        "..",
+        "e2e/resource",
+        subFolder,
+        template
+      );
     } else {
-      oldPath = path.resolve("./resource", template);
+      oldPath = path.resolve(__dirname, "..", "e2e/resource", template);
     }
     const newPath = path.resolve(testFolder, appName);
     try {
@@ -323,10 +327,14 @@ export class Executor {
     console.log(`successfully open project: ${newPath}`);
   }
 
-  static async package(workspace: string, env = "dev") {
+  static async package(
+    workspace: string,
+    env = "dev",
+    manifestFolderName = "appPackage"
+  ) {
     return this.executeCmd(
       workspace,
-      "package --manifest-file ./appPackage/manifest.json",
+      `package --manifest-file ./${manifestFolderName}/manifest.json`,
       env
     );
   }
@@ -413,5 +421,87 @@ export class Executor {
         onError(dataString);
       }
     });
+  }
+
+  static spawnCommand(
+    projectPath: string,
+    command: string,
+    args: string[],
+    onData?: (data: string) => void,
+    onError?: (data: string) => void
+  ) {
+    const childProcess = spawn(
+      os.type() === "Windows_NT" ? command + ".cmd" : command,
+      args,
+      {
+        cwd: projectPath,
+        env: process.env,
+      }
+    );
+    childProcess.stdout.on("data", (data) => {
+      const dataString = data.toString();
+      if (onData) {
+        onData(dataString);
+      }
+    });
+    childProcess.stderr.on("data", (data) => {
+      const dataString = data.toString();
+      if (onError) {
+        onError(dataString);
+      }
+    });
+    return childProcess;
+  }
+
+  static debugBotFunctionPreparation(projectPath: string) {
+    let envFile = "";
+    let tunnelName = "";
+    let envContent = "";
+    try {
+      envFile = path.resolve(projectPath, "env", ".env.local");
+      envContent = fs.readFileSync(envFile, "utf-8");
+    } catch (error) {
+      console.log("read file error", error);
+    }
+    const devtunnelProcess = Executor.startDevtunnel(
+      (data) => {
+        if (data) {
+          // start devtunnel
+          const domainRegex = /Connect via browser: https:\/\/(\S+)/;
+          const endpointRegex = /Connect via browser: (\S+)/;
+          const tunnelNameRegex =
+            /Ready to accept connections for tunnel: (\S+)/;
+          console.log(data);
+          const domainFound = data.match(domainRegex);
+          const endpointFound = data.match(endpointRegex);
+          const tunnelNameFound = data.match(tunnelNameRegex);
+          if (domainFound && endpointFound) {
+            if (domainFound[1] && endpointFound[1]) {
+              const domain = domainFound[1];
+              const endpoint = endpointFound[1];
+              try {
+                console.log(endpoint);
+                console.log(tunnelName);
+                envContent += `\nBOT_ENDPOINT=${endpoint}`;
+                envContent += `\nBOT_DOMAIN=${domain}`;
+                envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
+                fs.writeFileSync(envFile, envContent);
+              } catch (error) {
+                console.log(error);
+              }
+            }
+          }
+          if (tunnelNameFound) {
+            if (tunnelNameFound[1]) {
+              tunnelName = tunnelNameFound[1];
+            }
+          }
+        }
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+    return { devtunnelProcess, tunnelName };
   }
 }

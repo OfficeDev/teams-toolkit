@@ -48,12 +48,21 @@ export const EnvOption: CLICommandOption = {
   description:
     "Specifies the environment name for the project scaffolded by Microsoft Teams Toolkit.",
 };
-
+export const IgnoreLoadEnvOption: CLICommandOption = {
+  name: "ignore-env-file",
+  type: "boolean",
+  description: "Whether to skip loading .env file when --env is not specified.",
+};
 export const EnvFileOption: CLICommandOption = {
   name: "env-file",
   type: "string",
   description:
     "Specifies the .env file that defines the variables to replace in the Teams app manifest template file.",
+};
+export const IgnoreKeysOption: CLICommandOption = {
+  name: "ignore-keys",
+  type: "array",
+  description: "Specifies the keys to ignore in the .env file.",
 };
 
 export const ListFormatOption: CLICommandOption = {

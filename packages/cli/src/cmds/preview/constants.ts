@@ -98,9 +98,9 @@ export const doctorResult = {
   NodeNotFound: `Cannot find Node.js.`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions). Your project may continue to work but we recommend to install the supported version.`,
   NodeSuccess: `Node.js version (@Version) is installed`,
-  InstallNode: "Go to https://nodejs.org/about/releases/ to install LTS Node.js.",
+  InstallNode: "Go to https://nodejs.org to install LTS Node.js.",
   InstallNodeV3:
-    "The supported node versions are specified in the package.json. Go to https://nodejs.org/about/releases/ to install a supported Node.js.",
+    "The supported node versions are specified in the package.json. Go to https://nodejs.org to install a supported Node.js.",
   SideLoadingDisabled:
     "Your Microsoft 365 tenant admin hasn't enabled custom app upload permission for your account. You can't install your app to Teams!",
   NotSignIn: "No Microsoft 365 account login",

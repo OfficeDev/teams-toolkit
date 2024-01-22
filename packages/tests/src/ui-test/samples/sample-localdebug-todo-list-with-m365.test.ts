@@ -12,6 +12,7 @@ import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
 import * as path from "path";
 import * as fs from "fs";
+import * as os from "os";
 
 class TodoListM365TestCase extends CaseFactory {
   public override async onAfterCreate(
@@ -40,5 +41,7 @@ new TodoListM365TestCase(
   {
     teamsAppName: "toDoList-local",
     skipValidation: true,
+    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
+    testRootFolder: path.resolve(os.homedir(), "resourse"), // fix eslint error
   }
 ).test();

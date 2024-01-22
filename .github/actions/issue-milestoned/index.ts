@@ -4,7 +4,7 @@ import { DevopsClient } from './azdo';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { context } from '@actions/github';
 import { getInput } from '@actions/core';
-import { getEmail } from '../teamsfx-utils/utils';
+import { getEmail, sendAlert } from '../teamsfx-utils/utils';
 import * as WorkItemTrackingInterfaces from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
 
 
@@ -27,27 +27,40 @@ class Milestoned extends Action {
 	async onMilestoned(issue: OctoKitIssue) {
 		const content = await issue.getIssue();
 		const milestoneTitle = content.milestone?.title ?? "";
+		let sprintPath = "";
+		if (content.milestone?.description) {
+			const match = content.milestone?.description.match(/Sprint path is:(.*)/);
+			if (match && match.length > 1) {
+				sprintPath = match[1];
+			}
+		}
 		if (milestoneTitle.startsWith(milestonePrefix)) {
 			safeLog(`the issue ${content.number} is milestoned with ${milestoneTitle}`);
 			let client = await this.createClient();
 			const asignee = getEmail(content.assignee);
 			if (!asignee) {
 				safeLog(`the issue ${content.number} assignee:${content.assignee} is not associated with email address, ignore.`);
+				const subject = '[Github Issue Alert] missing associated email address for assignee';
+				const issueLink = `https://github.com/OfficeDev/TeamsFx/issues/${content.number}`;
+				const fileLink = "https://github.com/OfficeDev/TeamsFx/blob/dev/.github/accounts.json";
+				const message = `There is a github issue <a>${issueLink}</a> milestoned with account <b>${content.assignee}</b> which is not associated with company email. Please check it and update the account mapping in the file <a>${fileLink}</a>.`;
+				safeLog(message);
+				sendAlert(subject, message);
 			}
 			const url = this.issueUrl(content.number);
 			const title = titlePreix + `[${milestoneTitle}]` + content.title;
 			let workItem: WorkItemTrackingInterfaces.WorkItem;
 			if (featureLabel && content.labels.includes(featureLabel)) {
 				safeLog(`issue labeled with ${featureLabel}. Feature work item will be created.`);
-				workItem = await client.createFeatureItem(title, asignee, undefined, url);
+				workItem = await client.createFeatureItem(title, asignee, undefined, url, sprintPath);
 			} else if (content.labels.includes(bugLabel)) {
 				safeLog(`issue labeled with ${bugLabel}. Bug work item will be created.`);
-				workItem = await client.createBugItem(title, asignee, undefined, url);
+				workItem = await client.createBugItem(title, asignee, undefined, url, sprintPath);
 			} else {
 				safeLog(
 					`issue labeled without feature label(${featureLabel}) and bug label(${bugLabel}). Default bug work item will be created.`,
 				);
-				workItem = await client.createBugItem(title, asignee, undefined, url);
+				workItem = await client.createBugItem(title, asignee, undefined, url, sprintPath);
 			}
 			safeLog(`finished to create work item.`);
 			const workItemUrl = workItem._links?.html?.href;

@@ -488,6 +488,26 @@ describe("envUtils", () => {
       assert.isTrue(res.isOk());
     });
 
+    it("EnvLoaderMW ignore-env-file", async () => {
+      sandbox.stub(fs, "pathExists").resolves(true);
+      class MyClass {
+        async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+          return ok(undefined);
+        }
+      }
+      hooks(MyClass, {
+        myMethod: [EnvLoaderMW(true)],
+      });
+      const my = new MyClass();
+      const inputs = {
+        platform: Platform.VSCode,
+        projectPath: ".",
+        "ignore-env-file": true,
+      };
+      const res = await my.myMethod(inputs);
+      assert.isTrue(res.isOk());
+    });
+
     it("EnvLoaderMW success for F5 (missing .env file)", async () => {
       sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok("."));
       sandbox.stub(fs, "pathExistsSync").returns(false);
@@ -531,7 +551,7 @@ describe("envUtils", () => {
       const res = await my.myMethod(inputs);
       assert.isTrue(res.isErr());
     });
-    it("EnvLoaderMW success: no env available, use dev", async () => {
+    it("EnvLoaderMW success: no env available", async () => {
       sandbox.stub(pathUtils, "getEnvFolderPath").resolves(ok("teamsfx"));
       sandbox.stub(envUtil, "listEnv").resolves(ok([]));
       sandbox.stub(envUtil, "readEnv").resolves(ok({}));
@@ -830,6 +850,34 @@ describe("envUtils", () => {
       sandbox.stub(fs, "readFile").resolves("" as any);
       await envUtil.loadEnvFile(".env.dev");
       assert.equal(process.env.KEY, "VALUE");
+    });
+  });
+
+  describe("resetEnvFile", () => {
+    it("happy path", async () => {
+      const obj: any = { obj: { IKEY: "IKEY", KEY: "KEY" } };
+      sandbox.stub(dotenvUtil, "deserialize").returns(obj);
+      sandbox.stub(fs, "readFile").resolves("" as any);
+      sandbox.stub(fs, "writeFile").resolves();
+      await envUtil.resetEnvFile(" ", ["IKEY"]);
+      assert.equal(obj.obj.KEY, "");
+    });
+  });
+
+  describe("resetEnv", () => {
+    it("happy path", async () => {
+      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+      sandbox.stub(envUtil, "resetEnvFile").resolves();
+      sandbox.stub(fs, "pathExists").resolves(true);
+      await envUtil.resetEnv(" ", "dev", ["IKEY"]);
+    });
+    it("getEnvFilePath error", async () => {
+      sandbox.stub(pathUtils, "getEnvFilePath").resolves(err(new UserCancelError()));
+      await envUtil.resetEnv(" ", "dev", ["IKEY"]);
+    });
+    it("getEnvFilePath return undefined", async () => {
+      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
+      await envUtil.resetEnv(" ", "dev", ["IKEY"]);
     });
   });
 });

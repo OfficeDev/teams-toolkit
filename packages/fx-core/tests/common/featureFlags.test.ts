@@ -12,6 +12,7 @@ import {
   initializePreviewFeatureFlags,
   isApiKeyEnabled,
   isMultipleParametersEnabled,
+  isTeamsFxRebrandingEnabled,
 } from "../../src/common/featureFlags";
 chai.use(chaiAsPromised);
 
@@ -63,6 +64,23 @@ describe("featureFlags", () => {
     it("is false", async () => {
       mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "false" });
       const res = isMultipleParametersEnabled();
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("isTeamsFxRebrandingEnabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_REBRANDING: "true" });
+      const res = isTeamsFxRebrandingEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_REBRANDING: "false" });
+      const res = isTeamsFxRebrandingEnabled();
       chai.assert.isFalse(res);
     });
   });

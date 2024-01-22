@@ -1,38 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { Service } from "typedi";
-import { CreateAadAppArgs } from "./interface/createAadAppArgs";
-import { AadAppClient } from "./utility/aadAppClient";
-import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
-import {
-  FxError,
-  M365TokenProvider,
-  Result,
-  SystemError,
-  UserError,
-  ok,
-  err,
-} from "@microsoft/teamsfx-api";
-import { GraphScopes } from "../../../common/tools";
-import { MissingEnvUserError } from "./error/missingEnvError";
-import axios from "axios";
 import { hooks } from "@feathersjs/hooks/lib";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
+import axios from "axios";
+import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { logMessageKeys, descriptionMessageKeys, constants } from "./utility/constants";
+import { GraphScopes } from "../../../common/tools";
 import {
   HttpClientError,
   HttpServerError,
   InvalidActionInputError,
-  UnhandledError,
+  assembleError,
 } from "../../../error/common";
-import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
-import { SignInAudience } from "./interface/signInAudience";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
 import { AadAppNameTooLongError } from "./error/aadAppNameTooLongError";
+import { MissingEnvUserError } from "./error/missingEnvError";
+import { CreateAadAppArgs } from "./interface/createAadAppArgs";
+import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
+import { SignInAudience } from "./interface/signInAudience";
+import { AadAppClient } from "./utility/aadAppClient";
+import { constants, descriptionMessageKeys, logMessageKeys } from "./utility/constants";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -170,7 +162,7 @@ export class CreateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledError(error as Error, actionName)),
+        result: err(assembleError(error as Error, actionName)),
         summaries: summaries,
       };
     }

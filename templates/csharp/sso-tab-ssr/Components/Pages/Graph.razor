@@ -105,7 +105,7 @@
     private async Task<OnBehalfOfCredential> GetOnBehalfOfCredential()
     {
         var config = Configuration.Get<ConfigOptions>();
-        var tenantId = config.TeamsFx.Authentication.OAuthAuthority.TrimStart("https://login.microsoftonline.com/".ToCharArray());
+        var tenantId = config.TeamsFx.Authentication.OAuthAuthority.Remove(0, "https://login.microsoftonline.com/".Length);
         AccessToken ssoToken = await teamsUserCredential.GetTokenAsync(new TokenRequestContext(null), new CancellationToken());
         return new OnBehalfOfCredential(
             tenantId,
@@ -114,7 +114,7 @@
             ssoToken.Token
         );
     }
-    
+
     private GraphServiceClient GetGraphServiceClient(TokenCredential tokenCredential)
     {
         var client = new GraphServiceClient(tokenCredential, new string[] { _scope });

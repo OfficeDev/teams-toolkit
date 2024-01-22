@@ -263,14 +263,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install azure-functions-core-tools-4
 
-      - name: Install Win tools (win)
-        if: matrix.os == 'windows-latest'
-        run: |
-          Start-process powershell -Verb RunAs -ArgumentList "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))" -Wait 
-          Write-Host "Finish Installing Choco."
-          Start-Process powershell -verb RunAs -ArgumentList "C:\ProgramData\Chocolatey\choco.exe install openssl -y --force" -wait 
-          Write-Host "Finish Installing openssl."
-
       - name: Install devtunnel (ubuntu)
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         run: |

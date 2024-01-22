@@ -56,7 +56,7 @@ describe("Migration Tests", function () {
       await validateNotification(Notification.Upgrade);
 
       // local debug
-      await sampledebugContext.debugWithCLI("local");
+      await sampledebugContext.debugWithCLI("local", false);
 
       // upgrade
       await upgradeByTreeView();

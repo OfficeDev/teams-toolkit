@@ -258,12 +258,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-      - name: lerna expect rc version
+      - name: list history
         if: ${{ github.event.pull_request.base.ref == 'main' }}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${{ steps.branch-name.outputs.current_branch }} --yes
-          npx lerna changed -l > version_info.txt
-          cat feat_history.txt >> version_info.txt
+          cat feat_history.txt > version_info.txt
           cat fix_history.txt >> version_info.txt
       - uses: JoseThen/comment-pr@v1.2.0
         with:

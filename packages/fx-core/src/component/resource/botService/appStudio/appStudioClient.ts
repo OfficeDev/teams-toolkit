@@ -25,7 +25,7 @@ import {
 import { Messages } from "../messages";
 import { RetryHandler } from "../retryHandler";
 import { CommonStrings, ConfigNames } from "../strings";
-import { ErrorContextMW, TOOLS } from "../../../../core/globalVars";
+import { ErrorContextMW } from "../../../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
 import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 
@@ -49,7 +49,7 @@ export class AppStudioClient {
 
   public static newAxiosInstance(accessToken: string): AxiosInstance {
     accessToken = CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, accessToken);
-    const instance = WrappedAxiosClient.create(TOOLS.telemetryReporter, {
+    const instance = WrappedAxiosClient.create({
       headers: {
         post: {
           Authorization: `Bearer ${accessToken}`,

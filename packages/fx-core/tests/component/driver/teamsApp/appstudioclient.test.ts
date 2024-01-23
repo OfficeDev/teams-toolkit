@@ -103,7 +103,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
@@ -133,7 +132,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
@@ -309,7 +307,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -334,7 +331,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -365,7 +361,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -394,7 +389,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -425,7 +419,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -454,7 +447,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -493,7 +485,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
@@ -522,7 +513,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
@@ -567,7 +557,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.getAppPackage(appDef.teamsAppId!, appStudioToken, logProvider);
@@ -620,7 +609,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.partnerCenterAppPackageValidation(Buffer.from(""), appStudioToken);
@@ -659,7 +647,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.checkExistsInTenant(appDef.teamsAppId!, appStudioToken);
@@ -710,7 +697,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.publishTeamsAppUpdate("", Buffer.from(""), appStudioToken);
@@ -752,7 +738,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.publishTeamsAppUpdate(
@@ -791,7 +776,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.grantPermission(
@@ -970,7 +954,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.getApiKeyRegistrationById(appStudioToken, "fakeId");
@@ -1034,7 +1017,6 @@ describe("App Studio API Test", () => {
         root: "fakeRoot",
       } as any;
       TelemetryUtils.init(ctx);
-      sinon.stub(TelemetryUtils, "sendErrorEvent").callsFake(() => {});
 
       try {
         await AppStudioClient.createApiKeyRegistration(appStudioToken, appApiRegistration);

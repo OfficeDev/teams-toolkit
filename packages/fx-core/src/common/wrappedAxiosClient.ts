@@ -1,7 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import axios, { AxiosInstance, CreateAxiosDefaults } from "axios";
-import { TelemetryReporter } from "@microsoft/teamsfx-api";
+import axios, {
+  AxiosInstance,
+  AxiosError,
+  CreateAxiosDefaults,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios";
+import { TOOLS } from "../core/globalVars";
 import { APP_STUDIO_API_NAMES } from "../component/driver/teamsApp/constants";
 import {
   TelemetryPropertyKey,
@@ -16,113 +22,122 @@ import { HttpMethod } from "../component/constant/commonConstant";
  * This client will send telemetries to record API request trace
  */
 export class WrappedAxiosClient {
-  public static create(
-    telemetryReporter?: TelemetryReporter,
-    config?: CreateAxiosDefaults
-  ): AxiosInstance {
+  public static create(config?: CreateAxiosDefaults): AxiosInstance {
     const instance = axios.create(config);
 
-    // Send API start telemetry
-    instance.interceptors.request.use((request) => {
-      const method = request.method!;
-      const fullPath = `${request.baseURL ?? ""}${request.url ?? ""}`;
-      const apiName = this.convertUrlToApiName(fullPath, method);
+    instance.interceptors.request.use(this.onRequest);
 
-      const properties: { [key: string]: string } = {
-        url: `<${apiName}-url>`,
-        method: method,
-        params: this.generateParameters(request.params),
-        ...this.generateExtraProperties(fullPath, request.data),
-      };
-
-      let eventName: string;
-      if (this.isTDPApi(fullPath)) {
-        eventName = TelemetryEvent.AppStudioApi;
-      } else {
-        eventName = TelemetryEvent.DependencyApi;
-      }
-
-      telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties);
-
-      return request;
-    });
-
-    instance.interceptors.response.use(
-      // Send API success telemetry
-      (response) => {
-        const method = response.request.method;
-        const fullPath = `${(response.request.host as string) ?? ""}${
-          (response.request.path as string) ?? ""
-        }`;
-        const apiName = this.convertUrlToApiName(fullPath, method);
-
-        const properties: { [key: string]: string } = {
-          url: `<${apiName}-url>`,
-          method: method,
-          params: this.generateParameters(response.config.params),
-          [TelemetryPropertyKey.success]: TelemetryPropertyValue.success,
-          "status-code": response.status.toString(),
-          ...this.generateExtraProperties(fullPath, response.data),
-        };
-
-        let eventName: string;
-        if (this.isTDPApi(fullPath)) {
-          eventName = TelemetryEvent.AppStudioApi;
-        } else {
-          eventName = TelemetryEvent.DependencyApi;
-        }
-        telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
-        return response;
-      },
-      // Send API failure telemetry
-      (error) => {
-        const method = error.request.method;
-        const fullPath = `${(error.request.host as string) ?? ""}${
-          (error.request.path as string) ?? ""
-        }`;
-        const apiName = this.convertUrlToApiName(fullPath, method);
-
-        let requestData: any;
-        if (error.config.data) {
-          requestData = JSON.parse(error.config.data);
-        }
-        const properties: { [key: string]: string } = {
-          url: `<${apiName}-url>`,
-          method: method,
-          params: this.generateParameters(error.config.params),
-          [TelemetryPropertyKey.success]: TelemetryPropertyValue.failure,
-          "status-code": error.response.status.toString(),
-          ...this.generateExtraProperties(fullPath, requestData),
-        };
-
-        let eventName: string;
-        if (this.isTDPApi(fullPath)) {
-          const correlationId = error.response.headers[Constants.CORRELATION_ID];
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          const extraData = error.response.data
-            ? `data: ${JSON.stringify(error.response.data)}`
-            : "";
-          const TDPApiFailedError = new DeveloperPortalAPIFailedError(
-            error,
-            correlationId,
-            apiName,
-            extraData
-          );
-          properties[
-            TelemetryPropertyKey.errorCode
-          ] = `${TDPApiFailedError.source}.${TDPApiFailedError.name}`;
-          properties[TelemetryPropertyKey.errorMessage] = TDPApiFailedError.message;
-          eventName = TelemetryEvent.AppStudioApi;
-        } else {
-          eventName = TelemetryEvent.DependencyApi;
-        }
-
-        telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
-        return Promise.reject(error);
-      }
-    );
+    instance.interceptors.response.use(this.onResponse, this.onRejected);
 
     return instance;
+  }
+
+  /**
+   * Send API start telemetry
+   * @param request
+   */
+  public static onRequest(request: InternalAxiosRequestConfig) {
+    const method = request.method!;
+    const fullPath = `${request.baseURL ?? ""}${request.url ?? ""}`;
+    const apiName = this.convertUrlToApiName(fullPath, method);
+
+    const properties: { [key: string]: string } = {
+      url: `<${apiName}-url>`,
+      method: method,
+      params: this.generateParameters(request.params),
+      ...this.generateExtraProperties(fullPath, request.data),
+    };
+
+    let eventName: string;
+    if (this.isTDPApi(fullPath)) {
+      eventName = TelemetryEvent.AppStudioApi;
+    } else {
+      eventName = TelemetryEvent.DependencyApi;
+    }
+
+    TOOLS.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties);
+    return request;
+  }
+
+  /**
+   * Send API success telemetry
+   * @param response
+   * @returns
+   */
+  public static onResponse(response: AxiosResponse) {
+    const method = response.request.method;
+    const fullPath = `${(response.request.host as string) ?? ""}${
+      (response.request.path as string) ?? ""
+    }`;
+    const apiName = this.convertUrlToApiName(fullPath, method);
+
+    const properties: { [key: string]: string } = {
+      url: `<${apiName}-url>`,
+      method: method,
+      params: this.generateParameters(response.config.params),
+      [TelemetryPropertyKey.success]: TelemetryPropertyValue.success,
+      "status-code": response.status.toString(),
+      ...this.generateExtraProperties(fullPath, response.data),
+    };
+
+    let eventName: string;
+    if (this.isTDPApi(fullPath)) {
+      eventName = TelemetryEvent.AppStudioApi;
+    } else {
+      eventName = TelemetryEvent.DependencyApi;
+    }
+    TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, properties);
+    return response;
+  }
+
+  /**
+   * Send API failure telemetry
+   * @param error
+   * @returns
+   */
+  public static onRejected(error: AxiosError) {
+    const method = error.request.method;
+    const fullPath = `${(error.request.host as string) ?? ""}${
+      (error.request.path as string) ?? ""
+    }`;
+    const apiName = WrappedAxiosClient.convertUrlToApiName(fullPath, method);
+
+    let requestData: any;
+    if (error.config?.data) {
+      requestData = JSON.parse(error.config.data);
+    }
+    const properties: { [key: string]: string } = {
+      url: `<${apiName}-url>`,
+      method: method,
+      params: WrappedAxiosClient.generateParameters(error.config?.params),
+      [TelemetryPropertyKey.success]: TelemetryPropertyValue.failure,
+      [TelemetryPropertyKey.errorMessage]: JSON.stringify(error.response?.data),
+      "status-code": error.response?.status.toString() ?? "undefined",
+      ...WrappedAxiosClient.generateExtraProperties(fullPath, requestData),
+    };
+
+    let eventName: string;
+    if (WrappedAxiosClient.isTDPApi(fullPath)) {
+      const correlationId = error.response?.headers[Constants.CORRELATION_ID];
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      const extraData = error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : "";
+      const TDPApiFailedError = new DeveloperPortalAPIFailedError(
+        error,
+        correlationId,
+        apiName,
+        extraData
+      );
+      properties[
+        TelemetryPropertyKey.errorCode
+      ] = `${TDPApiFailedError.source}.${TDPApiFailedError.name}`;
+      properties[TelemetryPropertyKey.errorMessage] = TDPApiFailedError.message;
+      eventName = TelemetryEvent.AppStudioApi;
+    } else {
+      eventName = TelemetryEvent.DependencyApi;
+    }
+
+    TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
+    return Promise.reject(error);
   }
 
   /**
@@ -133,7 +148,7 @@ export class WrappedAxiosClient {
    * @param method
    * @returns
    */
-  private static convertUrlToApiName(fullPath: string, method: string): string {
+  public static convertUrlToApiName(fullPath: string, method: string): string {
     if (this.isTDPApi(fullPath)) {
       if (fullPath.match(new RegExp("/api/appdefinitions/partnerCenterAppPackageValidation"))) {
         return APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE;
@@ -164,7 +179,7 @@ export class WrappedAxiosClient {
           return APP_STUDIO_API_NAMES.DELETE_APP;
         }
       }
-      if (fullPath.match(new RegExp("/api/appdefinitions/"))) {
+      if (fullPath.match(new RegExp("/api/appdefinitions"))) {
         return APP_STUDIO_API_NAMES.LIST_APPS;
       }
       if (fullPath.match(new RegExp("/api/publishing/.*/appdefinitions"))) {
@@ -212,6 +227,13 @@ export class WrappedAxiosClient {
         }
       }
     }
+    if (
+      fullPath.match(
+        new RegExp(/(^https:\/\/)?authsvc\.teams\.microsoft\.com\/v1\.0\/users\/region/)
+      )
+    ) {
+      return "get-region";
+    }
     return fullPath.replace(/\//g, `-`);
   }
 
@@ -247,7 +269,7 @@ export class WrappedAxiosClient {
    * @returns
    */
   private static extractRegion(fullPath: string): string | undefined {
-    const regex = /dev(-int)?\.teams\.microsoft\.com\/([a-zA-Z-_]+)/;
+    const regex = /dev(-int)?\.teams\.microsoft\.com\/([a-zA-Z-_]+)\/api/;
     const matches = regex.exec(fullPath);
     if (matches != null && matches.length > 1) {
       return matches[2];

@@ -835,7 +835,10 @@ class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      if (inputs.env !== environmentNameManager.getLocalEnvName()) {
+      if (
+        inputs.env !== environmentNameManager.getLocalEnvName() &&
+        inputs.env !== environmentNameManager.getTestToolEnvName()
+      ) {
         const consent = await deployUtils.askForDeployConsentV3(ctx);
         if (consent.isErr()) {
           return err(consent.error);

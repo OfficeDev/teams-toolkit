@@ -4,7 +4,7 @@
     "license": "MIT",
     "main": "./lib/index.js",
     "scripts": {
-        "build": "tsc --build && shx cp -r ./src/prompts ./lib/",
+        "build": "tsc --build && shx cp -r ./src/prompts ./lib/ && shx cp -r ./src/adaptivecards ./lib/",
         "clean": "rimraf node_modules lib tsconfig.tsbuildinfo",
         "lint": "eslint **/src/**/*.{j,t}s{,x} --fix --no-error-on-unmatched-pattern",
         "start": "tsc --build && node ./lib/index.js",

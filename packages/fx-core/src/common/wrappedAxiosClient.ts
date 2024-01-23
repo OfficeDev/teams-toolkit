@@ -17,7 +17,7 @@ import { HttpMethod } from "../component/constant/commonConstant";
  */
 export class WrappedAxiosClient {
   public static create(
-    telemetryReporter: TelemetryReporter,
+    telemetryReporter?: TelemetryReporter,
     config?: CreateAxiosDefaults
   ): AxiosInstance {
     const instance = axios.create(config);
@@ -42,7 +42,7 @@ export class WrappedAxiosClient {
         eventName = TelemetryEvent.DependencyApi;
       }
 
-      telemetryReporter.sendTelemetryEvent(`${eventName}-start`, properties);
+      telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties);
 
       return request;
     });
@@ -71,7 +71,7 @@ export class WrappedAxiosClient {
         } else {
           eventName = TelemetryEvent.DependencyApi;
         }
-        telemetryReporter.sendTelemetryErrorEvent(eventName, properties);
+        telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
         return response;
       },
       // Send API failure telemetry
@@ -117,7 +117,7 @@ export class WrappedAxiosClient {
           eventName = TelemetryEvent.DependencyApi;
         }
 
-        telemetryReporter.sendTelemetryErrorEvent(eventName, properties);
+        telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
         return Promise.reject(error);
       }
     );
@@ -212,7 +212,7 @@ export class WrappedAxiosClient {
         }
       }
     }
-    return fullPath;
+    return fullPath.replace(/\//g, `-`);
   }
 
   /**
@@ -262,7 +262,7 @@ export class WrappedAxiosClient {
    * @returns
    */
   private static isTDPApi(baseUrl: string): boolean {
-    const regex = /dev(-int)?\.teams\.microsoft\.com/;
+    const regex = /(^https:\/\/)?dev(-int)?\.teams\.microsoft\.com/;
     const matches = regex.exec(baseUrl);
     return matches != null && matches.length > 0;
   }

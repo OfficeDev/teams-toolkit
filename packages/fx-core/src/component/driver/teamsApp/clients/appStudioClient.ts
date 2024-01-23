@@ -19,7 +19,6 @@ import {
   getAppStudioEndpoint,
 } from ".././constants";
 import { RetryHandler } from "../utils/utils";
-import { TelemetryUtils } from "../utils/telemetry";
 import { HelpLinks } from "../../../../common/constants";
 import { getLocalizedString } from "../../../../common/localizeUtils";
 import {
@@ -33,7 +32,7 @@ import { waitSeconds } from "../../../../common/tools";
 import { IValidationResult } from "../../../driver/teamsApp/interfaces/appdefinitions/IValidationResult";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { manifestUtils } from "../utils/ManifestUtils";
-import { setErrorContext } from "../../../../core/globalVars";
+import { setErrorContext, TOOLS } from "../../../../core/globalVars";
 import {
   CheckSideloadingPermissionFailedError,
   DeveloperPortalAPIFailedError,
@@ -61,7 +60,7 @@ export namespace AppStudioClient {
    * @returns {AxiosInstance}
    */
   function createRequesterWithToken(appStudioToken: string, _regionalUrl?: string): AxiosInstance {
-    const instance = WrappedAxiosClient.create(TelemetryUtils.ctx.telemetryReporter, {
+    const instance = WrappedAxiosClient.create(TOOLS.telemetryReporter, {
       baseURL: _regionalUrl ?? baseUrl,
     });
     instance.defaults.headers.common["Authorization"] = `Bearer ${appStudioToken}`;

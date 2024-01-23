@@ -124,7 +124,7 @@ export enum TelemetryEvent {
   PublishInDeveloperPortal = "publish-in-developer-portal",
   MetaData = "metadata",
   ProjectType = "project-type",
-  DependencyApi = "denpendency-api",
+  DependencyApi = "dependency-api",
   AppStudioApi = "app-studio-api",
 }
 

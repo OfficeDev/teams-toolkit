@@ -25,10 +25,9 @@ import {
 import { Messages } from "../messages";
 import { RetryHandler } from "../retryHandler";
 import { CommonStrings, ConfigNames } from "../strings";
-import { ErrorContextMW } from "../../../../core/globalVars";
+import { ErrorContextMW, TOOLS } from "../../../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
 import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
-import { TelemetryUtils } from "../../../driver/teamsApp/utils/telemetry";
 
 function handleBotFrameworkError(e: any, apiName: string): void | undefined {
   if (e.response?.status === HttpStatusCode.NOTFOUND) {
@@ -50,7 +49,7 @@ export class AppStudioClient {
 
   public static newAxiosInstance(accessToken: string): AxiosInstance {
     accessToken = CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, accessToken);
-    const instance = WrappedAxiosClient.create(TelemetryUtils.ctx.telemetryReporter, {
+    const instance = WrappedAxiosClient.create(TOOLS.telemetryReporter, {
       headers: {
         post: {
           Authorization: `Bearer ${accessToken}`,

@@ -21,6 +21,7 @@ import {
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
 } from "../telemetry";
+import { WrappedAxiosClient } from "../wrappedAxiosClient";
 
 const M365ErrorSource = "M365";
 const M365ErrorComponent = "PackageService";
@@ -44,7 +45,7 @@ export class PackageService {
   }
 
   public constructor(endpoint: string, logger?: LogProvider) {
-    this.axiosInstance = axios.create({
+    this.axiosInstance = WrappedAxiosClient.create(TOOLS.telemetryReporter, {
       timeout: 30000,
     });
     this.initEndpoint = endpoint;

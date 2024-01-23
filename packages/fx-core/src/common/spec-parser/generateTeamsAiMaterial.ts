@@ -54,17 +54,16 @@ export interface AdaptiveCardResult {
 
 const codeTemplate = `
 app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
-  return clienPromise.then(async (client) => {
-    const path = await client.paths["{{pathUrl}}"];
-    if (path && path.get) {
-        const result = await path.get(parameter);
-        const card = generateAdaptiveCard("./adaptiveCards/{{operationId}}.json", result);
-        await context.sendActivity({ attachments: [card] });
-    } else {
-        await context.sendActivity("no result");
-    }
-    return "result";
-  });
+  const client = await api.getClient();
+  const path = await client.paths["{{pathUrl}}"];
+  if (path && path.get) {
+      const result = await path.get(parameter);
+      const card = generateAdaptiveCard("./adaptiveCards/{{operationId}}.json", result);
+      await context.sendActivity({ attachments: [card] });
+  } else {
+      await context.sendActivity("no result");
+  }
+  return "result";
 });`;
 
 export function generateTeamsAiMaterial(

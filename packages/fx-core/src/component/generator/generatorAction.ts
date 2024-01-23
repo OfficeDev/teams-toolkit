@@ -138,7 +138,7 @@ export const fetchUrlForHotfixOnlyAction: GeneratorAction = {
     if (semver.gt(latestVer, localVer)) {
       context.url = getTemplateZipUrlByTag(context.language!, latestTag);
     } else {
-      // download template from fallback
+      // generate template from fallback
       context.cancelDownloading = true;
     }
   },

@@ -115,7 +115,9 @@ describe("Generator utils", () => {
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0\n 0.0.0-rc";
     sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
-    const url = await generatorUtils.fetchTemplateZipUrl("templateName");
+    const templateName = "templateName";
+    const selectedTag = await generatorUtils.getTemplateLatestTag(templateName);
+    const url = generatorUtils.getTemplateZipUrlByTag(templateName, selectedTag);
     assert.isTrue(url.includes("0.0.0-rc"));
   });
 
@@ -127,7 +129,7 @@ describe("Generator utils", () => {
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     try {
-      await generatorUtils.fetchTemplateZipUrl("templateName");
+      await generatorUtils.getTemplateLatestTag("templateName");
     } catch (e) {
       assert.exists(e);
       return;
@@ -145,7 +147,9 @@ describe("Generator utils", () => {
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     sandbox.stub(templateConfig, "version").value("^2.0.0");
     sandbox.replace(templateConfig, "tagPrefix", "templates@");
-    const url = await generatorUtils.fetchTemplateZipUrl("templateName");
+    const templateName = "templateName";
+    const selectedTag = await generatorUtils.getTemplateLatestTag(templateName);
+    const url = generatorUtils.getTemplateZipUrlByTag(templateName, selectedTag);
     assert.isTrue(url.includes(tag));
   });
 
@@ -158,7 +162,7 @@ describe("Generator utils", () => {
     sandbox.stub(templateConfig, "version").value("^4.0.0");
     sandbox.replace(templateConfig, "tagPrefix", "templates@");
     try {
-      await generatorUtils.fetchTemplateZipUrl("templateName");
+      await generatorUtils.getTemplateLatestTag("templateName");
     } catch (e) {
       assert.exists(e);
       return;
@@ -763,7 +767,7 @@ describe("Generator happy path", async () => {
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
-    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("test.zip");
+    sandbox.stub(generatorUtils, "getTemplateZipUrlByTag").resolves("test.zip");
     sandbox
       .stub(generatorUtils, "fetchZipFromUrl")
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));
@@ -931,7 +935,9 @@ describe("Generator happy path", async () => {
     sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.replace(templateConfig, "localVersion", "9.9.9");
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
-    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("fooUrl/templates@0.1.0/test.zip");
+    sandbox
+      .stub(generatorUtils, "getTemplateZipUrlByTag")
+      .resolves("fooUrl/templates@0.1.0/test.zip");
 
     const result = await Generator.generateTemplate(
       context,

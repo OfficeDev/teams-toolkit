@@ -124,15 +124,6 @@ export function getTemplateLocalVersion(): string {
   return templateConfig.localVersion;
 }
 
-export async function fetchTemplateZipUrl(
-  name: string,
-  tryLimits = defaultTryLimits,
-  timeoutInMs = defaultTimeoutInMs
-): Promise<string> {
-  const selectedTag = await getTemplateLatestTag(name, tryLimits, timeoutInMs);
-  return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
-}
-
 export function getTemplateZipUrlByTag(name: string, selectedTag: string): string {
   return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
 }

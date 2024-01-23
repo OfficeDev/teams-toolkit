@@ -641,6 +641,18 @@ describe("AadAppClient", async () => {
       expect(debugLogs[1].includes("Received API response")).to.be.true;
     });
 
+    it("should not send debug log when log provider is undefined", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/owners/$ref`)
+        .reply(200);
+      const debugLogs: string[] = [];
+
+      const mockAadAppClient = new AadAppClient(new MockedM365Provider(), undefined);
+      const addOwnerResult = await aadAppClient.addOwner(expectedObjectId, mockedUserObjectId);
+      expect(debugLogs.length).to.equal(0);
+    });
+
     // it("should retry when get 404 response", async () => {
     //   nock("https://graph.microsoft.com/v1.0")
     //     .post(`applications/${expectedObjectId}/owners/$ref`)

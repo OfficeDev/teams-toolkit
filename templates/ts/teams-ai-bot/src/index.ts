@@ -28,7 +28,7 @@ import {
   TurnContext,
 } from "botbuilder";
 import yaml from "js-yaml";
-import { generateAdaptiveCard, getClient } from "./utility";
+import { generateAdaptiveCard } from "./utility";
 
 // Read botFilePath and botFileSecret from .env file.
 const ENV_FILE = path.join(__dirname, "..", ".env");

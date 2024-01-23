@@ -1,19 +1,5 @@
-import { CardFactory, TurnContext } from "botbuilder";
-import OpenAPIClientAxios from "openapi-client-axios";
+import { CardFactory } from "botbuilder";
 const ACData = require("adaptivecards-templating");
-
-export async function getClient(api: OpenAPIClientAxios) {
-  const client = await api.getClient();
-  client.interceptors.response.use(
-    function (response) {
-      return response;
-    },
-    async function (error) {
-      throw new Error(`Failed to call API. Error: ${JSON.stringify(error.message)}`);
-    }
-  );
-  return client;
-}
 
 export function generateAdaptiveCard(templatePath: string, result: any) {
   if (!result || !result.data) {

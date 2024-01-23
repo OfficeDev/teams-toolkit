@@ -61,18 +61,6 @@ export class TelemetryUtils {
     );
   }
 
-  public static sendSuccessEvent(
-    eventName: string,
-    _properties?: { [key: string]: string },
-    measurements?: { [key: string]: number }
-  ) {
-    const properties = Object.assign({}, _properties);
-    this.addCommonProperty(properties);
-    properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
-  }
-
   public static sendErrorEvent(
     eventName: string,
     error: SystemError | UserError,

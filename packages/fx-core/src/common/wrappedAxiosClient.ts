@@ -31,6 +31,7 @@ export class WrappedAxiosClient {
       const properties: { [key: string]: string } = {
         url: `<${apiName}-url>`,
         method: method,
+        params: this.generateParameters(request.params),
         ...this.generateExtraProperties(fullPath, request.data),
       };
 
@@ -58,6 +59,7 @@ export class WrappedAxiosClient {
         const properties: { [key: string]: string } = {
           url: `<${apiName}-url>`,
           method: method,
+          params: this.generateParameters(response.config.params),
           [TelemetryPropertyKey.success]: TelemetryPropertyValue.success,
           "status-code": response.status.toString(),
           ...this.generateExtraProperties(fullPath, response.data),
@@ -87,6 +89,7 @@ export class WrappedAxiosClient {
         const properties: { [key: string]: string } = {
           url: `<${apiName}-url>`,
           method: method,
+          params: this.generateParameters(error.config.params),
           [TelemetryPropertyKey.success]: TelemetryPropertyValue.failure,
           "status-code": error.response.status.toString(),
           ...this.generateExtraProperties(fullPath, requestData),
@@ -260,9 +263,23 @@ export class WrappedAxiosClient {
    */
   private static isTDPApi(baseUrl: string): boolean {
     const regex = /dev(-int)?\.teams\.microsoft\.com/;
-    if (baseUrl.match(regex)) {
-      return true;
+    const matches = regex.exec(baseUrl);
+    return matches != null && matches.length > 0;
+  }
+
+  /**
+   * Flattern query parameters to string, e.g. {a: 1, b: 2} => a:1;b:2
+   * @param params
+   * @returns
+   */
+  private static generateParameters(params?: Record<string, unknown>): string {
+    if (!params) {
+      return "";
     }
-    return false;
+    const parameters: string[] = [];
+    for (const [key, value] of Object.entries(params)) {
+      parameters.push(`${key}:${value as string}`);
+    }
+    return parameters.join(";");
   }
 }

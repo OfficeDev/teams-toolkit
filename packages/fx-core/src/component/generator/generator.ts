@@ -26,7 +26,7 @@ import {
   UnzipError,
 } from "./error";
 import {
-  DownloadDirectoryActionSeq,
+  SampleActionSeq,
   GeneratorAction,
   GeneratorActionName,
   GeneratorContext,
@@ -150,7 +150,7 @@ export class Generator {
 
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
     ctx.logProvider.debug(`Downloading sample "${sampleName}" to ${destinationPath}`);
-    await this.generate(generatorContext, DownloadDirectoryActionSeq);
+    await this.generate(generatorContext, SampleActionSeq);
     return ok(undefined);
   }
 
@@ -177,7 +177,7 @@ export function templateDefaultOnActionError(
   error: Error
 ): Promise<void> {
   switch (action.name) {
-    case GeneratorActionName.FetchTemplateUrlWithTag:
+    case GeneratorActionName.FetchUrlForHotfixOnly:
     case GeneratorActionName.FetchZipFromUrl:
       context.cancelDownloading = true;
       if (!(error instanceof CancelDownloading)) {

@@ -160,6 +160,28 @@ describe("AadAppClient", async () => {
       expect(createAadAppResult.id).to.equal(expectedObjectId);
       expect(createAadAppResult.signInAudience).to.equal("AzureADMultipleOrgs");
     });
+
+    it("should send debug log when sending request and receiving response", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply(201, {
+        id: expectedObjectId,
+        displayName: expectedDisplayName,
+      });
+      const debugLogs: string[] = [];
+
+      sinon.stub(MockedLogProvider.prototype, "debug").callsFake((log: string) => {
+        debugLogs.push(log);
+      });
+
+      const createAadAppResult = await aadAppClient.createAadApp(
+        expectedDisplayName,
+        SignInAudience.AzureADMultipleOrgs
+      );
+
+      expect(debugLogs.length).to.equal(2);
+      expect(debugLogs[0].includes("Sending API request")).to.be.true;
+      expect(debugLogs[1].includes("Received API response")).to.be.true;
+    });
   });
 
   describe("generateClientSecret", async () => {

@@ -12,7 +12,6 @@ import { getTemplatesFolder } from "../../folder";
 import { MissKeyError, SampleNotFoundError, TemplateNotFoundError } from "./error";
 import {
   downloadDirectory,
-  fetchTemplateZipUrl,
   fetchZipFromUrl,
   getSampleInfoFromName,
   SampleUrlInfo,
@@ -20,6 +19,7 @@ import {
   zipFolder,
   getTemplateLatestTag,
   getTemplateZipUrlByTag,
+  getTemplateLocalVersion,
 } from "./utils";
 import semver from "semver";
 
@@ -132,12 +132,13 @@ export const fetchUrlForHotfixOnlyAction: GeneratorAction = {
       context.tryLimits,
       context.timeoutInMs
     );
-    // hotfix generates template based on url
+    const localVer = getTemplateLocalVersion();
     const latestVer = latestTag.split("@")[1];
-    if (semver.patch(latestVer) !== 0) {
-      context.url = getTemplateZipUrlByTag(context.language!, latestVer);
+    // git tag version is higher than the local version, download template from github
+    if (semver.gt(latestVer, localVer)) {
+      context.url = getTemplateZipUrlByTag(context.language!, latestTag);
     } else {
-      // stable generates templates based on the fallback
+      // download template from fallback
       context.cancelDownloading = true;
     }
   },

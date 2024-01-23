@@ -120,6 +120,10 @@ export async function getTemplateLatestTag(
   return selectedTag;
 }
 
+export function getTemplateLocalVersion(): string {
+  return templateConfig.localVersion;
+}
+
 export async function fetchTemplateZipUrl(
   name: string,
   tryLimits = defaultTryLimits,

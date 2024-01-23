@@ -919,7 +919,7 @@ describe("Generator happy path", async () => {
     assert.isTrue(result.isOk());
   });
 
-  it("template from fallback when stable release", async () => {
+  it("template from fallback when local version is higher than online version", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
@@ -929,6 +929,7 @@ describe("Generator happy path", async () => {
     await buildFakeTemplateZip(templateName, mockFileName);
 
     sandbox.replace(templateConfig, "useLocalTemplate", false);
+    sandbox.replace(templateConfig, "localVersion", "9.9.9");
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
     sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("fooUrl/templates@0.1.0/test.zip");
 
@@ -952,7 +953,7 @@ describe("Generator happy path", async () => {
     assert.isTrue(result.isOk());
   });
 
-  it("template from downloading when hotfix release", async () => {
+  it("template from downloading when local version is not higher than online version", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
@@ -962,8 +963,9 @@ describe("Generator happy path", async () => {
     };
 
     sandbox.replace(templateConfig, "useLocalTemplate", false);
+    sandbox.replace(templateConfig, "localVersion", "0.1.0");
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
-    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("fooUrl/templates@0.1.1/test.zip");
+    sandbox.stub(generatorUtils, "getTemplateLatestTag").resolves("templates@0.1.1");
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(zip);
 
     const result = await Generator.generateTemplate(

@@ -63,6 +63,7 @@ import * as utils from "../../src/utils";
 import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
+import { envResetCommand } from "../../src/commands/models/envReset";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -359,6 +360,32 @@ describe("CLI commands", () => {
       };
       const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isErr());
+    });
+  });
+  describe("envResetCommand", async () => {
+    it("success with env", async () => {
+      sandbox.stub(envUtil, "resetEnv").resolves();
+      const ctx: CLIContext = {
+        command: { ...envAddCommand, fullName: "teamsapp env reset" },
+        optionValues: { env: "dev", projectPath: "." },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envResetCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("success with env file", async () => {
+      sandbox.stub(envUtil, "resetEnvFile").resolves();
+      const ctx: CLIContext = {
+        command: { ...envAddCommand, fullName: "teamsapp env reset" },
+        optionValues: { "env-file": ".env.dev" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envResetCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
     });
   });
   describe("provisionCommand", async () => {

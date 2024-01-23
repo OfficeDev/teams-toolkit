@@ -396,7 +396,7 @@ export abstract class CaseFactory {
                   options?.type === "spfx"
                 );
                 try {
-                  await runDeploy(Timeout.tabDeploy, options?.type === "spfx");
+                  await runDeploy(Timeout.tabDeploy);
                 } catch (error) {
                   await reRunDeploy(Timeout.tabDeploy);
                 }

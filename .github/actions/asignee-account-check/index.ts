@@ -26,6 +26,8 @@ class Checker extends Action {
 			}
 			safeLog(message);
 			sendAlert(subject, message);
+		} else {
+			safeLog(`the ${assignee} has associated Microsoft account ${msAccount}.`);
 		}
 	}
 	async onTriggered(_: OctoKit) {

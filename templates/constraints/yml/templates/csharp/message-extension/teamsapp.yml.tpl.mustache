@@ -8,12 +8,17 @@ provision:
 
 {{#botAadAppCreate}} {{/botAadAppCreate}}
 
-{{#armDeploy}} deploymentName: Create-resources-for-mxt {{/armDeploy}}
+{{#armDeploy}} deploymentName: Create-resources-for-me {{/armDeploy}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+
 {{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 # Triggered when 'teamsapp deploy' is executed
 deploy:

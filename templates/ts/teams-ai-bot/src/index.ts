@@ -141,7 +141,6 @@ const specPath = path.join(__dirname, "../appPackage/apiSpecificationFile/{{OPEN
 const specContent = yaml.load(fs.readFileSync(specPath, "utf8")) as Document;
 const api = new OpenAPIClientAxios({ definition: specContent });
 api.init();
-const clienPromise = api.getClient();
 
 // TODO: add function to add ai action.
 

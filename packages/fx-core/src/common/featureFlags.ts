@@ -59,3 +59,7 @@ export function isMultipleParametersEnabled(): boolean {
 export function isTeamsFxRebrandingEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TeamsFxRebranding, false);
 }
+
+export function isTdpTemplateCliTestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
+}

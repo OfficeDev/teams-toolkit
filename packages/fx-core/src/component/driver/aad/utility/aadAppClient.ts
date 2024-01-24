@@ -44,7 +44,7 @@ export class AadAppClient {
       baseURL: this.baseUrl,
     });
     this.axios.interceptors.request.use(async (config) => {
-      this.logProvider?.info(
+      this.logProvider?.debug(
         getLocalizedString("core.common.SendingApiRequest", config.url, JSON.stringify(config.data))
       );
 
@@ -62,7 +62,7 @@ export class AadAppClient {
       return config;
     });
     this.axios.interceptors.response.use((response) => {
-      this.logProvider?.info(
+      this.logProvider?.debug(
         getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
       );
       return response;

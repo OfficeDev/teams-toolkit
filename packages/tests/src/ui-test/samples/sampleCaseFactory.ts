@@ -14,7 +14,11 @@ import {
   LocalDebugError,
 } from "../../utils/constants";
 import { waitForTerminal } from "../../utils/vscodeOperation";
-import { debugInitMap, initPage } from "../../utils/playwrightOperation";
+import {
+  debugInitMap,
+  initPage,
+  reopenPage,
+} from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";
@@ -33,6 +37,7 @@ import path from "path";
 import { Executor } from "../../utils/executor";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import os from "os";
+import { assert } from "console";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -203,6 +208,26 @@ export abstract class CaseFactory {
     );
   }
 
+  public async onReopenPage(
+    sampledebugContext: SampledebugContext,
+    teamsAppId: string,
+    options?: {
+      teamsAppName: string;
+      includeFunction: boolean;
+      npmName: string;
+      dashboardFlag: boolean;
+      type: string;
+    }
+  ): Promise<Page> {
+    return await reopenPage(
+      sampledebugContext.context!,
+      teamsAppId,
+      Env.username,
+      Env.password,
+      { dashboardFlag: options?.dashboardFlag }
+    );
+  }
+
   public async onValidate(
     page: Page,
     options?: {
@@ -230,6 +255,7 @@ export abstract class CaseFactory {
       onBeforeBrowerStart,
       onInitPage,
       onValidate,
+      onReopenPage,
     } = this;
     describe("Sample Tests", function () {
       this.timeout(Timeout.testAzureCase);
@@ -282,11 +308,9 @@ export abstract class CaseFactory {
           );
         }
         await onAfter(sampledebugContext, env);
-        // windows in cli can't stop debug
-        if (options?.debug === "cli" && os.type() === "Windows_NT") {
-          if (successFlag) process.exit(0);
-          else process.exit(1);
-        }
+        // make sure to stop debug
+        if (successFlag) process.exit(0);
+        else process.exit(1);
       });
 
       it(
@@ -318,72 +342,25 @@ export abstract class CaseFactory {
             }
             const debugEnvMap: Record<"local" | "dev", () => Promise<void>> = {
               local: async () => {
-                // local debug
-                if (options?.debug === "cli") {
-                  // cli preview
-                  console.log("======= debug with cli ========");
-                  console.log("botFlag: ", botFlag);
-                  if (botFlag) {
-                    const tunnel = Executor.debugBotFunctionPreparation(
-                      sampledebugContext.projectPath
-                    );
-                    tunnelName = tunnel.tunnelName;
-                    devtunnelProcess = tunnel.devtunnelProcess;
-                  }
-                  await new Promise((resolve) =>
-                    setTimeout(resolve, 60 * 1000)
-                  );
-                  {
-                    const { success } = await Executor.provision(
-                      sampledebugContext.projectPath,
-                      "local"
-                    );
-                    expect(success).to.be.true;
-                  }
-                  {
-                    const { success } = await Executor.deploy(
-                      sampledebugContext.projectPath,
-                      "local"
-                    );
-                    expect(success).to.be.true;
-                  }
-                  debugProcess = Executor.debugProject(
-                    sampledebugContext.projectPath,
-                    "local",
-                    true,
-                    process.env,
-                    (data) => {
-                      if (data) {
-                        console.log(data);
-                      }
-                    },
-                    (error) => {
-                      console.log(error);
-                    }
-                  );
-                  await new Promise((resolve) =>
-                    setTimeout(resolve, 2 * 30 * 1000)
-                  );
-                } else {
-                  console.log("======= debug with ttk ========");
-                  await debugInitMap[sampleName]();
-                  for (const label of validate) {
-                    try {
-                      await debugMap[label]();
-                    } catch (error) {
-                      const errorMsg = error.toString();
-                      if (
-                        // skip can't find element
-                        errorMsg.includes(
-                          LocalDebugError.ElementNotInteractableError
-                        ) ||
-                        // skip timeout
-                        errorMsg.includes(LocalDebugError.TimeoutError)
-                      ) {
-                        console.log("[skip error] ", error);
-                      } else {
-                        expect.fail(errorMsg);
-                      }
+                // local debug with ttk
+                console.log("======= debug with ttk ========");
+                await debugInitMap[sampleName]();
+                for (const label of validate) {
+                  try {
+                    await debugMap[label]();
+                  } catch (error) {
+                    const errorMsg = error.toString();
+                    if (
+                      // skip can't find element
+                      errorMsg.includes(
+                        LocalDebugError.ElementNotInteractableError
+                      ) ||
+                      // skip timeout
+                      errorMsg.includes(LocalDebugError.TimeoutError)
+                    ) {
+                      console.log("[skip error] ", error);
+                    } else {
+                      expect.fail(errorMsg);
                     }
                   }
                 }
@@ -403,41 +380,111 @@ export abstract class CaseFactory {
               },
             };
 
-            if (options?.skipInit) {
+            // if no skip init step
+            if (!options?.skipInit) {
+              await debugEnvMap[env]();
+
+              const teamsAppId = await sampledebugContext.getTeamsAppId(env);
+              expect(teamsAppId).to.not.be.empty;
+
+              // use 2nd middleware to process typical sample
+              await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
+
+              // init
+              const page = await onInitPage(sampledebugContext, teamsAppId, {
+                includeFunction: options?.includeFunction ?? false,
+                npmName: options?.npmName ?? "",
+                dashboardFlag: options?.dashboardFlag ?? false,
+                type: options?.type ?? "",
+                teamsAppName: options?.teamsAppName ?? "",
+              });
+
+              // if no skip vaildation
+              if (!options?.skipValidation) {
+                await onValidate(page, {
+                  context: sampledebugContext,
+                  displayName: Env.displayName,
+                  includeFunction: options?.includeFunction ?? false,
+                  npmName: options?.npmName ?? "",
+                  env: env,
+                });
+              } else {
+                console.log("skip ui skipValidation...");
+                console.log("debug finish!");
+              }
+            } else {
               console.log("skip ui skipInit...");
               console.log("debug finish!");
-              return;
             }
-            await debugEnvMap[env]();
 
-            const teamsAppId = await sampledebugContext.getTeamsAppId(env);
-            expect(teamsAppId).to.not.be.empty;
+            // cli preview
+            if (options?.debug === "cli") {
+              console.log("======= debug with cli ========");
+              console.log("botFlag: ", botFlag);
+              // start local tunnel
+              if (botFlag) {
+                const tunnel = Executor.debugBotFunctionPreparation(
+                  sampledebugContext.projectPath
+                );
+                tunnelName = tunnel.tunnelName;
+                devtunnelProcess = tunnel.devtunnelProcess;
+              }
+              await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+              debugProcess = Executor.debugProject(
+                sampledebugContext.projectPath,
+                "local",
+                true,
+                process.env,
+                (data) => {
+                  if (data) {
+                    console.log(data);
+                  }
+                },
+                (error) => {
+                  console.log(error);
+                  chai.assert.fail(error);
+                }
+              );
+              await new Promise((resolve) =>
+                setTimeout(resolve, 2 * 30 * 1000)
+              );
 
-            // use 2nd middleware to process typical sample
-            await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
+              // if no skip init step
+              if (!options?.skipInit) {
+                const teamsAppId = await sampledebugContext.getTeamsAppId(env);
+                expect(teamsAppId).to.not.be.empty;
 
-            // init
-            const page = await onInitPage(sampledebugContext, teamsAppId, {
-              includeFunction: options?.includeFunction ?? false,
-              npmName: options?.npmName ?? "",
-              dashboardFlag: options?.dashboardFlag ?? false,
-              type: options?.type ?? "",
-              teamsAppName: options?.teamsAppName ?? "",
-            });
+                // init
+                const page = await onReopenPage(
+                  sampledebugContext,
+                  teamsAppId,
+                  {
+                    includeFunction: options?.includeFunction ?? false,
+                    npmName: options?.npmName ?? "",
+                    dashboardFlag: options?.dashboardFlag ?? false,
+                    type: options?.type ?? "",
+                    teamsAppName: options?.teamsAppName ?? "",
+                  }
+                );
 
-            if (options?.skipValidation) {
-              console.log("skip ui skipValidation...");
-              console.log("debug finish!");
-              return;
+                // if no skip vaildation
+                if (!options?.skipValidation) {
+                  await onValidate(page, {
+                    context: sampledebugContext,
+                    displayName: Env.displayName,
+                    includeFunction: options?.includeFunction ?? false,
+                    npmName: options?.npmName ?? "",
+                    env: env,
+                  });
+                } else {
+                  console.log("skip ui skipValidation...");
+                  console.log("debug finish!");
+                }
+              } else {
+                console.log("skip ui skipInit...");
+                console.log("debug finish!");
+              }
             }
-            // validate
-            await onValidate(page, {
-              context: sampledebugContext,
-              displayName: Env.displayName,
-              includeFunction: options?.includeFunction ?? false,
-              npmName: options?.npmName ?? "",
-              env: env,
-            });
           } catch (error) {
             successFlag = false;
             errorMessage = "[Error]: " + error;

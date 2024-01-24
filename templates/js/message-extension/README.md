@@ -1,4 +1,4 @@
-# Overview of Bot Based Messaging Extension template
+# Overview of Bot Based Message Extension template
 
 A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 

@@ -2,25 +2,36 @@
  * refer to https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference for
  * complete Azure Functions developer guide.
  */
+const { app } = require("@azure/functions");
 
 /**
  * This function handles the HTTP request and returns the repair information.
  *
- * @param context - The Azure Functions context object.
  * @param req - The HTTP request.
+ * @param context - The Azure Functions context object.
  * @returns A promise that resolves with the HTTP response containing the repair information.
  */
-module.exports = async function (context, req) {
+async function repair(req, context) {
+  context.log("HTTP trigger function processed a request.");
+
+  // Check if the request is authorized.
+  if (!isApiKeyValid(req)) {
+    // Return 401 Unauthorized response.
+    return {
+      status: 401,
+    };
+  }
+
   // Initialize response.
   const res = {
     status: 200,
-    body: {
+    jsonBody: {
       results: [],
     },
   };
 
   // Get the assignedTo query parameter.
-  const assignedTo = req.query.assignedTo;
+  const assignedTo = req.query.get("assignedTo");
 
   // If the assignedTo query parameter is not provided, return all repair records.
   if (!assignedTo) {
@@ -39,6 +50,24 @@ module.exports = async function (context, req) {
   });
 
   // Return filtered repair records, or an empty array if no records were found.
-  res.body.results = repairs ?? [];
+  res.jsonBody.results = repairs ?? [];
   return res;
-};
+}
+
+/**
+ * The reason for this implementation is that Azure Function Core Tools does not support authentication when running locally.
+ * This template is designed to demonstrate and facilitate local debugging of authentication functionalities in the API-based
+ * message extension. Therefore, this approach was taken. If you prefer to leverage the Azure Functions' built-in API key
+ * authentication, please refer to https://aka.ms/functionkey for guidance.
+ * @param req - The HTTP request.
+ */
+function isApiKeyValid(req) {
+  const apiKey = req.headers.get("x-api-key");
+  return apiKey === process.env.API_KEY;
+}
+
+app.http("repair", {
+  methods: ["GET"],
+  authLevel: "anonymous",
+  handler: repair,
+});

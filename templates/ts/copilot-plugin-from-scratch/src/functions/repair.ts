@@ -3,35 +3,33 @@
  * developer guide.
  */
 
-import { Context, HttpRequest } from "@azure/functions";
-import repairRecords from "../repairsData.json";
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 
-// Define a Response interface.
-interface Response {
-  status: number;
-  body: {
-    results: any[];
-  };
-}
+import repairRecords from "../repairsData.json";
 
 /**
  * This function handles the HTTP request and returns the repair information.
  *
- * @param {Context} context - The Azure Functions context object.
  * @param {HttpRequest} req - The HTTP request.
+ * @param {InvocationContext} context - The Azure Functions context object.
  * @returns {Promise<Response>} - A promise that resolves with the HTTP response containing the repair information.
  */
-export default async function run(context: Context, req: HttpRequest): Promise<Response> {
+export async function repair(
+  req: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+  context.log("HTTP trigger function processed a request.");
+
   // Initialize response.
-  const res: Response = {
+  const res: HttpResponseInit = {
     status: 200,
-    body: {
+    jsonBody: {
       results: [],
     },
   };
 
   // Get the assignedTo query parameter.
-  const assignedTo = req.query.assignedTo;
+  const assignedTo = req.query.get("assignedTo");
 
   // If the assignedTo query parameter is not provided, return the response.
   if (!assignedTo) {
@@ -47,6 +45,12 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
   });
 
   // Return filtered repair records, or an empty array if no records were found.
-  res.body.results = repairs ?? [];
+  res.jsonBody.results = repairs ?? [];
   return res;
 }
+
+app.http("repair", {
+  methods: ["GET"],
+  authLevel: "anonymous",
+  handler: repair,
+});

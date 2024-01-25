@@ -12,9 +12,13 @@ import { FeatureFlagName } from "./constants";
 
 const packageJson = require("../../package.json");
 
-const SampleConfigOwner = "OfficeDev";
-const SampleConfigRepo = "TeamsFx-Samples";
-const SampleConfigFile = ".config/samples-config-v3.json";
+// const SampleConfigOwner = "OfficeDev";
+// const SampleConfigRepo = "TeamsFx-Samples";
+// const SampleConfigFile = ".config/samples-config-v3.json";
+// It should be placed into a configurable file later on
+const SampleConfigOwner = "xuruiyao-msft";
+const SampleConfigRepo = "OfficeDev-Samples";
+const SampleConfigFile = ".config/samples-config-v1.json";
 export const SampleConfigTag = "v2.4.0";
 // prerelease tag is always using a branch.
 export const SampleConfigBranchForPrerelease = "main";

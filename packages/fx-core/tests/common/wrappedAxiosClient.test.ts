@@ -40,12 +40,46 @@ describe("Wrapped Axios Client Test", () => {
     chai.expect(telemetryChecker.calledOnce).to.be.true;
   });
 
+  it("Dependency API start telemetry", async () => {
+    const mockedRequest = {
+      method: "POST",
+      baseURL: "https://example.com",
+      url: "",
+      params: {},
+      status: 200,
+      data: {},
+    } as any;
+    const telemetryChecker = sinon.spy(mockTools.telemetryReporter, "sendTelemetryEvent");
+
+    WrappedAxiosClient.onRequest(mockedRequest);
+    chai.expect(telemetryChecker.calledOnce).to.be.true;
+  });
+
   it("TDP API success response", async () => {
     const mockedResponse = {
       request: {
         method: "GET",
         host: getAppStudioEndpoint(),
         path: "/api/appdefinitions/manifest",
+      },
+      config: {
+        params: {},
+      },
+      status: 200,
+      data: {},
+    } as any;
+    const telemetryChecker = sinon.spy(mockTools.telemetryReporter, "sendTelemetryEvent");
+
+    WrappedAxiosClient.onResponse(mockedResponse);
+    chai.expect(telemetryChecker.calledOnce).to.be.true;
+  });
+
+  it("Dependency API success response", async () => {
+    const mockedResponse = {
+      request: {
+        method: "GET",
+        host: "https://example.com",
+        path: "",
       },
       config: {
         params: {},
@@ -67,6 +101,32 @@ describe("Wrapped Axios Client Test", () => {
         path: "/api/appdefinitions/fakeId",
       },
       config: {},
+      response: {
+        status: 404,
+        headers: {
+          "x-ms-correlation-id": uuid(),
+        },
+      },
+    } as any;
+    const telemetryChecker = sinon.spy(mockTools.telemetryReporter, "sendTelemetryErrorEvent");
+
+    WrappedAxiosClient.onRejected(mockedError);
+    chai.expect(telemetryChecker.calledOnce).to.be.true;
+  });
+
+  it("Dependency API error response", async () => {
+    const mockedError = {
+      request: {
+        method: "GET",
+        host: "https://example.com",
+        path: "",
+      },
+      config: {
+        data: '{"botId":"fakeId"}',
+      },
+      response: {
+        status: 400,
+      },
     } as any;
     const telemetryChecker = sinon.spy(mockTools.telemetryReporter, "sendTelemetryErrorEvent");
 

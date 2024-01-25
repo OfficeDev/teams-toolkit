@@ -10,13 +10,10 @@ import * as path from "path";
 import { Env } from "./env";
 import { dotenvUtil } from "./envUtil";
 import { TestFilePath } from "./constants";
-import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
 import {
-  Tunnel,
-  TunnelAccessControlEntryType,
-  TunnelPort,
-} from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
+  TunnelManagementHttpClient,
+  ManagementApiVersions,
+} from "@microsoft/dev-tunnels-management";
 
 class CleanHelper {
   protected readonly axios: AxiosInstance;
@@ -473,7 +470,7 @@ export class DevTunnelCleanHelper {
   constructor(token: string) {
     this.tunnelManagementClientImpl = new TunnelManagementHttpClient(
       "Teams-Toolkit-UI-TEST",
-      "2023-09-27-preview",
+      ManagementApiVersions.Version20230927preview,
       () => Promise.resolve(`Bearer ${token}`)
     );
   }

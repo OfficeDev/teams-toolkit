@@ -11,6 +11,7 @@ import { Tunnel, TunnelAccessControlEntryType, TunnelPort } from "@microsoft/dev
 import {
   TunnelManagementHttpClient,
   TunnelRequestOptions,
+  ManagementApiVersions,
 } from "@microsoft/dev-tunnels-management";
 import { TraceLevel } from "@microsoft/dev-tunnels-ssh";
 import { err, FxError, ok, Result, SystemError, UserError, Void } from "@microsoft/teamsfx-api";
@@ -108,7 +109,7 @@ export class DevTunnelTaskTerminal extends BaseTunnelTaskTerminal {
       isFeatureFlagEnabled(FeatureFlags.DevTunnelTest)
         ? TunnelManagementTestUserAgent
         : TunnelManagementUserAgent,
-      "2023-09-27-preview",
+      ManagementApiVersions.Version20230927preview,
       async () => {
         const tokenRes = await tools.tokenProvider.m365TokenProvider.getAccessToken({
           scopes: DevTunnelScopes,

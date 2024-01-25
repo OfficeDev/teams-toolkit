@@ -131,7 +131,7 @@ importers:
         version: link:../manifest
       axios:
         specifier: ^1.6.2
-        version: 1.6.2
+        version: 1.6.2(debug@4.3.4)
       chai:
         specifier: ^4.3.4
         version: 4.3.4
@@ -554,11 +554,11 @@ importers:
         specifier: ^0.6.5
         version: 0.6.5
       '@microsoft/dev-tunnels-contracts':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/dev-tunnels-management':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/teamsfx-api':
         specifier: workspace:*
         version: link:../api
@@ -570,7 +570,7 @@ importers:
         version: 8.5.0
       axios:
         specifier: ^1.6.2
-        version: 1.6.2
+        version: 1.6.2(debug@4.3.4)
       axios-retry:
         specifier: ^3.3.1
         version: 3.3.1
@@ -1086,7 +1086,7 @@ importers:
         version: 2.13.0(supports-color@9.4.0)
       axios:
         specifier: ^1.6.2
-        version: 1.6.2
+        version: 1.6.2(debug@4.3.4)
       botbuilder:
         specifier: ^4.21.2
         version: 4.21.2(supports-color@9.4.0)
@@ -1477,8 +1477,8 @@ importers:
         specifier: ^3.1.3
         version: 3.1.3
       '@microsoft/dev-tunnels-contracts':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/teamsfx-api':
         specifier: workspace:*
         version: link:../api
@@ -1705,7 +1705,7 @@ importers:
         version: 7.3.8
       axios:
         specifier: ^1.6.2
-        version: 1.6.2
+        version: 1.6.2(debug@4.3.4)
       azure-arm-resource:
         specifier: ^7.4.0
         version: 7.4.0
@@ -1739,17 +1739,17 @@ importers:
         version: 7.9.0
     devDependencies:
       '@microsoft/dev-tunnels-connections':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/dev-tunnels-contracts':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/dev-tunnels-management':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/dev-tunnels-ssh':
-        specifier: 3.11.31
-        version: 3.11.31
+        specifier: 3.11.36
+        version: 3.11.36
       '@microsoft/extra-shot-mocha':
         specifier: 0.0.1
         version: 0.0.1(mocha@10.2.0)(mochawesome@7.0.1)
@@ -1895,17 +1895,17 @@ importers:
         specifier: ^1.14.6
         version: 1.17.3
       '@microsoft/dev-tunnels-connections':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/dev-tunnels-contracts':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/dev-tunnels-management':
-        specifier: 1.0.7445
-        version: 1.0.7445
+        specifier: 1.1.9
+        version: 1.1.9
       '@microsoft/dev-tunnels-ssh':
-        specifier: 3.11.31
-        version: 3.11.31
+        specifier: 3.11.36
+        version: 3.11.36
       '@microsoft/teamsfx-api':
         specifier: workspace:*
         version: link:../api
@@ -8672,13 +8672,13 @@ packages:
     resolution: {integrity: sha512-PoHEgsnmcqruLNHZ/amACqdJ6YYQpED0KSRe6J7gIJTtpZC1FfFU9b1fmDKDKtFoUSrPzEh1qzO3kmRZP0betg==}
     dev: false
 
-  /@microsoft/dev-tunnels-connections@1.0.7445:
-    resolution: {integrity: sha512-nR4J+jOo0/WQhtt8qVotbPZuBKD3R0CsFzVKa9jEvNhA7xCc725HHb60zAyKMEXNai1TzIPHZ6QNKnKUj1iZ9Q==}
+  /@microsoft/dev-tunnels-connections@1.1.9:
+    resolution: {integrity: sha512-rwagGPYCIf5B1rN9FORhzPJhPIlmFUnGeyO0yr+WMTCjasRMlt1rABKCOg7zTcwgI9scK7qXfezP41kt5Op7Mg==}
     dependencies:
-      '@microsoft/dev-tunnels-contracts': 1.0.7445
-      '@microsoft/dev-tunnels-management': 1.0.7445
-      '@microsoft/dev-tunnels-ssh': 3.11.31
-      '@microsoft/dev-tunnels-ssh-tcp': 3.11.31
+      '@microsoft/dev-tunnels-contracts': 1.1.9
+      '@microsoft/dev-tunnels-management': 1.1.9
+      '@microsoft/dev-tunnels-ssh': 3.11.36
+      '@microsoft/dev-tunnels-ssh-tcp': 3.11.36
       await-semaphore: 0.1.3
       buffer: 5.7.1
       debug: 4.3.4(supports-color@9.4.0)
@@ -8689,8 +8689,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@microsoft/dev-tunnels-contracts@1.0.7445:
-    resolution: {integrity: sha512-L2Gm8PhzAKnJrUV7p2HD4Ze6m7WpqZ+dUgkDw9mqW5yNiTikJVfFweMZSiuWSOlfhxe/YkqQyMmqeUyhMiIJeA==}
+  /@microsoft/dev-tunnels-contracts@1.1.9:
+    resolution: {integrity: sha512-OayhehwI+CnO0Wr53e29ZJZWGsNA5yVG7r54qmZSLc5HxA5Cozk4hP7EbYDCXkxh4NbQoT1dhTzC8bkRo+wWXw==}
     dependencies:
       buffer: 5.7.1
       debug: 4.3.4(supports-color@9.4.0)
@@ -8698,26 +8698,26 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@microsoft/dev-tunnels-management@1.0.7445:
-    resolution: {integrity: sha512-fWMc9xGwu2nYXgqcl7BpyZRmnis5NUWXlX5Epr620L1PJJTI0Y2w7kE6UnztyFGw1KV/1EQUupwd7aSTjEYX0g==}
+  /@microsoft/dev-tunnels-management@1.1.9:
+    resolution: {integrity: sha512-wGuFEzvRiWZmDxQMGKEjOKhEIVnLiG6vRUuM9Hwqxpe/kbiyA2WiUyEVpniNPaaw8gDHTf9zJHnPNNj0JiL5mA==}
     dependencies:
-      '@microsoft/dev-tunnels-contracts': 1.0.7445
-      axios: 0.21.4(debug@4.3.4)
+      '@microsoft/dev-tunnels-contracts': 1.1.9
+      axios: 1.6.2(debug@4.3.4)
       buffer: 5.7.1
       debug: 4.3.4(supports-color@9.4.0)
       vscode-jsonrpc: 4.0.0
     transitivePeerDependencies:
       - supports-color
 
-  /@microsoft/dev-tunnels-ssh-tcp@3.11.31:
-    resolution: {integrity: sha512-zM+xRqRUTqXEuQtearhFCS+DBM0yGVXASaVL/Rx43t/T8oF6rW5E6YTTNs61/+v8nSgjVeQqrollWth7rxxxsw==}
+  /@microsoft/dev-tunnels-ssh-tcp@3.11.36:
+    resolution: {integrity: sha512-TAxraYXguA0y3M3MueeLma/dyoyvelyITSHVbHUrnOkgbYobs45LyQHuOzD42F57iJuP9DzpjC45RG+mKW3a/g==}
     dependencies:
-      '@microsoft/dev-tunnels-ssh': 3.11.31
+      '@microsoft/dev-tunnels-ssh': 3.11.36
     transitivePeerDependencies:
       - supports-color
 
-  /@microsoft/dev-tunnels-ssh@3.11.31:
-    resolution: {integrity: sha512-7L33PK0+4hdQF1kB+Zso9syIU/sVH11R63xNzbVvtOtKBCuamTGIRJH7UdvCWx/KkES/S3udFZ5e8aDRPzEBgw==}
+  /@microsoft/dev-tunnels-ssh@3.11.36:
+    resolution: {integrity: sha512-j7SlGaavPRs1Aho9a0JFRjL9N1V6UFo1Q2BUq6cpu+CnlWexmjvZmjeZyNQqwnnnEEAAGc5Vkz74cIQ8JHpvSA==}
     dependencies:
       buffer: 5.7.1
       debug: 4.3.4(supports-color@9.4.0)
@@ -8894,7 +8894,7 @@ packages:
     dependencies:
       ajv: 8.12.0
       ajv-draft-04: 1.0.0(ajv@8.12.0)
-      axios: 0.21.4(debug@4.3.4)
+      axios: 0.21.4
       fs-extra: 9.1.0
     transitivePeerDependencies:
       - debug
@@ -12390,7 +12390,7 @@ packages:
     dependencies:
       '@xmldom/xmldom': 0.8.10
       async: 2.6.4
-      axios: 0.21.4(debug@4.3.4)
+      axios: 0.21.4
       date-utils: 1.2.21
       jws: 3.2.2
       underscore: 1.13.6
@@ -12974,7 +12974,7 @@ packages:
     peerDependencies:
       axios: '>= 0.9.0'
     dependencies:
-      axios: 1.6.2
+      axios: 1.6.2(debug@4.3.4)
       fast-deep-equal: 3.1.3
       is-blob: 2.1.0
       is-buffer: 2.0.5
@@ -12987,12 +12987,13 @@ packages:
       is-retry-allowed: 2.2.0
     dev: false
 
-  /axios@0.21.4(debug@4.3.4):
+  /axios@0.21.4:
     resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
     dependencies:
       follow-redirects: 1.15.2(debug@4.3.4)
     transitivePeerDependencies:
       - debug
+    dev: false
 
   /axios@0.25.0:
     resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
@@ -13009,7 +13010,7 @@ packages:
       - debug
     dev: false
 
-  /axios@1.6.2:
+  /axios@1.6.2(debug@4.3.4):
     resolution: {integrity: sha512-7i24Ri4pmDRfJTR7LDBhsOTtcm+9kjX5WiY1X3wIisx6G9So3pfMkEiU7emUBe46oceVImccTEM3k6C5dbVW8A==}
     dependencies:
       follow-redirects: 1.15.2(debug@4.3.4)
@@ -22740,7 +22741,7 @@ packages:
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.6
-      axios: 1.6.2
+      axios: 1.6.2(debug@4.3.4)
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1

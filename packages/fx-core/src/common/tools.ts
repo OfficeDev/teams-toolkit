@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Tunnel } from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
+import {
+  TunnelManagementHttpClient,
+  ManagementApiVersions,
+} from "@microsoft/dev-tunnels-management";
 import {
   AzureAccountProvider,
   FxError,
@@ -328,7 +331,7 @@ export async function listDevTunnels(token: string): Promise<Result<Tunnel[], Fx
   try {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient(
       TunnelManagementUserAgent,
-      "2023-09-27-preview",
+      ManagementApiVersions.Version20230927preview,
       () => {
         const res = `Bearer ${token}`;
         return Promise.resolve(res);

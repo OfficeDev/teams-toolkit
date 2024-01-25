@@ -127,11 +127,6 @@ describe.skip("appStudio", () => {
     const teamsAppId = "teams";
     const m365TokenProvider = new MockM365TokenProvider();
 
-    beforeEach(() => {
-      sandbox.stub(TelemetryUtils, "sendStartEvent").returns();
-      sandbox.stub(TelemetryUtils, "sendSuccessEvent").returns();
-    });
-
     afterEach(() => {
       sandbox.restore();
     });

@@ -1892,7 +1892,9 @@ describe("handlers", () => {
 
     it("signinAzureCallback with cancel error", async () => {
       sinon.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
-      sinon.stub(AzureAccountManager.prototype, "getIdentityCredentialAsync").throws(new Error());
+      sinon
+        .stub(AzureAccountManager.prototype, "getIdentityCredentialAsync")
+        .throws(new UserCancelError(""));
 
       const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
 

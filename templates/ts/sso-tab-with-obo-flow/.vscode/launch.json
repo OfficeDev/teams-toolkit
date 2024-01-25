@@ -76,6 +76,9 @@
               "group": "all",
               "hidden": true
           },
+          "cascadeTerminateToConfigurations": [
+              "Attach to Local Service"
+          ],
           "internalConsoleOptions": "neverOpen"
       },
       {
@@ -87,6 +90,9 @@
               "group": "all",
               "hidden": true
           },
+          "cascadeTerminateToConfigurations": [
+              "Attach to Local Service"
+          ],
           "internalConsoleOptions": "neverOpen"
       },
       {
@@ -98,6 +104,9 @@
               "group": "all",
               "hidden": true
           },
+          "cascadeTerminateToConfigurations": [
+              "Attach to Local Service"
+          ],
           "internalConsoleOptions": "neverOpen"
       },
       {
@@ -109,6 +118,9 @@
               "group": "all",
               "hidden": true
           },
+          "cascadeTerminateToConfigurations": [
+              "Attach to Local Service"
+          ],
           "internalConsoleOptions": "neverOpen"
       },
       {
@@ -120,6 +132,9 @@
               "group": "all",
               "hidden": true
           },
+          "cascadeTerminateToConfigurations": [
+              "Attach to Local Service"
+          ],
           "internalConsoleOptions": "neverOpen"
       },
       {
@@ -131,6 +146,9 @@
               "group": "all",
               "hidden": true
           },
+          "cascadeTerminateToConfigurations": [
+              "Attach to Local Service"
+          ],
           "internalConsoleOptions": "neverOpen"
       },
       {

@@ -48,7 +48,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as commonTools from "@microsoft/teamsfx-core";
 import {
-  TelemetryUtils as AppManifestUtils,
   AppStudioClient,
   AppStudioScopes,
   AuthSvcScopes,
@@ -3043,7 +3042,6 @@ export async function scaffoldFromDeveloperPortalHandler(
 
   let appDefinition;
   try {
-    AppManifestUtils.init({ telemetryReporter: tools?.telemetryReporter } as any); // need to initiate temeletry so that telemetry set up in appManifest component can work.
     appDefinition = await AppStudioClient.getApp(appId, token, VsCodeLogInstance);
   } catch (error: any) {
     ExtTelemetry.sendTelemetryErrorEvent(

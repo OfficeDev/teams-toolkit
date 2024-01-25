@@ -22,7 +22,6 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { CreateTeamsAppArgs } from "./interfaces/CreateTeamsAppArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { AppStudioClient } from "./clients/appStudioClient";
-import { TelemetryUtils } from "./utils/telemetry";
 import { AppStudioResultFactory } from "./results";
 import { AppStudioError } from "./errors";
 import {
@@ -75,8 +74,6 @@ export class CreateTeamsAppDriver implements StepDriver {
     context: WrapDriverContext,
     outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
-
     const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);

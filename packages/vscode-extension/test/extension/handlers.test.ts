@@ -1879,6 +1879,26 @@ describe("handlers", () => {
       chai.assert.isTrue(getIdentityCredentialStub.calledOnce);
       sinon.restore();
     });
+
+    it("signinAzureCallback with error", async () => {
+      sinon.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
+      sinon.stub(AzureAccountManager.prototype, "getIdentityCredentialAsync").throws(new Error());
+
+      const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
+
+      chai.assert.isTrue(res.isErr());
+      sinon.restore();
+    });
+
+    it("signinAzureCallback with cancel error", async () => {
+      sinon.stub(AzureAccountManager.prototype, "getAccountInfo").returns({});
+      sinon.stub(AzureAccountManager.prototype, "getIdentityCredentialAsync").throws(new Error());
+
+      const res = await handlers.signinAzureCallback([{}, { status: 0 }]);
+
+      chai.assert.isTrue(res.isOk());
+      sinon.restore();
+    });
   });
 
   describe("validateAzureDependenciesHandler", () => {

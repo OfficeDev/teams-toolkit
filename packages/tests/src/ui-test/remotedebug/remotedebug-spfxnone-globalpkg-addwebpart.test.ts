@@ -60,7 +60,7 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Add wweb part to SPFx project with React frameworkusing globally installed packages",
+    "[auto] Add web part to SPFx project with React frameworkusing globally installed packages",
     {
       testPlanCaseId: 17581722,
       author: "v-helzha@microsoft.com",

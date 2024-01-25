@@ -59,7 +59,7 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Add wweb part to SPFx project with React framework",
+    "[auto] Add web part to SPFx project with React framework",
     {
       testPlanCaseId: 17581722,
       author: "v-helzha@microsoft.com",

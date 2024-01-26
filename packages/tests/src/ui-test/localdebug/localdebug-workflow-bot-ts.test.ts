@@ -37,8 +37,8 @@ import { getScreenshotName } from "../../utils/nameUtil";
 describe("Workflow Bot Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
-  let devtunnelProcess: ChildProcessWithoutNullStreams;
-  let debugProcess: ChildProcessWithoutNullStreams;
+  let devtunnelProcess: ChildProcessWithoutNullStreams | null;
+  let debugProcess: ChildProcessWithoutNullStreams | null;
   let tunnelName = "";
   let successFlag = true;
   let errorMessage = "";
@@ -54,13 +54,13 @@ describe("Workflow Bot Local Debug Tests", function () {
     this.timeout(Timeout.finishTestCase);
     if (debugProcess) {
       setTimeout(() => {
-        debugProcess.kill("SIGTERM");
+        debugProcess?.kill("SIGTERM");
       }, 2000);
     }
 
     if (tunnelName) {
       setTimeout(() => {
-        devtunnelProcess.kill("SIGTERM");
+        devtunnelProcess?.kill("SIGTERM");
       }, 2000);
       Executor.deleteTunnel(
         tunnelName,
@@ -167,26 +167,10 @@ describe("Workflow Bot Local Debug Tests", function () {
         await validateWorkFlowBot(page);
 
         // cli preview
-        console.log("======= debug with cli ========");
-        const tunnel = Executor.debugBotFunctionPreparation(projectPath);
-        tunnelName = tunnel.tunnelName;
-        devtunnelProcess = tunnel.devtunnelProcess;
-        await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
-        debugProcess = Executor.debugProject(
-          projectPath,
-          "local",
-          true,
-          process.env,
-          (data) => {
-            if (data) {
-              console.log(data);
-            }
-          },
-          (error) => {
-            console.log(error);
-          }
-        );
-        await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
+        const res = await Executor.cliPreview(projectPath, true);
+        devtunnelProcess = res.devtunnelProcess;
+        tunnelName = res.tunnelName;
+        debugProcess = res.debugProcess;
         {
           const page = await reopenPage(
             localDebugTestContext.context!,

@@ -2952,7 +2952,13 @@ export async function signinAzureCallback(args?: any[]): Promise<Result<null, Fx
       ...triggerFrom,
     });
   }
-  await AzureAccountManager.getIdentityCredentialAsync(true);
+  try {
+    await AzureAccountManager.getIdentityCredentialAsync(true);
+  } catch (error) {
+    if (!isUserCancelError(error)) {
+      return err(error);
+    }
+  }
   return ok(null);
 }
 

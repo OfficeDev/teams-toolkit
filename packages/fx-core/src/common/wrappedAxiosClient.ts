@@ -39,17 +39,17 @@ export class WrappedAxiosClient {
   public static onRequest(request: InternalAxiosRequestConfig) {
     const method = request.method!;
     const fullPath = `${request.baseURL ?? ""}${request.url ?? ""}`;
-    const apiName = this.convertUrlToApiName(fullPath, method);
+    const apiName = WrappedAxiosClient.convertUrlToApiName(fullPath, method);
 
     const properties: { [key: string]: string } = {
       url: `<${apiName}-url>`,
       method: method,
-      params: this.generateParameters(request.params),
-      ...this.generateExtraProperties(fullPath, request.data),
+      params: WrappedAxiosClient.generateParameters(request.params),
+      ...WrappedAxiosClient.generateExtraProperties(fullPath, request.data),
     };
 
     let eventName: string;
-    if (this.isTDPApi(fullPath)) {
+    if (WrappedAxiosClient.isTDPApi(fullPath)) {
       eventName = TelemetryEvent.AppStudioApi;
     } else {
       eventName = TelemetryEvent.DependencyApi;
@@ -69,19 +69,19 @@ export class WrappedAxiosClient {
     const fullPath = `${(response.request.host as string) ?? ""}${
       (response.request.path as string) ?? ""
     }`;
-    const apiName = this.convertUrlToApiName(fullPath, method);
+    const apiName = WrappedAxiosClient.convertUrlToApiName(fullPath, method);
 
     const properties: { [key: string]: string } = {
       url: `<${apiName}-url>`,
       method: method,
-      params: this.generateParameters(response.config.params),
+      params: WrappedAxiosClient.generateParameters(response.config.params),
       [TelemetryPropertyKey.success]: TelemetryPropertyValue.success,
       "status-code": response.status.toString(),
-      ...this.generateExtraProperties(fullPath, response.data),
+      ...WrappedAxiosClient.generateExtraProperties(fullPath, response.data),
     };
 
     let eventName: string;
-    if (this.isTDPApi(fullPath)) {
+    if (WrappedAxiosClient.isTDPApi(fullPath)) {
       eventName = TelemetryEvent.AppStudioApi;
     } else {
       eventName = TelemetryEvent.DependencyApi;

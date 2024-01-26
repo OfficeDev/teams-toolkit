@@ -15,6 +15,11 @@ const packageJson = require("../../package.json");
 const SampleConfigOwner = "OfficeDev";
 const SampleConfigRepo = "TeamsFx-Samples";
 const SampleConfigFile = ".config/samples-config-v3.json";
+
+const OfficeSampleConfigOwner = "xuruiyao-msft";
+const OfficeSampleConfigRepo = "OfficeDev-Samples";
+const OfficeSampleConfigFile = ".config/samples-config-v1.json";
+
 export const SampleConfigTag = "v2.4.0";
 // prerelease tag is always using a branch.
 export const SampleConfigBranchForPrerelease = "main";
@@ -67,12 +72,52 @@ class SampleProvider {
   }
 
   public async refreshSampleConfig(): Promise<SampleCollection> {
-    const { samplesConfig, ref } = await this.fetchOnlineSampleConfig();
-    this.sampleCollection = this.parseOnlineSampleConfig(samplesConfig, ref);
+    const { samplesConfig, ref } = await this.fetchOnlineSampleConfig(
+      SampleConfigOwner,
+      SampleConfigRepo,
+      SampleConfigFile
+    );
+    const officeRet = await this.fetchOnlineSampleConfig(
+      OfficeSampleConfigOwner,
+      OfficeSampleConfigRepo,
+      OfficeSampleConfigFile
+    );
+    const samplesConfigOffice = officeRet.samplesConfig;
+    const refOffice = officeRet.ref;
+    const sampleCollection = await this.parseOnlineSampleConfig(
+      samplesConfig,
+      ref,
+      SampleConfigOwner,
+      SampleConfigRepo
+    );
+    const sampleCollectionOffice = await this.parseOnlineSampleConfig(
+      samplesConfigOffice,
+      refOffice,
+      OfficeSampleConfigOwner,
+      OfficeSampleConfigRepo
+    );
+
+    this.sampleCollection = {
+      samples: [...sampleCollection.samples, ...sampleCollectionOffice.samples],
+      filterOptions: {
+        capabilities: [
+          ...sampleCollection.filterOptions.capabilities,
+          ...sampleCollectionOffice.filterOptions.capabilities,
+        ],
+        languages: [
+          ...sampleCollection.filterOptions.languages,
+          ...sampleCollectionOffice.filterOptions.languages,
+        ],
+        technologies: [
+          ...sampleCollection.filterOptions.technologies,
+          ...sampleCollectionOffice.filterOptions.technologies,
+        ],
+      },
+    };
     return this.sampleCollection;
   }
 
-  private async fetchOnlineSampleConfig() {
+  private async fetchOnlineSampleConfig(repoOwner: string, repo: string, configFile: string) {
     const version: string = packageJson.version;
     const configBranchInEnv = process.env[FeatureFlagName.SampleConfigBranch];
     let samplesConfig: SampleConfigType | undefined;
@@ -96,31 +141,41 @@ class SampleProvider {
     // Set branchOrTag value if branch in env is valid
     if (configBranchInEnv) {
       try {
-        const data = await this.fetchRawFileContent(configBranchInEnv);
+        const data = await this.fetchRawFileContent(configBranchInEnv, repoOwner, repo, configFile);
         ref = configBranchInEnv;
         samplesConfig = data as SampleConfigType;
       } catch (e: unknown) {}
     }
 
     if (samplesConfig === undefined) {
-      samplesConfig = (await this.fetchRawFileContent(ref)) as SampleConfigType;
+      samplesConfig = (await this.fetchRawFileContent(
+        ref,
+        repoOwner,
+        repo,
+        configFile
+      )) as SampleConfigType;
     }
 
     return { samplesConfig, ref };
   }
 
   @hooks([ErrorContextMW({ component: "SampleProvider" })])
-  private parseOnlineSampleConfig(samplesConfig: SampleConfigType, ref: string): SampleCollection {
+  private parseOnlineSampleConfig(
+    samplesConfig: SampleConfigType,
+    ref: string,
+    repoOwner: string,
+    repo: string
+  ): Promise<SampleCollection> {
     const samples =
       samplesConfig?.samples.map((sample) => {
         const isExternal = sample["downloadUrlInfo"] ? true : false;
         let gifUrl =
           sample["gifPath"] !== undefined
-            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${ref}/${
+            ? `https://raw.githubusercontent.com/${repoOwner}/${repo}/${ref}/${
                 sample["id"] as string
               }/${sample["gifPath"] as string}`
             : undefined;
-        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${ref}/${
+        let thumbnailUrl = `https://raw.githubusercontent.com/${repoOwner}/${repo}/${ref}/${
           sample["id"] as string
         }/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
@@ -141,8 +196,8 @@ class SampleProvider {
           downloadUrlInfo: isExternal
             ? sample["downloadUrlInfo"]
             : {
-                owner: SampleConfigOwner,
-                repository: SampleConfigRepo,
+                owner: repoOwner,
+                repository: repo,
                 ref: ref,
                 dir: sample["id"] as string,
               },
@@ -151,14 +206,14 @@ class SampleProvider {
         } as SampleConfig;
       }) || [];
 
-    return {
+    return Promise.resolve({
       samples,
       filterOptions: {
         capabilities: samplesConfig?.filterOptions["capabilities"] || [],
         languages: samplesConfig?.filterOptions["languages"] || [],
         technologies: samplesConfig?.filterOptions["technologies"] || [],
       },
-    };
+    });
   }
 
   public async getSampleReadmeHtml(sample: SampleConfig): Promise<string> {
@@ -188,8 +243,13 @@ class SampleProvider {
     }
   }
 
-  private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {
-    const url = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`;
+  private async fetchRawFileContent(
+    branchOrTag: string,
+    repoOwner: string,
+    repo: string,
+    configFile: string
+  ): Promise<unknown> {
+    const url = `https://raw.githubusercontent.com/${repoOwner}/${repo}/${branchOrTag}/${configFile}`;
     try {
       const fileResponse = await sendRequestWithTimeout(
         async () => {

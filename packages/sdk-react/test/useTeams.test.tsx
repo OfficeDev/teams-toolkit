@@ -382,16 +382,16 @@ describe("useTeams", () => {
       expect(pingEffect).toBeCalledTimes(2);
     });
   });
-});
 
-it("Should change loading status", async () => {
-  const { result } = renderHook(() => useTeams({}));
-  expect(result.current[0].loading).toBeUndefined();
+  it("Should change loading status", async () => {
+    const { result } = renderHook(() => useTeams({}));
+    expect(result.current[0].loading).toBeUndefined();
 
-  await waitFor(
-    () => {
-      expect(result.current[0].loading).toBe(false);
-    },
-    { interval: 1 }
-  );
+    await waitFor(
+      () => {
+        expect(result.current[0].loading).toBe(false);
+      },
+      { interval: 1 }
+    );
+  });
 });

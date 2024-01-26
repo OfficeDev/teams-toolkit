@@ -1385,7 +1385,7 @@
     "glob": "^10",
     "jscodeshift": "^0.14.0",
     "jsonc-parser": "^3.0.0",
-    "log4js": "^6.3.0",
+    "log4js": "^6.4.0",
     "node-rsa": "^1.1.1",
     "query-string": "6.14.1",
     "react-collapsible": "^2.10.0",

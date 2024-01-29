@@ -16,6 +16,9 @@ on:
   schedule:
     - cron: "0 16 * * *"
 
+permissions:
+  actions: read
+
 jobs:
   rerun:
     if: ${{ github.event_name == 'workflow_dispatch' }}

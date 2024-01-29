@@ -308,9 +308,6 @@ export abstract class CaseFactory {
           );
         }
         await onAfter(sampledebugContext, env);
-        // make sure to stop debug
-        if (successFlag) process.exit(0);
-        else process.exit(1);
       });
 
       it(

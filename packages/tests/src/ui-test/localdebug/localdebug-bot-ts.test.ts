@@ -99,7 +99,7 @@ describe("Local Debug Tests", function () {
             // skip timeout
             errorMsg.includes(LocalDebugError.TimeoutError) ||
             // skip node 16 warning
-            errorMsg.includes(LocalDebugError.FilePermission)
+            errorMsg.includes(LocalDebugError.NodeVersionError)
           ) {
             console.log("[skip error] ", error);
           } else {

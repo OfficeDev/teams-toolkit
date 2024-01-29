@@ -364,7 +364,7 @@ export enum LocalDebugTaskLabel2 {
 export enum LocalDebugError {
   ElementNotInteractableError = "ElementNotInteractableError",
   TimeoutError = "TimeoutError",
-  FilePermission = "FilePermissionError",
+  NodeVersionError = ">=18.0.0",
 }
 
 export class LocalDebugTaskInfo {

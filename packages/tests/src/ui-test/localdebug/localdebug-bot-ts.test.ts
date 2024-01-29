@@ -68,8 +68,6 @@ describe("Local Debug Tests", function () {
     }
     await localDebugTestContext.after(false, true);
     this.timeout(Timeout.finishAzureTestCase);
-    if (successFlag) process.exit(0);
-    else process.exit(1);
   });
 
   it(

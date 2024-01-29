@@ -51,8 +51,6 @@ describe("Local Debug Tests", function () {
 
     await localDebugTestContext.after(false, true);
     this.timeout(Timeout.finishAzureTestCase);
-    if (successFlag) process.exit(0);
-    else process.exit(1);
   });
 
   it(
@@ -91,15 +89,6 @@ describe("Local Debug Tests", function () {
         // cli preview
         const res = await Executor.cliPreview(projectPath, false);
         debugProcess = res.debugProcess;
-        {
-          const page = await reopenPage(
-            localDebugTestContext.context!,
-            teamsAppId,
-            Env.username,
-            Env.password
-          );
-          await validateBasicTab(page, ValidationContent.Tab);
-        }
         {
           const page = await reopenPage(
             localDebugTestContext.context!,

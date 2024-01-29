@@ -439,7 +439,7 @@ describe("CommonUtils", () => {
       chai.assert.equal(result, "");
     });
 
-    it("happy path", async () => {
+    it("happy path 1", async () => {
       const result = await commonUtils.anonymizeFilePaths(
         "at Object.require.extensions.<computed> [as .ts] (C:\\Users\\AppData\\Roaming\\npm\\node_modules\\ts-node\\src\\index.ts:1621:12)"
       );
@@ -448,9 +448,9 @@ describe("CommonUtils", () => {
         "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>:1621:12)"
       );
     });
-    it("happy path", async () => {
+    it("happy path 2", async () => {
       const result = await commonUtils.anonymizeFilePaths(
-        "at Object.require.extensions.<computed> [as .ts] (/User/\\AppData\\Roaming\\npm\\node_modules\\ts-node\\src\\index.ts:1621:12)"
+        "at Object.require.extensions.<computed> [as .ts] (/user/test/index.ts:1621:12)"
       );
       chai.assert.equal(
         result,

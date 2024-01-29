@@ -11,7 +11,6 @@ import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clien
 import { AppDefinition } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { AppUser } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/appUser";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
-import { TelemetryUtils } from "../../../../src/component/driver/teamsApp/utils/telemetry";
 import { RetryHandler } from "../../../../src/component/driver/teamsApp/utils/utils";
 import { PublishingState } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IPublishingAppDefinition";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
@@ -23,14 +22,6 @@ import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
 } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
-
-function newEnvInfo() {
-  return {
-    envName: "default",
-    config: {},
-    state: new Map(),
-  };
-}
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";
@@ -75,11 +66,6 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
 
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
       const res = await AppStudioClient.publishTeamsApp(
         appStudioToken,
         Buffer.from(""),
@@ -97,12 +83,6 @@ describe("App Studio API Test", () => {
         message: "fake message",
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
-
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
@@ -126,12 +106,6 @@ describe("App Studio API Test", () => {
         },
       };
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
-
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.publishTeamsApp(appStudioToken, Buffer.from(""), appStudioToken);
@@ -302,12 +276,6 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
 
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
-
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
@@ -326,11 +294,6 @@ describe("App Studio API Test", () => {
         },
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -356,11 +319,6 @@ describe("App Studio API Test", () => {
         },
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -383,12 +341,6 @@ describe("App Studio API Test", () => {
         },
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
-
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -414,12 +366,6 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
 
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
-
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
       } catch (error) {
@@ -442,11 +388,6 @@ describe("App Studio API Test", () => {
         message: "fake message",
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.importApp(Buffer.from(""), appStudioToken, logProvider);
@@ -480,12 +421,6 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "get").throws(error);
 
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
-
       try {
         await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
       } catch (error) {
@@ -507,12 +442,6 @@ describe("App Studio API Test", () => {
         },
       };
       sinon.stub(fakeAxiosInstance, "get").throws(error);
-
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.getApp(appDef.teamsAppId!, appStudioToken, logProvider);
@@ -551,12 +480,6 @@ describe("App Studio API Test", () => {
         message: "fake message",
       };
       sinon.stub(fakeAxiosInstance, "get").throws(error);
-
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.getAppPackage(appDef.teamsAppId!, appStudioToken, logProvider);
@@ -604,12 +527,6 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
 
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
-
       try {
         await AppStudioClient.partnerCenterAppPackageValidation(Buffer.from(""), appStudioToken);
       } catch (error) {
@@ -641,12 +558,6 @@ describe("App Studio API Test", () => {
         message: "fake message",
       };
       sinon.stub(fakeAxiosInstance, "get").throws(error);
-
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.checkExistsInTenant(appDef.teamsAppId!, appStudioToken);
@@ -692,12 +603,6 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
-
       try {
         await AppStudioClient.publishTeamsAppUpdate("", Buffer.from(""), appStudioToken);
       } catch (error) {
@@ -733,12 +638,6 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "get").resolves(getResponse);
 
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
-
       try {
         await AppStudioClient.publishTeamsAppUpdate(
           appStudioToken,
@@ -770,12 +669,6 @@ describe("App Studio API Test", () => {
         userPrincipalName: "fake",
         isAdministrator: false,
       };
-
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.grantPermission(
@@ -949,12 +842,6 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "get").throws(error);
 
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
-
       try {
         await AppStudioClient.getApiKeyRegistrationById(appStudioToken, "fakeId");
       } catch (error) {
@@ -1011,12 +898,6 @@ describe("App Studio API Test", () => {
         },
       };
       sinon.stub(fakeAxiosInstance, "post").throws(error);
-
-      const ctx = {
-        envInfo: newEnvInfo(),
-        root: "fakeRoot",
-      } as any;
-      TelemetryUtils.init(ctx);
 
       try {
         await AppStudioClient.createApiKeyRegistration(appStudioToken, appApiRegistration);

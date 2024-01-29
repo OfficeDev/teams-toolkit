@@ -445,7 +445,7 @@ describe("CommonUtils", () => {
       );
       chai.assert.equal(
         result,
-        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>:1621:12)"
+        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>/index.ts:1621:12)"
       );
     });
     it("happy path 2", async () => {
@@ -454,7 +454,16 @@ describe("CommonUtils", () => {
       );
       chai.assert.equal(
         result,
-        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>:1621:12)"
+        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>/index.ts:1621:12)"
+      );
+    });
+    it("happy path 3", async () => {
+      const result = await commonUtils.anonymizeFilePaths(
+        "some user stack trace at (C:/fake_path/fake_file:1:1)"
+      );
+      chai.assert.equal(
+        result,
+        "some user stack trace at (<REDACTED: user-file-path>/fake_file:1:1)"
       );
     });
   });

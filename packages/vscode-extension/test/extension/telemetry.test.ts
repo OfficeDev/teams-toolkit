@@ -96,7 +96,7 @@ describe("telemetry", () => {
       "sampleErrorEvent",
       {
         stringProp: "some string",
-        "error-stack": "some user stack trace at (<REDACTED: user-file-path>:1:1)",
+        "error-stack": "some user stack trace at (<REDACTED: user-file-path>/fake_file:1:1)",
         "project-id": "",
         "correlation-id": "",
         "feature-flags": featureFlags,

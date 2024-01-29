@@ -54,6 +54,9 @@ on:
   schedule:
     - cron: "0 18 * * *"
 
+permissions:
+  actions: read
+
 jobs:
   setup:
     runs-on: ubuntu-latest

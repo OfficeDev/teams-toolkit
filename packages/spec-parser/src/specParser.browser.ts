@@ -188,7 +188,7 @@ export class SpecParser {
       this.options.allowMissingId,
       this.options.allowAPIKeyAuth,
       this.options.allowMultipleParameters,
-      this.options.allowAPIKeyAuth
+      this.options.allowOauth2
     );
     this.apiMap = result;
     return result;

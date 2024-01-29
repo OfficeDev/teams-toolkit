@@ -31,7 +31,6 @@
     "fs-extra": "^11.2.0",
     "js-yaml": "^4.1.0",
     "openapi-types": "^7.2.3",
-    "path": "^0.12.7",
     "swagger2openapi": "^7.0.8"
   },
   "publishConfig": {

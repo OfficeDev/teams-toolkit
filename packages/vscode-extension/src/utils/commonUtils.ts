@@ -130,67 +130,12 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
 }
 
 export function anonymizeFilePaths(stack?: string): string {
-  if (stack === undefined || stack === null) {
+  if (!stack) {
     return "";
   }
-
-  const cleanupPatterns: RegExp[] = [];
-
-  let updatedStack = stack;
-
-  const cleanUpIndexes: [number, number][] = [];
-
-  for (const regexp of cleanupPatterns) {
-    while (true) {
-      const result = regexp.exec(stack);
-
-      if (!result) {
-        break;
-      }
-
-      cleanUpIndexes.push([result.index, regexp.lastIndex]);
-    }
-  }
-
-  const nodeModulesRegex = /^[\\\/]?(node_modules|node_modules\.asar)[\\\/]/;
-
-  const fileRegex =
-    /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
-
-  let lastIndex = 0;
-
-  updatedStack = "";
-
-  while (true) {
-    const result = fileRegex.exec(stack);
-
-    if (!result) {
-      break;
-    }
-
-    // Anoynimize user file paths that do not need to be retained or cleaned up.
-
-    if (
-      !nodeModulesRegex.test(result[0]) &&
-      cleanUpIndexes.every(([x, y]) => result.index < x || result.index >= y)
-    ) {
-      updatedStack += stack.substring(lastIndex, result.index) + "<REDACTED: user-file-path>";
-
-      lastIndex = fileRegex.lastIndex;
-    }
-  }
-
-  if (lastIndex < stack.length) {
-    updatedStack += stack.substr(lastIndex);
-  }
-
-  // sanitize with configured cleanup patterns
-
-  for (const regexp of cleanupPatterns) {
-    updatedStack = updatedStack.replace(regexp, "");
-  }
-
-  return updatedStack;
+  const filePathRegex = /\s\(([a-zA-Z]:\\[^\s:]+|\/[^\s:]+)/g;
+  const redactedErrorMessage = stack.replace(filePathRegex, " (<REDACTED: user-file-path>");
+  return redactedErrorMessage;
 }
 
 export class FeatureFlags {

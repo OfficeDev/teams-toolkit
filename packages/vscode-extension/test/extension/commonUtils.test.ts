@@ -425,4 +425,37 @@ describe("CommonUtils", () => {
       chai.assert.isFalse(result);
     });
   });
+
+  describe("anonymizeFilePaths()", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      mockfs.restore();
+      sandbox.restore();
+    });
+
+    it("undefined", async () => {
+      const result = await commonUtils.anonymizeFilePaths();
+      chai.assert.equal(result, "");
+    });
+
+    it("happy path", async () => {
+      const result = await commonUtils.anonymizeFilePaths(
+        "at Object.require.extensions.<computed> [as .ts] (C:\\Users\\AppData\\Roaming\\npm\\node_modules\\ts-node\\src\\index.ts:1621:12)"
+      );
+      chai.assert.equal(
+        result,
+        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>:1621:12)"
+      );
+    });
+    it("happy path", async () => {
+      const result = await commonUtils.anonymizeFilePaths(
+        "at Object.require.extensions.<computed> [as .ts] (/User/\\AppData\\Roaming\\npm\\node_modules\\ts-node\\src\\index.ts:1621:12)"
+      );
+      chai.assert.equal(
+        result,
+        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>:1621:12)"
+      );
+    });
+  });
 });

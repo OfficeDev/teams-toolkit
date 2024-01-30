@@ -20,16 +20,10 @@ import {
 } from "./interfaces";
 import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
-import { specFilter } from "./specFilter";
-import {
-  convertPathToCamelCase,
-  getAuthArray,
-  listSupportedAPIs,
-  resolveServerUrl,
-  validateSpec,
-} from "./utils";
-import { updateManifest } from "./manifestUpdater";
-import { generateAdaptiveCard } from "./adaptiveCardGenerator";
+import { SpecFilter } from "./specFilter";
+import { Utils } from "./utils";
+import { ManifestUpdater } from "./manifestUpdater";
+import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
 
 /**
@@ -95,7 +89,7 @@ export class SpecParser {
         };
       }
 
-      return validateSpec(
+      return Utils.validateSpec(
         this.spec!,
         this.parser,
         !!this.isSwaggerFile,
@@ -145,15 +139,15 @@ export class SpecParser {
           );
         }
 
-        apiResult.server = resolveServerUrl(serverUrl.url);
+        apiResult.server = Utils.resolveServerUrl(serverUrl.url);
 
         let operationId = operation.operationId;
         if (!operationId) {
-          operationId = `${method.toLowerCase()}${convertPathToCamelCase(path)}`;
+          operationId = `${method.toLowerCase()}${Utils.convertPathToCamelCase(path)}`;
         }
         apiResult.operationId = operationId;
 
-        const authArray = getAuthArray(operation.security, spec);
+        const authArray = Utils.getAuthArray(operation.security, spec);
 
         for (const auths of authArray) {
           if (auths.length === 1) {
@@ -203,7 +197,7 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const newUnResolvedSpec = specFilter(
+      const newUnResolvedSpec = SpecFilter.specFilter(
         filter,
         this.unResolveSpec!,
         this.spec!,
@@ -226,7 +220,7 @@ export class SpecParser {
         for (const method in newSpec.paths[url]) {
           const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
 
-          const authArray = getAuthArray(operation.security, newSpec);
+          const authArray = Utils.getAuthArray(operation.security, newSpec);
 
           if (authArray && authArray.length > 0) {
             AuthSet.add(authArray[0][0].authSchema);
@@ -259,7 +253,7 @@ export class SpecParser {
           if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
             const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
             try {
-              const [card, jsonPath] = generateAdaptiveCard(operation);
+              const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
               const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
               const wrappedCard = wrapAdaptiveCard(card, jsonPath);
               await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
@@ -285,7 +279,7 @@ export class SpecParser {
       }
 
       const auth = Array.from(AuthSet)[0];
-      const [updatedManifest, warnings] = await updateManifest(
+      const [updatedManifest, warnings] = await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
         adaptiveCardFolder,
@@ -328,7 +322,7 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = listSupportedAPIs(
+    const result = Utils.listSupportedAPIs(
       spec,
       this.options.allowMissingId,
       this.options.allowAPIKeyAuth,

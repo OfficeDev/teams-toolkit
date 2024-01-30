@@ -1,14 +1,16 @@
 {
   "name": "@microsoft/spec-parser",
   "version": "0.0.1",
-  "description": "Paser for OpenAPI specification files",
+  "type": "module",
+  "description": "Parser for OpenAPI specification files",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
   "module": "dist/index.esm2017.mjs",
   "esm5": "dist/index.esm5.js",
   "types": "types/index.d.ts",
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "test:unit": "nyc --no-clean -- mocha --require ts-node/register \"./test/*.test.ts\" -r mocha.env.ts --config .mocharc.json"
   },
   "files": [
     "dist/*js",
@@ -37,12 +39,22 @@
     "access": "public"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@rollup/plugin-json": "^6.1.0",
+    "@types/chai": "^4.2.22",
     "@types/fs-extra": "^11.0.4",
     "@types/js-yaml": "^4.0.9",
+    "@types/mocha": "^9.0.0",
+    "@types/sinon": "^17.0.3",
     "@types/swagger2openapi": "^7.0.4",
-    "rollup": "^4.9.6",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "typescript": "^5.3.3"
+    "chai": "^4.3.4",
+    "mocha": "^9.2.0",
+    "mock-fs": "^5.2.0",
+    "mocked-env": "^1.3.5",
+    "rollup": "^2.41.0",
+    "rollup-plugin-typescript2": "^0.31.0",
+    "sinon": "^12.0.1",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.4.4"
   }
 }

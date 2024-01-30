@@ -8,14 +8,13 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { TOOLS } from "../core/globalVars";
-import { APP_STUDIO_API_NAMES } from "../component/driver/teamsApp/constants";
+import { APP_STUDIO_API_NAMES, Constants } from "../component/driver/teamsApp/constants";
 import {
   TelemetryPropertyKey,
   TelemetryPropertyValue,
 } from "../component/driver/teamsApp/utils/telemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry";
 import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
-import { Constants } from "../component/driver/teamsApp/constants";
 import { HttpMethod } from "../component/constant/commonConstant";
 
 /**
@@ -27,10 +26,8 @@ export class WrappedAxiosClient {
 
     instance.interceptors.request.use((request) => this.onRequest(request));
 
-    instance.interceptors.response.use(
-      (response) => this.onResponse(response),
-      (error) => this.onRejected(error)
-    );
+    // eslint-disable-next-line prettier/prettier
+    instance.interceptors.response.use((response) => this.onResponse(response), (error) => this.onRejected(error));
 
     return instance;
   }

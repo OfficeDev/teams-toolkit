@@ -2476,7 +2476,7 @@ describe("scaffold question", () => {
             options
           );
           const placeholder = question.placeholder(inputs);
-          assert.equal("Select a programming language.", placeholder);
+          assert.equal("Select a programming language", placeholder);
         }
       }
     });

@@ -33,7 +33,7 @@ export class WebviewPanel {
   private panelType: PanelType = PanelType.SampleGallery;
   private disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(panelType: PanelType, isToSide?: boolean) {
+  public static createOrShow(panelType: PanelType, isToSide?: boolean, args?: any[]) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -52,6 +52,21 @@ export class WebviewPanel {
         : WebviewPanel.currentPanels.push(
             new WebviewPanel(panelType, column || vscode.ViewColumn.One)
           );
+    }
+
+    if (!args || (args && args.length === 0)) {
+      return;
+    }
+    if (panelType == PanelType.SampleGallery && args.length > 1) {
+      try {
+        const sampleId = args[1] as string;
+        void WebviewPanel.currentPanels
+          .find((panel) => panel.panelType === panelType)!
+          .panel.webview.postMessage({
+            message: Commands.OpenDesignatedSample,
+            sampleId: sampleId,
+          });
+      } catch (e) {}
     }
   }
 

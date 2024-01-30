@@ -1452,7 +1452,7 @@ async function ShowScaffoldingWarningSummary(
 
 export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(PanelType.SampleGallery, isTriggerFromWalkThrough(args));
+  WebviewPanel.createOrShow(PanelType.SampleGallery, isTriggerFromWalkThrough(args), args);
   return Promise.resolve(ok(null));
 }
 

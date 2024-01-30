@@ -9,11 +9,13 @@ import { localize } from "./utils/localizeUtils";
 
 enum Referrer {
   DeveloperPortal = "developerportal",
+  OfficeDoc = "officedoc",
 }
 interface QueryParams {
   appId?: string;
   referrer?: string;
   login_hint?: string;
+  sampleId?: string;
 }
 
 let isRunning = false;
@@ -63,6 +65,22 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
             isRunning = false;
           }
         );
+    } else if (queryParamas.referrer === Referrer.OfficeDoc) {
+      if (!queryParamas.sampleId) {
+        void vscode.window.showErrorMessage(
+          localize("teamstoolkit.devPortalIntegration.invalidLink")
+        );
+        return;
+      }
+      isRunning = true;
+      vscode.commands.executeCommand("fx-extension.openSamples", false, queryParamas.sampleId).then(
+        () => {
+          isRunning = false;
+        },
+        () => {
+          isRunning = false;
+        }
+      );
     }
   }
 }

@@ -70,13 +70,10 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     );
     if (this.state.loading) {
       return <div className="sample-gallery">{titleSection}</div>;
-    } else if (this.state.selectedSampleId) {
-      const selectedSample = this.samples.filter(
-        (sample: SampleInfo) => sample.id == this.state.selectedSampleId
-      )[0];
+    } else if (this.selectedSample) {
       return (
         <SampleDetailPage
-          sample={selectedSample}
+          sample={this.selectedSample}
           selectSample={this.onSampleSelected}
           createSample={this.onCreateSample}
           viewGitHub={this.onViewGithub}
@@ -173,6 +170,16 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     }
   }
 
+  private get selectedSample(): SampleInfo | null {
+    if (!this.state.selectedSampleId) {
+      return null;
+    }
+    const selectedSamples = this.samples.filter(
+      (sample: SampleInfo) => sample.id == this.state.selectedSampleId
+    );
+    return selectedSamples.length > 0 ? selectedSamples[0] : null;
+  }
+
   private messageHandler = (event: any) => {
     const message = event.data.message;
     switch (message) {
@@ -193,6 +200,9 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
             layout: value || "grid",
           });
         }
+        break;
+      case Commands.OpenDesignatedSample:
+        this.onSampleSelected(event.data.sampleId, TelemetryTriggerFrom.ExternalUrl);
         break;
       default:
         break;

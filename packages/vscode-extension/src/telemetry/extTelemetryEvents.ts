@@ -370,6 +370,7 @@ export enum TelemetrySuccess {
 
 export enum TelemetryTriggerFrom {
   CommandPalette = "CommandPalette",
+  ExternalUrl = "ExternalUrl",
   TreeView = "TreeView",
   ViewTitleNavigation = "ViewTitleNavigation",
   Webview = "Webview",

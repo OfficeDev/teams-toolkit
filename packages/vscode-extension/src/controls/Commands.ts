@@ -14,4 +14,5 @@ export enum Commands {
   UpgradeToolkit = "upgrade-toolkit",
   StoreData = "store-data",
   GetData = "get-data",
+  OpenDesignatedSample = "open-designated-sample",
 }

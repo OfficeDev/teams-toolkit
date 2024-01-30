@@ -30,6 +30,20 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
     });
   }
 
+  public componentDidUpdate(
+    prevProps: Readonly<SampleProps>,
+    _prevState: Readonly<SampleDetailState>,
+    _snapshot?: any
+  ): void {
+    // Reload the sample readme when sampleId is changed
+    if (this.props.sample.id !== prevProps.sample.id) {
+      vscode.postMessage({
+        command: Commands.LoadSampleReadme,
+        data: this.props.sample,
+      });
+    }
+  }
+
   public render() {
     const sample = this.props.sample;
     const header = (

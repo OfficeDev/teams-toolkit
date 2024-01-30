@@ -1220,34 +1220,38 @@ export async function validateBot(
         );
       }
       await RetryHandler.retry(async () => {
-        // wait for alert message to show
-        const btn = await frame?.waitForSelector(
-          `div.ui-box button:has-text("Continue")`
-        );
-        await btn?.click();
-        // wait for new tab to show
-        const popup = await page
-          .waitForEvent("popup")
-          .then((popup) =>
-            popup
-              .waitForEvent("close", {
-                timeout: Timeout.playwrightConsentPopupPage,
+        try {
+          // wait for alert message to show
+          const btn = await frame?.waitForSelector(
+            `div.ui-box button:has-text("Continue")`
+          );
+          await btn?.click();
+          // wait for new tab to show
+          const popup = await page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {});
+          if (popup && !popup?.isClosed()) {
+            await popup
+              .click('button:has-text("Reload")', {
+                timeout: Timeout.playwrightConsentPageReload,
               })
-              .catch(() => popup)
-          )
-          .catch(() => {});
-        if (popup && !popup?.isClosed()) {
-          await popup
-            .click('button:has-text("Reload")', {
-              timeout: Timeout.playwrightConsentPageReload,
-            })
-            .catch(() => {});
-          await popup
-            .click('button:has-text("Continue")', {
-              timeout: Timeout.playwrightConsentPageReload,
-            })
-            .catch(() => {});
-          await popup.click("input.button[type='submit'][value='Accept']");
+              .catch(() => {});
+            await popup
+              .click('button:has-text("Continue")', {
+                timeout: Timeout.playwrightConsentPageReload,
+              })
+              .catch(() => {});
+            await popup.click("input.button[type='submit'][value='Accept']");
+          }
+        } catch (error) {
+          console.log("reopen skip step");
         }
         await RetryHandler.retry(async () => {
           await frame?.waitForSelector(`p:has-text("${options?.expected}")`);
@@ -1284,6 +1288,7 @@ export async function validateBot(
 
 export async function validateNpm(page: Page, options?: { npmName?: string }) {
   try {
+    const searchPack = options?.npmName || "axios";
     console.log("start to verify npm search");
     await page.waitForTimeout(Timeout.shortTimeLoading);
     const frameElementHandle = await page.waitForSelector(
@@ -1301,15 +1306,15 @@ export async function validateNpm(page: Page, options?: { npmName?: string }) {
     } catch (error) {
       console.log("no message to dismiss");
     }
-    console.log("search npm ", options?.npmName);
+    console.log("search npm ", searchPack);
     const input = await frame?.waitForSelector("div.ui-box input.ui-box");
-    await input?.type(options?.npmName || "axios");
+    await input?.type(searchPack);
     try {
       const targetItem = await frame?.waitForSelector(
-        `span:has-text("${options?.npmName}")`
+        `span:has-text("${searchPack}")`
       );
       await targetItem?.click();
-      await frame?.waitForSelector(`card span:has-text("${options?.npmName}")`);
+      await frame?.waitForSelector(`card span:has-text("${searchPack}")`);
       console.log("verify npm search successfully!!!");
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {

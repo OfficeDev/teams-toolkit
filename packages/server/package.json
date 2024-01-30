@@ -89,13 +89,13 @@
     "umd-compat-loader": "^2.1.2",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
-    "webpack": "^5.38.1",
+    "webpack": "^5.76.0",
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
     "@azure/core-auth": "^1.4.0",
     "@azure/identity": "^3.1.3",
-    "@microsoft/dev-tunnels-contracts": "1.0.7445",
+    "@microsoft/dev-tunnels-contracts": "1.1.9",
     "@microsoft/teamsfx-api": "workspace:*",
     "@microsoft/teamsfx-core": "workspace:*",
     "fs-extra": "^9.1.0",

@@ -5,12 +5,13 @@ provision:
 
 {{#botAadAppCreate}} {{/botAadAppCreate}}
 
-{{#botFrameworkCreate}} {{/botFrameworkCreate}}
+{{#botFrameworkCreate}} m365extensions {{/botFrameworkCreate}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
 {{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 deploy:
 {{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}

@@ -28,7 +28,8 @@ import { expect } from "chai";
 export async function happyPathTest(
   runtime: Runtime,
   capabilities: CliCapabilities,
-  trigger?: CliTriggerType[]
+  trigger?: CliTriggerType[],
+  isTdpIntegrationTemplatesOnly?: boolean
 ): Promise<void> {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -40,6 +41,9 @@ export async function happyPathTest(
     env["TEAMSFX_CLI_DOTNET"] = "true";
   }
 
+  if (isTdpIntegrationTemplatesOnly) {
+    env["TEAMSFX_TDP_TEMPLATE_CLI_TEST"] = "true";
+  }
   const triggerStr =
     trigger === undefined
       ? ""

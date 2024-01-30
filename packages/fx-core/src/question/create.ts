@@ -28,6 +28,7 @@ import {
   isApiCopilotPluginEnabled,
   isApiKeyEnabled,
   isOfficeAddinEnabled,
+  isTdpTemplateCliTestEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -396,13 +397,18 @@ export class CapabilityOptions {
   }
 
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
-    return [
+    const capabilities = [
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.bots(inputs, true),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),
     ];
+    if (isTdpTemplateCliTestEnabled()) {
+      capabilities.push(CapabilityOptions.me());
+    }
+
+    return capabilities;
   }
 
   /**
@@ -444,6 +450,15 @@ export class CapabilityOptions {
     ];
   }
 
+  static tdpIntegrationCapabilities(): OptionItem[] {
+    // templates that are used by TDP integration only
+    return [
+      CapabilityOptions.me(),
+      CapabilityOptions.botAndMe(),
+      CapabilityOptions.nonSsoTabAndBot(),
+    ];
+  }
+
   /**
    * static capability list, which does not depend on any feature flags
    */
@@ -453,6 +468,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.tdpIntegrationCapabilities(),
     ];
 
     return capabilityOptions;
@@ -469,6 +485,10 @@ export class CapabilityOptions {
     ];
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+    }
+    if (isTdpTemplateCliTestEnabled()) {
+      // test templates that are used by TDP integration only
+      capabilityOptions.push(...CapabilityOptions.tdpIntegrationCapabilities());
     }
     return capabilityOptions;
   }

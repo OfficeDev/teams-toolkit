@@ -2,6 +2,56 @@
 
 ## Changelog
 
+### January 23, 2024
+
+#### New Features
+
+- **Deploy Tab Apps to Static Web App**: Azure Static Web Apps, an automatic service for building and deploying full-stack web apps to Azure from a code repository, is now the default solution for deploying Tab-based applications in Teams Toolkit. If you prefer the old way using Azure Storage, please refer to this [sample](https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/hello-world-tab-codespaces).
+
+### Enhancements
+
+- **Clean up `.deployment` Folder in between Deployments**: Teams Toolkit now cleans up the `.deployment` folder in the build directory before each deployment, addressing a [known issue](https://github.com/OfficeDev/TeamsFx/issues/10075) and reducing deployment time.
+  
+- **Optimized Dev Tunnel Expiration**: Inactive Dev Tunnel instances will now be automatically cleaned up after an hour, mitigating Dev Tunnel instance limitation errors.
+
+- **Log Level Settings**: Added log level settings for controlling the verbosity of Teams Toolkit logs. You can find the settings in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) under the `Teams Toolkit` section.
+![Logs](https://github.com/OfficeDev/TeamsFx/assets/11220663/3a1fc3a0-d69b-446e-8db2-0c756a18f95e)
+
+- **Richer Information in Sample App Details Page**: The Sample app detail page now includes additional details from the project README file, such as the project description, prerequisites, and steps to run the project.
+
+- **Improved Troubleshooting for Multi-tenant Scenario**: Teams Toolkit now provides a [troubleshooting guide](https://aka.ms/teamsfx-multi-tenant) for scenarios where `aadApp/update` action fails with a `HostNameNotOnVerifiedDomain` error in multi-tenant setups.
+
+- **Optimized SPFx Solution Version Handling**: Teams Toolkit now compares the SPFx solution version between global installations and the one used by Teams Toolkit when developers add additional web parts. Developers will be prompted if there's a need to install or upgrade the solution version when differences are detected.
+
+#### New Additions to the Sample App Gallery
+
+- **Format Reddit Link into Adaptive Card**: This sample application demonstrates how to format a Reddit link into an Adaptive Card in Microsoft Teams conversations.
+![Link Unfurling Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/0d44f8c3-d02e-4912-bfa2-6ed3fdb29c1b)
+
+#### Teams Toolkit CLI ([`@microsoft/teamsapp-cli`](https://www.npmjs.com/package/@microsoft/teamsapp-cli)) `v3.0.0@beta`
+![Teams Toolkit CLI](https://camo.githubusercontent.com/67608a468cbd406d6ff18585c8bc3b34d3d97d0a8ef525bdf516ca23fd5e32dd/68747470733a2f2f616b612e6d732f636c692d6865726f2d696d616765)
+Teams Toolkit CLI version 3 is now in public preview. Major changes include:
+
+- **New Command Signature**: Teams Toolkit CLI now starts with `teamsapp` as the root command signature for more clarity. We recommend changing your scripts to use `teamsapp` as the command prefix.
+
+- **New Command Structure**: Teams Toolkit CLI now has a new command structure that is more intuitive and easier to use. You can find the new command structure in the [Teams Toolkit CLI Command Reference](https://aka.ms/teamsfx-toolkit-cli).
+
+- **New Doctor Command**: `teamsapp doctor` command is a new command that helps diagnose and fix common issues with Teams Toolkit and Teams application development.
+
+#### Bug Fixes
+
+- Fixed an issue where you might see a `User canceled` error when canceling a new app creation. [#10691](https://github.com/OfficeDev/TeamsFx/pull/10691)
+- Fixed an issue where the Node.js installation link redirects to a 404 page. [#10587](https://github.com/OfficeDev/TeamsFx/pull/10587)
+- Fixed an issue with the accuracy of reflecting the latest Copilot Access status. [#10555](https://github.com/OfficeDev/TeamsFx/pull/10555)
+- Fixed an issue where the debug profile name for Microsoft Teams is not accurately reflected in the debug configuration. [#10478](https://github.com/OfficeDev/TeamsFx/pull/10478)
+- Fixed an issue where you might accidentally exceed the maximum length of application names without any warning messages. [#10457](https://github.com/OfficeDev/TeamsFx/pull/10457) 
+- Fixed an issue where `undefined` is printed in Teams application validation summary. [#10445](https://github.com/OfficeDev/TeamsFx/pull/10445)
+- Fixed an issue where you might accidentally see the incorrect changelog file popped up. [#10390](https://github.com/OfficeDev/TeamsFx/pull/10390)
+- Fixed an issue in Sample App Gallery where the multi-selection did not follow the order of the selection. [#10364](https://github.com/OfficeDev/TeamsFx/pull/10364)
+- Fixed a number of issues in the Sample App Gallery UI. [#10363](https://github.com/OfficeDev/TeamsFx/pull/10363)
+
+
+
 ### November 15, 2023
 
 This is a hot fix version that contains a bug fix:

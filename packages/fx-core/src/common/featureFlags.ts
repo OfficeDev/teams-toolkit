@@ -64,3 +64,7 @@ export function isTeamsFxRebrandingEnabled(): boolean {
 export function isOfficeAddinEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
 }
+
+export function isTdpTemplateCliTestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
+}

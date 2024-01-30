@@ -61,7 +61,7 @@
 
       // Parse hash parameters into key-value pairs
       function getHashParameters() {
-        let hashParams = {};
+        let hashParams = Object.create(null);
         location.hash
           .substr(1)
           .split("&")

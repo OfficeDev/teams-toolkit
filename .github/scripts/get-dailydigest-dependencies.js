@@ -38,6 +38,9 @@ const codeOwnerMap = new Map([
   ["m365-message-extension", "kuojianlu@microsoft.com"],
   ["ai-bot", "kuojianlu@microsoft.com"],
   ["ai-assistant-bot", "kuojianlu@microsoft.com"],
+  ["notification-http-timer-trigger-isolated", "tianyuan@microsoft.com"],
+  ["notification-http-trigger-isolated", "tianyuan@microsoft.com"],
+  ["notification-timer-trigger-isolated", "tianyuan@microsoft.com"],
 ]);
 
 async function getTemplatesDependencies() {

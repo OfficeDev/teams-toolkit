@@ -36,7 +36,7 @@ new ChefBotTestCase(
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
   {
-    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
+    debug: "cli",
     testRootFolder: path.resolve(os.homedir(), "resourse"), // fix yarn error
   }
 ).test();

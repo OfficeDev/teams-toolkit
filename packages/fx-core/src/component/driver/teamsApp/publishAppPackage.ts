@@ -13,7 +13,6 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { AppStudioClient } from "./clients/appStudioClient";
 import { Constants } from "./constants";
-import { TelemetryUtils } from "./utils/telemetry";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -51,8 +50,6 @@ export class PublishAppPackageDriver implements StepDriver {
     context: WrapDriverContext,
     outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
-
     const argsValidationResult = this.validateArgs(args);
     if (argsValidationResult.isErr()) {
       return err(argsValidationResult.error);

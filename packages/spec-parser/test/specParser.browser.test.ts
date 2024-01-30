@@ -13,9 +13,8 @@ import {
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";
 import { OpenAPIV3 } from "openapi-types";
-import * as utils from "../src/utils";
+import { Utils } from "../src/utils";
 import SwaggerParser from "@apidevtools/swagger-parser";
-import { format } from "../src/utils";
 
 // TODO: After SpecParser lib become a npm package, these tests should be running in browser environment
 describe("SpecParser in Browser", () => {
@@ -180,7 +179,7 @@ describe("SpecParser in Browser", () => {
           description: "Get user by user id, balabala",
           warning: {
             type: WarningType.OperationOnlyContainsOptionalParam,
-            content: format(ConstantString.OperationOnlyContainsOptionalParam, "getUserById"),
+            content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getUserById"),
             data: "getUserById",
           },
         },
@@ -239,7 +238,7 @@ describe("SpecParser in Browser", () => {
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const listSupportedAPIsSyp = sinon.spy(utils, "listSupportedAPIs");
+      const listSupportedAPIsSyp = sinon.spy(Utils, "listSupportedAPIs");
       let result = await specParser.listSupportedAPIInfo();
       result = await specParser.listSupportedAPIInfo();
       expect(result).to.deep.equal([
@@ -477,7 +476,7 @@ describe("SpecParser in Browser", () => {
         errors: [
           {
             type: ErrorType.UrlProtocolNotSupported,
-            content: utils.format(ConstantString.UrlProtocolNotSupported, "http"),
+            content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
@@ -639,7 +638,7 @@ describe("SpecParser in Browser", () => {
         warnings: [
           {
             type: WarningType.OperationIdMissing,
-            content: utils.format(ConstantString.MissingOperationId, "GET /pet"),
+            content: Utils.format(ConstantString.MissingOperationId, "GET /pet"),
             data: ["GET /pet"],
           },
         ],
@@ -746,7 +745,7 @@ describe("SpecParser in Browser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(utils as any, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");

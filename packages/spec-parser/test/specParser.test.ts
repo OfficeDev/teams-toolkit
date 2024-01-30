@@ -16,12 +16,11 @@ import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";
 import { OpenAPIV3 } from "openapi-types";
-import * as SpecFilter from "../src/specFilter";
-import * as ManifestUpdater from "../src/manifestUpdater";
-import * as AdaptiveCardGenerator from "../src/adaptiveCardGenerator";
-import * as utils from "../src/utils";
+import { SpecFilter } from "../src/specFilter";
+import { ManifestUpdater } from "../src/manifestUpdater";
+import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
+import { Utils } from "../src/utils";
 import jsyaml from "js-yaml";
-import { format } from "../src/utils";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("SpecParser", () => {
@@ -273,7 +272,7 @@ describe("SpecParser", () => {
         errors: [
           {
             type: ErrorType.UrlProtocolNotSupported,
-            content: format(ConstantString.UrlProtocolNotSupported, "http"),
+            content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
@@ -435,7 +434,7 @@ describe("SpecParser", () => {
         warnings: [
           {
             type: WarningType.OperationIdMissing,
-            content: format(ConstantString.MissingOperationId, "GET /pet"),
+            content: Utils.format(ConstantString.MissingOperationId, "GET /pet"),
             data: ["GET /pet"],
           },
         ],
@@ -542,7 +541,7 @@ describe("SpecParser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(utils as any, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");

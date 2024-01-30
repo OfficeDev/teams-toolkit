@@ -10,8 +10,7 @@
   "types": "types/index.d.ts",
   "scripts": {
     "build": "rollup -c",
-    "test:unit": "nyc --no-clean -- mocha --require ts-node/register \"./test/*.test.ts\" -r mocha.env.ts --config .mocharc.json",
-    "test": "nyc mocha \"test/**/*.test.ts\" "
+    "test:unit": "nyc --no-clean -- mocha --require ts-node/register \"./test/*.test.ts\" -r mocha.env.ts --config .mocharc.json"
   },
   "files": [
     "dist/*js",
@@ -40,6 +39,7 @@
     "access": "public"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@rollup/plugin-json": "^6.1.0",
     "@types/chai": "^4.2.22",
     "@types/fs-extra": "^11.0.4",

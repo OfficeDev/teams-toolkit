@@ -3,21 +3,7 @@
 
 import { assert, expect } from "chai";
 import "mocha";
-import {
-  checkPostBody,
-  checkParameters,
-  checkServerUrl,
-  convertPathToCamelCase,
-  getResponseJson,
-  getUrlProtocol,
-  isSupportedApi,
-  updateFirstLetter,
-  validateServer,
-  resolveServerUrl,
-  isWellKnownName,
-  format,
-  getSafeRegistrationIdEnvName,
-} from "../src/utils";
+import { Utils } from "../src/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../src/constants";
 import { ErrorType } from "../src/interfaces";
@@ -25,12 +11,12 @@ import { ErrorType } from "../src/interfaces";
 describe("utils", () => {
   describe("updateFirstLetter", () => {
     it("should return the string with the first letter capitalized", () => {
-      const result = updateFirstLetter("hello");
+      const result = Utils.updateFirstLetter("hello");
       expect(result).to.equal("Hello");
     });
 
     it("should return an empty string if the input is empty", () => {
-      const result = updateFirstLetter("");
+      const result = Utils.updateFirstLetter("");
       expect(result).to.equal("");
     });
   });
@@ -39,42 +25,42 @@ describe("utils", () => {
     it("should convert a path to camel case", () => {
       const path = "this/is/a/{test}/path";
       const expected = "ThisIsATestPath";
-      const result = convertPathToCamelCase(path);
+      const result = Utils.convertPathToCamelCase(path);
       assert.strictEqual(result, expected);
     });
 
     it("should convert a path to camel case start with /", () => {
       const path = "/this/is/a/{test}/path";
       const expected = "ThisIsATestPath";
-      const result = convertPathToCamelCase(path);
+      const result = Utils.convertPathToCamelCase(path);
       assert.strictEqual(result, expected);
     });
 
     it("should return an empty string for an empty path", () => {
       const path = "";
       const expected = "";
-      const result = convertPathToCamelCase(path);
+      const result = Utils.convertPathToCamelCase(path);
       assert.strictEqual(result, expected);
     });
 
     it("should return the same string for a path with no slashes", () => {
       const path = "test";
       const expected = "Test";
-      const result = convertPathToCamelCase(path);
+      const result = Utils.convertPathToCamelCase(path);
       assert.strictEqual(result, expected);
     });
 
     it("should return correct result for string with {} and .", () => {
       const path = "/{section}.json";
       const expected = "SectionJson";
-      const result = convertPathToCamelCase(path);
+      const result = Utils.convertPathToCamelCase(path);
       assert.strictEqual(result, expected);
     });
 
     it("should return correct result for complex string", () => {
       const path = "/{section}.{test1}/{test2}.json";
       const expected = "SectionTest1Test2Json";
-      const result = convertPathToCamelCase(path);
+      const result = Utils.convertPathToCamelCase(path);
       assert.strictEqual(result, expected);
     });
   });
@@ -114,7 +100,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -152,7 +138,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, false, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, false, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -204,7 +190,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -276,7 +262,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -348,7 +334,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, true, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -421,7 +407,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, true, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -495,7 +481,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, true);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, true);
       assert.strictEqual(result, true);
     });
 
@@ -574,7 +560,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, true, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -653,7 +639,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, true, false, true);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, true);
       assert.strictEqual(result, true);
     });
 
@@ -706,7 +692,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -759,7 +745,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -812,7 +798,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, true, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, true, false);
       assert.strictEqual(result, true);
     });
 
@@ -873,7 +859,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, true, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, true, false);
       assert.strictEqual(result, false);
     });
 
@@ -929,7 +915,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -986,7 +972,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -1024,7 +1010,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, true);
     });
 
@@ -1062,7 +1048,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1099,7 +1085,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1136,7 +1122,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1174,7 +1160,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1212,7 +1198,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1250,7 +1236,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1277,7 +1263,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1303,7 +1289,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1335,7 +1321,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
   });
@@ -1343,25 +1329,25 @@ describe("utils", () => {
   describe("getUrlProtocol", () => {
     it("should return the protocol of a valid URL", () => {
       const url = "https://example.com/path/to/file";
-      const protocol = getUrlProtocol(url);
+      const protocol = Utils.getUrlProtocol(url);
       expect(protocol).to.equal("https:");
     });
 
     it("should return undefined for an invalid URL", () => {
       const url = "not a url";
-      const protocol = getUrlProtocol(url);
+      const protocol = Utils.getUrlProtocol(url);
       expect(protocol).to.be.undefined;
     });
 
     it("should return undefined for relative url", () => {
       const url = "/v3";
-      const protocol = getUrlProtocol(url);
+      const protocol = Utils.getUrlProtocol(url);
       expect(protocol).to.be.undefined;
     });
 
     it("should return the protocol for other protocol", () => {
       const url = "ftp://v1";
-      const protocol = getUrlProtocol(url);
+      const protocol = Utils.getUrlProtocol(url);
       expect(protocol).to.equal("ftp:");
     });
   });
@@ -1372,7 +1358,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: false, schema: { type: "string" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, true);
     });
 
@@ -1381,7 +1367,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "string" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 2);
       assert.strictEqual(result.optionalNum, 0);
@@ -1393,7 +1379,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: true, schema: { type: "string" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1403,7 +1389,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: true, schema: { type: "string", default: "value" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, true);
       // header param is ignored
       assert.strictEqual(result.requiredNum, 1);
@@ -1416,7 +1402,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "query", required: true, schema: { type: "string" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 2);
@@ -1428,7 +1414,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "query", required: true, schema: { type: "array", default: ["item"] } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 1);
@@ -1440,7 +1426,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: false, schema: { type: "string" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 1);
@@ -1451,7 +1437,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "array" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1460,7 +1446,7 @@ describe("utils", () => {
         { in: "query", required: false, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "object" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1469,7 +1455,7 @@ describe("utils", () => {
         { in: "query", required: false, schema: { type: "string" } },
         { in: "path", required: false, schema: { type: "object" } },
       ];
-      const result = checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 0);
       assert.strictEqual(result.optionalNum, 1);
@@ -1479,7 +1465,7 @@ describe("utils", () => {
   describe("checkPostBodyRequiredParameters", () => {
     it("should return 0 for an empty schema", () => {
       const schema = {};
-      const result = checkPostBody(schema as any);
+      const result = Utils.checkPostBody(schema as any);
       assert.strictEqual(result.requiredNum, 0);
       assert.strictEqual(result.optionalNum, 0);
     });
@@ -1495,7 +1481,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBody(schema as any);
+      const result = Utils.checkPostBody(schema as any);
       assert.strictEqual(result.requiredNum, 0);
       assert.strictEqual(result.optionalNum, 1);
       assert.strictEqual(result.isValid, true);
@@ -1511,7 +1497,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBody(schema as any);
+      const result = Utils.checkPostBody(schema as any);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 0);
       assert.strictEqual(result.isValid, true);
@@ -1526,7 +1512,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBody(schema as any);
+      const result = Utils.checkPostBody(schema as any);
       assert.strictEqual(result.requiredNum, 0);
       assert.strictEqual(result.optionalNum, 1);
       assert.strictEqual(result.isValid, true);
@@ -1554,7 +1540,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBody(schema as any);
+      const result = Utils.checkPostBody(schema as any);
       assert.strictEqual(result.requiredNum, 2);
       assert.strictEqual(result.optionalNum, 1);
       assert.strictEqual(result.isValid, true);
@@ -1573,7 +1559,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBody(schema as any);
+      const result = Utils.checkPostBody(schema as any);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1591,7 +1577,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = checkPostBody(schema as any);
+      const result = Utils.checkPostBody(schema as any);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 0);
       assert.strictEqual(result.optionalNum, 0);
@@ -1601,13 +1587,13 @@ describe("utils", () => {
   describe("checkServerUrl", () => {
     it("should return an empty array if the server URL is valid", () => {
       const servers = [{ url: "https://example.com" }];
-      const errors = checkServerUrl(servers);
+      const errors = Utils.checkServerUrl(servers);
       assert.deepStrictEqual(errors, []);
     });
 
     it("should return an error if the server URL is relative", () => {
       const servers = [{ url: "/api" }];
-      const errors = checkServerUrl(servers);
+      const errors = Utils.checkServerUrl(servers);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.RelativeServerUrlNotSupported,
@@ -1619,11 +1605,11 @@ describe("utils", () => {
 
     it("should return an error if the server URL protocol is not HTTPS", () => {
       const servers = [{ url: "http://example.com" }];
-      const errors = checkServerUrl(servers);
+      const errors = Utils.checkServerUrl(servers);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: format(ConstantString.UrlProtocolNotSupported, "http"),
+          content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
           data: "http",
         },
       ]);
@@ -1633,7 +1619,7 @@ describe("utils", () => {
   describe("validateServer", () => {
     it("should return an error if there is no server information", () => {
       const spec = { paths: {} };
-      const errors = validateServer(spec as OpenAPIV3.Document, true, false, false, false);
+      const errors = Utils.validateServer(spec as OpenAPIV3.Document, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1652,7 +1638,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1666,7 +1652,7 @@ describe("utils", () => {
         servers: [{ url: "https://example.com" }],
         paths: {},
       };
-      const errors = validateServer(spec as OpenAPIV3.Document, true, false, false, false);
+      const errors = Utils.validateServer(spec as OpenAPIV3.Document, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1678,7 +1664,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1710,7 +1696,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1744,7 +1730,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1778,7 +1764,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.RelativeServerUrlNotSupported,
@@ -1787,12 +1773,12 @@ describe("utils", () => {
         },
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: format(ConstantString.UrlProtocolNotSupported, "http"),
+          content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
           data: "http",
         },
         {
           type: ErrorType.UrlProtocolNotSupported,
-          content: format(ConstantString.UrlProtocolNotSupported, "ftp"),
+          content: Utils.format(ConstantString.UrlProtocolNotSupported, "ftp"),
           data: "ftp",
         },
       ]);
@@ -1802,7 +1788,7 @@ describe("utils", () => {
   describe("getResponseJson", () => {
     it("should return an empty object if no JSON response is defined", () => {
       const operationObject = {};
-      const json = getResponseJson(operationObject);
+      const json = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({});
     });
 
@@ -1823,7 +1809,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = getResponseJson(operationObject);
+      const json = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -1851,7 +1837,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = getResponseJson(operationObject);
+      const json = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -1879,7 +1865,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = getResponseJson(operationObject);
+      const json = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -1919,7 +1905,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = getResponseJson(operationObject);
+      const json = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -1959,7 +1945,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = getResponseJson(operationObject);
+      const json = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({});
     });
   });
@@ -1969,7 +1955,7 @@ describe("utils", () => {
       process.env.OPENAPI_SERVER_URL = "https://localhost:3000/api";
       const url = "${{OPENAPI_SERVER_URL}}";
       const expectedUrl = "https://localhost:3000/api";
-      const resolvedUrl = resolveServerUrl(url);
+      const resolvedUrl = Utils.resolveServerUrl(url);
       assert.strictEqual(resolvedUrl, expectedUrl);
     });
 
@@ -1978,9 +1964,9 @@ describe("utils", () => {
       const url = "${{OPENAPI_SERVER_URL}}";
       const expectedUrl = "https://localhost:3000/api";
       assert.throws(
-        () => resolveServerUrl(url),
+        () => Utils.resolveServerUrl(url),
         Error,
-        format(ConstantString.ResolveServerUrlFailed, "OPENAPI_SERVER_URL")
+        Utils.format(ConstantString.ResolveServerUrlFailed, "OPENAPI_SERVER_URL")
       );
     });
 
@@ -1989,7 +1975,7 @@ describe("utils", () => {
       process.env.API_PORT = "3000";
       const url = "http://${{API_HOST}}:${{API_PORT}}/api";
       const expectedUrl = "http://localhost:3000/api";
-      const resolvedUrl = resolveServerUrl(url);
+      const resolvedUrl = Utils.resolveServerUrl(url);
       assert.strictEqual(resolvedUrl, expectedUrl);
     });
 
@@ -1998,103 +1984,103 @@ describe("utils", () => {
       process.env.API_HOST = "localhost";
       const url = "http://${{API_HOST}}:${{API_PORT}}/api";
       assert.throws(
-        () => resolveServerUrl(url),
+        () => Utils.resolveServerUrl(url),
         Error,
-        format(ConstantString.ResolveServerUrlFailed, "API_PORT")
+        Utils.format(ConstantString.ResolveServerUrlFailed, "API_PORT")
       );
     });
   });
 
   describe("isWellKnownName", () => {
     it("should return true for well-known result property names", () => {
-      expect(isWellKnownName("result", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("r_e_s_u_l_t", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("r-e-s-u-l-t", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("data", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("items", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("root", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("matches", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("queries", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("list", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("output", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("result", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("r_e_s_u_l_t", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("r-e-s-u-l-t", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("data", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("items", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("root", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("matches", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("queries", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("list", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("output", ConstantString.WellknownResultNames)).to.be.true;
     });
 
     it("should return true for well-known result property names with different casing", () => {
-      expect(isWellKnownName("Result", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("DaTa", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("ITEMS", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("Root", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("MaTcHeS", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("QuErIeS", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("LiSt", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("OutPut", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("Result", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("DaTa", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("ITEMS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("Root", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("MaTcHeS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("QuErIeS", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("LiSt", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("OutPut", ConstantString.WellknownResultNames)).to.be.true;
     });
 
     it("should return true for name substring is well-known result property names", () => {
-      expect(isWellKnownName("testResult", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("carData", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("productItems", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("rootValue", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("matchesResult", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("DataQueries", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("productLists", ConstantString.WellknownResultNames)).to.be.true;
-      expect(isWellKnownName("outputData", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("testResult", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("carData", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("productItems", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("rootValue", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("matchesResult", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("DataQueries", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("productLists", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("outputData", ConstantString.WellknownResultNames)).to.be.true;
     });
 
     it("should return false for non well-known result property names", () => {
-      expect(isWellKnownName("foo", ConstantString.WellknownResultNames)).to.be.false;
-      expect(isWellKnownName("bar", ConstantString.WellknownResultNames)).to.be.false;
-      expect(isWellKnownName("baz", ConstantString.WellknownResultNames)).to.be.false;
-      expect(isWellKnownName("qux", ConstantString.WellknownResultNames)).to.be.false;
+      expect(Utils.isWellKnownName("foo", ConstantString.WellknownResultNames)).to.be.false;
+      expect(Utils.isWellKnownName("bar", ConstantString.WellknownResultNames)).to.be.false;
+      expect(Utils.isWellKnownName("baz", ConstantString.WellknownResultNames)).to.be.false;
+      expect(Utils.isWellKnownName("qux", ConstantString.WellknownResultNames)).to.be.false;
     });
   });
 
   describe("format", () => {
     it("should replace %s placeholders with arguments", () => {
-      const result = format("Hello, %s!", "world");
+      const result = Utils.format("Hello, %s!", "world");
       expect(result).to.equal("Hello, world!");
     });
 
     it("should handle multiple placeholders and arguments", () => {
-      const result = format("The %s is %s.", "answer", "42");
+      const result = Utils.format("The %s is %s.", "answer", "42");
       expect(result).to.equal("The answer is 42.");
     });
 
     it("should handle missing arguments", () => {
-      const result = format("Hello, %s!", "");
+      const result = Utils.format("Hello, %s!", "");
       expect(result).to.equal("Hello, !");
     });
 
     it("should handle extra arguments", () => {
-      const result = format("Hello, %s!", "world", "extra");
+      const result = Utils.format("Hello, %s!", "world", "extra");
       expect(result).to.equal("Hello, world!");
     });
 
     it("should handle no placeholders", () => {
-      const result = format("Hello, world!");
+      const result = Utils.format("Hello, world!");
       expect(result).to.equal("Hello, world!");
     });
   });
 
   describe("getSafeRegistrationIdEnvName", () => {
     it("should return an empty string if authName is not provided", () => {
-      expect(getSafeRegistrationIdEnvName("")).to.equal("");
+      expect(Utils.getSafeRegistrationIdEnvName("")).to.equal("");
     });
 
     it("should replace non-alphanumeric characters with underscores and convert to uppercase", () => {
-      expect(getSafeRegistrationIdEnvName("auth@name")).to.equal("AUTH_NAME");
+      expect(Utils.getSafeRegistrationIdEnvName("auth@name")).to.equal("AUTH_NAME");
     });
 
     it('should prefix the result with "PREFIX_" if it does not start with an uppercase letter', () => {
-      expect(getSafeRegistrationIdEnvName("1authname")).to.equal("PREFIX_1AUTHNAME");
+      expect(Utils.getSafeRegistrationIdEnvName("1authname")).to.equal("PREFIX_1AUTHNAME");
     });
 
     it('should not prefix the result with "PREFIX_" if it starts with an uppercase letter', () => {
-      expect(getSafeRegistrationIdEnvName("Authname")).to.equal("AUTHNAME");
+      expect(Utils.getSafeRegistrationIdEnvName("Authname")).to.equal("AUTHNAME");
     });
 
     it("should convert all lowercase letters to uppercase", () => {
-      expect(getSafeRegistrationIdEnvName("authname")).to.equal("AUTHNAME");
+      expect(Utils.getSafeRegistrationIdEnvName("authname")).to.equal("AUTHNAME");
     });
   });
 });

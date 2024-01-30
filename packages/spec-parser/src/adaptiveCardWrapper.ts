@@ -11,7 +11,7 @@ import {
   TextBlockElement,
   WrappedAdaptiveCard,
 } from "./interfaces";
-import { isWellKnownName } from "./utils";
+import { Utils } from "./utils";
 
 export function wrapAdaptiveCard(card: AdaptiveCard, jsonPath: string): WrappedAdaptiveCard {
   const result: WrappedAdaptiveCard = {
@@ -63,13 +63,13 @@ export function inferPreviewCardTemplate(card: AdaptiveCard): PreviewCardTemplat
 
   for (const element of textBlockElements) {
     const text = element.text;
-    if (!result.title && isWellKnownName(text, ConstantString.WellknownTitleName)) {
+    if (!result.title && Utils.isWellKnownName(text, ConstantString.WellknownTitleName)) {
       result.title = text;
       textBlockElements.delete(element);
-    } else if (!result.subtitle && isWellKnownName(text, ConstantString.WellknownSubtitleName)) {
+    } else if (!result.subtitle && Utils.isWellKnownName(text, ConstantString.WellknownSubtitleName)) {
       result.subtitle = text;
       textBlockElements.delete(element);
-    } else if (!result.image && isWellKnownName(text, ConstantString.WellknownImageName)) {
+    } else if (!result.image && Utils.isWellKnownName(text, ConstantString.WellknownImageName)) {
       const match = text.match(/\${if\(([^,]+),/);
       const property = match ? match[1] : "";
       if (property) {

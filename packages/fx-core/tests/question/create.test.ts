@@ -43,6 +43,7 @@ import {
   createSampleProjectQuestionNode,
   folderQuestion,
   getLanguageOptions,
+  getAddinHostOptions,
   getTemplate,
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
@@ -2120,6 +2121,26 @@ describe("scaffold question", () => {
           });
         });
       });
+    });
+  });
+
+  describe("getAddinHostOptions", () => {
+    it("should return outlook host", async () => {
+      const options = getAddinHostOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+      });
+      assert.isTrue(options.length === 1 || options[0].id === "Outlook");
+    });
+
+    it("should return office host", async () => {
+      const options = getAddinHostOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+      });
+      assert.isTrue(options.length === 4);
     });
   });
 

@@ -961,7 +961,10 @@ describe("projectsJsonData for Office Addin", () => {
       data.getProjectTemplateBranchNameNew("taskpane", "typescript", "default", false),
       "yueli/wxp-json-toolkit" // TODO-yue: should be change when template is ready
     );
-
+    chai.assert.equal(
+      data.getProjectTemplateBranchNameNew("taskpane", "typescript", "default", true),
+      "yueli/wxp-json-toolkit" // TODO-yue: should be change when template is ready
+    );
     chai.assert.deepEqual(
       data.getProjectRepoAndBranchNew("taskpane", "typescript", "default", false),
       {

@@ -118,16 +118,13 @@ export class OfficeAddinGenerator {
           let host;
           if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
             host = jsonData.getHostTemplateNames(template);
-            //for (let i = 0; i < host.length; i++) {
-            const hostName = host[0];
             // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
             const manifestType = "json";
-            const projectName = "TeamsFx";
+            const hostName = "wxpo";
             const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(
               hostName
-            )} ${manifestType} ${projectName}`;
+            )} ${manifestType}`;
             await OfficeAddinGenerator.childProcessExec(cmdLine);
-            // }
           } else {
             host = inputs[QuestionNames.OfficeAddinHost];
             // Call 'convert-to-single-host' npm script in generated project, passing in host parameter

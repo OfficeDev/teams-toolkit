@@ -1,10 +1,10 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "module": "ES2015",
+    "module": "ES6",
     "outDir": "dist",
     "declarationDir": "dist",
-    "target": "es2016",
+    "target": "ES6",
     "lib": [
       "es5",
       "dom",
@@ -21,13 +21,16 @@
     "sourceMap": true,
     "importHelpers": true,
     "strict": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": false, // TODO: temporarily disabled
+    "noUnusedParameters": false, // TODO: temporarily disabled
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "downlevelIteration": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
   },
   "exclude": ["dist/**/*"]
 }

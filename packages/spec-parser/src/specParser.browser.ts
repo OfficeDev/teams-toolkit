@@ -15,7 +15,7 @@ import {
   ListAPIResult,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
-import { listSupportedAPIs, parseApiInfo, validateSpec } from "./utils";
+import { Utils } from "./utils";
 import { ConstantString } from "./constants";
 
 /**
@@ -81,7 +81,7 @@ export class SpecParser {
         };
       }
 
-      return validateSpec(
+      return Utils.validateSpec(
         this.spec!,
         this.parser,
         !!this.isSwaggerFile,
@@ -110,7 +110,7 @@ export class SpecParser {
           continue;
         }
 
-        const [command, warning] = parseApiInfo(
+        const [command, warning] = Utils.parseApiInfo(
           pathObjectItem,
           this.options.allowMultipleParameters
         );
@@ -183,7 +183,7 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = listSupportedAPIs(
+    const result = Utils.listSupportedAPIs(
       spec,
       this.options.allowMissingId,
       this.options.allowAPIKeyAuth,

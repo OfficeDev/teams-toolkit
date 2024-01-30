@@ -151,7 +151,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "app-name",
     type: "string",
     shortName: "n",
-    description: "Application name",
+    description: "Application Name",
     required: true,
   },
 ];

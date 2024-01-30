@@ -933,7 +933,7 @@ describe("handlers", () => {
 
     await handlers.openSamplesHandler();
 
-    sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, false);
+    sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, false, undefined);
   });
 
   it("openReadMeHandler", async () => {

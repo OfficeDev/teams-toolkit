@@ -55,7 +55,7 @@ export class WrappedAxiosClient {
       eventName = TelemetryEvent.DependencyApi;
     }
 
-    TOOLS.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties);
+    TOOLS?.telemetryReporter?.sendTelemetryEvent(`${eventName}-start`, properties);
     return request;
   }
 
@@ -86,7 +86,7 @@ export class WrappedAxiosClient {
     } else {
       eventName = TelemetryEvent.DependencyApi;
     }
-    TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, properties);
+    TOOLS?.telemetryReporter?.sendTelemetryEvent(eventName, properties);
     return response;
   }
 
@@ -136,7 +136,7 @@ export class WrappedAxiosClient {
       eventName = TelemetryEvent.DependencyApi;
     }
 
-    TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
+    TOOLS?.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties);
     return Promise.reject(error);
   }
 

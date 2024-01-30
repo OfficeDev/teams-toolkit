@@ -118,7 +118,7 @@ class CLIEngine {
     // parse args
     const parseRes = this.parseArgs(context, root, remainingArgs);
     // create FxCore for anycase, because Tools will be initialized in FxCore
-    const core = getFxCore(); 
+    const core = getFxCore();
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
       const res = await core.checkProjectType(context.optionValues.projectPath as string);

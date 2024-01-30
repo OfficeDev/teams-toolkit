@@ -69,6 +69,52 @@ describe("Wrapped Axios Client Test", () => {
     WrappedAxiosClient.onRejected(mockedError);
   });
 
+  it("TOOLS not initialized", async () => {
+    setTools(undefined as any);
+
+    const mockedRequest = {
+      method: "POST",
+      baseURL: getAppStudioEndpoint(),
+      url: "/amer/api/appdefinitions/v2/import",
+      params: {
+        overwriteIfAppAlreadyExists: true,
+      },
+      status: 200,
+      data: {},
+    } as any;
+    WrappedAxiosClient.onRequest(mockedRequest);
+
+    const mockedResponse = {
+      request: {
+        method: "GET",
+        host: getAppStudioEndpoint(),
+        path: "/api/appdefinitions/manifest",
+      },
+      config: {
+        params: {},
+      },
+      status: 200,
+      data: {},
+    } as any;
+    WrappedAxiosClient.onResponse(mockedResponse);
+
+    const mockedError = {
+      request: {
+        method: "GET",
+        host: getAppStudioEndpoint(),
+        path: "/api/appdefinitions/fakeId",
+      },
+      config: {},
+      response: {
+        status: 404,
+        headers: {
+          "x-ms-correlation-id": uuid(),
+        },
+      },
+    } as any;
+    WrappedAxiosClient.onRejected(mockedError);
+  });
+
   it("TDP API start telemetry", async () => {
     const mockedRequest = {
       method: "POST",

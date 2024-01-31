@@ -70,6 +70,20 @@ describe("uri handler", () => {
     sandbox.assert.calledOnceWithExactly(executeCommand, "fx-extension.openFromTdp", "1", "test");
   });
 
+  it("dev portal running", async () => {
+    const handler = new UriHandler();
+    const uri = vscode.Uri.parse(
+      "vscode://test.test?appId=1&referrer=developerportal&login_hint=test"
+    );
+
+    const showMessage = sandbox.stub(vscode.window, "showWarningMessage");
+    handler.handleUri(uri);
+    // call twice to trigger isRunning logic
+    await handler.handleUri(uri);
+
+    chai.assert.isTrue(showMessage.calledOnce);
+  });
+
   it("valid code spaces callback uri", async () => {
     try {
       const handler = new UriHandler();

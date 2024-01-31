@@ -1,5 +1,5 @@
 {
-    "name": "{{appName}}",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Notification Bot Sample (Restify)",
     "engines": {
@@ -10,6 +10,8 @@
     "main": "./lib/index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
+        "dev:teamsfx:testtool": "env-cmd --silent -f .localConfigs.testTool npm run dev",
+        "dev:teamsfx:launch-testtool": "env-cmd --silent -f env/.env.testtool teamsapptester start",
         "dev": "nodemon --watch ./src --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
         "build": "tsc --build && shx cp -r ./src/adaptiveCards ./lib/src",
         "start": "node ./lib/src/index.js",
@@ -22,7 +24,7 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^2.2.2-alpha",
+        "@microsoft/teamsfx": "^2.3.1-alpha",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },

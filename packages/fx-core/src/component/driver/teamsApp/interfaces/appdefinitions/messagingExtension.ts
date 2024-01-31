@@ -7,6 +7,8 @@ import { MessagingExtensionMessageHandler } from "./messagingExtensionMessageHan
 export interface MessagingExtension {
   objectId?: string;
   botId?: string;
+  messagingExtensionServiceType?: string;
+  apiSpecificationFilePath?: string;
   canUpdateConfiguration: boolean;
   commands: MessagingExtensionCommand[];
   messageHandlers: MessagingExtensionMessageHandler[];

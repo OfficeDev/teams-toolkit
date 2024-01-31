@@ -8,7 +8,7 @@ Welcome and thank you for your interest in contributing to **Microsoft.Azure.Web
 
 2. Install Function Core Tools v3 [[REF](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=linux%2Ccsharp%2Cbash#install-the-azure-functions-core-tools)]
 
-3. Install Node v12
+3. Install Node v18 and PNPM v8
 
 ## How to Build
 
@@ -53,9 +53,9 @@ This project uses FxCop to check code style. You can find style warnings in Visu
 
 ## Pull Request Process
 
-1. Check out a new branch from "main".
+1. Check out a new branch from "dev".
 2. Add your features and commit to the new branch.
 3. Make sure your changes are covered by tests. [How to Run Test Cases](#how-to-run-test-cases)
 4. Ensure code style check has no warning or error. [Style Guidelines](#style-guidelines)
-5. Create a pull request to merge your changes to "main" branch.
+5. Create a pull request to merge your changes to "dev" branch.
 6. At least one approve from code owners is required.

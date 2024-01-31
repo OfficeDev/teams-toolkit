@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
-// Licensed under the MIT
+// Licensed under the MIT license.
 
 export interface AADApplication {
   id?: string | null;

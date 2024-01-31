@@ -6,7 +6,7 @@ import { MemoryRouter, Route } from "react-router-dom";
 import { initializeIcons } from "@fluentui/react/lib/Icons";
 
 import { PanelType } from "./PanelType";
-import SampleGallery from "./SampleGallery";
+import SampleGallery from "./sampleGallery/SampleGallery";
 import Survey from "./Survey";
 import AccountHelp from "./webviewDocs/accountHelp";
 import FunctionBasedNotificationBot from "./webviewDocs/functionBasedNotificationBot";

@@ -1,23 +1,38 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initPage, validateBasicTab } from "../../playwrightOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import {
+  initPage,
+  validateBasicTab,
+  reopenPage,
+} from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
   LocalDebugTaskLabel,
   ValidationContent,
   DebugItemSelect,
-} from "../../constants";
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
+import { ChildProcessWithoutNullStreams } from "child_process";
+import { Executor } from "../../utils/executor";
+import { expect } from "chai";
+import { VSBrowser } from "vscode-extension-tester";
+import { getScreenshotName } from "../../utils/nameUtil";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
+  let debugProcess: ChildProcessWithoutNullStreams | null;
+  let successFlag = true;
+  let errorMessage = "";
 
   beforeEach(async function () {
     // ensure workbench is ready
@@ -28,7 +43,14 @@ describe("Local Debug Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await localDebugTestContext.after(false);
+    if (debugProcess) {
+      setTimeout(() => {
+        debugProcess?.kill("SIGTERM");
+      }, 2000);
+    }
+
+    await localDebugTestContext.after(false, true);
+    this.timeout(Timeout.finishAzureTestCase);
   });
 
   it(
@@ -38,27 +60,52 @@ describe("Local Debug Tests", function () {
       author: "xiaofu.huang@microsoft.com",
     },
     async () => {
-      const projectPath = path.resolve(
-        localDebugTestContext.testRootFolder,
-        localDebugTestContext.appName
-      );
-      validateFileExist(projectPath, "src/app.js");
+      try {
+        const projectPath = path.resolve(
+          localDebugTestContext.testRootFolder,
+          localDebugTestContext.appName
+        );
+        validateFileExist(projectPath, "src/app.js");
 
-      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+        console.log("======= debug with ttk ========");
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartApplication,
+          "restify listening to"
+        );
 
-      await waitForTerminal(
-        LocalDebugTaskLabel.StartApplication,
-        "restify listening to"
-      );
+        const teamsAppId = await localDebugTestContext.getTeamsAppId();
+        expect(teamsAppId).to.not.be.empty;
+        {
+          const page = await initPage(
+            localDebugTestContext.context!,
+            teamsAppId,
+            Env.username,
+            Env.password
+          );
+          await validateBasicTab(page, ValidationContent.Tab);
+        }
 
-      const teamsAppId = await localDebugTestContext.getTeamsAppId();
-      const page = await initPage(
-        localDebugTestContext.context!,
-        teamsAppId,
-        Env.username,
-        Env.password
-      );
-      await validateBasicTab(page, ValidationContent.Tab);
+        // cli preview
+        const res = await Executor.cliPreview(projectPath, false);
+        debugProcess = res.debugProcess;
+        {
+          const page = await reopenPage(
+            localDebugTestContext.context!,
+            teamsAppId,
+            Env.username,
+            Env.password
+          );
+          await validateBasicTab(page, ValidationContent.Tab);
+        }
+      } catch (error) {
+        successFlag = false;
+        errorMessage = "[Error]: " + error;
+        await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
+        await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
+      }
+      expect(successFlag, errorMessage).to.true;
+      console.log("debug finish!");
     }
   );
 });

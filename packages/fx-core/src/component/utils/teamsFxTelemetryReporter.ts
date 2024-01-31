@@ -1,9 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
+import { FxError, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
 import { TelemetryConstants } from "../constants";
+import { fillInTelemetryPropsForFxError } from "../../common/telemetry";
 
 export class TeamsFxTelemetryReporter {
   constructor(
@@ -43,20 +44,9 @@ export class TeamsFxTelemetryReporter {
       }
       if (error) {
         // sendTelemetryErrorEvent
-        const errorCode = error.source + "." + error.name;
-        const errorType =
-          error instanceof SystemError
-            ? TelemetryConstants.values.systemError
-            : TelemetryConstants.values.userError;
+        actualConfig.properties = actualConfig.properties || {};
 
-        actualConfig.properties = {
-          [TelemetryConstants.properties.success]: TelemetryConstants.values.no,
-          [TelemetryConstants.properties.errorCode]: errorCode,
-          [TelemetryConstants.properties.errorType]: errorType,
-          [TelemetryConstants.properties.errorMessage]: error.message,
-          [TelemetryConstants.properties.errorStack]: error.stack !== undefined ? error.stack : "",
-          ...actualConfig.properties,
-        };
+        fillInTelemetryPropsForFxError(actualConfig.properties, error);
 
         if (!actualConfig.errorProps) {
           actualConfig.errorProps = [];

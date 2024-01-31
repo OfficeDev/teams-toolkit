@@ -1,32 +1,33 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Frank Qian <frankqian@microsoft.com>
  */
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
   Capability,
   Trigger,
   Notification,
-  CliVersion,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
   validateNotificationBot,
   initPage,
-} from "../../../playwrightOperation";
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import {
   CLIVersionCheck,
   getBotSiteEndpoint,
 } from "../../../utils/commonUtils";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -57,13 +58,6 @@ describe("Migration Tests", function () {
       author: "frankqian@microsoft.com",
     },
     async () => {
-      // install v2 stable cli 1.2.6
-      await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      const result = await execCommand("./", "teamsfx -v");
-      console.log(result.stdout);
-      expect(
-        (result.stdout as string).includes(CliVersion.V2TeamsToolkitStable425)
-      ).to.be.true;
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup

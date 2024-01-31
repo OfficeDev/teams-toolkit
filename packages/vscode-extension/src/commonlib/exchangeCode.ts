@@ -1,10 +1,13 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { Disposable, Uri } from "vscode";
 import { uriEventHandler } from "../globalVariables";
 
 export async function getExchangeCode(): Promise<string> {
   let uriEventListener: Disposable;
   return new Promise((resolve: (value: string) => void, reject) => {
-    uriEventListener = uriEventHandler.event(async (uri: Uri) => {
+    uriEventListener = uriEventHandler.event((uri: Uri) => {
       try {
         /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
         const query = parseQuery(uri);

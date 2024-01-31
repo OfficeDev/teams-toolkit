@@ -49,17 +49,21 @@ export class BasicAuthProvider implements AuthProvider {
    * @throws {@link ErrorCode|AuthorizationInfoAlreadyExists} - when Authorization header or auth property already exists in request configuration.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    */
-  public async AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
+  public AddAuthenticationInfo(config: AxiosRequestConfig): Promise<AxiosRequestConfig> {
     if (config.headers && config.headers["Authorization"]) {
-      throw new ErrorWithCode(
-        ErrorMessage.AuthorizationHeaderAlreadyExists,
-        ErrorCode.AuthorizationInfoAlreadyExists
+      return Promise.reject(
+        new ErrorWithCode(
+          ErrorMessage.AuthorizationHeaderAlreadyExists,
+          ErrorCode.AuthorizationInfoAlreadyExists
+        )
       );
     }
     if (config.auth) {
-      throw new ErrorWithCode(
-        ErrorMessage.BasicCredentialAlreadyExists,
-        ErrorCode.AuthorizationInfoAlreadyExists
+      return Promise.reject(
+        new ErrorWithCode(
+          ErrorMessage.BasicCredentialAlreadyExists,
+          ErrorCode.AuthorizationInfoAlreadyExists
+        )
       );
     }
 
@@ -68,6 +72,6 @@ export class BasicAuthProvider implements AuthProvider {
       password: this.password,
     };
 
-    return config;
+    return Promise.resolve(config);
   }
 }

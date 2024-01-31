@@ -21,7 +21,9 @@ import { DriverContext } from "../../../src/component/driver/interface/commonArg
 import { metadataUtil } from "../../../src/component/utils/metadataUtil";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
-import { createHash } from "crypto";
+import { createHash, Hash } from "crypto";
+import { ExecutionResult as DriverResult } from "../../../src/component/driver/interface/stepDriver";
+import { metadataGraphPermissionUtil } from "../../../src/component/utils/metadataGraphPermssion";
 
 function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
   return ok([
@@ -29,11 +31,8 @@ function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[]
       uses: "arm/deploy",
       with: undefined,
       instance: {
-        run: async (
-          args: unknown,
-          context: DriverContext
-        ): Promise<Result<Map<string, string>, FxError>> => {
-          return ok(new Map());
+        execute: async (args: unknown, context: DriverContext): Promise<DriverResult> => {
+          return { result: ok(new Map<string, string>()), summaries: [] };
         },
       },
     },
@@ -45,6 +44,9 @@ describe("metadata util", () => {
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
   const mockProjectModel: ProjectModel = {
     version: "1.0.0",
+    additionalMetadata: {
+      sampleTag: "testRepo:testSample",
+    },
     registerApp: {
       name: "registerApp",
       driverDefs: [
@@ -57,12 +59,6 @@ describe("metadata util", () => {
           with: undefined,
         },
       ],
-      run: async (ctx: DriverContext) => {
-        return ok({
-          env: new Map(),
-          unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-        });
-      },
       resolvePlaceholders: () => {
         return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
       },
@@ -78,6 +74,7 @@ describe("metadata util", () => {
   beforeEach(() => {
     tools = new MockTools();
     setTools(tools);
+    sandbox.stub(metadataGraphPermissionUtil, "parseAadManifest").resolves();
   });
 
   afterEach(() => {
@@ -103,6 +100,7 @@ describe("metadata util", () => {
         "publish.actions": "",
         "registerApp.actions": "armdeploy,teamsAppcreate",
         [TelemetryProperty.YmlName]: "teamsapplocalyml",
+        [TelemetryProperty.SampleAppName]: "testRepo:testSample",
       })
     );
     assert(result.isOk());
@@ -121,6 +119,74 @@ describe("metadata util", () => {
         "publish.actions": "",
         "registerApp.actions": "armdeploy,teamsAppcreate",
         [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "testRepo:testSample",
+      })
+    );
+    assert(result.isOk());
+  });
+
+  it("should normalize @/\\. in sampleTag", async () => {
+    sandbox.stub(yamlParser, "parse").resolves(
+      ok({
+        ...mockProjectModel,
+        additionalMetadata: { sampleTag: "Hello@world/this\\is.a.sample" },
+      })
+    );
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const result = await metadataUtil.parse(".", "dev");
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
+        "configureApp.actions": "",
+        "deploy.actions": "",
+        "provision.actions": "",
+        "publish.actions": "",
+        "registerApp.actions": "armdeploy,teamsAppcreate",
+        [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "Hello_world_this_is_a_sample",
+      })
+    );
+    assert(result.isOk());
+  });
+
+  it("should send empty sample-app-name if additionalMetadata is undefined", async () => {
+    sandbox.stub(yamlParser, "parse").resolves(
+      ok({
+        ...mockProjectModel,
+        additionalMetadata: undefined,
+      })
+    );
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const result = await metadataUtil.parse(".", "dev");
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
+        "configureApp.actions": "",
+        "deploy.actions": "",
+        "provision.actions": "",
+        "publish.actions": "",
+        "registerApp.actions": "armdeploy,teamsAppcreate",
+        [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "",
+      })
+    );
+    assert(result.isOk());
+  });
+
+  it("no sample tag", async () => {
+    sandbox.stub(yamlParser, "parse").resolves(ok({ ...mockProjectModel, additionalMetadata: {} }));
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    const result = await metadataUtil.parse(".", "dev");
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        [TelemetryProperty.YmlSchemaVersion]: "1.0.0",
+        "configureApp.actions": "",
+        "deploy.actions": "",
+        "provision.actions": "",
+        "publish.actions": "",
+        "registerApp.actions": "armdeploy,teamsAppcreate",
+        [TelemetryProperty.YmlName]: "teamsappyml",
+        [TelemetryProperty.SampleAppName]: "",
       })
     );
     assert(result.isOk());
@@ -161,10 +227,18 @@ describe("metadata util", () => {
       extensions: [{}],
     };
     const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const hashSpy = sandbox.spy(Hash.prototype);
 
     manifest.extensions = [{}];
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.isTrue(hashSpy.update.called);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledOnceWith(TelemetryEvent.MetaData, {
         "manifest.id": "test-id",
@@ -173,12 +247,12 @@ describe("metadata util", () => {
         "manifest.bots": "bot1,bot2",
         "manifest.composeExtensions": "bot1,bot2",
         "manifest.staticTabs.contentUrl": `${[
-          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
-          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("hex"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("hex"),
         ].toString()}`,
         "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
           .update(manifest.configurableTabs[0].configurationUrl)
-          .digest("base64")}`,
+          .digest("hex")}`,
         "manifest.webApplicationInfo.id": "web-app-id",
         "manifest.extensions": "true",
       })
@@ -187,7 +261,12 @@ describe("metadata util", () => {
     // If extensions is empty, it should report false in telemetry event
     manifest.extensions = [];
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.isTrue(hashSpy.update.called);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledWith(TelemetryEvent.MetaData, {
         "manifest.id": "test-id",
@@ -196,12 +275,12 @@ describe("metadata util", () => {
         "manifest.bots": "bot1,bot2",
         "manifest.composeExtensions": "bot1,bot2",
         "manifest.staticTabs.contentUrl": `${[
-          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
-          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("hex"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("hex"),
         ].toString()}`,
         "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
           .update(manifest.configurableTabs[0].configurationUrl)
-          .digest("base64")}`,
+          .digest("hex")}`,
         "manifest.webApplicationInfo.id": "web-app-id",
         "manifest.extensions": "false",
       })
@@ -210,7 +289,12 @@ describe("metadata util", () => {
     // If extensions is undefined, it should report false in telemetry event
     manifest.extensions = undefined;
     metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
-
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.isTrue(hashSpy.update.called);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.isTrue(hashSpy.digest.calledWith("hex"));
     assert.isTrue(
       spy.calledWith(TelemetryEvent.MetaData, {
         "manifest.id": "test-id",
@@ -219,12 +303,50 @@ describe("metadata util", () => {
         "manifest.bots": "bot1,bot2",
         "manifest.composeExtensions": "bot1,bot2",
         "manifest.staticTabs.contentUrl": `${[
-          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("base64"),
-          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("base64"),
+          createHash("sha256").update(manifest.staticTabs[0].contentUrl).digest("hex"),
+          createHash("sha256").update(manifest.staticTabs[1].contentUrl).digest("hex"),
         ].toString()}`,
         "manifest.configurableTabs.configurationUrl": `${createHash("sha256")
           .update(manifest.configurableTabs[0].configurationUrl)
-          .digest("base64")}`,
+          .digest("hex")}`,
+        "manifest.webApplicationInfo.id": "web-app-id",
+        "manifest.extensions": "false",
+      })
+    );
+  });
+
+  it("parseManifest with undefined urls", () => {
+    const manifest: any = {
+      id: "test-id",
+      version: "1.0",
+      manifestVersion: "1.0",
+      bots: [{ botId: "bot1" }, { botId: "bot2" }],
+      composeExtensions: [{ botId: "bot1" }, { botId: "bot2" }],
+      staticTabs: [{ contentUrl: undefined }, { contentUrl: undefined }],
+      configurableTabs: [{ configurationUrl: undefined }],
+      webApplicationInfo: { id: "web-app-id" },
+    };
+    const spy = sandbox.spy(tools.telemetryReporter, "sendTelemetryEvent");
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const hashSpy = sandbox.spy(Hash.prototype);
+
+    metadataUtil.parseManifest(manifest as unknown as TeamsAppManifest);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.isTrue(hashSpy.update.notCalled);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.isTrue(hashSpy.digest.notCalled);
+    assert.isTrue(
+      spy.calledOnceWith(TelemetryEvent.MetaData, {
+        "manifest.id": "test-id",
+        "manifest.version": "1.0",
+        "manifest.manifestVersion": "1.0",
+        "manifest.bots": "bot1,bot2",
+        "manifest.composeExtensions": "bot1,bot2",
+        "manifest.staticTabs.contentUrl": "undefined,undefined",
+        "manifest.configurableTabs.configurationUrl": "undefined",
         "manifest.webApplicationInfo.id": "web-app-id",
         "manifest.extensions": "false",
       })

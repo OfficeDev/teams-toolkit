@@ -1,6 +1,8 @@
 import * as chai from "chai";
 import * as os from "os";
 import * as sinon from "sinon";
+import * as cp from "child_process";
+import * as vscode from "vscode";
 import { Uri } from "vscode";
 import { err, ok, UserError } from "@microsoft/teamsfx-api";
 import { envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
@@ -11,6 +13,7 @@ import { TelemetryProperty, TelemetryTriggerFrom } from "../../src/telemetry/ext
 import * as commonUtils from "../../src/utils/commonUtils";
 import { MockCore } from "../mocks/mockCore";
 import * as coreUtils from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import * as mockfs from "mock-fs";
 
 describe("CommonUtils", () => {
   describe("getPackageVersion", () => {
@@ -36,6 +39,14 @@ describe("CommonUtils", () => {
       const version = "4.6.0";
 
       chai.expect(commonUtils.getPackageVersion(version)).equals("formal");
+    });
+  });
+
+  describe("openFolderInExplorer", () => {
+    it("happy path", () => {
+      const folderPath = "fakePath";
+      sinon.stub(cp, "exec");
+      commonUtils.openFolderInExplorer(folderPath);
     });
   });
 
@@ -162,6 +173,12 @@ describe("CommonUtils", () => {
     it("throw error", async () => {
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
       sandbox.stub(core, "getTeamsAppName").rejects(new UserError({}));
+      const result = await commonUtils.getAppName();
+      chai.expect(result).equals(undefined);
+    });
+    it("should return undefined if getTeamsAppName returns empty string", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("."));
+      sandbox.stub(core, "getTeamsAppName").resolves(ok(""));
       const result = await commonUtils.getAppName();
       chai.expect(result).equals(undefined);
     });
@@ -335,6 +352,119 @@ describe("CommonUtils", () => {
       const result = await commonUtils.getProvisionSucceedFromEnv("test");
 
       chai.expect(result).equals(false);
+    });
+  });
+  describe("hasAdaptiveCardInWorkspace()", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      mockfs.restore();
+      sandbox.restore();
+    });
+
+    it("no workspace", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(undefined);
+
+      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          type: "AdaptiveCard",
+          version: "1.5",
+          actions: [
+            {
+              type: "Action.OpenUrl",
+              title: "More Info",
+              url: "https://example.com",
+            },
+          ],
+        }),
+      });
+
+      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isTrue(result);
+    });
+
+    it("hasAdaptiveCardInWorkspace() no adaptive card file", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({ hello: "world" }),
+      });
+
+      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+
+    it("hasAdaptiveCardInWorkspace() very large adaptive card file", async () => {
+      sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+      mockfs({
+        "/test/card.json": JSON.stringify({
+          $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+          type: "AdaptiveCard",
+          version: "1.5",
+          actions: [
+            {
+              type: "Action.OpenUrl",
+              title: "a".repeat(1024 * 1024 + 10),
+              url: "https://example.com",
+            },
+          ],
+        }),
+      });
+
+      const result = await commonUtils.hasAdaptiveCardInWorkspace();
+
+      chai.assert.isFalse(result);
+    });
+  });
+
+  describe("anonymizeFilePaths()", () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+      mockfs.restore();
+      sandbox.restore();
+    });
+
+    it("undefined", async () => {
+      const result = await commonUtils.anonymizeFilePaths();
+      chai.assert.equal(result, "");
+    });
+
+    it("happy path 1", async () => {
+      const result = await commonUtils.anonymizeFilePaths(
+        "at Object.require.extensions.<computed> [as .ts] (C:\\Users\\AppData\\Roaming\\npm\\node_modules\\ts-node\\src\\index.ts:1621:12)"
+      );
+      chai.assert.equal(
+        result,
+        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>/index.ts:1621:12)"
+      );
+    });
+    it("happy path 2", async () => {
+      const result = await commonUtils.anonymizeFilePaths(
+        "at Object.require.extensions.<computed> [as .ts] (/user/test/index.ts:1621:12)"
+      );
+      chai.assert.equal(
+        result,
+        "at Object.require.extensions.<computed> [as .ts] (<REDACTED: user-file-path>/index.ts:1621:12)"
+      );
+    });
+    it("happy path 3", async () => {
+      const result = await commonUtils.anonymizeFilePaths(
+        "some user stack trace at (C:/fake_path/fake_file:1:1)"
+      );
+      chai.assert.equal(
+        result,
+        "some user stack trace at (<REDACTED: user-file-path>/fake_file:1:1)"
+      );
     });
   });
 });

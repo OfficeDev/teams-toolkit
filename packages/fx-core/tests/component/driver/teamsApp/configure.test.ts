@@ -44,7 +44,7 @@ describe("teamsApp/update", async () => {
       appPackagePath: "fakePath",
     };
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
@@ -67,7 +67,7 @@ describe("teamsApp/update", async () => {
       return archivedFile;
     });
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
       if (result.isErr()) {
@@ -81,7 +81,7 @@ describe("teamsApp/update", async () => {
       appPackagePath: "",
     };
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal("InvalidActionInputError", result.error.name);
@@ -146,7 +146,7 @@ describe("teamsApp/update", async () => {
       return archivedFile;
     });
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert.isTrue(result.isErr());
   });
 
@@ -185,7 +185,7 @@ describe("teamsApp/update", async () => {
       return archivedFile;
     });
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     console.log(JSON.stringify(result));
     chai.assert.isTrue(result.isOk());
   });

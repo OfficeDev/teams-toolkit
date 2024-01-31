@@ -66,14 +66,16 @@ export class ConversationBot {
    * @remarks
    * Only work on server side.
    */
-  public async requestHandler(
+  public requestHandler(
     req: Request,
     res: Response,
     logic?: (context: TurnContext) => Promise<any>
   ): Promise<void> {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "ConversationBot"),
-      ErrorCode.RuntimeNotSupported
+    return Promise.reject(
+      new ErrorWithCode(
+        formatString(ErrorMessage.BrowserRuntimeNotSupported, "ConversationBot"),
+        ErrorCode.RuntimeNotSupported
+      )
     );
   }
 }

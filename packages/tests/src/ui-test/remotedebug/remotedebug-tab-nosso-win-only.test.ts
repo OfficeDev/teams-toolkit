@@ -3,15 +3,18 @@
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout, ValidationContent } from "../../constants";
+import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
   runDeploy,
   setSkuNameToB1,
 } from "./remotedebugContext";
-import { execCommandIfExist, createNewProject } from "../../vscodeOperation";
-import { initPage, validateBasicTab } from "../../playwrightOperation";
+import {
+  execCommandIfExist,
+  createNewProject,
+} from "../../utils/vscodeOperation";
+import { initPage, validateBasicTab } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 

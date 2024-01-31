@@ -63,7 +63,7 @@
         {
             "label": "Start frontend",
             "type": "shell",
-            "command": "npm run dev:teamsfx",
+            "command": "npm run dev-tab:teamsfx",
             "isBackground": true,
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -113,20 +113,6 @@
                     "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
                 }
             },
-            "presentation": {
-                "reveal": "silent"
-            },
-            "dependsOn": "Watch backend"
-        },
-        {
-            "label": "Watch backend",
-            "type": "shell",
-            "command": "npm run watch",
-            "isBackground": true,
-            "options": {
-                "cwd": "${workspaceFolder}/api"
-            },
-            "problemMatcher": "$tsc-watch",
             "presentation": {
                 "reveal": "silent"
             }

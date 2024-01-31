@@ -6,10 +6,9 @@ import {
   AzureAccountProvider,
   err,
   FxError,
-  Inputs,
+  InputsWithProjectPath,
   ok,
   OptionItem,
-  Platform,
   Result,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -36,6 +35,37 @@ export type ResourceGroupInfo = {
   name: string;
   location: string;
 };
+
+export const recommendedLocations = [
+  "South Africa North",
+  "Australia East",
+  "Central India",
+  "East Asia",
+  "Japan East",
+  "Korea Central",
+  "Southeast Asia",
+  "Canada Central",
+  "France Central",
+  "Germany West Central",
+  "Italy North",
+  "North Europe",
+  "Norway East",
+  "Poland Central",
+  "Sweden Central",
+  "Switzerland North",
+  "UK South",
+  "West Europe",
+  "Israel Central",
+  "Qatar Central",
+  "UAE North",
+  "Brazil South",
+  "Central US",
+  "East US",
+  "East US 2",
+  "South Central US",
+  "West US 2",
+  "West US 3",
+];
 
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
@@ -71,11 +101,13 @@ class ResourceGroupHelper {
       }
       return ok(response.name);
     } catch (e: any) {
+      delete e["request"];
       return err(
         new CreateResourceGroupError(
           resourceGroupName,
           subscriptionId,
-          e.message || JSON.stringify(e)
+          e.message || JSON.stringify(e),
+          e
         )
       );
     }
@@ -88,12 +120,14 @@ class ResourceGroupHelper {
     try {
       const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
       return ok(!!checkRes.body);
-    } catch (e) {
+    } catch (e: any) {
+      delete e["request"];
       return err(
         new CheckResourceGroupExistenceError(
           resourceGroupName,
           rmClient.subscriptionId,
-          JSON.stringify(e)
+          e.message || JSON.stringify(e),
+          e
         )
       );
     }
@@ -113,11 +147,13 @@ class ResourceGroupHelper {
         });
       } else return ok(undefined);
     } catch (e: any) {
+      delete e["request"];
       return err(
         new GetResourceGroupError(
           resourceGroupName,
           rmClient.subscriptionId,
-          e.message || JSON.stringify(e)
+          e.message || JSON.stringify(e),
+          e
         )
       );
     }
@@ -136,8 +172,9 @@ class ResourceGroupHelper {
       } while (!result.done);
       return ok(results);
     } catch (e: any) {
+      delete e["request"];
       return err(
-        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e), e)
       );
     }
   }
@@ -174,8 +211,13 @@ class ResourceGroupHelper {
       }
       return ok(rgLocations);
     } catch (e: any) {
+      delete e["request"];
       return err(
-        new ListResourceGroupLocationsError(rmClient.subscriptionId, e.message || JSON.stringify(e))
+        new ListResourceGroupLocationsError(
+          rmClient.subscriptionId,
+          e.message || JSON.stringify(e),
+          e
+        )
       );
     }
   }
@@ -184,6 +226,7 @@ class ResourceGroupHelper {
    * Ask user to create a new resource group or use an existing resource group  V3
    */
   async askResourceGroupInfoV3(
+    inputs: InputsWithProjectPath,
     azureAccountProvider: AzureAccountProvider,
     rmClient: ResourceManagementClient,
     defaultResourceGroupName: string
@@ -193,9 +236,6 @@ class ResourceGroupHelper {
       rmClient.subscriptionId,
       defaultResourceGroupName
     );
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-    };
     if (node) {
       const res = await traverse(node, inputs, TOOLS.ui);
       if (res.isErr()) {

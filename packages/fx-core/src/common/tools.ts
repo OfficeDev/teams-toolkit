@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { Tunnel } from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
+import {
+  TunnelManagementHttpClient,
+  ManagementApiVersions,
+} from "@microsoft/dev-tunnels-management";
 import {
   AzureAccountProvider,
   FxError,
@@ -33,6 +36,7 @@ import { assembleError } from "../error/common";
 import { FeatureFlagName, OfficeClientId, OutlookClientId, TeamsClientId } from "./constants";
 import { isFeatureFlagEnabled } from "./featureFlags";
 import { getDefaultString, getLocalizedString } from "./localizeUtils";
+import { PackageService } from "./m365/packageService";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -62,7 +66,7 @@ export const deepCopy = <T>(target: T): T => {
     });
     return cp.map((n: any) => deepCopy<any>(n)) as any;
   }
-  if (typeof target === "object" && target !== {}) {
+  if (typeof target === "object" && Object.keys(target).length) {
     const cp = { ...(target as { [key: string]: any }) } as {
       [key: string]: any;
     };
@@ -77,7 +81,10 @@ export const deepCopy = <T>(target: T): T => {
 export function isUserCancelError(error: Error): boolean {
   const errorName = "name" in error ? (error as any)["name"] : "";
   return (
-    errorName === "User Cancel" || errorName === "CancelProvision" || errorName === "UserCancel"
+    errorName === "User Cancel" ||
+    errorName === "CancelProvision" ||
+    errorName === "UserCancel" ||
+    errorName === "UserCancelError"
   );
 }
 
@@ -187,7 +194,7 @@ export function getUuid(): string {
 }
 
 export function isSPFxProject(projectSettings?: any): boolean {
-  const solutionSettings = projectSettings?.solutionSettings as any;
+  const solutionSettings = projectSettings?.solutionSettings;
   if (solutionSettings) {
     const selectedPlugins = solutionSettings.activeResourcePlugins;
     return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
@@ -226,6 +233,13 @@ export function getAllowedAppMaps(): Record<string, string> {
     [OutlookClientId.Web1]: getLocalizedString("core.common.OutlookWebClientName1"),
     [OutlookClientId.Web2]: getLocalizedString("core.common.OutlookWebClientName2"),
   };
+}
+
+export function getCopilotStatus(
+  token: string,
+  ensureUpToDate = false
+): Promise<boolean | undefined> {
+  return PackageService.GetSharedInstance().getCopilotStatus(token, ensureUpToDate);
 }
 
 export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
@@ -274,6 +288,11 @@ export async function getSPFxToken(
 export async function setRegion(authSvcToken: string) {
   const region = await AuthSvcClient.getRegion(authSvcToken);
   if (region) {
+    // Do not set region for INT env
+    const appStudioEndpoint = getAppStudioEndpoint();
+    if (appStudioEndpoint.includes("dev-int")) {
+      return;
+    }
     AppStudioClient.setRegion(region);
     BotAppStudioClient.setRegion(region);
   }
@@ -312,9 +331,10 @@ export async function listDevTunnels(token: string): Promise<Result<Tunnel[], Fx
   try {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient(
       TunnelManagementUserAgent,
-      async () => {
+      ManagementApiVersions.Version20230927preview,
+      () => {
         const res = `Bearer ${token}`;
-        return res;
+        return Promise.resolve(res);
       }
     );
 
@@ -324,6 +344,6 @@ export async function listDevTunnels(token: string): Promise<Result<Tunnel[], Fx
     const tunnels = await tunnelManagementClientImpl.listTunnels(undefined, undefined, options);
     return ok(tunnels);
   } catch (error) {
-    return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", (error as any).message));
+    return err(new SystemError("DevTunnels", "ListDevTunnelsFailed", error.message));
   }
 }

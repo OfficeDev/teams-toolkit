@@ -9,6 +9,11 @@ on:
   schedule:
     - cron: "0 8 * * *"
 
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
 jobs: 
   pr-title:
     if: ${{ github.event_name == 'pull_request' }}
@@ -39,7 +44,7 @@ jobs:
             }
 
   npm-audit:
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' }}
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -72,15 +77,9 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{github.event.pull_request.head.repo.full_name}}
-
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
-      - name: Setup Project
-        run: |
-          npm run setup
+      
+      - name: setup project
+        uses: ./.github/actions/setup-project
 
       - name: prettier check files in PR on Fork
         if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}
@@ -88,13 +87,13 @@ jobs:
           git remote add upstream https://github.com/OfficeDev/TeamsFx.git
           git fetch upstream ${{ github.event.pull_request.base.ref }}
           VAR=$(realpath .github/scripts/lint-pr.sh)
-          npx lerna exec -- bash $VAR upstream/${{ github.event.pull_request.base.ref }}
+          pnpm -r exec -- bash $VAR upstream/${{ github.event.pull_request.base.ref }}
 
       - name: prettier check files in PR on local
         if: ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }}
         run: |
           VAR=$(realpath .github/scripts/lint-pr.sh)
-          npx lerna exec -- bash $VAR origin/${{ github.event.pull_request.base.ref }}
+          pnpm -r exec -- bash $VAR origin/${{ github.event.pull_request.base.ref }}
 
       - name: Check if there are changes
         id: changes
@@ -108,7 +107,7 @@ jobs:
             echo 'There may be some unformatted files in your PR, please run these commands on Git Bash terminal: '
             echo '1. npm run setup'
             echo '2. VAR=$(realpath .github/scripts/lint-pr.sh) '
-            echo '3. npx lerna exec -- bash $VAR ${your-PR-target-branch}'
+            echo '3. pnpm -r exec -- bash $VAR ${your-PR-target-branch}'
             echo 'please replace the ${your-PR-target-branch} as the target branch of your PR, such as origin/dev or upstream/dev'
             exit 1
           fi
@@ -211,6 +210,9 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.event.pull_request.head.ref }}
+      - name: Get branch name
+        id: branch-name
+        uses: tj-actions/branch-names@v7
       - name: Add Pull Request Reviewer
         uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
         with: 
@@ -261,20 +263,13 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 14
-      - name: lerna expect rc version
+      - name: list history
         if: ${{ github.event.pull_request.base.ref == 'main' }}
         run: |
-          npx lerna version --conventional-commits --conventional-prerelease --preid=rc --no-git-tag-version --allow-branch ${GITHUB_REF#refs/*/} --yes
-          npx lerna changed -l | awk '{ print $1 "\t" $2 }'> version_info.txt
-      - uses: edwardgeorge/file-outputs-action@main
-        id: test
+          cat feat_history.txt > version_info.txt
+          cat fix_history.txt >> version_info.txt
+      - uses: JoseThen/comment-pr@v1.2.0
         with:
-          files: |
-            output1=version_info.txt
-            outpot2=feat_history.txt
-            output3=fix_history.txt
-      - uses: riskledger/update-pr-description@v2
-        with:
-          body: ${{join(steps.test.outputs.*, '')}}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          file_path: './version_info.txt'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

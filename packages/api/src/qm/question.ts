@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem } from "../types";
-import { InputTextConfig } from "./ui";
 import {
   ConditionFunc,
   FuncValidation,
@@ -61,6 +60,8 @@ export interface BaseQuestion {
    */
   value?: unknown;
 
+  valueType?: "skip" | "success";
+
   /**
    * default input value
    */
@@ -106,7 +107,9 @@ export interface UserInputQuestion extends BaseQuestion {
     | "multiFile"
     | "folder"
     | "text"
-    | "singleFileOrText";
+    | "singleFileOrText"
+    | "innerText"
+    | "confirm";
   /**
    * title is required for human input question
    */
@@ -124,7 +127,7 @@ export interface UserInputQuestion extends BaseQuestion {
   /**
    * default value of the question
    */
-  default?: string | string[] | LocalFunc<string | string[] | undefined>;
+  default?: string | string[] | boolean | LocalFunc<string | string[] | boolean | undefined>;
   /**
    * validation schema for the answer value, which can be static validation schema or dynamic customized validation function
    */
@@ -133,6 +136,45 @@ export interface UserInputQuestion extends BaseQuestion {
    * An optional validation message indicating or explaining the problem with the current input value.
    */
   validationHelp?: string;
+
+  /**
+   * A flag to indicate whether the question is required for CLI non-interactive mode.
+   * Default value is false.
+   * If not explicitly defined, the framework will try to fillin this field.
+   */
+  required?: boolean;
+
+  /**
+   * alternative names of the question that use to map the input properties into final Input object
+   */
+  alternativeNames?: string[];
+
+  /**
+   * CLI option/argument name, if not specified, the question name will be used as the CLI option/argument name
+   */
+  cliName?: string;
+
+  /**
+   * the question is only for CLI option abbrevation
+   */
+  cliShortName?: string;
+
+  /**
+   * whether the value is a boolean string value, if true, it will support '--option', which is equivalant to '--option true'
+   */
+  isBoolean?: boolean;
+
+  /**
+   * whether the question is mapped to CLI option or argument, default is option
+   */
+  cliType?: "option" | "argument";
+
+  cliDescription?: string;
+
+  /**
+   * @description the question will converted to a hidden option in CLI
+   */
+  cliHidden?: boolean;
 }
 
 /**
@@ -174,6 +216,38 @@ export interface SingleSelectQuestion extends UserInputQuestion {
    * if false: use still need to do the selection manually even there is no other choice.
    */
   skipSingleOption?: boolean;
+
+  /**
+   * the command is only for CLI option description
+   */
+  cliChoiceListCommand?: string;
+
+  /**
+   * whether to skip validation against allowed list in non-interactive mode, default false
+   */
+  skipValidation?: boolean;
+}
+
+/**
+ * Definition of single selection question
+ */
+export interface ConfirmQuestion extends UserInputQuestion {
+  type: "confirm";
+
+  /**
+   * display text for option true or false
+   */
+  transformer?: (value: boolean) => string;
+
+  /**
+   * answer value: true or false
+   */
+  value?: boolean;
+
+  /**
+   * The default selected `id` value of the option item
+   */
+  default?: boolean | LocalFunc<boolean>;
 }
 
 /**
@@ -226,6 +300,16 @@ export interface MultiSelectQuestion extends UserInputQuestion {
    * validation schema for the answer values
    */
   validation?: StringArrayValidation | FuncValidation<string[]>;
+
+  /**
+   * the command is only for CLI option description
+   */
+  cliChoiceListCommand?: string;
+
+  /**
+   * whether to skip validation against allowed list in non-interactive mode, default false
+   */
+  skipValidation?: boolean;
 }
 
 /**
@@ -233,6 +317,34 @@ export interface MultiSelectQuestion extends UserInputQuestion {
  */
 export interface TextInputQuestion extends UserInputQuestion {
   type: "text";
+  /**
+   * If the input value should be hidden. Defaults to false.
+   */
+  password?: boolean;
+  /**
+   * input value.
+   */
+  value?: string;
+  /**
+   * default value
+   *
+   */
+  default?: string | LocalFunc<string | undefined>;
+  /**
+   * validation schema, which can be a dynamic function closure
+   */
+  validation?: StringValidation | FuncValidation<string>;
+  /**
+   * validation when user confirms the input.
+   */
+  additionalValidationOnAccept?: StringValidation | FuncValidation<string>;
+}
+
+/**
+ * Definition of text input question of a sub-question of SingleFileOrInputQuestion
+ */
+export interface InnerTextInputQuestion extends UserInputQuestion {
+  type: "innerText";
   /**
    * If the input value should be hidden. Defaults to false.
    */
@@ -316,18 +428,6 @@ export interface FolderQuestion extends UserInputQuestion {
   validation?: FuncValidation<string>;
 }
 
-/**
- * `FuncQuestion` will not show any UI, but load some dynamic data in the question flow;
- * The dynamic data can be referred by the following question.
- */
-export interface FuncQuestion extends BaseQuestion {
-  type: "func";
-  /**
-   * A function that will be called to when the question is activated.
-   */
-  func: LocalFunc<any>;
-}
-
 export interface SingleFileOrInputQuestion extends UserInputQuestion {
   type: "singleFileOrText";
   /**
@@ -338,7 +438,7 @@ export interface SingleFileOrInputQuestion extends UserInputQuestion {
   /**
    * Config for the input box.
    */
-  inputBoxConfig: InputTextConfig;
+  inputBoxConfig: InnerTextInputQuestion;
 
   /**
    * This will only take effect in VSC.
@@ -369,66 +469,32 @@ export type Question =
   | SingleFileQuestion
   | MultiFileQuestion
   | FolderQuestion
-  | FuncQuestion
   | SingleFileQuestion
-  | SingleFileOrInputQuestion;
+  | SingleFileOrInputQuestion
+  | ConfirmQuestion;
 
 /**
- * QTreeNode is the tree node data structure, which have three main properties:
+ * IQTreeNode is the tree node data structure, which have three main properties:
  * - data: data is either a group or question. Questions can be organized into a group, which has the same trigger condition.
  * - condition: trigger condition for this node to be activated;
  * - children: child questions that will be activated according their trigger condition.
  */
-export class QTreeNode implements IQTreeNode {
-  data: Question | Group;
-  condition?: StringValidation | StringArrayValidation | ConditionFunc;
-  children?: QTreeNode[];
-  addChild(node: QTreeNode): QTreeNode {
-    if (!this.children) {
-      this.children = [];
-    }
-    this.children.push(node);
-    return this;
-  }
-  validate(): boolean {
-    //1. validate the cycle dependency
-    //2. validate the name uniqueness
-    //3. validate the params of RPC
-    // if (this.data.type === NodeType.group && (!this.children || this.children.length === 0)) return false;
-    return true;
-  }
-
-  /**
-   * trim the tree
-   */
-  trim(): QTreeNode | undefined {
-    if (this.children) {
-      const newChildren: QTreeNode[] = [];
-      for (const node of this.children) {
-        const trimmed = node.trim();
-        if (trimmed) newChildren.push(trimmed);
-      }
-      this.children = newChildren;
-    }
-    if (this.data.type === "group") {
-      if (!this.children || this.children.length === 0) return undefined;
-      if (this.children.length === 1) {
-        const child = this.children[0];
-        if (!(this.condition && child.condition)) {
-          child.condition ||= this.condition;
-          return child;
-        }
-      }
-    }
-    return this;
-  }
-  constructor(data: Question | Group) {
-    this.data = data;
-  }
-}
-
 export interface IQTreeNode {
   data: Question | Group;
   condition?: StringValidation | StringArrayValidation | ConditionFunc;
   children?: IQTreeNode[];
+  /**
+   * @description the question node will be ignored as CLI option in non-interactive mode
+   * "self" - only ignore the question itself
+   * "children" - ignore all nodes in sub-tree
+   * "all" - ignore self and all nodes in sub-tree
+   */
+  cliOptionDisabled?: "self" | "children" | "all";
+  /**
+   * @description the question node will be ignored as an Inputs property
+   * "self" - only ignore the question itself
+   * "children" - ignore all nodes in sub-tree
+   * "all" - ignore self and all nodes in sub-tree
+   */
+  inputsDisabled?: "self" | "children" | "all";
 }

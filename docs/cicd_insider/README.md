@@ -198,15 +198,15 @@ You can follow the pre-defined example bash scripts to build and customize CI/CD
 * [CD Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd_insider/others-script-cd-template.sh)
 The scripts are pretty straightforward and most parts of them are cross-platform CLI, so it's easy to transform them to other types of script, for example, powershell.
 
-The scripts are based on a cross-platform TeamsFx command line tool [TeamsFx-CLI](https://www.npmjs.com/package/@microsoft/teamsfx-cli). You can install it with `npm install -g @microsoft/teamsfx-cli` and follow the [documentation](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/cli/user-manual.md) to customize the scripts.
+The scripts are based on a cross-platform TeamsFx command line tool [TeamsFx-CLI](https://www.npmjs.com/package/@microsoft/teamsapp-cli). You can install it with `npm install -g @microsoft/teamsapp-cli` and follow the [documentation](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/cli/user-manual.md) to customize the scripts.
 
 > Note: To enable M365 account login by non-interactive mode, turn on `CI_ENABLED` by `export CI_ENABLED=true`.
 
-> Note: To enable `@microsoft/teamsfx-cli` running in non-interactive mode, set a global config like below:
+> Note: To enable `@microsoft/teamsapp-cli` running in non-interactive mode, set a global option like below:
 ```
-teamsfx config set -g interactive false
+teamsapp xxx --interactive false
 ```
-In non-interactive mode, `@microsoft/teamsfx-cli` will not ask questions for inputs interactively. And, if you'd like to use non-interactive mode by command, please add an option `--interactive false` by command.
+In non-interactive mode, `@microsoft/teamsapp-cli` will not ask questions for inputs interactively. And, if you'd like to use non-interactive mode by command, please add an option `--interactive false` by command.
 
 Please keep in mind that you must store Azure and M365 credentials in your environment variables securely. For example if you are using Github as your source code repository, you can use the [Github Secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) to securely store your credentials.
 
@@ -229,9 +229,9 @@ The following table gives details about the required environment variables used 
 To provision and deploy resources targeting Azure inside CI/CD, you must create an Azure service principal for use.
 
 Briefly, the steps include:
-1. Register an Azure AD application in single tenant, and it requires sufficient permissions in your Azure AD tenant.
-2. Assign a role to your Azure AD application to access your Azure subscription, and `Contributor` role is recommended. 
-3. Create a new Azure AD application secret.
+1. Register a Microsoft Entra application in single tenant, and it requires sufficient permissions in your Microsoft Entra tenant.
+2. Assign a role to your Microsoft Entra application to access your Azure subscription, and `Contributor` role is recommended. 
+3. Create a new Microsoft Entra application secret.
 4. Grab your tenant id, application id(AZURE_SERVICE_PRINCIPAL_NAME), and the secret(AZURE_SERVICE_PRINCIPAL_PASSWORD) for use.
 
 For detailed guidelines, refer to [the official document](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). There're three ways to create service principal, [Azure portal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal), [PowerShell](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-authenticate-service-principal-powershell), [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli), and you can choose the way you like.

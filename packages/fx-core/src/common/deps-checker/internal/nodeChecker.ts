@@ -105,9 +105,9 @@ export abstract class NodeChecker implements DepsChecker {
   public async resolve(installOptions?: BaseInstallOptions): Promise<DependencyStatus> {
     const installationInfo = await this.getInstallationInfo(installOptions);
     if (installationInfo.error) {
-      await this._logger.printDetailLog();
-      await this._logger.error(
-        `${installationInfo.error.message}, error = '${installationInfo.error}'`
+      this._logger.printDetailLog();
+      this._logger.error(
+        `${installationInfo.error.message}, error = '${installationInfo.error.toString()}'`
       );
     }
     this._logger.cleanup();
@@ -152,8 +152,8 @@ export abstract class NodeChecker implements DepsChecker {
     );
   }
 
-  public async command(): Promise<string> {
-    return "node";
+  public command(): Promise<string> {
+    return Promise.resolve("node");
   }
 
   public static async getInstalledNodeVersion(): Promise<NodeVersion | null> {
@@ -194,8 +194,8 @@ export class LtsNodeChecker extends NodeChecker {
   protected readonly _minErrorVersion = Number.MIN_SAFE_INTEGER;
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
 
-  protected async getSupportedVersions(): Promise<string[]> {
-    return ["16", "18"];
+  protected getSupportedVersions(): Promise<string[]> {
+    return Promise.resolve(["16", "18"]);
   }
 
   protected isVersionSupported(supportedVersions: string[], version: NodeVersion): boolean {
@@ -220,8 +220,8 @@ export class ProjectNodeChecker extends NodeChecker {
   protected readonly _minErrorVersion = Number.MIN_SAFE_INTEGER;
   protected readonly _maxErrorVersion = Number.MAX_SAFE_INTEGER;
 
-  protected async getNodeNotSupportedHelpLink(): Promise<string> {
-    return v3NodeNotSupportedHelpLink;
+  protected getNodeNotSupportedHelpLink(): Promise<string> {
+    return Promise.resolve(v3NodeNotSupportedHelpLink);
   }
 
   protected async getSupportedVersions(projectPath?: string): Promise<string[]> {

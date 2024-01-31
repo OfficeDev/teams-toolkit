@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -10,7 +13,7 @@ import {
   createNewProject,
   execCommandIfExist,
   execCommandIfExistFromTreeView,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { TreeViewTestContext, createSampleProject } from "./treeviewContext";
 import {
   CommandPaletteCommands,
@@ -18,7 +21,7 @@ import {
   TreeViewCommands,
   TemplateProject,
   TemplateProjectFolder,
-} from "../../constants";
+} from "../../utils/constants";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
 import { assert } from "chai";
@@ -66,9 +69,7 @@ describe("Create sample project and open sample view to download sample Tests", 
           // wait for frame is ready
           await webView.switchToFrame();
           const element = await webView.findWebElement(
-            By.xpath(
-              '//div[@class="sample-gallery"]/div[@class="section"]/div[@class="title"]'
-            )
+            By.xpath('//div[@class="sample-gallery"]//div[@class="title"]')
           );
           const text = await element.getText();
           await webView.switchBack();
@@ -91,9 +92,7 @@ describe("Create sample project and open sample view to download sample Tests", 
           console.log("find title");
           await driver.sleep(Timeout.webView);
           const element = await webView2.findWebElement(
-            By.xpath(
-              '//div[@class="sample-gallery"]/div[@class="section"]/div[@class="title"]'
-            )
+            By.xpath('//div[@class="sample-gallery"]//div[@class="title"]')
           );
           const text = await element.getText();
           await webView2.switchBack();

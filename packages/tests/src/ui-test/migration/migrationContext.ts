@@ -1,10 +1,17 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import path from "path";
 import * as fs from "fs-extra";
-import { openExistingProject } from "../../vscodeOperation";
-import { Capability, Trigger, Framework, TestFilePath } from "../../constants";
+import { openExistingProject } from "../../utils/vscodeOperation";
+import {
+  Capability,
+  Trigger,
+  Framework,
+  TestFilePath,
+} from "../../utils/constants";
 import { TestContext } from "../testContext";
 import { CliHelper } from "../cliHelper";
-import { stopDebugging } from "../../vscodeOperation";
+import { stopDebugging } from "../../utils/vscodeOperation";
 import { Env } from "../../utils/env";
 import { dotenvUtil } from "../../utils/envUtil";
 import {
@@ -59,14 +66,14 @@ export class MigrationTestContext extends TestContext {
     }
   }
 
-  public async createProjectCLI(V3: boolean) {
+  public async createProjectCLI(V3: boolean): Promise<string> {
     if (V3) {
       process.env["TEAMSFX_V3"] = "true";
     } else {
       process.env["TEAMSFX_V3"] = "false";
     }
     if (this.trigger) {
-      await CliHelper.createProjectWithCapability(
+      await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
@@ -74,7 +81,7 @@ export class MigrationTestContext extends TestContext {
         `--bot-host-type-trigger ${this.trigger}`
       );
     } else if (this.framework) {
-      await CliHelper.createProjectWithCapability(
+      await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
@@ -82,7 +89,7 @@ export class MigrationTestContext extends TestContext {
         `--spfx-framework-type ${this.framework}`
       );
     } else {
-      await CliHelper.createProjectWithCapability(
+      await CliHelper.createProjectWithCapabilityMigration(
         this.appName,
         this.testRootFolder,
         this.testName,
@@ -91,6 +98,7 @@ export class MigrationTestContext extends TestContext {
     }
     const projectPath = path.resolve(this.testRootFolder, this.appName);
     await openExistingProject(projectPath);
+    return projectPath;
   }
 
   public async disableDebugConsole(): Promise<void> {
@@ -191,14 +199,13 @@ export class MigrationTestContext extends TestContext {
   public async provisionWithCLI(
     env: "local" | "dev",
     v3: boolean,
-    environment?: NodeJS.ProcessEnv
+    environment: NodeJS.ProcessEnv = process.env
   ): Promise<void> {
-    if (v3) {
-      process.env["AZURE_RESOURCE_GROUP_NAME"] = this.rgName;
-      await AzSqlHelper.login();
-      const azhelper = new AzSqlHelper(this.rgName, []);
-      await azhelper.createResourceGroup();
-    }
+    process.env["AZURE_RESOURCE_GROUP_NAME"] = this.rgName;
+    await AzSqlHelper.login();
+    const azhelper = new AzSqlHelper(this.rgName, []);
+    await azhelper.createResourceGroup();
+
     await CliHelper.provisionProject(this.projectPath, env, v3, environment);
   }
 
@@ -210,8 +217,8 @@ export class MigrationTestContext extends TestContext {
     await CliHelper.publishProject(this.projectPath, env);
   }
 
-  public async debugWithCLI(env: "local" | "dev"): Promise<void> {
-    await CliHelper.debugProject(this.projectPath, env);
+  public async debugWithCLI(env: "local" | "dev", v3?: boolean): Promise<void> {
+    await CliHelper.debugProject(this.projectPath, env, v3);
   }
 
   public async cleanResource(

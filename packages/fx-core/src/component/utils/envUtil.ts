@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { cloneDeep, merge } from "lodash";
@@ -11,6 +14,7 @@ import { TelemetryEvent } from "../../common/telemetry";
 import { createHash } from "crypto";
 import { FileNotFoundError } from "../../error/common";
 import { internalOutputNames as UpdateTeamsAppOutputNames } from "../driver/teamsApp/configure";
+import { environmentNameManager } from "../../core/environmentName";
 
 export type DotenvOutput = {
   [k: string]: string;
@@ -57,7 +61,9 @@ class EnvUtil {
     if (!dotEnvFilePath || !(await fs.pathExists(dotEnvFilePath))) {
       if (silent) {
         // .env file does not exist, just ignore
-        process.env.TEAMSFX_ENV = env;
+        if (loadToProcessEnv) {
+          process.env.TEAMSFX_ENV = env;
+        }
         return ok({ TEAMSFX_ENV: env });
       } else {
         return err(new FileNotFoundError("core", dotEnvFilePath || `.env.${env}`));
@@ -88,7 +94,7 @@ class EnvUtil {
         if (key.startsWith("SECRET_")) {
           const raw = parseResultSecret.obj[key];
           if (raw.startsWith("crypto_")) {
-            const decryptRes = await cryptoProvider.decrypt(raw);
+            const decryptRes = cryptoProvider.decrypt(raw);
             if (decryptRes.isErr()) return err(decryptRes.error);
             parseResultSecret.obj[key] = decryptRes.value;
           }
@@ -122,6 +128,14 @@ class EnvUtil {
 
     TOOLS.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.MetaData, props);
 
+    return ok(parseResult.obj);
+  }
+
+  async loadEnvFile(dotEnvFilePath: string): Promise<Result<DotenvOutput, FxError>> {
+    const parseResult = dotenvUtil.deserialize(
+      await fs.readFile(dotEnvFilePath, { encoding: "utf8" })
+    );
+    this.mergeEnv(process.env, parseResult.obj);
     return ok(parseResult.obj);
   }
 
@@ -163,7 +177,7 @@ class EnvUtil {
     for (const key of Object.keys(envs)) {
       let value = envs[key];
       if (value && key.startsWith("SECRET_")) {
-        const res = await cryptoProvider.encrypt(value);
+        const res = cryptoProvider.encrypt(value);
         if (res.isErr()) return err(res.error);
         value = res.value;
         // envs[key] = value;
@@ -224,7 +238,9 @@ class EnvUtil {
     let envs = list
       .map((fileName) => this.extractEnvNameFromFileName(fileName))
       .filter((env) => env !== undefined) as string[];
-    if (remoteOnly) envs = envs.filter((env) => env !== "local");
+    if (remoteOnly) {
+      envs = envs.filter((env) => environmentNameManager.isRemoteEnvironment(env));
+    }
     return ok(envs);
   }
   object2map(obj: DotenvOutput): Map<string, string> {
@@ -247,6 +263,30 @@ class EnvUtil {
     const matches = inputFileName.match(regex);
     const envName = matches && matches[1];
     return envName || undefined;
+  }
+
+  async resetEnv(projectPath: string, env: string, ignoreKeys: string[]): Promise<void> {
+    const envFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
+    if (envFilePathRes.isErr()) return;
+    const envFilePath = envFilePathRes.value;
+    if (!envFilePath) return;
+    await this.resetEnvFile(envFilePath, ignoreKeys);
+    const dotEnvSecretFilePath = envFilePath + ".user";
+    if (await fs.pathExists(dotEnvSecretFilePath)) {
+      await this.resetEnvFile(dotEnvSecretFilePath, ignoreKeys);
+    }
+  }
+
+  async resetEnvFile(envFilePath: string, ignoreKeys: string[]): Promise<void> {
+    const parseResult = dotenvUtil.deserialize(
+      await fs.readFile(envFilePath, { encoding: "utf8" })
+    );
+    for (const key of Object.keys(parseResult.obj)) {
+      if (!ignoreKeys.includes(key)) {
+        parseResult.obj[key] = "";
+      }
+    }
+    await fs.writeFile(envFilePath, dotenvUtil.serialize(parseResult), { encoding: "utf8" });
   }
 }
 
@@ -299,7 +339,7 @@ class DotenvUtil {
         obj[key] = value;
         const parsedLine: DotenvParsedLine = { key: key, value: value };
         if (inlineComment) parsedLine.comment = inlineComment;
-        if (firstChar === '"' || firstChar === "'") parsedLine.quote = firstChar as '"' | "'";
+        if (firstChar === '"' || firstChar === "'") parsedLine.quote = firstChar;
         lines.push(parsedLine);
       } else {
         lines.push(line);
@@ -330,7 +370,7 @@ class DotenvUtil {
           if (line.quote) {
             value = `${line.quote}${value}${line.quote}`;
           }
-          array.push(`${line.key}=${value}${line.comment ? line.comment : ""}`);
+          array.push(`${line.key}=${value}${line.comment ? " " + line.comment : ""}`);
         }
       });
     }
@@ -345,3 +385,15 @@ class DotenvUtil {
 }
 
 export const dotenvUtil = new DotenvUtil();
+
+export function maskSecretValues(stdout: string): string {
+  for (const key of Object.keys(process.env)) {
+    if (key.startsWith("SECRET_")) {
+      const value = process.env[key];
+      if (value) {
+        stdout = stdout.replace(value, "***");
+      }
+    }
+  }
+  return stdout;
+}

@@ -1,7 +1,7 @@
 /**
  * @author Anne Fu <v-annefu@microsoft.com>
  */
-import { TeamsFxProject, Timeout } from "../../constants";
+import { TeamsFxProject, Timeout } from "../../utils/constants";
 import { TestContext } from "../testContext";
 import * as fs from "fs-extra";
 import * as chai from "chai";

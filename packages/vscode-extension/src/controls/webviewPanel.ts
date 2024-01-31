@@ -6,16 +6,14 @@ import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import { Inputs } from "@microsoft/teamsfx-api";
-import { AppStudioScopes, Correlator, sampleProvider } from "@microsoft/teamsfx-core";
+import { Correlator, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
 
-import AzureAccountManager from "../commonlib/azureLogin";
-import M365TokenInstance from "../commonlib/m365Login";
+import * as extensionPackage from "../../package.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
 import { downloadSample, getSystemInputs, openFolder } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
-  AccountType,
   InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
@@ -23,8 +21,8 @@ import {
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
 import { localize } from "../utils/localizeUtils";
+import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
-import { EventMessages } from "./messages";
 import { PanelType } from "./PanelType";
 
 export class WebviewPanel {
@@ -114,33 +112,16 @@ export class WebviewPanel {
       async (msg) => {
         switch (msg.command) {
           case Commands.OpenExternalLink:
-            vscode.env.openExternal(vscode.Uri.parse(msg.data));
+            void vscode.env.openExternal(vscode.Uri.parse(msg.data));
             break;
           case Commands.CloneSampleApp:
-            Correlator.run(async () => {
+            await Correlator.run(async () => {
               await this.downloadSampleApp(msg);
             });
             break;
           case Commands.DisplayCommands:
-            vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
-            break;
-          case Commands.SigninM365:
-            Correlator.run(async () => {
-              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-                [TelemetryProperty.AccountType]: AccountType.M365,
-              });
-              await M365TokenInstance.getJsonObject({ scopes: AppStudioScopes });
-            });
-            break;
-          case Commands.SigninAzure:
-            Correlator.run(async () => {
-              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.LoginClick, {
-                [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-                [TelemetryProperty.AccountType]: AccountType.Azure,
-              });
-              await AzureAccountManager.getIdentityCredentialAsync(false);
-            });
+            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+            await vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
             break;
           case Commands.CreateNewProject:
             await vscode.commands.executeCommand(
@@ -153,8 +134,27 @@ export class WebviewPanel {
             break;
           case Commands.SendTelemetryEvent:
             ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
+            break;
           case Commands.LoadSampleCollection:
             await this.LoadSampleCollection();
+            break;
+          case Commands.LoadSampleReadme:
+            await this.LoadSampleReadme(msg.data);
+            break;
+          case Commands.UpgradeToolkit:
+            await this.OpenToolkitInExtensionView(msg.data.version);
+            break;
+          case Commands.StoreData:
+            await globalVariables.context.globalState.update(msg.data.key, msg.data.value);
+            break;
+          case Commands.GetData:
+            await this.panel.webview.postMessage({
+              message: Commands.GetData,
+              data: {
+                key: msg.data.key,
+                value: globalVariables.context.globalState.get(msg.data.key),
+              },
+            });
             break;
           default:
             break;
@@ -186,7 +186,7 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      openFolder(res.value, true, false);
+      await openFolder(res.value, true);
     } else {
       props[TelemetryProperty.Success] = TelemetrySuccess.No;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
@@ -194,13 +194,80 @@ export class WebviewPanel {
   }
 
   private async LoadSampleCollection() {
-    await sampleProvider.fetchSampleConfig();
+    try {
+      await sampleProvider.refreshSampleConfig();
+    } catch (e: unknown) {
+      await this.panel.webview.postMessage({
+        message: Commands.LoadSampleCollection,
+        samples: [],
+        error: e,
+      });
+      return;
+    }
+    const sampleCollection = await sampleProvider.SampleCollection;
+    const sampleData = sampleCollection.samples.map((sample) => {
+      const extensionVersion = extensionPackage.version;
+      let versionComparisonResult = 0;
+      if (
+        sample.maximumToolkitVersion &&
+        compare(extensionVersion, sample.maximumToolkitVersion) > 0
+      ) {
+        versionComparisonResult = 1;
+      }
+      if (
+        sample.minimumToolkitVersion &&
+        compare(extensionVersion, sample.minimumToolkitVersion) < 0
+      ) {
+        versionComparisonResult = -1;
+      }
+      return {
+        ...sample,
+        versionComparisonResult,
+      };
+    });
     if (this.panel && this.panel.webview) {
-      this.panel.webview.postMessage({
-        message: EventMessages.LoadSampleCollection,
-        data: sampleProvider.SampleCollection,
+      await this.panel.webview.postMessage({
+        message: Commands.LoadSampleCollection,
+        samples: sampleData,
+        filterOptions: sampleCollection.filterOptions,
       });
     }
+  }
+
+  private async LoadSampleReadme(sample: SampleConfig) {
+    let htmlContent = "";
+    try {
+      htmlContent = await sampleProvider.getSampleReadmeHtml(sample);
+    } catch (e: unknown) {
+      await this.panel.webview.postMessage({
+        message: Commands.LoadSampleReadme,
+        error: e,
+        readme: "",
+      });
+      return;
+    }
+    if (this.panel && this.panel.webview) {
+      const readme = this.replaceRelativeImagePaths(htmlContent, sample);
+      await this.panel.webview.postMessage({
+        message: Commands.LoadSampleReadme,
+        readme: readme,
+      });
+    }
+  }
+
+  private async OpenToolkitInExtensionView(version: string) {
+    // await vscode.commands.executeCommand(
+    //   "workbench.extensions.installExtension",
+    //   `teamsdevapp.ms-teams-vscode-extension@${version}`
+    // );
+    await vscode.commands.executeCommand("workbench.extensions.action.checkForUpdates");
+  }
+
+  private replaceRelativeImagePaths(htmlContent: string, sample: SampleConfig) {
+    const urlInfo = sample.downloadUrlInfo;
+    const imageUrlBase = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${urlInfo.ref}/${urlInfo.dir}`;
+    const imageRegex = /img\s+src="([^"]+)"/gm;
+    return htmlContent.replace(imageRegex, `img src="${imageUrlBase}/$1"`);
   }
 
   private getWebpageTitle(panelType: PanelType): string {
@@ -230,6 +297,12 @@ export class WebviewPanel {
       path.join(globalVariables.context.extensionPath, "out/src", "client.js")
     );
     const scriptUri = this.panel.webview.asWebviewUri(scriptPathOnDisk);
+    const codiconsUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "codicon.css")
+    );
+    const dompurifyUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "purify.min.js")
+    );
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
@@ -239,7 +312,8 @@ export class WebviewPanel {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>ms-teams</title>
-            <base href='${scriptBaseUri}' />
+            <base href='${scriptBaseUri.toString()}' />
+            <link href="${codiconsUri.toString()}" rel="stylesheet" />
           </head>
           <body>
             <div id="root"></div>
@@ -247,7 +321,8 @@ export class WebviewPanel {
               const vscode = acquireVsCodeApi();
               const panelType = '${panelType}';
             </script>
-            <script nonce="${nonce}"  type="module" src="${scriptUri}"></script>
+            <script nonce="${nonce}" type="module" src="${scriptUri.toString()}"></script>
+            <script nonce="${nonce}" type="text/javascript" src="${dompurifyUri.toString()}"></script>
           </body>
         </html>`;
   }
@@ -288,8 +363,6 @@ export class WebviewPanel {
     }
 
     WebviewPanel.currentPanels.splice(panelIndex, 1);
-
-    AzureAccountManager.removeStatusChangeMap("quick-start-webview");
 
     // Clean up our resources
     this.panel.dispose();

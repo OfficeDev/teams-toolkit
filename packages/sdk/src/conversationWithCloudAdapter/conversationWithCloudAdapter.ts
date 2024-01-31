@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 export { ConversationOptions, NotificationOptions } from "./interface";
 export { ConversationBot } from "./conversation";
 export { BotSsoExecutionDialog } from "../conversation/sso/botSsoExecutionDialog";

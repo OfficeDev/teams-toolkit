@@ -1,18 +1,21 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
  * @author Anne Fu <v-annefu@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
 import {
   initPage,
   validateNotificationTimeBot,
-} from "../../playwrightOperation";
+} from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
   LocalDebugTaskLabel,
   LocalDebugTaskInfo,
-} from "../../constants";
+  DebugItemSelect,
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
@@ -49,7 +52,7 @@ describe("Time-trigger Notification Bot Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/timerTrigger.js");
 
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(

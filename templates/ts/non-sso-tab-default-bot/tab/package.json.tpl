@@ -1,5 +1,5 @@
 {
-    "name": "{{appName}}",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "0.1.0",
     "engines": {
         "node": "16 || 18"
@@ -7,7 +7,7 @@
     "private": true,
     "dependencies": {
         "@fluentui/react-components": "^9.18.0",
-        "@microsoft/teams-js": "^2.12.0",
+        "@microsoft/teams-js": "^2.13.0",
         "@microsoft/teamsfx": "^2.2.0",
         "@microsoft/teamsfx-react": "^3.0.0",
         "axios": "^0.21.1",

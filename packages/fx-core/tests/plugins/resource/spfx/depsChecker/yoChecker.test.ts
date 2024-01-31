@@ -3,52 +3,44 @@
 
 import "mocha";
 import { expect } from "chai";
-import { stub, restore, assert } from "sinon";
+import { stub, spy, restore, assert } from "sinon";
 import rewire from "rewire";
-
 import fs from "fs-extra";
-
-import { TestHelper } from "../helper";
 
 import { telemetryHelper } from "../../../../../src/component/generator/spfx/utils/telemetry-helper";
 import { YoChecker } from "../../../../../src/component/generator/spfx/depsChecker/yoChecker";
-import { LogProvider, LogLevel, Colors, UserError } from "@microsoft/teamsfx-api";
+import { LogProvider, LogLevel, UserError } from "@microsoft/teamsfx-api";
 import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
+import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 
 const ryc = rewire("../../../../../src/component/generator/spfx/depsChecker/yoChecker");
 
 class StubLogger implements LogProvider {
-  async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    return true;
+  msg = "";
+  verbose(msg: string): void {
+    this.log(LogLevel.Verbose, msg);
   }
-
-  async trace(message: string): Promise<boolean> {
-    return true;
+  debug(msg: string): void {
+    this.log(LogLevel.Debug, msg);
   }
-
-  async debug(message: string): Promise<boolean> {
-    return true;
+  info(msg: string | Array<any>): void {
+    this.log(LogLevel.Info, msg as string);
   }
-
-  async info(message: string | Array<{ content: string; color: Colors }>): Promise<boolean> {
-    return true;
+  warning(msg: string): void {
+    this.log(LogLevel.Warning, msg);
   }
-
-  async warning(message: string): Promise<boolean> {
-    return true;
+  error(msg: string): void {
+    this.log(LogLevel.Error, msg);
   }
-
-  async error(message: string): Promise<boolean> {
-    return true;
+  log(level: LogLevel, msg: string): void {
+    this.msg = msg;
   }
-
-  async fatal(message: string): Promise<boolean> {
-    return true;
+  async logInFile(level: LogLevel, msg: string): Promise<void> {
+    this.msg = msg;
   }
-
   getLogFilePath(): string {
     return "";
   }
@@ -82,7 +74,7 @@ describe("Yo checker", () => {
     });
 
     try {
-      await yc.install();
+      await yc.install("latest");
     } catch {
       assert.callCount(cleanStub, 2);
     }
@@ -100,10 +92,25 @@ describe("Yo checker", () => {
     });
 
     try {
-      await yc.install();
+      await yc.install("latest");
     } catch (e) {
       expect(e.name).equal("NpmInstallFailed");
     }
+  });
+
+  it("clean up failed when install", async () => {
+    const yc = new YoChecker(new StubLogger());
+    stub(fs, "existsSync").returns(false);
+    stub(fs, "emptyDir").throws("Failed to empty dir");
+    stub(cpUtils, "executeCommand").resolves();
+    stub(fs, "pathExists").callsFake(async () => {
+      return true;
+    });
+    const logErrorSpy = spy(StubLogger.prototype, "error");
+
+    await yc.install("latest");
+
+    assert.callCount(logErrorSpy, 1);
   });
 
   it("findGloballyInstalledVersion: returns version", async () => {
@@ -220,13 +227,14 @@ describe("Yo checker", () => {
       });
 
       stub(YoChecker.prototype, <any>"queryVersion").throws("error");
+      stub(Utils, "findLatestVersion").throws("error");
 
       const result = await yc.isLatestInstalled();
       expect(result).is.false;
     });
   });
 
-  describe("ensureLatestDependency", () => {
+  describe("ensureDependency", () => {
     setTools(new MockTools());
     it("install successfully", async () => {
       const yc = new YoChecker(new StubLogger());
@@ -237,7 +245,7 @@ describe("Yo checker", () => {
 
       const context = createContextV3();
 
-      const result = await yc.ensureLatestDependency(context);
+      const result = await yc.ensureDependency(context, "latest");
       expect(result.isOk()).to.be.true;
     });
 
@@ -249,7 +257,7 @@ describe("Yo checker", () => {
 
       const context = createContextV3();
 
-      const result = await yc.ensureLatestDependency(context);
+      const result = await yc.ensureDependency(context, "latest");
       expect(result.isErr()).to.be.true;
     });
   });

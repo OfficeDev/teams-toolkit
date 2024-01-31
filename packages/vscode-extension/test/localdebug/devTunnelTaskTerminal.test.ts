@@ -14,7 +14,10 @@ import * as vscode from "vscode";
 
 import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
 import { Tunnel } from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
+import {
+  TunnelManagementHttpClient,
+  ManagementApiVersions,
+} from "@microsoft/dev-tunnels-management";
 import { FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
 import { pathUtils } from "@microsoft/teamsfx-core";
@@ -42,7 +45,7 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
     return !!this.cancel;
   }
 
-  public resolveArgs(args: IDevTunnelArgs): Promise<void> {
+  public resolveArgs(args: IDevTunnelArgs): void {
     return super.resolveArgs(args);
   }
 
@@ -54,9 +57,13 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
   }
 
   static create(taskDefinition: vscode.TaskDefinition): TestDevTunnelTaskTerminal {
-    const tunnelManagementClientImpl = new TunnelManagementHttpClient("teamsfx-ut", async () => {
-      return "mock-token";
-    });
+    const tunnelManagementClientImpl = new TunnelManagementHttpClient(
+      "teamsfx-ut",
+      ManagementApiVersions.Version20230927preview,
+      async () => {
+        return "mock-token";
+      }
+    );
     const devTunnelManager = new DevTunnelManager(tunnelManagementClientImpl);
     const devTunnelStateManager = DevTunnelStateManager.create();
     return new TestDevTunnelTaskTerminal(taskDefinition, devTunnelManager, devTunnelStateManager);
@@ -203,7 +210,7 @@ describe("devTunnelTaskTerminal", () => {
       const existingTTKTunnel = {
         tunnelId: uuid.v4().substring(0, 8),
         clusterId: "test",
-        tags: ["TeamsToolkitCreatedTag"],
+        labels: ["TeamsToolkitCreatedTag"],
       };
       const devTunnelStateManager = DevTunnelStateManager.create();
       const mockResource = mock([existingTunnel, existingTTKTunnel]);
@@ -464,6 +471,20 @@ describe("devTunnelTaskTerminal", () => {
         errorPropertyName: "args.env",
       },
       {
+        message: "property env - error expiration",
+        args: {
+          type: "dev-tunnel",
+          ports: [
+            {
+              portNumber: 53000,
+              protocol: "https",
+            },
+          ],
+          expiration: "error",
+        },
+        errorPropertyName: "args.expiration",
+      },
+      {
         message: "happy path",
         args: {
           type: "dev-tunnel",
@@ -486,14 +507,13 @@ describe("devTunnelTaskTerminal", () => {
     testDataList.forEach((testData) => {
       it(testData.message, async () => {
         if (testData.errorPropertyName) {
-          await chai
-            .expect(tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs))
-            .rejectedWith(
+          chai
+            .expect(() => tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs))
+            .throw(
               `The value of '${testData.errorPropertyName}' is invalid for the task of type 'teamsfx'`
             );
         } else {
-          await chai.expect(tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs))
-            .fulfilled;
+          tunnelTaskTerminal.resolveArgs(testData.args as IDevTunnelArgs);
         }
       });
     });

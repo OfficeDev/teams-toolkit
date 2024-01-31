@@ -5,14 +5,15 @@
  * @author Qianhao Dong <qidon@microsoft.com>
  */
 import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
-import { err, FxError, Result, ok, M365TokenProvider } from "@microsoft/teamsfx-api";
+import { err, FxError, Result, ok, M365TokenProvider, LogProvider } from "@microsoft/teamsfx-api";
 import { AppStudioScopes } from "../../../../common/tools";
 import { AppStudioClient } from "../appStudio/appStudioClient";
 import { Utils } from "./utils";
 
 export async function createOrUpdateBotRegistration(
   m365TokenProvider: M365TokenProvider,
-  botRegistration: IBotRegistration
+  botRegistration: IBotRegistration,
+  logger?: LogProvider
 ): Promise<Result<boolean, FxError>> {
   // 1. Get bot registration from remote.
   // 2. If Not Found, Then create a new bot registration.
@@ -26,19 +27,24 @@ export async function createOrUpdateBotRegistration(
     return err(appStudioTokenRes.error);
   }
   const appStudioToken = appStudioTokenRes.value;
+  logger?.debug(`Input bot registration: ${JSON.stringify(botRegistration)}`);
   const remoteBotRegistration = await AppStudioClient.getBotRegistration(
     appStudioToken,
     botRegistration.botId!
   );
   if (!remoteBotRegistration) {
     // Not Found case.
+    logger?.verbose("Bot registration not found, create a new one.");
     await AppStudioClient.createBotRegistration(appStudioToken, botRegistration, false);
   } else {
     // Update bot registration.
+    logger?.verbose("Bot registration found, update it.");
+    logger?.debug(`Existing bot registration: ${JSON.stringify(remoteBotRegistration)}`);
     const mergedBotRegistration = Utils.mergeIBotRegistration(
       botRegistration,
       remoteBotRegistration
     );
+    logger?.debug(`Merged bot registration: ${JSON.stringify(mergedBotRegistration)}`);
     await AppStudioClient.updateBotRegistration(appStudioToken, mergedBotRegistration);
   }
   return ok(remoteBotRegistration !== undefined);

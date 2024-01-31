@@ -12,13 +12,7 @@ export type ExecutionResult = {
 
 export interface StepDriver {
   readonly description?: string;
-
-  /**
-   * Run the driver.
-   * @param args Arguments from the `with` section in the yaml file.
-   * @param context logger, telemetry, progress bar, etc.
-   */
-  run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>>;
+  readonly progressTitle?: string;
 
   /**
    * Run the driver and return success summary entries along with the result, no matter the result is success or failure.
@@ -28,11 +22,13 @@ export interface StepDriver {
    * @param ctx logger, telemetry, progress bar, etc.
    * @param outputEnvVarNames the environment variable names for each output
    * @param schemaVersion schema version of the executed yaml file
+   * @param name name of the executed yaml section
    */
-  execute?(
+  execute(
     args: unknown,
     ctx: DriverContext,
     outputEnvVarNames?: Map<string, string>,
-    schemaVersion?: string
+    schemaVersion?: string,
+    name?: string
   ): Promise<ExecutionResult>;
 }

@@ -22,6 +22,7 @@ import {
 } from "../../../../src/error/common";
 import { UserError } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
+import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -40,7 +41,7 @@ const outputEnvVarNames = new Map<string, string>(Object.entries(outputKeys));
 describe("aadAppCreate", async () => {
   const expectedObjectId = "00000000-0000-0000-0000-000000000000";
   const expectedClientId = "00000000-0000-0000-0000-111111111111";
-  const expectedDisplayName = "AAD app name";
+  const expectedDisplayName = "Microsoft Entra app name";
   const expectedSecretText = "fake secret";
   const createAadAppDriver = new CreateAadAppDriver();
   const mockedDriverContext: any = {
@@ -105,6 +106,17 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrapErr()).is.instanceOf(InvalidActionInputError);
   });
 
+  it("should throw error if Microsoft Entra app name exceeds 120 characters", async () => {
+    const invalidAppName = "a".repeat(121);
+    const args: any = {
+      name: invalidAppName,
+      generateClientSecret: false,
+    };
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(AadAppNameTooLongError);
+  });
+
   it("should throw error if outputEnvVarNames is undefined", async () => {
     const args: any = {
       name: "test",
@@ -116,7 +128,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrapErr()).is.instanceOf(OutputEnvironmentVariableUndefinedError);
   });
 
-  it("should create new AAD app and client secret with empty .env", async () => {
+  it("should create new Microsoft Entra app and client secret with empty .env", async () => {
     sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
       id: expectedObjectId,
       displayName: expectedDisplayName,
@@ -146,10 +158,10 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(6);
     expect(result.summaries.length).to.equal(2);
     expect(result.summaries).includes(
-      `Created Azure Active Directory application with object id ${expectedObjectId}`
+      `Created Microsoft Entra application with object id ${expectedObjectId}`
     );
     expect(result.summaries).includes(
-      `Generated client secret for Azure Active Directory application with object id ${expectedObjectId}`
+      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
     );
   });
 
@@ -193,14 +205,14 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(6);
     expect(result.summaries.length).to.equal(2);
     expect(result.summaries).includes(
-      `Created Azure Active Directory application with object id ${expectedObjectId}`
+      `Created Microsoft Entra application with object id ${expectedObjectId}`
     );
     expect(result.summaries).includes(
-      `Generated client secret for Azure Active Directory application with object id ${expectedObjectId}`
+      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
     );
   });
 
-  it("should use existing AAD app and generate new secret when AAD_APP_CLIENT_ID exists and only output generated client secret", async () => {
+  it("should use existing Microsoft Entra app and generate new secret when AAD_APP_CLIENT_ID exists and only output generated client secret", async () => {
     sinon.stub(AadAppClient.prototype, "createAadApp").rejects("createAadApp should not be called");
     sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
 
@@ -220,7 +232,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(1); // 1 new env and 2 existing env
     expect(result.summaries.length).to.equal(1);
     expect(result.summaries).includes(
-      `Generated client secret for Azure Active Directory application with object id existing value`
+      `Generated client secret for Microsoft Entra application with object id existing value`
     );
   });
 
@@ -278,7 +290,7 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(5);
     expect(result.summaries.length).to.equal(1);
     expect(result.summaries).includes(
-      `Created Azure Active Directory application with object id ${expectedObjectId}`
+      `Created Microsoft Entra application with object id ${expectedObjectId}`
     );
   });
 
@@ -526,7 +538,6 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.properties.success).to.equal("no");
     expect(endTelemetry.properties["error-code"]).to.equal("aadAppCreate.UnhandledError");
     expect(endTelemetry.properties["error-type"]).to.equal("system");
-    expect(endTelemetry.properties["error-stack"]).to.equal("fake stack");
   });
 
   it("should use input signInAudience when provided", async () => {
@@ -565,10 +576,10 @@ describe("aadAppCreate", async () => {
     expect(result.result._unsafeUnwrap().size).to.equal(6);
     expect(result.summaries.length).to.equal(2);
     expect(result.summaries).includes(
-      `Created Azure Active Directory application with object id ${expectedObjectId}`
+      `Created Microsoft Entra application with object id ${expectedObjectId}`
     );
     expect(result.summaries).includes(
-      `Generated client secret for Azure Active Directory application with object id ${expectedObjectId}`
+      `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
     );
   });
 

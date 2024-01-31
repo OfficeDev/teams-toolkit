@@ -3,7 +3,13 @@
 
 import { Stage, UserError } from "@microsoft/teamsfx-api";
 
-import { LocalEnvManager, envUtil, metadataUtil, pathUtils } from "@microsoft/teamsfx-core";
+import {
+  LocalEnvManager,
+  MetadataV3,
+  envUtil,
+  metadataUtil,
+  pathUtils,
+} from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
@@ -30,6 +36,14 @@ export async function getProjectRoot(
 export async function getNpmInstallLogInfo(): Promise<any> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
   return await localEnvManager.getNpmInstallLogInfo();
+}
+
+export async function getTestToolLogInfo(): Promise<string | undefined> {
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+  if (!globalVariables.workspaceUri?.fsPath) {
+    return undefined;
+  }
+  return await localEnvManager.getTestToolLogInfo(globalVariables.workspaceUri?.fsPath);
 }
 
 export class LocalDebugSession {
@@ -80,14 +94,14 @@ export function getLocalDebugSessionId(): string {
   return localDebugCorrelationIds[current].id;
 }
 
-export function checkAndSkipDebugging(): boolean {
+export async function checkAndSkipDebugging(): Promise<boolean> {
   // skip debugging if there is already a debug session
   if (allRunningDebugSessions.size > 0) {
     VsCodeLogInstance.warning("Skip debugging because there is already a debug session.");
     endLocalDebugSession();
-    return true;
+    return Promise.resolve(true);
   }
-  return false;
+  return Promise.resolve(false);
 }
 
 export class Step {
@@ -149,4 +163,13 @@ export async function triggerV3Migration(): Promise<void> {
   }
   // reload window to terminate debugging
   await VS_CODE_UI.reload();
+}
+
+// Only work in ts/js project
+export function isTestToolEnabledProject(workspacePath: string): boolean {
+  const testToolYmlPath = path.join(workspacePath, MetadataV3.testToolConfigFile);
+  if (fs.pathExistsSync(testToolYmlPath)) {
+    return true;
+  }
+  return false;
 }

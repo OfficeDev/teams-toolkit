@@ -18,7 +18,7 @@ import * as commentJson from "comment-json";
 describe("CreateOrUpdateJsonFileDriver", () => {
   const mockedDriverContext = {
     logProvider: new MockedLogProvider(),
-  } as DriverContext;
+  } as any;
   const driver = new CreateOrUpdateJsonFileDriver();
 
   beforeEach(() => {

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AuthenticationResult } from "@azure/msal-browser";
+import { AccountInfo, AuthenticationResult } from "@azure/msal-browser";
 import { assert, expect } from "chai";
 import { ErrorWithCode, ErrorCode } from "../../src/core/errors";
 import {
@@ -23,6 +23,7 @@ describe("Utils Tests", () => {
      }
    */
   const fakeSSOTokenFull =
+    // eslint-disable-next-line no-secrets/no-secrets
     "eyJhbGciOiJIUzI1NiJ9.eyJvaWQiOiJmYWtlLW9pZCIsIm5hbWUiOiJmYWtlLW5hbWUiLCJ2ZXIiOiIxLjAiLCJleHAiOjE1MzcyMzQ5NDgsInVwbiI6ImZha2UtdXBuIiwidGlkIjoiZmFrZS10aWQiLCJhdWQiOiJmYWtlLWF1ZCJ9.rLK5VlJK1FsGZJD0yb-ussSjl2Z4sSqG1Nhj7NqjNs4";
 
   function getAuthCodeTokenResponse(accessToken: string): AuthenticationResult {
@@ -31,7 +32,7 @@ describe("Utils Tests", () => {
       uniqueId: "fake-uniqure-id",
       tenantId: "fake-tenant-id",
       scopes: ["user.read"],
-      account: null,
+      account: {} as unknown as AccountInfo,
       idToken: "fake-id-token",
       idTokenClaims: {},
       accessToken: accessToken,

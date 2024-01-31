@@ -21,8 +21,8 @@ The TeamsFx CLI may require an Azure account and subscription to deploy the Azur
 ## Setup Development Environment
 ---
 
-1. Install Node v14 or later
-2. Install NPM v6 or later
+1. Install Node v18 or later
+2. Install PNPM v8 or later
 
 ## Build the project
 ---
@@ -32,16 +32,8 @@ The TeamsFx CLI may require an Azure account and subscription to deploy the Azur
 2. `cd TeamsFx`
 3. `npm run setup`
 
-This will run "lerna bootstrap" to link packages in monorepo locally. 
+This will run "pnpm install && npm run build" to link packages in monorepo locally. 
 
-### Build CLI package alone
-1. `cd packages/cli/`
-2. `npm install`
-2. `npm run build`
-
-This will install the dependent packages from public registry and build CLI package alone.
-
-**_NOTE:_** If you meet the error showing that some package cannot install, you can delete this package's `package-lock.json` file and try `npm run bootstrap` under `TeamsFx` folder again.
 
 ## Debug the project
 ---
@@ -58,8 +50,8 @@ This will install the dependent packages from public registry and build CLI pack
 4. Hit 'F5' or click start debugging button
 
 ### Install the published package
-1. Run: `npm install -g teamsfx-cli` (Pls check the version is the latest version)
-2. Now the package is installed in your global npm folder. You can type 'teamsfx -h' to see how to use the cli tool.
+1. Run: `npm install -g @microsoft/teamsapp-cli` (Pls check the version is the latest version)
+2. Now the package is installed in your global npm folder. You can type 'teamsapp -h' to see how to use the cli tool.
 
 ## Test the proejct
 ---
@@ -92,6 +84,12 @@ The project setup ESLINT and prettier for coding style and formating, please fol
 
 ### Format the code
 `npm run format`
+
+### Add dependency for CLI
+`pnpm install XXX`
+
+### Delete dependency for CLI
+`pnpm remove XXX`
 
 ## Opening PR and PR review
 ---

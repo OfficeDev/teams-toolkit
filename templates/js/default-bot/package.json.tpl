@@ -1,5 +1,5 @@
 {
-    "name": "{{appName}}",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
     "msteams": {
       "teamsAppId": null
@@ -13,13 +13,14 @@
     "main": "index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
+        "dev:teamsfx:testtool": "env-cmd --silent -f .localConfigs.testTool npm run dev",
+        "dev:teamsfx:launch-testtool": "env-cmd --silent -f env/.env.testtool teamsapptester start",
         "dev": "nodemon --inspect=9239 --signal SIGINT ./index.js",
         "start": "node ./index.js",
         "watch": "nodemon ./index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@microsoft/adaptivecards-tools": "^1.0.0",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },

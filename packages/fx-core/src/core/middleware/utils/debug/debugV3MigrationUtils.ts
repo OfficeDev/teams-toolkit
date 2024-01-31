@@ -87,7 +87,7 @@ export class OldProjectSettingsHelper {
   }
 
   private static includePlugin(oldProjectSettings: any, pluginName: string): boolean {
-    const azureSolutionSettings = oldProjectSettings.solutionSettings as any;
+    const azureSolutionSettings = oldProjectSettings.solutionSettings;
     return azureSolutionSettings.activeResourcePlugins.includes(pluginName);
   }
 }

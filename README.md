@@ -1,6 +1,5 @@
 # Microsoft Teams Toolkit
 
-[![SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/sdk-ci.yml)
 [![DotNet SDK CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/dotnetsdk-ci.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/dotnetsdk-ci.yml)
 [![Function Extension CI workflow](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/FunctionExtensionCI.yml)
 [![CodeQL](https://github.com/OfficeDev/TeamsFx/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/OfficeDev/TeamsFx/actions/workflows/codeql-analysis.yml)
@@ -26,7 +25,7 @@ Pick your preferred tool to get started:
 
 - For JavaScript and TypeScript developers, install [Teams Toolkit for Visual Studio Code](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals#install-teams-toolkit-for-visual-studio-code).
 - For .NET developers, install [Teams Toolkit for Visual Studio](https://docs.microsoft.com/microsoftteams/platform/toolkit/visual-studio-overview#install-teams-toolkit-for-visual-studio).
-- For command line users, install [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli#get-started): `npm install -g @microsoft/teamsfx-cli`
+- For command line users, install [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli#get-started): `npm install -g @microsoft/teamsapp-cli`
 
 Visit [Microsoft Teams developer documentation](https://aka.ms/teamsfx-docs) to get started with building apps with Teams Toolkit today.
 

@@ -27,14 +27,6 @@ export function getCustomizedKeys(prefix: string, manifest: any): string[] {
   return keys;
 }
 
-export function getLocalAppName(appName: string): string {
-  const suffix = "-local-debug";
-  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-    appName = appName + suffix;
-  }
-  return appName;
-}
-
 export function renderTemplate(manifestString: string, view: any): string {
   // Unesacped HTML
   Mustache.escape = (value) => value;
@@ -80,16 +72,28 @@ export function isBot(appDefinition: AppDefinition): boolean {
   return !!appDefinition.bots && appDefinition.bots.length > 0;
 }
 
-export function isMessageExtension(appDefinition: AppDefinition): boolean {
-  return !!appDefinition.messagingExtensions && appDefinition.messagingExtensions.length > 0;
+export function isBotBasedMessageExtension(appDefinition: AppDefinition): boolean {
+  return (
+    !!appDefinition.messagingExtensions &&
+    appDefinition.messagingExtensions.length > 0 &&
+    !!appDefinition.messagingExtensions[0].botId
+  );
 }
 
-export function isBotAndMessageExtension(appDefinition: AppDefinition): boolean {
-  return isBot(appDefinition) && isMessageExtension(appDefinition);
+export function isBotAndBotBasedMessageExtension(appDefinition: AppDefinition): boolean {
+  return isBot(appDefinition) && isBotBasedMessageExtension(appDefinition);
 }
 
 export function needBotCode(appDefinition: AppDefinition): boolean {
-  return isBot(appDefinition) || isMessageExtension(appDefinition);
+  return isBot(appDefinition) || isBotBasedMessageExtension(appDefinition);
+}
+
+function isApiBasedMessageExtension(appDefinition: AppDefinition): boolean {
+  return (
+    !!appDefinition.messagingExtensions &&
+    appDefinition.messagingExtensions.length > 0 &&
+    appDefinition.messagingExtensions[0].messagingExtensionServiceType?.toLowerCase() === "apibased"
+  );
 }
 
 export function containsUnsupportedFeature(appDefinition: AppDefinition): boolean {
@@ -97,7 +101,13 @@ export function containsUnsupportedFeature(appDefinition: AppDefinition): boolea
   const hasConnector = !!appDefinition?.connectors?.length;
   const hasActivies = appDefinition?.activities?.activityTypes?.length;
 
-  return !!hasScene || !!hasConnector || !!hasActivies || hasMeetingExtension(appDefinition);
+  return (
+    !!hasScene ||
+    !!hasConnector ||
+    !!hasActivies ||
+    hasMeetingExtension(appDefinition) ||
+    isApiBasedMessageExtension(appDefinition)
+  );
 }
 
 export function getFeaturesFromAppDefinition(appDefinition: AppDefinition): string[] {
@@ -119,7 +129,7 @@ export function getFeaturesFromAppDefinition(appDefinition: AppDefinition): stri
     features.push(bot);
   }
 
-  if (isMessageExtension(appDefinition)) {
+  if (isBotBasedMessageExtension(appDefinition)) {
     features.push(messageExtension);
   }
 

@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 "use strict";
 
 /**
@@ -88,19 +90,10 @@ enum TestPlanType {
   vscode = "vscode",
 }
 
-const AutoCLITestPlanPrefix = "[auto] cli@";
-const AutoVSCodeTestPlanPrefix = "[auto] vscode@";
+const AutoTeamsfxPlanPrefix = "[auto] teamsfx@";
 
-function TestPlanName(tpt: TestPlanType, version: string): string {
-  const tag = `${semver.major(version)}.${semver.minor(version)}.${semver.patch(
-    version
-  )}`;
-  switch (tpt) {
-    case TestPlanType.cli:
-      return AutoCLITestPlanPrefix + tag;
-    case TestPlanType.vscode:
-      return AutoVSCodeTestPlanPrefix + tag;
-  }
+function TestPlanName(version: string): string {
+  return AutoTeamsfxPlanPrefix + version;
 }
 
 /**
@@ -117,16 +110,6 @@ interface Pagenation<T> {
   v?: T;
   continuationToken?: string;
 }
-
-const CLITestPlanTemplate: TestPlan = {
-  id: 15232204,
-  name: "CLI Test Plan Template",
-};
-
-const VSCodeTestPlanTemplate: TestPlan = {
-  id: 10445806,
-  name: "VSCode Test Plan Template",
-};
 
 const BaseURL =
   "https://dev.azure.com/msazure/Microsoft Teams Extensibility/_apis/testplan";
@@ -401,13 +384,10 @@ class ADOTestPlanClient {
   public static async CloneTestPlan(name: string): Promise<TestPlan> {
     let id = 0;
     let sourceID = 0;
-    if (name.indexOf(AutoCLITestPlanPrefix) >= 0) {
-      sourceID = CLITestPlanTemplate.id;
+    if (name.indexOf(AutoTeamsfxPlanPrefix) >= 0) {
+      sourceID = process.env["AUTO_TEST_PLAN_ID"] as unknown as number;
     }
 
-    if (name.indexOf(AutoVSCodeTestPlanPrefix) >= 0) {
-      sourceID = VSCodeTestPlanTemplate.id;
-    }
     try {
       const response = await ADOTestPlanClient.client.post(
         "/Plans/CloneOperation",
@@ -464,12 +444,8 @@ async function main() {
       if (process.argv.length !== 5) {
         throw new Error("invalid param length");
       }
-
-      const tpt = process.argv[3] as TestPlanType;
       const version = process.argv[4];
-
-      const tpn = TestPlanName(tpt, version);
-
+      const tpn = TestPlanName(version); // [AUTO] teamsfx@X.X.X
       const allTestPlans = await ADOTestPlanClient.AllTestPlans();
 
       for (const i in allTestPlans) {

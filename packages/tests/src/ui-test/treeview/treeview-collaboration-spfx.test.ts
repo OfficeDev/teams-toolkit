@@ -2,12 +2,16 @@
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import { expect } from "chai";
-import { CommandPaletteCommands, Timeout, Notification } from "../../constants";
+import {
+  CommandPaletteCommands,
+  Timeout,
+  Notification,
+} from "../../utils/constants";
 import {
   createNewProject,
   execCommandIfExist,
   getNotification,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import path = require("path");
 import { VSBrowser } from "vscode-extension-tester";
 import { Env } from "../../utils/env";

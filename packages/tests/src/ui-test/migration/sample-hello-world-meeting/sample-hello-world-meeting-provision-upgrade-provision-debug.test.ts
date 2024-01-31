@@ -1,21 +1,20 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { SampledebugContext } from "../../samples/sampledebugContext";
 import {
   Timeout,
   TemplateProject,
   Notification,
   TemplateProjectFolder,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   validateUpgrade,
   upgradeByTreeView,
-} from "../../../vscodeOperation";
-import { initTeamsPage } from "../../../playwrightOperation";
+} from "../../../utils/vscodeOperation";
+import { initTeamsPage } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 
@@ -47,7 +46,7 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await sampledebugContext.createTemplateCLI(false);
+      await sampledebugContext.openResourceFolder();
       // verify popup
       await validateNotification(Notification.Upgrade);
 
@@ -82,8 +81,10 @@ describe("Migration Tests", function () {
         teamsAppId,
         Env.username,
         Env.password,
-        "hello-world-in-meeting-dev",
-        "meeting"
+        {
+          teamsAppName: "Hello_World_In_Meeting_App",
+          type: "meeting",
+        }
       );
       console.log("debug finish!");
     }

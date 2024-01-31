@@ -1,8 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export enum QuestionNames {
   Scratch = "scratch",
   SctatchYes = "scratch-yes",
   AppName = "app-name",
   Folder = "folder",
+  ProjectPath = "projectPath",
   ProgrammingLanguage = "programming-language",
   ProjectType = "project-type",
   Capabilities = "capabilities",
@@ -19,7 +23,6 @@ export enum QuestionNames {
   OfficeAddinTemplate = "addin-template-select",
   OfficeAddinHost = "addin-host",
   OfficeAddinImport = "addin-import",
-  SkipAppName = "skip-app-name",
   Samples = "samples",
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
@@ -29,9 +32,13 @@ export enum QuestionNames {
   ValidateMethod = "validate-method",
   AppPackagePath = "appPackagePath",
   CopilotPluginExistingApi = "copilot-plugin-existing-api", // group name for creating a Copilot plugin from existing api
-  ApiSpecLocation = "api-spec-location",
-  OpenAIPluginManifestLocation = "openai-plugin-manifest-location",
+  ApiSpecLocation = "openapi-spec-location",
+  OpenAIPluginManifest = "openai-plugin-manifest",
   ApiOperation = "api-operation",
+  MeArchitectureType = "me-architecture",
+  ApiSpecApiKey = "api-key",
+  ApiSpecApiKeyConfirm = "api-key-confirm",
+  ApiMEAuth = "api-me-auth",
 
   Features = "features",
   Env = "env",
@@ -58,4 +65,8 @@ export enum QuestionNames {
   UserEmail = "email",
 
   collaborationAppType = "collaborationType",
+}
+
+export enum CliQuestionName {
+  Capability = "capability",
 }

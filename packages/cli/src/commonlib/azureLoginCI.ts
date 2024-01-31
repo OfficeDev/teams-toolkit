@@ -2,23 +2,25 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import { TokenCredential } from "@azure/core-auth";
 import * as identity from "@azure/identity";
-import { Subscription, SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
 import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import { login, LoginStatus } from "./common/login";
+import { LoginStatus, login } from "./common/login";
 
-import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
-import { isWorkspaceSupported } from "../utils";
-import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
+import {
+  ConvertTokenToJson,
+  InvalidAzureSubscriptionError,
+  isValidProjectV3,
+} from "@microsoft/teamsfx-core";
 import * as os from "os";
 import { AzureSpCrypto } from "./cacheAccess";
-import { ConvertTokenToJson } from "@microsoft/teamsfx-core";
-import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
+import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
+import CLILogProvider from "./log";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -104,10 +106,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * singnout from Azure
    */
   async signout(): Promise<boolean> {
-    return new Promise(async (resolve) => {
-      await AzureSpCrypto.clearAzureSP();
-      resolve(true);
-    });
+    await AzureSpCrypto.clearAzureSP();
+    return true;
   }
   async getStatus(): Promise<LoginStatus> {
     await this.load();
@@ -202,20 +202,20 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
   }
 
-  async getSubscriptionInfoPath(): Promise<string | undefined> {
+  getSubscriptionInfoPath(): Promise<string | undefined> {
     if (AzureAccountManager.rootPath) {
-      if (isWorkspaceSupported(AzureAccountManager.rootPath)) {
+      if (isValidProjectV3(AzureAccountManager.rootPath)) {
         const subscriptionFile = path.join(
           AzureAccountManager.rootPath,
           `.${ConfigFolderName}`,
           subscriptionInfoFile
         );
-        return subscriptionFile;
+        return Promise.resolve(subscriptionFile);
       } else {
-        return undefined;
+        return Promise.resolve(undefined);
       }
     } else {
-      return undefined;
+      return Promise.resolve(undefined);
     }
   }
 
@@ -241,8 +241,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     AzureAccountManager.rootPath = rootPath;
   }
 
-  async readSubscription(): Promise<SubscriptionInfo | undefined> {
-    return undefined;
+  readSubscription(): Promise<SubscriptionInfo | undefined> {
+    return Promise.resolve(undefined);
   }
 }
 

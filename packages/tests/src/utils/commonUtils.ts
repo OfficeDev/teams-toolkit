@@ -1,9 +1,11 @@
-import { FeatureFlagName } from "../constants";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+import { FeatureFlagName } from "./constants";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as chai from "chai";
 import { dotenvUtil } from "./envUtil";
-import { TestFilePath } from "../constants";
+import { TestFilePath } from "./constants";
 import { exec, spawn, SpawnOptionsWithoutStdio } from "child_process";
 import { promisify } from "util";
 import { Executor } from "./executor";
@@ -102,7 +104,9 @@ export async function getBotSiteEndpoint(
   const context = dotenvUtil.deserialize(
     await fs.readFile(configFilePath, { encoding: "utf8" })
   );
-  const endpointUrl = context.obj[`${endpoint}`];
+  const endpointUrl =
+    context.obj[`${endpoint}`] ??
+    context.obj["PROVISIONOUTPUT__BOTOUTPUT__ENDPOINT"];
   const result = endpointUrl.includes("https://")
     ? endpointUrl
     : "https://" + endpointUrl;
@@ -129,14 +133,22 @@ export async function updateAadTemplate(
 export function spawnCommand(
   command: string,
   args?: string[],
-  options?: SpawnOptionsWithoutStdio | undefined
+  options?: SpawnOptionsWithoutStdio | undefined,
+  onData?: (data: string) => void,
+  onError?: (data: string) => void
 ) {
   const child = spawn(command, args, options);
   child.stdout.on("data", (data) => {
-    console.log(`${data}`);
+    const dataString = data.toString();
+    if (onData) {
+      onData(dataString);
+    }
   });
   child.stderr.on("data", (data) => {
-    console.error(`${data}`);
+    const dataString = data.toString();
+    if (onError) {
+      onError(dataString);
+    }
   });
   return child;
 }
@@ -150,14 +162,35 @@ export function timeoutPromise(timeout: number) {
   });
 }
 
-export function killPort(port: number): Promise<any> {
-  const command = `kill -9 $(lsof -t -i:${port})`;
-  return execAsync(command);
+export async function killPort(
+  port: number
+): Promise<{ stdout: string; stderr: string }> {
+  // windows
+  if (process.platform === "win32") {
+    const command = `for /f "tokens=5" %a in ('netstat -ano ^| find "${port}"') do @taskkill /f /pid %a`;
+    console.log("run command: ", command);
+    const result = await execAsync(command);
+    return result;
+  } else {
+    const command = `kill -9 $(lsof -t -i:${port})`;
+    console.log("run command: ", command);
+    const result = await execAsync(command);
+    return result;
+  }
 }
 
-export function killNgrok(): Promise<any> {
-  const command = `kill -9 $(lsof -i | grep ngrok | awk '{print $2}')`;
-  return execAsync(command);
+export async function killNgrok(): Promise<{ stdout: string; stderr: string }> {
+  if (process.platform === "win32") {
+    const command = `taskkill /f /im ngrok.exe`;
+    console.log("run command: ", command);
+    const result = await execAsync(command);
+    return result;
+  } else {
+    const command = `kill -9 $(lsof -i | grep ngrok | awk '{print $2}')`;
+    console.log("run command: ", command);
+    const result = await execAsync(command);
+    return result;
+  }
 }
 
 export function editDotEnvFile(
@@ -182,7 +215,7 @@ export function editDotEnvFile(
       .join("\n");
     fs.writeFileSync(filePath, newEnvFileContent);
   } catch (error) {
-    console.log('Failed to edit ".env" file.');
+    console.log('Failed to edit ".env" file. FilePath: ' + filePath);
   }
 }
 
@@ -190,15 +223,111 @@ export async function CLIVersionCheck(
   version: "V2" | "V3",
   projectPath: string
 ): Promise<{ success: boolean; cliVersion: string }> {
-  const command = `npx teamsfx --version`;
+  let command = "";
+  if (version === "V2") command = `npx teamsfx --version`;
+  else if (version === "V3") command = `npx teamsapp --version`;
   const { success, stdout } = await Executor.execute(command, projectPath);
   chai.expect(success).to.eq(true);
   const cliVersion = stdout.trim();
+  const versionGeneralRegex = /(\d\.\d+\.\d+).*$/;
+  const cliVersionOutputs = cliVersion.match(versionGeneralRegex);
+  console.log(cliVersionOutputs![0]);
   let versionRegex;
   if (version === "V2") versionRegex = /^1\.\d+\.\d+.*$/;
-  else if (version === "V3") versionRegex = /^2\.\d+\.\d+.*$/;
+  else if (version === "V3") versionRegex = /^[23]\.\d+\.\d+.*$/;
   else throw new Error(`Invalid version specified: ${version}`);
-  chai.expect(cliVersion).to.match(versionRegex);
+  chai.expect(cliVersionOutputs![0]).to.match(versionRegex);
   console.log(`CLI Version: ${cliVersion}`);
   return { success: true, cliVersion };
+}
+
+const policySnippets = {
+  locationKey1: "var authorizedClientApplicationIds",
+  locationValue1: `var allowedClientApplications = '["\${m365ClientId}","\${teamsMobileOrDesktopAppClientId}","\${teamsWebAppClientId}","\${officeWebAppClientId1}","\${officeWebAppClientId2}","\${outlookDesktopAppClientId}","\${outlookWebAppClientId1};\${outlookWebAppClientId2}"]'\n`,
+  locationKey2: "ALLOWED_APP_IDS",
+  locationValue2: `    WEBSITE_AUTH_AAD_ACL: '{"allowed_client_applications": \${allowedClientApplications}}}'\n`,
+};
+
+const locationValue1_320 = `var allowedClientApplications = '["\${m365ClientId}","\${teamsMobileOrDesktopAppClientId}","\${teamsWebAppClientId}","\${officeWebAppClientId1}","\${officeWebAppClientId2}","\${outlookDesktopAppClientId}","\${outlookWebAppClientId}"]'\n`;
+
+export async function updateFunctionAuthorizationPolicy(
+  version: "4.2.5" | "4.0.0" | "3.2.0",
+  projectPath: string
+): Promise<void> {
+  const fileName =
+    version == "4.2.5" ? "azureFunctionApiConfig.bicep" : "function.bicep";
+  const locationValue1 =
+    version == "3.2.0" ? locationValue1_320 : policySnippets.locationValue1;
+  const functionBicepPath = path.join(
+    projectPath,
+    "templates",
+    "azure",
+    "teamsFx",
+    fileName
+  );
+  let content = await fs.readFile(functionBicepPath, "utf-8");
+  content = updateContent(content, policySnippets.locationKey1, locationValue1);
+  content = updateContent(
+    content,
+    policySnippets.locationKey2,
+    policySnippets.locationValue2
+  );
+  await fs.writeFileSync(functionBicepPath, content);
+
+  if (version == "3.2.0") {
+    const fileName = "simpleAuth.bicep";
+    const simpleAuthBicepPath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "teamsFx",
+      fileName
+    );
+    let content = await fs.readFile(simpleAuthBicepPath, "utf-8");
+    content = updateContent(
+      content,
+      policySnippets.locationKey1,
+      locationValue1
+    );
+    content = updateContent(
+      content,
+      policySnippets.locationKey2,
+      policySnippets.locationValue2
+    );
+    await fs.writeFileSync(simpleAuthBicepPath, content);
+  }
+}
+
+export function updateContent(
+  content: string,
+  key: string,
+  value: string
+): string {
+  const index = findNextEndLineIndexOfWord(content, key);
+  const head = content.substring(0, index);
+  const tail = content.substring(index + 1);
+  return head + `\n${value}\n` + tail;
+}
+
+function findNextEndLineIndexOfWord(content: string, key: string): number {
+  const index = content.indexOf(key);
+  const result = content.indexOf("\n", index);
+  return result;
+}
+
+export async function updateDeverloperInManifestFile(
+  projectPath: string
+): Promise<void> {
+  const manifestFile = path.join(projectPath, "appPackage", `manifest.json`);
+  const context = await fs.readJSON(manifestFile);
+  //const context = await fs.readJSON(azureParametersFilePath);
+  try {
+    context["developer"]["websiteUrl"] = "https://www.example.com";
+    context["developer"]["privacyUrl"] = "https://www.example.com/privacy";
+    context["developer"]["termsOfUseUrl"] = "https://www.example.com/termofuse";
+  } catch {
+    console.log("Cannot set the propertie.");
+  }
+  console.log("Replaced the properties of developer in manifest file");
+  await fs.writeJSON(manifestFile, context, { spaces: 4 });
 }

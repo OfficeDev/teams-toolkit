@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
@@ -40,4 +43,11 @@ export async function rename(oldPath: string, newPath: string): Promise<void> {
     await fs.remove(newPath);
   }
   await fs.rename(oldPath, newPath);
+}
+
+// sliently remove file or dir
+export async function cleanup(path: string): Promise<void> {
+  try {
+    await fs.remove(path);
+  } catch {}
 }

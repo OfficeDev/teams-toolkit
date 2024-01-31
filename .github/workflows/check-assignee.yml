@@ -1,0 +1,57 @@
+name: Check Assignee
+
+on: 
+  issues:
+    types: [assigned]
+  workflow_dispatch: # allows to run manually for testing
+    inputs:
+      assignee:
+        description: 'specific the github account to check'
+        required: true  
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Checkout github action repository
+        uses: actions/checkout@v3
+        with:
+         repository: "microsoft/vscode-github-triage-actions"
+         ref: stable 
+         path: ./action-base
+      
+      - name: Copy action
+        run: |
+          cp -r .github/actions/asignee-account-check ./action-base/asignee-account-check
+          cp -r .github/actions/teamsfx-utils ./action-base/teamsfx-utils
+
+      - name: Npm install dependencies
+        run: npm install azure-devops-node-api --prefix ./action-base
+      - name: Npm install
+        run: npm install --production --prefix ./action-base
+      - name: Build action
+        continue-on-error: true
+        run: npm run build --prefix ./action-base
+      
+      - name: Check 
+        id: check
+        uses: ./action-base/asignee-account-check
+        with:
+          token: ${{secrets.GITHUB_TOKEN}}
+        env:
+          ASSIGNEE: ${{github.event.inputs.assignee}}
+
+      - name: Send Alert Email
+        uses: ./.github/actions/send-email-report
+        if: ${{ steps.check.outputs.alert_to != '' }}
+        env:
+          TO: ${{ steps.check.outputs.alert_to }}
+          BODY: '"${{ steps.check.outputs.alert_body }}"'
+          SUBJECT: ${{ steps.check.outputs.alert_subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}        

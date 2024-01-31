@@ -8,28 +8,27 @@ import {
   AppStudioScopes,
   assembleError,
   CoreQuestionNames,
-  environmentManager,
+  environmentNameManager,
   envUtil,
   FxCore,
   getSideloadingStatus,
-  Hub,
+  HubTypes,
+  isValidProjectV3,
   loadTeamsFxDevScript,
   TelemetryContext,
 } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import * as path from "path";
 import * as util from "util";
-import { Argv } from "yargs";
 import activate from "../../activate";
 import { signedOut } from "../../commonlib/common/constant";
 import cliLogger from "../../commonlib/log";
 import M365TokenInstance from "../../commonlib/m365Login";
-import { cliSource, RootFolderOptions } from "../../constants";
+import { cliSource } from "../../constants";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
-import { getColorizedString, getSystemInputs, isWorkspaceSupported } from "../../utils";
-import { YargsCommand } from "../../yargsCommand";
+import { getColorizedString, getSystemInputs } from "../../utils";
 import * as commonUtils from "./commonUtils";
 import * as constants from "./constants";
 import * as errors from "./errors";
@@ -45,10 +44,7 @@ const ProgressMessage: { [key: string]: string } = Object.freeze({
   [Progress.M365Account]: `Checking ${Progress.M365Account}`,
 });
 
-// The new preview cmd `teamsfx preview --env ...`
-export default class PreviewEnv extends YargsCommand {
-  public readonly commandHead = `preview`;
-  public readonly command = `${this.commandHead}`;
+export default class PreviewEnv {
   public readonly description = "Preview the current application.";
 
   protected runningTasks: Task[] = [];
@@ -56,64 +52,10 @@ export default class PreviewEnv extends YargsCommand {
   private readonly telemetryProperties: { [key: string]: string } = {};
   private readonly telemetryMeasurements: { [key: string]: number } = {};
 
-  public builder(yargs: Argv): Argv<any> {
-    yargs
-      .options(RootFolderOptions)
-      .options("env", {
-        description: "Select an existing env for the project",
-        string: true,
-        default: environmentManager.getLocalEnvName(),
-      })
-      .options("manifest-file-path", {
-        description:
-          "Select the Teams app manifest file path, defaults to '${folder}/appPackage/manifest.json'",
-        string: true,
-      })
-      .options("run-command", {
-        description:
-          "The command to start local service. Work for 'local' environment only. If undefined, teamsfx will use the auto detected one from project type (`npm run dev:teamsfx` or `dotnet run` or `func start`). If empty, teamsfx will skip starting local service.",
-        string: true,
-      })
-      .options("running-pattern", {
-        description: `The ready signal output that service is launched. Work for 'local' environment only. If undefined, teamsfx will use the default common pattern ("${constants.defaultRunningPattern.source}"). If empty, teamsfx treats process start as ready signal.`,
-        string: true,
-      })
-      .options("open-only", {
-        description:
-          "Work for 'local' environment only. If true, directly open web client without launching local service.",
-        boolean: true,
-        default: false,
-      })
-      .options("m365-host", {
-        description: "Preview the application in Teams, Outlook or the Microsoft 365 app",
-        string: true,
-        choices: [constants.Hub.teams, constants.Hub.outlook, constants.Hub.office],
-        default: constants.Hub.teams,
-      })
-      .options("browser", {
-        description: "Select browser to open Teams web client",
-        string: true,
-        choices: [constants.Browser.chrome, constants.Browser.edge, constants.Browser.default],
-        default: constants.Browser.default,
-      })
-      .options("browser-arg", {
-        description: 'Argument to pass to the browser (e.g. --browser-args="--guest")',
-        string: true,
-        array: true,
-      })
-      .options("exec-path", {
-        description:
-          'The paths that will be added to the system environment variable PATH when the command is executed, defaults to "${folder}/devTools/func".',
-        string: true,
-        default: constants.defaultExecPath,
-      });
-    return yargs.version(false);
-  }
-
   public async runCommand(args: {
     [argName: string]: boolean | string | string[] | undefined;
   }): Promise<Result<null, FxError>> {
-    if (args.folder === undefined || !isWorkspaceSupported(args.folder as string)) {
+    if (args.folder === undefined || !isValidProjectV3(args.folder as string)) {
       return err(errors.WorkspaceNotSupported(args.folder as string));
     }
     const workspaceFolder = path.resolve(args.folder as string);
@@ -124,21 +66,17 @@ export default class PreviewEnv extends YargsCommand {
     const runCommand: string | undefined = args["run-command"] as string;
     const runningPattern = args["running-pattern"] as string;
     const openOnly = args["open-only"] as boolean;
-    const m365Host = args["m365-host"] as constants.Hub;
+    const m365Host = args["m365-host"] as HubTypes;
     const execPath: string = args["exec-path"] as string;
-    let hub = Hub.teams;
-    if (m365Host === constants.Hub.outlook) {
-      hub = Hub.outlook;
-    } else if (m365Host === constants.Hub.office) {
-      hub = Hub.office;
-    }
     const browser = args.browser as constants.Browser;
     const browserArguments = (args["browser-arg"] as string[]) ?? [];
 
     cliTelemetry.withRootFolder(workspaceFolder);
     this.telemetryProperties[TelemetryProperty.PreviewType] =
-      env.toLowerCase() === environmentManager.getLocalEnvName() ? "local" : `remote-${env}`;
-    this.telemetryProperties[TelemetryProperty.PreviewHub] = hub;
+      environmentNameManager.isRemoteEnvironment(env.toLowerCase())
+        ? `remote-${env}`
+        : env.toLowerCase();
+    this.telemetryProperties[TelemetryProperty.PreviewHub] = m365Host;
     this.telemetryProperties[TelemetryProperty.PreviewBrowser] = browser;
 
     return await localTelemetryReporter.runWithTelemetryGeneric(
@@ -151,7 +89,7 @@ export default class PreviewEnv extends YargsCommand {
           runCommand,
           runningPattern,
           openOnly,
-          hub,
+          m365Host,
           browser,
           browserArguments,
           execPath
@@ -166,14 +104,14 @@ export default class PreviewEnv extends YargsCommand {
     );
   }
 
-  protected async doPreview(
+  async doPreview(
     workspaceFolder: string,
     env: string,
     manifestFilePath: string,
     runCommand: string | undefined,
     runningPattern: string,
     openOnly: boolean,
-    hub: Hub,
+    hub: HubTypes,
     browser: constants.Browser,
     browserArguments: string[],
     execPath: string
@@ -203,7 +141,7 @@ export default class PreviewEnv extends YargsCommand {
     if (
       !openOnly &&
       runCommand === undefined &&
-      env.toLowerCase() === environmentManager.getLocalEnvName()
+      env.toLowerCase() === environmentNameManager.getLocalEnvName()
     ) {
       const runCommandRes = await this.detectRunCommand(workspaceFolder);
       if (runCommandRes.isErr()) {
@@ -229,7 +167,10 @@ export default class PreviewEnv extends YargsCommand {
     try {
       // 5. run command as background task
       this.runningTasks = [];
-      if (runCommand !== undefined && env.toLowerCase() === environmentManager.getLocalEnvName()) {
+      if (
+        runCommand !== undefined &&
+        env.toLowerCase() === environmentNameManager.getLocalEnvName()
+      ) {
         const runTaskRes = await localTelemetryReporter.runWithTelemetry(
           TelemetryEvent.PreviewStartServices,
           () => this.runCommandAsTask(workspaceFolder, runCommand!, runningPatternRegex, execPath)
@@ -244,7 +185,7 @@ export default class PreviewEnv extends YargsCommand {
       if (launchRes.isErr()) {
         throw launchRes.error;
       }
-      if (runCommand !== undefined && env === environmentManager.getLocalEnvName()) {
+      if (runCommand !== undefined && env === environmentNameManager.getLocalEnvName()) {
         cliLogger.necessaryLog(LogLevel.Warning, constants.waitCtrlPlusC);
       }
     } catch (error: any) {
@@ -255,7 +196,7 @@ export default class PreviewEnv extends YargsCommand {
     return ok(null);
   }
 
-  protected async checkM365Account(appTenantId?: string): Promise<
+  async checkM365Account(appTenantId?: string): Promise<
     Result<
       {
         tenantId?: string;
@@ -326,7 +267,7 @@ export default class PreviewEnv extends YargsCommand {
   protected async previewWithManifest(
     projectPath: string,
     env: string,
-    hub: Hub,
+    hub: HubTypes,
     manifestFilePath: string
   ): Promise<Result<string, FxError>> {
     const coreRes = await activate(projectPath, true);
@@ -334,7 +275,7 @@ export default class PreviewEnv extends YargsCommand {
     const inputs = getSystemInputs(projectPath, env);
     inputs[CoreQuestionNames.M365Host] = hub;
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = manifestFilePath;
-    inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
+    // inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation // confirm is skipped in question model
     return await core.previewWithManifest(inputs);
   }
 
@@ -426,7 +367,7 @@ export default class PreviewEnv extends YargsCommand {
 
   protected async launchBrowser(
     env: string,
-    hub: Hub,
+    hub: HubTypes,
     url: string,
     browser: constants.Browser,
     browserArgs: string[]
@@ -437,7 +378,7 @@ export default class PreviewEnv extends YargsCommand {
       LogLevel.Warning,
       util.format(constants.manifestChangesHintMessage, `--env ${env}`)
     );
-    if (hub !== Hub.teams) {
+    if (hub !== HubTypes.teams) {
       cliLogger.necessaryLog(LogLevel.Warning, constants.m365TenantHintMessage);
     }
 

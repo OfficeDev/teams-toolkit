@@ -1,6 +1,6 @@
 # Enable single sign-on for tab applications
 
-Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit facilitates this interaction by abstracting some of the Azure Active Directory flows and integrations behind some simple, high level APIs. This enables you to add single sign-on (SSO) features easily to your Teams application.
+Microsoft Teams provides a mechanism by which an application can obtain the signed-in Teams user token to access Microsoft Graph (and other APIs). Teams Toolkit facilitates this interaction by abstracting some of the Microsoft Entra flows and integrations behind some simple, high level APIs. This enables you to add single sign-on (SSO) features easily to your Teams application.
 
 # Changes to your project
 
@@ -10,7 +10,7 @@ After you successfully added SSO into your project, Teams Toolkit will create an
 
 | Action | File | Description |
 | - | - | - |
-| Create| `aad.template.json` under `templates/appPackage` | The Azure Active Directory application manifest that is used to register the application with AAD. |
+| Create| `aad.template.json` under `templates/appPackage` | The Microsoft Entra application manifest that is used to register the application with Microsoft Entra. |
 | Modify | `manifest.template.json` under `templates/appPackage` | An `webApplicationInfo` object will be added into your Teams app manifest template. This field is required by Teams when enabling SSO. |
 | Create | `auth/tab` | Reference code, redirect pages and a `README.md` file. These files are provided for reference. See below for more information. |
 
@@ -37,14 +37,14 @@ These two HTML files are used for auth redirects.
 
 You can debug your application by pressing F5.
 
-Teams Toolkit will use the AAD manifest file to register a AAD application registered for SSO.
+Teams Toolkit will use the Microsoft Entra manifest file to register a Microsoft Entra application registered for SSO.
 
 To learn more about Teams Toolkit local debug functionalities, refer to this [document](https://docs.microsoft.com/microsoftteams/platform/toolkit/debug-local).
 
-# Customize AAD applications
+# Customize Microsoft Entra applications
 
-The AAD [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) allows you to customize various aspects of your application registration. You can update the manifest as needed.
+The Microsoft Entra [manifest](https://docs.microsoft.com/azure/active-directory/develop/reference-app-manifest) allows you to customize various aspects of your application registration. You can update the manifest as needed.
 
 Follow this [document](https://aka.ms/teamsfx-aad-manifest#how-to-customize-the-aad-manifest-template) if you need to include additional API permissions to access your desired APIs.
 
-Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your AAD application in Azure Portal.
+Follow this [document](https://aka.ms/teamsfx-aad-manifest#How-to-view-the-AAD-app-on-the-Azure-portal) to view your Microsoft Entra application in Azure Portal.

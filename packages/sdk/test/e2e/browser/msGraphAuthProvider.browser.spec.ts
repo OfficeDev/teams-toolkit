@@ -44,7 +44,7 @@ describe("MsGraphAuthProvider Tests - Browser", () => {
       });
 
     sinon
-      .stub(TeamsUserCredential.prototype, <any>"getToken")
+      .stub(TeamsUserCredential.prototype, "getToken")
       .callsFake(async (scopes: string | string[]): Promise<AccessToken | null> => {
         const graphToken = await getGraphToken(ssoToken, scopes);
         return new Promise((resolve) => {
@@ -114,7 +114,7 @@ describe("MsGraphAuthProvider Tests with Credential - Browser", () => {
       });
 
     sinon
-      .stub(TeamsUserCredential.prototype, <any>"getToken")
+      .stub(TeamsUserCredential.prototype, "getToken")
       .callsFake(async (scopes: string | string[]): Promise<AccessToken | null> => {
         const graphToken = await getGraphToken(ssoToken, scopes);
         return new Promise((resolve) => {

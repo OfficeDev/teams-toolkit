@@ -1,15 +1,19 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
+
 import { MigrationTestContext } from "../migrationContext";
-import { Timeout, Capability, Notification } from "../../../constants";
+import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import {
   validateNotification,
   startDebugging,
   validateUpgrade,
   upgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testCase);
@@ -43,7 +47,7 @@ describe("Migration Tests", function () {
 
       // verify popup
       await validateNotification(Notification.Upgrade);
-      await startDebugging();
+      await startDebugging("Debug (Chrome)");
 
       // upgrade
       await upgrade();

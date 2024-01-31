@@ -1,38 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { Service } from "typedi";
-import { CreateAadAppArgs } from "./interface/createAadAppArgs";
-import { AadAppClient } from "./utility/aadAppClient";
-import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
-import {
-  FxError,
-  M365TokenProvider,
-  Result,
-  SystemError,
-  UserError,
-  ok,
-  err,
-} from "@microsoft/teamsfx-api";
-import { GraphScopes } from "../../../common/tools";
-import { MissingEnvUserError } from "./error/missingEnvError";
-import axios from "axios";
 import { hooks } from "@feathersjs/hooks/lib";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
+import axios from "axios";
+import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { logMessageKeys, descriptionMessageKeys, constants } from "./utility/constants";
+import { GraphScopes } from "../../../common/tools";
 import {
   HttpClientError,
   HttpServerError,
   InvalidActionInputError,
-  UnhandledError,
+  assembleError,
 } from "../../../error/common";
-import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
-import { SignInAudience } from "./interface/signInAudience";
-import { updateProgress } from "../middleware/updateProgress";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
+import { AadAppNameTooLongError } from "./error/aadAppNameTooLongError";
+import { MissingEnvUserError } from "./error/missingEnvError";
+import { CreateAadAppArgs } from "./interface/createAadAppArgs";
+import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
+import { SignInAudience } from "./interface/signInAudience";
+import { AadAppClient } from "./utility/aadAppClient";
+import { constants, descriptionMessageKeys, logMessageKeys } from "./utility/constants";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -43,19 +35,9 @@ const driverConstants = {
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateAadAppDriver implements StepDriver {
   description = getLocalizedString(descriptionMessageKeys.create);
+  readonly progressTitle = getLocalizedString("driver.aadApp.progressBar.createAadAppTitle");
 
-  public async run(
-    args: CreateAadAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const result = await this.execute(args, context);
-    return result.result;
-  }
-
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.aadApp.progressBar.createAadAppTitle")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateAadAppArgs,
     context: DriverContext,
@@ -71,7 +53,7 @@ export class CreateAadAppDriver implements StepDriver {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
 
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
       const aadAppState: CreateAadAppOutput = loadStateFromEnv(outputEnvVarNames);
       if (!aadAppState.clientId) {
         context.logProvider?.info(
@@ -80,9 +62,9 @@ export class CreateAadAppDriver implements StepDriver {
             outputEnvVarNames.get(OutputKeys.clientId)
           )
         );
-        // Create new AAD app if no client id exists
+        // Create new Microsoft Entra app if no client id exists
         const signInAudience = args.signInAudience
-          ? (args.signInAudience as SignInAudience)
+          ? args.signInAudience
           : SignInAudience.AzureADMyOrg;
         const aadApp = await aadAppClient.createAadApp(args.name, signInAudience);
         aadAppState.clientId = aadApp.appId!;
@@ -164,12 +146,12 @@ export class CreateAadAppDriver implements StepDriver {
         );
         if (error.response!.status >= 400 && error.response!.status < 500) {
           return {
-            result: err(new HttpClientError(actionName, message, helpLink)),
+            result: err(new HttpClientError(error, actionName, message, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new HttpServerError(actionName, message)),
+            result: err(new HttpServerError(error, actionName, message)),
             summaries: summaries,
           };
         }
@@ -180,7 +162,7 @@ export class CreateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledError(error as Error, actionName)),
+        result: err(assembleError(error as Error, actionName)),
         summaries: summaries,
       };
     }
@@ -207,6 +189,10 @@ export class CreateAadAppDriver implements StepDriver {
 
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
+    }
+
+    if (args.name.length > 120) {
+      throw new AadAppNameTooLongError(actionName);
     }
   }
 

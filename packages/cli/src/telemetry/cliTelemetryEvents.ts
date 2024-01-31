@@ -4,8 +4,18 @@
 
 export enum TelemetryEvent {
   //TODO: define CLI telemetry event
+
+  RootCommand = "root",
+
+  AccountShowStart = "account-show-start",
+  AccountShow = "account-show",
+
   AccountLoginStart = "login-start",
   AccountLogin = "login",
+  AccountLoginAzure = "login-azure",
+  AccountLoginM365 = "login-m365",
+
+  AccountLogout = "logout",
 
   CreateProjectStart = "create-project-start",
   CreateProject = "create-project",
@@ -21,6 +31,8 @@ export enum TelemetryEvent {
 
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
+
+  ListSample = "list-sample",
 
   UpdateProjectStart = "add-resource-start",
   UpdateProject = "add-resource",
@@ -87,6 +99,7 @@ export enum TelemetryEvent {
   EnvList = "env-list",
   CreateNewEnvironmentStart = "create-new-environment-start",
   CreateNewEnvironment = "create-new-environment",
+  ResetEnvironment = "reset-environment",
 
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",
@@ -96,6 +109,14 @@ export enum TelemetryEvent {
 
   UpgradeStart = "upgrade-start",
   Upgrade = "upgrade",
+
+  Command = "command", // this event is used to track the usage of each command, including --help command
+
+  M365Sigeloading = "m365-sideloading",
+  M365Unacquire = "m365-unacquire",
+  M365LaunchInfo = "m365-launch-info",
+
+  Doctor = "doctor",
 }
 
 export enum TelemetryProperty {
@@ -133,16 +154,31 @@ export enum TelemetryProperty {
   NewProjectId = "new-project-id",
   IsM365 = "is-m365",
   IsCreatingM365 = "is-creating-m365",
-  IsFromSample = "is-from-sample",
   ProgrammingLanguage = "programming-language",
   HostType = "host-type",
+
+  RunFrom = "run-from",
+
+  // command related property
+  CommandName = "command-name",
+  CommandHelp = "command-help",
+  CommandVersion = "command-version",
+  CommandDebug = "command-debug",
+  CommandVerbose = "command-verbose",
+  CommandInteractive = "command-interactive",
+  BinName = "bin-name", // the input binary name: teamsfx or teamsapp
 }
 
 export enum TelemetrySuccess {
   Yes = "yes",
   No = "no",
 }
-
+export enum CliConfigRunFrom {
+  GitHub = "GitHub",
+  AzDo = "AzDo",
+  Jenkins = "Jenkins",
+  Other = "Other",
+}
 export enum TelemetryErrorType {
   UserError = "user",
   SystemError = "system",

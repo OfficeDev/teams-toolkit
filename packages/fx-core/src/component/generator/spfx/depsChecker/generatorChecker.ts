@@ -22,10 +22,9 @@ import { DependencyValidateError, NpmInstallError } from "../error";
 import { cpUtils } from "../../../../common/deps-checker/util/cpUtils";
 import { Constants } from "../utils/constants";
 import { getExecCommand, Utils } from "../utils/utils";
-import { PackageSelectOptionsHelper } from "../../../../question/create";
 
 const name = Constants.GeneratorPackageName;
-const displayName = `${name}@${Constants.LatestVersion}`;
+const displayName = `${name}`;
 const timeout = 6 * 60 * 1000;
 
 export class GeneratorChecker implements DependencyChecker {
@@ -35,54 +34,64 @@ export class GeneratorChecker implements DependencyChecker {
     this._logger = logger;
   }
 
-  public async ensureLatestDependency(ctx: Context): Promise<Result<boolean, FxError>> {
-    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGeneratorStart);
+  public async ensureDependency(
+    ctx: Context,
+    targetVersion: string
+  ): Promise<Result<boolean, FxError>> {
+    telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGeneratorStart);
 
     try {
-      this._logger.info(`${displayName} not found, installing...`);
-      await this.install();
-      this._logger.info(`Successfully installed ${displayName}`);
+      void this._logger.info(`${displayName}@${targetVersion} not found, installing...`);
+      await this.install(targetVersion);
+      void this._logger.info(`Successfully installed ${displayName}@${targetVersion}`);
 
-      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureLatestSharepointGenerator);
+      telemetryHelper.sendSuccessEvent(ctx, TelemetryEvents.EnsureSharepointGenerator);
     } catch (error) {
       telemetryHelper.sendErrorEvent(
         ctx,
-        TelemetryEvents.EnsureLatestSharepointGenerator,
+        TelemetryEvents.EnsureSharepointGenerator,
         error as UserError | SystemError,
         {
-          [TelemetryProperty.EnsureLatestSharepointGeneratorReason]: (
-            error as UserError | SystemError
-          ).name,
+          [TelemetryProperty.EnsureSharepointGeneratorReason]: (error as UserError | SystemError)
+            .name,
         }
       );
-      await this._logger.error(`Failed to install ${displayName}, error = '${error}'`);
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      this._logger.error(`Failed to install ${displayName}@${targetVersion}, error = '${error}'`);
       return err(error as UserError | SystemError);
     }
 
     return ok(true);
   }
 
-  public async isLatestInstalled(): Promise<boolean> {
+  public async isLatestInstalled(loadedLatestVersion: string | undefined): Promise<boolean> {
     try {
-      const generatorVersion = await this.queryVersion();
-      const latestGeneratorVersion =
-        PackageSelectOptionsHelper.getLatestSpGeneratorVersion() ??
-        (await this.findLatestVersion(5));
-      const hasSentinel = await fs.pathExists(this.getSentinelPath());
-      return !!latestGeneratorVersion && generatorVersion === latestGeneratorVersion && hasSentinel;
+      const generatorVersion = await this.findLocalInstalledVersion();
+      const latestGeneratorVersion = loadedLatestVersion ?? (await this.findLatestVersion(5));
+      return !!latestGeneratorVersion && generatorVersion === latestGeneratorVersion;
     } catch (error) {
       return false;
     }
   }
 
-  public async install(): Promise<void> {
-    this._logger.info("Start installing...");
-    await this.cleanup();
-    await this.installGenerator();
+  public async findLocalInstalledVersion(): Promise<string | undefined> {
+    try {
+      const generatorVersion = await this.queryVersion();
+      const hasSentinel = await fs.pathExists(this.getSentinelPath());
+      return hasSentinel ? generatorVersion : undefined;
+    } catch (error) {
+      return undefined;
+    }
+  }
 
-    this._logger.info("Validating package...");
+  public async install(targetVersion: string): Promise<void> {
+    void this._logger.info("Start installing...");
+    await this.cleanup();
+    await this.installGenerator(targetVersion);
+
+    void this._logger.info("Validating package...");
     if (!(await this.validate())) {
-      this._logger.debug(`Failed to validate ${name}, cleaning up...`);
+      void this._logger.debug(`Failed to validate ${name}, cleaning up...`);
       await this.cleanup();
       throw DependencyValidateError(name);
     }
@@ -102,9 +111,15 @@ export class GeneratorChecker implements DependencyChecker {
   }
 
   public async findGloballyInstalledVersion(
-    timeoutInSeconds?: number
+    timeoutInSeconds?: number,
+    shouldThrowIfNotFind?: boolean
   ): Promise<string | undefined> {
-    return await Utils.findGloballyInstalledVersion(this._logger, name, timeoutInSeconds ?? 0);
+    return await Utils.findGloballyInstalledVersion(
+      this._logger,
+      name,
+      timeoutInSeconds ?? 0,
+      shouldThrowIfNotFind
+    );
   }
 
   public async findLatestVersion(timeoutInSeconds?: number): Promise<string | undefined> {
@@ -149,15 +164,14 @@ export class GeneratorChecker implements DependencyChecker {
       await fs.emptyDir(this.getDefaultInstallPath());
       await fs.remove(this.getSentinelPath());
     } catch (err) {
-      await this._logger.error(
-        `Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`
-      );
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      this._logger.error(`Failed to clean up path: ${this.getDefaultInstallPath()}, error: ${err}`);
     }
   }
 
-  private async installGenerator(): Promise<void> {
+  private async installGenerator(targetVersion: string): Promise<void> {
+    const version = targetVersion ?? Constants.LatestVersion;
     try {
-      const version = Constants.LatestVersion;
       await fs.ensureDir(path.join(this.getDefaultInstallPath(), "node_modules"));
       await cpUtils.executeCommand(
         undefined,
@@ -174,7 +188,7 @@ export class GeneratorChecker implements DependencyChecker {
 
       await fs.ensureFile(this.getSentinelPath());
     } catch (error) {
-      this._logger.error(`Failed to execute npm install ${displayName}`);
+      void this._logger.error(`Failed to execute npm install ${displayName}@${version}`);
       throw NpmInstallError(error as Error);
     }
   }

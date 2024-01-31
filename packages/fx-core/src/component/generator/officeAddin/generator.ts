@@ -16,13 +16,6 @@ import {
   Context,
 } from "@microsoft/teamsfx-api";
 import { join } from "path";
-import {
-  AddinLanguageQuestion,
-  OfficeHostQuestion,
-  getTemplate,
-  AddinProjectFolderQuestion,
-  AddinProjectManifestQuestion,
-} from "./question";
 import { HelperMethods } from "./helperMethods";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import projectsJsonData from "./config/projectsJsonData";
@@ -35,6 +28,8 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
+import { getTemplate } from "../../../question/create";
+import { getLocalizedString } from "../../../common/localizeUtils";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -60,13 +55,13 @@ export class OfficeAddinGenerator {
     }
 
     // If lang is undefined, it means the project is created from a folder.
-    const lang = inputs[AddinLanguageQuestion.name];
+    const lang = inputs[QuestionNames.ProgrammingLanguage];
 
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,
       templateName,
-      lang ? (lang === "TypeScript" ? "ts" : "js") : undefined
+      lang != "No Options" ? (lang === "TypeScript" ? "ts" : "js") : undefined
     );
     if (templateRes.isErr()) return err(templateRes.error);
 
@@ -85,10 +80,14 @@ export class OfficeAddinGenerator {
     const template = getTemplate(inputs);
     const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
-    const fromFolder = inputs[AddinProjectFolderQuestion.name];
-    const language = inputs[AddinLanguageQuestion.name];
-    const host = inputs[OfficeHostQuestion.name];
+    const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
+    const language = inputs[QuestionNames.ProgrammingLanguage];
+    const host = inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
+    const importProgress = context.userInteraction.createProgressBar(
+      getLocalizedString("core.generator.officeAddin.importProject.title"),
+      3
+    );
 
     process.chdir(addinRoot);
     try {
@@ -119,22 +118,34 @@ export class OfficeAddinGenerator {
           await HelperMethods.moveManifestLocation(addinRoot, manifestPath);
         }
       } else {
+        await importProgress.start();
         // from existing project
+        await importProgress.next(
+          getLocalizedString("core.generator.officeAddin.importProject.copyFiles")
+        );
         HelperMethods.copyAddinFiles(fromFolder, addinRoot);
-        const sourceManifestFile: string = inputs[AddinProjectManifestQuestion.name];
+        const sourceManifestFile: string = inputs[QuestionNames.OfficeAddinManifest];
         let manifestFile: string = sourceManifestFile.replace(fromFolder, addinRoot);
+        await importProgress.next(
+          getLocalizedString("core.generator.officeAddin.importProject.convertProject")
+        );
         if (manifestFile.endsWith(".xml")) {
           // Need to convert to json project first
           await convertProject(manifestFile);
           manifestFile = manifestFile.replace(/\.xml$/, ".json");
         }
-        inputs[OfficeHostQuestion.name] = await getHost(manifestFile);
-        HelperMethods.updateManifest(destinationPath, manifestFile);
+        inputs[QuestionNames.OfficeAddinHost] = await getHost(manifestFile);
+        await importProgress.next(
+          getLocalizedString("core.generator.officeAddin.importProject.updateManifest")
+        );
+        await HelperMethods.updateManifest(destinationPath, manifestFile);
       }
       process.chdir(workingDir);
+      await importProgress.end(true, true);
       return ok(undefined);
     } catch (e) {
       process.chdir(workingDir);
+      await importProgress.end(false, true);
       return err(CopyFileError(e as Error));
     }
   }

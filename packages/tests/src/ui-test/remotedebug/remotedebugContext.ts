@@ -1,16 +1,15 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as os from "os";
 import { TestContext } from "../testContext";
 import {
   CommandPaletteCommands,
   Timeout,
   TestFilePath,
   Notification,
-} from "../../constants";
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import {
   cleanUpAadApp,
@@ -23,9 +22,10 @@ import {
   execCommandIfExist,
   getNotification,
   clearNotifications,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { ModalDialog, InputBox, VSBrowser } from "vscode-extension-tester";
 import { dotenvUtil } from "../../utils/envUtil";
+import { execAsync } from "../../utils/commonUtils";
 
 export class RemoteDebugTestContext extends TestContext {
   public testName: string;
@@ -109,14 +109,6 @@ export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   context[simpleAuthPluginName]["skuName"] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
-export async function setBotSkuNameToB1(projectPath: string) {
-  const botPluginName = "fx-resource-bot";
-  const envFilePathSuffix = path.join(".fx", "env.default.json");
-  const envFilePath = path.resolve(projectPath, envFilePathSuffix);
-  const context = await fs.readJSON(envFilePath);
-  context[botPluginName]["skuName"] = "B1";
-  return fs.writeJSON(envFilePath, context, { spaces: 4 });
-}
 
 export async function setSkuNameToB1(projectPath: string) {
   const parameters = "parameters";
@@ -158,20 +150,22 @@ export async function setSimpleAuthSkuNameToB1Bicep(
 
 export async function setBotSkuNameToB1Bicep(
   projectPath: string,
-  envName: string
+  filePath = ""
 ) {
-  const ConfigFolderName = "fx";
-  const InputConfigsFolderName = "configs";
-  const bicepParameterFile = path.join(
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
-    `azure.parameters.${envName}.json`
+  const azureParametersFilePathSuffix = filePath
+    ? path.join(filePath)
+    : path.join("infra", "azure.parameters.json");
+  const azureParametersFilePath = path.resolve(
+    projectPath,
+    azureParametersFilePathSuffix
   );
-  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
-  const parameters = await fs.readJSON(parametersFilePath);
-  parameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] =
-    "B1";
-  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+  const ProvisionParameters = await fs.readJSON(azureParametersFilePath);
+  ProvisionParameters["parameters"]["provisionParameters"]["value"][
+    "botWebAppSKU"
+  ] = "B1";
+  return fs.writeJSON(azureParametersFilePath, ProvisionParameters, {
+    spaces: 4,
+  });
 }
 
 export async function inputSqlUserName(
@@ -218,8 +212,10 @@ export async function runProvision(
     await provisionConfirmInput.setText(rgName);
     await provisionConfirmInput.confirm();
     await driver.sleep(Timeout.shortTimeWait);
-    await provisionConfirmInput.selectQuickPick("East US");
-    console.log("location: East US");
+    // await provisionConfirmInput.selectQuickPick("East US");
+    await provisionConfirmInput.setText("West US");
+    await provisionConfirmInput.confirm();
+    console.log("location: West US");
     await driver.sleep(Timeout.shortTimeWait);
     const dialog = new ModalDialog();
     console.log("click provision button");
@@ -269,22 +265,17 @@ export async function reRunProvision() {
   await driver.sleep(waitTime);
 }
 
-export async function runDeploy(
-  waitTime: number = Timeout.tabDeploy,
-  spfx = false
-) {
+export async function runDeploy(waitTime: number = Timeout.tabDeploy) {
   const driver = VSBrowser.instance.driver;
   await clearNotifications();
   console.log("start to deploy");
   await execCommandIfExist(CommandPaletteCommands.DeployCommand);
 
   await driver.sleep(Timeout.shortTimeWait);
-  if (!spfx) {
-    const dialog = new ModalDialog();
-    console.log("click deploy button");
-    await dialog.pushButton("Deploy");
-    await driver.sleep(waitTime);
-  }
+  const dialog = new ModalDialog();
+  console.log("click deploy button");
+  await dialog.pushButton("Deploy");
+  await driver.sleep(waitTime);
 
   try {
     await getNotification(
@@ -375,4 +366,18 @@ export async function setSkipAddingSqlUser(
   const parameters = await fs.readJSON(parametersFilePath);
   parameters["skipAddingSqlUser"] = true;
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+}
+
+export async function configSpfxGlobalEnv() {
+  try {
+    console.log(`Start to set up global environment:`);
+    const result = await execAsync(
+      "npm install gulp-cli yo @microsoft/generator-sharepoint --global"
+    );
+    console.log(`[Successfully] set up global environment.`);
+    console.log(`${result.stdout}`);
+  } catch (error) {
+    console.log(error);
+    throw new Error(`Failed to set up global environment: ${error}`);
+  }
 }

@@ -1,5 +1,5 @@
 {
-    "name": "{{appName}}",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit Workflow Bot Sample",
     "engines": {
@@ -10,6 +10,8 @@
     "main": "./src/index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
+        "dev:teamsfx:testtool": "env-cmd --silent -f .localConfigs.testTool npm run dev",
+        "dev:teamsfx:launch-testtool": "env-cmd --silent -f env/.env.testtool teamsapptester start",
         "dev": "nodemon --inspect=9239 --signal SIGINT ./src/index.js",
         "start": "node ./src/index.js",
         "watch": "nodemon ./src/index.js",

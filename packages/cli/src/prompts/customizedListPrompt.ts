@@ -1,124 +1,107 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import lodash from "lodash";
+import {
+  AsyncPromptConfig,
+  createPrompt,
+  isDownKey,
+  isEnterKey,
+  isUpKey,
+  useKeypress,
+  usePagination,
+  usePrefix,
+  useRef,
+  useState,
+} from "@inquirer/core";
+import type {} from "@inquirer/type";
+import ansiEscapes from "ansi-escapes";
 import chalk from "chalk";
 import figures from "figures";
-import inquirer from "inquirer";
-import { Interface as ReadlineInterface } from "readline";
-import ListPrompt from "inquirer/lib/prompts/list";
+import { addChoiceDetail, computePrefixWidth, nextPosition } from "./utils";
 
-import ScreenManager from "../console/screen";
-import { addChoiceDetail, white } from "./utils";
+export type Choice = {
+  id: string;
+  title: string;
+  detail?: string;
+};
 
-/**
- * The question-options for the `ListPrompt<T>`.
- */
-export type Question = inquirer.ListQuestionOptions<inquirer.Answers>;
+export type Config = AsyncPromptConfig & {
+  choices: ReadonlyArray<Choice>;
+  defaultValue?: string;
+  pageSize?: number;
+  loop?: boolean;
+};
 
-export default class CustomizedListPrompt extends ListPrompt {
-  constructor(questions: Question, rl: ReadlineInterface, answers: inquirer.Answers) {
-    questions.loop = false;
-    super(questions, rl, answers);
-  }
-
-  /**
-   * Render the prompt to screen
-   * @return {ListPrompt} self
-   */
-  render(): void {
-    // Render question
-    let message = this.getQuestion();
-
-    if (this.firstRender) {
-      message += white("(Use arrow keys)");
+export const select = createPrompt((config: Config, done: (value: string) => void): string => {
+  const { choices, defaultValue } = config;
+  const firstRender = useRef(true);
+  const prefix = usePrefix();
+  const [status, setStatus] = useState("pending");
+  const [cursorPosition, setCursorPos] = useState(() => {
+    const startIndex = defaultValue ? choices.findIndex((choice) => choice.id === defaultValue) : 0;
+    if (startIndex < 0) {
+      throw new Error("[select prompt] No selectable choices. All choices are disabled.");
     }
-
-    // Render choices or answer depending on the state
-    if (this.status === "answered") {
-      message += chalk.cyan(this.opt.choices.getChoice(this.selected).extra.title);
-    } else {
-      const [choicesStr, choicesStrs] = listRender(this.opt.choices, this.selected);
-      const indexPosition = this.opt.choices.indexOf(
-        this.opt.choices.getChoice(this.selected) as any
-      );
-      const realIndexPosition =
-        (this.opt.choices as any).reduce((acc: number, value: any, i: number) => {
-          // Dont count lines past the choice we are looking at
-          if (i > indexPosition) {
-            return acc;
-          }
-          // Add line if it's a separator
-          if (value.type === "separator") {
-            return acc + 1;
-          }
-
-          const l = choicesStrs[i];
-          // Non-strings take up one line
-          if (typeof l !== "string") {
-            return acc + 1;
-          }
-
-          // Calculate lines taken up by string
-          return acc + l.split("\n").length;
-        }, 0) - 1;
-      message += "\n" + this.paginator.paginate(choicesStr, realIndexPosition);
-    }
-
-    this.firstRender = false;
-
-    ScreenManager["moveCursorDown"](0);
-    this.screen.render(message, "");
-  }
-}
-
-/**
- * Function for rendering list choices
- * @param  {Number} pointer Position of the pointer
- * @return {String}         Rendered content
- */
-function listRender(choices: any, pointer: number): [string, string[]] {
-  let output = "";
-  let separatorOffset = 0;
-  let prefixWidth = 1;
-  choices.forEach((choice: any) => {
-    prefixWidth = Math.max(
-      prefixWidth,
-      choice.disabled || !choice.extra?.title ? 0 : choice.extra.title.length + 1
-    );
+    return startIndex;
   });
 
-  const outputs: string[] = [];
-  choices.forEach((choice: any, i: number) => {
-    output = "";
-    if (choice.type === "separator") {
-      separatorOffset++;
-      output += "  " + choice + "\n";
-      return;
-    }
+  // Safe to assume the cursor position always point to a Choice.
+  const choice = choices[cursorPosition] as Choice;
 
-    if (choice.disabled) {
-      separatorOffset++;
-      output += "  - " + choice.extra.title;
-      output += " (" + (lodash.isString(choice.disabled) ? choice.disabled : "Disabled") + ")";
-      output += "\n";
-      return;
-    }
+  useKeypress((key) => {
+    if (isEnterKey(key)) {
+      setStatus("done");
+      done(choice.id);
+    } else if (isUpKey(key) || isDownKey(key)) {
+      let newCursorPosition = cursorPosition;
+      const offset = isUpKey(key) ? -1 : 1;
+      let selectedOption = undefined;
 
-    const isSelected = i - separatorOffset === pointer;
-    if (isSelected) {
-      output += chalk.blueBright(figures.radioOn + " " + choice.extra.title);
-    } else {
-      output += chalk.blueBright(figures.radioOff) + " " + chalk.whiteBright(choice.extra.title);
-    }
+      while (!selectedOption) {
+        newCursorPosition = nextPosition(
+          newCursorPosition,
+          offset,
+          choices.length,
+          config.loop === true
+        );
+        selectedOption = choices[newCursorPosition];
+      }
 
-    if (choice.extra?.detail) {
-      output = addChoiceDetail(output, choice.extra.detail, choice.extra.title.length, prefixWidth);
+      setCursorPos(newCursorPosition);
     }
-
-    output += "\n";
-    outputs.push(output.replace(/\n$/, ""));
   });
 
-  return [outputs.join("\n"), outputs];
-}
+  const message: string = chalk.bold(config.message);
+  if (firstRender.current) {
+    firstRender.current = false;
+  }
+  const pageSize = config.pageSize || 7;
+  const prefixWidth = computePrefixWidth(cursorPosition, pageSize, choices);
+  const renderChoice = (choice: Choice, index: number) => {
+    let output = "";
+    if (index === cursorPosition) {
+      output += chalk.cyan(`${figures.radioOn} ${choice.title}`);
+    } else {
+      output += `${chalk.blueBright(figures.radioOff)} ${choice.title}`;
+    }
+
+    if (choice.detail) {
+      output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
+    }
+    return output;
+  };
+
+  const windowedChoices = usePagination({
+    items: choices,
+    active: cursorPosition,
+    pageSize: pageSize,
+    loop: false,
+    renderItem: (item) => renderChoice(item.item as Choice, item.index),
+  });
+
+  if (status === "done") {
+    return `${prefix} ${message} ${chalk.cyan(choice.title)}`;
+  }
+
+  return `${prefix} ${message}\n${windowedChoices}${ansiEscapes.cursorHide}`;
+});

@@ -4,17 +4,15 @@
 import { ok, SystemError, UserError } from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 
-import Telemetry, { CliTelemetry } from "../../../src/telemetry/cliTelemetry";
 import { CliTelemetryReporter } from "../../../src/commonlib/telemetry";
-import { UserSettings } from "../../../src/userSetttings";
-import { expect } from "../utils";
+import cliTelemetry from "../../../src/telemetry/cliTelemetry";
 import {
   TelemetryComponentType,
   TelemetryErrorType,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../../src/telemetry/cliTelemetryEvents";
-import * as Utils from "../../../src/utils";
+import { expect } from "../utils";
 
 describe("Telemetry", function () {
   const sandbox = sinon.createSandbox();
@@ -23,26 +21,12 @@ describe("Telemetry", function () {
     sandbox.restore();
   });
 
-  it("setReporter", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-    const reporter = new CliTelemetryReporter("real", "real", "real", "real");
-    CliTelemetry.setReporter(reporter);
-  });
-
-  it("getReporter", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-    const reporter = new CliTelemetryReporter("real", "real", "real", "real");
-    CliTelemetry.setReporter(reporter);
-    expect(CliTelemetry.getReporter()["reporter"]);
-  });
-
   it("withRootFolder", () => {
-    Telemetry.withRootFolder("real");
-    expect(CliTelemetry["rootFolder"]).equals("real");
+    cliTelemetry.withRootFolder("real");
+    expect(cliTelemetry["rootFolder"]).equals("real");
   });
 
   it("sendTelemetryEvent", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     sandbox
       .stub(CliTelemetryReporter.prototype, "sendTelemetryEvent")
       .callsFake((eventName: string, properties?: any) => {
@@ -51,15 +35,14 @@ describe("Telemetry", function () {
         expect(properties[TelemetryProperty.AppId]).equals(undefined);
       });
     const reporter = new CliTelemetryReporter("real", "real", "real", "real");
-    CliTelemetry.setReporter(reporter);
-    Telemetry.sendTelemetryEvent("eventName");
+    cliTelemetry.reporter = reporter;
+    cliTelemetry.sendTelemetryEvent("eventName");
   });
 
   describe("sendTelemetryEvent", () => {
     const sandbox = sinon.createSandbox();
 
     before(() => {
-      sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
       sandbox
         .stub(CliTelemetryReporter.prototype, "sendTelemetryErrorEvent")
         .callsFake((eventName: string, properties?: any) => {
@@ -77,7 +60,7 @@ describe("Telemetry", function () {
           }
         });
       const reporter = new CliTelemetryReporter("real", "real", "real", "real");
-      CliTelemetry.setReporter(reporter);
+      cliTelemetry.reporter = reporter;
     });
 
     after(() => {
@@ -86,17 +69,16 @@ describe("Telemetry", function () {
 
     it("UserError", () => {
       const userError = new UserError("ut", "user", "UserError");
-      Telemetry.sendTelemetryErrorEvent("UserError", userError);
+      cliTelemetry.sendTelemetryErrorEvent("UserError", userError);
     });
 
     it("SystemError", () => {
       const systemError = new SystemError("ut", "system", "SystemError");
-      Telemetry.sendTelemetryErrorEvent("SystemError", systemError);
+      cliTelemetry.sendTelemetryErrorEvent("SystemError", systemError);
     });
   });
 
   it("sendTelemetryException", () => {
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     sandbox
       .stub(CliTelemetryReporter.prototype, "sendTelemetryException")
       .callsFake((error: Error, properties?: any) => {
@@ -105,15 +87,14 @@ describe("Telemetry", function () {
         expect(properties[TelemetryProperty.AppId]).equals(undefined);
       });
     const reporter = new CliTelemetryReporter("real", "real", "real", "real");
-    CliTelemetry.setReporter(reporter);
-    Telemetry.sendTelemetryException(new Error("exception"));
+    cliTelemetry.reporter = reporter;
+    cliTelemetry.sendTelemetryException(new Error("exception"));
   });
 
   it("flush", async () => {
     sandbox.stub(CliTelemetryReporter.prototype, "flush");
-    sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
     const reporter = new CliTelemetryReporter("real", "real", "real", "real");
-    CliTelemetry.setReporter(reporter);
-    await Telemetry.flush();
+    cliTelemetry.reporter = reporter;
+    await cliTelemetry.flush();
   });
 });

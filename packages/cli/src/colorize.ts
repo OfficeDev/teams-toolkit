@@ -2,17 +2,18 @@
 // Licensed under the MIT license.
 
 import chalk from "chalk";
-import { strings } from "./resource";
+import figures from "figures";
 
 export enum TextType {
   Success = "success",
   Error = "error",
   Warning = "warning",
-  Info = "info",
+  Info = "info", // primary text
   Hyperlink = "hyperlink",
   Email = "email",
   Important = "important",
-  Details = "details",
+  Details = "details", // secondary text
+  Commands = "commands", // commands, parameters, system inputs
 }
 
 export function colorize(message: string, type: TextType): string {
@@ -27,19 +28,23 @@ export function colorize(message: string, type: TextType): string {
     case TextType.Warning:
       return chalk.yellowBright(message);
     case TextType.Info:
-      return chalk.whiteBright(message);
+      return message;
     case TextType.Hyperlink:
-      return chalk.cyanBright(message);
+      return chalk.cyanBright.underline(message);
     case TextType.Email:
     case TextType.Important:
       return chalk.magentaBright(message);
     case TextType.Details:
-      return chalk.white(message);
+      return chalk.gray(message);
+    case TextType.Commands:
+      return chalk.blueBright(message);
   }
 }
 
-export const SuccessText = colorize(strings["success.prefix"], TextType.Success);
-export const WarningText = colorize(strings["warning.prefix"], TextType.Success);
+export const DoneText = colorize(`(${figures.tick}) Done: `, TextType.Success);
+export const SuccessText = colorize(`(${figures.tick}) Success: `, TextType.Success);
+export const WarningText = colorize(`(${figures.warning}) Warning: `, TextType.Warning);
+export const ErrorPrefix = `(${figures.cross}) Error: `;
 
 export function replaceTemplateString(template: string, ...args: string[]): string {
   let result = template;

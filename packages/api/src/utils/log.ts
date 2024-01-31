@@ -4,81 +4,67 @@
 
 export enum LogLevel {
   /**
-   * Contain the most detailed messages.
-   */
-  Trace = 0,
-  /**
    * For debugging and development.
    */
   Debug = 1,
   /**
+   * Contain the most detailed messages.
+   */
+  Verbose = 2,
+  /**
    * Tracks the general flow of the app. May have long-term value.
    */
-  Info = 2,
+  Info = 3,
   /**
    * For abnormal or unexpected events. Typically includes errors or conditions that don't cause the app to fail.
    */
-  Warning = 3,
+  Warning = 4,
   /**
    * For errors and exceptions that cannot be handled. These messages indicate a failure in the current operation or request, not an app-wide failure.
    */
-  Error = 4,
-  /**
-   * For failures that require immediate attention. Examples: data loss scenarios.
-   */
-  Fatal = 5,
+  Error = 5,
 }
 
 export interface LogProvider {
   /**
-   * Use to record information
-   * @param logLevel Defines logging severity levels.
-   * @param message Information of log event
+   * log by level
    */
-  log(logLevel: LogLevel, message: string): Promise<boolean>;
+  log(logLevel: LogLevel, message: string): void;
 
   /**
-   * Use to record trace information
-   * @param message Information of log event
+   * diagnostic information used by user
    */
-  trace(message: string): Promise<boolean>;
+  verbose(message: string): void;
 
   /**
-   * Use to record debug information
-   * @param message Information of log event
+   * debug information used internally
    */
-  debug(message: string): Promise<boolean>;
+  debug(message: string): void;
 
   /**
-   * Use to record info information
-   * @param message Information of log event
+   * normal output information
    */
-  info(message: string, logToFile?: boolean): Promise<boolean>;
+  info(message: string): void;
 
   /**
-   * Use to record info information
-   * @param message Information of log event
+   * normal output information, colored version
    */
-  info(message: Array<{ content: string; color: Colors }>, logToFile?: boolean): Promise<boolean>;
+  info(message: Array<{ content: string; color: Colors }>): void;
 
   /**
-   * Use to record warning information
-   * @param message Information of log event
+   * warning information
    */
-  warning(message: string, logToFile?: boolean): Promise<boolean>;
+  warning(message: string): void;
 
   /**
-   * Use to record error information
-   * @param message Information of log event
+   * error information
    */
-  error(message: string, logToFile?: boolean): Promise<boolean>;
+  error(message: string): void;
 
   /**
-   * Use to record critical information
-   * @param message Information of log event
+   * log content into file
    */
-  fatal(message: string): Promise<boolean>;
-
+  logInFile(logLevel: LogLevel, message: string): Promise<void>;
   /**
    * Get log file path
    */

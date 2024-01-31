@@ -2,22 +2,22 @@
 // Licensed under the MIT license.
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks/lib";
-import { FxError, IQTreeNode, Inputs, Result, err } from "@microsoft/teamsfx-api";
+import { Inputs, err } from "@microsoft/teamsfx-api";
 import { TOOLS } from "../../core/globalVars";
+import { QuestionNodes, questionNodes } from "../../question";
 import { traverse } from "../../ui/visitor";
 
-export function QuestionMW(question: () => Result<IQTreeNode | undefined, FxError>): Middleware {
+export function QuestionMW(key: keyof QuestionNodes, fromAction = false): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
     const inputs = ctx.arguments[0] as Inputs;
-    const getQuestionRes = question();
-    if (getQuestionRes.isErr()) throw getQuestionRes.error;
-    const node = getQuestionRes.value;
-    if (node) {
-      const askQuestionRes = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
-      if (askQuestionRes.isErr()) {
-        ctx.result = err(askQuestionRes.error);
-        return;
-      }
+    if (fromAction) {
+      inputs.outputEnvVarNames = ctx.arguments[2];
+    }
+    const node = questionNodes[key]();
+    const askQuestionRes = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
+    if (askQuestionRes.isErr()) {
+      ctx.result = err(askQuestionRes.error);
+      return;
     }
     await next();
   };

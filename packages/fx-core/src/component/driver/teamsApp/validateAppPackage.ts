@@ -13,6 +13,8 @@ import {
   TeamsAppManifest,
   Platform,
   Colors,
+  LogLevel,
+  ManifestUtil,
 } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
@@ -25,7 +27,6 @@ import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ValidateAppPackageArgs } from "./interfaces/ValidateAppPackageArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { TelemetryUtils } from "./utils/telemetry";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { AppStudioResultFactory } from "./results";
 import { AppStudioError } from "./errors";
@@ -36,7 +37,6 @@ import AdmZip from "adm-zip";
 import { Constants } from "./constants";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { SummaryConstant } from "../../configManager/constant";
-import { updateProgress } from "../middleware/updateProgress";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
 
 const actionName = "teamsApp/validateAppPackage";
@@ -44,15 +44,9 @@ const actionName = "teamsApp/validateAppPackage";
 @Service(actionName)
 export class ValidateAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.validateDriver");
-
-  public async run(
-    args: ValidateAppPackageArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.validate(args, wrapContext);
-    return res;
-  }
+  readonly progressTitle = getLocalizedString(
+    "plugins.appstudio.validateAppPackage.progressBar.message"
+  );
 
   public async execute(
     args: ValidateAppPackageArgs,
@@ -66,15 +60,11 @@ export class ValidateAppPackageDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("plugins.appstudio.validateAppPackage.progressBar.message")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async validate(
     args: ValidateAppPackageArgs,
     context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
     const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);
@@ -95,6 +85,10 @@ export class ValidateAppPackageDriver implements StepDriver {
       const manifestContent = manifestFile.getData().toString();
       const manifest = JSON.parse(manifestContent) as TeamsAppManifest;
       metadataUtil.parseManifest(manifest);
+
+      // Add common properties like isCopilotPlugin: boolean
+      const manifestTelemetries = ManifestUtil.parseCommonTelemetryProperties(manifest);
+      merge(context.telemetryProperties, manifestTelemetries);
     }
 
     const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
@@ -147,13 +141,30 @@ export class ValidateAppPackageDriver implements StepDriver {
           content: `${validationResult.notes.length} passed.\n`,
           color: Colors.BRIGHT_GREEN,
         });
+
+        if (validationResult.errors.length > 0 || validationResult.warnings.length > 0) {
+          outputMessage.push({
+            content: getDefaultString(
+              "driver.teamsApp.summary.validate.checkPath",
+              args.appPackagePath
+            ),
+            color: Colors.BRIGHT_WHITE,
+          });
+        }
+
         validationResult.errors.map((error) => {
           outputMessage.push({ content: `${SummaryConstant.Failed} `, color: Colors.BRIGHT_RED });
           outputMessage.push({
-            content: `${error.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            content: `${error.content} \nFile path: ${error.filePath}, title: ${error.title}`,
             color: Colors.BRIGHT_WHITE,
           });
-          outputMessage.push({ content: `${error.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          if (error.helpUrl) {
+            outputMessage.push({
+              content: `\n${getLocalizedString("core.option.learnMore")}: `,
+              color: Colors.BRIGHT_WHITE,
+            });
+            outputMessage.push({ content: `${error.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          }
         });
         validationResult.warnings.map((warning) => {
           outputMessage.push({
@@ -161,20 +172,29 @@ export class ValidateAppPackageDriver implements StepDriver {
             color: Colors.BRIGHT_YELLOW,
           });
           outputMessage.push({
-            content: `${warning.content} \n${getLocalizedString("core.option.learnMore")}: `,
+            content: `${warning.content}  \nFile path: ${warning.filePath}, title: ${warning.title}`,
             color: Colors.BRIGHT_WHITE,
           });
-          outputMessage.push({ content: `${warning.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          if (warning.helpUrl) {
+            outputMessage.push({
+              content: `\n${getLocalizedString("core.option.learnMore")}: `,
+              color: Colors.BRIGHT_WHITE,
+            });
+            outputMessage.push({ content: `${warning.helpUrl}\n`, color: Colors.BRIGHT_CYAN });
+          }
         });
         validationResult.notes.map((note) => {
-          outputMessage.push({
-            content: `${SummaryConstant.Succeeded} `,
-            color: Colors.BRIGHT_GREEN,
-          });
-          outputMessage.push({
-            content: `${note.content}\n`,
-            color: Colors.BRIGHT_WHITE,
-          });
+          // It might be undefined in some cases
+          if (note.content) {
+            outputMessage.push({
+              content: `${SummaryConstant.Succeeded} `,
+              color: Colors.BRIGHT_GREEN,
+            });
+            outputMessage.push({
+              content: `${note.content}\n`,
+              color: Colors.BRIGHT_WHITE,
+            });
+          }
         });
         context.ui?.showMessage("info", outputMessage, false);
         if (validationResult.errors.length > 0) {
@@ -192,19 +212,34 @@ export class ValidateAppPackageDriver implements StepDriver {
         // logs in output window
         const errors = validationResult.errors
           .map((error) => {
-            return `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
-              "core.option.learnMore"
-            )}: ${error.helpUrl}`;
+            let message = `${SummaryConstant.Failed} ${error.content} \n${getLocalizedString(
+              "error.teamsApp.validate.details",
+              error.filePath,
+              error.title
+            )} \n`;
+            if (error.helpUrl) {
+              message += getLocalizedString("core.option.learnMore", error.helpUrl);
+            }
+            return message;
           })
           .join(EOL);
         const warnings = validationResult.warnings
           .map((warning) => {
-            return `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
-              "core.option.learnMore"
-            )}: ${warning.helpUrl}`;
+            let message = `${SummaryConstant.NotExecuted} ${warning.content} \n${getLocalizedString(
+              "error.teamsApp.validate.details",
+              warning.filePath,
+              warning.title
+            )} \n`;
+            if (warning.helpUrl) {
+              message += getLocalizedString("core.option.learnMore", warning.helpUrl);
+            }
+            return message;
           })
           .join(EOL);
         const notes = validationResult.notes
+          .filter((note) => {
+            return note.content !== undefined;
+          })
           .map((note) => {
             return `${SummaryConstant.Succeeded} ${note.content}`;
           })
@@ -242,31 +277,52 @@ export class ValidateAppPackageDriver implements StepDriver {
           getLocalizedString(
             "driver.teamsApp.summary.validate",
             summaryStr.join(", "),
+            errors.length > 0 || warnings.length > 0
+              ? getLocalizedString(
+                  "driver.teamsApp.summary.validate.checkPath",
+                  args.appPackagePath
+                )
+              : "",
             errors,
             warnings,
             path.resolve(context.logProvider?.getLogFilePath())
           );
         context.logProvider?.info(outputMessage);
         // logs in log file
-        context.logProvider?.info(`${outputMessage}\n${errors}\n${warnings}\n${notes}`, true);
+        await context.logProvider?.logInFile(
+          LogLevel.Info,
+          `${outputMessage}\n${errors}\n${warnings}\n${notes}`
+        );
 
+        const defaultMesage = getDefaultString(
+          "driver.teamsApp.validate.result",
+          summaryStr.join(", ")
+        );
+        const displayMessage = getLocalizedString(
+          "driver.teamsApp.validate.result.display",
+          summaryStr.join(", ")
+        );
         if (args.showMessage) {
           // For non-lifecycle commands, just show the message
-          const message = getLocalizedString(
-            "driver.teamsApp.validate.result.display",
-            summaryStr.join(", ")
-          );
-          context.ui?.showMessage("info", message, false);
+          if (validationResult.errors.length > 0) {
+            return err(
+              AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
+                defaultMesage,
+                displayMessage,
+              ])
+            );
+          } else if (validationResult.warnings.length > 0) {
+            context.ui?.showMessage("warn", displayMessage, false);
+          } else {
+            context.ui?.showMessage("info", displayMessage, false);
+          }
         } else {
           // For lifecycle like provision, stop-on-error
           if (validationResult.errors.length > 0) {
             return err(
               AppStudioResultFactory.UserError(AppStudioError.ValidationFailedError.name, [
-                getDefaultString("driver.teamsApp.validate.result", summaryStr.join(", ")),
-                getLocalizedString(
-                  "driver.teamsApp.validate.result.display",
-                  summaryStr.join(", ")
-                ),
+                defaultMesage,
+                displayMessage,
               ])
             );
           }

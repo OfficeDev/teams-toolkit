@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
@@ -20,39 +20,56 @@ import {
   CancelDownloading,
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
-  FetchZipFromUrlError,
+  FetchSampleInfoError,
+  TemplateNotFoundError,
   TemplateZipFallbackError,
   UnzipError,
 } from "./error";
 import {
-  DownloadDirectoryActionSeq,
+  SampleActionSeq,
   GeneratorAction,
   GeneratorActionName,
   GeneratorContext,
   TemplateActionSeq,
 } from "./generatorAction";
 import {
-  getSampleInfoFromName,
-  getSampleRelativePath,
+  convertToUrl,
+  isApiLimitError,
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
+import { enableTestToolByDefault } from "../../common/featureFlags";
+import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
 
 export class Generator {
   public static getDefaultVariables(
     appName: string,
-    safeProjectNameFromVS?: string
+    safeProjectNameFromVS?: string,
+    targetFramework?: string,
+    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string }
   ): { [key: string]: string } {
+    const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
+
+    const safeRegistrationIdEnvName = getSafeRegistrationIdEnvName(
+      apiKeyAuthData?.registrationIdEnvName ?? ""
+    );
+
     return {
       appName: appName,
       ProjectName: appName,
-      SafeProjectName: safeProjectNameFromVS ?? convertToAlphanumericOnly(appName),
+      TargetFramework: targetFramework ?? "net8.0",
+      SafeProjectName: safeProjectName,
+      SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
+      ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
+      ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
+      ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
+      enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
     };
   }
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
-      progressTitle: ProgressTitles.generateTemplate,
+      progressTitle: ProgressTitles.create,
       progressSteps: 1,
       componentName: componentName,
       errorSource: errorSource,
@@ -69,31 +86,41 @@ export class Generator {
   ): Promise<Result<undefined, FxError>> {
     const replaceMap = ctx.templateVariables ?? {};
     const generatorContext: GeneratorContext = {
-      name: language ?? commonTemplateName,
-      relativePath: `${scenario}/`,
+      name: scenario,
+      language: language ?? commonTemplateName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>
-        renderTemplateFileName(fileName, fileData, replaceMap),
+        renderTemplateFileName(fileName, fileData, replaceMap)
+          .replace(/\\/g, "/")
+          .replace(`${scenario}/`, ""),
       fileDataReplaceFn: (fileName, fileData) =>
         renderTemplateFileData(fileName, fileData, replaceMap),
+      filterFn: (fileName) => fileName.replace(/\\/g, "/").startsWith(`${scenario}/`),
       onActionError: templateDefaultOnActionError,
     };
+    const templateName = `${scenario}-${generatorContext.name}`;
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.TemplateName]: `${scenario}-${generatorContext.name}`,
+      [TelemetryProperty.TemplateName]: templateName,
     });
-    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate(scenario));
+
+    await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
+    ctx.logProvider.debug(`Downloading app template "${templateName}" to ${destinationPath}`);
     await this.generate(generatorContext, TemplateActionSeq);
+
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
+    if (!generatorContext.outputs?.length) {
+      return err(new TemplateNotFoundError(scenario).toFxError());
+    }
     return ok(undefined);
   }
 
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
-      progressTitle: ProgressTitles.generateSample,
+      progressTitle: ProgressTitles.create,
       progressSteps: 1,
       componentName: componentName,
       errorSource: errorSource,
@@ -108,23 +135,22 @@ export class Generator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     merge(actionContext?.telemetryProps, {
-      [TelemetryProperty.SampleName]: sampleName,
+      [TelemetryProperty.SampleAppName]: sampleName,
       [TelemetryProperty.SampleDownloadDirectory]: "true",
     });
-    const sample = getSampleInfoFromName(sampleName);
     // sample doesn't need replace function. Replacing projectId will be handled by core.
+
     const generatorContext: GeneratorContext = {
       name: sampleName,
       destination: destinationPath,
       logProvider: ctx.logProvider,
-      url: sample.url,
       timeoutInMs: sampleDefaultTimeoutInMs,
-      relativePath: sample.relativePath ?? getSampleRelativePath(sampleName),
       onActionError: sampleDefaultOnActionError,
     };
+
     await actionContext?.progressBar?.next(ProgressMessages.generateSample(sampleName));
-    const actionSeq = DownloadDirectoryActionSeq;
-    await this.generate(generatorContext, actionSeq);
+    ctx.logProvider.debug(`Downloading sample "${sampleName}" to ${destinationPath}`);
+    await this.generate(generatorContext, SampleActionSeq);
     return ok(undefined);
   }
 
@@ -138,38 +164,37 @@ export class Generator {
         await action.run(context);
         await context.onActionEnd?.(action, context);
       } catch (e) {
-        if (!context.onActionError) {
-          throw e;
-        }
+        if (e instanceof BaseComponentInnerError) throw e.toFxError();
         if (e instanceof Error) await context.onActionError(action, context, e);
       }
     }
   }
 }
 
-export async function templateDefaultOnActionError(
+export function templateDefaultOnActionError(
   action: GeneratorAction,
   context: GeneratorContext,
   error: Error
 ): Promise<void> {
   switch (action.name) {
-    case GeneratorActionName.FetchTemplateUrlWithTag:
+    case GeneratorActionName.FetchUrlForHotfixOnly:
     case GeneratorActionName.FetchZipFromUrl:
       context.cancelDownloading = true;
       if (!(error instanceof CancelDownloading)) {
-        await context.logProvider.info(error.message);
-        await context.logProvider.info(LogMessages.getTemplateFromLocal);
+        context.logProvider.info(error.message);
+        context.logProvider.info(LogMessages.getTemplateFromLocal);
       }
       break;
     case GeneratorActionName.FetchTemplateZipFromLocal:
-      await context.logProvider.error(error.message);
-      throw new TemplateZipFallbackError().toFxError();
+      context.logProvider.error(error.message);
+      return Promise.reject(new TemplateZipFallbackError().toFxError());
     case GeneratorActionName.Unzip:
-      await context.logProvider.error(error.message);
-      throw new UnzipError().toFxError();
+      context.logProvider.error(error.message);
+      return Promise.reject(new UnzipError().toFxError());
     default:
-      throw new Error(error.message);
+      return Promise.reject(new Error(error.message));
   }
+  return Promise.resolve();
 }
 
 export async function sampleDefaultOnActionError(
@@ -177,22 +202,20 @@ export async function sampleDefaultOnActionError(
   context: GeneratorContext,
   error: Error
 ): Promise<void> {
-  await context.logProvider.error(error.message);
+  context.logProvider.error(error.message);
+  if (await fs.pathExists(context.destination)) {
+    await fs.rm(context.destination, { recursive: true });
+  }
   switch (action.name) {
+    case GeneratorActionName.FetchSampleInfo:
+      throw new FetchSampleInfoError(error).toFxError();
     case GeneratorActionName.DownloadDirectory:
-      if (await fs.pathExists(context.destination)) {
-        await fs.rm(context.destination, { recursive: true });
-      }
-      if (error instanceof BaseComponentInnerError) throw error.toFxError();
-      else if (error.message.includes("403")) {
-        throw new DownloadSampleApiLimitError(context.url!).toFxError();
+      const url = convertToUrl(context.sampleInfo!);
+      if (isApiLimitError(error)) {
+        throw new DownloadSampleApiLimitError(url, error).toFxError();
       } else {
-        throw new DownloadSampleNetworkError(context.url!).toFxError();
+        throw new DownloadSampleNetworkError(url, error).toFxError();
       }
-    case GeneratorActionName.FetchZipFromUrl:
-      throw new FetchZipFromUrlError(context.url!).toFxError();
-    case GeneratorActionName.Unzip:
-      throw new UnzipError().toFxError();
     default:
       throw new Error(error.message);
   }

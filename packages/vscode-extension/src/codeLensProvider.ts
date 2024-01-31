@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import {
-  AdaptiveCardsFolderName,
   AppPackageFolderName,
+  ManifestUtil,
+  TeamsAppManifest,
   TemplateFolderName,
 } from "@microsoft/teamsfx-api";
 import {
   MetadataV3,
   envUtil,
-  environmentManager,
+  environmentNameManager,
   getAllowedAppMaps,
   getPermissionMap,
 } from "@microsoft/teamsfx-core";
@@ -21,6 +23,7 @@ import { commandIsRunning } from "./globalVariables";
 import { getSystemInputs } from "./handlers";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { localize } from "./utils/localizeUtils";
+import * as _ from "lodash";
 
 async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
   // Get environment variables
@@ -29,7 +32,7 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
   let localEnvs, defaultEnvs;
   const localEnvsRes = await envUtil.readEnv(
     inputs.projectPath!,
-    environmentManager.getLocalEnvName(),
+    environmentNameManager.getLocalEnvName(),
     false
   );
   if (localEnvsRes.isErr()) {
@@ -39,7 +42,7 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
   }
   const defaultEnvsRes = await envUtil.readEnv(
     inputs.projectPath!,
-    environmentManager.getDefaultEnvName(),
+    environmentNameManager.getDefaultEnvName(),
     false
   );
   if (defaultEnvsRes.isErr()) {
@@ -54,17 +57,17 @@ async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: 
     let title = "👉";
 
     const localValue = localEnvs[key];
-    title = `${title} ${environmentManager.getLocalEnvName()}: ${localValue}`;
+    title = `${title} ${environmentNameManager.getLocalEnvName()}: ${localValue}`;
 
     if (lens.documentName.endsWith("manifest.template.local.json")) {
       lens.command = {
         title: title,
         command: "fx-extension.openConfigState",
-        arguments: [{ type: "env", from: from, env: environmentManager.getLocalEnvName() }],
+        arguments: [{ type: "env", from: from, env: environmentNameManager.getLocalEnvName() }],
       };
     } else {
       const defaultValue = defaultEnvs[key];
-      title = `${title}, ${environmentManager.getDefaultEnvName()}: ${defaultValue}`;
+      title = `${title}, ${environmentNameManager.getDefaultEnvName()}: ${defaultValue}`;
 
       lens.command = {
         title: title,
@@ -132,7 +135,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
         new vscode.Position(line.lineNumber, indexOf + match.length)
       );
       const command = {
-        title: "🔑Decrypt secret",
+        title: "🔑" + localize("teamstoolkit.codeLens.decryptSecret"),
         command: "fx-extension.decryptSecret",
         arguments: [match, range],
       };
@@ -140,33 +143,6 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
         codeLenses.push(new vscode.CodeLens(range, command));
       }
     }
-    return codeLenses;
-  }
-}
-
-export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
-  public static async detectedAdaptiveCards(): Promise<boolean> {
-    const searchTerm = "adaptivecards.io/schemas/adaptive-card.json";
-    const files: vscode.Uri[] = await vscode.workspace.findFiles(
-      `**/${AdaptiveCardsFolderName}/*.json`
-    );
-    for (const file of files) {
-      const content = await fs.readFile(file.fsPath, "utf8");
-      if (content.includes(searchTerm)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  provideCodeLenses(_document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
-    const codeLenses: vscode.CodeLens[] = [];
-    const topOfFile = new vscode.Range(0, 0, 0, 0);
-    const command = {
-      title: `👀${localize("teamstoolkit.commandsTreeViewProvider.previewAdaptiveCard")}`,
-      command: "fx-extension.OpenAdaptiveCardExt",
-      arguments: [TelemetryTriggerFrom.CodeLens],
-    };
-    codeLenses.push(new vscode.CodeLens(topOfFile, command));
     return codeLenses;
   }
 }
@@ -220,7 +196,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       );
       const url = line.text.substring(line.text.indexOf("https"), line.text.length - 2);
       const schemaCommand = {
-        title: "Open schema",
+        title: localize("teamstoolkit.codeLens.openSchema"),
         command: "fx-extension.openSchema",
         arguments: [{ url: url }],
       };
@@ -448,7 +424,7 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private computePreviewCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses = [];
     const command = {
-      title: "🖼️Preview",
+      title: "🖼️" + localize("teamstoolkit.codeLens.preview"),
       command: "fx-extension.openPreviewAadFile",
       arguments: [{ fsPath: document.fileName }],
     };
@@ -478,18 +454,30 @@ export class AadAppTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private computeAadManifestCodeLenses(document: vscode.TextDocument): vscode.CodeLens[] {
     const codeLenses: vscode.CodeLens[] = [];
     const updateCmd = {
-      title: "🔄Deploy AAD manifest",
+      title: "🔄" + localize("teamstoolkit.codeLens.deployMicrosoftEntraManifest"),
       command: "fx-extension.updateAadAppManifest",
       arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
 
-    const editTemplateCmd = {
-      title: "⚠️This file is auto-generated, click here to edit the manifest template file",
-      command: "fx-extension.editAadManifestTemplate",
-      arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
-    };
-    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+      const workspaceFolder = vscode.workspace.workspaceFolders[0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      const aadTemplateFileExist = fs.pathExistsSync(
+        `${workspacePath}/${MetadataV3.aadManifestFileName}`
+      );
+
+      if (aadTemplateFileExist) {
+        const editTemplateCmd = {
+          title:
+            "⚠️" + localize("teamstoolkit.codeLens.editDeprecatedMicrosoftEntraManifestTemplate"),
+          command: "fx-extension.editAadManifestTemplate",
+          arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
+        };
+        codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
+      }
+    }
+
     return codeLenses;
   }
 }
@@ -508,14 +496,103 @@ export class PermissionsJsonFileCodeLensProvider implements vscode.CodeLensProvi
       );
       if (aadTemplateFileExist) {
         const editTemplateCmd = {
-          title:
-            "⚠️This file is deprecated and not used anymore. Please click here to use AAD manifest template file instead",
+          title: "⚠️" + localize("teamstoolkit.codeLens.editMicrosoftEntraManifestTemplate"),
           command: "fx-extension.editAadManifestTemplate",
           arguments: [{ fsPath: document.fileName }, TelemetryTriggerFrom.CodeLens],
         };
         codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
         return codeLenses;
       }
+    }
+  }
+}
+
+export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
+  private schemaRegex = /composeExtensions/;
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+
+    const manifest: TeamsAppManifest = JSON.parse(document.getText());
+    const manifestProperties = ManifestUtil.parseCommonProperties(manifest);
+    if (!manifestProperties.isApiME) {
+      return codeLenses;
+    }
+
+    const text = document.getText();
+    const regex = new RegExp(this.schemaRegex);
+    const matches = regex.exec(text);
+    if (matches != null) {
+      const match = matches[0];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+      const schemaCommand = {
+        title: "➕" + localize("teamstoolkit.codeLens.copilotPluginAddAPI"),
+        command: "fx-extension.copilotPluginAddAPI",
+        arguments: [{ fsPath: document.fileName }],
+      };
+      codeLenses.push(new vscode.CodeLens(range, schemaCommand));
+      return codeLenses;
+    }
+  }
+}
+
+export class TeamsAppYamlCodeLensProvider implements vscode.CodeLensProvider {
+  private provisionRegex = /^provision:/m;
+  private deployRegex = /^deploy:/m;
+  private publishRegex = /^publish:/m;
+  private regexes = [this.provisionRegex, this.deployRegex, this.publishRegex];
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const text = document.getText();
+    return _.flatMap(this.regexes, (regex) => {
+      const matches = regex.exec(text);
+      if (matches && matches.length > 0) {
+        const match = matches[0];
+        const line = document.lineAt(document.positionAt(matches.index).line);
+        const indexOf = line.text.indexOf(match);
+        const position = new vscode.Position(line.lineNumber, indexOf);
+        const range = new vscode.Range(
+          position,
+          new vscode.Position(line.lineNumber, indexOf + match.length)
+        );
+        const schemaCommand = this.getCommand(match);
+        return [new vscode.CodeLens(range, schemaCommand)];
+      } else {
+        return [];
+      }
+    });
+  }
+
+  private getCommand(match: string): vscode.Command | undefined {
+    if (match.startsWith("provision")) {
+      return {
+        title: "🔄" + localize("teamstoolkit.commands.provision.title"),
+        command: "fx-extension.provision",
+        arguments: [TelemetryTriggerFrom.CodeLens],
+      };
+    } else if (match.startsWith("deploy")) {
+      return {
+        title: "🔄" + localize("teamstoolkit.commands.deploy.title"),
+        command: "fx-extension.deploy",
+        arguments: [TelemetryTriggerFrom.CodeLens],
+      };
+    } else if (match.startsWith("publish")) {
+      return {
+        title: "🔄" + localize("teamstoolkit.commands.publish.title"),
+        command: "fx-extension.publish",
+        arguments: [TelemetryTriggerFrom.CodeLens],
+      };
+    } else {
+      return undefined;
     }
   }
 }

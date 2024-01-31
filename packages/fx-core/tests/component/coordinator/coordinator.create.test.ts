@@ -3,30 +3,38 @@ import "mocha";
 import { err, Inputs, ok, Platform, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
+import { glob } from "glob";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
+import { CreateSampleProjectInputs } from "../../../src";
+import { FeatureFlagName } from "../../../src/common/constants";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator, TemplateNames } from "../../../src/component/coordinator";
 import { developerPortalScaffoldUtils } from "../../../src/component/developerPortalScaffoldUtils";
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
+import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { Generator } from "../../../src/component/generator/generator";
+import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { createContextV3 } from "../../../src/component/utils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
 import { FxCore } from "../../../src/core/FxCore";
 import { setTools } from "../../../src/core/globalVars";
 import { InputValidationError, MissingRequiredInputError } from "../../../src/error/common";
-import { QuestionNames } from "../../../src/question/questionNames";
 import {
+  ApiMessageExtensionAuthOptions,
   CapabilityOptions,
+  MeArchitectureOptions,
   ProjectTypeOptions,
   ScratchOptions,
 } from "../../../src/question/create";
+import { QuestionNames } from "../../../src/question/questionNames";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
-import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
 
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator create", () => {
+  let mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
@@ -35,6 +43,7 @@ describe("coordinator create", () => {
   });
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("create project from sample", async () => {
@@ -44,16 +53,36 @@ describe("coordinator create", () => {
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
+    const inputs: CreateSampleProjectInputs = {
       platform: Platform.CLI,
       folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab",
+      samples: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
-    const res = await fxCore.createProject(inputs);
+    const res = await fxCore.createSampleProject(inputs);
     assert.isTrue(res.isOk());
   });
+
+  it("create project from sample: todo-list-SPFx", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    sandbox.stub(glob, "glob").resolves();
+    sandbox.stub(fs, "readFile").resolves("test" as any);
+    sandbox.stub(fs, "writeFile").resolves("");
+    const inputs: CreateSampleProjectInputs = {
+      platform: Platform.CLI,
+      folder: ".",
+      samples: "todo-list-SPFx",
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createSampleProject(inputs);
+    assert.isTrue(res.isOk());
+  });
+
   it("fail to create project from sample", async () => {
     sandbox.stub(Generator, "generateSample").resolves(err(new UserError({})));
     sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -61,14 +90,13 @@ describe("coordinator create", () => {
       .stub(settingsUtil, "readSettings")
       .resolves(ok({ trackingId: "mockId", version: V3Version }));
     sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
-    const inputs: Inputs = {
+    const inputs: CreateSampleProjectInputs = {
       platform: Platform.CLI,
       folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab",
+      samples: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
-    const res = await fxCore.createProject(inputs);
+    const res = await fxCore.createSampleProject(inputs);
     assert.isTrue(res.isErr());
   });
   it("create project from sample rename folder", async () => {
@@ -85,17 +113,16 @@ describe("coordinator create", () => {
       .resolves(["abc"] as any)
       .onSecondCall()
       .resolves([]);
-    const inputs: Inputs = {
+    const inputs: CreateSampleProjectInputs = {
       platform: Platform.CLI,
       folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.no().id,
-      [QuestionNames.Samples]: "hello-world-tab",
+      samples: "hello-world-tab-with-backend",
     };
     const fxCore = new FxCore(tools);
-    const res = await fxCore.createProject(inputs);
+    const res = await fxCore.createSampleProject(inputs);
     assert.isTrue(res.isOk());
     if (res.isOk()) {
-      assert.isTrue(res.value.endsWith("_1"));
+      assert.isTrue(res.value.projectPath.endsWith("_1"));
     }
   });
   it("create project from scratch", async () => {
@@ -109,8 +136,7 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.tab(),
+      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
     };
     const fxCore = new FxCore(tools);
@@ -201,7 +227,7 @@ describe("coordinator create", () => {
       assert.isTrue(res.error instanceof MissingRequiredInputError);
     }
   });
-  it("create SPFx project", async () => {
+  it("fail to create SPFx project", async () => {
     sandbox.stub(SPFxGenerator, "generate").resolves(err(new UserError({})));
     sandbox
       .stub(settingsUtil, "readSettings")
@@ -211,7 +237,6 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
       [QuestionNames.ProgrammingLanguage]: "javascript",
       [QuestionNames.SPFxSolution]: "new",
@@ -223,7 +248,7 @@ describe("coordinator create", () => {
     assert.isTrue(res2.isErr());
   });
 
-  it("fail to create SPFx project", async () => {
+  it("create SPFx project", async () => {
     sandbox.stub(SPFxGenerator, "generate").resolves(ok(undefined));
     sandbox
       .stub(settingsUtil, "readSettings")
@@ -233,9 +258,8 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.SPFxTab().id,
-      [QuestionNames.ProgrammingLanguage]: "javascript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
       [QuestionNames.SPFxSolution]: "new",
       [QuestionNames.SPFxFramework]: "none",
       [QuestionNames.SPFxWebpartName]: "test",
@@ -256,10 +280,31 @@ describe("coordinator create", () => {
       platform: Platform.VS,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
       [QuestionNames.ProgrammingLanguage]: "csharp",
       [QuestionNames.SafeProjectName]: "safeprojectname",
+    };
+    const fxCore = new FxCore(tools);
+    const res2 = await fxCore.createProject(inputs);
+    assert.isTrue(res2.isOk());
+  });
+
+  it("create notification bot project from VS", async () => {
+    sandbox.stub(Generator, "generateSample").resolves(ok(undefined));
+    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    sandbox
+      .stub(settingsUtil, "readSettings")
+      .resolves(ok({ trackingId: "mockId", version: V3Version }));
+    sandbox.stub(settingsUtil, "writeSettings").resolves(ok(""));
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
+      [QuestionNames.BotTrigger]: "http-functions",
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      isIsolated: true,
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
@@ -277,7 +322,6 @@ describe("coordinator create", () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.Capabilities]: CapabilityOptions.m365SsoLaunchPage().id,
       [QuestionNames.ProgrammingLanguage]: "typescript",
     };
@@ -311,7 +355,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -359,7 +402,6 @@ describe("coordinator create", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
       [QuestionNames.ProjectType]: ProjectTypeOptions.bot().id,
@@ -415,7 +457,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -469,7 +510,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -478,7 +518,7 @@ describe("coordinator create", () => {
       [QuestionNames.Capabilities]: "TabNonSsoAndBot",
       [QuestionNames.ReplaceWebsiteUrl]: ["tab1"],
       [QuestionNames.ReplaceContentUrl]: [],
-      [QuestionNames.ReplaceBotIds]: ["bot"],
+      [QuestionNames.ReplaceBotIds]: ["messageExtension"],
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
@@ -506,7 +546,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -514,7 +553,6 @@ describe("coordinator create", () => {
     };
     const fxCore = new FxCore(tools);
     const res2 = await fxCore.createProject(inputs);
-
     assert.isTrue(res2.isErr());
   });
 
@@ -532,7 +570,6 @@ describe("coordinator create", () => {
 
     const inputs: Inputs = {
       platform: Platform.VSCode,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       folder: ".",
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProgrammingLanguage]: "javascript",
@@ -547,6 +584,175 @@ describe("coordinator create", () => {
 
     assert.isTrue(res2.isOk());
     assert.equal(generator.args[0][2], TemplateNames.Tab);
+  });
+
+  it("create API ME (without api auth options) from new api sucessfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.CopilotPluginFromScratch);
+  });
+
+  it("create API ME (no auth) from new api sucessfully", async () => {
+    mockedEnvRestore = mockedEnv({
+      API_COPILOT_API_KEY: "true",
+    });
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
+      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.none().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.CopilotPluginFromScratch);
+  });
+
+  it("create API ME (key auth) from new api sucessfully", async () => {
+    mockedEnvRestore = mockedEnv({
+      API_COPILOT_API_KEY: "true",
+    });
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
+      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.apiKey().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.CopilotPluginFromScratchApiKey);
+  });
+
+  it("create API ME from existing api sucessfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    sandbox
+      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
+      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.apiSpec().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("create non-sso tab earlier than .Net8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      ["targetFramework"]: "net6.0",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.Tab);
+  });
+
+  it("create sso tab earlier than .Net8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      ["targetFramework"]: "net6.0",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.SsoTab);
+  });
+
+  it("create non-sso tab from .NET 8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      ["targetFramework"]: "net8.0",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.TabSSR);
+  });
+
+  it("create sso tab from .NET 8", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "csharp",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      ["targetFramework"]: "net8.0",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.tab().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+    };
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.SsoTabSSR);
   });
 });
 
@@ -592,7 +798,6 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: "__invalid__",
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
 
@@ -607,7 +812,6 @@ describe("Office Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.AppName]: undefined,
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
 
@@ -629,11 +833,106 @@ describe("Office Addin", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: ".",
-      [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");
+  });
+});
+
+describe("Copilot plugin", async () => {
+  const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  tools.ui = new MockedUserInteraction();
+  setTools(tools);
+
+  beforeEach(() => {
+    sandbox.stub(fs, "ensureDir").resolves();
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should scaffold from API spec successfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    sandbox
+      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("scaffold from API spec error", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    sandbox
+      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr());
+  });
+
+  it("should scaffold from OpenAI plugin successfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    sandbox
+      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
+      .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("scaffold from OpenAI plugin error", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+
+    sandbox
+      .stub(CopilotPluginGenerator, "generateFromOpenAIPlugin")
+      .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.copilotPlugin().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginOpenAIPlugin().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isErr());
   });
 });

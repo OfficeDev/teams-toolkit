@@ -31,7 +31,10 @@ import {
   CheckDeploymentStatusError,
   CheckDeploymentStatusTimeoutError,
   GetPublishingCredentialsError,
-} from "../../../../../error/deploy";
+} from "../../../../../error";
+import { hooks } from "@feathersjs/hooks";
+import { ErrorContextMW } from "../../../../../core/globalVars";
+import path from "path";
 
 export abstract class AzureDeployImpl extends BaseDeployImpl {
   protected managementClient: appService.WebSiteManagementClient | undefined;
@@ -72,6 +75,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       return false;
     }
     await this.azureDeploy(inputs, azureResource, azureCredential);
+    await this.cleanup();
     return true;
   }
 
@@ -86,6 +90,27 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void>;
+
+  /**
+   * cleanup function after deployment is finished
+   * @protected
+   */
+  protected async cleanup(): Promise<void> {
+    if (this.zipFilePath && !this.dryRun && fs.existsSync(this.zipFilePath)) {
+      try {
+        await fs.remove(this.zipFilePath);
+        // if upper folder is empty, remove it
+        const parentFolder = path.dirname(this.zipFilePath);
+        if ((await fs.readdir(parentFolder)).length === 0) {
+          await fs.remove(parentFolder);
+        }
+      } catch (e) {
+        this.logger.warning(
+          `Failed to remove zip package. ${JSON.stringify(e, Object.getOwnPropertyNames(e))}`
+        );
+      }
+    }
+  }
 
   /**
    * check if resource id is legal and parse it
@@ -104,6 +129,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
    * @param logger log provider
    * @protected
    */
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureZipDeployImpl" })])
   public async checkDeployStatus(
     location: string,
     config: AzureUploadConfig,
@@ -112,22 +138,32 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
     let res: AxiosDeployQueryResult;
     for (let i = 0; i < DeployConstant.DEPLOY_CHECK_RETRY_TIMES; ++i) {
       try {
+        this.logger.verbose(`Check deploy status with location: ${location}`);
         res = await AzureDeployImpl.AXIOS_INSTANCE.get(location, config);
+        this.logger.verbose(
+          `Check deploy status response: ${JSON.stringify(res, Object.getOwnPropertyNames(res))}`
+        );
       } catch (e) {
+        this.logger.verbose(
+          `Check deploy status failed with error: ${JSON.stringify(
+            e,
+            Object.getOwnPropertyNames(e),
+            2
+          )}`
+        );
         if (axios.isAxiosError(e)) {
-          await logger.error(
+          logger.error(
             `Check deploy status failed with response status code: ${
               e.response?.status ?? "NA"
             }, message: ${JSON.stringify(e.response?.data)}`
           );
           throw new CheckDeploymentStatusError(
             location,
-            new Error(
-              `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
-                e.response?.data
-              )}`
-            ),
-            this.helpLink
+            e,
+            this.helpLink,
+            `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
+              e.response?.data
+            )}`
           );
         }
         throw new CheckDeploymentStatusError(location, e as Error, this.helpLink);
@@ -138,7 +174,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           await waitSeconds(DeployConstant.BACKOFF_TIME_S);
         } else if (res?.status === HttpStatusCode.OK || res?.status === HttpStatusCode.CREATED) {
           if (res.data?.status === DeployStatus.Failed) {
-            await this.logger.warning(
+            this.logger.warning(
               getDefaultString(
                 "error.deploy.DeployRemoteStartError",
                 location,
@@ -149,7 +185,7 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           return res.data;
         } else {
           if (res.status) {
-            await logger.error(`Deployment is failed with error code: ${res.status}.`);
+            logger.error(`Deployment is failed with error code: ${res.status}.`);
           }
           throw new CheckDeploymentStatusError(
             location,
@@ -180,8 +216,8 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
       const defaultScope = "https://management.azure.com/.default";
       const token = await azureCredential.getToken(defaultScope);
       if (token) {
-        await this.logger.info(
-          "Get AAD token successfully. Upload zip package through AAD Auth mode."
+        this.logger.info(
+          "Get Microsoft Entra token successfully. Upload zip package through AAD Auth mode."
         );
         return {
           headers: {
@@ -194,30 +230,34 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
           timeout: DeployConstant.DEPLOY_TIMEOUT_IN_MS,
         };
       } else {
-        this.context.telemetryReporter.sendTelemetryErrorEvent("Get-Deploy-AAD-token-failed", {
-          error: "AAD token is empty.",
-        });
-        await this.logger.info(
-          "Get AAD token failed. AAD Token is empty. Upload zip package through basic auth mode. Please check your Azure credential."
+        this.context.telemetryReporter.sendTelemetryErrorEvent(
+          "Get-Deploy-Microsoft Entra-token-failed",
+          {
+            error: "Microsoft Entra token is empty.",
+          }
+        );
+        this.logger.info(
+          "Get Microsoft Entra token failed. AAD Token is empty. Upload zip package through basic auth mode. Please check your Azure credential."
         );
       }
     } catch (e) {
       this.context.telemetryReporter.sendTelemetryErrorEvent("Get-Deploy-AAD-token-failed", {
         error: (e as Error).toString(),
       });
-      await this.logger.info(
+      this.logger.info(
         `Get AAD token failed with error: ${JSON.stringify(
-          e
+          e,
+          Object.getOwnPropertyNames(e)
         )}. Upload zip package through basic auth mode.`
       );
     }
 
-    // IF only enable AAD deploy, throw error
+    // IF only enable Microsoft Entra deploy, throw error
     if (process.env["TEAMSFX_AAD_DEPLOY_ONLY"] === "true") {
       throw new GetPublishingCredentialsError(
         azureResource.instanceId,
         azureResource.resourceGroupName,
-        new Error("Get AAD token failed."),
+        new Error("Get Microsoft Entra token failed."),
         this.helpLink
       );
     }
@@ -263,14 +303,14 @@ export abstract class AzureDeployImpl extends BaseDeployImpl {
   }
 
   protected async restartFunctionApp(azureResource: AzureResourceInfo): Promise<void> {
-    await this.context.logProvider.debug("Restarting function app...");
+    this.context.logProvider.debug("Restarting function app...");
     try {
       await this.managementClient?.webApps?.restart(
         azureResource.resourceGroupName,
         azureResource.instanceId
       );
     } catch (e) {
-      await this.logger.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
+      this.logger.warning(getLocalizedString("driver.deploy.error.restartWebAppError"));
     }
   }
 }

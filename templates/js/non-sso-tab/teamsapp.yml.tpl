@@ -5,15 +5,16 @@ version: 1.0.0
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
   # Creates a Teams app
   - uses: teamsApp/create
     with:
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      # Teams app name
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
@@ -76,7 +77,7 @@ provision:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand
@@ -97,13 +98,14 @@ deploy:
       # or add it to your environment variable file.
       resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}}
 
-# Triggered when 'teamsfx publish' is executed
+# Triggered when 'teamsapp publish' is executed
 publish:
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+  # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
       # Path to manifest template

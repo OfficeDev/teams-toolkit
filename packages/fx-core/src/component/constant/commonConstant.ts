@@ -16,6 +16,12 @@ export enum HttpStatusCode {
   INTERNAL_SERVER_ERROR = 500,
 }
 
+export class HttpMethod {
+  public static readonly POST = "POST";
+  public static readonly GET = "GET";
+  public static readonly DELETE = "DELETE";
+}
+
 export class TelemetryConstant {
   // the component name of the deployment life cycle
   public static readonly DEPLOY_COMPONENT_NAME = "deploy";
@@ -23,4 +29,6 @@ export class TelemetryConstant {
   public static readonly PROVISION_COMPONENT_NAME = "provision";
   // the script component name
   public static readonly SCRIPT_COMPONENT = "script";
+  // the component name of the deployment to SWA script
+  public static readonly DEPLOY_TO_SWA_COMPONENT = "deploy_to_swa";
 }

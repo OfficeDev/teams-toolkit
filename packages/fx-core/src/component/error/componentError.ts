@@ -11,6 +11,7 @@ import {
 import { getDefaultString, getLocalizedString } from "../../common/localizeUtils";
 import { DeployConstant } from "../constant/deployConstant";
 import { HttpStatusCode } from "../constant/commonConstant";
+import { camelCase } from "lodash";
 
 /**
  * component error
@@ -30,6 +31,7 @@ export class BaseComponentInnerError extends Error {
   displayMessage?: string;
   suggestionKey?: string[];
   detail?: string;
+  innerError?: Error;
 
   constructor(
     source: string,
@@ -39,7 +41,8 @@ export class BaseComponentInnerError extends Error {
     messageParams?: string[],
     suggestionKey?: string[],
     detail?: string,
-    helpLink?: string
+    helpLink?: string,
+    innerError?: Error
   ) {
     super(
       messageKey
@@ -59,13 +62,15 @@ export class BaseComponentInnerError extends Error {
         : getLocalizedString(messageKey)
       : "";
     this.detail = detail;
+    this.innerError = innerError;
   }
 
   toFxError(): FxError {
     if (this.errorType === "UserError") {
       return new UserError({
-        source: this.source,
-        error: this,
+        source: camelCase(this.source),
+        // if innerError is set, send innerError to telemetry
+        error: this.innerError ?? this,
         helpLink: this.helpLink,
         name: this.name,
         message: this.message,
@@ -73,10 +78,11 @@ export class BaseComponentInnerError extends Error {
       } as UserErrorOptions);
     } else {
       return new SystemError({
-        source: this.source,
+        source: camelCase(this.source),
         name: this.name,
         message: this.message,
-        error: this,
+        // if innerError is set, send innerError to telemetry
+        error: this.innerError ?? this,
         helpLink: this.helpLink,
         displayMessage: this.toDisplayMessage(),
       } as SystemErrorOptions);
@@ -103,9 +109,14 @@ export class BaseComponentInnerError extends Error {
     return new BaseComponentInnerError(
       source,
       "SystemError",
-      "UnknownError",
+      // use inner error name instead of "UnhandledError"
+      error instanceof Error ? error.name : "UnhandledError",
       "error.common.UnhandledError",
-      [JSON.stringify(error)]
+      [source, JSON.stringify(error, Object.getOwnPropertyNames(error))],
+      undefined,
+      undefined,
+      undefined,
+      error instanceof Error ? error : undefined
     );
   }
 }
@@ -187,36 +198,6 @@ export class ExternalApiCallError extends BaseComponentInnerError {
         "plugins.frontend.checkNetworkTip",
       ],
       detail
-    );
-  }
-}
-
-export class ExecuteCommandError extends BaseComponentInnerError {
-  constructor(
-    source: string,
-    name: string,
-    messageKey: string,
-    messageParams: string[],
-    error: string
-  ) {
-    super(
-      source,
-      "UserError",
-      name,
-      messageKey,
-      messageParams,
-      ["plugins.bot.CheckCommandOutput", "suggestions.retryTheCurrentStep"],
-      error
-    );
-  }
-
-  static fromErrorOutput(source: string, commands: string[], error: unknown): ExecuteCommandError {
-    return new ExecuteCommandError(
-      source,
-      "CommandExecutionError",
-      "plugins.bot.RunFailedCommand",
-      commands,
-      typeof error === "string" ? error : JSON.stringify(error)
     );
   }
 }

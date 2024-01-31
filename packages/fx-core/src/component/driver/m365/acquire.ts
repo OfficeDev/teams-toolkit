@@ -10,14 +10,12 @@ import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api"
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { PackageService } from "../../../common/m365/packageService";
 import { serviceEndpoint, serviceScope } from "../../../common/m365/serviceConstant";
+import { FileNotFoundError, InvalidActionInputError, assembleError } from "../../../error/common";
 import { getAbsolutePath, wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
-import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
-import { UnhandledError } from "../../../error/common";
 
 interface AcquireArgs {
   appPackagePath?: string; // The path of the app package
@@ -34,11 +32,9 @@ const outputKeys = {
 @Service(actionName) // DO NOT MODIFY the service name
 export class M365TitleAcquireDriver implements StepDriver {
   description = getLocalizedString("driver.m365.acquire.description");
+  readonly progressTitle = getLocalizedString("driver.m365.acquire.progress.message");
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.m365.acquire.progress.message")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: AcquireArgs,
     context: DriverContext
@@ -46,13 +42,10 @@ export class M365TitleAcquireDriver implements StepDriver {
     return wrapRun(async () => {
       const result = await this.handler(args, context);
       return result.output;
-    });
+    }, actionName);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.m365.acquire.progress.message")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: AcquireArgs,
     ctx: DriverContext,
@@ -63,7 +56,7 @@ export class M365TitleAcquireDriver implements StepDriver {
       const result = await this.handler(args, ctx, outputEnvVarNames);
       summaries = result.summaries;
       return result.output;
-    });
+    }, actionName);
     return {
       result: outputResult,
       summaries,
@@ -91,7 +84,7 @@ export class M365TitleAcquireDriver implements StepDriver {
         process.env.SIDELOADING_SERVICE_ENDPOINT ?? serviceEndpoint;
       const sideloadingServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
 
-      const packageService = new PackageService(sideloadingServiceEndpoint);
+      const packageService = new PackageService(sideloadingServiceEndpoint, context.logProvider);
       const sideloadingTokenRes = await context.m365TokenProvider.getAccessToken({
         scopes: [sideloadingServiceScope],
       });
@@ -120,7 +113,7 @@ export class M365TitleAcquireDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledError(error as Error, actionName);
+      throw assembleError(error as Error, actionName);
     }
   }
 

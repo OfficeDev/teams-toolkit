@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 
 export abstract class DynamicNode extends vscode.TreeItem {
-  public abstract getChildren(): Promise<DynamicNode[] | undefined | null>;
+  public abstract getChildren(): vscode.ProviderResult<DynamicNode[]>;
 
-  public abstract getTreeItem(): Promise<vscode.TreeItem>;
+  public abstract getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem>;
 }

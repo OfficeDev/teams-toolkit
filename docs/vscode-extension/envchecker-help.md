@@ -102,7 +102,7 @@ Go to [the official website](https://docs.microsoft.com/azure/azure-resource-man
 
 ### NodeNotFound
 
-> Cannot find Node.js. Go to https://nodejs.org/about/releases/ to install Node.js (v16 is recommended).
+> Cannot find Node.js. Go to https://nodejs.org to install Node.js (v16 is recommended).
 
 As the Teams Toolkit project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local.  
 

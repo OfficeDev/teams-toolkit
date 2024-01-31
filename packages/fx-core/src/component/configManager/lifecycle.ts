@@ -1,9 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author yefuwang@microsoft.com
  */
 
-import { ok, err, FxError, Result, LogProvider, UserError } from "@microsoft/teamsfx-api";
-import _ from "lodash";
+import { ok, err, FxError, Result, LogProvider } from "@microsoft/teamsfx-api";
+import _, { camelCase } from "lodash";
 import { Container } from "typedi";
 import { InvalidYmlActionNameError } from "../../error/yml";
 import { DriverContext } from "../driver/interface/commonArgs";
@@ -14,12 +17,13 @@ import {
   DriverDefinition,
   LifecycleName,
   ILifecycle,
-  Output,
   DriverInstance,
   UnresolvedPlaceholders,
   ResolvedPlaceholders,
   ExecutionResult,
 } from "./interface";
+import { MissingEnvironmentVariablesError } from "../../error";
+import { setErrorContext } from "../../core/globalVars";
 
 function resolveDriverDef(
   def: DriverDefinition,
@@ -78,7 +82,7 @@ function resolve(
   }
 }
 
-function resolveString(
+export function resolveString(
   val: string,
   resolved: ResolvedPlaceholders,
   unresolved: UnresolvedPlaceholders
@@ -89,11 +93,20 @@ function resolveString(
   while (matches != null) {
     const envVar = matches[1];
     const envVal = process.env[envVar];
-    if (!envVal) {
-      unresolved.push(envVar);
+    if (envVar === "APP_NAME_SUFFIX") {
+      if (envVal === undefined || envVal === null) {
+        unresolved.push(envVar);
+      } else {
+        resolved.push(envVar);
+        newVal = newVal.replace(matches[0], envVal);
+      }
     } else {
-      resolved.push(envVar);
-      newVal = newVal.replace(matches[0], envVal);
+      if (!envVal) {
+        unresolved.push(envVar);
+      } else {
+        resolved.push(envVar);
+        newVal = newVal.replace(matches[0], envVal);
+      }
     }
     matches = placeHolderReg.exec(val);
   }
@@ -130,7 +143,9 @@ export class Lifecycle implements ILifecycle {
   }
 
   async execute(ctx: DriverContext): Promise<ExecutionResult> {
-    const actions = JSON.stringify(this.driverDefs.map((def) => this.stringifyDriverDef(def)));
+    const actions = JSON.stringify(
+      this.driverDefs.map((def) => camelCase(this.stringifyDriverDef(def)))
+    );
     const telemetryReporter = new TeamsFxTelemetryReporter(ctx.telemetryReporter, {
       componentName: component,
     });
@@ -157,19 +172,22 @@ export class Lifecycle implements ILifecycle {
     } else {
       if (result.error.kind === "Failure") {
         e = result.error.error;
-        ctx.logProvider.info(`Failed to Execute lifecycle ${this.name}. ${e.name}:${e.message}`);
+        ctx.logProvider.error(`Failed to Execute lifecycle ${this.name}. ${e.name}:${e.message}`);
       } else if (result.error.kind === "PartialSuccess") {
         failedAction = this.stringifyDriverDef(result.error.reason.failedDriver);
         const output = Lifecycle.stringifyOutput(result.error.env);
         if (result.error.reason.kind === "DriverError") {
           e = result.error.reason.error;
-          ctx.logProvider.info(
+          ctx.logProvider.error(
             `Failed to Execute lifecycle ${this.name} due to failed action: ${failedAction}. ${e.name}:${e.message}. Env output: ${output}`
           );
         } else if (result.error.reason.kind === "UnresolvedPlaceholders") {
           // This error is just for telemetry because sendEndEvent() needs an error as parameter.
-          e = new UserError(component, "UnresolvedPlaceHolders", "UnresolvedPlaceHolders");
-          ctx.logProvider.info(
+          e = new MissingEnvironmentVariablesError(
+            component,
+            result.error.reason.unresolvedPlaceHolders.join(",")
+          );
+          ctx.logProvider.error(
             `Failed to Execute lifecycle ${
               this.name
             } because there are unresolved placeholders ${JSON.stringify(
@@ -188,7 +206,7 @@ export class Lifecycle implements ILifecycle {
           [TelemetryProperty.Actions]: actions,
           [TelemetryProperty.ResolvedPlaceholders]: JSON.stringify(resolved),
           [TelemetryProperty.UnresolvedPlaceholders]: JSON.stringify(unresolved),
-          [TelemetryProperty.FailedAction]: failedAction ?? "",
+          [TelemetryProperty.FailedAction]: camelCase(failedAction) ?? "",
         },
       },
       e
@@ -210,15 +228,18 @@ export class Lifecycle implements ILifecycle {
     const envOutput = new Map<string, string>();
     const summaries: string[][] = [];
     for (const driver of drivers) {
-      ctx.logProvider.info(
+      ctx.logProvider.verbose(
         `Executing action ${this.stringifyDriverDef(driver)} in lifecycle ${this.name}`
       );
+      if (driver.instance.progressTitle) {
+        await ctx.progressBar?.next(driver.instance.progressTitle);
+      }
       resolveDriverDef(driver, resolved, unresolved);
       if (unresolved.length > 0) {
-        ctx.logProvider.info(
-          `Unresolved placeholders(${unresolved}) found for Action ${this.stringifyDriverDef(
-            driver
-          )} in lifecycle ${this.name}`
+        ctx.logProvider.warning(
+          `Unresolved placeholders(${unresolved.join(
+            ","
+          )}) found for Action ${this.stringifyDriverDef(driver)} in lifecycle ${this.name}`
         );
         summaries.push([
           `${SummaryConstant.Failed} Unresolved placeholders: ${unresolved.join(",")}`,
@@ -243,24 +264,18 @@ export class Lifecycle implements ILifecycle {
         }
       }
 
-      let result: Result<Map<string, string>, FxError>;
-      let summary: string[];
-      if (driver.instance.execute) {
-        const r = await driver.instance.execute(
-          driver.with,
-          ctx,
-          driver.writeToEnvironmentFile
-            ? new Map(Object.entries(driver.writeToEnvironmentFile))
-            : undefined,
-          this.version
-        );
-        result = r.result;
-        summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);
-      } else {
-        result = await driver.instance.run(driver.with, ctx);
-        // if execute is not implemented, treat it as if no summaries was returned.
-        summary = [];
-      }
+      setErrorContext({ component: camelCase(driver.uses), method: "execute" }); // set driver name as component name for telemetry
+      const r = await driver.instance.execute(
+        driver.with,
+        ctx,
+        driver.writeToEnvironmentFile
+          ? new Map(Object.entries(driver.writeToEnvironmentFile))
+          : undefined,
+        this.version,
+        driver.name
+      );
+      const result = r.result;
+      const summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);
       summaries.push(summary);
       if (result.isErr()) {
         summary.push(`${SummaryConstant.Failed} ${result.error.message}`);
@@ -282,7 +297,7 @@ export class Lifecycle implements ILifecycle {
         envOutput.set(envVar, value);
         process.env[envVar] = value;
       }
-      ctx.logProvider.info(
+      ctx.logProvider.verbose(
         `Action ${this.stringifyDriverDef(driver)} in lifecycle ${
           this.name
         } succeeded with output ${Lifecycle.stringifyOutput(result.value)}`
@@ -290,40 +305,6 @@ export class Lifecycle implements ILifecycle {
     }
 
     return { result: ok(envOutput), summaries };
-  }
-
-  async run(ctx: DriverContext): Promise<Result<Output, FxError>> {
-    const maybeDrivers = this.resolveDriverInstances(ctx.logProvider);
-    if (maybeDrivers.isErr()) {
-      return err(maybeDrivers.error);
-    }
-    const drivers = maybeDrivers.value;
-
-    return Lifecycle.runDrivers(drivers, ctx);
-  }
-
-  private static async runDrivers(
-    drivers: DriverInstance[],
-    ctx: DriverContext
-  ): Promise<Result<Output, FxError>> {
-    const envOutput = new Map<string, string>();
-    const unresolvedPlaceHolders: string[] = resolvePlaceHolders(drivers)[1];
-    if (unresolvedPlaceHolders.length > 0) {
-      return ok({ env: envOutput, unresolvedPlaceHolders });
-    }
-
-    for (const driver of drivers) {
-      const result = await driver.instance.run(driver.with, ctx);
-      if (result.isErr()) {
-        return err(result.error);
-      }
-      for (const [envVar, value] of result.value) {
-        envOutput.set(envVar, value);
-        process.env[envVar] = value;
-      }
-    }
-
-    return ok({ env: envOutput, unresolvedPlaceHolders });
   }
 
   private stringifyDriverDef(def: DriverDefinition): string {
@@ -334,7 +315,7 @@ export class Lifecycle implements ILifecycle {
   }
 
   public resolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
-    log.debug(`Trying to resolve actions for lifecycle ${this.name}`);
+    void log.debug(`Trying to resolve actions for lifecycle ${this.name}`);
     const drivers: DriverInstance[] = [];
     for (const def of this.driverDefs) {
       if (!Container.has(def.uses)) {
@@ -342,7 +323,7 @@ export class Lifecycle implements ILifecycle {
       }
       const driver = Container.get<StepDriver>(def.uses);
       drivers.push({ instance: driver, ...def });
-      log.debug(`Action ${this.stringifyDriverDef(def)} found for lifecycle ${this.name}`);
+      void log.debug(`Action ${this.stringifyDriverDef(def)} found for lifecycle ${this.name}`);
     }
     return ok(drivers);
   }

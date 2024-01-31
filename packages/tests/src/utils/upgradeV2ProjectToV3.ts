@@ -1,6 +1,6 @@
-import { execCommandIfExist } from "../vscodeOperation";
+import { execCommandIfExist } from "./vscodeOperation";
 import { ModalDialog, InputBox, VSBrowser } from "vscode-extension-tester";
-import { CommandPaletteCommands, Timeout, TestFilePath } from "../constants";
+import { CommandPaletteCommands, Timeout, TestFilePath } from "./constants";
 
 export async function upgradeV2ToV3() {
   console.log("start to upgrade the project");

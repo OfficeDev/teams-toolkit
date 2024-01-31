@@ -19,7 +19,6 @@ export const ComponentNames = {
   SPFxTab: "spfx-tab",
   SPFx: "spfx",
   Identity: "identity",
-  APIMFeature: "apim-feature",
   APIM: "apim",
   KeyVault: "key-vault",
   AzureSQL: "azure-sql",
@@ -61,6 +60,17 @@ export const TelemetryConstants = {
     errorMessage: "error-message",
     errorStack: "error-stack",
     timeCost: "time-cost",
+    errorName: "error-name", // need classify, keep error name as a separate property for telemetry analysis, error name should has limited set of values
+    innerError: "inner-error", // need classify, JSON serialized raw inner error that is caused by internal error or external call error
+    errorCat: "error-cat", // need classify, error category
+    errorCat1: "error-cat1", // need classify, error category level 1
+    errorCat2: "error-cat2", // need classify, error category level 2
+    errorCat3: "error-cat3", // need classify, error category level 3
+    errorStage: "error-stage", // need classify
+    errorComponent: "error-component", // need classify
+    errorMethod: "error-method", // need classify
+    errorSource: "error-source", // need classify
+    errorInnerCode: "error-inner-code", // need classify
   },
   values: {
     yes: "yes",
@@ -73,29 +83,6 @@ export const TelemetryConstants = {
 export const ErrorConstants = {
   unhandledError: "UnhandledError",
   unhandledErrorMessage: "Unhandled Error",
-};
-
-export const APIMOutputs = {
-  serviceResourceId: {
-    key: "serviceResourceId",
-    bicepVariable: "provisionOutputs.apimOutput.value.serviceResourceId",
-  },
-  productResourceId: {
-    key: "productResourceId",
-    bicepVariable: "provisionOutputs.apimOutput.value.productResourceId",
-  },
-  authServerResourceId: {
-    key: "authServerResourceId",
-  },
-  apimClientAADObjectId: {
-    key: "apimClientAADObjectId",
-  },
-  apimClientAADClientId: {
-    key: "apimClientAADClientId",
-  },
-  apimClientAADClientSecret: {
-    key: "apimClientAADClientSecret",
-  },
 };
 
 export const AadAppOutputs = {

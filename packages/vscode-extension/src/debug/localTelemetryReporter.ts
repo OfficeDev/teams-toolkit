@@ -22,6 +22,7 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { getLocalDebugSession } from "./commonUtils";
 import { TeamsfxTaskProvider } from "./teamsfxTaskProvider";
+import { TeamsFxNpmCommands } from "@microsoft/teamsfx-core";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -62,7 +63,22 @@ export async function sendDebugAllStartEvent(additionalProperties: {
     { [TelemetryProperty.CorrelationId]: session.id },
     session.properties
   );
+
+  // Transparent task properties
+  const taskInfo = await getTaskInfo();
+  if (taskInfo && taskInfo.IsTransparentTask) {
+    properties[TelemetryProperty.DebugPrelaunchTaskInfo] = JSON.stringify(
+      taskInfo.PreLaunchTaskInfo
+    );
+    properties[TelemetryProperty.DebugIsTransparentTask] =
+      properties[TelemetryProperty.DebugIsTransparentTask] ?? "true";
+  } else {
+    properties[TelemetryProperty.DebugIsTransparentTask] =
+      properties[TelemetryProperty.DebugIsTransparentTask] ?? "false";
+  }
+
   localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugAllStart, properties);
+  return Promise.resolve();
 }
 
 export async function sendDebugAllEvent(
@@ -225,7 +241,11 @@ export async function getTaskInfo(): Promise<TaskInfo | undefined> {
 
       for (const label of labelList) {
         const task = findTask(taskJson, label);
-        const isTeamsFxTask = task?.type === TeamsfxTaskProvider.type;
+        const isTeamsFxTask =
+          task?.type === TeamsfxTaskProvider.type ||
+          (task?.type === "shell" &&
+            task?.command &&
+            Object.values(TeamsFxNpmCommands).includes(task?.command));
 
         // Only send the info scaffold by Teams Toolkit. If user changed some property, the value will be "unknown".
         dependsOnArr.push({
@@ -235,7 +255,10 @@ export async function getTaskInfo(): Promise<TaskInfo | undefined> {
             ? task?.command
               ? UnknownPlaceholder
               : UndefinedPlaceholder
-            : maskValue(task?.command, Object.values(TaskCommand)),
+            : maskValue(task?.command, [
+                ...Object.values(TaskCommand),
+                ...Object.values(TeamsFxNpmCommands),
+              ]),
         });
       }
       return dependsOnArr;

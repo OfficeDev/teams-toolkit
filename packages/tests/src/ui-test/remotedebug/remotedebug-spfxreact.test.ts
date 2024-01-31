@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -5,18 +8,23 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { expect } from "chai";
 import { InputBox, VSBrowser } from "vscode-extension-tester";
-import { CommandPaletteCommands, Timeout, Notification } from "../../constants";
-import { RemoteDebugTestContext } from "./remotedebugContext";
+import {
+  CommandPaletteCommands,
+  Timeout,
+  Notification,
+} from "../../utils/constants";
+import { RemoteDebugTestContext, runDeploy } from "./remotedebugContext";
 import {
   execCommandIfExist,
   getNotification,
   createNewProject,
   clearNotifications,
-} from "../../vscodeOperation";
-import { initPage, validateSpfx } from "../../playwrightOperation";
+} from "../../utils/vscodeOperation";
+import { initPage, validateSpfx } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { cleanUpLocalProject } from "../../utils/cleanHelper";
 import { it } from "../../utils/it";
+import { validateFileExist } from "../../utils/commonUtils";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -54,6 +62,7 @@ describe("Remote debug Tests", function () {
     async function () {
       const driver = VSBrowser.instance.driver;
       await createNewProject("spfxreact", appName);
+      validateFileExist(projectPath, "src/src/index.ts");
       await clearNotifications();
       await execCommandIfExist(CommandPaletteCommands.ProvisionCommand);
       await driver.sleep(Timeout.spfxProvision);
@@ -61,16 +70,7 @@ describe("Remote debug Tests", function () {
         Notification.ProvisionSucceeded,
         Timeout.shortTimeWait
       );
-      await clearNotifications();
-      await execCommandIfExist(CommandPaletteCommands.DeployCommand);
-      try {
-        const deployConfirmInput = await InputBox.create();
-        await deployConfirmInput.confirm();
-      } catch (error) {
-        console.log("No need to confirm to deploy.");
-      }
-      await driver.sleep(Timeout.spfxDeploy);
-      await getNotification(Notification.DeploySucceeded, Timeout.longTimeWait);
+      await runDeploy();
 
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
@@ -84,7 +84,7 @@ describe("Remote debug Tests", function () {
       await driver.sleep(Timeout.longTimeWait);
 
       // Validate app name is in the page
-      await validateSpfx(page, appName);
+      await validateSpfx(page, { displayName: appName });
     }
   );
 });

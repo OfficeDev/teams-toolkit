@@ -1,0 +1,122 @@
+.sample-filter {
+  display: flex;
+  flex-direction: column;
+  width: calc(100% - 48px);
+  margin: 0 24px;
+}
+
+.sample-filter-bar {
+  display: flex;
+  flex-direction: row;
+
+  .search-box {
+    width: 200px;
+
+    .codicon-close {
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+    }
+
+    .hide {
+      display: none;
+    }
+  }
+
+  .search-box::part(root) {
+    border-radius: 2px;
+    border: 1px solid var(--vscode-menu-separatorBackground, #3C3C3C);
+    height: 24px;
+    color: var(--vscode-peekViewTitleDescription-foreground, #CCCCCC);
+    background: rgba(255, 255, 255, 0.1);
+
+    input::placeholder {
+      color: "#A0A0A0";
+    }
+
+    &:focus-within {
+      border: 1px solid var(--vscode-inputValidation-infoBorder, #007ACC);
+    }
+  }
+
+  .filter-bar {
+    flex-grow: 1;
+  }
+
+  .layout-button {
+    height: 24px;
+    width: 24px;
+    margin-left: 8px;
+
+    &:hover {
+      border-radius: 2px;
+      background: var(--vscode-diffEditor-unchangedRegionBackground, #3C3C3C);
+    }
+  }
+
+  .layout-selected {
+    border-radius: 2px;
+    background: var(--vscode-diffEditor-unchangedRegionBackground, #3C3C3C);
+  }
+}
+
+.filter-tag-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-top: 8px;
+
+  .filter-tag {
+    flex-shrink: 0;
+    margin-right: 16px;
+    margin-top: 8px;
+    height: 16px;
+    font-size: 13px;
+    padding: 2px 8px;
+    border: 0;
+    border-radius: 2px;
+
+    span {
+      display: inline-block;
+      height: 16px;
+      top: -3px;
+      position: relative;
+    }
+
+    .codicon-close {
+      padding-left: 8px;
+      top: 0px;
+      font-size: 16px;
+
+      &:hover {
+        color: var(--vscode-editor-foreground);
+      }
+    }
+  }
+
+  button {
+    height: 20px;
+    margin: 8px 0 0 0;
+    font-size: 14px;
+    padding: 0;
+    color: var(--vscode-textLink-foreground);
+
+    :active {
+      color: var(--vscode-textLink-foreground);
+    }
+  }
+}
+
+body.vscode-light {
+  .filter-tag {
+    background-color: #E5E5E5;
+    color: #606060;
+  }
+}
+
+body.vscode-dark {
+  .filter-tag {
+    background-color: #333333;
+    color: #CCCCCC;
+  }
+}

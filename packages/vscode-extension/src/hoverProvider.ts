@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { envUtil } from "@microsoft/teamsfx-core";
 import { environmentVariableRegex } from "./constants";
 import { getSystemInputs } from "./handlers";
@@ -60,7 +60,7 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
     let message = "";
     let args;
     if (displayLocalValue) {
-      const envName = environmentManager.getLocalEnvName();
+      const envName = environmentNameManager.getLocalEnvName();
       const envInfo = envInfos[envName];
       const value = envInfo ? envInfo[key] : undefined;
       if (value) {
@@ -76,11 +76,11 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
         if (value) {
           message += `**${envName}**: ${value} \n\n`;
         } else {
-          if (envName === environmentManager.getLocalEnvName()) {
+          if (envName === environmentNameManager.getLocalEnvName()) {
             message += `**${envName}** Trigger debug to see placeholder value \n\n`;
           } else {
             const commandUri = vscode.Uri.parse("command:fx-extension.provision");
-            message += `**${envName}**: [Trigger Teams: Provision in the cloud command to see placeholder value](${commandUri}) \n\n`;
+            message += `**${envName}**: [Trigger Teams: Provision in the cloud command to see placeholder value](${commandUri.toString()}) \n\n`;
           }
         }
       }
@@ -90,7 +90,7 @@ export class ManifestTemplateHoverProvider implements vscode.HoverProvider {
     const commandUri = vscode.Uri.parse(
       `command:fx-extension.openConfigState?${encodeURIComponent(JSON.stringify(args))}`
     );
-    message += `[✏️Edit env file](${commandUri})`;
+    message += `[✏️Edit env file](${commandUri.toString()})`;
 
     const markdown = new vscode.MarkdownString(message);
     markdown.isTrusted = true;

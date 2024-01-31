@@ -1,5 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
- * @author Frank Qian <frankqian@microsoft.com>
+ * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import { MigrationTestContext } from "../migrationContext";
 import {
@@ -8,23 +10,23 @@ import {
   Notification,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { initPage, validateBot } from "../../../playwrightOperation";
+import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import {
   validateNotification,
   startDebugging,
   upgradeByTreeView,
   waitForTerminal,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testAzureCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
 
   beforeEach(async function () {
@@ -64,7 +66,7 @@ describe("Migration Tests", function () {
 
       // local debug with TTK
       try {
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
         await waitForTerminal(
           LocalDebugTaskLabel.StartLocalTunnel,
           LocalDebugTaskResult.StartSuccess
@@ -87,7 +89,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateBot(page, "helloWorld");
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World Bot is Running",
+      });
     }
   );
 });

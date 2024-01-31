@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import axios, { AxiosInstance, AxiosRequestConfig, Method } from "axios";
 import { RetryHandler } from "./retryHandler";
 import { ResourceGroupManager } from "./resourceGroupManager";
@@ -7,14 +9,11 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Env } from "./env";
 import { dotenvUtil } from "./envUtil";
-import { TestFilePath } from "../constants";
-import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
+import { TestFilePath } from "./constants";
 import {
-  Tunnel,
-  TunnelAccessControlEntryType,
-  TunnelPort,
-} from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
+  TunnelManagementHttpClient,
+  ManagementApiVersions,
+} from "@microsoft/dev-tunnels-management";
 
 class CleanHelper {
   protected readonly axios: AxiosInstance;
@@ -372,11 +371,106 @@ export class AppStudioCleanHelper extends CleanHelper {
   }
 }
 
+export class M365TitleCleanHelper extends CleanHelper {
+  constructor(token: string) {
+    super("https://titles.prod.mos.microsoft.com", token);
+  }
+
+  public static async create(
+    tenantId: string,
+    clientId: string,
+    username: string,
+    password: string
+  ): Promise<M365TitleCleanHelper> {
+    const token = await this.getUserToken(
+      tenantId,
+      clientId,
+      username,
+      password
+    );
+    return new M365TitleCleanHelper(token);
+  }
+
+  private static async getUserToken(
+    tenantId: string,
+    clientId: string,
+    username: string,
+    password: string
+  ): Promise<string> {
+    const config = {
+      auth: {
+        clientId: clientId,
+        authority: `https://login.microsoftonline.com/${tenantId}`,
+      },
+    };
+
+    const usernamePasswordRequest = {
+      scopes: ["https://titles.prod.mos.microsoft.com/.default"],
+      username: username,
+      // Need to encode password for special characters to workaround the MSAL bug:
+      // https://github.com/AzureAD/microsoft-authentication-library-for-js/issues/4326#issuecomment-995109619
+      password: encodeURIComponent(password),
+    };
+
+    const pca = new msal.PublicClientApplication(config);
+    const credential = await pca.acquireTokenByUsernamePassword(
+      usernamePasswordRequest
+    );
+    const accessToken = credential?.accessToken;
+    if (!accessToken) {
+      throw new Error("Failed to get token.");
+    }
+    return accessToken;
+  }
+
+  public async unacquire(id: string, retryTimes = 5) {
+    if (!id) {
+      return Promise.resolve(true);
+    }
+    return new Promise<boolean>(async (resolve) => {
+      for (let i = 0; i < retryTimes; ++i) {
+        try {
+          await this.axios!.delete(`/catalog/v1/users/acquisitions/${id}`);
+          console.info(`[Success] delete the M365 Title id: ${id}`);
+          return resolve(true);
+        } catch {
+          await delay(2000);
+        }
+      }
+      console.error(`[Failed] delete the M365 Title with id: ${id}`);
+      return resolve(false);
+    });
+  }
+
+  public async listAcquisitions(): Promise<any[]> {
+    const result: any[] = [];
+    const response = await this.execute(
+      "post",
+      `/catalog/v1/users/acquisitions/get`,
+      {
+        Filter: {
+          SupportedElementTypes: [
+            "StaticTabs",
+            "Bots",
+            "MeetingExtensionDefinition",
+          ],
+        },
+      }
+    );
+
+    if (response?.data?.acquisitions) {
+      result.push(...(response?.data?.acquisitions as any[]));
+    }
+    return result;
+  }
+}
+
 export class DevTunnelCleanHelper {
   private readonly tunnelManagementClientImpl: TunnelManagementHttpClient;
   constructor(token: string) {
     this.tunnelManagementClientImpl = new TunnelManagementHttpClient(
       "Teams-Toolkit-UI-TEST",
+      ManagementApiVersions.Version20230927preview,
       () => Promise.resolve(`Bearer ${token}`)
     );
   }
@@ -429,7 +523,7 @@ export class DevTunnelCleanHelper {
   public async deleteAll(tag = "TeamsToolkitCreatedTag"): Promise<void> {
     const tunnels = await this.tunnelManagementClientImpl.listTunnels();
     for (const tunnel of tunnels) {
-      if (tunnel?.tags?.includes(tag)) {
+      if (tunnel?.labels?.includes(tag)) {
         console.log(`clean dev tunnel ${tunnel.tunnelId}`);
         await this.tunnelManagementClientImpl.deleteTunnel(tunnel);
       }
@@ -467,13 +561,14 @@ export async function cleanUpResourceGroup(
 
 export async function createResourceGroup(
   appName: string,
-  envName?: string
+  envName?: string,
+  location?: string
 ): Promise<boolean> {
   if (!appName) {
     return false;
   }
   const name = `${appName}-${envName}-rg`;
-  return await createResourceGroupByName(name);
+  return await createResourceGroupByName(name, location);
 }
 
 export async function createResourceGroupByName(
@@ -657,4 +752,9 @@ export async function cleanUpStagedPublishApp(appId: string) {
       `Failed to get apps in admin portal, error message: ${e.message}`
     );
   }
+}
+
+function delay(ms: number) {
+  // tslint:disable-next-line no-string-based-set-timeout
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

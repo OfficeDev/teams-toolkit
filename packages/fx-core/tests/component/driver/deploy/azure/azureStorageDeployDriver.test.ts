@@ -25,7 +25,6 @@ import {
 } from "@azure/storage-blob";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import * as armStorage from "@azure/arm-storage";
-import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as uuid from "uuid";
@@ -84,7 +83,7 @@ describe("Azure Storage Deploy Driver test", () => {
         next: async (detail?: string): Promise<void> => {},
         end: async (): Promise<void> => {},
       } as IProgressHandler,
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -113,8 +112,56 @@ describe("Azure Storage Deploy Driver test", () => {
         return {};
       },
     } as BlockBlobClient);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isOk(), true);
+    const rex = await deploy.execute(args, context);
+    assert.equal(rex.result.isOk(), true);
+  });
+
+  it("deploy to storage happy path when storage exists", async () => {
+    const deploy = new AzureStorageDeployDriver();
+    await fs.open(path.join(testFolder, "test.txt"), "a");
+    const args = {
+      workingDirectory: sysTmp,
+      artifactFolder: `./${folder}`,
+      resourceId:
+        "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Storage/storageAccounts/some-server-farm",
+    } as DeployArgs;
+    const context = {
+      azureAccountProvider: new TestAzureAccountProvider(),
+      ui: new MockUserInteraction(),
+      logProvider: new TestLogProvider(),
+      progressBar: {
+        start: async (detail?: string): Promise<void> => {},
+        next: async (detail?: string): Promise<void> => {},
+        end: async (): Promise<void> => {},
+      } as IProgressHandler,
+    } as any;
+    sandbox
+      .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
+      .resolves(new MyTokenCredential());
+    const clientStub = sandbox.createStubInstance(StorageManagementClient);
+    clientStub.storageAccounts = {} as StorageAccounts;
+    const mockStorageManagementClient = new StorageManagementClient(new MyTokenCredential(), "id");
+    mockStorageManagementClient.storageAccounts = getMockStorageAccount1() as any;
+    sandbox.stub(armStorage, "StorageManagementClient").returns(mockStorageManagementClient);
+    sandbox.stub(ContainerClient.prototype, "exists").resolves(true);
+    sandbox.stub(ContainerClient.prototype, "listBlobsFlat").returns([
+      {
+        properties: {
+          contentLengthNo: 1,
+        },
+      },
+    ] as any);
+    //sandbox.stub(ContainerClient.prototype, "listBlobsFlat").resolves();
+    sandbox
+      .stub(ContainerClient.prototype, "deleteBlob")
+      .resolves({ errorCode: undefined } as BlobDeleteResponse);
+    /*const calls = sandbox.stub().callsFake(() => clientStub);
+    Object.setPrototypeOf(StorageManagementClient, calls);*/
+    sandbox.stub(ContainerClient.prototype, "getBlockBlobClient").returns({
+      uploadFile: async (filePath: string, options?: BlockBlobParallelUploadOptions) => {
+        return {};
+      },
+    } as BlockBlobClient);
     const rex = await deploy.execute(args, context);
     assert.equal(rex.result.isOk(), true);
   });
@@ -131,20 +178,20 @@ describe("Azure Storage Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .throws(new Error("error"));
 
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("clear storage error", async () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     const deploy = new AzureStorageDeployDriver();
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -174,16 +221,16 @@ describe("Azure Storage Deploy Driver test", () => {
     sandbox
       .stub(ContainerClient.prototype, "deleteBlob")
       .resolves({ errorCode: "403" } as BlobDeleteResponse);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageClearBlobsError");
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
+    chai.assert.equal(res.result._unsafeUnwrapErr().name, "AzureStorageClearBlobsError");
   });
 
   it("clear storage with remote server error", async () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     const deploy = new AzureStorageDeployDriver();
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
@@ -213,9 +260,9 @@ describe("Azure Storage Deploy Driver test", () => {
     sandbox
       .stub(ContainerClient.prototype, "deleteBlob")
       .resolves({ errorCode: "error", _response: { status: 500 } } as BlobDeleteResponse);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageClearBlobsError");
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
+    chai.assert.equal(res.result._unsafeUnwrapErr().name, "AzureStorageClearBlobsError");
   });
 
   it("upload with error", async () => {
@@ -231,7 +278,7 @@ describe("Azure Storage Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -260,11 +307,9 @@ describe("Azure Storage Deploy Driver test", () => {
         return { errorCode: "error" };
       },
     } as BlockBlobClient);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageUploadFilesError");
-    const rex = await deploy.execute(args, context);
-    assert.equal(rex.result.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
+    chai.assert.equal(res.result._unsafeUnwrapErr().name, "AzureStorageUploadFilesError");
   });
 
   it("upload with remote server error", async () => {
@@ -280,7 +325,7 @@ describe("Azure Storage Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -309,9 +354,9 @@ describe("Azure Storage Deploy Driver test", () => {
         return { errorCode: "error", _response: { status: 500 } };
       },
     } as BlockBlobClient);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageUploadFilesError");
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
+    chai.assert.equal(res.result._unsafeUnwrapErr().name, "AzureStorageUploadFilesError");
   });
 
   it("get container with remote server error", async () => {
@@ -327,7 +372,7 @@ describe("Azure Storage Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -342,9 +387,9 @@ describe("Azure Storage Deploy Driver test", () => {
         return {};
       },
     } as BlockBlobClient);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageGetContainerError");
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
+    chai.assert.equal(res.result._unsafeUnwrapErr().name, "AzureStorageGetContainerError");
   });
 
   it("get container with normal error", async () => {
@@ -360,7 +405,7 @@ describe("Azure Storage Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -375,8 +420,8 @@ describe("Azure Storage Deploy Driver test", () => {
         return {};
       },
     } as BlockBlobClient);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
-    chai.assert.equal(res._unsafeUnwrapErr().name, "AzureStorageGetContainerError");
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
+    chai.assert.equal(res.result._unsafeUnwrapErr().name, "AzureStorageGetContainerError");
   });
 });

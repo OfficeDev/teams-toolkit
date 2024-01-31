@@ -5,11 +5,13 @@ import { err, FxError, LogProvider, M365TokenProvider, ok, Result } from "@micro
 
 import { CoreSource } from "../../core/error";
 import { AppStudioScopes } from "../tools";
-import { Hub } from "./constants";
 import { NotExtendedToM365Error } from "./errors";
 import { PackageService } from "./packageService";
 import { serviceEndpoint, serviceScope } from "./serviceConstant";
 import { assembleError } from "../../error/common";
+import { HubTypes } from "../../question/other";
+import { ErrorContextMW } from "../../core/globalVars";
+import { hooks } from "@feathersjs/hooks";
 
 export class LaunchHelper {
   private readonly m365TokenProvider: M365TokenProvider;
@@ -19,20 +21,32 @@ export class LaunchHelper {
     this.m365TokenProvider = m365TokenProvider;
     this.logger = logger;
   }
-
+  @hooks([ErrorContextMW({ component: "LaunchHelper" })])
   public async getLaunchUrl(
-    hub: Hub,
+    hub: HubTypes,
     teamsAppId: string,
     capabilities: string[],
-    withLoginHint = true
+    withLoginHint = true,
+    isApiME = false
   ): Promise<Result<string, FxError>> {
     const loginHint = withLoginHint
       ? (await this.getUpnFromToken()) ?? "login_your_m365_account" // a workaround that user has the chance to login
       : undefined;
     let url: URL;
     switch (hub) {
-      case Hub.teams: {
-        const baseUrl = `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true`;
+      case HubTypes.teams: {
+        let installAppPackage = true;
+        if (
+          isApiME &&
+          !capabilities.includes("staticTab") &&
+          !capabilities.includes("configurableTab") &&
+          !capabilities.includes("Bot")
+        ) {
+          installAppPackage = false;
+        }
+        const baseUrl = installAppPackage
+          ? `https://teams.microsoft.com/l/app/${teamsAppId}?installAppPackage=true&webjoin=true`
+          : "https://teams.microsoft.com";
         url = new URL(baseUrl);
         const tid = await this.getTidFromToken();
         if (tid) {
@@ -40,7 +54,7 @@ export class LaunchHelper {
         }
         break;
       }
-      case Hub.outlook: {
+      case HubTypes.outlook: {
         const result = await this.getM365AppId(teamsAppId);
         if (result.isErr()) {
           return err(result.error);
@@ -51,7 +65,7 @@ export class LaunchHelper {
         url = new URL(baseUrl);
         break;
       }
-      case Hub.office:
+      case HubTypes.office:
         {
           const result = await this.getM365AppId(teamsAppId);
           if (result.isErr()) {

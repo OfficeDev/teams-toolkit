@@ -1,0 +1,153 @@
+.sample-gallery {
+  .sample-list-item:first-child {
+    border-top: 1px solid;
+    border-color: var(--vscode-menu-separatorBackground, #454545);
+  }
+
+  .sample-list-item {
+    height: 44px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    border-bottom: 1px solid;
+    border-color: var(--vscode-menu-separatorBackground, #454545);
+
+    .title-tag {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      min-width: 100px;
+    }
+
+    .hidden-label {
+      position: absolute;
+      top: auto;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    h3 {
+      font-size: 15px;
+      color: var(--vscode-editor-foreground);
+      font-weight: 400;
+      text-align: left;
+      line-height: 18px;
+      margin: 0;
+      min-width: 50px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    h3:hover {
+      flex-shrink: 0;
+    }
+
+    h3:hover ~ .tagSection {
+      flex-shrink: 1;
+      overflow: hidden;
+      flex-wrap: nowrap;
+    }
+
+    .padding {
+      flex-grow: 1;
+      flex-shrink: 2;
+      min-width: 4.5px;
+      height: 20px;
+      cursor:pointer;
+    }
+
+    .tagSection {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: flex-end;
+      margin-left: 4px;
+
+      .tag {
+        margin-left: 8px;
+        flex-shrink: 0;
+        height: 16px;
+        font-size: 13px;
+        padding: 2px 8px;
+        border: 0;
+        border-radius: 2px;
+
+        span {
+          display: inline-block;
+          height: 16px;
+          top: -1px;
+          position: relative;
+        }
+      }
+    }
+
+    .tooltip {
+      display: none;
+      width: auto;
+      background-color: #E5E5E5;
+      color: #606060;
+      text-align: center;
+      border-radius: 4px;
+      padding: 1px 4px;
+      margin-left: 10px;
+
+      position: absolute;
+      z-index: 1;
+    }
+
+    .info {
+      flex-shrink: 0;
+      margin-top: 2px;
+
+      .codicon {
+        margin-left: 7.5px;
+        color: var(--vscode-symbolIcon-interfaceForeground);
+      }
+    }
+
+    .info:hover .tooltip {
+      display: block;
+    }
+
+    vscode-button {
+      flex-shrink: 0;
+      border-radius: 0;
+      margin-left: 7.5px;
+      height: 28px;
+    }
+
+    .buttonSection {
+      z-index: 1;
+      display: flex;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      align-items: center;
+      background-color: var(--background);
+    }
+  }
+}
+
+body.vscode-light {
+  .tag {
+    background-color: #E5E5E5;
+    color: #606060;
+  }
+
+  .featured-sample-section .buttonSection {
+    background-color: #F8F8F8;
+  }
+}
+
+body.vscode-dark {
+  .tag {
+    background-color: #333333;
+    color: #CCCCCC;
+  }
+
+  .featured-sample-section .buttonSection {
+    background-color: #252526;
+  }
+}

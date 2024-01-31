@@ -1,6 +1,5 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -8,17 +7,17 @@ import {
   Notification,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { validateTab, initPage } from "../../../playwrightOperation";
+import { validateTab, initPage } from "../../../utils/playwrightOperation";
 import {
   validateNotification,
   startDebugging,
   upgradeByTreeView,
   waitForTerminal,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
@@ -56,7 +55,7 @@ describe("Migration Tests", function () {
       await validateNotification(Notification.Upgrade);
 
       // local debug
-      await mirgationDebugTestContext.debugWithCLI("local");
+      await mirgationDebugTestContext.debugWithCLI("local", false);
 
       // upgrade
       await upgradeByTreeView();
@@ -87,7 +86,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, Env.displayName, false);
+      await validateTab(page, {
+        displayName: Env.displayName,
+        includeFunction: false,
+      });
     }
   );
 });

@@ -44,10 +44,10 @@ describe("Dotnet Build Driver test", () => {
       logProvider: new TestLogProvider(),
       projectPath: "./",
       progressBar: progressHandler,
-    } as DriverContext;
+    } as any;
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
-    const res = await driver.run(args, context);
-    chai.expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
+    const res = await driver.execute(args, context);
+    chai.expect(res.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
     assert.equal(progressNextCaller.callCount, 1);
   });
 
@@ -62,7 +62,7 @@ describe("Dotnet Build Driver test", () => {
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
     const res = await driver.execute(args, context);
     chai.expect(res.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
@@ -79,9 +79,9 @@ describe("Dotnet Build Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
-    const res = await driver.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await driver.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 });

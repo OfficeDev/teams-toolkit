@@ -8,7 +8,7 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
@@ -20,6 +20,7 @@ provision:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
         echo "::set-teamsfx-env TAB_ENDPOINT=https://localhost:53000";
+
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:

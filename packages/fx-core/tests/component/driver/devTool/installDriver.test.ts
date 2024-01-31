@@ -15,6 +15,7 @@ import { FuncToolChecker } from "../../../../src/common/deps-checker/internal/fu
 import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { DepsCheckerError } from "../../../../src/common/deps-checker/depsError";
 import { DotnetChecker } from "../../../../src/common/deps-checker/internal/dotnetChecker";
+import { TestToolChecker } from "../../../../src/common/deps-checker/internal/testToolChecker";
 
 describe("Tools Install Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -312,6 +313,112 @@ describe("Tools Install Driver test", () => {
       );
       chai.assert.isTrue(res.isErr());
     });
+  });
+
+  describe("Test Tool installation test (run)", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Install test tool", async () => {
+      sandbox.stub(TestToolChecker.prototype, "resolve").resolves({
+        name: "Teams App Test Tool",
+        type: DepsType.TestTool,
+        isInstalled: true,
+        command: "teamsapptester",
+        details: {
+          isLinuxSupported: true,
+          supportedVersions: [],
+          installVersion: "0.1.0",
+          binFolders: ["./devTools/testTool"],
+        },
+      });
+      const res = await toolsInstallDriver.run(
+        { testTool: { version: "~0.1.0", symlinkDir: "./devTools/testTool" } },
+        mockedDriverContext
+      );
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        chai.assert.isEmpty(res.value);
+      }
+    });
+
+    // it("Install test tool failed without error", async () => {
+    //   sandbox.stub(TestToolChecker.prototype, "resolve").resolves({
+    //     name: "Teams App Test Tool",
+    //     type: DepsType.TestTool,
+    //     isInstalled: false,
+    //     command: "teamsapptester",
+    //     details: {
+    //       isLinuxSupported: true,
+    //       supportedVersions: [],
+    //       installVersion: "0.1.0",
+    //       binFolders: ["./devTools/testTool"],
+    //     },
+    //   });
+    //   const res = await toolsInstallDriver.run(
+    //     { testTool: { version: "~0.1.0", symlinkDir: "./devTools/testTool" } },
+    //     mockedDriverContext
+    //   );
+    //   chai.assert.isTrue(res.isErr());
+    // });
+    // it("Install test tool failed with error", async () => {
+    //   sandbox.stub(TestToolChecker.prototype, "resolve").resolves({
+    //     name: "Teams App Test Tool",
+    //     type: DepsType.TestTool,
+    //     isInstalled: false,
+    //     command: "teamsapptester",
+    //     details: {
+    //       isLinuxSupported: true,
+    //       supportedVersions: [],
+    //       installVersion: "0.1.0",
+    //       binFolders: ["./devTools/testTool"],
+    //     },
+    //     error: new DepsCheckerError("failed", "help link"),
+    //   });
+    //   const res = await toolsInstallDriver.run(
+    //     { testTool: { version: "~0.1.0", symlinkDir: "./devTools/testTool" } },
+    //     mockedDriverContext
+    //   );
+    //   chai.assert.isTrue(res.isErr());
+    // });
+    const cases: { name: string; args: unknown; expected: boolean }[] = [
+      {
+        name: "happy path",
+        args: { testTool: { version: "~1", symlinkDir: "./devTools/testTool" } },
+        expected: true,
+      },
+      { name: "not an object", args: { testTool: 1 }, expected: false },
+      { name: "version is not string", args: { testTool: { version: [] } }, expected: false },
+      {
+        name: "version is invalid semver",
+        args: { testTool: { version: "a.b" } },
+        expected: false,
+      },
+      {
+        name: "invalid symlinkDir",
+        args: { testTool: { version: "~1", symlinkDir: 1 } },
+        expected: false,
+      },
+    ];
+    for (const c of cases) {
+      it("Install test tool args check " + c.name, async () => {
+        sandbox.stub(TestToolChecker.prototype, "resolve").resolves({
+          name: "Teams App Test Tool",
+          type: DepsType.TestTool,
+          isInstalled: true,
+          command: "teamsapptester",
+          details: {
+            isLinuxSupported: true,
+            supportedVersions: [],
+            installVersion: "0.1.0",
+            binFolders: ["./devTools/testTool"],
+          },
+        });
+        const res = await toolsInstallDriver.run(c.args as InstallToolArgs, mockedDriverContext);
+        chai.assert.equal(res.isOk(), c.expected);
+      });
+    }
   });
 
   describe("Trust Cert test (execute)", () => {
@@ -709,6 +816,27 @@ describe("Tools Install Driver test", () => {
         chai.assert.includeDeepMembers(Array.from(res.result.value.entries()), [
           ["MY_DOTNET_PATH", ""],
         ]);
+      }
+    });
+
+    it("Install dotnet: undefined details", async () => {
+      sandbox.stub(DotnetChecker.prototype, "resolve").resolves({
+        name: ".NET Core SDK",
+        type: DepsType.Dotnet,
+        isInstalled: true,
+        command: "~/.fx/dotnet/dotnet.exe",
+        details: undefined as any,
+      });
+      const outputEnvVarNames = new Map([["dotnetPath", "MY_DOTNET_PATH"]]);
+      const res = await toolsInstallDriver.execute(
+        { dotnet: true },
+        mockedDriverContext,
+        outputEnvVarNames
+      );
+      chai.assert.isNotEmpty(res.summaries);
+      chai.assert.isTrue(res.result.isOk());
+      if (res.result.isOk()) {
+        chai.assert.isEmpty(res.result.value);
       }
     });
 

@@ -550,7 +550,7 @@ describe("Collaborator APIs for V3", () => {
             return ok("teamsAppId");
           }
         });
-      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId) => {
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake((appId) => {
         return appId;
       });
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
@@ -620,7 +620,7 @@ describe("Collaborator APIs for V3", () => {
             return ok("teamsAppId");
           }
         });
-      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake(async (appId) => {
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake((appId) => {
         return appId;
       });
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputsCli);
@@ -670,6 +670,44 @@ describe("Collaborator APIs for V3", () => {
         .resolves(err(new UserError("source", "name", "message")));
       const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
       assert.isTrue(result.isErr());
+    });
+
+    it("load empty manifest id in Teams app", async () => {
+      inputs[CollaborationConstants.AppType] = [CollaborationConstants.TeamsAppQuestionId];
+      inputs[QuestionNames.TeamsAppManifestFilePath] = "teamsAppManifestPath";
+      sandbox
+        .stub(CollaborationUtil, "loadManifestId")
+        .callsFake(async (manifestFilePath: string) => {
+          if (manifestFilePath == "aadManifestPath") {
+            return ok("aadObjectId");
+          } else {
+            return ok("teamsAppId");
+          }
+        });
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake((appId) => {
+        return undefined;
+      });
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
+      assert.isTrue(result.isErr() && result.error.name === "FailedToLoadManifestId");
+    });
+
+    it("load empty manifest id in aad app", async () => {
+      inputs[CollaborationConstants.AppType] = [CollaborationConstants.AadAppQuestionId];
+      inputs[QuestionNames.AadAppManifestFilePath] = "aadAppManifestPath";
+      sandbox
+        .stub(CollaborationUtil, "loadManifestId")
+        .callsFake(async (manifestFilePath: string) => {
+          if (manifestFilePath == "aadManifestPath") {
+            return ok("aadObjectId");
+          } else {
+            return ok("teamsAppId");
+          }
+        });
+      sandbox.stub(CollaborationUtil, "parseManifestId").callsFake((appId) => {
+        return undefined;
+      });
+      const result = await CollaborationUtil.getTeamsAppIdAndAadObjectId(inputs);
+      assert.isTrue(result.isErr() && result.error.name === "FailedToLoadManifestId");
     });
   });
 
@@ -1334,27 +1372,27 @@ describe("Collaborator APIs for V3", () => {
 
     it("happy path: hardcode", async () => {
       inputs.env = "dev";
-      const res = await CollaborationUtil.parseManifestId("00000000-0000-0000-0000-000000000000");
+      const res = CollaborationUtil.parseManifestId("00000000-0000-0000-0000-000000000000");
       assert.equal(res, "00000000-0000-0000-0000-000000000000");
     });
 
     it("happy path: read from env", async () => {
       inputs.env = "dev";
       const mockedEnvRestoreForInput = mockedEnv({ ["TEAMS_APP_ID"]: "teamsAppId" });
-      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
+      const res = CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
       assert.equal(res, "teamsAppId");
       mockedEnvRestoreForInput();
     });
 
     it("return undefined when invalid", async () => {
-      const res = await CollaborationUtil.parseManifestId("TEST");
+      const res = CollaborationUtil.parseManifestId("TEST");
       assert.isUndefined(res);
     });
 
     it("return undefined when empty env", async () => {
       inputs.env = "dev";
       const mockedEnvRestoreForInput = mockedEnv({ ["TEAMS_APP_ID"]: undefined });
-      const res = await CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
+      const res = CollaborationUtil.parseManifestId("${{TEAMS_APP_ID}}");
       assert.isUndefined(res);
       mockedEnvRestoreForInput();
     });

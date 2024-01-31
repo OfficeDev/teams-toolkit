@@ -7,7 +7,7 @@
 import { BotChannelType, IBotRegistration } from "./interfaces/IBotRegistration";
 
 import { Context, SystemError } from "@microsoft/teamsfx-api";
-import { AxiosInstance, default as axios } from "axios";
+import { AxiosInstance } from "axios";
 import { HttpStatusCode } from "../../../constant/commonConstant";
 import { AppStudioClient as AppStudio } from "../../../driver/teamsApp/clients/appStudioClient";
 import { APP_STUDIO_API_NAMES, getAppStudioEndpoint } from "../../../driver/teamsApp/constants";
@@ -25,6 +25,9 @@ import {
 import { Messages } from "../messages";
 import { RetryHandler } from "../retryHandler";
 import { CommonStrings, ConfigNames } from "../strings";
+import { ErrorContextMW } from "../../../../core/globalVars";
+import { hooks } from "@feathersjs/hooks";
+import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 
 function handleBotFrameworkError(e: any, apiName: string): void | undefined {
   if (e.response?.status === HttpStatusCode.NOTFOUND) {
@@ -46,7 +49,7 @@ export class AppStudioClient {
 
   public static newAxiosInstance(accessToken: string): AxiosInstance {
     accessToken = CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, accessToken);
-    const instance = axios.create({
+    const instance = WrappedAxiosClient.create({
       headers: {
         post: {
           Authorization: `Bearer ${accessToken}`,
@@ -58,10 +61,6 @@ export class AppStudioClient {
         },
       },
     });
-    instance.interceptors.request.use(function (config) {
-      config.params = { teamstoolkit: true, ...config.params };
-      return config;
-    });
     return instance;
   }
 
@@ -72,12 +71,11 @@ export class AppStudioClient {
   public static setRegion(region: string) {
     AppStudioClient.baseUrl = region;
   }
-
+  @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])
   public static async getBotRegistration(
     token: string,
     botId: string
   ): Promise<IBotRegistration | undefined> {
-    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.GET_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
@@ -86,7 +84,6 @@ export class AppStudioClient {
       );
       if (isHappyResponse(response)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.GET_BOT);
         return <IBotRegistration>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
       } else {
         // Defensive code and it should never reach here.
@@ -96,21 +93,47 @@ export class AppStudioClient {
       handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
     }
   }
-
+  @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])
+  public static async listBots(token: string): Promise<IBotRegistration[] | undefined> {
+    const axiosInstance = AppStudioClient.newAxiosInstance(token);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        axiosInstance.get(`${AppStudioClient.baseUrl}/api/botframework`)
+      );
+      if (isHappyResponse(response)) {
+        return <IBotRegistration[]>response!.data; // response cannot be undefined as it's checked in isHappyResponse.
+      } else {
+        // Defensive code and it should never reach here.
+        throw new Error("Failed to get data");
+      }
+    } catch (e) {
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
+    }
+  }
+  @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])
+  public static async deleteBot(token: string, botId: string): Promise<void> {
+    const axiosInstance = AppStudioClient.newAxiosInstance(token);
+    try {
+      await RetryHandler.Retry(() =>
+        axiosInstance.delete(`${AppStudioClient.baseUrl}/api/botframework/${botId}`)
+      );
+    } catch (e) {
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.DELETE_BOT);
+    }
+  }
+  @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])
   public static async createBotRegistration(
     token: string,
     registration: IBotRegistration,
     checkExistence = true,
     context?: Context
   ): Promise<void> {
-    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     if (registration.botId && checkExistence) {
       const botReg = await AppStudioClient.getBotRegistration(token, registration.botId);
       if (botReg) {
         context?.logProvider?.info(Messages.BotResourceExist("Appstudio"));
-        AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
         return;
       }
     }
@@ -122,7 +145,6 @@ export class AppStudioClient {
       if (!isHappyResponse(response)) {
         throw new ProvisionError(CommonStrings.APP_STUDIO_BOT_REGISTRATION);
       }
-      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.CREATE_BOT);
     } catch (e) {
       handleBotFrameworkError(e, APP_STUDIO_API_NAMES.CREATE_BOT);
     }
@@ -149,22 +171,21 @@ export class AppStudioClient {
 
     return;
   }
-
+  @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])
   public static async updateBotRegistration(
     token: string,
     botReg: IBotRegistration
   ): Promise<void> {
-    AppStudio.sendStartEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
     const axiosInstance = AppStudioClient.newAxiosInstance(token);
 
     try {
       const response = await RetryHandler.Retry(() =>
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         axiosInstance.post(`${AppStudioClient.baseUrl}/api/botframework/${botReg.botId}`, botReg)
       );
       if (!isHappyResponse(response)) {
         throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT);
       }
-      AppStudio.sendSuccessEvent(APP_STUDIO_API_NAMES.UPDATE_BOT);
     } catch (e) {
       handleBotFrameworkError(e, APP_STUDIO_API_NAMES.UPDATE_BOT);
     }

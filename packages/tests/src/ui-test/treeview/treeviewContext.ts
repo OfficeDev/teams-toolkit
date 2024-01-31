@@ -1,6 +1,6 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import * as fs from "fs-extra";
 import { expect } from "chai";
@@ -13,11 +13,15 @@ import {
   WebView,
 } from "vscode-extension-tester";
 import { TestContext } from "../testContext";
-import { CommandPaletteCommands, Extension, Timeout } from "../../constants";
+import {
+  CommandPaletteCommands,
+  Extension,
+  Timeout,
+} from "../../utils/constants";
 import {
   execCommandIfExist,
   ensureExtensionActivated,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { getScreenshotName } from "../../utils/nameUtil";
 
 export class TreeViewTestContext extends TestContext {
@@ -59,19 +63,19 @@ export async function createSampleProject(
   await webView.switchToFrame();
   let foundSample = false;
   console.log("finding sample...");
-  const elements = await webView.findWebElements(
-    By.xpath('//div[@class="sample-gallery"]/div[@class="sample-stack"]/div')
-  );
+
+  const elements = await webView.findWebElements(By.css("h3"));
   for (const element of elements) {
-    const sampleItem = await element.findElement(By.css("h3"));
-    const SampleItemName = await sampleItem.getText();
+    const SampleItemName = await element.getText();
     if (SampleItemName === sample) {
       foundSample = true;
       await element.click();
       break;
     }
   }
+
   if (!foundSample) {
+    await VSBrowser.instance.takeScreenshot(getScreenshotName("no-sample-"));
     throw new Error(`Not found sample ${sample}`);
   }
   const button = await webView.findWebElement(

@@ -187,12 +187,96 @@
             await _middleware.OnTurnAsync(mockContext.Object, (ctx) => Task.CompletedTask, CancellationToken.None);
 
             Assert.AreEqual(1, _storage.Items.Count);
-            var reference = _storage.Items.GetValueOrDefault($"_a_{conversationId}", null);
+            var reference = _storage.Items.GetValueOrDefault($"_a_{teamId}", null);
             Assert.IsNotNull(reference);
             Assert.AreEqual(activityId, reference.ActivityId);
             Assert.AreEqual("x", reference.ChannelId);
             Assert.AreEqual("a", reference.Conversation.TenantId);
-            Assert.AreEqual(conversationId, reference.Conversation.Id);
+            Assert.AreEqual(teamId, reference.Conversation.Id);
+        }
+
+        [TestMethod]
+        public async Task OnTurnAsync_HandleCurrentBotMessaged_GeneralChannel()
+        {
+            var activityId = Guid.NewGuid().ToString("N");
+            var conversationId = Guid.NewGuid().ToString("N");
+            var teamId = Guid.NewGuid().ToString("N");
+            var activity = new Activity
+            {
+                Type = "message",
+                Id = activityId,
+                ChannelId = "x",
+                ChannelData = new TeamsChannelData
+                {
+                    Team = new TeamInfo
+                    {
+                        Id = teamId,
+                    },
+                    Channel = new ChannelInfo
+                    {
+                        Id = teamId,
+                    },
+                },
+                Conversation = new ConversationAccount
+                {
+                    Id = conversationId,
+                    Name = "bar",
+                    TenantId = "a",
+                    ConversationType = "channel",
+                },
+            };
+            var mockContext = new Mock<ITurnContext>();
+            mockContext.SetupGet(c => c.Activity).Returns(activity);
+
+            Assert.AreEqual(0, _storage.Items.Count);
+            await _middleware.OnTurnAsync(mockContext.Object, (ctx) => Task.CompletedTask, CancellationToken.None);
+
+            Assert.AreEqual(1, _storage.Items.Count);
+            var reference = _storage.Items.GetValueOrDefault($"_a_{teamId}", null);
+            Assert.IsNotNull(reference);
+            Assert.AreEqual(activityId, reference.ActivityId);
+            Assert.AreEqual("x", reference.ChannelId);
+            Assert.AreEqual("a", reference.Conversation.TenantId);
+            Assert.AreEqual(teamId, reference.Conversation.Id);
+        }
+
+        [TestMethod]
+        public async Task OnTurnAsync_HandleCurrentBotMessaged_NonGeneralChannel()
+        {
+            var activityId = Guid.NewGuid().ToString("N");
+            var conversationId = Guid.NewGuid().ToString("N");
+            var teamId = Guid.NewGuid().ToString("N");
+            var activity = new Activity
+            {
+                Type = "message",
+                Id = activityId,
+                ChannelId = "x",
+                ChannelData = new TeamsChannelData
+                {
+                    Team = new TeamInfo
+                    {
+                        Id = teamId,
+                    },
+                    Channel = new ChannelInfo
+                    {
+                        Id = $"{teamId}-channel",
+                    },
+                },
+                Conversation = new ConversationAccount
+                {
+                    Id = conversationId,
+                    Name = "bar",
+                    TenantId = "a",
+                    ConversationType = "channel",
+                },
+            };
+            var mockContext = new Mock<ITurnContext>();
+            mockContext.SetupGet(c => c.Activity).Returns(activity);
+
+            Assert.AreEqual(0, _storage.Items.Count);
+            await _middleware.OnTurnAsync(mockContext.Object, (ctx) => Task.CompletedTask, CancellationToken.None);
+
+            Assert.AreEqual(0, _storage.Items.Count);
         }
 
         [TestMethod]

@@ -316,18 +316,18 @@ export class BotSsoExecutionDialog extends ComponentDialog {
     if (!value || !value.id) {
       throw new Error("Invalid signin/tokenExchange. Missing activity.value.id.");
     }
-    return `${channelId}/${conversationId}/${value.id}`;
+    return `${channelId}/${conversationId}/${value.id as string}`;
   }
 
   private matchPattern(pattern: string | RegExp, text: string): boolean | RegExpMatchArray {
     if (text) {
       if (typeof pattern === "string") {
-        const regExp = new RegExp(pattern as string, "i");
+        const regExp = new RegExp(pattern, "i");
         return regExp.test(text);
       }
 
       if (pattern instanceof RegExp) {
-        const matches = text.match(pattern as RegExp);
+        const matches = text.match(pattern);
         return matches ?? false;
       }
     }

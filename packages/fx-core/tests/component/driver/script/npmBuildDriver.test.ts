@@ -39,10 +39,10 @@ describe("NPM Build Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     sandbox.stub(utils, "executeCommand").resolves(ok(["", {}]));
-    const res = await driver.run(args, context);
-    chai.assert.equal(res.isOk(), true);
+    const res = await driver.execute(args, context);
+    chai.assert.equal(res.result.isOk(), true);
 
     chai.assert.equal((await driver.execute(args, context)).result.isOk(), true);
   });
@@ -58,9 +58,9 @@ describe("NPM Build Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     sandbox.stub(utils, "executeCommand").resolves(err(new UserError({})));
-    const res = await driver.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await driver.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 });

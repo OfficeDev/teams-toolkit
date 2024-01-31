@@ -1,24 +1,21 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
+import { performance } from "perf_hooks";
 import * as util from "util";
-import * as vscode from "vscode";
 import { v4 as uuidv4 } from "uuid";
-import { FxError, Result, UserError, Void } from "@microsoft/teamsfx-api";
-import { assembleError } from "@microsoft/teamsfx-core";
+import * as vscode from "vscode";
+import { FxError, Result, SystemError, UserError, Void } from "@microsoft/teamsfx-api";
+import { assembleError, Correlator } from "@microsoft/teamsfx-core";
+import { ExtensionErrors, ExtensionSource } from "../../error";
 import * as globalVariables from "../../globalVariables";
 import { showError } from "../../handlers";
-import { ExtensionErrors, ExtensionSource } from "../../error";
-import { getDefaultString, localize } from "../../utils/localizeUtils";
-import { sendDebugAllEvent } from "../localTelemetryReporter";
-import * as commonUtils from "../commonUtils";
 import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
-import { performance } from "perf_hooks";
-import { Correlator } from "@microsoft/teamsfx-core";
+import { getDefaultString, localize } from "../../utils/localizeUtils";
+import * as commonUtils from "../commonUtils";
+import { sendDebugAllEvent } from "../localTelemetryReporter";
 
 const ControlCodes = {
   CtrlC: "\u0003",
@@ -39,15 +36,14 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   open(): void {
     this.startTime = performance.now();
     this.do()
-      .then((res) => {
-        const error = res.isErr() ? res.error : undefined;
-        this.stop(error);
-      })
+      .then((res) => this.stop(res.isErr() ? res.error : undefined))
       .catch((error) => this.stop(error));
   }
 
   close(): void {
-    this.stop();
+    this.stop().catch((error) => {
+      this.writeEmitter.fire(`${error?.message as string}\r\n`);
+    });
   }
 
   handleInput(data: string): void {
@@ -59,17 +55,23 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
           getDefaultString("teamstoolkit.localDebug.taskCancelError"),
           localize("teamstoolkit.localDebug.taskCancelError")
         )
-      );
+      ).catch((error) => {
+        this.writeEmitter.fire(`${error?.message as string}\r\n`);
+      });
     }
   }
 
   protected async stop(error?: any, outputError = true): Promise<void> {
     if (error) {
+      const fxError: UserError | SystemError = assembleError(error);
+
       // TODO: add color
-      this.writeEmitter.fire(`${error?.message}\r\n`);
-      const fxError = assembleError(error);
+      this.writeEmitter.fire(`${fxError.message}\r\n`);
+
       if (outputError) {
-        showError(fxError);
+        showError(fxError).catch(() => {
+          // ignore
+        });
       }
       this.closeEmitter.fire(1);
 

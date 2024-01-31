@@ -2,15 +2,19 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
+  CreateProjectResult,
   Func,
   FxError,
+  IQTreeNode,
   Inputs,
-  QTreeNode,
+  OpenAIPluginManifest,
   Result,
   Stage,
   Tools,
+  UserError,
   Void,
   err,
   ok,
@@ -19,14 +23,26 @@ import {
   Correlator,
   FxCore,
   environmentManager,
+  getCopilotStatus,
   getSideloadingStatus,
+  setRegion,
   listDevTunnels,
+  HubOptions,
+  environmentNameManager,
+  TestToolInstallOptions,
+  DependencyStatus,
+  DepsManager,
+  assembleError,
+  DepsType,
+  CoreDepsLoggerAdapter,
+  CoreDepsTelemetryAdapter,
+  EmptyTelemetry,
 } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
-import { IServerConnection, Namespaces } from "./apis";
+import { DependencyStatusRPC, IServerConnection, Namespaces } from "./apis";
 import { callFunc } from "./customizedFuncAdapter";
 import LogProvider from "./providers/logger";
 import TelemetryReporter from "./providers/telemetry";
@@ -63,6 +79,7 @@ export default class ServerConnection implements IServerConnection {
       this.buildArtifactsRequest.bind(this),
       this.publishApplicationRequest.bind(this),
       this.deployTeamsAppManifestRequest.bind(this),
+      this.getCopilotStatusRequest.bind(this),
       this.getSideloadingStatusRequest.bind(this),
       this.getLaunchUrlRequest.bind(this),
 
@@ -70,28 +87,31 @@ export default class ServerConnection implements IServerConnection {
       this.customizeValidateFuncRequest.bind(this),
       this.customizeOnSelectionChangeFuncRequest.bind(this),
       this.addSsoRequest.bind(this),
-      this.getProjectComponents.bind(this),
       this.getProjectMigrationStatusRequest.bind(this),
       this.migrateProjectRequest.bind(this),
       this.publishInDeveloperPortalRequest.bind(this),
+      this.setRegionRequest.bind(this),
       this.listDevTunnelsRequest.bind(this),
+      this.copilotPluginAddAPIRequest.bind(this),
+      this.loadOpenAIPluginManifestRequest.bind(this),
+      this.listOpenAPISpecOperationsRequest.bind(this),
+      this.checkAndInstallTestTool.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
     });
   }
-
   public listen() {
     this.connection.listen();
   }
 
-  public async getQuestionsRequest(
+  public getQuestionsRequest(
     stage: Stage,
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
+  ): Result<IQTreeNode | undefined, FxError> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    const res = await Correlator.runWithId(
+    const res = Correlator.runWithId(
       corrId,
       (stage, inputs) => this.core.getQuestions(stage, inputs),
       stage,
@@ -103,7 +123,7 @@ export default class ServerConnection implements IServerConnection {
   public async createProjectRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<string, FxError>> {
+  ): Promise<Result<CreateProjectResult, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -116,7 +136,7 @@ export default class ServerConnection implements IServerConnection {
   public async localDebugRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -152,7 +172,7 @@ export default class ServerConnection implements IServerConnection {
   public async preCheckYmlAndEnvForVSRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -165,7 +185,7 @@ export default class ServerConnection implements IServerConnection {
   public async validateManifestForVSRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -178,7 +198,7 @@ export default class ServerConnection implements IServerConnection {
   public async provisionResourcesRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -191,7 +211,7 @@ export default class ServerConnection implements IServerConnection {
   public async deployArtifactsRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -233,7 +253,7 @@ export default class ServerConnection implements IServerConnection {
   public async publishApplicationRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -267,7 +287,6 @@ export default class ServerConnection implements IServerConnection {
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
-    inputs[CoreQuestionNames.M365Host] = "Teams";
     const res = await Correlator.runWithId(
       corrId,
       (params) => this.core.previewWithManifest(params),
@@ -280,7 +299,7 @@ export default class ServerConnection implements IServerConnection {
     funcId: number,
     params: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const res = await callFunc("LocalFunc", funcId, params);
     return standardizeResult(res);
   }
@@ -320,13 +339,23 @@ export default class ServerConnection implements IServerConnection {
     return ok(String(res));
   }
 
+  public async getCopilotStatusRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<string, FxError>> {
+    const res = await getCopilotStatus(accountToken.token, true);
+    return ok(String(res));
+  }
+
   public async addSsoRequest(inputs: Inputs, token: CancellationToken) {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const func: Func = {
       namespace: "fx-solution-azure",
       method: "addSso",
       params: {
-        envName: environmentManager.getDefaultEnvName(),
+        envName: environmentNameManager.getDefaultEnvName(),
       },
     };
     const res = await Correlator.runWithId(
@@ -336,14 +365,6 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return standardizeResult(res);
-  }
-
-  public async getProjectComponents(
-    inputs: Inputs,
-    token: CancellationToken
-  ): Promise<Result<string | undefined, FxError>> {
-    // No components for V5
-    return ok("");
   }
 
   public async getProjectMigrationStatusRequest(
@@ -375,7 +396,7 @@ export default class ServerConnection implements IServerConnection {
   public async publishInDeveloperPortalRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>> {
+  ): Promise<Result<undefined, FxError>> {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const res = await Correlator.runWithId(
       corrId,
@@ -383,6 +404,16 @@ export default class ServerConnection implements IServerConnection {
       inputs
     );
     return standardizeResult(res);
+  }
+
+  public async setRegionRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<any, FxError>> {
+    await setRegion(accountToken.token);
+    return ok(true);
   }
 
   public async listDevTunnelsRequest(
@@ -394,6 +425,85 @@ export default class ServerConnection implements IServerConnection {
       corrId,
       (params) => listDevTunnels(inputs.devTunnelToken),
       inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async copilotPluginAddAPIRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<undefined, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginAddAPI(inputs),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async loadOpenAIPluginManifestRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<OpenAIPluginManifest, FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginLoadOpenAIManifest(inputs),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
+  public async listOpenAPISpecOperationsRequest(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<ApiOperation[], FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.copilotPluginListOperations(inputs),
+      inputs
+    );
+    if (res.isErr()) {
+      const msg = res.error.map((e) => e.content).join("\n");
+      return standardizeResult(
+        err(new UserError("Fx-VS", "ListOpenAPISpecOperationsError", msg, msg))
+      );
+    }
+    return standardizeResult(ok(res.value));
+  }
+
+  public async checkAndInstallTestTool(
+    options: TestToolInstallOptions & { correlationId: string },
+    token: CancellationToken
+  ): Promise<Result<DependencyStatusRPC, FxError>> {
+    const corrId = options.correlationId || "";
+    const depsManager = new DepsManager(
+      new CoreDepsLoggerAdapter(this.tools.logProvider),
+      this.tools.telemetryReporter
+        ? new CoreDepsTelemetryAdapter(this.tools.telemetryReporter)
+        : new EmptyTelemetry()
+    );
+    const res = await Correlator.runWithId(
+      corrId,
+      async (): Promise<Result<DependencyStatusRPC, FxError>> => {
+        try {
+          const depStatus = await depsManager.ensureDependency(DepsType.TestTool, false, options);
+          // convert DependencyStatus to pure JSON because after the default JSON.stringify and error message will be lost
+          return ok({
+            isInstalled: depStatus.isInstalled,
+            command: depStatus.command,
+            details: depStatus.details,
+            ...(depStatus.error !== undefined
+              ? { error: { message: depStatus.error.message, helpLink: depStatus.error.helpLink } }
+              : {}),
+          });
+        } catch (error: unknown) {
+          const fxError = assembleError(error, "Fx-VS");
+          return err(fxError);
+        }
+      }
     );
     return standardizeResult(res);
   }

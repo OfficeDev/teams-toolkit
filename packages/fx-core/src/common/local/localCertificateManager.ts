@@ -41,6 +41,7 @@ export interface LocalCertificate {
   isTrusted?: boolean;
   alreadyTrusted?: boolean;
   error?: FxError;
+  found?: boolean;
 }
 
 export class LocalCertificateManager {
@@ -65,7 +66,7 @@ export class LocalCertificateManager {
    * - Check cert store if trusted (thumbprint, expiration)
    * - Add to cert store if not trusted (friendly name as well)
    */
-  public async setupCertificate(needTrust: boolean): Promise<LocalCertificate> {
+  public async setupCertificate(needTrust: boolean, checkOnly = false): Promise<LocalCertificate> {
     const certFilePath = `${this.certFolder}/${LocalDebugCertificate.CertFileName}`;
     const keyFilePath = `${this.certFolder}/${LocalDebugCertificate.KeyFileName}`;
     const localCert: LocalCertificate = {
@@ -86,18 +87,25 @@ export class LocalCertificateManager {
         }
       }
 
+      localCert.found = !!certThumbprint;
       if (!certThumbprint) {
+        if (checkOnly) {
+          return localCert;
+        }
         // generate cert and key
         certThumbprint = await this.generateCertificate(certFilePath, keyFilePath);
       }
 
       if (needTrust) {
-        if (certThumbprint && (await this.verifyCertificateInStore(certThumbprint))) {
+        if (await this.verifyCertificateInStore(certThumbprint)) {
           // already trusted
           localCert.isTrusted = true;
           localCert.alreadyTrusted = true;
         } else {
           localCert.alreadyTrusted = false;
+          if (checkOnly) {
+            return localCert;
+          }
           await this.trustCertificate(
             localCert,
             certThumbprint,
@@ -106,6 +114,7 @@ export class LocalCertificateManager {
         }
       }
     } catch (error: any) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       this.logger?.warning(`Failed to setup certificate. Error: ${error}`);
       localCert.isTrusted = false;
       localCert.error = new UserError({
@@ -119,7 +128,7 @@ export class LocalCertificateManager {
     }
   }
 
-  private async generateCertificate(certFile: string, keyFile: string): Promise<string> {
+  async generateCertificate(certFile: string, keyFile: string): Promise<string> {
     // prepare attributes and extensions
     const now = new Date();
     const expiry = new Date();
@@ -182,10 +191,7 @@ export class LocalCertificateManager {
     return thumbprint;
   }
 
-  private verifyCertificateContent(
-    certContent: string,
-    keyContent: string
-  ): [string | undefined, boolean] {
+  verifyCertificateContent(certContent: string, keyContent: string): [string | undefined, boolean] {
     const thumbprint: string | undefined = undefined;
     try {
       const cert = pki.certificateFromPem(certContent);
@@ -268,7 +274,7 @@ export class LocalCertificateManager {
     }
   }
 
-  private async verifyCertificateInStore(thumbprint: string): Promise<boolean | undefined> {
+  async verifyCertificateInStore(thumbprint: string): Promise<boolean | undefined> {
     try {
       if (os.type() === "Windows_NT") {
         return await this.checkCertificateWindows(thumbprint);
@@ -293,6 +299,7 @@ export class LocalCertificateManager {
       }
     } catch (error) {
       // treat any error as not verified, to not block the main progress
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       this.logger?.debug(`Certificate unverified. Details: ${error}`);
       return false;
     }
@@ -337,6 +344,7 @@ export class LocalCertificateManager {
       }
     } catch (error: any) {
       // treat any error as install failure, to not block the main progress
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       this.logger?.warning(`Failed to install certificate. Error: ${error}`);
       localCert.isTrusted = false;
       localCert.error = new UserError({
@@ -362,7 +370,7 @@ export class LocalCertificateManager {
         );
         userSelected = res.isOk() ? res.value : undefined;
         if (userSelected === learnMoreText()) {
-          this.ui.openUrl(learnMoreUrl);
+          void this.ui.openUrl(learnMoreUrl);
         }
       } while (userSelected === learnMoreText());
       return userSelected === installText();

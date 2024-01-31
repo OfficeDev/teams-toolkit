@@ -1,0 +1,126 @@
+name: Code Cleanup Report Stage 2
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  todo-comment-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: setup project
+      uses: ./.github/actions/setup-project
+
+    - name: Search todo comment list
+      id: search
+      run: |
+        content=`grep -inr "// TODO" --include \*.ts --exclude-dir=node_modules .`
+        delimiter="$(openssl rand -hex 8)"
+        echo "todo<<${delimiter}" >> "${GITHUB_OUTPUT}"
+        echo "$content" >> "${GITHUB_OUTPUT}"
+        echo "${delimiter}" >> "${GITHUB_OUTPUT}"
+
+    - name: Find owner for todo comment file
+      run: |
+        node .github/scripts/todo-comment-check.js
+      env: 
+        TODO_LIST: ${{steps.search.outputs.todo}}   
+
+  file-lines-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Find file with lines over 600
+      run: |
+        wc -l `find packages/*/src -type f -name "*.ts" ` | awk '{ if($1 > 600 && $2 !="total") print $1,$2;}'
+      
+  type-checking-promise:
+    runs-on: ubuntu-latest
+    if: false
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+        - tests
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: setup project
+      uses: ./.github/actions/setup-project
+
+    - name: Update eslint config
+      run: |
+        sed -i 's/shared/promise/g' .eslintrc.js
+        sed -i '/header/d' .eslintrc.js
+      working-directory: packages/${{matrix.package}}
+
+    - name: Detect type-checking promise issues
+      run: |
+        npx eslint src --ext ts --format unix
+      working-directory: packages/${{matrix.package}}
+
+  type-checking-else:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+        - cli
+        - tests
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: setup project
+      uses: ./.github/actions/setup-project
+
+    - name: Update eslint config
+      run: |
+        sed -i 's/shared/type/g' .eslintrc.js
+        sed -i '/header/d' .eslintrc.js
+      working-directory: packages/${{matrix.package}}
+
+    - name: Detect type-checking else issues
+      run: |
+        npx eslint src --ext ts --format unix
+      working-directory: packages/${{matrix.package}}
+
+  normal-eslint-check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+        - fx-core
+        - server
+        - vscode-extension
+        - manifest
+        - api
+        - cli
+        - sdk
+        - sdk-react
+        - tests
+        - adaptivecards-tools-sdk
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: setup project
+      uses: ./.github/actions/setup-project
+
+    - name: Detect type-checking normal issues
+      run: |
+        npx eslint src --ext ts --format unix
+      working-directory: packages/${{matrix.package}}

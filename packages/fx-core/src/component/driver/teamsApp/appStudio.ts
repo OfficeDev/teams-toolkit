@@ -43,7 +43,6 @@ import set from "lodash/set";
 import { actionName as createAppPackageActionName } from "./createAppPackage";
 import { actionName as configureTeamsAppActionName } from "./configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
-import { TelemetryUtils } from "./utils/telemetry";
 import { QuestionNames } from "../../../question";
 
 export async function checkIfAppInDifferentAcountSameTenant(
@@ -77,18 +76,16 @@ export async function updateManifestV3(
   ctx: Context,
   inputs: InputsWithProjectPath
 ): Promise<Result<Map<string, string>, FxError>> {
-  TelemetryUtils.init(ctx);
   const state = {
     ENV_NAME: process.env.TEAMSFX_ENV,
   };
   const manifestTemplatePath =
-    inputs.manifestTemplatePath ??
-    (await manifestUtils.getTeamsAppManifestPath(inputs.projectPath));
+    inputs.manifestTemplatePath ?? manifestUtils.getTeamsAppManifestPath(inputs.projectPath);
   const manifestFileName = path.join(
     inputs.projectPath,
     AppPackageFolderName,
     BuildFolderName,
-    `manifest.${state.ENV_NAME}.json`
+    `manifest.${state.ENV_NAME!}.json`
   );
 
   // Prepare for driver
@@ -102,7 +99,7 @@ export async function updateManifestV3(
     appPackagePath: createAppPackageArgs.outputZipPath,
   };
   const driverContext: DriverContext = generateDriverContext(ctx, inputs);
-  await envUtil.readEnv(inputs.projectPath!, state.ENV_NAME!);
+  await envUtil.readEnv(inputs.projectPath, state.ENV_NAME!);
 
   // render manifest
   let manifest: any;
@@ -118,7 +115,7 @@ export async function updateManifestV3(
     !(await fs.pathExists(manifestFileName)) ||
     !(await fs.pathExists(createAppPackageArgs.outputZipPath))
   ) {
-    const res = await buildDriver.run(createAppPackageArgs, driverContext);
+    const res = (await buildDriver.execute(createAppPackageArgs, driverContext)).result;
     if (res.isErr()) {
       return err(res.error);
     }
@@ -139,9 +136,9 @@ export async function updateManifestV3(
     );
 
     if (res?.isOk() && res.value === previewOnly) {
-      return await buildDriver.run(createAppPackageArgs, driverContext);
+      return (await buildDriver.execute(createAppPackageArgs, driverContext)).result;
     } else if (res?.isOk() && res.value === previewUpdate) {
-      await buildDriver.run(createAppPackageArgs, driverContext);
+      await buildDriver.execute(createAppPackageArgs, driverContext);
     } else {
       return err(new UserCancelError("appStudio"));
     }
@@ -158,7 +155,7 @@ export async function updateManifestV3(
   try {
     const localUpdateTime = process.env.TEAMS_APP_UPDATE_TIME;
     if (localUpdateTime) {
-      const app = await AppStudioClient.getApp(teamsAppId!, appStudioToken, ctx.logProvider);
+      const app = await AppStudioClient.getApp(teamsAppId, appStudioToken, ctx.logProvider);
       const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
       if (new Date(localUpdateTime).getTime() < devPortalUpdateTime) {
         const option = getLocalizedString("plugins.appstudio.overwriteAndUpdate");
@@ -175,7 +172,7 @@ export async function updateManifestV3(
     }
 
     const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
-    const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
+    const result = (await configureDriver.execute(updateTeamsAppArgs, driverContext)).result;
     if (result.isErr()) {
       return err(result.error);
     }
@@ -197,21 +194,21 @@ export async function updateManifestV3(
         },
         { content: url, color: Colors.BRIGHT_CYAN },
       ];
-      ctx.userInteraction.showMessage("info", message, false);
+      await ctx.userInteraction.showMessage("info", message, false);
     } else {
-      ctx.userInteraction
+      void ctx.userInteraction
         .showMessage(
           "info",
           getLocalizedString("plugins.appstudio.teamsAppUpdatedNotice"),
           false,
           getLocalizedString("plugins.appstudio.viewDeveloperPortal")
         )
-        .then((res) => {
+        .then(async (res) => {
           if (
             res?.isOk() &&
             res.value === getLocalizedString("plugins.appstudio.viewDeveloperPortal")
           ) {
-            ctx.userInteraction.openUrl(url);
+            await ctx.userInteraction.openUrl(url);
           }
         });
     }
@@ -221,7 +218,7 @@ export async function updateManifestV3(
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.UpdateManifestWithInvalidAppError.name,
-          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId!)
+          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId)
         )
       );
     } else {
@@ -269,8 +266,10 @@ export async function updateTeamsAppV3ForPublish(
     } catch (e) {
       validationError = AppStudioResultFactory.UserError(
         AppStudioError.ValidationFailedError.name,
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
         AppStudioError.ValidationFailedError.message([(e as any).message])
       );
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       validationError.stack = (e as any).stack;
     }
   } else {
@@ -292,7 +291,7 @@ export async function updateTeamsAppV3ForPublish(
   }
 
   const configureDriver: ConfigureTeamsAppDriver = Container.get(configureTeamsAppActionName);
-  const result = await configureDriver.run(updateTeamsAppArgs, driverContext);
+  const result = (await configureDriver.execute(updateTeamsAppArgs, driverContext)).result;
   if (result.isErr()) {
     return err(result.error);
   }
@@ -324,7 +323,7 @@ export async function getAppPackage(
     const zip = new AdmZip(buffer);
     const zipEntries = zip.getEntries(); // an array of ZipEntry records
 
-    zipEntries?.forEach(async function (zipEntry) {
+    zipEntries?.forEach(function (zipEntry) {
       const data = zipEntry.getData();
       const name = zipEntry.entryName.toLowerCase();
       switch (name) {

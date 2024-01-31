@@ -7,15 +7,15 @@
     "developer": {
         "name": "Teams App, Inc.",
         "websiteUrl": "https://www.example.com",
-        "privacyUrl": "https://www.example.com/termofuse",
-        "termsOfUseUrl": "https://www.example.com/privacy"
+        "privacyUrl": "https://www.example.com/privacy",
+        "termsOfUseUrl": "https://www.example.com/termofuse"
     },
     "icons": {
         "color": "color.png",
         "outline": "outline.png"
     },
     "name": {
-        "short": "{{appName}}-${{TEAMSFX_ENV}}",
+        "short": "{{appName}}${{APP_NAME_SUFFIX}}",
         "full": "full name for {{appName}}"
     },
     "description": {
@@ -84,23 +84,6 @@
                             "title": "Text",
                             "description": "Text for the card",
                             "inputType": "textarea"
-                        }
-                    ]
-                },
-                {
-                    "id": "shareMessage",
-                    "context": [
-                        "message"
-                    ],
-                    "description": "Test command to run action on message context (message sharing)",
-                    "title": "Share Message",
-                    "type": "action",
-                    "parameters": [
-                        {
-                            "name": "includeImage",
-                            "title": "Include Image",
-                            "description": "Include image in Hero Card",
-                            "inputType": "toggle"
                         }
                     ]
                 },

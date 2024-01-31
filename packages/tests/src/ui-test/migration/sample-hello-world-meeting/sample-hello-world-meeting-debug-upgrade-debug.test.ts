@@ -1,6 +1,5 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { SampledebugContext } from "../../samples/sampledebugContext";
 import {
   Timeout,
@@ -9,7 +8,7 @@ import {
   TemplateProjectFolder,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import {
   validateNotification,
@@ -17,8 +16,8 @@ import {
   upgradeByTreeView,
   startDebugging,
   waitForTerminal,
-} from "../../../vscodeOperation";
-import { initTeamsPage } from "../../../playwrightOperation";
+} from "../../../utils/vscodeOperation";
+import { initTeamsPage } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
@@ -52,13 +51,13 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await sampledebugContext.createTemplateCLI(false);
+      await sampledebugContext.openResourceFolder();
       // verify popup
 
       await validateNotification(Notification.Upgrade);
 
       // local debug
-      await sampledebugContext.debugWithCLI("local");
+      await sampledebugContext.debugWithCLI("local", false);
 
       // upgrade
       await upgradeByTreeView();
@@ -69,7 +68,7 @@ describe("Migration Tests", function () {
 
       try {
         // local debug
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
 
         console.log("wait frontend start");
         await waitForTerminal(
@@ -89,8 +88,10 @@ describe("Migration Tests", function () {
         teamsAppId,
         Env.username,
         Env.password,
-        "hello-world-in-meeting-local",
-        "meeting"
+        {
+          teamsAppName: "Hello_World_In_Meeting_App",
+          type: "meeting",
+        }
       );
       console.log("debug finish!");
     }

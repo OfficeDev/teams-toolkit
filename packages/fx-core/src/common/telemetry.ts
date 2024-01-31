@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
-
-export class TelemetryReporterInstance {
-  public static telemetryReporter: TelemetryReporter | undefined;
-}
+import { FxError, SystemError } from "@microsoft/teamsfx-api";
+import { TelemetryConstants } from "../component/constants";
+import { TOOLS, globalVars } from "../core/globalVars";
+import { ProjectTypeResult } from "./projectTypeChecker";
+import { assign } from "lodash";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -14,6 +14,7 @@ export enum TelemetryProperty {
   Feature = "feature",
   Hosting = "hosting",
   AppId = "appid",
+  BotId = "botid",
   Success = "success",
   ErrorType = "error-type",
   ErrorCode = "error-code",
@@ -30,8 +31,10 @@ export enum TelemetryProperty {
   AzureResources = "azure-resources",
   Capabilities = "capabilities",
   ActivePlugins = "active-plugins",
+  IsCopilotAllowed = "is-copilot-allowed",
   IsSideloadingAllowed = "is-sideloading-allowed",
   NeedMigrateAadManifest = "need-migrate-aad-manifest",
+  CheckCopilotTracingId = "copilot-trace-id",
   CheckSideloadingStatusCode = "status-code",
   CheckSideloadingMethod = "method",
   CheckSideloadingUrl = "url",
@@ -40,7 +43,6 @@ export enum TelemetryProperty {
   TemplateScenario = "template-scenario",
   TemplateFallback = "template-fallback",
   TemplateName = "template-name",
-  SampleName = "sample-name",
   SampleDownloadDirectory = "sample-download-directory",
   Fallback = "fallback",
   HasSwitchedSubscription = "has-switched-subscription",
@@ -50,6 +52,11 @@ export enum TelemetryProperty {
   ToolkitVersion = "toolkit-version",
   YmlName = "yml-name",
   YmlSchemaVersion = "yml-schema-version",
+  GraphPermission = "graph-permission",
+  GraphPermissionHasRole = "graph-permission-has-role",
+  GraphPermissionHasAdminScope = "graph-permission-has-admin-scope",
+  GraphPermissionScopes = "graph-permission-scopes",
+  AadManifest = "aad-manifest",
 }
 
 export enum TelemetryEvent {
@@ -69,6 +76,7 @@ export enum TelemetryEvent {
   ProjectUpgradeStart = "project-upgrade-start",
   ReadJson = "read-json",
   DecryptUserdata = "decrypt-userdata",
+  CheckCopilot = "check-copilot",
   CheckResourceGroupStart = "check-resource-group-start",
   CheckResourceGroup = "check-resource-group",
   CheckSubscriptionStart = "check-subscription-start",
@@ -115,6 +123,23 @@ export enum TelemetryEvent {
   SkipDeploy = "skip-deploy",
   PublishInDeveloperPortal = "publish-in-developer-portal",
   MetaData = "metadata",
+  ProjectType = "project-type",
+  DependencyApi = "dependency-api",
+  AppStudioApi = "app-studio-api",
+}
+
+export enum ProjectTypeProps {
+  IsTeamsFx = "is-teamsfx",
+  TeamsfxConfigType = "teamsfx-config-type",
+  TeamsfxConfigVersion = "teamsfx-config-version",
+  TeamsfxVersionState = "teamsfx-version-state",
+  TeamsfxProjectId = "teamsfx-project-id",
+  TeamsManifest = "has-manifest",
+  TeamsManifestVersion = "manifest-version",
+  TeamsManifestAppId = "manifest-app-id",
+  TeamsManifestCapabilities = "manifest-capabilities",
+  TeamsJs = "teams-js",
+  Lauguages = "languages",
 }
 
 export enum TelemetrySuccess {
@@ -173,11 +198,7 @@ export function sendTelemetryEvent(
     properties = {};
   }
   properties[TelemetryProperty.Component] = component;
-  TelemetryReporterInstance.telemetryReporter?.sendTelemetryEvent(
-    eventName,
-    properties,
-    measurements
-  );
+  TOOLS.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
 }
 
 export function sendTelemetryErrorEvent(
@@ -190,17 +211,75 @@ export function sendTelemetryErrorEvent(
     properties = {};
   }
   properties[TelemetryProperty.Component] = component;
-  properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-  if (fxError instanceof UserError) {
-    properties[TelemetryProperty.ErrorType] = TelemetryErrorType.UserError;
-  } else {
-    properties[TelemetryProperty.ErrorType] = TelemetryErrorType.SystemError;
+
+  fillInTelemetryPropsForFxError(properties, fxError);
+
+  TOOLS.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
+}
+
+/**
+ * fill in telemetry properties for FxError
+ * @param error FxError
+ * @param props teletry properties
+ */
+export function fillInTelemetryPropsForFxError(
+  props: Record<string, string>,
+  error: FxError
+): void {
+  const errorCode = error.source + "." + error.name;
+  const errorType =
+    error instanceof SystemError
+      ? TelemetryConstants.values.systemError
+      : TelemetryConstants.values.userError;
+  props[TelemetryConstants.properties.success] = TelemetryConstants.values.no;
+  props[TelemetryConstants.properties.errorCode] =
+    props[TelemetryConstants.properties.errorCode] || errorCode;
+  props[TelemetryConstants.properties.errorType] = errorType;
+  props[TelemetryConstants.properties.errorMessage] = error.message;
+  props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
+  props[TelemetryConstants.properties.errorName] = error.name;
+
+  // append global context properties
+  props[TelemetryConstants.properties.errorComponent] = globalVars.component;
+  props[TelemetryConstants.properties.errorStage] = globalVars.stage;
+  props[TelemetryConstants.properties.errorMethod] = globalVars.method;
+  props[TelemetryConstants.properties.errorSource] = globalVars.source;
+  if (error.innerError && error.innerError["code"]) {
+    props[TelemetryConstants.properties.errorInnerCode] = error.innerError["code"];
   }
 
-  properties[TelemetryProperty.ErrorCode] = `${fxError.source}.${fxError.name}`;
-  properties[TelemetryProperty.ErrorMessage] = `${fxError.message}${
-    fxError.stack ? "\nstack:\n" + fxError.stack : ""
-  }`;
+  if (error.innerError) {
+    props[TelemetryConstants.properties.innerError] = JSON.stringify(
+      error.innerError,
+      Object.getOwnPropertyNames(error.innerError)
+    );
+  }
 
-  TelemetryReporterInstance.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
+  if (error.categories) {
+    props[TelemetryConstants.properties.errorCat] = error.categories.join("|");
+    props[TelemetryConstants.properties.errorCat1] = error.categories[0];
+    props[TelemetryConstants.properties.errorCat2] = error.categories[1];
+    props[TelemetryConstants.properties.errorCat3] = error.categories[2];
+  }
+}
+
+export function fillinProjectTypeProperties(
+  props: Record<string, string>,
+  projectTypeRes: ProjectTypeResult
+) {
+  const newProps = {
+    [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
+    [ProjectTypeProps.TeamsfxConfigType]: projectTypeRes.teamsfxConfigType || "",
+    [ProjectTypeProps.TeamsfxConfigVersion]: projectTypeRes.teamsfxConfigVersion || "",
+    [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",
+    [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
+    [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
+    [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifestVersion || "",
+    [ProjectTypeProps.TeamsManifestAppId]: projectTypeRes.manifestAppId || "",
+    [ProjectTypeProps.TeamsfxProjectId]: projectTypeRes.teamsfxProjectId || "",
+    [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
+    [ProjectTypeProps.TeamsManifestCapabilities]:
+      projectTypeRes.manifestCapabilities?.join(",") || "",
+  };
+  assign(props, newProps);
 }

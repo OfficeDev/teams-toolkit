@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "prerequisiteCheck.bicep",
+  CopilotPluginEnable = "developCopilotPlugin",
+  LogLevel = "logLevel",
 }
 
 export const AzurePortalUrl = "https://portal.azure.com";
@@ -22,7 +26,9 @@ export enum GlobalKey {
   OpenReadMe = "fx-extension.openReadMe",
   OpenSampleReadMe = "fx-extension.openSampleReadMe",
   ShowLocalDebugMessage = "ShowLocalDebugMessage",
-  ShowLocalPreviewMessage = "ShowLocalPreviewMessage",
+  CreateWarnings = "CreateWarnings",
+  SampleGalleryLayout = "teamsToolkit:sampleGallery:layout",
+  AutoInstallDependency = "teamsToolkit:autoInstallDependency",
 }
 
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;

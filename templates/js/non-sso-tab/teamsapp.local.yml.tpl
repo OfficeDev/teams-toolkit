@@ -8,7 +8,7 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
@@ -25,7 +25,6 @@ provision:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
-
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -67,12 +66,11 @@ deploy:
     writeToEnvironmentFile:
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
-
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install --no-audit
-
   # Generate runtime environment variables
   - uses: file/createOrUpdateEnvironmentFile
     with:

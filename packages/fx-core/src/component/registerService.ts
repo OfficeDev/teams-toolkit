@@ -7,7 +7,6 @@ import "./code/botCode";
 import "./code/tab/tabCode";
 import "./feature/cicd/cicd";
 import "./feature/sso";
-import "./resource/apim/apim";
 import "./resource/azureAppService/azureFunction";
 import "./resource/azureAppService/azureWebApp";
 import "./resource/azureStorage/azureStorage";

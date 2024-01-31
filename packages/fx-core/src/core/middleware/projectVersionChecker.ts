@@ -33,30 +33,36 @@ function needToShowUpdateDialog(versionInfo: VersionInfo) {
   return false;
 }
 
-async function showDialog(ctx: CoreHookContext): Promise<FxError> {
+function showDialog(ctx: CoreHookContext): Promise<FxError> {
   const lastArg = ctx.arguments[ctx.arguments.length - 1];
   const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
   if (inputs.platform === Platform.VSCode) {
     const messageKey = "core.projectVersionChecker.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then((res) => {
-      if (res.isOk() && res.value === moreInfoButton) {
-        TOOLS.ui.openUrl(MetadataV2.updateToolkitLink);
-      }
-    });
-    return IncompatibleProjectError(messageKey);
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton()).then(
+      (res) => {
+        if (res.isOk() && res.value === moreInfoButton()) {
+          void TOOLS.ui.openUrl(MetadataV2.updateToolkitLink);
+        }
+      },
+      () => {}
+    );
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   } else if (inputs.platform === Platform.CLI) {
     const messageKey = "core.projectVersionChecker.cliUseNewVersion";
     TOOLS.logProvider.warning(getLocalizedString(messageKey));
-    return IncompatibleProjectError(messageKey);
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   } else {
     const messageKey = "core.projectVersionChecker.vs.incompatibleProject";
     const message = getLocalizedString(messageKey);
-    TOOLS.ui.showMessage("warn", message, false, moreInfoButton).then((res) => {
-      if (res.isOk() && res.value === moreInfoButton) {
-        TOOLS.ui.openUrl(learnMoreLink);
-      }
-    });
-    return IncompatibleProjectError(messageKey);
+    TOOLS.ui.showMessage("warn", message, false, moreInfoButton()).then(
+      (res) => {
+        if (res.isOk() && res.value === moreInfoButton()) {
+          void TOOLS.ui.openUrl(learnMoreLink);
+        }
+      },
+      () => {}
+    );
+    return Promise.resolve(IncompatibleProjectError(messageKey));
   }
 }

@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
  */
 import * as path from "path";
-import { startDebugging, waitForTerminal } from "../../vscodeOperation";
-import { initPage, validateBot } from "../../playwrightOperation";
+import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
+import { initPage, validateMsg } from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel } from "../../constants";
+import { Timeout, LocalDebugTaskLabel } from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
@@ -37,22 +40,19 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "index.js");
-
+      validateFileExist(projectPath, "src/index.js");
       await startDebugging("Debug in Teams (Chrome)");
-
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(LocalDebugTaskLabel.StartBotApp, "Bot started");
-
       const teamsAppId = await localDebugTestContext.getTeamsAppId();
-      //   const page = await initPage(
-      //     localDebugTestContext.context!,
-      //     teamsAppId,
-      //     Env.username,
-      //     Env.password
-      //   );
-      //   await localDebugTestContext.validateLocalStateForBot();
-      //   await validateBot(page);
+      const page = await initPage(
+        localDebugTestContext.context!,
+        teamsAppId,
+        Env.username,
+        Env.password
+      );
+      await localDebugTestContext.validateLocalStateForBot();
+      await validateMsg(page);
     }
   );
 });

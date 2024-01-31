@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Colors, FxError, LogLevel, Result, err, ok } from "@microsoft/teamsfx-api";
-import { Hub } from "@microsoft/teamsfx-core";
-import cliLogger from "../../commonlib/log";
+import { Colors, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { HubTypes } from "@microsoft/teamsfx-core";
+import { logger } from "../../commonlib/logger";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../../userInteraction";
 import { getColorizedString } from "../../utils";
@@ -13,7 +13,7 @@ import { OpeningBrowserFailed } from "./errors";
 import { localTelemetryReporter } from "./localTelemetryReporter";
 
 export async function openHubWebClientNew(
-  hub: Hub,
+  hub: HubTypes,
   url: string,
   browser: constants.Browser,
   browserArguments: string[] = [],
@@ -31,7 +31,7 @@ export async function openHubWebClientNew(
 }
 
 async function _openHubWebClientNew(
-  hub: Hub,
+  hub: HubTypes,
   url: string,
   browser: constants.Browser,
   browserArguments: string[] = []
@@ -46,7 +46,7 @@ async function _openHubWebClientNew(
       color: Colors.BRIGHT_CYAN,
     },
   ];
-  cliLogger.necessaryLog(LogLevel.Info, getColorizedString(message));
+  logger.info(getColorizedString(message));
 
   const previewBar = CLIUIInstance.createProgressBar(constants.previewTitle, 1);
   await previewBar.start(constants.previewStartMessage);
@@ -55,7 +55,7 @@ async function _openHubWebClientNew(
     await commonUtils.openBrowser(browser, url, browserArguments);
   } catch {
     const error = OpeningBrowserFailed(browser);
-    cliLogger.necessaryLog(LogLevel.Warning, constants.openBrowserHintMessage);
+    logger.warning(constants.openBrowserHintMessage);
     await previewBar.end(false);
     return err(error);
   }

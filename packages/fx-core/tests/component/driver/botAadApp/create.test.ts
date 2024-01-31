@@ -18,10 +18,12 @@ import {
   HttpServerError,
   InvalidActionInputError,
   UnhandledError,
+  UnhandledUserError,
 } from "../../../../src";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import { AADApplication } from "../../../../src/component/driver/aad/interface/AADApplication";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
+import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -71,6 +73,20 @@ describe("botAadAppCreate", async () => {
     ).to.rejectedWith(InvalidActionInputError);
   });
 
+  it("should throw error if Microsoft Entra app name exceeds 120 characters", async () => {
+    const invalidAppName = "a".repeat(121);
+    const args: any = {
+      name: invalidAppName,
+    };
+    const result = await createBotAadAppDriver.execute(
+      args,
+      mockedDriverContext,
+      outputEnvVarNames
+    );
+    expect(result.result.isErr()).to.be.true;
+    expect(result.result._unsafeUnwrapErr()).is.instanceOf(AadAppNameTooLongError);
+  });
+
   it("should throw error if outputEnvVarNames is undefined", async () => {
     const args: any = {
       name: "test",
@@ -110,9 +126,6 @@ describe("botAadAppCreate", async () => {
     const args: any = {
       name: expectedDisplayName,
     };
-    const progressBar = {
-      next: sinon.stub(),
-    };
 
     sinon.stub(AadAppClient.prototype, "createAadApp").resolves({
       id: expectedObjectId,
@@ -121,8 +134,6 @@ describe("botAadAppCreate", async () => {
     } as AADApplication);
 
     sinon.stub(AadAppClient.prototype, "generateClientSecret").resolves(expectedSecretText);
-
-    mockedDriverContext.progressBar = progressBar;
 
     const result = await createBotAadAppDriver.execute(
       args,
@@ -136,7 +147,6 @@ describe("botAadAppCreate", async () => {
     expect(result.result.isOk() && result.result.value.get(outputKeys.botPassword)).to.be.equal(
       expectedSecretText
     );
-    expect(progressBar.next.calledOnce).to.be.true;
   });
 
   it("should throw user error when GraphClient failed with 4xx error", async () => {
@@ -277,5 +287,33 @@ describe("botAadAppCreate", async () => {
       outputEnvVarNames
     );
     expect(result.result.isOk()).to.be.true;
+  });
+
+  it("handler", async () => {
+    const args: any = {
+      name: expectedDisplayName,
+    };
+    const progressBar = {
+      next: sinon.stub(),
+    };
+    const mockedDriverContextWithNoLogProvider: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+    };
+
+    sinon.stub(createBotAadAppDriver, "validateArgs").throws({ name: "AadCreateAppError" });
+
+    mockedDriverContextWithNoLogProvider.progressBar = progressBar;
+
+    try {
+      await createBotAadAppDriver.handler(
+        args,
+        mockedDriverContextWithNoLogProvider,
+        outputEnvVarNames
+      );
+      expect.fail();
+    } catch (e) {
+      expect(e instanceof UnhandledError).to.be.true;
+    }
   });
 });

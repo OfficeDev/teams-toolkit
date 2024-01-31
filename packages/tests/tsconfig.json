@@ -1,17 +1,34 @@
 {
-    "compilerOptions": {
-      "module": "commonjs",
-      "target": "es6",
-      "outDir": "out",
-      "lib": ["es6", "dom", "esnext.asynciterable"],
-      "sourceMap": true,
-      "rootDir": "src",
-      "resolveJsonModule": true,
-      "skipLibCheck": true,
-      "strict": true /* enable all strict type-checking options */,
-      "jsx": "react",
-      "esModuleInterop": true
-    },
-    "include": ["src"],
-    "exclude": ["node_modules", ".test-resources", "src/ui-test/treeview/office-xml-addin"]
-  }
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "outDir": "out",
+    "lib": [
+      "es6",
+      "dom",
+      "esnext.asynciterable"
+    ],
+    "sourceMap": true,
+    "rootDir": "src",
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": true /* enable all strict type-checking options */,
+    "jsx": "react",
+    "noEmitOnError": true,
+    "useUnknownInCatchVariables": false,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    ".test-resources",
+    "src/ui-test/treeview/office-xml-addin",
+    "src/commonlib",
+    "src/e2e"
+  ]
+}

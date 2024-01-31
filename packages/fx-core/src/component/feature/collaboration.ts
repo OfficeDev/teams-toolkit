@@ -1,19 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Context, FxError, M365TokenProvider, Result, err, ok } from "@microsoft/teamsfx-api";
-import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
+import {
+  Context,
+  FxError,
+  LogProvider,
+  M365TokenProvider,
+  Result,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
+import axios from "axios";
+import { Service } from "typedi";
 import { AadOwner, ResourcePermission, TeamsAppAdmin } from "../../common/permissionInterface";
+import { AppIdNotExist } from "../../core/error";
+import { ErrorContextMW } from "../../core/globalVars";
+import { HttpClientError, HttpServerError, assembleError } from "../../error/common";
 import { AadAppClient } from "../driver/aad/utility/aadAppClient";
 import { permissionsKeys } from "../driver/aad/utility/constants";
 import { addStartAndEndTelemetry } from "../driver/middleware/addStartAndEndTelemetry";
-import axios from "axios";
-import { HttpClientError, HttpServerError, UnhandledError } from "../../error/common";
-import { TelemetryUtils } from "../driver/teamsApp/utils/telemetry";
-import { AppUser } from "../driver/teamsApp/interfaces/appdefinitions/appUser";
-import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { AppStudioClient } from "../driver/teamsApp/clients/appStudioClient";
+import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
+import { AppUser } from "../driver/teamsApp/interfaces/appdefinitions/appUser";
 
 const EventName = {
   grantPermission: "grant-permission",
@@ -27,11 +36,13 @@ const componentNameTeams = "AppStudioPlugin";
 export class AadCollaboration {
   private readonly aadAppClient: AadAppClient;
 
-  constructor(m365TokenProvider: M365TokenProvider) {
-    this.aadAppClient = new AadAppClient(m365TokenProvider);
+  constructor(m365TokenProvider: M365TokenProvider, logProvider?: LogProvider) {
+    this.aadAppClient = new AadAppClient(m365TokenProvider, logProvider);
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.grantPermission, componentNameAad)])
+  @hooks([
+    ErrorContextMW({ source: "Graph", component: "AadCollaboration" }),
+    addStartAndEndTelemetry(EventName.grantPermission, componentNameAad),
+  ])
   public async grantPermission(
     ctx: Context,
     objectId: string,
@@ -50,11 +61,13 @@ export class AadCollaboration {
       ];
       return ok(result);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, objectId));
     }
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.listCollaborator, componentNameAad)])
+  @hooks([
+    ErrorContextMW({ source: "Graph", component: "AadCollaboration" }),
+    addStartAndEndTelemetry(EventName.listCollaborator, componentNameAad),
+  ])
   public async listCollaborator(
     ctx: Context,
     objectId: string
@@ -63,11 +76,13 @@ export class AadCollaboration {
       const owners = await this.aadAppClient.getOwners(objectId);
       return ok(owners ?? []);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, objectId));
     }
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.checkPermission, componentNameAad)])
+  @hooks([
+    ErrorContextMW({ source: "Graph", component: "AadCollaboration" }),
+    addStartAndEndTelemetry(EventName.checkPermission, componentNameAad),
+  ])
   public async checkPermission(
     ctx: Context,
     objectId: string,
@@ -87,24 +102,26 @@ export class AadCollaboration {
       ];
       return ok(result);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, objectId));
     }
   }
 
-  private handleError(error: any, ctx: Context): FxError {
+  private handleError(error: any, ctx: Context, appId: string): FxError {
     if (axios.isAxiosError(error)) {
       const message = JSON.stringify(error.response!.data);
       ctx.logProvider?.error(message);
-      if (error.response!.status >= 400 && error.response!.status < 500) {
-        return new HttpClientError(componentNameAad, message);
+      if (error.response!.status === 404) {
+        return new AppIdNotExist(appId);
+      } else if (error.response!.status >= 400 && error.response!.status < 500) {
+        return new HttpClientError(error, componentNameAad, message);
       } else {
-        return new HttpServerError(componentNameAad, message);
+        return new HttpServerError(error, componentNameAad, message);
       }
     }
 
     const message = JSON.stringify(error);
     ctx.logProvider?.error(message);
-    return new UnhandledError(error as Error, componentNameAad);
+    return assembleError(error as Error, componentNameAad);
   }
 }
 
@@ -112,12 +129,13 @@ export class AadCollaboration {
 export class TeamsCollaboration {
   private readonly tokenProvider: M365TokenProvider;
 
-  constructor(ctx: Context, m365TokenProvider: M365TokenProvider) {
+  constructor(m365TokenProvider: M365TokenProvider) {
     this.tokenProvider = m365TokenProvider;
-    TelemetryUtils.init(ctx);
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.grantPermission, componentNameTeams)])
+  @hooks([
+    ErrorContextMW({ source: "Teams", component: "TeamsCollaboration" }),
+    addStartAndEndTelemetry(EventName.grantPermission, componentNameTeams),
+  ])
   public async grantPermission(
     ctx: Context,
     teamsAppId: string,
@@ -129,7 +147,12 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      await AppStudioClient.grantPermission(teamsAppId, appStudioToken as string, userInfo);
+      await AppStudioClient.grantPermission(
+        teamsAppId,
+        appStudioToken as string,
+        userInfo,
+        ctx.logProvider
+      );
       const result: ResourcePermission[] = [
         {
           name: Constants.PERMISSIONS.name,
@@ -140,11 +163,13 @@ export class TeamsCollaboration {
       ];
       return ok(result);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, teamsAppId));
     }
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.listCollaborator, componentNameTeams)])
+  @hooks([
+    ErrorContextMW({ source: "Teams", component: "TeamsCollaboration" }),
+    addStartAndEndTelemetry(EventName.listCollaborator, componentNameTeams),
+  ])
   public async listCollaborator(
     ctx: Context,
     teamsAppId: string
@@ -155,7 +180,11 @@ export class TeamsCollaboration {
       });
       const appStudioToken = appStudioTokenRes.isOk() ? appStudioTokenRes.value : undefined;
 
-      const userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
+      const userLists = await AppStudioClient.getUserList(
+        teamsAppId,
+        appStudioToken as string,
+        ctx.logProvider
+      );
       if (!userLists) {
         return ok([]);
       }
@@ -175,11 +204,13 @@ export class TeamsCollaboration {
 
       return ok(teamsAppAdmin);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, teamsAppId));
     }
   }
-
-  @hooks([addStartAndEndTelemetry(EventName.checkPermission, componentNameTeams)])
+  @hooks([
+    ErrorContextMW({ source: "Teams", component: "TeamsCollaboration" }),
+    addStartAndEndTelemetry(EventName.checkPermission, componentNameTeams),
+  ])
   public async checkPermission(
     ctx: Context,
     teamsAppId: string,
@@ -194,38 +225,42 @@ export class TeamsCollaboration {
       const teamsAppRoles = await AppStudioClient.checkPermission(
         teamsAppId,
         appStudioToken as string,
-        userInfo.aadId
+        userInfo.aadId,
+        ctx.logProvider
       );
 
       const result: ResourcePermission[] = [
         {
           name: Constants.PERMISSIONS.name,
-          roles: [teamsAppRoles as string],
+          roles: [teamsAppRoles],
           type: Constants.PERMISSIONS.type,
           resourceId: teamsAppId,
         },
       ];
       return ok(result);
     } catch (error) {
-      return err(this.handleError(error, ctx));
+      return err(this.handleError(error, ctx, teamsAppId));
     }
   }
 
-  private handleError(error: any, ctx: Context): FxError {
+  private handleError(error: any, ctx: Context, appId: string): FxError {
     if (error.innerError) {
       const message = JSON.stringify(error.innerError.response.data);
       ctx.logProvider?.error(message);
-      const fxError =
-        error.innerError.response.status &&
-        error.innerError.response.status >= 400 &&
-        error.innerError.response.status < 500
-          ? new HttpClientError(componentNameTeams, message)
-          : new HttpServerError(componentNameTeams, message);
-      return fxError;
+      if (error.innerError.response.status) {
+        const statusCode = error.innerError.response.status;
+        if (statusCode === 404) {
+          return new AppIdNotExist(appId);
+        } else if (statusCode >= 400 && statusCode < 500) {
+          return new HttpClientError(error, componentNameTeams, message);
+        } else {
+          return new HttpServerError(error, componentNameTeams, message);
+        }
+      }
     }
 
     const message = JSON.stringify(error);
     ctx.logProvider?.error(message);
-    return new UnhandledError(error as Error, componentNameTeams);
+    return assembleError(error as Error, componentNameTeams);
   }
 }

@@ -6,6 +6,8 @@ import {
   ManifestCapability,
   Result,
   TeamsAppManifest,
+  IComposeExtension,
+  IMessagingExtensionCommand,
   err,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -17,7 +19,11 @@ import "reflect-metadata";
 import stripBom from "strip-bom";
 import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
-import { FileNotFoundError, MissingEnvironmentVariablesError } from "../../../../error/common";
+import {
+  FileNotFoundError,
+  JSONSyntaxError,
+  MissingEnvironmentVariablesError,
+} from "../../../../error/common";
 import { CapabilityOptions } from "../../../../question/create";
 import { BotScenario } from "../../../constants";
 import { convertManifestTemplateToV2, convertManifestTemplateToV3 } from "../../../migrate";
@@ -41,13 +47,16 @@ import {
 import { AppStudioError } from "../errors";
 import { AppStudioResultFactory } from "../results";
 import { TelemetryPropertyKey } from "./telemetry";
+import { WrapDriverContext } from "../../util/wrapUtil";
+import { hooks } from "@feathersjs/hooks";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
-    const filePath = await this.getTeamsAppManifestPath(projectPath);
+    const filePath = this.getTeamsAppManifestPath(projectPath);
     return await this._readAppManifest(filePath);
   }
-
+  @hooks([ErrorContextMW({ component: "ManifestUtils" })])
   async _readAppManifest(manifestTemplatePath: string): Promise<Result<TeamsAppManifest, FxError>> {
     if (!(await fs.pathExists(manifestTemplatePath))) {
       return err(new FileNotFoundError("teamsApp", manifestTemplatePath));
@@ -57,8 +66,12 @@ export class ManifestUtils {
     let content = await fs.readFile(manifestTemplatePath, { encoding: "utf-8" });
     content = stripBom(content);
     const contentV3 = convertManifestTemplateToV3(content);
-    const manifest = JSON.parse(contentV3) as TeamsAppManifest;
-    return ok(manifest);
+    try {
+      const manifest = JSON.parse(contentV3) as TeamsAppManifest;
+      return ok(manifest);
+    } catch (e) {
+      return err(new JSONSyntaxError(manifestTemplatePath, e, "ManifestUtils"));
+    }
   }
 
   async _writeAppManifest(
@@ -71,7 +84,7 @@ export class ManifestUtils {
     return ok(undefined);
   }
 
-  async getTeamsAppManifestPath(projectPath: string): Promise<string> {
+  getTeamsAppManifestPath(projectPath: string): string {
     const filePath = path.join(projectPath, "appPackage", "manifest.json");
     return filePath;
   }
@@ -103,6 +116,7 @@ export class ManifestUtils {
           } else {
             if (capability.existingApp) {
               const template = cloneDeep(STATIC_TABS_TPL_EXISTING_APP[0]);
+              // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
               template.entityId = "index" + staticTabIndex;
               appManifest.staticTabs.push(template);
             } else {
@@ -111,6 +125,7 @@ export class ManifestUtils {
                   ? STATIC_TABS_TPL_V3[1]
                   : STATIC_TABS_TPL_V3[0];
               const template = cloneDeep(tabManifest);
+              // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
               template.entityId = "index" + staticTabIndex;
               appManifest.staticTabs.push(template);
             }
@@ -222,14 +237,14 @@ export class ManifestUtils {
     switch (capability) {
       case "staticTab":
         return (
-          manifest.staticTabs !== undefined && manifest.staticTabs!.length >= STATIC_TABS_MAX_ITEMS
+          manifest.staticTabs !== undefined && manifest.staticTabs.length >= STATIC_TABS_MAX_ITEMS
         );
       case "configurableTab":
-        return manifest.configurableTabs !== undefined && manifest.configurableTabs!.length >= 1;
+        return manifest.configurableTabs !== undefined && manifest.configurableTabs.length >= 1;
       case "Bot":
-        return manifest.bots !== undefined && manifest.bots!.length >= 1;
+        return manifest.bots !== undefined && manifest.bots.length >= 1;
       case "MessageExtension":
-        return manifest.composeExtensions !== undefined && manifest.composeExtensions!.length >= 1;
+        return manifest.composeExtensions !== undefined && manifest.composeExtensions.length >= 1;
       case "WebApplicationInfo":
         return false;
       default:
@@ -238,13 +253,13 @@ export class ManifestUtils {
   }
   public getCapabilities(template: TeamsAppManifest): string[] {
     const capabilities: string[] = [];
-    if (template.staticTabs && template.staticTabs!.length > 0) {
+    if (template.staticTabs && template.staticTabs.length > 0) {
       capabilities.push("staticTab");
     }
-    if (template.configurableTabs && template.configurableTabs!.length > 0) {
+    if (template.configurableTabs && template.configurableTabs.length > 0) {
       capabilities.push("configurableTab");
     }
-    if (template.bots && template.bots!.length > 0) {
+    if (template.bots && template.bots.length > 0) {
       capabilities.push("Bot");
     }
     if (template.composeExtensions) {
@@ -253,8 +268,23 @@ export class ManifestUtils {
     return capabilities;
   }
 
+  /**
+   * Get command id from composeExtensions
+   * @param manifest
+   */
+  public getOperationIds(manifest: TeamsAppManifest): string[] {
+    const ids: string[] = [];
+    manifest.composeExtensions?.map((extension: IComposeExtension) => {
+      extension.commands?.map((command: IMessagingExtensionCommand) => {
+        ids.push(command.id);
+      });
+    });
+    return ids;
+  }
+
   async getManifestV3(
     manifestTemplatePath: string,
+    context?: WrapDriverContext,
     generateIdIfNotResolved = true
   ): Promise<Result<TeamsAppManifest, FxError>> {
     const manifestRes = await manifestUtils._readAppManifest(manifestTemplatePath);
@@ -275,7 +305,10 @@ export class ManifestUtils {
     // Add environment variable keys to telemetry
     const customizedKeys = getEnvironmentVariables(manifestTemplateString);
     const telemetryProps: { [key: string]: string } = {};
-    telemetryProps[TelemetryPropertyKey.customizedKeys] = JSON.stringify(customizedKeys);
+    telemetryProps[TelemetryPropertyKey.customizedKeys] = customizedKeys.join(";");
+    if (context) {
+      context.addTelemetryProperties(telemetryProps);
+    }
 
     const resolvedManifestString = expandEnvironmentVariable(manifestTemplateString);
 

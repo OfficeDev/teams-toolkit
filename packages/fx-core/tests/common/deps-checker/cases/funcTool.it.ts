@@ -52,18 +52,18 @@ describe("FuncToolChecker E2E Test", async () => {
     const homePath = path.join(baseFolder!, "Aarón García", "for test");
     await fs.ensureDir(homePath);
     const funcToolChecker = mockFunc(homePath);
-    const spyChecker = sandbox.spy(funcToolChecker);
+    const spyChecker = sandbox.spy(funcToolChecker, "getInstallationInfo");
 
     const installOptions = {
       projectPath: projectPath,
       symlinkDir: "./devTools/func",
-      version: "~4.0.4670",
+      version: "~4.0.5174",
     };
-    const res = await spyChecker.resolve(installOptions);
+    const res = await funcToolChecker.resolve(installOptions);
     if (res.error) {
       console.log(res.error);
     }
-    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+    assert.isTrue(spyChecker.calledOnce);
 
     expect(res.isInstalled).to.be.equal(true);
     expect(res.details.binFolders?.length).to.be.equal(1);
@@ -87,21 +87,21 @@ describe("FuncToolChecker E2E Test", async () => {
     const homePath = path.join(baseFolder!, "homeDir");
     const funcToolChecker = mockFunc(homePath);
     await fs.ensureFile(path.join(homePath, ".fx/bin/azfunc"));
-    const spyChecker = sandbox.spy(funcToolChecker);
+    const spyChecker = sandbox.spy(funcToolChecker, "getInstallationInfo");
 
     const installOptions = {
       projectPath: projectPath,
       symlinkDir: "./devTools/func",
-      version: "~4.0.4670",
+      version: "~4.0.5174",
     };
-    const res = await spyChecker.resolve(installOptions);
+    const res = await funcToolChecker.resolve(installOptions);
     assert.isFalse(res.isInstalled);
     const installationInfo = await funcToolChecker.getInstallationInfo(installOptions);
     assert.isFalse(installationInfo.isInstalled);
 
     // second: still works well
     await fs.remove(path.join(homePath, ".fx/bin/azfunc"));
-    const retryRes = await spyChecker.resolve(installOptions);
+    const retryRes = await funcToolChecker.resolve(installOptions);
     if (retryRes.error) {
       console.log(retryRes.error);
     }
@@ -122,7 +122,7 @@ describe("FuncToolChecker E2E Test", async () => {
     const installOptions = {
       projectPath: projectPath,
       symlinkDir: "./devTools/func",
-      version: "~4.0.4670",
+      version: "~4.0.5174",
     };
     const depsInfo = await funcToolChecker.resolve(installOptions);
 
@@ -147,7 +147,7 @@ describe("FuncToolChecker E2E Test", async () => {
     const installOptions = {
       projectPath: projectPath,
       symlinkDir: "./devTools/func",
-      version: "~4.0.4670",
+      version: "~4.0.5174",
     };
     const depsInfo = await funcToolChecker.resolve(installOptions);
     if (depsInfo.error) {
@@ -163,7 +163,7 @@ describe("FuncToolChecker E2E Test", async () => {
     if (isLinux()) {
       this.skip();
     }
-    if (!funcVersion || semver.satisfies(funcVersion, "~4.0.4670")) {
+    if (!funcVersion || semver.satisfies(funcVersion, "~4.0.5174")) {
       this.skip();
     }
 
@@ -172,17 +172,17 @@ describe("FuncToolChecker E2E Test", async () => {
     const homePath = path.join(baseFolder!, "homeDir");
     const funcToolChecker = mockFunc(homePath);
 
-    const spyChecker = sandbox.spy(funcToolChecker);
+    const spyChecker = sandbox.spy(funcToolChecker, "getInstallationInfo");
     const installOptions = {
       projectPath: projectPath,
       symlinkDir: "./devTools/func",
-      version: "~4.0.4670",
+      version: "~4.0.5174",
     };
-    const res = await spyChecker.resolve(installOptions);
+    const res = await funcToolChecker.resolve(installOptions);
     if (res.error) {
       console.log(res.error);
     }
-    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+    assert.isTrue(spyChecker.calledOnce);
     assert.isTrue(res.isInstalled);
     assert.equal(res.details.binFolders?.length, 1);
     assert.equal(res.details.binFolders?.[0], symlinkPath);
@@ -198,7 +198,7 @@ describe("FuncToolChecker E2E Test", async () => {
     if (isLinux()) {
       this.skip();
     }
-    if (!funcVersion || !semver.satisfies(funcVersion, "~4.0.4670")) {
+    if (!funcVersion || !semver.satisfies(funcVersion, "~4.0.5174")) {
       this.skip();
     }
 
@@ -206,17 +206,17 @@ describe("FuncToolChecker E2E Test", async () => {
     const homePath = path.join(baseFolder!, "homeDir");
     const funcToolChecker = mockFunc(homePath);
 
-    const spyChecker = sandbox.spy(funcToolChecker);
+    const spyChecker = sandbox.spy(funcToolChecker, "getInstallationInfo");
     const installOptions = {
       projectPath: projectPath,
       symlinkDir: "./devTools/func",
-      version: "~4.0.4670",
+      version: "~4.0.5174",
     };
-    const res = await spyChecker.resolve(installOptions);
+    const res = await funcToolChecker.resolve(installOptions);
     if (res.error) {
       console.log(res.error);
     }
-    assert.isTrue(spyChecker.getInstallationInfo.calledOnce);
+    assert.isTrue(spyChecker.calledOnce);
     assert.isTrue(res.isInstalled);
     assert.equal(res.details.binFolders, undefined);
 

@@ -15,6 +15,8 @@ import path from "path";
 import { ExecutionResult } from "../driver/interface/stepDriver";
 import { getLocalizedString } from "../../common/localizeUtils";
 
+const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
+
 /**
  * check parameter, throw error if value is null or undefined
  * @param name parameter name
@@ -47,7 +49,7 @@ export function asBoolean(s: unknown, key: string, helpLink?: string): boolean {
 
 export function asString(s: unknown, key: string, helpLink?: string): string {
   if (typeof s === "string") {
-    return s as string;
+    return s;
   }
   throw PrerequisiteError.somethingMissing("Deploy", key, helpLink);
 }
@@ -61,7 +63,7 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
     if (typeof data === "object" && data !== null) {
       const maybeT = data as unknown as T;
       for (const key of Object.keys(keyValidators) as Array<keyof T>) {
-        keyValidators[key](maybeT[key], `${key}`, helpLink);
+        keyValidators[key](maybeT[key], `${String(key)}`, helpLink);
       }
       return maybeT;
     }
@@ -77,26 +79,36 @@ export function asFactory<T>(keyValidators: KeyValidators<T>) {
 
 export async function wrapRun(
   exec: () => Promise<Map<string, string>>,
+  errorSource: string,
   errorHandler?: () => Promise<void>,
   logProvider?: LogProvider
 ): Promise<Result<Map<string, string>, FxError>> {
   try {
     return ok(await exec());
   } catch (error) {
-    if (errorHandler) {
-      await errorHandler();
-    }
-    if (error instanceof BaseComponentInnerError) {
-      if (error.detail) {
-        await logProvider?.debug(`Error occurred: ${error.detail}`);
-      }
-      return err(error.toFxError());
-    } else if (error instanceof UserError || error instanceof SystemError) {
-      return err(error);
-    }
-    // always return error as SystemError
-    return err(BaseComponentInnerError.unknownError("Deploy", error).toFxError());
+    return await errorHandle(error, errorSource, logProvider, errorHandler);
   }
+}
+
+export async function errorHandle(
+  error: unknown,
+  errorSource: string,
+  logProvider?: LogProvider,
+  errorHandler?: () => Promise<void>
+): Promise<Result<Map<string, string>, FxError>> {
+  if (errorHandler) {
+    await errorHandler();
+  }
+  if (error instanceof BaseComponentInnerError) {
+    if (error.detail) {
+      logProvider?.debug(`Error occurred: ${error.detail}`);
+    }
+    return err(error.toFxError());
+  } else if (error instanceof UserError || error instanceof SystemError) {
+    return err(error);
+  }
+  // always return error as SystemError
+  return err(BaseComponentInnerError.unknownError(errorSource, error).toFxError());
 }
 
 export async function wrapSummary(
@@ -114,16 +126,23 @@ export async function wrapSummary(
 }
 
 // Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
-export function expandEnvironmentVariable(content: string): string {
-  const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
+export function expandEnvironmentVariable(
+  content: string,
+  envs?: { [key in string]: string }
+): string {
   const placeholders = content.match(placeholderRegex);
-
   if (placeholders) {
     for (const placeholder of placeholders) {
       const envName = placeholder.slice(3, -2).trim(); // removes `${{` and `}}`
-      const envValue = process.env[envName];
-      if (envValue) {
-        content = content.replace(placeholder, envValue);
+      const envValue = envs ? envs[envName] : process.env[envName];
+      if (envName === "APP_NAME_SUFFIX") {
+        if (envValue !== undefined && envValue !== null) {
+          content = content.replace(placeholder, envValue);
+        }
+      } else {
+        if (envValue) {
+          content = content.replace(placeholder, envValue);
+        }
       }
     }
   }
@@ -136,7 +155,6 @@ export function expandEnvironmentVariable(content: string): string {
  * @return An array of environment variables
  */
 export function getEnvironmentVariables(content: string): string[] {
-  const placeholderRegex = /\${{ *[a-zA-Z_][a-zA-Z0-9_]* *}}/g;
   const placeholders = content.match(placeholderRegex);
   if (placeholders) {
     const variables = placeholders.map((placeholder) => placeholder.slice(3, -2).trim()); // removes `${{` and `}}`)

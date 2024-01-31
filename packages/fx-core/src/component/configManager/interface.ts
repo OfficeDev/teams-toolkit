@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author yefuwang@microsoft.com
  */
@@ -5,6 +8,10 @@
 import { FxError, LogProvider, Result } from "@microsoft/teamsfx-api";
 import { DriverContext } from "../driver/interface/commonArgs";
 import { StepDriver } from "../driver/interface/stepDriver";
+
+export type AdditionalMetadata = {
+  [key: string]: unknown;
+};
 
 export type RawProjectModel = {
   registerApp?: DriverDefinition[];
@@ -14,6 +21,7 @@ export type RawProjectModel = {
   publish?: DriverDefinition[];
   environmentFolderPath?: string;
   version: string;
+  additionalMetadata?: AdditionalMetadata;
 };
 
 export type ProjectModel = {
@@ -24,6 +32,7 @@ export type ProjectModel = {
   publish?: ILifecycle;
   environmentFolderPath?: string;
   version: string;
+  additionalMetadata?: AdditionalMetadata;
 };
 
 export type DriverDefinition = {
@@ -74,13 +83,6 @@ export type ExecutionResult = {
 export interface ILifecycle {
   name: LifecycleName;
   driverDefs: DriverDefinition[];
-  // When run, the lifecycle will try to resolve all placeholders in the driver's arguments
-  // based on the environment variables. If there are unresolved placeholders, the lifecycle
-  // will return ok with the list of unresolved placeholders.
-  // If there are no unresolved placeholders, the lifecycle will run the drivers in order and
-  // return ok with the output of all drivers.
-  // If there is any driver error, run will return early with the error.
-  run(ctx: DriverContext): Promise<Result<Output, FxError>>;
 
   /**
    * Resolve all placeholders in the driver's arguments based on the environment variables in-place.

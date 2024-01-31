@@ -1,5 +1,5 @@
 {
-  "name": "{{appName}}",
+  "name": "{{SafeProjectNameLowerCase}}",
   "version": "1.0.0",
   "msteams": {
     "teamsAppId": null

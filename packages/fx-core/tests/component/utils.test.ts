@@ -20,6 +20,7 @@ import { TeamsFxTelemetryReporter } from "../../src/component/utils/teamsFxTelem
 import { setTools } from "../../src/core/globalVars";
 import { MockTools } from "../core/utils";
 import { MockedTelemetryReporter } from "../plugins/solution/util";
+import { resolveString } from "../../src/component/configManager/lifecycle";
 
 describe("resetEnvInfoWhenSwitchM365", () => {
   const sandbox = sinon.createSandbox();
@@ -115,6 +116,60 @@ describe("expandEnvironmentVariable", () => {
     const result = expandEnvironmentVariable(template);
 
     expect(result).to.equal("placeholder: A");
+  });
+
+  it("should allow leading empty string for app name suffix", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: "",
+    });
+    const result = expandEnvironmentVariable(template);
+    expect(result).to.equal("myapp");
+  });
+  it("should replace for none-empty app name suffix", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: "abc",
+    });
+    const result = expandEnvironmentVariable(template);
+    expect(result).to.equal("myappabc");
+  });
+  it("resolveString for empty APP_NAME_SUFFIX", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: "",
+    });
+    const resolved: string[] = [];
+    const unresolved: string[] = [];
+    resolveString(template, resolved, unresolved);
+    expect(resolved.length).to.equal(1);
+  });
+  it("resolveString for undefined APP_NAME_SUFFIX", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: undefined,
+    });
+    const resolved: string[] = [];
+    const unresolved: string[] = [];
+    resolveString(template, resolved, unresolved);
+    expect(unresolved.length).to.equal(1);
+  });
+  it("resolveString for none empty APP_NAME_SUFFIX", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    envRestore = mockedEnv({
+      APP_NAME_SUFFIX: "abc",
+    });
+    const resolved: string[] = [];
+    const unresolved: string[] = [];
+    const result = resolveString(template, resolved, unresolved);
+    expect(result).to.equal("myappabc");
+    expect(resolved.length).to.equal(1);
+  });
+
+  it("support input envs", () => {
+    const template = "myapp${{ APP_NAME_SUFFIX }}";
+    const result = expandEnvironmentVariable(template, { APP_NAME_SUFFIX: "abc" });
+    expect(result).to.equal("myappabc");
   });
 });
 

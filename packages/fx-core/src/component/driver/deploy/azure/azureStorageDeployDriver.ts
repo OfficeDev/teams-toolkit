@@ -33,8 +33,9 @@ import {
   AzureStorageClearBlobsError,
   AzureStorageGetContainerError,
   AzureStorageUploadFilesError,
-} from "../../../../error/deploy";
+} from "../../../../error";
 import { ProgressMessages } from "../../../messages";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 const ACTION_NAME = "azureStorage/deploy";
 
@@ -43,11 +44,6 @@ export class AzureStorageDeployDriver implements StepDriver {
   readonly description: string = getLocalizedString(
     "driver.deploy.deployToAzureStorageDescription"
   );
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    const impl = new AzureStorageDeployDriverImpl(args, context);
-    return (await impl.run()).result;
-  }
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.DEPLOY_COMPONENT_NAME)])
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
@@ -70,20 +66,21 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
 
   protected helpLink = "https://aka.ms/teamsfx-actions/azure-storage-deploy";
 
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureStorageDeployDriverImpl" })])
   async azureDeploy(
     args: DeployStepArgs,
     azureResource: AzureResourceInfo,
     azureCredential: TokenCredential
   ): Promise<void> {
-    await this.context.logProvider.debug("Start deploying to Azure Storage Service");
-    await this.context.logProvider.debug("Get Azure Storage Service deploy credential");
+    this.context.logProvider.debug("Start deploying to Azure Storage Service");
+    this.context.logProvider.debug("Get Azure Storage Service deploy credential");
     const containerClient = await AzureStorageDeployDriverImpl.createContainerClient(
       azureResource,
       azureCredential
     );
     // delete all existing blobs
     await this.deleteAllBlobs(containerClient, azureResource.instanceId, this.context.logProvider);
-    await this.context.logProvider.debug("Uploading files to Azure Storage Service");
+    this.context.logProvider.debug("Uploading files to Azure Storage Service");
     // upload all to storage
     const ig = await this.handleIgnore(args, this.context);
     const sourceFolder = this.distDirectory;
@@ -117,7 +114,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
         this.helpLink
       );
     }
-    await this.context.logProvider.debug("Upload files to Azure Storage Service successfully");
+    this.context.logProvider.debug("Upload files to Azure Storage Service successfully");
     return;
   }
 
@@ -156,7 +153,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
     storageName: string,
     logProvider: LogProvider
   ): Promise<void> {
-    await logProvider.debug(
+    logProvider.debug(
       `Deleting all existing blobs in container '${DeployConstant.AZURE_STORAGE_CONTAINER_NAME}' for Azure Storage account '${storageName}'.`
     );
 
@@ -168,6 +165,7 @@ export class AzureStorageDeployDriverImpl extends AzureDeployImpl {
     }
 
     const responses = await Promise.all(deleteJobs);
+    logProvider.verbose(`Delete all blobs responses: ${JSON.stringify(responses)}`);
     const errorResponse = responses.find((res) => res.errorCode);
     if (errorResponse) {
       throw new AzureStorageClearBlobsError(storageName, errorResponse);

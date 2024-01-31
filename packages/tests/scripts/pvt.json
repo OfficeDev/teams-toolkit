@@ -6,12 +6,16 @@
       "remotedebug-spfxreact-none",
       "remotedebug-spfxreact-minimal",
       "remotedebug-spfxreact",
+      "remotedebug-spfxreact-globalpkg",
+      "remotedebug-spfxnone-globalpkg-addwebpart",
+      "remotedebug-spfxreact-addwebpart",
       "localdebug-tab-nosso",
       "localdebug-bot",
-      "localdebug-m365lp",
+      "localdebug-bot-twice",
       "localdebug-command-and-response",
       "localdebug-notification-func",
-      "localdebug-notification-restify"
+      "localdebug-notification-restify",
+      "localdebug-tab-regen-appid"
     ],
     "node-18": [
       "treeview-newproject-outlook-add-in",
@@ -45,7 +49,20 @@
       "remotedebug-tab-regen-appid-win-only",
       "remotedebug-tab-aad-deploy-win-only",
       "remotedebug-notification-func-timertrigger-ts-win-only",
-      "remotedebug-notification-func-timertrigger-win-only"
+      "remotedebug-notification-func-timertrigger-win-only",
+      "remotedebug-link-unfurling-win-only",
+      "remotedebug-link-unfurling-ts-win-only",
+      "remotedebug-aichat-bot-win-only",
+      "remotedebug-aichat-bot-ts-win-only",
+      "remotedebug-aiassistant-bot-win-only",
+      "remotedebug-aiassistant-bot-ts-win-only",
+      "remotedebug-msg-newapi-win-only",
+      "remotedebug-msg-newapi-ts-win-only",
+      "remotedebug-msg-openapi-win-only",
+      "localdebug-command-and-response-ts"
+    ],
+    "node-20": [
+      "localdebug-obo-tab"
     ]
   },
   "ubuntu-latest": {
@@ -58,7 +75,6 @@
       "localdebug-spfx",
       "localdebug-tab-nosso",
       "localdebug-bot",
-      "localdebug-m365lp",
       "localdebug-command-and-response",
       "localdebug-notification-func",
       "localdebug-notification-restify"
@@ -70,8 +86,7 @@
       "treeview-samples",
       "telemetry@open-vscode",
       "localdebug-bot-ts",
-      "localdebug-command-and-response-ts",
-      "localdebug-m365lp-ts",
+      "localdebug-obo-tab-ts",
       "localdebug-msg-ts",
       "localdebug-msg",
       "localdebug-msgsa-ts",
@@ -86,11 +101,20 @@
       "localdebug-notification-timertrigger-ts",
       "localdebug-dashboard-tab-ts",
       "localdebug-dashboard-tab",
-      "localdebug-tab-regen-appid",
-      "localdebug-bot-twice",
       "localdebug-tab-aad-deploy",
       "localdebug-notification-func-timertrigger-ts",
-      "localdebug-notification-func-timertrigger"
+      "localdebug-notification-func-timertrigger",
+      "localdebug-link-unfurling",
+      "localdebug-link-unfurling-ts",
+      "localdebug-aichat-bot",
+      "localdebug-aichat-bot-ts",
+      "localdebug-aiassistant-bot",
+      "localdebug-aiassistant-bot-ts",
+      "localdebug-msg-newapi",
+      "localdebug-msg-newapi-ts"
+    ],
+    "node-20": [
+      "localdebug-obo-tab"
     ]
   },
   "macos-latest": {

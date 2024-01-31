@@ -18,7 +18,7 @@ As the person creating the project (creator), follow these steps to allow others
 
 ### Add collaborators to application registration
 1. [Creator] Go to the [Azure Portal](https://portal.azure.com) and select "Azure Active Directory".
-2. [Creator] Select "App Registrations" and select your Azure AD app.
+2. [Creator] Select "App Registrations" and select your Microsoft Entra app.
 3. [Creator] Select "Owners" and click "Add Owners" to add each collaborator as an owner with an administrator role.
 
 ### Add collaborators as owner of teams app

@@ -163,13 +163,9 @@ export default class projectsJsonData {
   ): string | undefined {
     for (const key in this.projectJsonData.projectTypes) {
       if (_.toLower(projectTypeKey) == key) {
-        if (projectTypeKey == "manifest") {
-          return this.projectJsonData.projectTypes[key].templates.manifestonly.repository;
-        } else {
-          return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
-            frameworkType
-          ].repository;
-        }
+        return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+          frameworkType
+        ].repository;
       }
     }
     return undefined;
@@ -183,18 +179,14 @@ export default class projectsJsonData {
   ): string | undefined {
     for (const key in this.projectJsonData.projectTypes) {
       if (_.toLower(projectTypeKey) == key) {
-        if (projectTypeKey == "manifest") {
-          return this.projectJsonData.projectTypes.manifest.templates.branch;
+        if (prerelease) {
+          return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+            frameworkType
+          ].prerelease;
         } else {
-          if (prerelease) {
-            return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
-              frameworkType
-            ].prerelease;
-          } else {
-            return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
-              frameworkType
-            ].branch;
-          }
+          return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+            frameworkType
+          ].branch;
         }
       }
     }

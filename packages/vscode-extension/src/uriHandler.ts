@@ -25,12 +25,6 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
       this.fire(uri);
       return;
     }
-    if (isRunning) {
-      void vscode.window.showWarningMessage(
-        localize("teamstoolkit.devPortalIntegration.blockingMessage")
-      );
-      return;
-    }
 
     if (!uri.query) {
       void vscode.window.showErrorMessage(
@@ -47,6 +41,12 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
     }
 
     if (queryParamas.referrer === Referrer.DeveloperPortal) {
+      if (isRunning) {
+        void vscode.window.showWarningMessage(
+          localize("teamstoolkit.devPortalIntegration.blockingMessage")
+        );
+        return;
+      }
       if (!queryParamas.appId) {
         void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.invalidLink")
@@ -72,15 +72,7 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
         );
         return;
       }
-      isRunning = true;
-      vscode.commands.executeCommand("fx-extension.openSamples", false, queryParamas.sampleId).then(
-        () => {
-          isRunning = false;
-        },
-        () => {
-          isRunning = false;
-        }
-      );
+      void vscode.commands.executeCommand("fx-extension.openSamples", false, queryParamas.sampleId);
     }
   }
 }

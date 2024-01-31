@@ -11,5 +11,8 @@
     ".nyc_output": true,
   },
   // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
-  "typescript.tsc.autoDetect": "off"
+  "typescript.tsc.autoDetect": "off",
+  "terminal.integrated.env.osx": {
+    "PATH": "usr/local/opt/node@18/bin:/Users/hermanwen/.nvm/versions/node/v18.19.0/bin:/usr/local/opt/node@16/bin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/usr/local/share/dotnet:~/.dotnet/tools:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Users/hermanwen/.orbstack/bin:/Volumes/Office/NugetCache/.tools/azureauth/0.4.0:/Users/hermanwen/.azureauth/latest",
+  }
 }

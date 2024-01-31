@@ -117,13 +117,10 @@ export class OfficeAddinGenerator {
 
           let host;
           if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
-            host = jsonData.getHostTemplateNames(template);
             // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-            const manifestType = "json";
-            const hostName = "wxpo";
             const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(
-              hostName
-            )} ${manifestType}`;
+              "wxpo" // support word, excel, powerpoint, outlook
+            )} ${"json"}`;
             await OfficeAddinGenerator.childProcessExec(cmdLine);
           } else {
             host = inputs[QuestionNames.OfficeAddinHost];

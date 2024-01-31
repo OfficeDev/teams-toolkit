@@ -478,6 +478,8 @@ jobs:
           npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mochawesome-report/mochawesome.json
 
   rerun:
+    permissions:
+      actions: write
     needs: main
     if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest

@@ -1,9 +1,4 @@
 // https://github.com/karma-runner/karma-chrome-launcher
-// import { webpackTestConfig } from "./config/webpack.test";
-// import karma from "karma";
-// import { argv } from "yargs";
-// import "puppeteer/lib/cjs/puppeteer/common/LaunchOptions.js";
-// import "dotenv/config.js";
 const webpackTestConfig = require("./config/webpack.test.cjs");
 const karma = require("karma");
 const { argv } = require("yargs");

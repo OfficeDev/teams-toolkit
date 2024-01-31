@@ -53,19 +53,20 @@ export class WebviewPanel {
             new WebviewPanel(panelType, column || vscode.ViewColumn.One)
           );
     }
-
-    if (!args || (args && args.length === 0)) {
+    // if args empty or undefined, return
+    if (!args?.length) {
       return;
     }
     if (panelType == PanelType.SampleGallery && args.length > 1) {
       try {
         const sampleId = args[1] as string;
-        void WebviewPanel.currentPanels
-          .find((panel) => panel.panelType === panelType)!
-          .panel.webview.postMessage({
+        const panel = WebviewPanel.currentPanels.find((panel) => panel.panelType === panelType);
+        if (panel) {
+          void panel.panel.webview.postMessage({
             message: Commands.OpenDesignatedSample,
             sampleId: sampleId,
           });
+        }
       } catch (e) {}
     }
   }

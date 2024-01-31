@@ -81,4 +81,35 @@ describe("uri handler", () => {
       chai.assert.isTrue(false);
     }
   });
+
+  it("invalid uri missing sampleId", async () => {
+    const handler = new UriHandler();
+    const uri = vscode.Uri.parse(
+      "vscode://TeamsDevApp.ms-teams-vscode-extension?referrer=officedoc"
+    );
+    const showMessage = sandbox.stub(vscode.window, "showErrorMessage");
+    await handler.handleUri(uri);
+
+    sandbox.assert.calledOnce(showMessage);
+  });
+
+  it("valid designated sample callback uri", async () => {
+    const handler = new UriHandler();
+    const uri = vscode.Uri.parse(
+      "vscode://TeamsDevApp.ms-teams-vscode-extension?referrer=officedoc&sampleId=hello-world-teams-tab-and-outlook-add-in"
+    );
+
+    const executeCommand = sandbox
+      .stub(vscode.commands, "executeCommand")
+      .returns(Promise.reject(""));
+    await handler.handleUri(uri);
+
+    chai.assert.isTrue(executeCommand.calledOnce);
+    sandbox.assert.calledOnceWithExactly(
+      executeCommand,
+      "fx-extension.openSamples",
+      false,
+      "hello-world-teams-tab-and-outlook-add-in"
+    );
+  });
 });

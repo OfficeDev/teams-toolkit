@@ -10,7 +10,9 @@
   "types": "types/index.d.ts",
   "scripts": {
     "build": "rollup -c",
-    "test:unit": "nyc --no-clean -- mocha --require ts-node/register \"./test/*.test.ts\" -r mocha.env.ts --config .mocharc.json"
+    "test:unit:node": "nyc --no-clean -- mocha --require ts-node/register \"test/{,!(browser)/**/}.test.ts\" -r config/mocha.env.ts --config config/.mocharc.json",
+    "test:unit:browser": "karma start karma.conf.cjs --single-run --unit",
+    "test:unit": "npm run test:unit:node && npm run test:unit:browser "
   },
   "files": [
     "dist/*js",
@@ -31,9 +33,15 @@
     "@apidevtools/swagger-parser": "^10.1.0",
     "@microsoft/teams-manifest": "^0.1.3",
     "fs-extra": "^11.2.0",
+    "http": "^0.0.1-security",
+    "https-browserify": "^1.0.0",
     "js-yaml": "^4.1.0",
     "openapi-types": "^7.2.3",
-    "swagger2openapi": "^7.0.8"
+    "process": "^0.11.10",
+    "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
+    "swagger2openapi": "^7.0.8",
+    "url": "^0.11.3"
   },
   "publishConfig": {
     "access": "public"
@@ -48,13 +56,27 @@
     "@types/sinon": "^17.0.3",
     "@types/swagger2openapi": "^7.0.4",
     "chai": "^4.3.4",
+    "karma": "^6.3.8",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-cli": "^2.0.0",
+    "karma-coverage": "^2.0.0",
+    "karma-env-preprocessor": "^0.1.1",
+    "karma-junit-reporter": "^2.0.1",
+    "karma-mocha": "^2.0.1",
+    "karma-mocha-reporter": "^2.2.5",
+    "karma-sourcemap-loader": "^0.3.8",
+    "karma-webpack": "^5.0.0",
     "mocha": "^9.2.0",
     "mock-fs": "^5.2.0",
     "mocked-env": "^1.3.5",
+    "puppeteer": "^13.1.3",
     "rollup": "^2.41.0",
     "rollup-plugin-typescript2": "^0.31.0",
     "sinon": "^12.0.1",
+    "source-map-loader": "^3.0.0",
+    "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
-    "typescript": "^4.4.4"
+    "typescript": "^4.4.4",
+    "util": "^0.12.5"
   }
 }

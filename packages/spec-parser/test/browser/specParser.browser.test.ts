@@ -3,18 +3,18 @@
 
 import "mocha";
 import { expect } from "chai";
-import sinon from "sinon";
-import { SpecParser } from "../src/specParser.browser";
+import * as sinon from "sinon";
+import { SpecParser } from "../../src/specParser.browser";
 import {
   ErrorType,
   ValidationStatus,
   WarningType,
-} from "../src/interfaces";
-import { SpecParserError } from "../src/specParserError";
-import { ConstantString } from "../src/constants";
+} from "../../src/interfaces";
+import { SpecParserError } from "../../src/specParserError";
+import { ConstantString } from "../../src/constants";
 import { OpenAPIV3 } from "openapi-types";
-import { Utils } from "../src/utils";
-import SwaggerParser from "@apidevtools/swagger-parser";
+import { Utils } from "../../src/utils";
+import * as SwaggerParser from "@apidevtools/swagger-parser";
 
 // TODO: After SpecParser lib become a npm package, these tests should be running in browser environment
 describe("SpecParser in Browser", () => {
@@ -323,7 +323,7 @@ describe("SpecParser in Browser", () => {
     it("should throw an error when the SwaggerParser library throws an error", async () => {
       const specPath = "invalid-spec.yaml";
       const specParser = new SpecParser(specPath);
-      sinon.stub(SwaggerParser, "validate").rejects(new Error("Invalid specification"));
+      sinon.stub(SwaggerParser.prototype,  "validate").rejects(new Error("Invalid specification"));
       const parseStub = sinon
         .stub(specParser.parser, "parse")
         .rejects(new Error("Invalid specification"));

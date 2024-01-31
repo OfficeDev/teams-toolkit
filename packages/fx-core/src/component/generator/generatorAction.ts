@@ -12,13 +12,16 @@ import { getTemplatesFolder } from "../../folder";
 import { MissKeyError, SampleNotFoundError, TemplateNotFoundError } from "./error";
 import {
   downloadDirectory,
-  fetchTemplateZipUrl,
   fetchZipFromUrl,
   getSampleInfoFromName,
   SampleUrlInfo,
   unzip,
   zipFolder,
+  getTemplateLatestTag,
+  getTemplateZipUrlByTag,
+  getTemplateLocalVersion,
 } from "./utils";
+import semver from "semver";
 
 export interface GeneratorContext {
   name: string;
@@ -54,7 +57,7 @@ export interface GeneratorAction {
 
 export enum GeneratorActionName {
   FetchTemplateZipFromSourceCode = "FetchTemplateZipFromSourceCodeAction",
-  FetchTemplateUrlWithTag = "FetchTemplatesUrlWithTag",
+  FetchUrlForHotfixOnly = "FetchUrlForHotfixOnly",
   FetchZipFromUrl = "FetchZipFromUrl",
   FetchTemplateZipFromLocal = "FetchTemplateZipFromLocal",
   FetchSampleInfo = "FetchSampleInfo",
@@ -116,19 +119,28 @@ export const downloadDirectoryAction: GeneratorAction = {
   },
 };
 
-export const fetchTemplateUrlWithTagAction: GeneratorAction = {
-  name: GeneratorActionName.FetchTemplateUrlWithTag,
+export const fetchUrlForHotfixOnlyAction: GeneratorAction = {
+  name: GeneratorActionName.FetchUrlForHotfixOnly,
   run: async (context: GeneratorContext) => {
-    if (context.zip || context.url || context.cancelDownloading) {
+    if (context.zip || context.cancelDownloading) {
       return;
     }
 
     context.logProvider.debug(`Fetching template url with tag: ${JSON.stringify(context)}`);
-    context.url = await fetchTemplateZipUrl(
+    const latestTag = await getTemplateLatestTag(
       context.language!,
       context.tryLimits,
       context.timeoutInMs
     );
+    const localVer = getTemplateLocalVersion();
+    const latestVer = latestTag.split("@")[1];
+    // git tag version is higher than the local version, download template from github
+    if (semver.gt(latestVer, localVer)) {
+      context.url = getTemplateZipUrlByTag(context.language!, latestTag);
+    } else {
+      // generate template from fallback
+      context.cancelDownloading = true;
+    }
   },
 };
 
@@ -143,7 +155,25 @@ export const fetchZipFromUrlAction: GeneratorAction = {
     if (!context.url) {
       throw new MissKeyError("url");
     }
+
     context.zip = await fetchZipFromUrl(context.url, context.tryLimits, context.timeoutInMs);
+  },
+};
+
+export const unzipAction: GeneratorAction = {
+  name: GeneratorActionName.Unzip,
+  run: async (context: GeneratorContext) => {
+    if (!context.zip) {
+      return;
+    }
+    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
+    context.outputs = await unzip(
+      context.zip,
+      context.destination,
+      context.fileNameReplaceFn,
+      context.fileDataReplaceFn,
+      context.filterFn
+    );
   },
 };
 
@@ -174,33 +204,12 @@ export const fetchTemplateFromLocalAction: GeneratorAction = {
   },
 };
 
-export const unzipAction: GeneratorAction = {
-  name: GeneratorActionName.Unzip,
-  run: async (context: GeneratorContext) => {
-    if (!context.zip) {
-      return;
-    }
-    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
-    context.outputs = await unzip(
-      context.zip,
-      context.destination,
-      context.fileNameReplaceFn,
-      context.fileDataReplaceFn,
-      context.filterFn
-    );
-  },
-};
-
 export const TemplateActionSeq: GeneratorAction[] = [
   fetchTemplateZipFromSourceCodeAction,
-  fetchTemplateUrlWithTagAction,
+  fetchUrlForHotfixOnlyAction,
   fetchZipFromUrlAction,
   unzipAction,
   fetchTemplateFromLocalAction,
 ];
 
-export const SampleActionSeq: GeneratorAction[] = [fetchZipFromUrlAction, unzipAction];
-export const DownloadDirectoryActionSeq: GeneratorAction[] = [
-  fetchSampleInfoAction,
-  downloadDirectoryAction,
-];
+export const SampleActionSeq: GeneratorAction[] = [fetchSampleInfoAction, downloadDirectoryAction];

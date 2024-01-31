@@ -272,7 +272,7 @@ export class Lifecycle implements ILifecycle {
           ? new Map(Object.entries(driver.writeToEnvironmentFile))
           : undefined,
         this.version,
-        this.name
+        driver.name
       );
       const result = r.result;
       const summary = r.summaries.map((s) => `${SummaryConstant.Succeeded} ${s}`);

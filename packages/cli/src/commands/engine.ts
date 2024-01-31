@@ -117,10 +117,10 @@ class CLIEngine {
   ): Promise<Result<undefined, FxError>> {
     // parse args
     const parseRes = this.parseArgs(context, root, remainingArgs);
-
+    // create FxCore for anycase, because Tools will be initialized in FxCore
+    const core = getFxCore();
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
-      const core = getFxCore();
       const res = await core.checkProjectType(context.optionValues.projectPath as string);
       if (res.isOk()) {
         const projectTypeResult = res.value;
@@ -370,7 +370,7 @@ class CLIEngine {
                 if (option.value === undefined) {
                   option.value = [];
                 }
-                const values = nextToken.split(/[,\s]+/);
+                const values = nextToken.split(",");
                 for (const v of values) {
                   option.value.push(v);
                 }

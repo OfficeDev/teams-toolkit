@@ -764,6 +764,29 @@ describe("azureParameterMigration", () => {
       assert.equal(error.innerError.message, "templates/azure/provision.bicep does not exist");
     }
   });
+
+  it("azure.parameter.dev.json is not existing", async () => {
+    // Stub
+    sandbox.stub(fs, "pathExistsSync").returns(false);
+
+    const migrationContext = await mockMigrationContext(projectPath);
+
+    // Stub
+    await copyTestProject(Constants.manifestsMigrationHappyPath, projectPath);
+
+    // Action
+    await azureParameterMigration(migrationContext);
+
+    // Assert
+    const azureParameterDevFilePath = path.join(
+      projectPath,
+      "templates",
+      "azure",
+      "azure.parameters.dev.json"
+    );
+
+    assert.isFalse(await fs.pathExists(azureParameterDevFilePath));
+  });
 });
 
 describe("updateLaunchJson", () => {

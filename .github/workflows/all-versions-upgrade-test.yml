@@ -199,6 +199,8 @@ jobs:
     - sampleTest
     - templateTest
     if: ${{ failure() && github.run_attempt < 3 }}
+    permissions:
+      actions: read
     runs-on: ubuntu-latest
     steps:
       - name: rerun

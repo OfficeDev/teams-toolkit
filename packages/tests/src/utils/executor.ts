@@ -7,7 +7,7 @@ import { TemplateProjectFolder, Capability } from "./constants";
 import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
-import { spawn } from "child_process";
+import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 
 export class Executor {
   static async execute(
@@ -503,5 +503,37 @@ export class Executor {
       }
     );
     return { devtunnelProcess, tunnelName };
+  }
+
+  static async cliPreview(projectPath: string, includeBot: boolean) {
+    console.log("======= debug with cli ========");
+    let tunnelName = "";
+    let devtunnelProcess = null;
+    if (includeBot) {
+      const tunnel = Executor.debugBotFunctionPreparation(projectPath);
+      tunnelName = tunnel.tunnelName;
+      devtunnelProcess = tunnel.devtunnelProcess;
+      await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+    }
+    const debugProcess = Executor.debugProject(
+      projectPath,
+      "local",
+      true,
+      process.env,
+      (data) => {
+        if (data) {
+          console.log(data);
+        }
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
+    await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
+    return {
+      tunnelName,
+      devtunnelProcess,
+      debugProcess,
+    };
   }
 }

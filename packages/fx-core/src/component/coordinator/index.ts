@@ -70,6 +70,7 @@ import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { convertToAlphanumericOnly } from "../../common/utils";
 import { isApiKeyEnabled } from "../../common/featureFlags";
+import { environmentNameManager } from "../../core/environmentName";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -834,9 +835,14 @@ class Coordinator {
     }
     const projectModel = maybeProjectModel.value;
     if (projectModel.deploy) {
-      const consent = await deployUtils.askForDeployConsentV3(ctx);
-      if (consent.isErr()) {
-        return err(consent.error);
+      if (
+        inputs.env !== environmentNameManager.getLocalEnvName() &&
+        inputs.env !== environmentNameManager.getTestToolEnvName()
+      ) {
+        const consent = await deployUtils.askForDeployConsentV3(ctx);
+        if (consent.isErr()) {
+          return err(consent.error);
+        }
       }
       const summaryReporter = new SummaryReporter([projectModel.deploy], ctx.logProvider);
       let hasError = false;

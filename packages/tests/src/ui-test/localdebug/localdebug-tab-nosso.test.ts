@@ -30,7 +30,7 @@ import { getScreenshotName } from "../../utils/nameUtil";
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
-  let debugProcess: ChildProcessWithoutNullStreams;
+  let debugProcess: ChildProcessWithoutNullStreams | null;
   let successFlag = true;
   let errorMessage = "";
 
@@ -45,14 +45,12 @@ describe("Local Debug Tests", function () {
     this.timeout(Timeout.finishTestCase);
     if (debugProcess) {
       setTimeout(() => {
-        debugProcess.kill("SIGTERM");
+        debugProcess?.kill("SIGTERM");
       }, 2000);
     }
 
     await localDebugTestContext.after(false, true);
     this.timeout(Timeout.finishAzureTestCase);
-    if (successFlag) process.exit(0);
-    else process.exit(1);
   });
 
   it(
@@ -89,22 +87,8 @@ describe("Local Debug Tests", function () {
         }
 
         // cli preview
-        console.log("======= debug with cli ========");
-        debugProcess = Executor.debugProject(
-          projectPath,
-          "local",
-          true,
-          process.env,
-          (data) => {
-            if (data) {
-              console.log(data);
-            }
-          },
-          (error) => {
-            console.log(error);
-          }
-        );
-        await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
+        const res = await Executor.cliPreview(projectPath, false);
+        debugProcess = res.debugProcess;
         {
           const page = await reopenPage(
             localDebugTestContext.context!,

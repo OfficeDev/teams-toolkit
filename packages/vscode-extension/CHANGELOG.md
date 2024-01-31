@@ -42,7 +42,7 @@ Enhancement:
 - Teams Toolkit CLI Enhancement including: Commands have been reorganized into a hierarchical structure, added a teamsfx list command, improve the help command readability, outputs have been refreshed and log      levels have been streamlined for clarity.
 - Update Teams AI chat bot template to use latest teams-ai library.
 
-Bug Fixs:
+Bug Fixes:
 
 - Resolved an issue causing an No localized strings file found error in Visual Studio Code output. ([#10090](https://github.com/OfficeDev/TeamsFx/pull/10090))
 - Fixed a flickering issue when selecting an option in Quick Pick. ([#10100](https://github.com/OfficeDev/TeamsFx/pull/10100))

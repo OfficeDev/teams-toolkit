@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
-        "dev": "func start --typescript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"",
+        "dev": "nodemon --exec func start --typescript --language-worker=\"--inspect=9229\" --port \"7071\" --cors \"*\"",
         "build": "tsc",
         "watch:teamsfx": "tsc --watch",
         "watch": "tsc -w",
@@ -12,11 +12,13 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@azure/functions": "^1.2.2"
+        "@azure/functions": "^4.1.0"
     },
     "devDependencies": {
         "env-cmd": "^10.1.0",
         "@types/node": "^20.8.10",
+        "nodemon": "^3.0.3",
         "typescript": "^5.2.2"
-    }
+    },
+    "main": "dist/src/functions/*.js"
 }

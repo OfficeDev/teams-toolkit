@@ -11,7 +11,7 @@ import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { ValidateManifestArgs } from "./interfaces/ValidateManifestArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { TelemetryUtils, TelemetryPropertyKey } from "./utils/telemetry";
+import { TelemetryPropertyKey } from "./utils/telemetry";
 import { AppStudioResultFactory } from "./results";
 import { AppStudioError } from "./errors";
 import { manifestUtils } from "./utils/ManifestUtils";
@@ -47,7 +47,6 @@ export class ValidateManifestDriver implements StepDriver {
     args: ValidateManifestArgs,
     context: WrapDriverContext
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
     const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);

@@ -3,26 +3,23 @@
  * developer guide.
  */
 
-import { Context, HttpRequest } from "@azure/functions";
+import { app, HttpRequest, HttpResponseInit, InvocationContext } from "@azure/functions";
 
 import repairRecords from "../repairsData.json";
-
-// Define a Response interface.
-interface Response {
-  status: number;
-  body?: {
-    results: any[];
-  };
-}
 
 /**
  * This function handles the HTTP request and returns the repair information.
  *
- * @param {Context} context - The Azure Functions context object.
  * @param {HttpRequest} req - The HTTP request.
- * @returns {Promise<Response>} - A promise that resolves with the HTTP response containing the repair information.
+ * @param {InvocationContext} context - The Azure Functions context object.
+ * @returns {Promise<HttpResponseInit>} - A promise that resolves with the HTTP response containing the repair information.
  */
-export default async function run(context: Context, req: HttpRequest): Promise<Response> {
+export async function repair(
+  req: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+  context.log("HTTP trigger function processed a request.");
+
   // Check if the request is authorized.
   if (!isApiKeyValid(req)) {
     // Return 401 Unauthorized response.
@@ -32,15 +29,15 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
   }
 
   // Initialize response.
-  const res: Response = {
+  const res: HttpResponseInit = {
     status: 200,
-    body: {
+    jsonBody: {
       results: [],
     },
   };
 
   // Get the assignedTo query parameter.
-  const assignedTo = req.query.assignedTo;
+  const assignedTo = req.query.get("assignedTo");
 
   // If the assignedTo query parameter is not provided, return the response.
   if (!assignedTo) {
@@ -56,7 +53,7 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
   });
 
   // Return filtered repair records, or an empty array if no records were found.
-  res.body.results = repairs ?? [];
+  res.jsonBody.results = repairs ?? [];
   return res;
 }
 
@@ -69,6 +66,12 @@ export default async function run(context: Context, req: HttpRequest): Promise<R
  * @returns {boolean} - True if the request is authorized, false otherwise.
  */
 function isApiKeyValid(req: HttpRequest): boolean {
-  const apiKey = req.headers["x-api-key"];
+  const apiKey = req.headers.get("x-api-key");
   return apiKey === process.env.API_KEY;
 }
+
+app.http("repair", {
+  methods: ["GET"],
+  authLevel: "anonymous",
+  handler: repair,
+});

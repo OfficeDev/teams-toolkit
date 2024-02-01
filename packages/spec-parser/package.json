@@ -10,7 +10,7 @@
   "types": "types/index.d.ts",
   "scripts": {
     "build": "rollup -c",
-    "test:unit:node": "nyc --no-clean -- mocha --require ts-node/register \"test/{,!(browser)/**/}.test.ts\" -r config/mocha.env.ts --config config/.mocharc.json",
+    "test:unit:node": "c8 --no-clean -- mocha --require ts-node/register \"test/*.test.ts\" -r config/mocha.env.ts --config config/.mocharc.json",
     "test:unit:browser": "karma start karma.conf.cjs --single-run --unit",
     "test:unit": "npm run test:unit:node && npm run test:unit:browser "
   },
@@ -32,6 +32,7 @@
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.1.0",
     "@microsoft/teams-manifest": "^0.1.3",
+    "c8": "^9.1.0",
     "fs-extra": "^11.2.0",
     "http": "^0.0.1-security",
     "https-browserify": "^1.0.0",

@@ -157,7 +157,12 @@ export class Utils {
   
         const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
         const requestJsonBody = requestBody?.content["application/json"];
-  
+
+        const mediaTypesCount = Object.keys(requestBody?.content || {}).length;
+        if (mediaTypesCount > 1) {
+          return false;
+        }
+
         const responseJson = Utils.getResponseJson(operationObject);
         if (Object.keys(responseJson).length === 0) {
           return false;
@@ -289,7 +294,7 @@ export class Utils {
   static updateFirstLetter(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
-  
+
   static getResponseJson(
     operationObject: OpenAPIV3.OperationObject | undefined
   ): OpenAPIV3.MediaTypeObject {
@@ -297,6 +302,12 @@ export class Utils {
   
     for (const code of ConstantString.ResponseCodeFor20X) {
       const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
+
+      const mediaTypesCount = Object.keys(responseObject?.content || {}).length;
+      if (mediaTypesCount > 1) {
+        return {};
+      }
+
       if (responseObject?.content?.["application/json"]) {
         json = responseObject.content["application/json"];
         break;

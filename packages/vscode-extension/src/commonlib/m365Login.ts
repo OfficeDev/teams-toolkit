@@ -216,26 +216,18 @@ export class M365Login extends BasicLogin implements M365TokenProvider {
     const message = localize("teamstoolkit.appStudioLogin.message");
     const signin = localize("teamstoolkit.common.signin");
     const createTestingTenant = localize("teamstoolkit.appStudioLogin.createM365TestingTenant");
-    const learnMore = localize("teamstoolkit.appStudioLogin.learnMore");
     let userSelected: string | undefined;
     do {
       userSelected = await vscode.window.showInformationMessage(
         message,
         { modal: true },
         signin,
-        createTestingTenant,
-        learnMore
+        createTestingTenant
       );
       if (userSelected === createTestingTenant) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSignInJoinM365);
         void vscode.env.openExternal(
           vscode.Uri.parse("https://developer.microsoft.com/en-us/microsoft-365/dev-program")
-        );
-      } else if (userSelected === learnMore) {
-        void vscode.env.openExternal(
-          vscode.Uri.parse(
-            "https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program"
-          )
         );
       }
     } while (userSelected === createTestingTenant);

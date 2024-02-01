@@ -51,13 +51,6 @@ pipeline {
             }
         }
 
-        // Set for non-interactive mode.
-        stage('Set for non-interactive mode') {
-            steps {
-                sh 'npx teamsfx config set -g interactive false'
-            }
-        }
-
         stage('Login Azure by service principal') {
             environment {
               SP_NAME = credentials('AZURE_SERVICE_PRINCIPAL_NAME') 

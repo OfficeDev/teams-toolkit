@@ -8,7 +8,7 @@ import { MetadataV3 } from "./versionMetadata";
 export function validateProjectSettings(projectSettings: any): string | undefined {
   if (!projectSettings) return "empty projectSettings";
   if (!projectSettings.solutionSettings) return undefined;
-  const solutionSettings = projectSettings.solutionSettings as any;
+  const solutionSettings = projectSettings.solutionSettings;
   let validateRes = validateStringArray(solutionSettings.azureResources);
   if (validateRes) {
     return `solutionSettings.azureResources validation failed: ${validateRes}`;
@@ -36,11 +36,12 @@ function validateStringArray(arr?: any, enums?: string[]) {
   if (!Array.isArray(arr)) {
     return "is not array";
   }
-  for (const element of arr as any[]) {
+  for (const element of arr) {
     if (typeof element !== "string") {
       return "array elements is not string type";
     }
     if (enums && !enums.includes(element)) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       return `array elements is out of scope: ${enums}`;
     }
   }

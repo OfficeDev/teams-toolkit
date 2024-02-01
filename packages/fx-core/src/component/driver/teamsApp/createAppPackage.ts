@@ -1,37 +1,38 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import fs from "fs-extra";
-import AdmZip from "adm-zip";
-import * as path from "path";
 import { hooks } from "@feathersjs/hooks/lib";
-import { Result, FxError, ok, err, Platform, Colors } from "@microsoft/teamsfx-api";
+import { Colors, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import fs from "fs-extra";
+import * as path from "path";
 import { Service } from "typedi";
-import { StepDriver, ExecutionResult } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { WrapDriverContext } from "../util/wrapUtil";
-import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { manifestUtils } from "./utils/ManifestUtils";
-import { Constants } from "./constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
-import { updateProgress } from "../middleware/updateProgress";
+import { ErrorContextMW } from "../../../core/globalVars";
+import {
+  FileNotFoundError,
+  InvalidActionInputError,
+  MissingEnvironmentVariablesError,
+} from "../../../error/common";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { WrapDriverContext } from "../util/wrapUtil";
+import { Constants } from "./constants";
+import { CreateAppPackageArgs } from "./interfaces/CreateAppPackageArgs";
+import { manifestUtils } from "./utils/ManifestUtils";
+import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
+import { TelemetryPropertyKey } from "./utils/telemetry";
+import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
 
 export const actionName = "teamsApp/zipAppPackage";
 
 @Service(actionName)
 export class CreateAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.createAppPackageDriver");
-
-  public async run(
-    args: CreateAppPackageArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.build(args, wrapContext);
-    return res;
-  }
+  readonly progressTitle = getLocalizedString(
+    "plugins.appstudio.createPackage.progressBar.message"
+  );
 
   public async execute(
     args: CreateAppPackageArgs,
@@ -46,8 +47,8 @@ export class CreateAppPackageDriver implements StepDriver {
   }
 
   @hooks([
+    ErrorContextMW({ source: "Teams", component: "CreateAppPackageDriver" }),
     addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("plugins.appstudio.createPackage.progressBar.message")),
   ])
   public async build(
     args: CreateAppPackageArgs,
@@ -63,7 +64,7 @@ export class CreateAppPackageDriver implements StepDriver {
       manifestPath = path.join(context.projectPath, manifestPath);
     }
 
-    const manifestRes = await manifestUtils.getManifestV3(manifestPath);
+    const manifestRes = await manifestUtils.getManifestV3(manifestPath, context);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
@@ -87,7 +88,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
     const appDirectory = path.dirname(manifestPath);
 
-    const colorFile = path.join(appDirectory, manifest.icons.color);
+    const colorFile = path.resolve(appDirectory, manifest.icons.color);
     if (!(await fs.pathExists(colorFile))) {
       const error = new FileNotFoundError(
         actionName,
@@ -96,8 +97,12 @@ export class CreateAppPackageDriver implements StepDriver {
       );
       return err(error);
     }
+    const colorFileRelativePath = path.relative(appDirectory, colorFile);
+    if (colorFileRelativePath.startsWith("..")) {
+      return err(new InvalidFileOutsideOfTheDirectotryError(colorFile));
+    }
 
-    const outlineFile = path.join(appDirectory, manifest.icons.outline);
+    const outlineFile = path.resolve(appDirectory, manifest.icons.outline);
     if (!(await fs.pathExists(outlineFile))) {
       const error = new FileNotFoundError(
         actionName,
@@ -105,6 +110,10 @@ export class CreateAppPackageDriver implements StepDriver {
         "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
       );
       return err(error);
+    }
+    const outlineFileRelativePath = path.relative(appDirectory, outlineFile);
+    if (outlineFileRelativePath.startsWith("..")) {
+      return err(new InvalidFileOutsideOfTheDirectotryError(outlineFile));
     }
 
     // pre-check existence
@@ -145,9 +154,80 @@ export class CreateAppPackageDriver implements StepDriver {
     ) {
       for (const language of manifest.localizationInfo.additionalLanguages) {
         const file = language.file;
-        const fileName = `${appDirectory}/${file}`;
+        const fileName = path.resolve(appDirectory, file);
+        const relativePath = path.relative(appDirectory, fileName);
+        if (relativePath.startsWith("..")) {
+          return err(new InvalidFileOutsideOfTheDirectotryError(fileName));
+        }
         const dir = path.dirname(file);
         zip.addLocalFile(fileName, dir === "." ? "" : dir);
+      }
+    }
+
+    // M365 Copilot plugin, API specification and Adaptive card templates
+    if (
+      manifest.composeExtensions &&
+      manifest.composeExtensions.length > 0 &&
+      manifest.composeExtensions[0].composeExtensionType == "apiBased" &&
+      manifest.composeExtensions[0].apiSpecificationFile
+    ) {
+      const apiSpecificationFile = path.resolve(
+        appDirectory,
+        manifest.composeExtensions[0].apiSpecificationFile
+      );
+      if (!(await fs.pathExists(apiSpecificationFile))) {
+        return err(
+          new FileNotFoundError(
+            actionName,
+            apiSpecificationFile,
+            "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+          )
+        );
+      }
+      const relativePath = path.relative(appDirectory, apiSpecificationFile);
+      if (relativePath.startsWith("..")) {
+        return err(new InvalidFileOutsideOfTheDirectotryError(apiSpecificationFile));
+      }
+      const expandedEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
+        apiSpecificationFile,
+        context
+      );
+      if (expandedEnvVarResult.isErr()) {
+        return err(expandedEnvVarResult.error);
+      }
+      const openAPIContent = expandedEnvVarResult.value;
+      const attr = await fs.stat(apiSpecificationFile);
+      zip.addFile(
+        manifest.composeExtensions[0].apiSpecificationFile,
+        Buffer.from(openAPIContent),
+        "",
+        attr.mode
+      );
+
+      if (manifest.composeExtensions[0].commands.length > 0) {
+        for (const command of manifest.composeExtensions[0].commands) {
+          if (command.apiResponseRenderingTemplateFile) {
+            const adaptiveCardFile = path.resolve(
+              appDirectory,
+              command.apiResponseRenderingTemplateFile
+            );
+            if (!(await fs.pathExists(adaptiveCardFile))) {
+              return err(
+                new FileNotFoundError(
+                  actionName,
+                  adaptiveCardFile,
+                  "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+                )
+              );
+            }
+            const relativePath = path.relative(appDirectory, adaptiveCardFile);
+            if (relativePath.startsWith("..")) {
+              return err(new InvalidFileOutsideOfTheDirectotryError(adaptiveCardFile));
+            }
+            const dir = path.dirname(command.apiResponseRenderingTemplateFile);
+            zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
+          }
+        }
       }
     }
 
@@ -159,21 +239,33 @@ export class CreateAppPackageDriver implements StepDriver {
     await fs.writeFile(jsonFileName, JSON.stringify(manifest, null, 4));
     await fs.chmod(jsonFileName, 0o444);
 
-    if (context.platform === Platform.CLI || context.platform === Platform.VS) {
-      const builtSuccess = [
-        { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
-        { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
-        { content: zipFileName, color: Colors.BRIGHT_MAGENTA },
-        { content: " built successfully!", color: Colors.BRIGHT_WHITE },
-      ];
-      if (context.platform === Platform.VS) {
-        context.logProvider?.info(builtSuccess);
-      } else {
-        context.ui?.showMessage("info", builtSuccess, false);
-      }
-    }
-
+    const builtSuccess = [
+      { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
+      { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
+      { content: zipFileName, color: Colors.BRIGHT_MAGENTA },
+      { content: " built successfully!", color: Colors.BRIGHT_WHITE },
+    ];
+    context.logProvider.info(builtSuccess);
     return ok(new Map());
+  }
+
+  private static async expandOpenAPIEnvVars(
+    openAPISpecPath: string,
+    ctx: WrapDriverContext
+  ): Promise<Result<string, FxError>> {
+    const content = await fs.readFile(openAPISpecPath, "utf8");
+    const vars = getEnvironmentVariables(content);
+    ctx.addTelemetryProperties({
+      [TelemetryPropertyKey.customizedOpenAPIKeys]: vars.join(";"),
+    });
+    const result = expandEnvironmentVariable(content);
+    const notExpandedVars = getEnvironmentVariables(result);
+    if (notExpandedVars.length > 0) {
+      return err(
+        new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), openAPISpecPath)
+      );
+    }
+    return ok(result);
   }
 
   private validateArgs(args: CreateAppPackageArgs): Result<any, FxError> {

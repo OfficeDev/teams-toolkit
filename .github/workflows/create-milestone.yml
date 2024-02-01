@@ -8,6 +8,8 @@ on:
 jobs:
   main:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -20,6 +22,9 @@ jobs:
 
       - name: Copy action
         run: cp -r .github/actions/create-milestone ./action-base/create-milestone
+
+      - name: Npm install dependencies
+        run: npm install azure-devops-node-api --prefix ./action-base
       - name: Npm install
         run: npm install --production --prefix ./action-base
       - name: Build action
@@ -29,7 +34,7 @@ jobs:
       - name: Run Create Milestone
         uses: ./action-base/create-milestone
         with:
-          milestone-prefix: CY
-          milestone-days: 14
-          advanced-days: 3
           token: ${{secrets.GITHUB_TOKEN}}
+          devops-token: ${{secrets.ADO_PAT}}
+          devops-org: "msazure"
+          devops-projectId: "Microsoft Teams Extensibility"

@@ -1,0 +1,129 @@
+.sample-detail-page {
+    margin: 20px 100px;
+    display: flex;
+    flex-direction: column;
+    min-width: 568px;
+    color: var(--vscode-editor-foreground);
+
+    button {
+        height: 16px;
+        font-size: 13px;
+        padding: 0;
+        margin-bottom: 24px;
+        color: var(--vscode-textLink-foreground);
+
+        span>i {
+            font-size: 12px;
+            width: 14px;
+            height: 14px;
+            color: var(--vscode-textLink-foreground);
+        }
+
+        :active {
+            color: var(--vscode-textLink-foreground);
+        }
+    }
+
+    .upgrade-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 40px;
+    
+        .tooltip {
+            display: flex;
+            align-items: center;
+        }
+
+        .codicon {
+            margin-left: 8px;
+            margin-right: 4px;
+            color: var(--vscode-symbolIcon-interfaceForeground);
+        }
+
+        vscode-button {
+            flex-shrink: 0;
+            height: 28px;
+        }
+    }
+
+    .header {
+        display: grid;
+        grid-template-columns: auto max-content;
+        margin: 16px 0 12px 0;
+
+        .contents {
+            min-width: 205px;
+            grid-column: 1/2;
+        }
+
+        h2 {
+            font-size: 26px;
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-weight: 600;
+            line-height: 31px;
+        }
+
+        .buttons {
+            grid-column: 2/3;
+            margin: 0 0 auto auto;
+            display: flex;
+
+            vscode-button {
+                margin-left: 8px;
+                margin-right: 0px;
+                width: max-content;
+            }
+        }
+    }
+
+    .tags {
+        display: flex;
+        .tag {
+            margin-right: 8px;
+            flex-shrink: 0;
+            height: 16px;
+            font-size: 13px;
+            padding: 2px 8px;
+            border: 0;
+            border-radius: 2px;
+
+            span {
+                display: inline-block;
+                height: 16px;
+                top: -1px;
+                position: relative;
+            }
+        }
+    }
+
+    .markdown-body {
+        margin: 45px 0 0 0;
+        padding: 0;
+    }
+}
+
+body.vscode-light {
+    .tag {
+        background-color: #E5E5E5;
+        color: #606060;
+    }
+
+    .upgrade-banner {
+        background-color: #F0F0F0;
+    }
+}
+
+body.vscode-dark {
+    .tag {
+        background-color: #333333;
+        color: #CCCCCC;
+    }
+
+    .upgrade-banner {
+        background-color: #303031;
+    }
+}

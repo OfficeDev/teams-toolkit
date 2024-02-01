@@ -1,14 +1,15 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as globalVariables from "../globalVariables";
+import VsCodeLogInstance from "../commonlib/log";
 
 let loadedCollection: Record<string, string> | undefined = undefined;
 let defaultCollection: Record<string, string> | undefined = undefined;
 let askedForCollection: Record<string, string> = {};
-let loadedLocale: string;
+export let loadedLocale: string;
 
 export function localize(key: string, defValue?: string) {
   return getString(key, defValue);
@@ -28,6 +29,7 @@ function getString(key: string, defValue?: string) {
 
 export function _resetCollections(): void {
   loadedLocale = "";
+  defaultCollection = undefined;
   loadedCollection = undefined;
   askedForCollection = {};
 }
@@ -37,7 +39,7 @@ export function _getAskedForCollection(): Record<string, string> {
 }
 
 function shouldReloadLocale(): boolean {
-  return !loadedCollection || parseLocale() !== loadedLocale;
+  return !loadedCollection;
 }
 
 declare let navigator: { language: string } | undefined;
@@ -48,8 +50,11 @@ export function parseLocale(): string {
       return navigator.language.toLowerCase();
     }
   } catch {}
-  const vscodeConfigString = process.env.VSCODE_NLS_CONFIG;
-  return vscodeConfigString ? JSON.parse(vscodeConfigString).locale : "en-us";
+  const vscodeLocale = process.env.VSCODE_NLS_CONFIG
+    ? (JSON.parse(process.env.VSCODE_NLS_CONFIG) as Record<string, string>).locale
+    : undefined;
+  VsCodeLogInstance.info(`Current VS Code locale is: ${vscodeLocale ?? ""}`);
+  return vscodeLocale ?? "en-us";
 }
 
 function getLocalizedString(key: string, isDefault: boolean, defValue?: string): string {
@@ -81,8 +86,13 @@ export function loadLocalizedStrings(): void {
     `package.nls.${loadedLocale}.json`
   );
   if (fs.pathExistsSync(nlsFile)) {
-    loadedCollection = fs.readJsonSync(nlsFile);
+    loadedCollection = fs.readJsonSync(nlsFile) as Record<string, string> | undefined;
   } else {
+    if (loadedLocale !== "en" && loadedLocale !== "en-us") {
+      VsCodeLogInstance.error(
+        `No localized strings file found for locale: ${loadedLocale}, will fallback to default one.`
+      );
+    }
     loadedCollection = {};
   }
 
@@ -96,9 +106,10 @@ function loadDefaultStrings(): void {
       "package.nls.json"
     );
     if (fs.pathExistsSync(defaultNlsFile)) {
-      defaultCollection = fs.readJsonSync(defaultNlsFile);
+      defaultCollection = fs.readJsonSync(defaultNlsFile) as Record<string, string> | undefined;
     } else {
       defaultCollection = {};
+      VsCodeLogInstance.error(`No default localized strings file found.`);
     }
   }
 }

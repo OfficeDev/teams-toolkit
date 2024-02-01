@@ -4,15 +4,13 @@
 import { getLocalizedString } from "../common/localizeUtils";
 
 export class ProgressTitles {
-  static readonly generateTemplate = getLocalizedString("core.progress.generateTemplate");
-  static readonly generateSample = getLocalizedString("core.progress.generateSample");
+  static readonly create = getLocalizedString("core.progress.create");
 }
 
 export class ProgressMessages {
-  static readonly generateTemplate = (templateName: string): string =>
-    getLocalizedString("core.progress.generateTemplate.detail", templateName);
+  static readonly generateTemplate = getLocalizedString("core.progress.createFromTemplate");
   static readonly generateSample = (sampleName: string): string =>
-    getLocalizedString("core.progress.generateSample.detail", sampleName);
+    getLocalizedString("core.progress.createFromSample", sampleName);
   static readonly configureAzureStorageEnableStaticWebsite = getLocalizedString(
     "core.progress.configureAzureStorage"
   );

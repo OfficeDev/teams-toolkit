@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * interface ImportInfo is to define all the import declarations
  * importSingleExportInfo include all the mappings of importing a single export from a module

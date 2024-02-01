@@ -69,5 +69,19 @@ namespace Microsoft.TeamsFx.Test.Conversation
             Assert.AreEqual(1, list.Length);
             Assert.AreEqual("activity-2", list[0].ActivityId);
         }
+
+        [TestMethod]
+        public async Task Set_FileNameWithEnvironmentVariable()
+        {
+            var previous = Environment.GetEnvironmentVariable("TEAMSFX_NOTIFICATION_STORE_FILENAME");
+            Environment.SetEnvironmentVariable("TEAMSFX_NOTIFICATION_STORE_FILENAME", ".notification.testtool.json");
+            var storage = new LocalFileStorage(testDir);
+            await storage.Write("key-1", new ConversationReference { ActivityId = "activity-1" });
+            Environment.SetEnvironmentVariable("TEAMSFX_NOTIFICATION_STORE_FILENAME", previous);
+
+            var storeFile = Path.Combine(testDir, ".notification.testtool.json");
+            Assert.IsTrue(File.Exists(storeFile));
+
+        }
     }
 }

@@ -1,14 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import "mocha";
+import { err, Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
+import * as tools from "@microsoft/teamsfx-core/build/common/tools";
 import { assert } from "chai";
+import "mocha";
 import sinon from "sinon";
-import { CancellationToken, createMessageConnection, Event } from "vscode-jsonrpc";
-import ServerConnection from "../src/serverConnection";
 import { Duplex } from "stream";
-import { Inputs, ok, Platform, Stage, Void } from "@microsoft/teamsfx-api";
+import { CancellationToken, createMessageConnection } from "vscode-jsonrpc";
 import { setFunc } from "../src/customizedFuncAdapter";
+import ServerConnection from "../src/serverConnection";
+import {
+  DependencyStatus,
+  DepsManager,
+  NodeNotFoundError,
+  TestToolInstallOptions,
+} from "@microsoft/teamsfx-core";
 
 class TestStream extends Duplex {
   _write(chunk: string, _encoding: string, done: () => void) {
@@ -43,20 +50,21 @@ describe("serverConnections", () => {
 
   it("getQuestionsRequest", () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.returns(undefined);
+    const fake = sandbox.fake.returns(ok(undefined));
     sandbox.replace(connection["core"], "getQuestions", fake);
     const stage = Stage.create;
     const inputs = { platform: Platform.VS };
     const token = {};
     const res = connection.getQuestionsRequest(stage, inputs as Inputs, token as CancellationToken);
-    res.then((data) => {
-      assert.equal(data, ok(undefined));
-    });
+    assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isUndefined(res.value);
+    }
   });
 
   it("createProjectRequest", () => {
     const connection = new ServerConnection(msgConn);
-    const fake = sandbox.fake.returns("test");
+    const fake = sandbox.fake.returns({ projectPath: "test" });
     sandbox.replace(connection["core"], "createProject", fake);
     const inputs = {
       platform: "vs",
@@ -64,7 +72,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.createProjectRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok({ projectPath: "test" }));
     });
   });
 
@@ -78,7 +86,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.localDebugRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -122,7 +130,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.provisionResourcesRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -139,7 +147,7 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -156,7 +164,7 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -170,7 +178,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.deployArtifactsRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -218,7 +226,7 @@ describe("serverConnections", () => {
     const token = {};
     const res = connection.publishApplicationRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -250,7 +258,7 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     res.then((data) => {
-      assert.equal(data, ok("test"));
+      assert.equal(data, ok(undefined));
     });
   });
 
@@ -305,6 +313,18 @@ describe("serverConnections", () => {
     });
   });
 
+  it("getCopilotStatusRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const accountToken = {
+      token: "test token",
+    };
+    const cancelToken = {};
+    const res = connection.getCopilotStatusRequest(accountToken, cancelToken as CancellationToken);
+    res.then((data) => {
+      assert.equal(data, ok("undefined"));
+    });
+  });
+
   it("addSsoRequest", () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");
@@ -317,18 +337,6 @@ describe("serverConnections", () => {
     const res = connection.addSsoRequest(inputs as Inputs, token as CancellationToken);
     res.then((data) => {
       assert.equal(data, ok("test"));
-    });
-  });
-
-  it("getProjectComponents", () => {
-    const connection = new ServerConnection(msgConn);
-    const inputs = {
-      platform: "vs",
-    };
-    const token = {};
-    const res = connection.getProjectComponents(inputs as Inputs, token as CancellationToken);
-    res.then((data) => {
-      assert.equal(data, ok(""));
     });
   });
 
@@ -403,6 +411,19 @@ describe("serverConnections", () => {
     });
   });
 
+  it("setRegionRequest", () => {
+    const connection = new ServerConnection(msgConn);
+    const accountToken = {
+      token: "fakeToken",
+    };
+    sinon.stub(tools, "setRegion").callsFake(async () => {});
+
+    const res = connection.setRegionRequest(accountToken, {} as CancellationToken);
+    res.then((data) => {
+      assert.equal(data.isOk(), true);
+    });
+  });
+
   it("listDevTunnelsRequest fail with wrong token", async () => {
     const connection = new ServerConnection(msgConn);
     const fake = sandbox.fake.returns("test");
@@ -416,5 +437,90 @@ describe("serverConnections", () => {
       token as CancellationToken
     );
     assert.isTrue(res.isErr());
+  });
+
+  it("loadOpenAIPluginManifestRequest succeed", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok({}));
+    sandbox.replace(connection["core"], "copilotPluginLoadOpenAIManifest", fake);
+    const res = await connection.loadOpenAIPluginManifestRequest(
+      {} as Inputs,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+  });
+
+  it("copilotPluginListOperations fail", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(err([{ content: "error1" }, { content: "error2" }]));
+    sandbox.replace(connection["core"], "copilotPluginListOperations", fake);
+    const res = await connection.listOpenAPISpecOperationsRequest(
+      {} as Inputs,
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.equal(res.error.message, "error1\nerror2");
+    }
+  });
+
+  it("copilotPluginAddAPIRequest", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok(undefined));
+    sandbox.replace(connection["core"], "copilotPluginAddAPI", fake);
+    const res = await connection.copilotPluginAddAPIRequest({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isOk());
+  });
+
+  it("checkAndInstallTestTool", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox.stub(DepsManager.prototype, "ensureDependency").resolves({
+      isInstalled: true,
+      command: "mock command",
+      details: { installVersion: "mock version", binFolders: ["mock bin folders"] },
+    } as DependencyStatus);
+    const res = await connection.checkAndInstallTestTool(
+      {} as TestToolInstallOptions & { correlationId: string },
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+    assert.deepEqual(res._unsafeUnwrap(), {
+      isInstalled: true,
+      command: "mock command",
+      details: { installVersion: "mock version", binFolders: ["mock bin folders"] },
+    });
+  });
+  it("checkAndInstallTestTool DepenendencyStatus error", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox.stub(DepsManager.prototype, "ensureDependency").resolves({
+      isInstalled: true,
+      command: "mock command",
+      details: {},
+      error: new NodeNotFoundError("mock message", "mock help link"),
+    } as DependencyStatus);
+    const res = await connection.checkAndInstallTestTool(
+      {} as TestToolInstallOptions & { correlationId: string },
+      {} as CancellationToken
+    );
+    assert.isTrue(res.isOk());
+    assert.deepEqual(res._unsafeUnwrap(), {
+      isInstalled: true,
+      command: "mock command",
+      details: {},
+      error: {
+        message: "mock message",
+        helpLink: "mock help link",
+      },
+    });
+  });
+  it("checkAndInstallTestTool error", async () => {
+    const connection = new ServerConnection(msgConn);
+    sandbox.stub(DepsManager.prototype, "ensureDependency").rejects("MockError");
+    const res = await connection.checkAndInstallTestTool(
+      {} as TestToolInstallOptions & { correlationId: string },
+      {} as CancellationToken
+    );
+    assert.isFalse(res.isOk());
+    assert.match(res._unsafeUnwrapErr().message, /MockError/);
   });
 });

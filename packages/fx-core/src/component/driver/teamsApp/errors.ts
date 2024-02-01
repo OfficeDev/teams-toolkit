@@ -13,27 +13,6 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly DeveloperPortalAPIFailedError = {
-    name: "DeveloperPortalAPIFailed",
-    message: (
-      e: any,
-      correlationId: string,
-      requestPath: string,
-      apiName: string,
-      extraData: string
-    ): [string, string] => [
-      getDefaultString(
-        "error.appstudio.apiFailed.telemetry",
-        e.name,
-        e.message,
-        apiName,
-        correlationId,
-        extraData
-      ),
-      getLocalizedString("error.appstudio.apiFailed"),
-    ],
-  };
-
   public static readonly AuthServiceAPIFailedError = {
     name: "AuthServiceAPIFailed",
     message: (e: any, requestPath: string, apiName: string): [string, string] => [
@@ -117,8 +96,10 @@ export class AppStudioError {
   public static readonly GrantPermissionFailedError = {
     name: "GrantPermissionFailed",
     message: (errorMessage: string, id?: string): [string, string] => [
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       `${Constants.PERMISSIONS.name}: ${id}. ` +
         getDefaultString("error.appstudio.grantPermissionFailed", errorMessage),
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       `${Constants.PERMISSIONS.name}: ${id}. ` +
         getLocalizedString("error.appstudio.grantPermissionFailed", errorMessage),
     ],
@@ -185,6 +166,14 @@ export class AppStudioError {
     message: (): [string, string] => [
       getDefaultString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
       getLocalizedString("error.appstudio.teamsAppCreateConflictWithPublishedApp"),
+    ],
+  };
+
+  public static readonly TeamsAppPublishConflictError = {
+    name: "TeamsAppPublishConflict",
+    message: (teamsAppId: string): [string, string] => [
+      getDefaultString("error.appstudio.teamsAppPublishConflict", teamsAppId),
+      getLocalizedString("error.appstudio.teamsAppPublishConflict", teamsAppId),
     ],
   };
 }

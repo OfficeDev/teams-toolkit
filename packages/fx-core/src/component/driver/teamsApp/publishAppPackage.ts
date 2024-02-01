@@ -13,16 +13,14 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { PublishAppPackageArgs } from "./interfaces/PublishAppPackageArgs";
 import { AppStudioClient } from "./clients/appStudioClient";
 import { Constants } from "./constants";
-import { TelemetryUtils } from "./utils/telemetry";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError, UserCancelError } from "../../../error/common";
-import { updateProgress } from "../middleware/updateProgress";
 
-const actionName = "teamsApp/publishAppPackage";
+export const actionName = "teamsApp/publishAppPackage";
 
 const defaultOutputNames = {
   publishedAppId: "TEAMS_APP_PUBLISHED_APP_ID",
@@ -31,18 +29,7 @@ const defaultOutputNames = {
 @Service(actionName)
 export class PublishAppPackageDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.publishDriver");
-  public async run(
-    args: PublishAppPackageArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.publish(args, wrapContext);
-
-    console.log("Summaries");
-    wrapContext.summaries.forEach((value) => console.log(value));
-
-    return res;
-  }
+  readonly progressTitle = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
 
   public async execute(
     args: PublishAppPackageArgs,
@@ -57,17 +44,12 @@ export class PublishAppPackageDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async publish(
     args: PublishAppPackageArgs,
     context: WrapDriverContext,
     outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
-
     const argsValidationResult = this.validateArgs(args);
     if (argsValidationResult.isErr()) {
       return err(argsValidationResult.error);
@@ -149,6 +131,7 @@ export class PublishAppPackageDriver implements StepDriver {
         if (executePublishUpdate) {
           const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.1");
           context.addSummary(message);
+          context.logProvider.debug(message);
           const appId = await AppStudioClient.publishTeamsAppUpdate(
             manifest.id,
             archivedFile,
@@ -168,6 +151,7 @@ export class PublishAppPackageDriver implements StepDriver {
         );
         const message = getLocalizedString("driver.teamsApp.progressBar.publishTeamsAppStep2.2");
         context.addSummary(message);
+        context.logProvider.debug(message);
         const appId = await AppStudioClient.publishTeamsApp(
           manifest.id,
           archivedFile,

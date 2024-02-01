@@ -15,10 +15,9 @@ import * as Models from "@azure/arm-appservice/src/models";
 import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import { assert, expect } from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { AzureFunctionDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureFunctionDeployDriver";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
-import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
 import * as uuid from "uuid";
@@ -33,6 +32,21 @@ describe("Azure Function Deploy Driver test", () => {
 
   before(async () => {
     await fs.mkdirs(testFolder);
+    await fs.writeFile(path.join(testFolder, "test.txt"), "test");
+    sandbox
+      .stub(fs, "createReadStream")
+      .withArgs(path.join(sysTmp, ".deployment/deployment.zip"))
+      .returns({
+        pipe: sandbox.stub().returns({
+          pipe: sandbox.stub().returns({
+            pipe: sandbox.stub().returns("responseMock"),
+          }),
+        }),
+        on: sandbox.spy(() => true),
+        destroy: sandbox.spy(() => true),
+      } as any);
+    sandbox.stub(fs, "existsSync").returns(true);
+    sandbox.stub(fs, "remove").resolves();
   });
 
   after(async () => {
@@ -62,7 +76,7 @@ describe("Azure Function Deploy Driver test", () => {
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -72,7 +86,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").resolves();
@@ -93,8 +107,6 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
@@ -112,7 +124,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -122,7 +134,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").rejects();
@@ -143,8 +155,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(false);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(false);
   });
 
   it("deploy restart throws", async () => {
@@ -162,7 +174,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: logger,
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -172,7 +184,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").throws(new Error("test"));
@@ -193,8 +205,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(false);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(false);
     // log warning will print
     sinon.assert.calledOnce(caller);
   });
@@ -211,7 +223,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -242,8 +254,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(true);
   });
 
   it("Check deploy status error", async () => {
@@ -258,7 +270,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -289,8 +301,8 @@ describe("Azure Function Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 403,
     });
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(true);
   });
 
   it("Check deploy status ok but cannot start", async () => {
@@ -306,7 +318,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -316,7 +328,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").throws(new Error("test"));
@@ -338,8 +350,8 @@ describe("Azure Function Deploy Driver test", () => {
       status: 200,
       data: { status: 3 },
     });
-    const res = await deploy.run(args, context);
-    expect(res.isOk()).to.equal(true);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isOk()).to.equal(true);
   });
 
   it("Check deploy throws", async () => {
@@ -354,7 +366,7 @@ describe("Azure Function Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -386,8 +398,8 @@ describe("Azure Function Deploy Driver test", () => {
       .stub(AzureDeployImpl.AXIOS_INSTANCE, "get")
       .throws({ isAxiosError: true } as AxiosError);
 
-    const res = await deploy.run(args, context);
-    expect(res.isErr()).to.equal(true);
+    const res = await deploy.execute(args, context);
+    expect(res.result.isErr()).to.equal(true);
   });
 
   it("deploy dry run", async () => {
@@ -404,7 +416,7 @@ describe("Azure Function Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       ui: new MockUserInteraction(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -414,7 +426,7 @@ describe("Azure Function Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("other file"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(client.webApps, "restart").resolves();

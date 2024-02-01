@@ -1,22 +1,22 @@
 # yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+# Visit https://aka.ms/teamsfx-actions for details on actions
 version: 1.0.0
 
-environmentFolderPath: ./env
-
 provision:
-  # Creates a new Azure Active Directory (AAD) app to authenticate users if
+  # Creates a new Microsoft Entra app to authenticate users if
   # the environment variable that stores clientId is empty
   - uses: aadApp/create
     with:
-      # Note: when you run aadApp/update, the AAD app name will be updated
+      # Note: when you run aadApp/update, the Microsoft Entra app name will be updated
       # based on the definition in manifest. If you don't want to change the
-      # name, make sure the name in AAD manifest is the same with the name
+      # name, make sure the name in Microsoft Entra manifest is the same with the name
       # defined here.
       name: {{appName}}
-      # If the value is false, the driver will not generate client secret for you
+      # If the value is false, the action will not generate client secret for you
       generateClientSecret: true
       # Authenticate users with a Microsoft work or school account in your
-      # organization's Azure AD tenant (for example, single tenant).
+      # organization's Microsoft Entra tenant (for example, single tenant).
       signInAudience: AzureADMyOrg
     # Write the information of created resources into environment file for the
     # specified environment variable(s).
@@ -34,13 +34,14 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  - uses: script # Set required variables for local launch
+  # Set required variables for local launch
+  - uses: script
     with:
       run:
         echo "::set-teamsfx-env TAB_DOMAIN=localhost:53000";
@@ -48,12 +49,12 @@ provision:
         echo "::set-teamsfx-env FUNC_NAME=getUserProfile";
         echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
 
-  # Apply the AAD manifest to an existing AAD app. Will use the object id in
-  # manifest file to determine which AAD app to update.
+  # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
+  # manifest file to determine which Microsoft Entra app to update.
   - uses: aadApp/update
     with:
       # Relative path to this file. Environment variables in manifest will
-      # be replaced before apply to AAD app
+      # be replaced before apply to Microsoft Entra app
       manifestPath: ./aad.manifest.json
       outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
@@ -70,19 +71,20 @@ provision:
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
-  
+
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-  
+
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.
   # Will use the app id in manifest file to determine which Teams app to update.
   - uses: teamsApp/update
     with:
-      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip # Relative path to teamsfx folder. This is the path for built zip file.
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
   # Extend your Teams app to Outlook and the Microsoft 365 app
   - uses: teamsApp/extendToM365
@@ -102,7 +104,7 @@ deploy:
       devCert:
         trust: true
       func:
-        version: ~4.0.4670
+        version: ~4.0.5455
         symlinkDir: ./devTools/func
       dotnet: true
     # Write the information of installed development tool(s) into environment
@@ -115,21 +117,16 @@ deploy:
 
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install --no-audit
 
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
+      workingDirectory: api
       args: install --no-audit
-      workingDirectory: api
-
-  # TeamsFx Azure Functions project depends on extra Azure Functions binding extensions for HTTP trigger authorization.
-  - uses: cli/runDotnetCommand
-    with:
-      workingDirectory: api
-      args: build extensions.csproj -o bin --ignore-failed-sources
-      execPath: ${{DOTNET_PATH}}
 
   # Generate runtime environment variables for tab
   - uses: file/createOrUpdateEnvironmentFile

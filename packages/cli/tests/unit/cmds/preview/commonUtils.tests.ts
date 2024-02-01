@@ -33,6 +33,19 @@ describe("commonUtils", () => {
       });
       expect(progressHandler.end.calledOnce).to.be.true;
     });
+
+    it("happy path 2", async () => {
+      const progressHandler = sandbox.createStubInstance(MockProgressHandler);
+      const taskStopCallback = createTaskStopCb(progressHandler, { k: "v" });
+      await taskStopCallback("npm install", false, {
+        command: "command",
+        success: false,
+        stdout: [],
+        stderr: [],
+        exitCode: 1,
+      });
+      expect(progressHandler.end.calledOnce).to.be.true;
+    });
   });
 });
 

@@ -1,11 +1,14 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   AppPackageFolderName,
   AzureAccountProvider,
   BuildFolderName,
+  ConfirmQuestion,
   DynamicPlatforms,
   IQTreeNode,
   Inputs,
-  LocalEnvironmentName,
   MultiSelectQuestion,
   OptionItem,
   Platform,
@@ -17,14 +20,20 @@ import fs from "fs-extra";
 import * as path from "path";
 import { ConstantString } from "../common/constants";
 import { getLocalizedString } from "../common/localizeUtils";
-import { Hub } from "../common/m365/constants";
 import { AppStudioScopes } from "../common/tools";
-import { resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
+import { Constants } from "../component/driver/add/utility/constants";
+import { recommendedLocations, resourceGroupHelper } from "../component/utils/ResourceGroupHelper";
 import { envUtil } from "../component/utils/envUtil";
 import { CollaborationConstants, CollaborationUtil } from "../core/collaborator";
-import { environmentManager } from "../core/environment";
+import { environmentNameManager } from "../core/environmentName";
 import { TOOLS } from "../core/globalVars";
-import { SPFxImportFolderQuestion, SPFxWebpartNameQuestion } from "./create";
+import {
+  SPFxFrameworkQuestion,
+  SPFxImportFolderQuestion,
+  SPFxWebpartNameQuestion,
+  apiOperationQuestion,
+  apiSpecLocationQuestion,
+} from "./create";
 import { QuestionNames } from "./questionNames";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
@@ -46,6 +55,8 @@ export function listCollaboratorQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
         data: selectAppTypeQuestion(),
+        cliOptionDisabled: "self",
+        inputsDisabled: "self",
         children: [selectTeamsAppNode, selectAadAppNode],
       },
     ],
@@ -71,6 +82,8 @@ export function grantPermissionQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => DynamicPlatforms.includes(inputs.platform),
         data: selectAppTypeQuestion(),
+        cliOptionDisabled: "self",
+        inputsDisabled: "self",
         children: [
           selectTeamsAppNode,
           selectAadAppNode,
@@ -93,16 +106,37 @@ export function deployAadManifestQuestionNode(): IQTreeNode {
         children: [
           {
             condition: (inputs: Inputs) =>
+              inputs.platform === Platform.VSCode && // confirm question only works for VSC
               inputs.projectPath !== undefined &&
               path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
                 path.join(inputs.projectPath, "aad.manifest.json"),
             data: confirmManifestQuestion(false, false),
+            cliOptionDisabled: "self",
+            inputsDisabled: "self",
           },
           {
             condition: isAadMainifestContainsPlaceholder,
             data: selectTargetEnvQuestion(QuestionNames.Env, false, false, ""),
           },
         ],
+      },
+    ],
+  };
+}
+
+export function validateTeamsAppQuestionNode(): IQTreeNode {
+  return {
+    data: selectTeamsAppValidationMethodQuestion(),
+    cliOptionDisabled: "self",
+    inputsDisabled: "self",
+    children: [
+      {
+        condition: { equals: TeamsAppValidationOptions.schema().id },
+        data: selectTeamsAppManifestQuestion(),
+      },
+      {
+        condition: { equals: TeamsAppValidationOptions.package().id },
+        data: selectTeamsAppPackageQuestion(),
       },
     ],
   };
@@ -115,6 +149,8 @@ export function selectTeamsAppManifestQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) => confirmCondition(inputs, false),
         data: confirmManifestQuestion(true, false),
+        cliOptionDisabled: "self",
+        inputsDisabled: "self",
       },
     ],
   };
@@ -126,11 +162,14 @@ export function selectAadAppManifestQuestionNode(): IQTreeNode {
     children: [
       {
         condition: (inputs: Inputs) =>
+          inputs.platform === Platform.VSCode && // confirm question only works for VSC
           inputs.projectPath &&
           inputs[QuestionNames.AadAppManifestFilePath] &&
           path.resolve(inputs[QuestionNames.AadAppManifestFilePath]) !==
             path.join(inputs.projectPath, "aad.manifest.json"),
         data: confirmManifestQuestion(false, false),
+        cliOptionDisabled: "self",
+        inputsDisabled: "self",
       },
     ],
   };
@@ -138,18 +177,42 @@ export function selectAadAppManifestQuestionNode(): IQTreeNode {
 
 function confirmCondition(inputs: Inputs, isLocal: boolean): boolean {
   return (
-    inputs.platform !== Platform.CLI_HELP &&
-    inputs.platform !== Platform.CLI &&
-    inputs.platform !== Platform.VS &&
+    inputs.platform === Platform.VSCode && // confirm question only works for VSC
     inputs.projectPath &&
-    inputs[QuestionNames.TeamsAppManifestFilePath] &&
-    path.resolve(inputs[QuestionNames.TeamsAppManifestFilePath]) !==
+    inputs[
+      isLocal ? QuestionNames.LocalTeamsAppManifestFilePath : QuestionNames.TeamsAppManifestFilePath
+    ] &&
+    path.resolve(
+      inputs[
+        isLocal
+          ? QuestionNames.LocalTeamsAppManifestFilePath
+          : QuestionNames.TeamsAppManifestFilePath
+      ]
+    ) !==
       path.join(
         inputs.projectPath,
         AppPackageFolderName,
         isLocal ? "manifest.local.json" : "manifest.json"
       )
   );
+}
+
+async function spfxFrameworkExist(inputs: Inputs): Promise<boolean> {
+  if (inputs.platform === Platform.CLI_HELP) {
+    return false;
+  }
+
+  const yorcPath = path.join(inputs[QuestionNames.SPFxFolder], Constants.YO_RC_FILE);
+  if (!(await fs.pathExists(yorcPath))) {
+    return false;
+  }
+
+  const yorcJson = (await fs.readJson(yorcPath)) as Record<string, any>;
+  if (!yorcJson["@microsoft/generator-sharepoint"]) {
+    return false;
+  }
+
+  return yorcJson["@microsoft/generator-sharepoint"]["template"];
 }
 
 export function addWebPartQuestionNode(): IQTreeNode {
@@ -160,18 +223,28 @@ export function addWebPartQuestionNode(): IQTreeNode {
         data: SPFxWebpartNameQuestion(),
         children: [
           {
+            data: SPFxFrameworkQuestion(),
+            condition: async (inputs: Inputs) => {
+              return !(await spfxFrameworkExist(inputs));
+            },
+          },
+          {
             data: selectTeamsAppManifestQuestion(),
             children: [
               {
                 condition: (inputs: Inputs) => confirmCondition(inputs, false),
                 data: confirmManifestQuestion(true, false),
+                cliOptionDisabled: "self",
+                inputsDisabled: "self",
               },
               {
-                data: selectTeamsAppManifestQuestion(true),
+                data: selectLocalTeamsAppManifestQuestion(),
                 children: [
                   {
                     condition: (inputs: Inputs) => confirmCondition(inputs, true),
                     data: confirmManifestQuestion(true, true),
+                    cliOptionDisabled: "self",
+                    inputsDisabled: "self",
                   },
                 ],
               },
@@ -183,28 +256,55 @@ export function addWebPartQuestionNode(): IQTreeNode {
   };
 }
 
-function selectTeamsAppManifestQuestion(isLocal = false): SingleFileQuestion {
+export function selectTeamsAppManifestQuestion(): SingleFileQuestion {
   return {
-    name: isLocal
-      ? QuestionNames.LocalTeamsAppManifestFilePath
-      : QuestionNames.TeamsAppManifestFilePath,
-    title: getLocalizedString(
-      isLocal
-        ? "core.selectLocalTeamsAppManifestQuestion.title"
-        : "core.selectTeamsAppManifestQuestion.title"
-    ),
+    name: QuestionNames.TeamsAppManifestFilePath,
+    cliName: "teams-manifest-file",
+    cliShortName: "t",
+    cliDescription:
+      "Specifies the Microsoft Teams app manifest template file path, it can be either absolute path or relative path to project root folder, defaults to './appPackage/manifest.json'",
+    title: getLocalizedString("core.selectTeamsAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
-      if (!inputs.projectPath) return undefined;
-      const manifestPath = path.join(
-        inputs.projectPath,
-        AppPackageFolderName,
-        isLocal ? "manifest.local.json" : "manifest.json"
-      );
-      if (fs.pathExistsSync(manifestPath)) {
-        return manifestPath;
+      if (inputs.platform === Platform.CLI_HELP) {
+        return "./appPackage/manifest.json";
       } else {
-        return undefined;
+        if (!inputs.projectPath) return undefined;
+        const manifestPath = path.join(inputs.projectPath, AppPackageFolderName, "manifest.json");
+        if (fs.pathExistsSync(manifestPath)) {
+          return manifestPath;
+        } else {
+          return undefined;
+        }
+      }
+    },
+  };
+}
+
+export function selectLocalTeamsAppManifestQuestion(): SingleFileQuestion {
+  return {
+    name: QuestionNames.LocalTeamsAppManifestFilePath,
+    cliName: "local-teams-manifest-file",
+    cliShortName: "l",
+    cliDescription:
+      "Specifies the Microsoft Teams app manifest template file path for local environment, it can be either absolute path or relative path to project root folder.",
+    title: getLocalizedString("core.selectLocalTeamsAppManifestQuestion.title"),
+    type: "singleFile",
+    default: (inputs: Inputs): string | undefined => {
+      if (inputs.platform === Platform.CLI_HELP) {
+        return "./appPackage/manifest.local.json";
+      } else {
+        if (!inputs.projectPath) return undefined;
+        const manifestPath = path.join(
+          inputs.projectPath,
+          AppPackageFolderName,
+          "manifest.local.json"
+        );
+        if (fs.pathExistsSync(manifestPath)) {
+          return manifestPath;
+        } else {
+          return undefined;
+        }
       }
     },
   };
@@ -217,7 +317,7 @@ function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSele
     false_true: QuestionNames.ConfirmAadManifest,
     false_false: QuestionNames.ConfirmAadManifest,
   };
-  const name = map[`${isTeamsApp}_${isLocal}`];
+  const name = map[`${isTeamsApp.toString()}_${isLocal.toString()}`];
   return {
     name: name,
     title: isTeamsApp
@@ -268,9 +368,14 @@ function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
   };
 }
 
-export function selectTeamsAppValidationMethodQuestionNode(): IQTreeNode {
+export function copilotPluginAddAPIQuestionNode(): IQTreeNode {
   return {
-    data: selectTeamsAppValidationMethodQuestion(),
+    data: apiSpecLocationQuestion(false),
+    children: [
+      {
+        data: apiOperationQuestion(false),
+      },
+    ],
   };
 }
 
@@ -299,6 +404,10 @@ function selectTeamsAppPackageQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.TeamsAppPackageFilePath,
     title: getLocalizedString("core.selectTeamsAppPackageQuestion.title"),
+    cliDescription:
+      "Specifies the zipped Microsoft Teams app package path, it's a relative path to project root folder, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'",
+    cliName: "app-package-file",
+    cliShortName: "p",
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
       if (!inputs.projectPath) return undefined;
@@ -323,12 +432,45 @@ export function selectTeamsAppPackageQuestionNode(): IQTreeNode {
   };
 }
 
+export enum HubTypes {
+  teams = "teams",
+  outlook = "outlook",
+  office = "office",
+}
+
+export class HubOptions {
+  static teams(): OptionItem {
+    return {
+      id: "teams",
+      label: "Teams",
+    };
+  }
+  static outlook(): OptionItem {
+    return {
+      id: "outlook",
+      label: "Outlook",
+    };
+  }
+  static office(): OptionItem {
+    return {
+      id: "office",
+      label: "the Microsoft 365 app",
+    };
+  }
+  static all(): OptionItem[] {
+    return [this.teams(), this.outlook(), this.office()];
+  }
+}
+
 function selectM365HostQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.M365Host,
+    cliShortName: "m",
+    cliDescription: "Preview the application in Teams, Outlook or the Microsoft 365 app.",
     title: getLocalizedString("core.M365HostQuestion.title"),
+    default: HubOptions.teams().id,
     type: "singleSelect",
-    staticOptions: [Hub.teams, Hub.outlook, Hub.office],
+    staticOptions: HubOptions.all(),
     placeholder: getLocalizedString("core.M365HostQuestion.placeholder"),
   };
 }
@@ -349,20 +491,24 @@ export function selectTargetEnvQuestion(
   questionName = QuestionNames.TargetEnvName,
   remoteOnly = true,
   throwErrorIfNoEnv = false,
-  defaultValueIfNoEnv = environmentManager.getDefaultEnvName()
+  defaultValueIfNoEnv = environmentNameManager.getDefaultEnvName()
 ): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: questionName,
     title: getLocalizedString("core.QuestionSelectTargetEnvironment.title"),
-    staticOptions: ["dev", "local"],
+    cliName: "env",
+    cliDescription: "Specifies the environment name for the project.",
+    staticOptions: [],
     dynamicOptions: async (inputs: Inputs) => {
-      const res = await envUtil.listEnv(inputs.projectPath!, remoteOnly);
+      if (!inputs.projectPath) return [];
+      const res = await envUtil.listEnv(inputs.projectPath, remoteOnly);
       if (res.isErr()) {
         if (throwErrorIfNoEnv) throw res.error;
         return [defaultValueIfNoEnv];
       }
-      return res.value;
+      // "testtool" env is a pure local env and doesn't have manifest
+      return res.value.filter((env) => env !== environmentNameManager.getTestToolEnvName());
     },
     skipSingleOption: true,
     forgetLastValue: true,
@@ -370,6 +516,7 @@ export function selectTargetEnvQuestion(
 }
 
 async function getDefaultUserEmail() {
+  if (!TOOLS?.tokenProvider.m365TokenProvider) return undefined;
   const jsonObjectRes = await TOOLS.tokenProvider.m365TokenProvider.getJsonObject({
     scopes: AppStudioScopes,
   });
@@ -390,6 +537,7 @@ export function inputUserEmailQuestion(): TextInputQuestion {
     name: QuestionNames.UserEmail,
     type: "text",
     title: getLocalizedString("core.getUserEmailQuestion.title"),
+    cliDescription: "Email address of the collaborator.",
     default: getDefaultUserEmail,
     validation: {
       validFunc: async (input: string, previousInputs?: Inputs) => {
@@ -434,15 +582,23 @@ export async function isAadMainifestContainsPlaceholder(inputs: Inputs): Promise
 export function selectAadManifestQuestion(): SingleFileQuestion {
   return {
     name: QuestionNames.AadAppManifestFilePath,
-    title: getLocalizedString("core.selectAadManifestQuestion.title"),
+    cliName: "entra-app-manifest-file",
+    cliShortName: "a",
+    cliDescription:
+      "Specifies the Microsoft Entra app manifest file path, can be either absolute path or relative path to project root folder.",
+    title: getLocalizedString("core.selectAadAppManifestQuestion.title"),
     type: "singleFile",
     default: (inputs: Inputs): string | undefined => {
-      if (!inputs.projectPath) return undefined;
-      const manifestPath: string = path.join(inputs.projectPath, "aad.manifest.json");
-      if (fs.pathExistsSync(manifestPath)) {
-        return manifestPath;
+      if (inputs.platform === Platform.CLI_HELP) {
+        return "./aad.manifest.json";
       } else {
-        return undefined;
+        if (!inputs.projectPath) return undefined;
+        const manifestPath: string = path.join(inputs.projectPath, "aad.manifest.json");
+        if (fs.pathExistsSync(manifestPath)) {
+          return manifestPath;
+        } else {
+          return undefined;
+        }
       }
     },
   };
@@ -465,13 +621,15 @@ function selectAppTypeQuestion(): MultiSelectQuestion {
         description: getLocalizedString("core.teamsAppQuestion.description"),
       },
     ],
+    validation: { minItems: 1 },
+    validationHelp: "Please select at least one app type.",
   };
 }
 
 export async function envQuestionCondition(inputs: Inputs): Promise<boolean> {
   const appType = inputs[CollaborationConstants.AppType] as string[];
-  const requireAad = appType.includes(CollaborationConstants.AadAppQuestionId);
-  const requireTeams = appType.includes(CollaborationConstants.TeamsAppQuestionId);
+  const requireAad = appType?.includes(CollaborationConstants.AadAppQuestionId);
+  const requireTeams = appType?.includes(CollaborationConstants.TeamsAppQuestionId);
   const aadManifestPath = inputs[QuestionNames.AadAppManifestFilePath];
   const teamsManifestPath = inputs[QuestionNames.TeamsAppManifestFilePath];
 
@@ -513,15 +671,15 @@ export async function newEnvNameValidation(
   inputs?: Inputs
 ): Promise<string | undefined> {
   const targetEnvName = input;
-  const match = targetEnvName.match(environmentManager.envNameRegex);
+  const match = targetEnvName.match(environmentNameManager.envNameRegex);
   if (!match) {
     return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation1");
   }
 
-  if (targetEnvName === LocalEnvironmentName) {
+  if (!environmentNameManager.isRemoteEnvironment(targetEnvName)) {
     return getLocalizedString(
       "core.getQuestionNewTargetEnvironmentName.validation3",
-      LocalEnvironmentName
+      targetEnvName
     );
   }
   if (!inputs?.projectPath) return "Project path is not defined";
@@ -530,7 +688,7 @@ export async function newEnvNameValidation(
     return getLocalizedString("core.getQuestionNewTargetEnvironmentName.validation4");
   }
 
-  inputs!.existingEnvNames = envListRes.value; //cache existing env names
+  inputs.existingEnvNames = envListRes.value; //cache existing env names
 
   const found =
     envListRes.value.find(
@@ -549,6 +707,9 @@ export function newTargetEnvQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.NewTargetEnvName,
+    cliName: "name",
+    cliDescription: "Specifies the new environment name.",
+    cliType: "argument",
     title: getLocalizedString("core.getQuestionNewTargetEnvironmentName.title"),
     validation: {
       validFunc: newEnvNameValidation,
@@ -576,7 +737,9 @@ export function selectSourceEnvQuestion(): SingleSelectQuestion {
   return {
     type: "singleSelect",
     name: QuestionNames.SourceEnvName,
+    cliName: "env",
     title: getLocalizedString("core.QuestionSelectSourceEnvironment.title"),
+    cliDescription: "Specifies an existing environment name to copy from.",
     staticOptions: [],
     dynamicOptions: async (inputs: Inputs) => {
       if (inputs.existingEnvNames) {
@@ -647,7 +810,7 @@ function selectResourceGroupQuestion(
 }
 
 export function validateResourceGroupName(input: string, inputs?: Inputs): string | undefined {
-  const name = input as string;
+  const name = input;
   // https://docs.microsoft.com/en-us/rest/api/resources/resource-groups/create-or-update#uri-parameters
   const match = name.match(/^[-\w._()]+$/);
   if (!match) {
@@ -706,9 +869,32 @@ function selectResourceGroupLocationQuestion(
       if (getLocationsRes.isErr()) {
         throw getLocationsRes.error;
       }
-      return getLocationsRes.value;
+      const recommended = getLocationsRes.value.filter((location) => {
+        return recommendedLocations.indexOf(location) >= 0;
+      });
+      const others = getLocationsRes.value.filter((location) => {
+        return recommendedLocations.indexOf(location) < 0;
+      });
+      return [
+        ...recommended.map((location) => {
+          return {
+            id: location,
+            label: location,
+            groupName: getLocalizedString(
+              "core.QuestionNewResourceGroupLocation.group.recommended"
+            ),
+          } as OptionItem;
+        }),
+        ...others.map((location) => {
+          return {
+            id: location,
+            label: location,
+            groupName: getLocalizedString("core.QuestionNewResourceGroupLocation.group.others"),
+          } as OptionItem;
+        }),
+      ];
     },
-    default: "East US",
+    default: "Central US",
   };
 }
 
@@ -728,6 +914,62 @@ export function resourceGroupQuestionNode(
             data: selectResourceGroupLocationQuestion(azureAccountProvider, subscriptionId),
           },
         ],
+      },
+    ],
+  };
+}
+
+export function apiSpecApiKeyConfirmQestion(): ConfirmQuestion {
+  return {
+    name: QuestionNames.ApiSpecApiKeyConfirm,
+    title: getLocalizedString("core.createProjectQuestion.ApiKeyConfirm"),
+    type: "confirm",
+    default: true,
+  };
+}
+
+export function apiSpecApiKeyQuestion(): IQTreeNode {
+  return {
+    data: {
+      type: "text",
+      name: QuestionNames.ApiSpecApiKey,
+      cliShortName: "k",
+      title: getLocalizedString("core.createProjectQuestion.ApiKey"),
+      cliDescription: "Api key for OpenAPI spec.",
+      forgetLastValue: true,
+      validation: {
+        validFunc: (input: string): string | undefined => {
+          const pattern = /^(\w){10,128}/g;
+          const match = pattern.test(input);
+
+          const result = match
+            ? undefined
+            : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+          return result;
+        },
+      },
+      additionalValidationOnAccept: {
+        validFunc: (input: string, inputs?: Inputs): string | undefined => {
+          if (!inputs) {
+            throw new Error("inputs is undefined"); // should never happen
+          }
+
+          process.env[QuestionNames.ApiSpecApiKey] = input;
+          return;
+        },
+      },
+    },
+    condition: (inputs: Inputs) => {
+      return (
+        inputs.outputEnvVarNames &&
+        !process.env[inputs.outputEnvVarNames.get("registrationId")] &&
+        !inputs.primaryClientSecret &&
+        !inputs.secondaryClientSecret
+      );
+    },
+    children: [
+      {
+        data: apiSpecApiKeyConfirmQestion(),
       },
     ],
   };

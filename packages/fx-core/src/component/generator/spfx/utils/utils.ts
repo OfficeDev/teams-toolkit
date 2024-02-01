@@ -8,6 +8,7 @@ import { LogProvider } from "@microsoft/teamsfx-api";
 import axios, { AxiosInstance } from "axios";
 import { cpUtils, DebugLogger } from "../../../../common/deps-checker/util/cpUtils";
 import * as os from "os";
+import { Constants } from "./constants";
 
 export class Utils {
   static async configure(configurePath: string, map: Map<string, string>): Promise<void> {
@@ -47,16 +48,16 @@ export class Utils {
   ): Promise<string> {
     return new Promise((resolve, reject) => {
       if (showInOutputWindow) {
-        logProvider?.info(`[${title}] Start to run command: "${command}".`);
+        logProvider?.info(`[${title || ""}] Start to run command: "${command}".`);
       }
 
       exec(command, { cwd: workingDir }, (error, standardOutput) => {
         if (showInOutputWindow) {
-          logProvider?.debug(`[${title}]${standardOutput}`);
+          logProvider?.debug(`[${title || ""}]${standardOutput}`);
         }
         if (error) {
           if (showInOutputWindow) {
-            logProvider?.error(`[${title}] Failed to run command: "${command}".`);
+            logProvider?.error(`[${title || ""}] Failed to run command: "${command}".`);
             logProvider?.error(error.message);
           }
           reject(error);
@@ -168,7 +169,7 @@ export class Utils {
         return undefined;
       }
     } catch (error) {
-      logger?.error(`Failed to execute "npm ls ${packageName}"`);
+      logger?.debug(`Failed to execute "npm ls ${packageName}"`);
       if (shouldThrowIfNotFound) {
         throw error;
       }
@@ -203,6 +204,30 @@ export class Utils {
     } catch (error) {
       return undefined;
     }
+  }
+
+  static truncateAppShortName(appName: string): string {
+    const appNameSuffixPlaceholder = "${{APP_NAME_SUFFIX}}";
+    const localSuffix = "local";
+
+    if (appName.endsWith(appNameSuffixPlaceholder)) {
+      const appNameWithouSuffix = appName.substring(
+        0,
+        appName.length - appNameSuffixPlaceholder.length
+      );
+      if (appNameWithouSuffix.length + localSuffix.length > Constants.TEAMS_APP_NAME_MAX_LENGTH) {
+        return (
+          appNameWithouSuffix.substring(
+            0,
+            Constants.TEAMS_APP_NAME_MAX_LENGTH - localSuffix.length
+          ) + appNameSuffixPlaceholder
+        );
+      }
+    } else if (appName.length > Constants.TEAMS_APP_NAME_MAX_LENGTH) {
+      return appName.substring(0, Constants.TEAMS_APP_NAME_MAX_LENGTH);
+    }
+
+    return appName;
   }
 }
 

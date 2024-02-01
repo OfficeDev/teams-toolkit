@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   SystemError,
   SystemErrorOptions,
@@ -6,6 +9,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { HelpLinks } from "../common/constants";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { ErrorCategory } from "./types";
 
 /**
  * Failed to get M365 token JSON object after sign in
@@ -18,6 +22,7 @@ export class M365TokenJSONNotFoundError extends SystemError {
       name: "M365TokenJSONNotFoundError",
       message: getDefaultString(key),
       displayMessage: getLocalizedString(key),
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
   }
@@ -34,6 +39,7 @@ export class M365TenantIdNotFoundInTokenError extends SystemError {
       name: "M365TenantIdNotFoundInTokenError",
       message: getDefaultString(key),
       displayMessage: getLocalizedString(key),
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
   }
@@ -51,6 +57,7 @@ export class M365TenantIdNotMatchError extends UserError {
       message: getDefaultString(key, signedInTenantId, dotEnvTenantId, clearKeys),
       displayMessage: getLocalizedString(key, signedInTenantId, dotEnvTenantId, clearKeys),
       helpLink: HelpLinks.SwitchTenant,
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
   }

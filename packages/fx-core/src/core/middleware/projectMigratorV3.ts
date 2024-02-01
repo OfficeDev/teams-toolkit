@@ -4,15 +4,7 @@
 /**
  * @author xzf0587 <zhaofengxu@microsoft.com>
  */
-import {
-  AppPackageFolderName,
-  err,
-  FxError,
-  ok,
-  SystemError,
-  UserError,
-  Platform,
-} from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, err, FxError, ok, Platform } from "@microsoft/teamsfx-api";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { CoreHookContext } from "../types";
 import { backupFolder, MigrationContext } from "./utils/migrationContext";
@@ -24,7 +16,6 @@ import {
   sendTelemetryEvent,
   TelemetryEvent,
 } from "../../common/telemetry";
-import { ErrorConstants } from "../../component/constants";
 import { TOOLS } from "../globalVars";
 import {
   UpgradeV3CanceledError,
@@ -100,6 +91,7 @@ import { VersionForMigration } from "./types";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { HubName, LaunchBrowser, LaunchUrl } from "./utils/debug/constants";
 import { manifestUtils } from "../../component/driver/teamsApp/utils/ManifestUtils";
+import { assembleError } from "../../error";
 
 const Constants = {
   vscodeProvisionBicepPath: "./templates/azure/provision.bicep",
@@ -147,16 +139,16 @@ export const errorNames = {
   manifestTemplateInvalid: "ManifestTemplateInvalid",
   aadManifestTemplateNotExist: "AadManifestTemplateNotExist",
 };
-const upgradeButton = getLocalizedString("core.option.upgrade");
-export const moreInfoButton = getLocalizedString("core.option.moreInfo");
-const migrationMessageButtons = [upgradeButton, moreInfoButton];
+const upgradeButton = () => getLocalizedString("core.option.upgrade");
+export const moreInfoButton: () => string = () => getLocalizedString("core.option.moreInfo");
+const migrationMessageButtons = () => [upgradeButton(), moreInfoButton()];
 
 const telemetryProperties = {
   [TelemetryPropertyKey.upgradeVersion]: TelemetryPropertyValue.upgradeVersion,
 };
 
 type Migration = (context: MigrationContext) => Promise<void>;
-const subMigrations: Array<Migration> = [
+export const subMigrations: Array<Migration> = [
   preMigration,
   manifestsMigration,
   generateAppYml,
@@ -217,10 +209,7 @@ export const ProjectMigratorMWV3: Middleware = async (ctx: CoreHookContext, next
   }
 };
 
-export async function wrapRunMigration(
-  context: MigrationContext,
-  exec: (context: MigrationContext) => void
-): Promise<void> {
+export async function wrapRunMigration(context: MigrationContext, exec: Migration): Promise<void> {
   try {
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorMigrateStart);
     await exec(context);
@@ -231,21 +220,9 @@ export async function wrapRunMigration(
       context.telemetryProperties
     );
   } catch (error: any) {
-    let fxError: FxError;
-    if (error instanceof UserError || error instanceof SystemError) {
-      fxError = error;
-    } else {
-      if (!(error instanceof Error)) {
-        error = new Error(error.toString());
-      }
-      fxError = new SystemError({
-        error,
-        source: Component.core,
-        name: ErrorConstants.unhandledError,
-        message: error.message,
-        displayMessage: error.message,
-      });
-    }
+    const errorMessage = buildErrorMessage(error, context.currentStep);
+    const fxError = assembleError(error, Component.core);
+    fxError.message = errorMessage;
     sendTelemetryErrorEventForUpgrade(
       Component.core,
       TelemetryEvent.ProjectMigratorError,
@@ -258,7 +235,19 @@ export async function wrapRunMigration(
   await context.removeFxV2();
 }
 
-async function rollbackMigration(context: MigrationContext): Promise<void> {
+export function buildErrorMessage(error: any, step?: string): string {
+  let message = error.message as string;
+  if (error.code === "ENOENT" && error.path) {
+    const fileName = path.basename(error.path);
+    message = `Missing file: ${fileName}\n${message}`;
+  }
+  if (step) {
+    message = `MigrationStep: ${step}\n${message}`;
+  }
+  return message;
+}
+
+export async function rollbackMigration(context: MigrationContext): Promise<void> {
   await context.cleanModifiedPaths();
   await context.restoreBackup();
   await context.cleanBackup();
@@ -275,11 +264,12 @@ async function showSummaryReport(context: MigrationContext): Promise<void> {
 
 export async function migrate(context: MigrationContext): Promise<void> {
   for (const subMigration of subMigrations) {
+    context.currentStep = subMigration.name;
     await subMigration(context);
   }
 }
 
-async function preMigration(context: MigrationContext): Promise<void> {
+export async function preMigration(context: MigrationContext): Promise<void> {
   await context.backup(MetadataV2.configFolder);
 }
 
@@ -460,15 +450,14 @@ export async function manifestsMigration(context: MigrationContext): Promise<voi
     await context.fsWriteFile(manifestPath, manifest);
   }
 
-  // Read AAD app manifest and save to ./aad.manifest.json
+  // Read Microsoft Entra app manifest and save to ./aad.manifest.json
   const oldAadManifestPath = path.join(oldAppPackageFolderPath, MetadataV2.aadTemplateFileName);
   const oldAadManifestExists = await fs.pathExists(
     path.join(context.projectPath, oldAadManifestPath)
   );
 
-  const activeResourcePlugins = (projectSettings.solutionSettings as any)
-    .activeResourcePlugins as any[];
-  const component = (projectSettings as any).components as any[];
+  const activeResourcePlugins = projectSettings.solutionSettings.activeResourcePlugins as any[];
+  const component = projectSettings.components as any[];
   const aadRequired =
     (activeResourcePlugins && activeResourcePlugins.includes("fx-resource-aad-app-for-teams")) ||
     (component &&
@@ -514,10 +503,12 @@ export async function azureParameterMigration(context: MigrationContext): Promis
       continue;
     }
 
-    const content = await fs.readFile(
-      path.join(context.projectPath, configFolderPath, fileName),
-      "utf-8"
-    );
+    const parameterPath = path.join(context.projectPath, configFolderPath, fileName);
+    // double confirm for file existence as fsReadDirSync may return deleted file names
+    if (!fs.pathExistsSync(parameterPath)) {
+      continue;
+    }
+    const content = await fs.readFile(parameterPath, "utf-8");
 
     const newContent = replacePlaceholdersForV3(content, bicepContent);
     await context.fsWriteFile(path.join(azureFolderPath, fileName), newContent);
@@ -555,15 +546,15 @@ async function askUserConfirm(
   let answer;
   do {
     answer = await popupMessageModal(versionForMigration);
-    if (answer === moreInfoButton) {
-      TOOLS?.ui!.openUrl(learnMoreLink);
+    if (answer === moreInfoButton()) {
+      TOOLS?.ui.openUrl(learnMoreLink);
       sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
         [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
         [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
       });
     }
-  } while (answer === moreInfoButton);
-  if (!answer || !migrationMessageButtons.includes(answer)) {
+  } while (answer === moreInfoButton());
+  if (!answer || !migrationMessageButtons().includes(answer)) {
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.cancel,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.modal,
@@ -585,14 +576,14 @@ async function showNonmodalNotification(
 ): Promise<boolean> {
   sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
   const answer = await popupMessageNonmodal(versionForMigration);
-  if (answer === moreInfoButton) {
-    TOOLS?.ui!.openUrl(learnMoreLink);
+  if (answer === moreInfoButton()) {
+    TOOLS?.ui.openUrl(learnMoreLink);
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.learnMore,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
     });
     return false;
-  } else if (answer === upgradeButton) {
+  } else if (answer === upgradeButton()) {
     sendTelemetryEventForUpgrade(Component.core, TelemetryEvent.ProjectMigratorNotification, {
       [TelemetryPropertyKey.button]: TelemetryPropertyValue.ok,
       [TelemetryPropertyKey.mode]: TelemetryPropertyValue.nonmodal,
@@ -645,7 +636,7 @@ async function popupMessage(
     "warn",
     migrationNotificationMessage(versionForMigration),
     isModal,
-    ...migrationMessageButtons
+    ...migrationMessageButtons()
   );
   return res?.isOk() ? res.value : undefined;
 }
@@ -707,7 +698,7 @@ export async function configsMigration(context: MigrationContext): Promise<void>
               .toString()
               .includes("TEAMSFX_ENV=")
               ? ""
-              : "TEAMSFX_ENV=" + envName + EOL;
+              : "TEAMSFX_ENV=" + envName + EOL + "APP_NAME_SUFFIX=" + envName + EOL;
             // convert every name and add the env name at the first line
             const envData =
               teamsfx_env +

@@ -5,13 +5,15 @@ import _ from "lodash";
 import "mocha";
 import fs from "fs-extra";
 import path from "path";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse, AxiosHeaders } from "axios";
 import {
   downloadDirectory,
   getSampleInfoFromName,
   runWithLimitedConcurrency,
   renderTemplateFileData,
   renderTemplateFileName,
+  simplifyAxiosError,
+  isApiLimitError,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
 import {
@@ -25,30 +27,72 @@ import AdmZip from "adm-zip";
 import { createSandbox } from "sinon";
 import {
   GeneratorContext,
-  fetchTemplateUrlWithTagAction,
-  fetchTemplateZipFromLocalAction,
+  fetchUrlForHotfixOnlyAction,
+  fetchTemplateFromLocalAction,
   fetchZipFromUrlAction,
   unzipAction,
+  fetchSampleInfoAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { SampleInfo } from "../../../src/common/samples";
+import { sampleProvider, SampleConfig } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import { placeholderDelimiters } from "../../../src/component/generator/constant";
+import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
+import * as folderUtils from "../../../../fx-core/src/folder";
+import {
+  DownloadSampleApiLimitError,
+  DownloadSampleNetworkError,
+  FetchSampleInfoError,
+} from "../../../src/component/generator/error";
+import { ActionContext } from "../../../src/component/middleware/actionExecutionMW";
 
-const mockedSampleInfo: SampleInfo = {
+const mockedSampleInfo: SampleConfig = {
   id: "test-id",
+  onboardDate: new Date(),
   title: "test-title",
   shortDescription: "test-sd",
   fullDescription: "test-fd",
+  types: [],
   tags: [],
   time: "",
   configuration: "test-configuration",
-  link: "test-link",
   suggested: false,
-  url: "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test",
+  thumbnailUrl: "",
+  gifUrl: "",
+  downloadUrlInfo: {
+    owner: "OfficeDev",
+    repository: "TeamsFx-Samples",
+    ref: "dev",
+    dir: "test",
+  },
+};
+
+// The sample prefix is present in the downloadurl of the external sample
+const mockedExternalSampleConfig = {
+  samples: [
+    {
+      id: "test",
+      onboardDate: new Date(),
+      title: "test-title",
+      shortDescription: "test-sd",
+      fullDescription: "test-fd",
+      types: [],
+      tags: [],
+      time: "",
+      configuration: "test-configuration",
+      suggested: false,
+      gifUrl: "",
+      downloadUrlInfo: {
+        owner: "Org",
+        repository: "Repo",
+        ref: "main",
+        dir: "sample/test",
+      },
+    },
+  ],
 };
 
 describe("Generator utils", () => {
@@ -69,8 +113,11 @@ describe("Generator utils", () => {
       TEAMSFX_TEMPLATE_PRERELEASE: "rc",
     });
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0\n 0.0.0-rc";
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
-    const url = await generatorUtils.fetchTemplateZipUrl("templateName");
+    const templateName = "templateName";
+    const selectedTag = await generatorUtils.getTemplateLatestTag(templateName);
+    const url = generatorUtils.getTemplateZipUrlByTag(templateName, selectedTag);
     assert.isTrue(url.includes("0.0.0-rc"));
   });
 
@@ -82,7 +129,7 @@ describe("Generator utils", () => {
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     try {
-      await generatorUtils.fetchTemplateZipUrl("templateName");
+      await generatorUtils.getTemplateLatestTag("templateName");
     } catch (e) {
       assert.exists(e);
       return;
@@ -96,10 +143,13 @@ describe("Generator utils", () => {
     });
     const tagList = "1.0.0\n 2.0.0\n 2.1.0\n 3.0.0";
     const tag = "2.1.0";
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(axios, "get").resolves({ data: tagList, status: 200 } as AxiosResponse);
     sandbox.stub(templateConfig, "version").value("^2.0.0");
     sandbox.replace(templateConfig, "tagPrefix", "templates@");
-    const url = await generatorUtils.fetchTemplateZipUrl("templateName");
+    const templateName = "templateName";
+    const selectedTag = await generatorUtils.getTemplateLatestTag(templateName);
+    const url = generatorUtils.getTemplateZipUrlByTag(templateName, selectedTag);
     assert.isTrue(url.includes(tag));
   });
 
@@ -112,7 +162,7 @@ describe("Generator utils", () => {
     sandbox.stub(templateConfig, "version").value("^4.0.0");
     sandbox.replace(templateConfig, "tagPrefix", "templates@");
     try {
-      await generatorUtils.fetchTemplateZipUrl("templateName");
+      await generatorUtils.getTemplateLatestTag("templateName");
     } catch (e) {
       assert.exists(e);
       return;
@@ -229,7 +279,7 @@ describe("Generator utils", () => {
       (fileName: string, fileData: Buffer) => renderTemplateFileName(fileName, fileData, {}),
       (fileName: string, fileData: Buffer) =>
         renderTemplateFileData(fileName, fileData, { appName: "test" }),
-      "test1"
+      (fileName: string) => fileName.startsWith("test1")
     );
     assert.isFalse(await fs.pathExists(path.join(outputDir, "test.txt")));
   });
@@ -239,7 +289,7 @@ describe("Generator utils", () => {
     try {
       getSampleInfoFromName(sampleName);
     } catch (e) {
-      assert.equal(e.message, "invalid sample name: 'test'");
+      assert.equal(e.message, "Invalid inputs: sample 'test' not found");
     }
   });
 
@@ -265,12 +315,27 @@ describe("Generator utils", () => {
 
   it("download directory get file info error", async () => {
     const axiosStub = sandbox.stub(axios, "get");
-    axiosStub.onFirstCall().resolves({ status: 403 });
+    const error = new Error("Network error");
+    (error as any).isAxiosError = true;
+    (error as any).response = {
+      status: 403,
+      headers: {
+        "x-ratelimit-remaining": "0",
+      },
+    };
+    axiosStub.onFirstCall().rejects(error);
     try {
-      await downloadDirectory("https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test", tmpDir);
+      await downloadDirectory(
+        {
+          owner: "OfficeDev",
+          repository: "TeamsFx-Samples",
+          ref: "dev",
+          dir: "test",
+        },
+        tmpDir
+      );
     } catch (e) {
       assert.exists(e);
-      assert.isTrue(e.message.includes("HTTP Request failed"));
       return;
     }
     assert.fail("Should not reach here.");
@@ -285,7 +350,15 @@ describe("Generator utils", () => {
     axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
     axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     await fs.ensureDir(tmpDir);
-    await downloadDirectory("https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test", tmpDir);
+    await downloadDirectory(
+      {
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: "dev",
+        dir: "test",
+      },
+      tmpDir
+    );
     const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
     assert.equal(data, mockFileData);
   });
@@ -303,6 +376,115 @@ describe("Generator utils", () => {
     await runWithLimitedConcurrency(data, callback, 1);
     assert.deepEqual(res, [1, 10, 2, 3]);
   });
+
+  it("convert sample info to url", async () => {
+    const sampleInfo: generatorUtils.SampleUrlInfo = {
+      owner: "OfficeDev",
+      repository: "TeamsFx-Samples",
+      ref: "dev",
+      dir: "test",
+    };
+    const url = generatorUtils.convertToUrl(sampleInfo);
+    assert.equal(url, "https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/test");
+  });
+
+  it("should simplify an AxiosError", () => {
+    const mockError: AxiosError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 403,
+        statusText: "Forbidden",
+        headers: {
+          "x-ratelimit-remaining": "0",
+        },
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const simplifiedError = simplifyAxiosError(mockError);
+    const expectedError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      config: undefined,
+      stack: "Error stack",
+      status: 403,
+      statusText: "Forbidden",
+      headers: {
+        "x-ratelimit-remaining": "0",
+      },
+      data: "Error data",
+    };
+
+    assert.deepEqual(simplifiedError, expectedError);
+  });
+  it("should simplify an AxiosError with no response", () => {
+    const mockError: AxiosError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      stack: "Error stack",
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const simplifiedError = simplifyAxiosError(mockError);
+    const expectedError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      data: undefined,
+      headers: undefined,
+      status: undefined,
+      statusText: undefined,
+      config: undefined,
+      stack: "Error stack",
+    };
+
+    assert.deepEqual(simplifiedError, expectedError);
+  });
+
+  it("should return true for an API limit error", () => {
+    const mockError: AxiosError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 403,
+        statusText: "Forbidden",
+        headers: {
+          "x-ratelimit-remaining": "0",
+        },
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+
+    assert.isTrue(isApiLimitError(mockError));
+  });
+
+  it("should return false for a non-API limit error", () => {
+    const mockError: AxiosError = {
+      message: "Not Found",
+      name: "AxiosError",
+      code: "404",
+      stack: "Error stack",
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    assert.isFalse(isApiLimitError(mockError));
+  });
 });
 
 describe("Generator error", async () => {
@@ -313,6 +495,9 @@ describe("Generator error", async () => {
   const tmpDir = path.join(__dirname, "tmp");
 
   afterEach(async () => {
+    if (await fs.pathExists(tmpDir)) {
+      await fs.rm(tmpDir, { recursive: true });
+    }
     sandbox.restore();
   });
 
@@ -320,9 +505,9 @@ describe("Generator error", async () => {
     sandbox.stub(generatorUtils, "fetchZipFromUrl").rejects();
     const generatorContext: GeneratorContext = {
       name: "test",
-      relativePath: "/",
       destination: "test",
       logProvider: tools.logProvider,
+      filterFn: (filename) => filename.startsWith("/"),
       onActionError: templateDefaultOnActionError,
     };
     try {
@@ -342,33 +527,126 @@ describe("Generator error", async () => {
     assert.isTrue(generatorContext.cancelDownloading);
   });
 
-  it("fetch sample zip from url error", async () => {
-    sandbox.stub(fetchZipFromUrlAction, "run").throws(new Error("test"));
-    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
-    const result = await Generator.generateSample(ctx, tmpDir, "test");
-    if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "FetchZipFromUrlError");
-    }
-  });
-
   it("template fallback error", async () => {
-    sandbox.stub(fetchTemplateUrlWithTagAction, "run").throws(new Error("test"));
-    sandbox.stub(fetchTemplateZipFromLocalAction, "run").throws(new Error("test"));
+    sandbox.stub(fetchUrlForHotfixOnlyAction, "run").throws(new Error("test"));
+    sandbox.stub(fetchTemplateFromLocalAction, "run").throws(new Error("test"));
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
+    } else {
+      assert.fail("template fallback error should be thrown.");
     }
   });
 
   it("unzip error", async () => {
-    sandbox.stub(fetchTemplateUrlWithTagAction, "run").resolves();
+    sandbox.stub(fetchUrlForHotfixOnlyAction, "run").resolves();
     sandbox.stub(fetchZipFromUrlAction, "run").resolves();
-    sandbox.stub(fetchTemplateZipFromLocalAction, "run").resolves();
+    sandbox.stub(fetchTemplateFromLocalAction, "run").resolves();
     sandbox.stub(unzipAction, "run").throws(new Error("test"));
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "UnzipError");
+    } else {
+      assert.fail("upzip error should be thrown.");
     }
+  });
+
+  it("fetch sample info fail", async () => {
+    sandbox.stub(fetchSampleInfoAction, "run").throws(new Error("test"));
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    if (result.isErr()) {
+      assert.equal(result.error.name, "FetchSampleInfoError");
+    } else {
+      assert.fail("fetch sample info error should be thrown.");
+    }
+  });
+
+  it("sample not found error", async () => {
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").resolves(mockedSampleInfo);
+    sandbox.stub(generatorUtils, "downloadDirectory").resolves([] as string[]);
+    sandbox
+      .stub(generatorUtils, "sendRequestWithTimeout")
+      .resolves({ data: sampleConfigV3 } as AxiosResponse);
+
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    if (result.isErr()) {
+      assert.equal(result.error.name, "SampleNotFoundError");
+    } else {
+      assert.fail("Sample not found error should be thrown.");
+    }
+  });
+  it("create download sample network error with correct inner error", async () => {
+    const url = "http://example.com";
+    const mockError: AxiosError = {
+      message: "Test error",
+      name: "AxiosError",
+      config: {
+        headers: new AxiosHeaders(),
+      },
+      code: "500",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 500,
+        statusText: "Internal Server Error",
+        headers: {},
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const error = new DownloadSampleNetworkError(url, mockError);
+    assert.deepEqual(error.innerError, simplifyAxiosError(mockError));
+  });
+  it("create fetch sample info error with correct inner error", async () => {
+    const mockError: AxiosError = {
+      message: "Test error",
+      name: "AxiosError",
+      config: {
+        headers: new AxiosHeaders(),
+      },
+      code: "500",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 500,
+        statusText: "Internal Server Error",
+        headers: {},
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const error = new FetchSampleInfoError(mockError);
+    assert.deepEqual(error.innerError, simplifyAxiosError(mockError));
+  });
+  it("create download sample api limit error with correct inner error", async () => {
+    const url = "http://example.com";
+    const mockError: AxiosError = {
+      message: "API rate limit exceeded",
+      name: "AxiosError",
+      code: "403",
+      stack: "Error stack",
+      response: {
+        config: {
+          headers: new AxiosHeaders(),
+        },
+        status: 403,
+        statusText: "Forbidden",
+        headers: {
+          "x-ratelimit-remaining": "0",
+        },
+        data: "Error data",
+      },
+      isAxiosError: true,
+      toJSON: () => ({}),
+    };
+    const error = new DownloadSampleApiLimitError(url, mockError);
+    assert.deepEqual(error.innerError, simplifyAxiosError(mockError));
   });
 });
 
@@ -435,6 +713,17 @@ describe("Generator happy path", async () => {
   const context = createContextV3();
   const sandbox = createSandbox();
   const tmpDir = path.join(__dirname, "tmp");
+
+  async function buildFakeTemplateZip(templateName: string, mockFileName: string) {
+    const mockFileData = "test data";
+    const fallbackDir = path.join(tmpDir, "fallback");
+    await fs.ensureDir(fallbackDir);
+    const templateZip = new AdmZip();
+    templateZip.addFile(path.join(templateName, mockFileName), Buffer.from(mockFileData));
+    templateZip.writeZip(path.join(fallbackDir, "ts.zip"));
+    return templateZip;
+  }
+
   afterEach(async () => {
     sandbox.restore();
     if (await fs.pathExists(tmpDir)) {
@@ -444,22 +733,28 @@ describe("Generator happy path", async () => {
 
   it("external sample", async () => {
     const axiosStub = sandbox.stub(axios, "get");
-    const sampleName = "bot-proactive-messaging-teamsfx";
+    sandbox
+      .stub(sampleProvider, "SampleCollection")
+      .value(Promise.resolve(mockedExternalSampleConfig));
+    const sampleName = "test";
     const mockFileName = "test.txt";
     const mockFileData = "test data";
-    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    const foobarName = "foobar";
+    const foobarFileName = "foobar.txt";
+    const fileInfo = [
+      { type: "file", path: `sample/${sampleName}/${mockFileName}` },
+      { type: "file", path: `sample/${foobarName}/${foobarFileName}` },
+    ];
     axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
     axiosStub.onSecondCall().resolves({ status: 200, data: mockFileData });
     const result = await Generator.generateSample(context, tmpDir, sampleName);
     assert.isTrue(result.isOk());
-  });
-
-  it("teamsfx sample", async () => {
-    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(new AdmZip());
-    const sampleName = "test";
-    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
-    const result = await Generator.generateSample(context, tmpDir, sampleName);
-    assert.isTrue(result.isOk());
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("file creation failure");
+    }
+    if (fs.existsSync(path.join(tmpDir, foobarFileName))) {
+      assert.fail("file should not be created");
+    }
   });
 
   it("template", async () => {
@@ -472,13 +767,73 @@ describe("Generator happy path", async () => {
     const zip = new AdmZip();
     zip.addLocalFolder(inputDir);
     zip.writeZip(path.join(tmpDir, "test.zip"));
-    sandbox.stub(generatorUtils, "fetchTemplateZipUrl").resolves("test.zip");
+    sandbox.stub(generatorUtils, "getTemplateZipUrlByTag").resolves("test.zip");
     sandbox
       .stub(generatorUtils, "fetchZipFromUrl")
       .resolves(new AdmZip(path.join(tmpDir, "test.zip")));
     context.templateVariables = Generator.getDefaultVariables("test");
     const result = await Generator.generateTemplate(context, tmpDir, templateName, language);
     assert.isTrue(result.isOk());
+  });
+
+  it("template variables when test tool enabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "true" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.enableTestToolByDefault, "true");
+  });
+
+  it("template variables when test tool disabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.enableTestToolByDefault, "");
+  });
+
+  it("template variables when contains auth", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
+      authName: "authName",
+      openapiSpecPath: "path/to/spec.yaml",
+      registrationIdEnvName: "AUTHNAME_REGISTRATION_ID",
+    });
+    assert.equal(vars.enableTestToolByDefault, "");
+    assert.equal(vars.appName, "Test");
+    assert.equal(vars.ApiSpecAuthName, "authName");
+    assert.equal(vars.ApiSpecPath, "path/to/spec.yaml");
+    assert.equal(vars.ApiSpecAuthRegistrationIdEnvName, "AUTHNAME_REGISTRATION_ID");
+    assert.equal(vars.SafeProjectName, "Test");
+    assert.equal(vars.SafeProjectNameLowerCase, "test");
+  });
+
+  it("template variables when contains auth with special characters", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
+      authName: "authName",
+      openapiSpecPath: "path/to/spec.yaml",
+      registrationIdEnvName: "AUTH-NAME_REGISTRATION*ID",
+    });
+    assert.equal(vars.enableTestToolByDefault, "");
+    assert.equal(vars.appName, "Test");
+    assert.equal(vars.ApiSpecAuthName, "authName");
+    assert.equal(vars.ApiSpecPath, "path/to/spec.yaml");
+    assert.equal(vars.ApiSpecAuthRegistrationIdEnvName, "AUTH_NAME_REGISTRATION_ID");
+    assert.equal(vars.SafeProjectName, "Test");
+    assert.equal(vars.SafeProjectNameLowerCase, "test");
+  });
+
+  it("template variables when contains auth with name not start with [A-Z]", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
+    const vars = Generator.getDefaultVariables("Test", "Test", undefined, {
+      authName: "authName",
+      openapiSpecPath: "path/to/spec.yaml",
+      registrationIdEnvName: "*AUTH-NAME_REGISTRATION*ID",
+    });
+    assert.equal(vars.enableTestToolByDefault, "");
+    assert.equal(vars.appName, "Test");
+    assert.equal(vars.ApiSpecAuthName, "authName");
+    assert.equal(vars.ApiSpecPath, "path/to/spec.yaml");
+    assert.equal(vars.ApiSpecAuthRegistrationIdEnvName, "PREFIX__AUTH_NAME_REGISTRATION_ID");
+    assert.equal(vars.SafeProjectName, "Test");
+    assert.equal(vars.SafeProjectNameLowerCase, "test");
   });
 
   it("template from source code", async () => {
@@ -501,6 +856,143 @@ describe("Generator happy path", async () => {
     assert.isTrue(success);
     mockedEnvRestore();
   });
+
+  it("template from fallback when remote zip processing fails", async () => {
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const language = "ts";
+    const foobarTemplateZip = new AdmZip();
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+    await buildFakeTemplateZip(templateName, mockFileName);
+
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    // template with fallback
+    const isFallback = actionContext.telemetryProps?.fallback === "true";
+    if (isFallback === false) {
+      assert.fail("template should be generated by fallback");
+    }
+
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("template creation failure");
+    }
+    assert.isTrue(result.isOk());
+  });
+
+  it("template from fallback when using local template tag", async () => {
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const language = "ts";
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+    await buildFakeTemplateZip(templateName, mockFileName);
+
+    sandbox.replace(templateConfig, "useLocalTemplate", true);
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    // template with fallback
+    const isFallback = actionContext.telemetryProps?.fallback === "true";
+    if (isFallback === false) {
+      assert.fail("template should be generated by fallback");
+    }
+
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("local template creation failure");
+    }
+    assert.isTrue(result.isOk());
+  });
+
+  it("template from fallback when local version is higher than online version", async () => {
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const language = "ts";
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+    await buildFakeTemplateZip(templateName, mockFileName);
+
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
+    sandbox.replace(templateConfig, "localVersion", "9.9.9");
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+    sandbox
+      .stub(generatorUtils, "getTemplateZipUrlByTag")
+      .resolves("fooUrl/templates@0.1.0/test.zip");
+
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    // template with fallback
+    const isFallback = actionContext.telemetryProps?.fallback === "true";
+    if (isFallback === false) {
+      assert.fail("template should be generated by fallback");
+    }
+
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("local template creation failure");
+    }
+    assert.isTrue(result.isOk());
+  });
+
+  it("template from downloading when local version is not higher than online version", async () => {
+    const templateName = "test";
+    const mockFileName = "test.txt";
+    const language = "ts";
+    const zip = await buildFakeTemplateZip(templateName, mockFileName);
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+
+    sandbox.replace(templateConfig, "useLocalTemplate", false);
+    sandbox.replace(templateConfig, "localVersion", "0.1.0");
+    sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+    sandbox.stub(generatorUtils, "getTemplateLatestTag").resolves("templates@0.1.1");
+    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(zip);
+
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    // template without fallback
+    const isFallback = actionContext.telemetryProps?.fallback === "true";
+    if (isFallback === true) {
+      assert.fail("template should be generated by downloading");
+    }
+
+    if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
+      assert.fail("local template creation failure");
+    }
+    assert.isTrue(result.isOk());
+  });
 });
 
 describe("Generate sample using download directory", () => {
@@ -514,7 +1006,7 @@ describe("Generate sample using download directory", () => {
     mockedEnvRestore = mockedEnv({
       DOWNLOAD_DIRECTORY: "true",
     });
-    sandbox.stub(generatorUtils, "getSampleInfoFromName").returns(mockedSampleInfo);
+    sandbox.stub(generatorUtils, "getSampleInfoFromName").resolves(mockedSampleInfo);
   });
 
   afterEach(async () => {
@@ -539,11 +1031,19 @@ describe("Generate sample using download directory", () => {
 
   it("download directory throw api limit error", async () => {
     const axiosStub = sandbox.stub(axios, "get");
-    axiosStub.onFirstCall().resolves({ status: 403 });
+    const error = new Error("Network error");
+    (error as any).isAxiosError = true;
+    (error as any).response = {
+      status: 403,
+      headers: {
+        "x-ratelimit-remaining": "0",
+      },
+    };
+    axiosStub.onSecondCall().rejects(error);
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     assert.isTrue(result.isErr());
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "DownloadSampleApiLimitError");
+      assert.equal(result.error.name, "DownloadSampleApiLimitError");
     }
   });
 
@@ -554,7 +1054,7 @@ describe("Generate sample using download directory", () => {
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     assert.isTrue(result.isErr());
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+      assert.equal(result.error.name, "DownloadSampleNetworkError");
     }
   });
 
@@ -576,8 +1076,21 @@ describe("Generate sample using download directory", () => {
     const result = await Generator.generateSample(ctx, tmpDir, "test");
     assert.isTrue(result.isErr());
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "DownloadSampleNetworkError");
+      assert.equal(result.error.name, "DownloadSampleNetworkError");
     }
     assert.isFalse(await fs.pathExists(path.join(tmpDir, sampleName)));
+  });
+
+  it("clean up if downloading failed", async () => {
+    const rmStub = sandbox.stub(fs, "rm").resolves();
+    const existsStub = sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(generatorUtils, "downloadDirectory").rejects();
+    const result = await Generator.generateSample(ctx, tmpDir, "test");
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.name, "DownloadSampleNetworkError");
+    }
+    assert.isTrue(rmStub.calledOnce);
+    assert.isTrue(existsStub.calledOnce);
   });
 });

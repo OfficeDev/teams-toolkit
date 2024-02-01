@@ -6,7 +6,11 @@ import * as sinon from "sinon";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { AadCollaboration, TeamsCollaboration } from "../../../src/component/feature/collaboration";
-import { MockedM365Provider, MockedV2Context } from "../../plugins/solution/util";
+import {
+  MockedLogProvider,
+  MockedM365Provider,
+  MockedV2Context,
+} from "../../plugins/solution/util";
 import { AadAppClient } from "../../../src/component/driver/aad/utility/aadAppClient";
 import axios from "axios";
 import { AppStudioClient } from "../../../src/component/driver/teamsApp/clients/appStudioClient";
@@ -17,7 +21,8 @@ const expect = chai.expect;
 
 describe("AadCollaboration", async () => {
   const m365TokenProvider = new MockedM365Provider();
-  const aadCollaboration = new AadCollaboration(m365TokenProvider);
+  const logProvider = new MockedLogProvider();
+  const aadCollaboration = new AadCollaboration(m365TokenProvider, logProvider);
   const sandbox = sinon.createSandbox();
   const context = new MockedV2Context();
   const expectedObjectId = "00000000-0000-0000-0000-000000000000";
@@ -52,7 +57,7 @@ describe("AadCollaboration", async () => {
     expect(result.isOk() && result.value[0].resourceId == expectedObjectId).to.be.true;
   });
 
-  it("check permission: should return owner if user is aad owner", async () => {
+  it("check permission: should return owner if user is Microsoft Entra owner", async () => {
     sandbox.stub(AadAppClient.prototype, "getOwners").resolves([
       {
         resourceId: expectedUserId,
@@ -70,7 +75,7 @@ describe("AadCollaboration", async () => {
     expect(result.isOk() && result.value[0].roles![0] == "Owner").to.be.true;
   });
 
-  it("check permission: should return no permission if user is not aad owner", async () => {
+  it("check permission: should return no permission if user is not Microsoft Entra owner", async () => {
     sandbox.stub(AadAppClient.prototype, "getOwners").resolves([
       {
         resourceId: expectedUserId,
@@ -84,7 +89,7 @@ describe("AadCollaboration", async () => {
     expect(result.isOk() && result.value[0].roles![0] == "No Permission").to.be.true;
   });
 
-  it("errors: should return HttpClientError for 4xx errors", async () => {
+  it("grant permission errors: should return HttpClientError for 4xx errors", async () => {
     sandbox.stub(AadAppClient.prototype, "addOwner").rejects({
       message: "Request failed with status code 404",
       response: {
@@ -102,7 +107,25 @@ describe("AadCollaboration", async () => {
     expect(result.isErr() && result.error.name == "HttpClientError").to.be.true;
   });
 
-  it("errors: should return HttpServerError for 5xx errors", async () => {
+  it("grant permission errors: should return AppIdNotExist for 404 errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "addOwner").rejects({
+      message: "Request failed with status code 404",
+      response: {
+        status: 404,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(true);
+
+    const result = await aadCollaboration.grantPermission(
+      context,
+      expectedObjectId,
+      expectedUserId
+    );
+    expect(result.isErr() && result.error.name == "AppIdNotExist").to.be.true;
+  });
+
+  it("grant permission errors: should return HttpServerError for 5xx errors", async () => {
     sandbox.stub(AadAppClient.prototype, "addOwner").rejects({
       message: "Request failed with status code 500",
       response: {
@@ -120,7 +143,7 @@ describe("AadCollaboration", async () => {
     expect(result.isErr() && result.error.name == "HttpServerError").to.be.true;
   });
 
-  it("errors: should return UnhandledError for unknown errors", async () => {
+  it("grant permission errors: should return UnhandledError for unknown errors", async () => {
     sandbox.stub(AadAppClient.prototype, "addOwner").rejects({
       message: "Request failed with status code 500",
       response: {
@@ -137,12 +160,140 @@ describe("AadCollaboration", async () => {
     );
     expect(result.isErr() && result.error.name == "UnhandledError").to.be.true;
   });
+
+  it("list collaborator errors: should return HttpClientError for 4xx errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "getOwners").rejects({
+      message: "Request failed with status code 404",
+      response: {
+        status: 400,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(true);
+
+    const result = await aadCollaboration.listCollaborator(context, expectedObjectId);
+    expect(result.isErr() && result.error.name == "HttpClientError").to.be.true;
+  });
+
+  it("list collaborator errors: should return AppIdNotExist for 404 errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "getOwners").rejects({
+      message: "Request failed with status code 404",
+      response: {
+        status: 404,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(true);
+
+    const result = await aadCollaboration.listCollaborator(context, expectedObjectId);
+    expect(result.isErr() && result.error.name == "AppIdNotExist").to.be.true;
+  });
+
+  it("list collaborator errors: should return HttpServerError for 5xx errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "getOwners").rejects({
+      message: "Request failed with status code 500",
+      response: {
+        status: 500,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(true);
+
+    const result = await aadCollaboration.listCollaborator(context, expectedObjectId);
+    expect(result.isErr() && result.error.name == "HttpServerError").to.be.true;
+  });
+
+  it("list collaborator errors: should return UnhandledError for unknown errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "getOwners").rejects({
+      message: "Request failed with status code 500",
+      response: {
+        status: 500,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(false);
+
+    const result = await aadCollaboration.listCollaborator(context, expectedObjectId);
+    expect(result.isErr() && result.error.name == "UnhandledError").to.be.true;
+  });
+
+  it("check permission errors: should return HttpClientError for 4xx errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "getOwners").rejects({
+      message: "Request failed with status code 404",
+      response: {
+        status: 400,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(true);
+
+    const result = await aadCollaboration.checkPermission(
+      context,
+      expectedObjectId,
+      expectedUserId
+    );
+    expect(result.isErr() && result.error.name == "HttpClientError").to.be.true;
+  });
+
+  it("check permission errors: should return AppIdNotExist for 404 errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "getOwners").rejects({
+      message: "Request failed with status code 404",
+      response: {
+        status: 404,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(true);
+
+    const result = await aadCollaboration.checkPermission(
+      context,
+      expectedObjectId,
+      expectedUserId
+    );
+    expect(result.isErr() && result.error.name == "AppIdNotExist").to.be.true;
+  });
+
+  it("check permission errors: should return HttpServerError for 5xx errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "getOwners").rejects({
+      message: "Request failed with status code 500",
+      response: {
+        status: 500,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(true);
+
+    const result = await aadCollaboration.checkPermission(
+      context,
+      expectedObjectId,
+      expectedUserId
+    );
+    expect(result.isErr() && result.error.name == "HttpServerError").to.be.true;
+  });
+
+  it("check permission errors: should return UnhandledError for unknown errors", async () => {
+    sandbox.stub(AadAppClient.prototype, "getOwners").rejects({
+      message: "Request failed with status code 500",
+      response: {
+        status: 500,
+        data: {},
+      },
+    });
+    sandbox.stub(axios, "isAxiosError").returns(false);
+
+    const result = await aadCollaboration.checkPermission(
+      context,
+      expectedObjectId,
+      expectedUserId
+    );
+    expect(result.isErr() && result.error.name == "UnhandledError").to.be.true;
+  });
 });
 
 describe("TeamsCollaboration", async () => {
   const context = new MockedV2Context();
   const m365TokenProvider = new MockedM365Provider();
-  const teamsCollaboration = new TeamsCollaboration(context, m365TokenProvider);
+  const teamsCollaboration = new TeamsCollaboration(m365TokenProvider);
   const sandbox = sinon.createSandbox();
   const expectedAppId = "00000000-0000-0000-0000-000000000000";
   const expectedUserId = "expectedUserId";
@@ -187,7 +338,7 @@ describe("TeamsCollaboration", async () => {
     expect(result.isOk() && result.value[0].roles![0] == "Administrator").to.be.true;
   });
 
-  it("check permission: should return no permission if user is not aad owner", async () => {
+  it("check permission: should return no permission if user is not Microsoft Entra owner", async () => {
     sandbox.stub(AppStudioClient, "checkPermission").resolves("No permission");
 
     const result = await teamsCollaboration.checkPermission(
@@ -198,10 +349,10 @@ describe("TeamsCollaboration", async () => {
     expect(result.isOk() && result.value[0].roles![0] == "No permission").to.be.true;
   });
 
-  it("errors: should return HttpClientError for 4xx errors", async () => {
+  it("list collaborator errors: should return HttpClientError for 4xx errors", async () => {
     sandbox.stub(AppStudioClient, "getUserList").rejects({
       innerError: {
-        message: "Request failed with status code 404",
+        message: "Request failed with status code 400",
         response: {
           status: 400,
           data: {},
@@ -213,7 +364,22 @@ describe("TeamsCollaboration", async () => {
     expect(result.isErr() && result.error.name == "HttpClientError").to.be.true;
   });
 
-  it("errors: should return HttpServerError for 5xx errors", async () => {
+  it("list collaborator errors: should return AppIdNotExist for 404 errors", async () => {
+    sandbox.stub(AppStudioClient, "getUserList").rejects({
+      innerError: {
+        message: "Request failed with status code 404",
+        response: {
+          status: 404,
+          data: {},
+        },
+      },
+    });
+
+    const result = await teamsCollaboration.listCollaborator(context, expectedAppId);
+    expect(result.isErr() && result.error.name == "AppIdNotExist").to.be.true;
+  });
+
+  it("list collaborator errors: should return HttpServerError for 5xx errors", async () => {
     sandbox.stub(AppStudioClient, "getUserList").rejects({
       innerError: {
         message: "Request failed with status code 500",
@@ -228,12 +394,152 @@ describe("TeamsCollaboration", async () => {
     expect(result.isErr() && result.error.name == "HttpServerError").to.be.true;
   });
 
-  it("errors: should return unhandledErrors", async () => {
+  it("list collaborator errors: should return unhandledErrors", async () => {
     sandbox.stub(AppStudioClient, "getUserList").rejects({
       message: "Request failed with status code 500",
     });
 
     const result = await teamsCollaboration.listCollaborator(context, expectedAppId);
+    expect(result.isErr() && result.error.name == "UnhandledError").to.be.true;
+  });
+
+  it("grant permission errors: should return HttpClientError for 4xx errors", async () => {
+    sandbox.stub(AppStudioClient, "grantPermission").rejects({
+      innerError: {
+        message: "Request failed with status code 400",
+        response: {
+          status: 400,
+          data: {},
+        },
+      },
+    });
+
+    const result = await teamsCollaboration.grantPermission(
+      context,
+      expectedAppId,
+      expectedUserInfo
+    );
+    expect(result.isErr() && result.error.name == "HttpClientError").to.be.true;
+  });
+
+  it("grant permission errors: should return AppIdNotExist for 404 errors", async () => {
+    sandbox.stub(AppStudioClient, "grantPermission").rejects({
+      innerError: {
+        message: "Request failed with status code 404",
+        response: {
+          status: 404,
+          data: {},
+        },
+      },
+    });
+
+    const result = await teamsCollaboration.grantPermission(
+      context,
+      expectedAppId,
+      expectedUserInfo
+    );
+    expect(result.isErr() && result.error.name == "AppIdNotExist").to.be.true;
+  });
+
+  it("grant permission errors: should return HttpServerError for 5xx errors", async () => {
+    sandbox.stub(AppStudioClient, "grantPermission").rejects({
+      innerError: {
+        message: "Request failed with status code 500",
+        response: {
+          status: 500,
+          data: {},
+        },
+      },
+    });
+
+    const result = await teamsCollaboration.grantPermission(
+      context,
+      expectedAppId,
+      expectedUserInfo
+    );
+    expect(result.isErr() && result.error.name == "HttpServerError").to.be.true;
+  });
+
+  it("grant permission errors: should return unhandledErrors", async () => {
+    sandbox.stub(AppStudioClient, "grantPermission").rejects({
+      message: "Request failed with status code 500",
+    });
+
+    const result = await teamsCollaboration.grantPermission(
+      context,
+      expectedAppId,
+      expectedUserInfo
+    );
+    expect(result.isErr() && result.error.name == "UnhandledError").to.be.true;
+  });
+
+  it("check permission errors: should return HttpClientError for 4xx errors", async () => {
+    sandbox.stub(AppStudioClient, "checkPermission").rejects({
+      innerError: {
+        message: "Request failed with status code 400",
+        response: {
+          status: 400,
+          data: {},
+        },
+      },
+    });
+
+    const result = await teamsCollaboration.checkPermission(
+      context,
+      expectedAppId,
+      expectedUserInfo
+    );
+    expect(result.isErr() && result.error.name == "HttpClientError").to.be.true;
+  });
+
+  it("check permission errors: should return AppIdNotExist for 404 errors", async () => {
+    sandbox.stub(AppStudioClient, "checkPermission").rejects({
+      innerError: {
+        message: "Request failed with status code 404",
+        response: {
+          status: 404,
+          data: {},
+        },
+      },
+    });
+
+    const result = await teamsCollaboration.checkPermission(
+      context,
+      expectedAppId,
+      expectedUserInfo
+    );
+    expect(result.isErr() && result.error.name == "AppIdNotExist").to.be.true;
+  });
+
+  it("check permission errors: should return HttpServerError for 5xx errors", async () => {
+    sandbox.stub(AppStudioClient, "checkPermission").rejects({
+      innerError: {
+        message: "Request failed with status code 500",
+        response: {
+          status: 500,
+          data: {},
+        },
+      },
+    });
+
+    const result = await teamsCollaboration.checkPermission(
+      context,
+      expectedAppId,
+      expectedUserInfo
+    );
+    expect(result.isErr() && result.error.name == "HttpServerError").to.be.true;
+  });
+
+  it("check permission errors: should return unhandledErrors", async () => {
+    sandbox.stub(AppStudioClient, "checkPermission").rejects({
+      message: "Request failed with status code 500",
+    });
+
+    const result = await teamsCollaboration.checkPermission(
+      context,
+      expectedAppId,
+      expectedUserInfo
+    );
     expect(result.isErr() && result.error.name == "UnhandledError").to.be.true;
   });
 });

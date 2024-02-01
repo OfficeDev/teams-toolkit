@@ -21,7 +21,7 @@ module.exports = {
     "@typescript-eslint/eslint-plugin",
     "prettier",
     "no-secrets",
-    "@microsoft/eslint-plugin-teamsfx",
+    "header",
   ],
   rules: {
     "prettier/prettier": "error",

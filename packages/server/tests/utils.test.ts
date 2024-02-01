@@ -74,31 +74,31 @@ describe("utils", () => {
 
     it("case 4: ok with value", () => {
       const e = "test value";
-      const res = getResponseWithErrorHandling(Promise.resolve(ok(e)));
+      const res = getResponseWithErrorHandling(Promise.resolve(ok<string, FxError>(e)));
       return res.then(function (data) {
         expect((data as any).value).to.equal(e);
       });
     });
 
     it("case 5: ok with undefined", () => {
-      const res = getResponseWithErrorHandling(Promise.resolve(ok(undefined)));
+      const res = getResponseWithErrorHandling(Promise.resolve(ok<undefined, FxError>(undefined)));
       return res.then(function (data) {
         expect((data as any).value).to.equal(undefined);
       });
     });
   });
 
-  it("convertUIConfigToJson", () => {
+  it("convertUIConfigToJson", async () => {
     const f = () => {};
     const config = {
       name: "test name",
       title: "test title",
-      default: "test default value",
+      default: () => Promise.resolve("test default value"),
       options: ["option1", "option2"],
       validation: f,
     };
     reset();
-    const res = convertUIConfigToJson(config as UIConfig<string>);
+    const res = await convertUIConfigToJson(config as UIConfig<string>);
     const exp = {
       name: "test name",
       title: "test title",

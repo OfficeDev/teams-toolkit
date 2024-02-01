@@ -1,5 +1,5 @@
 {
-    "name": "{{appName}}",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit hello world Bot sample",
     "engines": {
@@ -10,8 +10,10 @@
     "main": "./lib/index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
+        "dev:teamsfx:testtool": "env-cmd --silent -f .localConfigs.testTool npm run dev",
+        "dev:teamsfx:launch-testtool": "env-cmd --silent -f env/.env.testtool teamsapptester start",
         "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
-        "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
+        "build": "tsc --build",
         "start": "node ./lib/index.js",
         "watch": "nodemon --exec \"npm run start\"",
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -21,13 +23,12 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/adaptivecards-tools": "^1.0.0",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-        "@types/node": "^14.0.0",
+        "@types/node": "^16.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",

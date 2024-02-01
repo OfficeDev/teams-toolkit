@@ -1,4 +1,4 @@
-import { Project } from "../constants";
+import { Project } from "./constants";
 import * as uuid from "uuid";
 
 export function getAppNamePrefix(): string {

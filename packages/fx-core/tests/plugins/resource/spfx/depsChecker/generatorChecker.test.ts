@@ -12,37 +12,30 @@ import { telemetryHelper } from "../../../../../src/component/generator/spfx/uti
 import { createContextV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
-import { PackageSelectOptionsHelper } from "../../../../../src/question/create";
 
 class StubLogger implements LogProvider {
-  async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    return true;
+  msg = "";
+  verbose(msg: string): void {
+    this.log(LogLevel.Verbose, msg);
   }
-
-  async trace(message: string): Promise<boolean> {
-    return true;
+  debug(msg: string): void {
+    this.log(LogLevel.Debug, msg);
   }
-
-  async debug(message: string): Promise<boolean> {
-    return true;
+  info(msg: string | Array<any>): void {
+    this.log(LogLevel.Info, msg as string);
   }
-
-  async info(message: string | Array<{ content: string; color: Colors }>): Promise<boolean> {
-    return true;
+  warning(msg: string): void {
+    this.log(LogLevel.Warning, msg);
   }
-
-  async warning(message: string): Promise<boolean> {
-    return true;
+  error(msg: string): void {
+    this.log(LogLevel.Error, msg);
   }
-
-  async error(message: string): Promise<boolean> {
-    return true;
+  log(level: LogLevel, msg: string): void {
+    this.msg = msg;
   }
-
-  async fatal(message: string): Promise<boolean> {
-    return true;
+  async logInFile(level: LogLevel, msg: string): Promise<void> {
+    this.msg = msg;
   }
-
   getLogFilePath(): string {
     return "";
   }
@@ -63,7 +56,6 @@ describe("generator checker", () => {
 
   afterEach(() => {
     restore();
-    PackageSelectOptionsHelper.clear();
   });
 
   describe("getDependencyInfo", async () => {
@@ -79,10 +71,32 @@ describe("generator checker", () => {
       });
 
       try {
-        await generatorChecker.install();
+        await generatorChecker.install("1.18.2");
       } catch {
         chai.expect(cleanStub.callCount).equal(2);
       }
+    });
+
+    it("install error", async () => {
+      const generatorChecker = new GeneratorChecker(new StubLogger());
+      stub(GeneratorChecker.prototype, <any>"cleanup").callsFake(async () => {
+        console.log("stub cleanup");
+        return;
+      });
+      stub(cpUtils, "executeCommand").throws(new Error("unknown"));
+      stub(fs, "pathExists").callsFake(async () => {
+        return true;
+      });
+
+      let hasError = false;
+
+      try {
+        await generatorChecker.install("1.18.2");
+      } catch {
+        hasError = true;
+      }
+
+      chai.expect(hasError).to.be.true;
     });
 
     it("findGloballyInstalledVersion: returns version", async () => {
@@ -161,8 +175,26 @@ describe("generator checker", () => {
         return "latest";
       });
 
-      const result = await checker.isLatestInstalled();
+      const result = await checker.isLatestInstalled("latest");
       chai.expect(result).is.true;
+    });
+
+    it("miss sentinel version", async () => {
+      const checker = new GeneratorChecker(new StubLogger());
+      stub(fs, "pathExists").callsFake(async () => {
+        return false;
+      });
+
+      stub(GeneratorChecker.prototype, <any>"queryVersion").callsFake(async () => {
+        return "latest";
+      });
+
+      stub(GeneratorChecker.prototype, <any>"findLatestVersion").callsFake(async () => {
+        return "latest";
+      });
+
+      const result = await checker.isLatestInstalled("latest");
+      chai.expect(result).is.false;
     });
 
     it("latest not installed", async () => {
@@ -182,28 +214,7 @@ describe("generator checker", () => {
         return "latest";
       });
 
-      const result = await checker.isLatestInstalled();
-      chai.expect(result).is.false;
-    });
-
-    it("latest not installed", async () => {
-      const checker = new GeneratorChecker(new StubLogger());
-      stub(fs, "pathExists").callsFake(async () => {
-        console.log("stub pathExists");
-        return false;
-      });
-
-      stub(GeneratorChecker.prototype, <any>"queryVersion").callsFake(async () => {
-        console.log("stub queryversion");
-        return "lower version";
-      });
-
-      stub(GeneratorChecker.prototype, <any>"findLatestVersion").callsFake(async () => {
-        console.log("stub findLatestVersion");
-        return "latest";
-      });
-
-      const result = await checker.isLatestInstalled();
+      const result = await checker.isLatestInstalled(undefined);
       chai.expect(result).is.false;
     });
 
@@ -215,13 +226,14 @@ describe("generator checker", () => {
       });
 
       stub(GeneratorChecker.prototype, <any>"queryVersion").throws("error");
+      stub(GeneratorChecker.prototype, <any>"findLatestVersion").throws("error");
 
-      const result = await checker.isLatestInstalled();
+      const result = await checker.isLatestInstalled(undefined);
       chai.expect(result).is.false;
     });
   });
 
-  describe("ensureLatestDependency", () => {
+  describe("ensureDependency", () => {
     it("install successfully", async () => {
       const checker = new GeneratorChecker(new StubLogger());
 
@@ -231,7 +243,7 @@ describe("generator checker", () => {
 
       const context = createContextV3();
 
-      const result = await checker.ensureLatestDependency(context);
+      const result = await checker.ensureDependency(context, "1.18.2");
       chai.expect(result.isOk()).to.be.true;
     });
 
@@ -244,7 +256,7 @@ describe("generator checker", () => {
 
       const context = createContextV3();
 
-      const result = await checker.ensureLatestDependency(context);
+      const result = await checker.ensureDependency(context, "1.18.2");
       chai.expect(result.isErr()).to.be.true;
     });
   });

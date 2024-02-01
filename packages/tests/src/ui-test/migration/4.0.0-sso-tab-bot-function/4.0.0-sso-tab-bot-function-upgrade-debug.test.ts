@@ -1,6 +1,5 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -9,10 +8,13 @@ import {
   LocalDebugTaskLabel,
   ResourceToDeploy,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { validateTab, initPage } from "../../../playwrightOperation";
+import {
+  validateProactiveMessaging,
+  initPage,
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
@@ -20,9 +22,10 @@ import {
   upgradeByTreeView,
   waitForTerminal,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
+import { updateFunctionAuthorizationPolicy } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -52,13 +55,17 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await mirgationDebugTestContext.createProjectCLI(false);
+      const projectPath = await mirgationDebugTestContext.createProjectCLI(
+        false
+      );
       // verify popup
       await validateNotification(Notification.Upgrade);
 
       // add feature
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Bot);
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
+
+      await updateFunctionAuthorizationPolicy("4.0.0", projectPath);
 
       // upgrade
       await upgradeByTreeView();
@@ -69,7 +76,7 @@ describe("Migration Tests", function () {
 
       // local debug with TTK
       try {
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
         await waitForTerminal(
           LocalDebugTaskLabel.StartLocalTunnel,
           LocalDebugTaskResult.StartSuccess
@@ -94,7 +101,7 @@ describe("Migration Tests", function () {
         await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
 
-      const teamsAppId = await mirgationDebugTestContext.getTeamsAppId();
+      const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("local");
       // UI verify
       const page = await initPage(
         mirgationDebugTestContext.context!,
@@ -102,7 +109,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, Env.displayName, false);
+      await validateProactiveMessaging(page);
     }
   );
 });

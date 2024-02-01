@@ -1,45 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
-import { Service } from "typedi";
-import { AadAppClient } from "./utility/aadAppClient";
-import axios from "axios";
-import { SystemError, UserError, ok, err, FxError, Result } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
+import axios from "axios";
+import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
-import { buildAadManifest } from "./utility/buildAadManifest";
-import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
 import {
   HttpClientError,
   HttpServerError,
   InvalidActionInputError,
-  UnhandledError,
+  assembleError,
 } from "../../../error/common";
-import { updateProgress } from "../middleware/updateProgress";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
+import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
+import { AadAppClient } from "./utility/aadAppClient";
+import { buildAadManifest } from "./utility/buildAadManifest";
+import { descriptionMessageKeys, logMessageKeys } from "./utility/constants";
 
-const actionName = "aadApp/update"; // DO NOT MODIFY the name
+export const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
 // logic from src\component\resource\aadApp\aadAppManifestManager.ts
 @Service(actionName) // DO NOT MODIFY the service name
 export class UpdateAadAppDriver implements StepDriver {
   description = getLocalizedString(descriptionMessageKeys.update);
+  readonly progressTitle = getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle");
 
-  public async run(
-    args: UpdateAadAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const result = await this.execute(args, context);
-    return result.result;
-  }
-
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.aadApp.progressBar.updateAadAppTitle")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(args: UpdateAadAppArgs, context: DriverContext): Promise<ExecutionResult> {
     const summaries: string[] = [];
 
@@ -48,7 +37,7 @@ export class UpdateAadAppDriver implements StepDriver {
       const state = this.loadCurrentState();
 
       this.validateArgs(args);
-      const aadAppClient = new AadAppClient(context.m365TokenProvider);
+      const aadAppClient = new AadAppClient(context.m365TokenProvider, context.logProvider);
 
       const manifest = await buildAadManifest(
         context,
@@ -58,15 +47,15 @@ export class UpdateAadAppDriver implements StepDriver {
       );
 
       // MS Graph API does not allow adding new OAuth permissions and pre authorize it within one request
-      // So split update AAD app to two requests:
-      // 1. If there's preAuthorizedApplications, remove it temporary and update AAD app to create possible new permission
+      // So split update Microsoft Entra app to two requests:
+      // 1. If there's preAuthorizedApplications, remove it temporary and update Microsoft Entra app to create possible new permission
       if (manifest.preAuthorizedApplications && manifest.preAuthorizedApplications.length > 0) {
         const preAuthorizedApplications = manifest.preAuthorizedApplications;
         manifest.preAuthorizedApplications = [];
         await aadAppClient.updateAadApp(manifest);
         manifest.preAuthorizedApplications = preAuthorizedApplications;
       }
-      // 2. Update AAD app again with full manifest to set preAuthorizedApplications
+      // 2. Update Microsoft Entra app again with full manifest to set preAuthorizedApplications
       await aadAppClient.updateAadApp(manifest);
       const summary = getLocalizedString(
         logMessageKeys.successUpdateAadAppManifest,
@@ -99,19 +88,22 @@ export class UpdateAadAppDriver implements StepDriver {
           summaries: summaries,
         };
       }
-      if (axios.isAxiosError(error)) {
-        const message = JSON.stringify(error.response!.data);
+      if (
+        axios.isAxiosError(error) &&
+        error.response // If no response, treat as unhandled error first to understand the actual problem
+      ) {
+        const message = JSON.stringify(error.response.data);
         context.logProvider?.error(
           getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
         );
-        if (error.response!.status >= 400 && error.response!.status < 500) {
+        if (error.response.status >= 400 && error.response.status < 500) {
           return {
-            result: err(new HttpClientError(actionName, message, helpLink)),
+            result: err(new HttpClientError(error, actionName, message, helpLink)),
             summaries: summaries,
           };
         } else {
           return {
-            result: err(new HttpServerError(actionName, message)),
+            result: err(new HttpServerError(error, actionName, message)),
             summaries: summaries,
           };
         }
@@ -122,7 +114,7 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledError(error as Error, actionName)),
+        result: err(assembleError(error as Error, actionName)),
         summaries: summaries,
       };
     } finally {

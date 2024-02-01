@@ -1,23 +1,26 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
   Capability,
   Notification,
   ResourceToDeploy,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { validateTab, initPage } from "../../../playwrightOperation";
+import {
+  validateProactiveMessaging,
+  initPage,
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
-} from "../../../vscodeOperation";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+} from "../../../utils/vscodeOperation";
+import { updateFunctionAuthorizationPolicy } from "../../../utils/commonUtils";
+import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -47,7 +50,9 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await mirgationDebugTestContext.createProjectCLI(false);
+      const projectPath = await mirgationDebugTestContext.createProjectCLI(
+        false
+      );
       // verify popup
       await validateNotification(Notification.Upgrade);
 
@@ -55,25 +60,19 @@ describe("Migration Tests", function () {
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Bot);
       await mirgationDebugTestContext.addFeatureV2(ResourceToDeploy.Function);
 
+      await updateFunctionAuthorizationPolicy("4.0.0", projectPath);
+
       // upgrade
       await upgradeByTreeView();
       //verify upgrade
       await validateUpgrade();
 
-      // install test cil in project
-      await CliHelper.installCLI(
-        Env.TARGET_CLI,
-        false,
-        mirgationDebugTestContext.projectPath
-      );
       // enable cli v3
       CliHelper.setV3Enable();
 
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
-      // v3 deploy
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await runProvision(mirgationDebugTestContext.appName);
+      await runDeploy(Timeout.botDeploy);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       // UI verify
@@ -83,7 +82,7 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateTab(page, Env.displayName, false);
+      await validateProactiveMessaging(page);
     }
   );
 });

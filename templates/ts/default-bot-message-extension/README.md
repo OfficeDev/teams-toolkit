@@ -19,15 +19,17 @@ This is a simple hello world application with both Bot and Message extension cap
 - From Visual Studio Code: Start debugging the project by hitting the `F5` key in Visual Studio Code.
 - Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Run and Debug` green arrow button.
 - From TeamsFx CLI:
-  - Install [ngrok](https://ngrok.com/download) and start your local tunnel service by running the command `ngrok http 3978`.
-  - In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your ngrok URL.
+  - Install [dev tunnel cli](https://aka.ms/teamsfx-install-dev-tunnel).
+  - Login with your M365 Account using the command `devtunnel user login`.
+  - Start your local tunnel service by running the command `devtunnel host -p 3978 --protocol http --allow-anonymous`.
+  - In the `env/.env.local` file, fill in the values for `BOT_DOMAIN` and `BOT_ENDPOINT` with your dev tunnel URL.
     ```
-    BOT_DOMAIN=sample-id.ngrok.io
-    BOT_ENDPOINT=https://sample-id.ngrok.io
+    BOT_DOMAIN=sample-id-3978.devtunnels.ms
+    BOT_ENDPOINT=https://sample-id-3978.devtunnels.ms
     ```
-  - Executing the command `teamsfx provision --env local` in your project directory.
-  - Executing the command `teamsfx deploy --env local` in your project directory.
-  - Executing the command `teamsfx preview --env local` in your project directory.
+  - Executing the command `teamsapp provision --env local` in your project directory.
+  - Executing the command `teamsapp deploy --env local` in your project directory.
+  - Executing the command `teamsapp preview --env local` in your project directory.
 
 ## Edit the manifest
 
@@ -42,7 +44,7 @@ Deploy your project to Azure by following these steps:
 
 | From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                  | From TeamsFx CLI                                                                                                                                                                                                                    |
 | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the Teams Toolkit and click `Provision` from DEPLOYMENT section or open the command palette and select: `Teams: Provision`.</li><li>Open the Teams Toolkit and click `Deploy` or open the command palette and select: `Teams: Deploy`.</li></ul> | <ul> <li>Run command `teamsfx account login azure`.</li> <li>Run command `teamsfx provision --env dev`.</li> <li>Run command: `teamsfx deploy --env dev`. </li></ul> |
+| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the Teams Toolkit and click `Provision` from DEPLOYMENT section or open the command palette and select: `Teams: Provision`.</li><li>Open the Teams Toolkit and click `Deploy` or open the command palette and select: `Teams: Deploy`.</li></ul> | <ul> <li>Run command `teamsapp auth login azure`.</li> <li>Run command `teamsapp provision --env dev`.</li> <li>Run command: `teamsapp deploy --env dev`. </li></ul> |
 
 > Note: Provisioning and deployment may incur charges to your Azure Subscription.
 
@@ -56,26 +58,26 @@ Once the provisioning and deployment steps are finished, you can preview your ap
   1. Select `Launch Remote (Edge)` or `Launch Remote (Chrome)` from the launch configuration drop-down.
   1. Press the Play (green arrow) button to launch your app - now running remotely from Azure.
 
-- From TeamsFx CLI: execute `teamsfx preview --env dev` in your project directory to launch your application.
+- From TeamsFx CLI: execute `teamsapp preview --env dev` in your project directory to launch your application.
 
 ## Validate manifest file
 
 To check that your manifest file is valid:
 
 - From Visual Studio Code: open the command palette and select: `Teams: Validate Application`.
-- From TeamsFx CLI: run command `teamsfx validate` in your project directory.
+- From TeamsFx CLI: run command `teamsapp validate` in your project directory.
 
 ## Package
 
 - From Visual Studio Code: open the Teams Toolkit and click `Zip Teams App Package` or open the command palette and select `Teams: Zip Teams App Package`.
-- Alternatively, from the command line run `teamsfx package` in the project directory.
+- Alternatively, from the command line run `teamsapp package` in the project directory.
 
 ## Publish to Teams
 
 Once deployed, you may want to distribute your application to your organization's internal app store in Teams. Your app will be submitted for admin approval.
 
 - From Visual Studio Code: open the Teams Toolkit and click `Publish` or open the command palette and select: `Teams: Publish`.
-- From TeamsFx CLI: run command `teamsfx publish` in your project directory.
+- From TeamsFx CLI: run command `teamsapp publish` in your project directory.
 
 ## Play with Messging Extension
 

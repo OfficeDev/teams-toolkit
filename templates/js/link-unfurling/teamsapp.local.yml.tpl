@@ -8,21 +8,21 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Create or reuse an existing Azure Active Directory application for bot.
+  # Create or reuse an existing Microsoft Entra application for bot.
   - uses: botAadApp/create
     with:
-      # The Azure Active Directory application's display name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      # The Microsoft Entra application's display name
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     writeToEnvironmentFile:
-      # The Azure Active Directory application's client id created for bot.
+      # The Microsoft Entra application's client id created for bot.
       botId: BOT_ID
-      # The Azure Active Directory application's client secret created for bot.
+      # The Microsoft Entra application's client secret created for bot.
       botPassword: SECRET_BOT_PASSWORD
 
   # Create or update the bot registration on dev.botframework.com
@@ -41,7 +41,6 @@ provision:
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
-
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -54,7 +53,6 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.
   # Will use the app id in manifest file to determine which Teams app to update.
@@ -62,7 +60,6 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-
   # Extend your Teams app to Outlook and the Microsoft 365 app
   - uses: teamsApp/extendToM365
     with:
@@ -77,9 +74,9 @@ provision:
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install --no-audit
-
   # Generate runtime environment variables
   - uses: file/createOrUpdateEnvironmentFile
     with:

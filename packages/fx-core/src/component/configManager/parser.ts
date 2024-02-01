@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author yefuwang@microsoft.com
  */
@@ -7,7 +10,13 @@ import fs from "fs-extra";
 import { load } from "js-yaml";
 import { globalVars } from "../../core/globalVars";
 import { InvalidYamlSchemaError, YamlFieldMissingError, YamlFieldTypeError } from "../../error/yml";
-import { IYamlParser, ProjectModel, RawProjectModel, LifecycleNames } from "./interface";
+import {
+  IYamlParser,
+  ProjectModel,
+  RawProjectModel,
+  LifecycleNames,
+  AdditionalMetadata,
+} from "./interface";
 import { Lifecycle } from "./lifecycle";
 import { Validator } from "./validator";
 import { getLocalizedString } from "../../common/localizeUtils";
@@ -21,19 +30,25 @@ const versionNotSupportedKey = "error.yaml.VersionNotSupported";
 function parseRawProjectModel(obj: Record<string, unknown>): Result<RawProjectModel, FxError> {
   const result: RawProjectModel = { version: "" };
   if (environmentFolderPath in obj) {
-    if (typeof obj["environmentFolderPath"] !== "string") {
+    if (typeof obj[environmentFolderPath] !== "string") {
       return err(new YamlFieldTypeError("environmentFolderPath", "string"));
     }
-    result.environmentFolderPath = obj[environmentFolderPath] as string;
+    result.environmentFolderPath = obj[environmentFolderPath] as unknown as string;
   }
 
   if ("version" in obj) {
     if (typeof obj["version"] !== "string") {
       return err(new YamlFieldTypeError("version", "string"));
     }
-    result.version = obj["version"] as string;
+    result.version = obj["version"];
   } else {
     return err(new YamlFieldMissingError("version"));
+  }
+
+  if ("additionalMetadata" in obj) {
+    // No validation for additionalMetadata by design. This property is for telemetry related purpose only
+    // and should not affect user-observable behavior of TTK.
+    result.additionalMetadata = obj["additionalMetadata"] as AdditionalMetadata;
   }
 
   for (const name of LifecycleNames) {
@@ -108,6 +123,10 @@ export class YamlParser implements IYamlParser {
       result.environmentFolderPath = raw.value.environmentFolderPath;
     }
 
+    if (raw.value.additionalMetadata) {
+      result.additionalMetadata = raw.value.additionalMetadata;
+    }
+
     return ok(result);
   }
 
@@ -115,17 +134,15 @@ export class YamlParser implements IYamlParser {
     path: string,
     validateSchema?: boolean
   ): Promise<Result<RawProjectModel, FxError>> {
-    let diagnostic: string | undefined = undefined;
     try {
       globalVars.ymlFilePath = path;
       const str = await fs.readFile(path, "utf8");
       const content = load(str);
       const value = content as unknown as Record<string, unknown>;
       const version = typeof value["version"] === "string" ? value["version"] : undefined;
-      diagnostic = await validator.generateDiagnosticMessage(path, str, version);
       // note: typeof null === "object" typeof undefined === "undefined" in js
       if (typeof content !== "object" || Array.isArray(content) || content === null) {
-        return err(new InvalidYamlSchemaError(path, diagnostic));
+        return err(new InvalidYamlSchemaError(path));
       }
       if (validateSchema) {
         if (!validator.isVersionSupported(version ?? "undefined")) {
@@ -142,12 +159,12 @@ export class YamlParser implements IYamlParser {
         }
         const valid = validator.validate(value, version);
         if (!valid) {
-          return err(new InvalidYamlSchemaError(path, diagnostic));
+          return err(new InvalidYamlSchemaError(path));
         }
       }
       return parseRawProjectModel(value);
     } catch (error) {
-      return err(new InvalidYamlSchemaError(path, diagnostic));
+      return err(new InvalidYamlSchemaError(path));
     }
   }
 }

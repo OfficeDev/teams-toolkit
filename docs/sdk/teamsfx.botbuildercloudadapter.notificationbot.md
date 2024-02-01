@@ -27,6 +27,7 @@ export declare class NotificationBot
 |  [findAllMembers(predicate, scope)](./teamsfx.botbuildercloudadapter.notificationbot.findallmembers.md) |  | Return all [Member](./teamsfx.member.md) where predicate is true, and empty array otherwise. |
 |  [findChannel(predicate)](./teamsfx.botbuildercloudadapter.notificationbot.findchannel.md) |  | Return the first [Channel](./teamsfx.channel.md) where predicate is true, and undefined otherwise. (Ensure the bot app is installed into the <code>General</code> channel, otherwise undefined will be returned.) |
 |  [findMember(predicate, scope)](./teamsfx.botbuildercloudadapter.notificationbot.findmember.md) |  | Return the first [Member](./teamsfx.member.md) where predicate is true, and undefined otherwise. |
-|  [getPagedInstallations(pageSize, continuationToken)](./teamsfx.botbuildercloudadapter.notificationbot.getpagedinstallations.md) |  | Gets a pagined list of targets where the bot is installed. |
+|  [getPagedInstallations(pageSize, continuationToken, validationEnabled)](./teamsfx.botbuildercloudadapter.notificationbot.getpagedinstallations.md) |  | Gets a pagined list of targets where the bot is installed. |
 |  [installations()](./teamsfx.botbuildercloudadapter.notificationbot.installations.md) |  | Get all targets where the bot is installed. |
+|  [validateInstallation(conversationReference)](./teamsfx.botbuildercloudadapter.notificationbot.validateinstallation.md) |  | Validate the installation by getting paged memebers. |
 

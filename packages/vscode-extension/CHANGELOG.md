@@ -1,5 +1,81 @@
 # Changelog
 
+## 5.4.0 - Dec 18, 2023
+
+This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include the Adaptive Card Previewer, Teams App Test Tool, new project templates for AI Assistant Bot, and a refreshed Sample Gallery. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
+
+- [October Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-update-october-2023): Search sample app, new Contoso Retail Dashboard sample app, Teams Toolkit CLI improvement.
+- [November Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-november-2023): Brand-new AI Assistant Bot App template, Teams app test tool, integrated Adaptive Card Previewer, Refreshed look for Sample Gallery etc.
+
+We've listened to your feedback and included these additional new features, enhancements, and bug fixes to this release.
+
+New features:
+
+- [Preview Feature] AI Assistant Bot App template using Teams AI library and the OpenAI Assistants API. This template demonstrates how to build an intelligent chatbot within Teams.
+  ![AI-assistant-bot](https://github.com/OfficeDev/TeamsFx/assets/113089977/13877e7b-cffb-4717-9d1e-587478a43e5d)
+- [Preview Feature] Teams App Test Tool removes the need for a lot of the setup to run and debug a Teams bot in a web-based chat environment that is similar to Teams.
+  ![Teams app test tool](https://github.com/OfficeDev/TeamsFx/assets/113089977/7f6bcf56-27b3-4a7b-a160-64ab847efd92)
+- [Preview Feature] Preview and edit Adaptive Cards effortlessly using the Adaptive Card Previewer now included in Teams Toolkit.
+  ![Adaptive Card Previwer](https://github.com/OfficeDev/TeamsFx/assets/113089977/8062f237-d640-45b2-a7b2-81a0a4b0aa10)
+- [Generally Available] Navigate quickly through samples using list or grid views. You can also search samples or filter samples by type, capability, and programming language.
+  ![New sample gallery UI](https://github.com/OfficeDev/TeamsFx/assets/113089977/cbb18477-1f6d-4ab5-a947-1840d3290e40)
+- [Preview Feature] Developing with Microsoft Copilot? We’ve added a helpful license check UI to ensure that your account has the necessary Microsoft Copilot licenses.
+  ![Copilot license check](https://github.com/OfficeDev/TeamsFx/assets/113089977/78fa1fc5-0e19-40f0-b324-65583485f743)
+
+Enhancement:
+
+- New samples in the Sample Gallery:
+    ![new samples](https://github.com/OfficeDev/TeamsFx/assets/113089977/2af41ec4-ee19-4b66-a58a-d2d8bdbbbd60)
+
+  - Large Scale Notification Bot: send individual chat messages to a large number of users in a tenant
+  - Graph Connector Bot: Teams command bot that queries custom data ingested into Microsoft Graph using Graph connector.
+  - Contoso Retail Dashboard: demonstrates how to build a dashboard for control layouts. It runs in Teams, Outlook, and the Microsoft 365 app.
+  - Teams Conversation Bot using Python: Python example for Teams Bot app.
+  - Teams Messaging Extensions Search using Python: Python example for Teams Messaging Extensions app.
+  - SSO Enabled Tab via APIM Proxy: Teams tab app that can display user login information with SSO.
+  - Ingest Custom API Data into Microsoft 365 with Microsoft Graph Connector: simplify the process of creating a Microsoft Graph connector that ingests data from a custom API to Microsoft Graph
+
+- Recommended Regions in Provision
+  ![Provision Region](https://github.com/OfficeDev/TeamsFx/assets/113089977/97867d08-b7af-4eae-b1e7-d0102e1a1361)
+- Automatic `npm install` for SPFx Tab App
+  ![npm install for SPFx](https://github.com/OfficeDev/TeamsFx/assets/113089977/514d262d-9695-40dc-91aa-5c35044a319d)
+- Teams Toolkit CLI Enhancement including: Commands have been reorganized into a hierarchical structure, added a teamsfx list command, improve the help command readability, outputs have been refreshed and log      levels have been streamlined for clarity.
+- Update Teams AI chat bot template to use latest teams-ai library.
+
+Bug Fixes:
+
+- Resolved an issue causing an No localized strings file found error in Visual Studio Code output. ([#10090](https://github.com/OfficeDev/TeamsFx/pull/10090))
+- Fixed a flickering issue when selecting an option in Quick Pick. ([#10100](https://github.com/OfficeDev/TeamsFx/pull/10100))
+- Corrected a string typo in the Create a New App dialog. ([#10197](https://github.com/OfficeDev/TeamsFx/pull/10197))
+- Fixed the notification store path missing issue when using Test tool for Teams notification bot app. ([#10499](https://github.com/OfficeDev/TeamsFx/pull/10499))
+
+## 5.2.0 - Sep 19, 2023
+
+This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include the ability to import an existing SharePoint Framework solution, new project templates for Link Unfurling and AI Chat Bot, and more. We previously shared these incremental changes in the prerelease version and through a series of blog posts:
+
+- [July Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-july-2023): Import an existing SharePoint Framework solution, implement link unfurling in Teams and Outlook.
+- [August Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-with-new-ai-chat-bot-template/): Create an AI chat bot with the new AI Chat Bot template.
+
+We've listened to your feedback and included these additional new features, enhancements, and bug fixes to this release.
+
+New features:
+
+- Import an existing SharePoint Framework solution and continue development with Teams Toolkit.
+    ![SPFx Existing App](https://github.com/OfficeDev/TeamsFx/assets/11220663/3944f5c8-6c8c-4b4d-8df8-dc4f45b5967f)
+- A new link unfurling project template to help you get started with displaying rich content from links in Teams messages and Outlook emails.
+    ![Link Unfurling](https://github.com/OfficeDev/TeamsFx/assets/11220663/6e8b982a-0531-4ec1-8420-f6f17955ff40)
+- A new AI Chat Bot project template to help you get started with building a GPT-like chat bot with AI capabilities using the [Teams AI Library](https://github.com/microsoft/teams-ai).
+  ![AI Bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/86a90d2a-efc3-4d8b-9e8c-5d34a1e8c081)
+- The Sample Gallery has a new sample, One Productivity Hub using Graph Toolkit with SPFx, that shows you how to build a Tab for viewing your calendar events, to-do tasks, and files using Microsoft Graph Toolkit components and a SharePoint provider.
+    ![SPFx Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/084ac508-49ea-4b30-854c-8b4d578ff6ee)
+- Run life-cycle commands like Provision, Deploy, and Publish using new CodeLens hints added in-line to `teamsapp.yml`` when editing the file.
+    ![Inline Commands](https://github.com/OfficeDev/TeamsFx/assets/11220663/f6897b26-0e3c-441c-b028-32093e8322a7)
+
+Bug fixes:
+
+- Fixed an issue where the `Preview` tag for the `AI Chat Bot` project template was not included in previous version. ([#9901](https://github.com/OfficeDev/TeamsFx/pull/9901))
+- Fixed an issue where sometimes Teams Toolkit may fail to activate due to an unexpected package dependency on `types/keytar`. ([#9910](https://github.com/OfficeDev/TeamsFx/pull/9910))
+
 ## 5.0.1 - June 20, 2023
 
 Incremental version for Teams Toolkit with multiple bug fixes:
@@ -10,8 +86,8 @@ Incremental version for Teams Toolkit with multiple bug fixes:
 - Fixed an issue in [`script`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#script) action where charset encoding were not properly handled. ([#8769](https://github.com/OfficeDev/TeamsFx/pull/8769))
 - Fixed an issue where the app might fail to start the dev tunnel for local development due to an unexpected token error. ([#8980](https://github.com/OfficeDev/TeamsFx/pull/8980))
 - Fixed an issue where migration failed due to the expected path of the `.gitignore` file. ([#8912](https://github.com/OfficeDev/TeamsFx/pull/8912))
-- Fixed an issue [#8853](https://github.com/OfficeDev/TeamsFx/issues/8853) in [`botAadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#botaadappcreate) action where no detailed errors were printed when Teams Toolkit failed to create the app in Azure Active Directory. ([#8910](https://github.com/OfficeDev/TeamsFx/pull/8910))
-- Fixed an issue in [`aadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappcreate) and [`aadApp/update`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappupdate) actions where no detailed error messages were printed when Teams Toolkit failed to create or update the app in Azure Active Directory. ([#8911](https://github.com/OfficeDev/TeamsFx/pull/8911))
+- Fixed an issue [#8853](https://github.com/OfficeDev/TeamsFx/issues/8853) in [`botAadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#botaadappcreate) action where no detailed errors were printed when Teams Toolkit failed to create the app in Microsoft Entra. ([#8910](https://github.com/OfficeDev/TeamsFx/pull/8910))
+- Fixed an issue in [`aadApp/create`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappcreate) and [`aadApp/update`](https://github.com/OfficeDev/TeamsFx/wiki/Available-actions-in-Teams-Toolkit#aadappupdate) actions where no detailed error messages were printed when Teams Toolkit failed to create or update the app in Microsoft Entra. ([#8911](https://github.com/OfficeDev/TeamsFx/pull/8911))
 - Fixed an issue where you might see multiple login prompts when Teams Toolkit failed to retrieve the token by automatically clearing the cache. ([#9026](https://github.com/OfficeDev/TeamsFx/pull/9026))
 
 ## 5.0.0 - May 16, 2023
@@ -194,7 +270,7 @@ New Features:
 - User can create Teams app that can launch and preview in other Microsoft 365 platform like Office.com and Outlook. The options are offered when user create a new Teams app.
 - User can incrementally add features to their Teams app using `Add features` in Teams Toolkit during the development process. For example, adding additional Teams extending capability, adding Azure resources like SQL Database or Azure Function etc., adding Single Sign on or API connections and so on.
 - User can preview the Teams manifest file and only deploy the manifest file without deploy the whole project.
-- User can customized Azure AD manifest file.
+- User can customized Microsoft Entra manifest file.
 - Add tutorials in the Teams Toolkit, user can find them by typing the command `Teams: View Guided Tutorials` in the command palette (Ctrl+Shift+P).
 - A new sample which use Graph Connector get on board to the Sample Gallery. Click `View Samples` in Teams Toolkit to browse Sample Gallery.
 
@@ -222,7 +298,7 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 
 New Features:
 
-- Provide multiple entry points of creating testing tenant/accounts to unblock user from Microsoft 365 account issues, like Microsoft 365 account does not have sideloading permission or user does not have Microsoft 365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "Create an account" option in `Teams: Accounts` Command and improved Get Started page.
+- Provide multiple entry points of creating testing tenant/accounts to unblock user from Microsoft 365 account issues, like Microsoft 365 account does not have custom app upload permission or user does not have Microsoft 365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "Create an account" option in `Teams: Accounts` Command and improved Get Started page.
 
 Enhancement:
 
@@ -395,7 +471,7 @@ New Feature:
 
 - Support projects migration from Teams Toolkit V1 to V2. If your Teams projects are created using Teams Toolkit V1, try migrate your project follow the [migration instructions](https://aka.ms/teamsfx-migrate-v1).
 - Support local debug experience for Teams Tab/Bot/Messaging extension project migrated from Teams Toolkit V1.
-- Check permission to turn-on Teams custom app uploading when user sign-in to Microsoft 365 account. Learn more about [Teams app uploading or sideloading permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
+- Check permission to turn-on Teams custom app uploading when user sign-in to Microsoft 365 account. Learn more about [custom app upload permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
 - (Preview Feature) Support provision cloud resources using Azure Resource Manager. To enable this feature, please follow [instructions](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit).
 
 Enhancement:
@@ -513,12 +589,12 @@ Fixed:
 
 ## 1.2.2 - April 1 2021
 
-- Increase the timout limit when creating an AAD password for a bot registration.
+- Increase the timout limit when creating a Microsoft Entra password for a bot registration.
 
 ## 1.2.1 - March 15 2021
 
 - Bug fix for env/manifest file automatic replacements not happening for some scaffolds.
-- Bug fix for AAD app creation where consent should be admin and users and not just admin.
+- Bug fix for Microsoft Entra app creation where consent should be admin and users and not just admin.
 
 ## 1.2.0 - March 2021
 
@@ -530,16 +606,16 @@ Fixed:
 
 ## 1.1.8 - 9 Dec 2020
 
-- Azure AD single sign-on bug fixes for Group tabs
+- Microsoft Entra single sign-on bug fixes for Group tabs
 
 ## 1.1.4 - 1 Dec 2020
 
-- Azure AD single sign-on documentation updates
+- Microsoft Entra single sign-on documentation updates
 - Bug fixes
 
 ## 1.1.3 - 24 Nov 2020
 
-- Azure AD single sign-on scaffolding for Tab apps
+- Microsoft Entra single sign-on scaffolding for Tab apps
 - Download application publishing package from VS Code
 - Bug fixes
 

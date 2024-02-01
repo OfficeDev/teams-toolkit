@@ -1,13 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-import {
-  FuncValidation,
-  getValidationFunction,
-  Inputs,
-  Platform,
-  SingleSelectQuestion,
-  Stage,
-  TextInputQuestion,
-} from "@microsoft/teamsfx-api";
+import { FuncValidation, Inputs, Platform, Stage, TextInputQuestion } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -18,12 +10,9 @@ import { cpUtils } from "../../../../../src";
 import { getLocalizedString } from "../../../../../src/common/localizeUtils";
 import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 import {
-  fillInAppNameFuncQuestion,
-  PackageSelectOptionsHelper,
-  SPFxVersionOptionIds,
   QuestionNames,
-  SPFxPackageSelectQuestion,
   SPFxWebpartNameQuestion,
+  appNameQuestion,
 } from "../../../../../src/question";
 
 describe("utils", () => {
@@ -155,48 +144,6 @@ describe("utils", () => {
     });
   });
 
-  describe("SPFxPackageSelectQuestion", async () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it("return undefined if choosing to install locally", async () => {
-      const func = getValidationFunction<string>(
-        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
-        { platform: Platform.VSCode }
-      );
-      const res = await func(SPFxVersionOptionIds.installLocally);
-      chai.expect(res).equal(undefined);
-    });
-
-    it("return undefined if package exists", async () => {
-      sinon.stub(PackageSelectOptionsHelper, "checkGlobalPackages").returns(true);
-
-      const func = getValidationFunction<string>(
-        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
-        { platform: Platform.VSCode }
-      );
-      const res = await func(SPFxVersionOptionIds.globalPackage);
-      chai.expect(res).equal(undefined);
-    });
-
-    it("return undefined if package exists", async () => {
-      sinon.stub(PackageSelectOptionsHelper, "checkGlobalPackages").returns(false);
-
-      const func = getValidationFunction<string>(
-        (SPFxPackageSelectQuestion() as SingleSelectQuestion).validation!,
-        { platform: Platform.VSCode }
-      );
-      let error;
-      try {
-        await func(SPFxVersionOptionIds.globalPackage);
-      } catch (e) {
-        error = e;
-      }
-      chai.expect(error.name).equal("DevEnvironmentSetupError");
-    });
-  });
-
   it("findLatestVersion: exeute commmand error with undefined logger", async () => {
     sinon.stub(cpUtils, "executeCommand").throws("run command error");
 
@@ -224,49 +171,19 @@ describe("utils", () => {
     chai.expect(res).to.be.undefined;
   });
 
-  it("dynamicOptions", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-    };
-    sinon.stub(PackageSelectOptionsHelper, "loadOptions").resolves();
-    sinon.stub(PackageSelectOptionsHelper, "getOptions").resolves([]);
-    const res = await (SPFxPackageSelectQuestion() as SingleSelectQuestion).dynamicOptions!(inputs);
-    chai.expect(res.length === 0).to.be.true;
-  });
-
-  it("Returns error when path already exists", async () => {
+  it("Returns solution name as default app name", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       folder: "c:\\testApp",
-      [QuestionNames.AppName]: "",
       [QuestionNames.SPFxFolder]: "c:\\test",
+      [QuestionNames.SPFxSolution]: "import",
     };
     sinon
       .stub(fs, "readJson")
       .resolves({ "@microsoft/generator-sharepoint": { solutionName: "fakedSolutionName" } });
     sinon.stub(fs, "pathExists").resolves(true);
 
-    try {
-      await (fillInAppNameFuncQuestion() as any).func(inputs);
-    } catch (e) {
-      chai.expect(e.name).equal("PathAlreadyExists");
-    }
-  });
-
-  it("Returns error when invalid SPFx solution", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.AppName]: "",
-      [QuestionNames.SPFxSolution]: "import",
-      [QuestionNames.SPFxFolder]: "c:\\test",
-    };
-    sinon.stub(fs, "readJson").resolves({ "@microsoft/generator-sharepoint": {} });
-    sinon.stub(fs, "pathExists").resolves(true);
-
-    try {
-      await (fillInAppNameFuncQuestion() as any).func(inputs);
-    } catch (e) {
-      chai.expect(e.name).equal("RetrieveSPFxInfoFailed");
-    }
+    const defaultName = await (appNameQuestion() as any).default(inputs);
+    chai.expect(defaultName).equal("fakedSolutionName");
   });
 });

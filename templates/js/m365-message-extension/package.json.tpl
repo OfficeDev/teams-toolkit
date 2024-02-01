@@ -1,23 +1,26 @@
 {
-  "name": "{{appName}}",
+  "name": "{{SafeProjectNameLowerCase}}",
   "version": "1.0.0",
   "msteams": {
     "teamsAppId": null
   },
-  "description": "Microsoft Teams Toolkit m365 message extension sample",
+  "description": "Microsoft Teams Toolkit message extension search sample",
   "engines": {
     "node": "16 || 18"
   },
   "author": "Microsoft",
   "license": "MIT",
-  "main": "index.js",
+  "main": "./src/index.js",
   "scripts": {
     "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
-    "dev": "nodemon --inspect=9239 --signal SIGINT ./index.js",
-    "start": "node ./index.js",
-    "watch": "nodemon ./index.js"
+    "dev": "nodemon --inspect=9239 --signal SIGINT ./src/index.js",
+    "start": "node ./src/index.js",
+    "watch": "nodemon ./src/index.js"
   },
   "dependencies": {
+    "adaptive-expressions": "^4.20.0",
+    "adaptivecards-templating": "^2.3.1",
+    "adaptivecards": "^3.0.1",
     "botbuilder": "^4.20.0",
     "restify": "^10.0.0"
   },

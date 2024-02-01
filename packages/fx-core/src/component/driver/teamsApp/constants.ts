@@ -11,8 +11,6 @@ const AAD_STATE_KEY = ComponentNames.AadApp;
 const TAB_STATE_KEY = ComponentNames.TeamsTab;
 const BOT_STATE_KEY = ComponentNames.TeamsBot;
 
-export const manifestStateDataRegex = /{{{?state\.[a-zA-Z-_]+\.\w+}}}?/g;
-
 export const STATIC_TABS_TPL_V3: IStaticTab[] = [
   {
     entityId: "index",
@@ -239,6 +237,8 @@ export class ErrorMessages {
 export class APP_STUDIO_API_NAMES {
   public static readonly CREATE_APP = "create-app";
   public static readonly GET_APP = "get-app";
+  public static readonly LIST_APPS = "list-app";
+  public static readonly DELETE_APP = "delete-app";
   public static readonly PUBLISH_APP = "publish-app";
   public static readonly GET_PUBLISHED_APP = "get-published-app";
   public static readonly UPDATE_PUBLISHED_APP = "update-published-app";
@@ -248,7 +248,11 @@ export class APP_STUDIO_API_NAMES {
   public static readonly VALIDATE_APP_PACKAGE = "validate-app-package";
   public static readonly CREATE_BOT = "create-bot";
   public static readonly GET_BOT = "get-bot";
+  public static readonly LIST_BOT = "list-bot";
+  public static readonly DELETE_BOT = "delete-bot";
   public static readonly UPDATE_BOT = "update-bot";
+  public static readonly CREATE_API_KEY = "create-api-key";
+  public static readonly GET_API_KEY = "get-api-key";
 }
 
 /**

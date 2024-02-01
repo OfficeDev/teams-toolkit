@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -5,10 +8,10 @@ import {
   clearNotifications,
   createNewProject,
   getNotification,
-} from "../../vscodeOperation";
+} from "../../utils/vscodeOperation";
 import { TreeViewTestContext, zipAppPackage } from "./treeviewContext";
 import { createEnv } from "../remotedebug/remotedebugContext";
-import { Timeout, Notification } from "../../constants";
+import { Timeout, Notification } from "../../utils/constants";
 import { it } from "../../utils/it";
 
 describe("Execute Build Teams Package", function () {
@@ -34,7 +37,6 @@ describe("Execute Build Teams Package", function () {
       author: "v-helzha@microsoft.com",
     },
     async function () {
-      await clearNotifications();
       await createNewProject("spfxreact", treeViewTestContext.appName);
       await zipAppPackage("dev");
       await getNotification(

@@ -1,8 +1,7 @@
-/**
- * @author Ivan Chen <v-ivanchen@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as fs from "fs-extra";
-import * as os from "os";
 import * as path from "path";
 import {
   Timeout,
@@ -10,21 +9,28 @@ import {
   TemplateProject,
   TemplateProjectFolder,
   TestFilePath,
-} from "../../constants";
+} from "../../utils/constants";
 import { dotenvUtil } from "../../utils/envUtil";
-import { clearNotifications } from "../../vscodeOperation";
 import { InputBox, VSBrowser } from "vscode-extension-tester";
 import { getSampleAppName } from "../../utils/nameUtil";
 import {
   execCommandIfExistFromTreeView,
   openExistingProject,
   stopDebugging,
-} from "../../vscodeOperation";
+  clearNotifications,
+} from "../../utils/vscodeOperation";
 import { assert, expect } from "chai";
 import { TestContext } from "../testContext";
 import * as dotenv from "dotenv";
 import { CliHelper } from "../cliHelper";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
+import {
+  cleanUpAadApp,
+  cleanTeamsApp,
+  cleanAppStudio,
+  cleanUpLocalProject,
+  cleanUpResourceGroup,
+} from "../../utils/cleanHelper";
 
 export class SampledebugContext extends TestContext {
   public readonly appName: string;
@@ -61,12 +67,7 @@ export class SampledebugContext extends TestContext {
       this.appName = getSampleAppName(sampleName);
     }
     // fix eslint error
-    if (
-      originSample === TemplateProjectFolder.TodoListBackend ||
-      originSample === TemplateProjectFolder.TodoListM365
-    )
-      this.testRootFolder = path.resolve(os.homedir(), "resourse");
-    else this.testRootFolder = testRootFolder;
+    this.testRootFolder = testRootFolder;
     this.projectPath = path.resolve(this.testRootFolder, this.appName);
     this.env = "dev";
     this.rgName = `${this.appName}-dev-rg`;
@@ -75,30 +76,70 @@ export class SampledebugContext extends TestContext {
   public async sampleAfter(
     rgName: string,
     hasAadPlugin = true,
-    hasBotPlugin = false
-  ) {
+    hasBotPlugin = false,
+    envName = "dev"
+  ): Promise<void> {
     await stopDebugging();
-    await this.context!.close();
-    await this.browser!.close();
-    await AzSqlHelper.deleteResourceGroup(rgName);
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    await this.context?.close();
+    await this.browser?.close();
+    await this.cleanUp(
+      this.appName,
+      this.projectPath,
+      hasAadPlugin,
+      hasBotPlugin,
+      false,
+      envName
+    );
   }
 
   public async after(
     hasAadPlugin = true,
     hasBotPlugin = false,
-    envName = "dev"
-  ) {
+    envName = "local"
+  ): Promise<void> {
     await stopDebugging();
-    await this.context!.close();
-    await this.browser!.close();
-    if (envName != "local") {
-      await AzSqlHelper.deleteResourceGroup(this.rgName);
-    }
-    await this.cleanResource(hasAadPlugin, hasBotPlugin);
+    await this.context?.close();
+    await this.browser?.close();
+    await this.cleanUp(
+      this.appName,
+      this.projectPath,
+      hasAadPlugin,
+      hasBotPlugin,
+      false,
+      envName
+    );
   }
 
-  public async openResourceFolder() {
+  public async cleanUp(
+    appName: string,
+    projectPath: string,
+    hasAadPlugin = true,
+    hasBotPlugin = false,
+    hasApimPlugin = false,
+    envName = "dev"
+  ): Promise<[boolean[] | undefined, void, void, boolean, boolean]> {
+    const cleanUpAadAppPromise = cleanUpAadApp(
+      projectPath,
+      hasAadPlugin,
+      hasBotPlugin,
+      hasApimPlugin,
+      envName
+    );
+    return Promise.all([
+      // delete aad app
+      cleanUpAadAppPromise,
+      // uninstall Teams app
+      cleanTeamsApp(appName),
+      // delete Teams app in app studio
+      cleanAppStudio(appName),
+      // remove resouce group
+      cleanUpResourceGroup(appName, envName),
+      // remove project
+      cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
+    ]);
+  }
+
+  public async openResourceFolder(): Promise<void> {
     console.log("start to open project: ", this.sampleName);
     // two repos have different sample path
     const oldPath = path.resolve(
@@ -123,7 +164,7 @@ export class SampledebugContext extends TestContext {
     }
   }
 
-  public async createTemplate() {
+  public async createTemplate(): Promise<void> {
     console.log(
       "start to create project: ",
       this.appName,
@@ -178,7 +219,7 @@ export class SampledebugContext extends TestContext {
     );
   }
 
-  public async createTemplateCLI(V3: boolean) {
+  public async createTemplateCLI(V3: boolean): Promise<void> {
     console.log(
       "start to create project: ",
       this.appName,
@@ -213,7 +254,7 @@ export class SampledebugContext extends TestContext {
     );
   }
 
-  public async openExistFolder(path: string) {
+  public async openExistFolder(path: string): Promise<void> {
     await openExistingProject(path);
   }
 
@@ -284,23 +325,28 @@ export class SampledebugContext extends TestContext {
     await CliHelper.publishProject(this.projectPath, env);
   }
 
-  public async debugWithCLI(env: "local" | "dev"): Promise<void> {
-    await CliHelper.debugProject(this.projectPath, env);
+  public async debugWithCLI(env: "local" | "dev", v3?: boolean): Promise<void> {
+    await CliHelper.debugProject(this.projectPath, env, v3);
   }
 
   public async getTeamsAppId(env: "local" | "dev" = "local"): Promise<string> {
-    const userDataFile = path.join(
-      TestFilePath.configurationFolder,
-      `.env.${env}`
-    );
-    const configFilePath = path.resolve(this.projectPath, userDataFile);
-    const context = dotenvUtil.deserialize(
-      await fs.readFile(configFilePath, { encoding: "utf8" })
-    );
-    const result = context.obj.TEAMS_APP_ID as string;
-    console.log(`TEAMS APP ID: ${result}`);
-    expect(result).to.not.be.undefined;
-    return result;
+    try {
+      const userDataFile = path.join(
+        TestFilePath.configurationFolder,
+        `.env.${env}`
+      );
+      const configFilePath = path.resolve(this.projectPath, userDataFile);
+      const context = dotenvUtil.deserialize(
+        await fs.readFile(configFilePath, { encoding: "utf8" })
+      );
+      const result = context.obj.TEAMS_APP_ID as string;
+      console.log(`TEAMS APP ID: ${result}`);
+      expect(result).to.not.be.undefined;
+      return result;
+    } catch (error) {
+      console.log(error);
+      return "";
+    }
   }
 
   public editDotEnvFile(

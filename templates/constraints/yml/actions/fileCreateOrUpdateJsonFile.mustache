@@ -1,0 +1,81 @@
+{{#launchSettings}}
+  # Create or update debug profile in lauchsettings file
+  - uses: file/createOrUpdateJsonFile
+    with:
+      target: ./Properties/launchSettings.json
+      content:
+        profiles:
+        {{#profiles}}
+          {{{profileName}}}
+            commandName: "Project"
+          {{#commandLineArgs}}
+            commandLineArgs: {{{commandLineArgs}}}
+          {{/commandLineArgs}}
+            dotnetRunMessages: true
+            launchBrowser: true
+          {{#launchUrl}}
+            launchUrl: {{{launchUrl}}}
+          {{/launchUrl}}          
+          {{#applicationUrl}}
+            applicationUrl: {{{applicationUrl}}}
+          {{/applicationUrl}}
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+          {{#localstore}}
+              TEAMSFX_NOTIFICATION_LOCALSTORE_DIR: "../../.."
+          {{/localstore}}
+          {{#hotReload}}
+            hotReloadProfile: "aspnetcore"
+          {{/hotReload}}
+        {{/profiles}}
+        {{^profiles}}
+        {{#profileName}}
+          {{{profileName}}}
+        {{/profileName}}
+        {{^profileName}}
+          Microsoft Teams (browser):
+        {{/profileName}}
+            commandName: "Project"
+          {{#commandLineArgs}}
+            commandLineArgs: {{{commandLineArgs}}}
+          {{/commandLineArgs}}
+            dotnetRunMessages: true
+            launchBrowser: true
+          {{#launchUrl}}
+            launchUrl: {{{launchUrl}}}
+          {{/launchUrl}}
+          {{^launchUrl}}
+            launchUrl: "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
+          {{/launchUrl}}
+          {{#applicationUrl}}
+            applicationUrl: {{{applicationUrl}}}
+          {{/applicationUrl}}
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+          {{#localstore}}
+              TEAMSFX_NOTIFICATION_LOCALSTORE_DIR: "../../.."
+          {{/localstore}}
+          {{#hotReload}}
+            hotReloadProfile: "aspnetcore"
+          {{/hotReload}}
+          {{/profiles}}
+{{/launchSettings}}
+{{#appsettings}}
+  # Generate runtime appsettings to JSON file
+  - uses: file/createOrUpdateJsonFile
+    with:
+      target: ./appsettings.Development.json
+      content:
+      {{#BOT}}
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+      {{/BOT}}
+      {{#Authentication}}
+        TeamsFx:
+          Authentication:
+            ClientId: ${{AAD_APP_CLIENT_ID}}
+            ClientSecret: ${{SECRET_AAD_APP_CLIENT_SECRET}}
+            InitiateLoginEndpoint: ${{TAB_ENDPOINT}}/auth-start.html
+            OAuthAuthority: ${{AAD_APP_OAUTH_AUTHORITY}}
+      {{/Authentication}}
+{{/appsettings}}

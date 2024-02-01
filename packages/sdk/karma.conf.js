@@ -11,12 +11,32 @@ const karmaConfig = {
 
   files: getTestFiles(argv),
 
+  plugins: [
+    "karma-mocha",
+    "karma-webpack",
+    "karma-sourcemap-loader",
+    "karma-env-preprocessor",
+    "karma-coverage",
+    "karma-junit-reporter",
+    "karma-mocha-reporter",
+    "karma-chrome-launcher",
+  ],
+
   // frameworks to use
   // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
   frameworks: ["mocha", "webpack"],
 
   // list of files / patterns to exclude
-  exclude: [],
+  exclude: [
+    "src/apiClient/*.browser.ts",
+    "src/bot/*.browser.ts",
+    "src/conversation/*.browser.ts",
+    "src/conversationWithCloudAdapter/*.browser.ts",
+    "src/core/defaultTediousConnectionConfiguration.browser.ts",
+    "src/credential/appCredential.browser.ts",
+    "src/credential/onBehalfOfUserCredential.browser.ts",
+    "src/messageExtension/*.browser.ts",
+  ],
 
   // preprocess matching files before serving them to the browser
   // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor

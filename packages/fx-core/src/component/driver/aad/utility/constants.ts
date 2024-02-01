@@ -21,10 +21,15 @@ export const descriptionMessageKeys = {
 };
 
 export const permissionsKeys = {
-  name: "Azure AD App",
+  name: "Microsoft Entra App",
   owner: "Owner",
   noPermission: "No Permission",
   type: "M365",
+};
+
+export const aadErrorCode = {
+  permissionErrorCode: "CannotDeleteOrUpdateEnabledEntitlement",
+  hostNameNotOnVerifiedDomain: "HostNameNotOnVerifiedDomain", // Using unverified domain in multi tenant scenario
 };
 
 export const constants = {

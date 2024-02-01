@@ -1,18 +1,22 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Frank Qian <frankqian@microsoft.com>
  */
+
 import { MigrationTestContext } from "../migrationContext";
-import { Timeout, Capability, Notification } from "../../../constants";
+import { Timeout, Capability, Notification } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { initPage, validateBot } from "../../../playwrightOperation";
-import { CliHelper } from "../../cliHelper";
+import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import {
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
-} from "../../../vscodeOperation";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+} from "../../../utils/vscodeOperation";
+import { runProvision, runDeploy } from "../../remotedebug/remotedebugContext";
+import { CliHelper } from "../../cliHelper";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -51,24 +55,15 @@ describe("Migration Tests", function () {
       // verify upgrade
       await validateUpgrade();
 
-      // install test cil in project
-      await CliHelper.installCLI(
-        Env.TARGET_CLI,
-        false,
-        mirgationDebugTestContext.projectPath
-      );
       // enable cli v3
       CliHelper.setV3Enable();
 
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
-      // v3 deploy
-      await mirgationDebugTestContext.deployWithCLI("dev");
-
-      const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
+      await runProvision(mirgationDebugTestContext.appName);
+      await runDeploy(Timeout.botDeploy);
 
       // UI verify
+      const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       const page = await initPage(
         mirgationDebugTestContext.context!,
         teamsAppId,

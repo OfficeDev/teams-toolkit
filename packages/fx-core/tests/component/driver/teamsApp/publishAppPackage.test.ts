@@ -46,7 +46,7 @@ describe("teamsApp/publishAppPackage", async () => {
       appPackagePath: "fakepath",
     };
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal(AppStudioError.FileNotFoundError.name, result.error.name);
@@ -58,7 +58,7 @@ describe("teamsApp/publishAppPackage", async () => {
       appPackagePath: "",
     };
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isErr());
     if (result.isErr()) {
       chai.assert.equal("InvalidActionInputError", result.error.name);
@@ -106,7 +106,7 @@ describe("teamsApp/publishAppPackage", async () => {
     sinon.stub(AppStudioClient, "getAppByTeamsAppId").resolves(state);
     sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok("Cancel"));
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert.isTrue(result.isErr());
     if (result.isErr()) {
       chai.assert.isTrue(result.error instanceof UserCancelError);
@@ -134,7 +134,7 @@ describe("teamsApp/publishAppPackage", async () => {
     sinon.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
     sinon.stub(mockedDriverContext.ui, "showMessage").resolves(ok("Confirm"));
 
-    const result = await teamsAppDriver.run(args, mockedDriverContext);
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert.isTrue(result.isOk());
   });
 });

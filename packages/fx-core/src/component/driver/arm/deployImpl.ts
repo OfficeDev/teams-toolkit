@@ -11,8 +11,12 @@ import { ConstantString } from "../../../common/constants";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { CompileBicepError, DeployArmError } from "../../../error/arm";
 import { InvalidAzureCredentialError } from "../../../error/azure";
-import { InvalidActionInputError } from "../../../error/common";
-import { expandEnvironmentVariable, getAbsolutePath } from "../../utils/common";
+import { InvalidActionInputError, MissingEnvironmentVariablesError } from "../../../error/common";
+import {
+  expandEnvironmentVariable,
+  getAbsolutePath,
+  getEnvironmentVariables,
+} from "../../utils/common";
 import { cpUtils } from "../../utils/depsChecker/cpUtils";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { Constants, TelemetryProperties, TemplateType } from "./constant";
@@ -21,6 +25,8 @@ import { ensureBicepForDriver } from "./util/bicepChecker";
 import { ArmErrorHandle, DeployContext } from "./util/handleError";
 import { convertOutputs, getFileExtension, hasBicepTemplate } from "./util/util";
 import { validateArgs } from "./validator";
+import { ErrorContextMW } from "../../../core/globalVars";
+import { hooks } from "@feathersjs/hooks";
 
 const helpLink = "https://aka.ms/teamsfx-actions/arm-deploy";
 
@@ -39,7 +45,11 @@ export class ArmDeployImpl {
     await this.validateArgs();
     await this.createClient();
     const needBicepCli = hasBicepTemplate(this.args.templates);
+
     if (needBicepCli && this.args.bicepCliVersion) {
+      this.context.logProvider.debug(
+        `Ensure bicep cli version ${this.args.bicepCliVersion} for ${Constants.actionName}`
+      );
       this.bicepCommand = await this.ensureBicepCli();
     } else {
       this.bicepCommand = "bicep";
@@ -66,6 +76,9 @@ export class ArmDeployImpl {
   }
 
   private async createClient(): Promise<void> {
+    this.context.logProvider.debug(
+      `Get token from AzureAccountProvider to create ResourceManagementClient of @azure/arm-resources`
+    );
     const azureToken = await this.context.azureAccountProvider.getIdentityCredentialAsync();
     if (!azureToken) {
       throw new InvalidAzureCredentialError();
@@ -78,6 +91,9 @@ export class ArmDeployImpl {
     this.setTelemetries();
     await Promise.all(
       this.args.templates.map(async (template) => {
+        this.context.logProvider.debug(
+          `Deploy template ${template.deploymentName} from ${template.path} to resource group ${this.args.resourceGroupName}`
+        );
         const res = await this.deployTemplate(template);
         if (res.isOk() && res.value) {
           this.context.addSummary(
@@ -137,7 +153,7 @@ export class ArmDeployImpl {
       return errRes;
     }
   }
-
+  @hooks([ErrorContextMW({ source: "Azure", component: "ArmDeployImpl" })])
   async innerExecuteDeployment(
     templateArg: templateArgs,
     deploymentParameters: Deployment
@@ -157,10 +173,18 @@ export class ArmDeployImpl {
     const filePath = getAbsolutePath(parameters, this.context.projectPath);
     const template = await fs.readFile(filePath, ConstantString.UTF8Encoding);
     const parameterJsonString = expandEnvironmentVariable(template);
+    this.checkPlaceholderInTemplate(parameterJsonString, filePath);
     return JSON.parse(parameterJsonString);
   }
 
-  private async getDeployTemplate(templatePath: string): Promise<string> {
+  checkPlaceholderInTemplate(parameterJsonString: string, filePath: string): void {
+    const tokens = getEnvironmentVariables(parameterJsonString);
+    if (tokens.length > 0) {
+      throw new MissingEnvironmentVariablesError("arm", tokens.join(","), filePath);
+    }
+  }
+
+  async getDeployTemplate(templatePath: string): Promise<string> {
     const templateType = getFileExtension(templatePath);
     const filePath = getAbsolutePath(templatePath, this.context.projectPath);
     let templateJsonString;
@@ -175,6 +199,7 @@ export class ArmDeployImpl {
 
   async compileBicepToJson(filePath: string): Promise<JSON> {
     try {
+      this.context.logProvider.debug(`Compile bicep template ${filePath} to json`);
       const result = await cpUtils.executeCommand(
         undefined,
         this.context.logProvider,

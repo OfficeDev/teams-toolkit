@@ -7,17 +7,16 @@ import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
+import * as commentJson from "comment-json";
+import { CommentJSONValue } from "comment-json";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { InvalidActionInputError, assembleError } from "../../../error/common";
 import { getAbsolutePath, wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { GenerateJsonArgs } from "./interface/generateJsonArgs";
-import { InvalidActionInputError, UnhandledError } from "../../../error/common";
-import * as commentJson from "comment-json";
-import { CommentJSONValue } from "comment-json";
 
 const actionName = "file/createOrUpdateJsonFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
@@ -25,11 +24,9 @@ const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateJsonFile";
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateOrUpdateJsonFileDriver implements StepDriver {
   description = getLocalizedString("driver.file.createOrUpdateJsonFile.description");
+  readonly progressTitle = getLocalizedString("driver.file.progressBar.appsettings");
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.appsettings")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: GenerateJsonArgs,
     context: DriverContext
@@ -37,20 +34,17 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
     return wrapRun(async () => {
       const result = await this.handler(args, context);
       return result.output;
-    });
+    }, actionName);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.appsettings")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(args: GenerateJsonArgs, ctx: DriverContext): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {
       const result = await this.handler(args, ctx);
       summaries = result.summaries;
       return result.output;
-    });
+    }, actionName);
     return {
       result: outputResult,
       summaries,
@@ -90,7 +84,7 @@ export class CreateOrUpdateJsonFileDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledError(error as Error, actionName);
+      throw assembleError(error as Error, actionName);
     }
   }
 

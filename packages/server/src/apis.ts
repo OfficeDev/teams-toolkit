@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 
 import {
+  ApiOperation,
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
+  CreateProjectResult,
   FxError,
   Inputs,
   InputTextConfig,
@@ -11,6 +15,7 @@ import {
   LogLevel,
   MultiSelectConfig,
   MultiSelectResult,
+  OpenAIPluginManifest,
   Result,
   SelectFileConfig,
   SelectFileResult,
@@ -24,7 +29,7 @@ import {
   TokenRequest,
   Void,
 } from "@microsoft/teamsfx-api";
-import { VersionCheckRes } from "@microsoft/teamsfx-core";
+import { DependencyStatus, TestToolInstallOptions, VersionCheckRes } from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
   NotificationType2,
@@ -69,12 +74,15 @@ export interface IServerConnection {
   createProjectRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<string, FxError>>;
-  localDebugRequest: (inputs: Inputs, token: CancellationToken) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<CreateProjectResult, FxError>>;
+  localDebugRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<undefined, FxError>>;
   provisionResourcesRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<undefined, FxError>>;
   preProvisionResourcesRequest: (
     inputs: Inputs,
     token: CancellationToken
@@ -92,23 +100,23 @@ export interface IServerConnection {
   preCheckYmlAndEnvForVSRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>>;
+  ): Promise<Result<undefined, FxError>>;
   validateManifestForVSRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Result<Void, FxError>>;
+  ): Promise<Result<undefined, FxError>>;
   deployArtifactsRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<undefined, FxError>>;
   buildArtifactsRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<undefined, FxError>>;
   publishApplicationRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<undefined, FxError>>;
   deployTeamsAppManifestRequest: (
     inputs: Inputs,
     token: CancellationToken
@@ -122,19 +130,19 @@ export interface IServerConnection {
     funcId: number,
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<undefined, FxError>>;
   customizeValidateFuncRequest: (
     funcId: number,
     answer: any,
     previousAnswers: Inputs | undefined,
     token: CancellationToken
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<undefined, FxError>>;
   customizeOnSelectionChangeFuncRequest: (
     funcId: number,
     currentSelectedIds: Set<string>,
     previousSelectedIds: Set<string>,
     token: CancellationToken
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<undefined, FxError>>;
   addSsoRequest: (inputs: Inputs, token: CancellationToken) => Promise<Result<any, FxError>>;
 
   getProjectMigrationStatusRequest: (
@@ -148,11 +156,33 @@ export interface IServerConnection {
   publishInDeveloperPortalRequest: (
     inputs: Inputs,
     token: CancellationToken
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<undefined, FxError>>;
+  setRegionRequest: (
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ) => Promise<Result<undefined, FxError>>;
   listDevTunnelsRequest: (
     inputs: Inputs,
     token: CancellationToken
   ) => Promise<Result<Tunnel[], FxError>>;
+  copilotPluginAddAPIRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<undefined, FxError>>;
+  loadOpenAIPluginManifestRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<OpenAIPluginManifest, FxError>>;
+  listOpenAPISpecOperationsRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<ApiOperation[], FxError>>;
+  checkAndInstallTestTool: (
+    options: TestToolInstallOptions & { correlationId: string },
+    token: CancellationToken
+  ) => Promise<Result<DependencyStatusRPC, FxError>>;
 }
 
 /**
@@ -250,6 +280,9 @@ export const RequestTypes = {
     selectFolder: new RequestType1<SelectFolderConfig, Result<SelectFolderResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/selectFolderRequest`
     ),
+    confirm: new RequestType1<ConfirmConfig, Result<ConfirmResult, FxError>, Error>(
+      `${Namespaces.UserInteraction}/confirmRequest`
+    ),
     showMessage: new RequestType4<
       "info" | "warn" | "error",
       string | Array<{ content: string; color: Colors }>,
@@ -276,4 +309,18 @@ export interface IServerFxError {
   helpLink?: string;
   issueLink?: string;
   displayMessage?: string;
+  recommendedOperation?: string;
+}
+
+export interface DependencyStatusRPC {
+  isInstalled: boolean;
+  command: string;
+  details: {
+    installVersion?: string;
+    binFolders?: string[];
+  };
+  error?: {
+    message: string;
+    helpLink: string;
+  };
 }

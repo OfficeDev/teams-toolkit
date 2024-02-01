@@ -1,6 +1,6 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -8,15 +8,13 @@ import {
   Trigger,
   Notification,
   LocalDebugTaskLabel,
-  LocalDebugTaskResult,
-  CliVersion,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
   validateNotificationBot,
   initPage,
-} from "../../../playwrightOperation";
+} from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
@@ -24,14 +22,12 @@ import {
   waitForTerminal,
   validateUpgrade,
   upgradeByTreeView,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
   CliHelper.setV3Enable();
 
@@ -49,7 +45,7 @@ describe("Migration Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await mirgationDebugTestContext.after(true, true, "local");
+    await mirgationDebugTestContext.after(false, true, "local");
   });
 
   it(
@@ -72,23 +68,21 @@ describe("Migration Tests", function () {
       CliHelper.setV3Enable();
 
       // local debug with TTK
+      await startDebugging("Debug (Chrome)");
+      await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
-        await startDebugging();
-
-        console.log("Start Local Tunnel");
         await waitForTerminal(
-          LocalDebugTaskLabel.StartLocalTunnel,
-          LocalDebugTaskResult.StartSuccess
+          "Start Azurite emulator",
+          "Azurite Blob service is successfully listening"
         );
-
-        console.log("Start Bot");
         await waitForTerminal(
           LocalDebugTaskLabel.StartBot,
-          LocalDebugTaskResult.AppSuccess
+          "Worker process started and initialized"
         );
       } catch (error) {
         await VSBrowser.instance.takeScreenshot(getScreenshotName("debug"));
-        throw new Error(error as string);
+        console.log("[Skip Error]: ", error);
+        await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId();
 

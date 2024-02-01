@@ -3,9 +3,9 @@
  */
 import { By, EditorView, VSBrowser, WebView } from "vscode-extension-tester";
 import { expect } from "chai";
-import { execCommandIfExist } from "../../vscodeOperation";
+import { execCommandIfExist } from "../../utils/vscodeOperation";
 import { TreeViewTestContext } from "./treeviewContext";
-import { CommandPaletteCommands, Timeout } from "../../constants";
+import { CommandPaletteCommands, Timeout } from "../../utils/constants";
 import { delay } from "../../utils/retryHandler";
 import { it } from "../../utils/it";
 

@@ -9,7 +9,7 @@ import {
   teamsDarkTheme,
   teamsHighContrastTheme,
 } from "@fluentui/react-components";
-import { useTeamsUserCredential } from "@microsoft/teamsfx-react";
+import { useTeams } from "@microsoft/teamsfx-react";
 
 import SampleDashboard from "./dashboards/SampleDashboard";
 import { TeamsFxContext } from "./internal/context";
@@ -22,12 +22,9 @@ import TermsOfUse from "./TermsOfUse";
  * of the app.
  */
 export default function App() {
-  const { loading, themeString, teamsUserCredential } = useTeamsUserCredential({
-    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    clientId: process.env.REACT_APP_CLIENT_ID,
-  });
+  const { loading, themeString } = useTeams()[0];
   return (
-    <TeamsFxContext.Provider value={{ themeString, teamsUserCredential }}>
+    <TeamsFxContext.Provider value={{ themeString }}>
       <FluentProvider
         id="fluent-provider"
         theme={

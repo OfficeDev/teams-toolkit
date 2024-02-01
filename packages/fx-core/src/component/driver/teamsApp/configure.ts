@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok, Platform } from "@microsoft/teamsfx-api";
+import { FxError, Result, err, ok, ManifestUtil } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { hooks } from "@feathersjs/hooks/lib";
 import isUUID from "validator/lib/isUUID";
@@ -13,16 +13,13 @@ import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "./clients/appStudioClient";
 import { AppStudioResultFactory } from "./results";
-import { TelemetryUtils } from "./utils/telemetry";
 import { manifestUtils } from "./utils/ManifestUtils";
 import { AppStudioError } from "./errors";
 import { AppStudioScopes } from "../../../common/tools";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { TelemetryProperty } from "../../../common/telemetry";
 import { Service } from "typedi";
 import { getAbsolutePath } from "../../utils/common";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
-import { updateProgress } from "../middleware/updateProgress";
 
 export const actionName = "teamsApp/update";
 
@@ -34,15 +31,9 @@ export const internalOutputNames = {
 @Service(actionName)
 export class ConfigureTeamsAppDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.updateDriver");
-
-  public async run(
-    args: ConfigureTeamsAppArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    const res = await this.update(args, wrapContext);
-    return res;
-  }
+  readonly progressTitle = getLocalizedString(
+    "driver.teamsApp.progressBar.updateTeamsAppStepMessage"
+  );
 
   public async execute(
     args: ConfigureTeamsAppArgs,
@@ -57,17 +48,12 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     };
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.teamsApp.progressBar.updateTeamsAppStepMessage")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   async update(
     args: ConfigureTeamsAppArgs,
     context: WrapDriverContext,
     outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
-
     const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);
@@ -97,16 +83,9 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     if (manifest.isErr()) {
       return err(manifest.error);
     }
-    const capabilities = manifestUtils.getCapabilities(manifest.value).map((x) => {
-      if (x == "staticTab" || x == "configurableTab") {
-        return "Tab";
-      } else {
-        return x;
-      }
-    });
-    merge(context.telemetryProperties, {
-      [TelemetryProperty.Capabilities]: [...new Set(capabilities)].join(";"),
-    });
+
+    const manifestTelemetries = ManifestUtil.parseCommonTelemetryProperties(manifest.value);
+    merge(context.telemetryProperties, manifestTelemetries);
 
     // Fail if Teams app not exists, as this action only update the Teams app, not create
     // See work item 17187087
@@ -145,7 +124,7 @@ export class ConfigureTeamsAppDriver implements StepDriver {
         "plugins.appstudio.teamsAppUpdatedLog",
         appDefinition.teamsAppId!
       );
-      context.logProvider.info(message);
+      context.logProvider.verbose(message);
       context.addSummary(message);
       return ok(
         new Map([

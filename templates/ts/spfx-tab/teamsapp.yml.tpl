@@ -5,12 +5,14 @@ version: 1.0.0
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
+  # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
-      args: install
       workingDirectory: src
+      args: install
   - uses: cli/runNpxCommand
     with:
       workingDirectory: src
@@ -24,17 +26,16 @@ deploy:
       createAppCatalogIfNotExist: false
       packageSolutionPath: ./src/config/package-solution.json
 
-
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
   # Creates a Teams app
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   # Validate using manifest schema
@@ -72,23 +73,29 @@ provision:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
 
-# Triggered when 'teamsfx publish' is executed
+# Triggered when 'teamsapp publish' is executed
 publish:
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+  # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
-      outputJsonPath: ./build/manifest.${{TEAMSFX_ENV}}.json
+      outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
   - uses: teamsApp/copyAppPackageToSPFx
     with:
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       spfxFolder: ./src
+  # Validate app package using validation rules
+  - uses: teamsApp/validateAppPackage
+    with:
+      # Relative path to this file. This is the path for built zip file.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
   # Apply the Teams app manifest to an existing Teams app in
   # Teams Developer Portal.
   # Will use the app id in manifest file to determine which Teams app to update.

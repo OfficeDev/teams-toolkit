@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 export enum TelemetryEvent {
   ManageAccount = "manage-account",
   CreateAccountStart = "create-account-start",
@@ -78,12 +79,17 @@ export enum TelemetryEvent {
 
   OpenAzurePortal = "open-azure-portal",
 
-  ClickSampleCard = "click-sample-card",
-
   DownloadSampleStart = "download-sample-start",
   DownloadSample = "download-sample",
 
+  CloneSample = "clone-sample",
   ViewSampleInGitHub = "view-sample-in-github",
+  UpgradeToolkitForSample = "upgrade-toolkit-for-sample",
+  SearchSample = "search-sample",
+  ChangeLayout = "change-layout",
+  SelectSample = "select-sample",
+  FilterSampleAdd = "filter-sample-add",
+  FilterSampleRemove = "filter-sample-remove",
 
   WatchVideo = "watch-video",
   PauseVideo = "pause-video",
@@ -117,6 +123,7 @@ export enum TelemetryEvent {
   DebugService = "debug-service",
   DebugPrereqsCheckM365Account = "debug-prereqs-check-m365-account",
   DebugPrereqsCheckM365AccountSignIn = "debug-prereqs-check-m365-account-sign-in",
+  DebugPrereqsCheckM365Copilot = "debug-prereqs-check-m365-copilot",
   DebugPrereqsCheckM365Sideloading = "debug-prereqs-check-m365-sideloading",
   DebugPrereqsCheckNode = "debug-prereqs-check-node",
   DebugPrereqsCheckPorts = "debug-prereqs-check-ports",
@@ -173,6 +180,7 @@ export enum TelemetryEvent {
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
+  OpenCopilotEnroll = "open-copilot-enroll",
   OpenSideloadingLearnMore = "open-sideloading-learn-more",
   OpenSignInJoinM365 = "open-sign-in-joinm365",
 
@@ -188,6 +196,10 @@ export enum TelemetryEvent {
   ClickLocalPreview = "click-local-preview",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 
+  AdaptiveCardPreviewerInstall = "acp-install",
+  AdaptiveCardPreviewerInstallConfirm = "acp-install-confirm",
+  AdaptiveCardPreviewerInstallCancel = "acp-install-cancel",
+
   PreviewManifestFile = "preview-manifest",
   PreviewAadManifestFile = "preview-aad-manifest",
 
@@ -198,6 +210,7 @@ export enum TelemetryEvent {
   MigrateTeamsManifest = "migrate-teams-manifest",
 
   TreeViewLocalDebug = "treeview-localdebug",
+  TreeViewDebugInTestTool = "treeview-debugintesttool",
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
@@ -205,6 +218,7 @@ export enum TelemetryEvent {
   ShowOutputChannel = "show-output-channel",
   OpenFolder = "open-folder",
   ClickGetHelp = "click-get-help",
+  MessageDebugInTestTool = "message-debugintesttool",
 
   // To track the event of opening in new window after creating a new project
   OpenNewProject = "open-new-project",
@@ -233,6 +247,15 @@ export enum TelemetryEvent {
 
   // Select to input a value when choosing between browsing local file or proceeding to input
   ContinueToInput = "continue-to-input",
+  selectFileOrInputResultType = "select-file-or-input-result-type",
+
+  // Copilot plugin
+  CopilotPluginAddAPI = "copilot-plugin-add-api",
+
+  ShowScaffoldingWarningSummary = "show-scaffolding-warning-summary",
+  ShowScaffoldingWarningSummaryError = "show-scaffolding-warning-summary-error",
+
+  FindSimilarIssues = "find-similar-issues",
 }
 
 export enum TelemetryProperty {
@@ -274,6 +297,7 @@ export enum TelemetryProperty {
   DebugPortsInUse = "debug-ports-in-use",
   DebugM365AccountStatus = "debug-m365-account-status",
   DebugIsSideloadingAllowed = "debug-is-sideloading-allowed",
+  DebugHasCopilotAccess = "debug-has-copilot-access",
   DebugConcurrentCorrelationId = "debug-concurrent-correlation-id",
   DebugConcurrentLastEventName = "debug-concurrent-last-event-name",
   DebugIsTransparentTask = "debug-is-transparent-task",
@@ -285,6 +309,8 @@ export enum TelemetryProperty {
   DebugNgrokLog = "debug-ngrok-log",
   DebugConfigName = "debug-config-name",
   DebugDevTunnelNum = "debug-dev-tunnel-num",
+  DebugTestTool = "debug-test-tool",
+  DebugTestToolLog = "debug-test-tool-log",
   Internal = "internal",
   InternalAlias = "internal-alias",
   OSArch = "os-arch",
@@ -324,6 +350,11 @@ export enum TelemetryProperty {
   Interaction = "interaction",
   Identifier = "identifier",
   ValidateMethod = "validate-method",
+  // Used in Sample Gallery
+  SearchText = "search-text",
+  ChangedFilter = "changed-filter",
+  SampleFilters = "sample-filters",
+  Layout = "layout",
 }
 
 export enum TelemetryMeasurements {
@@ -351,6 +382,8 @@ export enum TelemetryTriggerFrom {
   InProductDoc = "InProductDoc",
   AccountHelp = "AccountHelp",
   SideloadingDisabled = "SideloadingDisabled",
+  SampleGallery = "SampleGallery",
+  SampleDetailPage = "SampleDetailPage",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",
@@ -411,6 +444,11 @@ export enum InProductGuideInteraction {
   Hide = "hide",
   ScrollToBottom = "scroll-to-bottom",
   RunCommand = "run-command",
+}
+
+export enum SelectFileOrInputResultType {
+  LocalFile = "local-file",
+  Input = "input",
 }
 
 export const TelemetryComponentType = "extension";

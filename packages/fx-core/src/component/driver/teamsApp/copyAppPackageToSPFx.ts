@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Result, FxError, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
@@ -14,7 +14,6 @@ import { asFactory, asString, wrapRun } from "../../utils/common";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { WrapDriverContext } from "../util/wrapUtil";
 import { copyAppPackageToSPFxArgs } from "./interfaces/CopyAppPackageToSPFxArgs";
 
@@ -25,6 +24,9 @@ export class copyAppPackageToSPFxDriver implements StepDriver {
   public readonly description = getLocalizedString(
     "driver.teamsApp.description.copyAppPackageToSPFxDriver"
   );
+  public readonly progressTitle = getLocalizedString(
+    "driver.teamsApp.progressBar.copyAppPackageToSPFxStepMessage"
+  );
 
   private readonly EmptyMap = new Map<string, string>();
 
@@ -33,26 +35,13 @@ export class copyAppPackageToSPFxDriver implements StepDriver {
     spfxFolder: asString,
   });
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(
-      getLocalizedString("driver.teamsApp.progressBar.copyAppPackageToSPFxStepMessage")
-    ),
-  ])
-  public async run(
-    args: copyAppPackageToSPFxArgs,
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    const wrapContext = new WrapDriverContext(context, actionName, actionName);
-    return wrapRun(() => this.copy(args, wrapContext));
-  }
-
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: copyAppPackageToSPFxArgs,
     ctx: DriverContext
   ): Promise<ExecutionResult> {
     const wrapContext = new WrapDriverContext(ctx, actionName, actionName);
-    const result = await this.run(args, wrapContext);
+    const result = await wrapRun(() => this.copy(args, wrapContext), actionName);
     return {
       result,
       summaries: wrapContext.summaries,

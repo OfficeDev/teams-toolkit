@@ -1,6 +1,6 @@
-/**
- * @author Frank Qian <frankqian@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -8,17 +8,18 @@ import {
   Notification,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { initPage, validateMsg } from "../../../playwrightOperation";
+import { initPage, validateMsg } from "../../../utils/playwrightOperation";
 import {
   validateNotification,
   startDebugging,
   upgrade,
   waitForTerminal,
   validateUpgrade,
-} from "../../../vscodeOperation";
+  upgradeByTreeView,
+} from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
@@ -56,8 +57,7 @@ describe("Migration Tests", function () {
       await validateNotification(Notification.Upgrade);
 
       // upgrade
-      await startDebugging();
-      await upgrade();
+      await upgradeByTreeView();
       // verify upgrade
       await validateUpgrade();
       // enable cli v3

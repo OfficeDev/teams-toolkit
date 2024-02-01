@@ -10,12 +10,15 @@ import ScreenManager from "../../src/console/screen";
 describe("colorize", () => {
   const sandox = sinon.createSandbox();
   let message = "";
-
+  let isTTY: boolean;
   beforeEach(() => {
+    isTTY = process.stdout.isTTY;
+    process.stdout.isTTY = true;
     sandox.stub(ScreenManager, "writeLine").callsFake((msg: string) => (message += msg));
   });
 
   afterEach(() => {
+    process.stdout.isTTY = isTTY;
     sandox.restore();
     message = "";
   });
@@ -51,7 +54,9 @@ describe("colorize", () => {
   it("colorize - Details", async () => {
     colorize("test", TextType.Details);
   });
-
+  it("colorize - Commands", async () => {
+    colorize("test", TextType.Commands);
+  });
   it("replace template string", async () => {
     const template = "test %s";
     const result = replaceTemplateString(template, "test");

@@ -1,6 +1,10 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Frank Qian <frankqian@microsoft.com>
  */
+
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -8,17 +12,17 @@ import {
   Notification,
   LocalDebugTaskLabel,
   LocalDebugTaskResult,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { initPage, validateBot } from "../../../playwrightOperation";
+import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import {
   startDebugging,
   waitForTerminal,
   validateNotification,
   upgradeByTreeView,
   validateUpgrade,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
@@ -56,7 +60,7 @@ describe("Migration Tests", function () {
       await validateNotification(Notification.Upgrade);
 
       // local debug
-      await mirgationDebugTestContext.debugWithCLI("local");
+      await mirgationDebugTestContext.debugWithCLI("local", false);
 
       // upgrade
       await upgradeByTreeView();
@@ -67,7 +71,7 @@ describe("Migration Tests", function () {
 
       // local debug with TTK
       try {
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
         await waitForTerminal(
           LocalDebugTaskLabel.StartLocalTunnel,
           LocalDebugTaskResult.StartSuccess

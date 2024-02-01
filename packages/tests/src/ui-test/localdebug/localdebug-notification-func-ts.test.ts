@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 /**
  * @author Aocheng Wang <aochengwang@microsoft.com>
  */
@@ -6,10 +8,17 @@ import {
   startDebugging,
   stopDebugging,
   waitForTerminal,
-} from "../../vscodeOperation";
-import { initPage, validateNotificationBot } from "../../playwrightOperation";
+} from "../../utils/vscodeOperation";
+import {
+  initPage,
+  validateNotificationBot,
+} from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
-import { Timeout, LocalDebugTaskLabel } from "../../constants";
+import {
+  Timeout,
+  LocalDebugTaskLabel,
+  DebugItemSelect,
+} from "../../utils/constants";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import { validateFileExist } from "../../utils/commonUtils";
@@ -47,7 +56,7 @@ describe("Func Hosted Notification Bot Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/httpTrigger.ts");
       const driver = VSBrowser.instance.driver;
-      await startDebugging();
+      await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
         await waitForTerminal(
@@ -67,7 +76,7 @@ describe("Func Hosted Notification Bot Local Debug Tests", function () {
           "Clicked button Cancel for failing to attach to main target"
         );
         await stopDebugging();
-        await startDebugging();
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,

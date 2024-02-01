@@ -8,22 +8,22 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Create or reuse an existing Azure Active Directory application for bot.
+  # Create or reuse an existing Microsoft Entra application for bot.
   - uses: botAadApp/create
     with:
-      # The Azure Active Directory application's display name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      # The Microsoft Entra application's display name
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     writeToEnvironmentFile:
-      # The Azure Active Directory application's client id created for bot.
+      # The Microsoft Entra application's client id created for bot.
       botId: BOT_ID
-      # The Azure Active Directory application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD 
+      # The Microsoft Entra application's client secret created for bot.
+      botPassword: SECRET_BOT_PASSWORD
 
   # Generate runtime appsettings to JSON file
   - uses: file/createOrUpdateJsonFile
@@ -42,12 +42,14 @@ provision:
       description: ""
       channels:
         - name: msteams
+        - name: m365extensions
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
@@ -55,6 +57,7 @@ provision:
       manifestPath: ./appPackage/manifest.json
       outputZipPath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
       outputJsonPath: ./appPackage/build/manifest.${{TEAMSFX_ENV}}.json
+
   # Validate app package using validation rules
   - uses: teamsApp/validateAppPackage
     with:
@@ -69,6 +72,17 @@ provision:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
 
+  # Extend your Teams app to Outlook and the Microsoft 365 app
+  - uses: teamsApp/extendToM365
+    with:
+      # Relative path to the build app package.
+      appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+    # Write the information of created resources into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
+      titleId: M365_TITLE_ID
+      appId: M365_APP_ID
+
   # Create or update debug profile in lauchsettings file
   - uses: file/createOrUpdateJsonFile
     with:
@@ -80,7 +94,16 @@ provision:
             dotnetRunMessages: true
             launchBrowser: true
             launchUrl: "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
-            applicationUrl: "https://localhost:7130;http://localhost:5130"
+            applicationUrl: "http://localhost:5130"
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+            hotReloadProfile: "aspnetcore"
+          Outlook (browser):
+            commandName: "Project"
+            dotnetRunMessages: true
+            launchBrowser: true
+            launchUrl: "https://outlook.office.com/mail?login_hint=${{TEAMSFX_M365_USER_NAME}}"
+            applicationUrl: "http://localhost:5130"
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"

@@ -24,6 +24,7 @@ import {
   AzureStorageGetContainerPropertiesError,
   AzureStorageSetContainerPropertiesError,
 } from "../../../../error/deploy";
+import { ErrorContextMW } from "../../../../core/globalVars";
 
 const ACTION_NAME = "azureStorage/enableStaticWebsite";
 
@@ -50,7 +51,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.PROVISION_COMPONENT_NAME)])
   async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
     context.progressBar?.next(ProgressMessages.configureAzureStorageEnableStaticWebsite);
-    return wrapRun(() => this.config(args, context), undefined, context.logProvider);
+    return wrapRun(() => this.config(args, context), ACTION_NAME, undefined, context.logProvider);
   }
 
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
@@ -64,13 +65,14 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
    * @param args Azure Storage resourceId, index page and error page
    * @param context log provider, progress handler, telemetry reporter
    */
+  @hooks([ErrorContextMW({ source: "Azure", component: "AzureStorageStaticWebsiteConfigDriver" })])
   async config(args: unknown, context: DriverContext): Promise<Map<string, string>> {
     const logger = context.logProvider;
     const input = AzureStorageStaticWebsiteConfigDriver.STORAGE_CONFIG_ARGS(
       args,
       AzureStorageStaticWebsiteConfigDriver.HELP_LINK
     );
-    await logger.debug(
+    logger.debug(
       `Enabling static website feature for Azure Storage account ${input.storageResourceId}`
     );
     const azureInfo = parseAzureResourceId(
@@ -81,7 +83,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     const azureBlobClient = await createBlobServiceClient(azureInfo, azureTokenCredential);
 
     if (await this.isStorageStatusWebsiteEnabled(azureInfo, azureBlobClient, context)) {
-      await logger.debug(
+      logger.debug(
         `Static website feature is already enabled for Azure Storage account ${input.storageResourceId}.`
       );
       return AzureStorageStaticWebsiteConfigDriver.RETURN_VALUE;
@@ -118,7 +120,7 @@ export class AzureStorageStaticWebsiteConfigDriver implements StepDriver {
     azureBlobClient: BlobServiceClient,
     context: DriverContext
   ): Promise<boolean> {
-    await context.logProvider.debug(
+    context.logProvider.debug(
       `Checking if static website feature is enabled in Azure Storage account '${azureInfo.instanceId}'.`
     );
     return await wrapAzureOperation(

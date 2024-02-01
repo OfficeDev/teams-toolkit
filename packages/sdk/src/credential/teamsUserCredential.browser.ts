@@ -122,9 +122,11 @@ export class TeamsUserCredential implements TokenCredential {
     let result: string;
     try {
       const params = {
-        url: `${this.config.initiateLoginEndpoint}?clientId=${
-          this.config.clientId
-        }&scope=${encodeURI(scopesStr)}&loginHint=${this.loginHint}`,
+        url: `${
+          this.config.initiateLoginEndpoint ? this.config.initiateLoginEndpoint : ""
+        }?clientId=${this.config.clientId ? this.config.clientId : ""}&scope=${encodeURI(
+          scopesStr
+        )}&loginHint=${this.loginHint ? this.loginHint : ""}`,
         width: loginPageWidth,
         height: loginPageHeight,
       } as authentication.AuthenticatePopUpParameters;
@@ -241,7 +243,9 @@ export class TeamsUserCredential implements TokenCredential {
           scopesRequestForAcquireTokenSilent
         );
       } catch (error: any) {
-        const acquireTokenSilentFailedMessage = `Failed to call acquireTokenSilent. Reason: ${error?.message}. `;
+        const acquireTokenSilentFailedMessage = `Failed to call acquireTokenSilent. Reason: ${
+          error?.message as string
+        }. `;
         internalLogger.verbose(acquireTokenSilentFailedMessage);
       }
 
@@ -255,7 +259,9 @@ export class TeamsUserCredential implements TokenCredential {
           };
           tokenResponse = await this.msalInstance!.ssoSilent(scopesRequestForSsoSilent);
         } catch (error: any) {
-          const ssoSilentFailedMessage = `Failed to call ssoSilent. Reason: ${error?.message}. `;
+          const ssoSilentFailedMessage = `Failed to call ssoSilent. Reason: ${
+            error?.message as string
+          }. `;
           internalLogger.verbose(ssoSilentFailedMessage);
         }
       }
@@ -412,7 +418,9 @@ export class TeamsUserCredential implements TokenCredential {
     } catch (error: any) {
       // Values in result.sessionStorage can not be set into session storage.
       // Throw error since this may block user.
-      const errorMessage = `Failed to set values in session storage. Error: ${error.message}`;
+      const errorMessage = `Failed to set values in session storage. Error: ${
+        error.message as string
+      }`;
       internalLogger.error(errorMessage);
       throw new ErrorWithCode(errorMessage, ErrorCode.InternalError);
     }

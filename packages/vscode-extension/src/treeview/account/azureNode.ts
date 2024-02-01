@@ -17,14 +17,14 @@ export class AzureAccountNode extends DynamicNode {
     this.contextValue = "signinAzure";
   }
 
-  public async setSignedIn(upn: string) {
+  public setSignedIn(upn: string) {
     if (this.status === AccountItemStatus.SignedIn) {
       return false;
     }
     this.status = AccountItemStatus.SignedIn;
     this.label = upn;
     this.contextValue = "signedinAzure";
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
     return false;
   }
 
@@ -35,7 +35,7 @@ export class AzureAccountNode extends DynamicNode {
     this.status = AccountItemStatus.SigningIn;
     this.contextValue = "";
     // refresh
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
   }
 
   public setSignedOut() {
@@ -45,15 +45,15 @@ export class AzureAccountNode extends DynamicNode {
     this.status = AccountItemStatus.SignedOut;
     this.contextValue = "signinAzure";
     // refresh
-    this.eventEmitter.fire(this);
+    this.eventEmitter.fire(undefined);
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     // No subscription info in V3
     return null;
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {
     if (this.status === AccountItemStatus.SigningIn) {
       this.iconPath = loadingIcon;
     } else {

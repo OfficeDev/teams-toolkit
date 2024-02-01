@@ -11,12 +11,10 @@
       "request": "launch",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "resolveSourceMapLocations": [
-        "${workspaceFolder}/out/**/*.js",
-        "${workspaceFolder}/../fx-core/build/**/*.js",
-        "${workspaceFolder}/../api/build/**/*.js"
       ],
       "env": {
-        "NODE_ENV": "development"
+        "NODE_ENV": "development",
+        "TEAMSFX_SAMPLE_CONFIG_BRANCH": "dev",
       },
       "preLaunchTask": "npm: build"
     },

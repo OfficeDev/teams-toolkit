@@ -5,8 +5,11 @@ import { TokenCredential } from "@azure/core-auth";
 import {
   AzureAccountProvider,
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   CryptoProvider,
   FxError,
+  InputResult,
   InputTextConfig,
   InputTextResult,
   IProgressHandler,
@@ -25,6 +28,7 @@ import {
   SelectFilesResult,
   SelectFolderConfig,
   SelectFolderResult,
+  SingleFileOrInputConfig,
   SingleSelectConfig,
   SingleSelectResult,
   SubscriptionInfo,
@@ -212,6 +216,12 @@ export class MockUserInteraction implements UserInteraction {
     throw new Error(`Method openUrl not implemented: ${link}`);
   }
 
+  selectFileOrInput(
+    config: SingleFileOrInputConfig
+  ): Promise<Result<InputResult<string>, FxError>> {
+    throw new Error(`Method selectFileOrInput not implemented: ${config}`);
+  }
+
   async showMessage(
     level: "info" | "warn" | "error",
     message: string,
@@ -253,6 +263,10 @@ export class MockUserInteraction implements UserInteraction {
   }): Promise<Result<string, FxError>> {
     throw new Error(`Method openUrl not implemented: runCommand`);
   }
+
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    return ok({ type: "success", result: true });
+  }
 }
 
 export class MockTools implements Tools {
@@ -288,34 +302,28 @@ export class MockPermissionRequestProvider implements PermissionRequestProvider 
 }
 
 export class MockLogProvider implements LogProvider {
-  async trace({}: string): Promise<boolean> {
-    return true;
+  msg = "";
+  verbose(msg: string): void {
+    this.log(LogLevel.Verbose, msg);
   }
-
-  async debug({}: string): Promise<boolean> {
-    return true;
+  debug(msg: string): void {
+    this.log(LogLevel.Debug, msg);
   }
-
-  async info({}: string | Array<any>): Promise<boolean> {
-    return true;
+  info(msg: string | Array<any>): void {
+    this.log(LogLevel.Info, msg as string);
   }
-
-  async warning({}: string): Promise<boolean> {
-    return true;
+  warning(msg: string): void {
+    this.log(LogLevel.Warning, msg);
   }
-
-  async error({}: string): Promise<boolean> {
-    return true;
+  error(msg: string): void {
+    this.log(LogLevel.Error, msg);
   }
-
-  async fatal({}: string): Promise<boolean> {
-    return true;
+  log(level: LogLevel, msg: string): void {
+    this.msg = msg;
   }
-
-  async log({}: LogLevel, {}: string): Promise<boolean> {
-    return true;
+  async logInFile(level: LogLevel, msg: string): Promise<void> {
+    this.msg = msg;
   }
-
   getLogFilePath(): string {
     return "";
   }

@@ -1,7 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Xiaofu Huang <xiaofhua@microsoft.com>
  */
@@ -24,7 +23,11 @@ import {
 } from "../../telemetry/extTelemetryEvents";
 import { getDefaultString, localize } from "../../utils/localizeUtils";
 import { getLocalDebugSession, Step } from "../commonUtils";
-import { baseTunnelDisplayMessages, TunnelDisplayMessages } from "../constants";
+import {
+  baseTunnelDisplayMessages,
+  RecommendedOperations,
+  TunnelDisplayMessages,
+} from "../constants";
 import { doctorConstant } from "../depsChecker/doctorConstant";
 import { localTelemetryReporter } from "../localTelemetryReporter";
 import { BaseTaskTerminal } from "./baseTaskTerminal";
@@ -83,7 +86,7 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
     );
   }
 
-  public static async stopAll(): Promise<void> {
+  public static stopAll(): void {
     for (const task of BaseTunnelTaskTerminal.tunnelTaskTerminals.values()) {
       task.close();
     }
@@ -92,16 +95,13 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
   protected abstract generateTelemetries(): { [key: string]: string };
   protected abstract _do(): Promise<Result<Void, FxError>>;
 
-  protected async resolveArgs(args: IBaseTunnelArgs): Promise<void> {
+  protected resolveArgs(args: IBaseTunnelArgs): void {
     if (!args) {
       throw BaseTaskTerminal.taskDefinitionError("args");
     }
 
     if (args.type) {
-      if (
-        typeof args.type !== "string" ||
-        !(Object.values(TunnelType) as string[]).includes(args.type)
-      ) {
+      if (typeof args.type !== "string" || !Object.values(TunnelType).includes(args.type)) {
         throw BaseTaskTerminal.taskDefinitionError("args.type");
       }
     }
@@ -269,37 +269,62 @@ export abstract class BaseTunnelTaskTerminal extends BaseTaskTerminal {
 }
 
 export const TunnelError = Object.freeze({
-  TunnelEnvError: (error: any) =>
-    new UserError(
-      ExtensionSource,
-      ExtensionErrors.TunnelEnvError,
-      `${getDefaultString("teamstoolkit.localDebug.tunnelEnvError")} ${error?.message ?? ""}`,
-      `${localize("teamstoolkit.localDebug.tunnelEnvError")} ${error?.message ?? ""}`
-    ),
-  StartTunnelError: (error?: any) =>
-    new UserError(
-      ExtensionSource,
-      ExtensionErrors.StartTunnelError,
-      `${getDefaultString("teamstoolkit.localDebug.startTunnelError")} ${error?.message ?? ""}`,
-      `${localize("teamstoolkit.localDebug.startTunnelError")} ${error?.message ?? ""}`
-    ),
-  DevTunnelOperationError: (operationName: string, error?: any) =>
-    new UserError(
-      ExtensionSource,
-      ExtensionErrors.DevTunnelOperationError,
-      `${util.format(
+  TunnelEnvError: (error: Error) => {
+    const userError = new UserError({
+      source: ExtensionSource,
+      name: ExtensionErrors.TunnelEnvError,
+      message: `${getDefaultString("teamstoolkit.localDebug.tunnelEnvError")} ${
+        error?.message ?? ""
+      }`,
+      displayMessage: `${localize("teamstoolkit.localDebug.tunnelEnvError")} ${
+        error?.message ?? ""
+      }`,
+      helpLink: baseTunnelDisplayMessages.learnMoreHelpLink,
+    });
+    userError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+    return userError;
+  },
+  StartTunnelError: (error?: Error) => {
+    const userError = new UserError({
+      source: ExtensionSource,
+      name: ExtensionErrors.StartTunnelError,
+      message: `${getDefaultString("teamstoolkit.localDebug.startTunnelError")} ${
+        error?.message ?? ""
+      }`,
+      displayMessage: `${localize("teamstoolkit.localDebug.startTunnelError")} ${
+        error?.message ?? ""
+      }`,
+      helpLink: baseTunnelDisplayMessages.learnMoreHelpLink,
+    });
+    userError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+    return userError;
+  },
+  DevTunnelOperationError: (operationName: string, error?: Error) => {
+    const userError = new UserError({
+      source: ExtensionSource,
+      name: ExtensionErrors.DevTunnelOperationError,
+      message: `${util.format(
         getDefaultString("teamstoolkit.localDebug.devTunnelOperationError"),
         operationName
       )} ${error?.message ?? ""}`,
-      `${util.format(localize("teamstoolkit.localDebug.devTunnelOperationError"), operationName)} ${
-        error?.message ?? ""
-      }`
-    ),
-  TunnelResourceLimitExceededError: (error: any) => {
-    return new UserError(
-      ExtensionSource,
-      ExtensionErrors.TunnelResourceLimitExceededError,
-      error?.message
-    );
+      displayMessage: `${util.format(
+        localize("teamstoolkit.localDebug.devTunnelOperationError"),
+        operationName
+      )} ${error?.message ?? ""}`,
+      helpLink: baseTunnelDisplayMessages.learnMoreHelpLink,
+    });
+    userError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+    return userError;
+  },
+  TunnelResourceLimitExceededError: (error: Error) => {
+    const userError = new UserError({
+      source: ExtensionSource,
+      name: ExtensionErrors.TunnelResourceLimitExceededError,
+      message: error?.message,
+      displayMessage: error?.message,
+      helpLink: baseTunnelDisplayMessages.learnMoreHelpLink,
+    });
+    userError.recommendedOperation = RecommendedOperations.DebugInTestTool;
+    return userError;
   },
 });

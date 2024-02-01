@@ -31,6 +31,7 @@ import {
   getLocalDebugSession,
   getLocalDebugSessionId,
   getNpmInstallLogInfo,
+  getTestToolLogInfo,
 } from "./commonUtils";
 import {
   errorDetail,
@@ -81,7 +82,7 @@ function getTaskKey(task: vscode.Task): string {
 
   // "source|name|scope"
   const scope = (task.scope as vscode.WorkspaceFolder)?.uri?.toString() || task.scope?.toString();
-  return `${task.source}|${task.name}|${scope}`;
+  return `${task.source}|${task.name}|${scope ?? ""}`;
 }
 
 function isNpmInstallTask(task: vscode.Task): boolean {
@@ -95,7 +96,7 @@ function isNpmInstallTask(task: vscode.Task): boolean {
 function isTeamsFxTransparentTask(task: vscode.Task): boolean {
   if (task.definition && task.definition.type === ProductName) {
     const command = task.definition.command as string;
-    if ((Object.values(TaskCommand) as string[]).includes(command)) {
+    if (Object.values(TaskCommand).includes(command)) {
       return true;
     }
   }
@@ -129,13 +130,35 @@ function isTeamsfxTask(task: vscode.Task): boolean {
     if (task.execution && <vscode.ShellExecution>task.execution) {
       const execution = <vscode.ShellExecution>task.execution;
       commandLine =
-        execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
+        execution.commandLine ||
+        `${typeof execution.command === "string" ? execution.command : execution.command.value} ${(
+          execution.args || []
+        ).join(" ")}`;
     }
     if (commandLine !== undefined) {
       if (/(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx/i.test(commandLine)) {
         return true;
       }
       if (/teamsfx\/script\/.*\.js/i.test(commandLine)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function isLaunchTestToolTask(task: vscode.Task): boolean {
+  if (task) {
+    // dev:teamsfx and watch:teamsfx
+    if (task.execution && <vscode.ShellExecution>task.execution) {
+      const execution = <vscode.ShellExecution>task.execution;
+      const commandLine =
+        execution.commandLine ||
+        `${typeof execution.command === "string" ? execution.command : execution.command.value} ${(
+          execution.args || []
+        ).join(" ")}`;
+      if (/(npm|yarn)[\s]+(run )?[\s]*[^:\s]+:teamsfx:launch-testtool/i.test(commandLine)) {
         return true;
       }
     }
@@ -189,6 +212,30 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
 
       activeNpmInstallTasks.set(task.name, new NpmInstallTaskInfo());
     }
+    if (isLaunchTestToolTask(task)) {
+      // Debug in Test Tool doesn't launch browser in vscode launch.json
+      // This is the final task that we have control to send debug-all event.
+      const session = getLocalDebugSession();
+      if (session.id !== DebugNoSessionId) {
+        if (session.failedServices.length > 0) {
+          terminateAllRunningTeamsfxTasks();
+          // TODO: send test tool log file
+          await sendDebugAllEvent(
+            new UserError({
+              source: ExtensionSource,
+              name: ExtensionErrors.DebugServiceFailedBeforeStartError,
+            }),
+            {
+              [TelemetryProperty.DebugFailedServices]: JSON.stringify(session.failedServices),
+              [TelemetryProperty.DebugTestTool]: "true",
+            }
+          );
+          endLocalDebugSession();
+          return;
+        }
+        await sendDebugAllEvent(undefined, { [TelemetryProperty.DebugTestTool]: "true" });
+      }
+    }
   }
 }
 
@@ -208,15 +255,35 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   }
 
   if (task.scope !== undefined && isTeamsfxTask(task)) {
+    const currentSession = getLocalDebugSession();
     if (event.exitCode !== 0) {
-      const currentSession = getLocalDebugSession();
       currentSession.failedServices.push({ name: task.name, exitCode: event.exitCode });
     }
     allRunningTeamsfxTasks.delete(getTaskKey(task));
     localTelemetryReporter.sendTelemetryEvent(TelemetryEvent.DebugService, {
       [TelemetryProperty.DebugServiceName]: task.name,
-      [TelemetryProperty.DebugServiceExitCode]: event.exitCode + "",
+      [TelemetryProperty.DebugServiceExitCode]: String(event.exitCode),
     });
+
+    if (isLaunchTestToolTask(task)) {
+      // This is the final task for test tool.
+      // If this task exits (even exitCode is 0) before being successfully started, the debug fails.
+      if (currentSession.id !== DebugNoSessionId) {
+        terminateAllRunningTeamsfxTasks();
+        await sendDebugAllEvent(
+          new UserError({
+            source: ExtensionSource,
+            name: ExtensionErrors.DebugTestToolFailedToStartError,
+          }),
+          {
+            [TelemetryProperty.DebugTestTool]: "true",
+            [TelemetryProperty.DebugServiceExitCode]: String(event.exitCode),
+            [TelemetryProperty.DebugTestToolLog]: (await getTestToolLogInfo()) || "<undefined>",
+          }
+        );
+        endLocalDebugSession();
+      }
+    }
   } else if (
     task.scope !== undefined &&
     isTeamsFxTransparentTask(task) &&
@@ -262,15 +329,18 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       }
       const properties: { [key: string]: string } = {
         [TelemetryProperty.DebugNpmInstallName]: task.name,
-        [TelemetryProperty.DebugNpmInstallExitCode]: event.exitCode + "", // "undefined" or number value
+        [TelemetryProperty.DebugNpmInstallExitCode]: String(event.exitCode), // "undefined" or number value
       };
       if (validNpmInstallLogInfo) {
-        properties[TelemetryProperty.DebugNpmInstallNodeVersion] =
-          npmInstallLogInfo?.nodeVersion + ""; // "undefined" or string value
-        properties[TelemetryProperty.DebugNpmInstallNpmVersion] =
-          npmInstallLogInfo?.npmVersion + ""; // "undefined" or string value
-        properties[TelemetryProperty.DebugNpmInstallErrorMessage] =
-          npmInstallLogInfo?.errorMessage?.join("\n") + ""; // "undefined" or string value
+        properties[TelemetryProperty.DebugNpmInstallNodeVersion] = String(
+          npmInstallLogInfo?.nodeVersion
+        ); // "undefined" or string value
+        properties[TelemetryProperty.DebugNpmInstallNpmVersion] = String(
+          npmInstallLogInfo?.npmVersion
+        ); // "undefined" or string value
+        properties[TelemetryProperty.DebugNpmInstallErrorMessage] = String(
+          npmInstallLogInfo?.errorMessage?.join("\n")
+        ); // "undefined" or string value
       }
 
       const measurements: { [key: string]: number } = {};
@@ -312,7 +382,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
           const issue = {
             title: localize("teamstoolkit.handlers.reportIssue"),
             run: async (): Promise<void> => {
-              vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
+              await vscode.commands.executeCommand("vscode.open", vscode.Uri.parse(url));
             },
           };
           vscode.window
@@ -324,10 +394,15 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
               ),
               issue
             )
-            .then(async (button) => {
-              await button?.run();
-            });
-          await VsCodeLogInstance.error(
+            .then(
+              async (button) => {
+                await button?.run();
+              },
+              () => {
+                // Do nothing on reject
+              }
+            );
+          VsCodeLogInstance.error(
             util.format(
               localize("teamstoolkit.localDebug.npmInstallFailedHintMessage"),
               task.name,
@@ -361,11 +436,16 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           localize("teamstoolkit.localDebug.m365TenantHintMessage"),
           false,
           localize("teamstoolkit.localDebug.learnMore")
-        ).then(async (result) => {
-          if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
-            await VS_CODE_UI.openUrl(m365AppsPrerequisitesHelpLink);
+        ).then(
+          async (result) => {
+            if (result.isOk() && result.value === localize("teamstoolkit.localDebug.learnMore")) {
+              await VS_CODE_UI.openUrl(m365AppsPrerequisitesHelpLink);
+            }
+          },
+          () => {
+            // Do nothing on reject
           }
-        });
+        );
       }
 
       // and not a restart one
@@ -379,11 +459,11 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         [TelemetryProperty.DebugSessionId]: event.id,
         [TelemetryProperty.DebugType]: debugConfig.type,
         [TelemetryProperty.DebugRequest]: debugConfig.request,
-        [TelemetryProperty.DebugPort]: debugConfig.port + "",
-        [TelemetryProperty.DebugRemote]: debugConfig.teamsfxIsRemote + "",
-        [TelemetryProperty.DebugAppId]: debugConfig.teamsfxAppId + "",
+        [TelemetryProperty.DebugPort]: String(debugConfig.port),
+        [TelemetryProperty.DebugRemote]: String(debugConfig.teamsfxIsRemote),
+        [TelemetryProperty.DebugAppId]: String(debugConfig.teamsfxAppId),
         [TelemetryProperty.Env]: env,
-        [TelemetryProperty.Hub]: debugConfig.teamsfxHub + "",
+        [TelemetryProperty.Hub]: String(debugConfig.teamsfxHub),
       });
       // This is the launch browser local debug session.
       if (debugConfig.request === "launch" && !debugConfig.teamsfxIsRemote) {
@@ -407,7 +487,9 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
           return;
         }
 
-        sendDebugAllEvent();
+        sendDebugAllEvent().catch(() => {
+          // Do nothing
+        });
       }
     }
   }

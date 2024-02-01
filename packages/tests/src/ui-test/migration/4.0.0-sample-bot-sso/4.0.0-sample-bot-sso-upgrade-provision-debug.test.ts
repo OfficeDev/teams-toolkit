@@ -1,21 +1,25 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
+
 import { SampledebugContext } from "../../samples/sampledebugContext";
 import {
   Timeout,
   TemplateProject,
   Notification,
   TemplateProjectFolder,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
   validateUpgrade,
   upgradeByTreeView,
-} from "../../../vscodeOperation";
-import { initPage, validateBot } from "../../../playwrightOperation";
+} from "../../../utils/vscodeOperation";
+import { initPage, validateBot } from "../../../utils/playwrightOperation";
 import { Env } from "../../../utils/env";
 import { CLIVersionCheck } from "../../../utils/commonUtils";
 
@@ -36,7 +40,7 @@ describe("Migration Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    await sampledebugContext.after();
+    await sampledebugContext.after(true, true, "dev");
   });
 
   it(
@@ -47,7 +51,7 @@ describe("Migration Tests", function () {
     },
     async () => {
       // create v2 project using CLI
-      await sampledebugContext.createTemplateCLI(false);
+      await sampledebugContext.openResourceFolder();
       // verify popup
       await validateNotification(Notification.Upgrade);
 

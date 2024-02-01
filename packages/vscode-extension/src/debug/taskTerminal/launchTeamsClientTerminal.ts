@@ -1,7 +1,6 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as cp from "child_process";
 import * as vscode from "vscode";
 import * as util from "util";
@@ -22,8 +21,8 @@ import {
   openTerminalMessage,
 } from "../constants";
 import { core, getSystemInputs } from "../../handlers";
-import { CoreQuestionNames } from "@microsoft/teamsfx-core";
-import { Hub } from "@microsoft/teamsfx-core";
+import { CoreQuestionNames, environmentNameManager } from "@microsoft/teamsfx-core";
+import { HubOptions } from "@microsoft/teamsfx-core";
 
 interface LaunchTeamsClientArgs {
   env?: string;
@@ -60,7 +59,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
 
     const inputs = getSystemInputs();
     inputs.env = this.args.env;
-    inputs[CoreQuestionNames.M365Host] = Hub.teams;
+    inputs[CoreQuestionNames.M365Host] = HubOptions.teams().id;
     inputs[CoreQuestionNames.TeamsAppManifestFilePath] = this.args.manifestPath;
     inputs[CoreQuestionNames.ConfirmManifest] = "manifest"; // skip confirmation
     const result = await core.previewWithManifest(inputs);
@@ -75,7 +74,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
       launchingTeamsClientDisplayMessages.launchUrlMessage(launchUrl)
     );
 
-    if (this.args.env == "local") {
+    if (this.args.env && !environmentNameManager.isRemoteEnvironment(this.args.env)) {
       VsCodeLogInstance.outputChannel.appendLine("");
       VsCodeLogInstance.outputChannel.appendLine(
         launchingTeamsClientDisplayMessages.hotReloadingMessage
@@ -86,7 +85,7 @@ export class LaunchTeamsClientTerminal extends BaseTaskTerminal {
   }
 
   private openUrl(url: string): Promise<Result<Void, FxError>> {
-    return new Promise<Result<Void, FxError>>(async (resolve, reject) => {
+    return new Promise<Result<Void, FxError>>((resolve) => {
       const options: cp.SpawnOptions = {
         cwd: globalVariables.workspaceUri?.fsPath ?? "",
         shell: false,

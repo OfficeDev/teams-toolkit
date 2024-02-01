@@ -1,9 +1,12 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
-import { Timeout } from "../../constants";
+import { Notification, Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
   runProvision,
@@ -14,8 +17,9 @@ import {
   execCommandIfExist,
   createNewProject,
   clearNotifications,
-} from "../../vscodeOperation";
-import { initPage, validateBot } from "../../playwrightOperation";
+  getNotification,
+} from "../../utils/vscodeOperation";
+import { initPage, validateEchoBot } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
 import {
@@ -71,8 +75,14 @@ describe("Remote debug Tests", function () {
       await runProvision(appName);
       await clearNotifications();
       await cleanUpResourceGroup(appName, "dev");
-      await createResourceGroup(appName, "dev");
+      await createResourceGroup(appName, "dev", "westus");
       await reRunProvision();
+      await getNotification(
+        Notification.ProvisionSucceeded,
+        Timeout.longTimeWait,
+        8,
+        ["Error", "Failed"]
+      );
       await runDeploy(Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
@@ -84,7 +94,7 @@ describe("Remote debug Tests", function () {
         Env.password
       );
       await driver.sleep(Timeout.longTimeWait);
-      await validateBot(page);
+      await validateEchoBot(page);
     }
   );
 });

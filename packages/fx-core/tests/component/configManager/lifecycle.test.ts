@@ -20,7 +20,15 @@ import {
   MockedUserInteraction,
 } from "../../plugins/solution/util";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
-import { Platform, Result, FxError, ok, err, SystemError } from "@microsoft/teamsfx-api";
+import {
+  Platform,
+  Result,
+  FxError,
+  ok,
+  err,
+  SystemError,
+  IProgressHandler,
+} from "@microsoft/teamsfx-api";
 import { ExecutionResult, StepDriver } from "../../../src/component/driver/interface/stepDriver";
 import { SummaryConstant } from "../../../src/component/configManager/constant";
 
@@ -36,8 +44,13 @@ const mockedDriverContext: DriverContext = {
 };
 
 class DriverA implements StepDriver {
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    return ok(new Map([["OUTPUT_A", "VALUE_A"]]));
+  progressTitle = "mocked progress title";
+
+  async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return {
+      result: ok(new Map([["OUTPUT_A", "VALUE_A"]])),
+      summaries: [],
+    };
   }
 }
 
@@ -51,8 +64,13 @@ class DriverAWithSummary extends DriverA {
 }
 
 class DriverB implements StepDriver {
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    return ok(new Map([["OUTPUT_B", "VALUE_B"]]));
+  progressTitle = "mocked progress title";
+
+  async execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
+    return {
+      result: ok(new Map([["OUTPUT_B", "VALUE_B"]])),
+      summaries: [],
+    };
   }
 }
 
@@ -66,11 +84,11 @@ class DriverBWithSummary extends DriverB {
 }
 
 class DriverThatCapitalize implements StepDriver {
-  async run(
-    args: { INPUT_A: string },
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    return ok(new Map([["OUTPUT", args.INPUT_A.toUpperCase()]]));
+  async execute(args: { INPUT_A: string }, ctx: DriverContext): Promise<ExecutionResult> {
+    return {
+      result: ok(new Map([["OUTPUT", args.INPUT_A.toUpperCase()]])),
+      summaries: [],
+    };
   }
 }
 
@@ -84,36 +102,24 @@ class DriverThatCapitalizeWithSummary extends DriverThatCapitalize {
 }
 
 class DriverThatLowercase implements StepDriver {
-  async run(
-    args: { INPUT_A: string },
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    return ok(new Map([["OUTPUT_C", args.INPUT_A.toLowerCase()]]));
+  async execute(args: { INPUT_A: string }, ctx: DriverContext): Promise<ExecutionResult> {
+    return {
+      result: ok(new Map([["OUTPUT_C", args.INPUT_A.toLowerCase()]])),
+      summaries: [],
+    };
   }
 }
 
 class DriverThatHasNestedArgs implements StepDriver {
-  async run(
-    args: { key: [{ key1: string }] },
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
-    return ok(new Map([["OUTPUT_D", args.key.map((e) => e.key1).join(",")]]));
-  }
-}
-
-class DriverThatReturnsError implements StepDriver {
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    const fxError: FxError = {
-      name: "fakeError",
-      message: "fake message",
-      source: "xxx",
-      timestamp: new Date(),
+  async execute(args: { key: [{ key1: string }] }, ctx: DriverContext): Promise<ExecutionResult> {
+    return {
+      result: ok(new Map([["OUTPUT_D", args.key.map((e) => e.key1).join(",")]])),
+      summaries: [],
     };
-    return err(fxError);
   }
 }
 
-class DriverThatReturnsErrorWithSummary extends DriverThatReturnsError {
+class DriverThatReturnsErrorWithSummary implements StepDriver {
   async execute(args: unknown, context: DriverContext): Promise<ExecutionResult> {
     const fxError: FxError = {
       name: "fakeError",
@@ -128,14 +134,16 @@ class DriverThatReturnsErrorWithSummary extends DriverThatReturnsError {
 const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
 class DriverThatUsesEnvField implements StepDriver {
-  async run(
-    args: { key: [{ key1: string }] },
-    context: DriverContext
-  ): Promise<Result<Map<string, string>, FxError>> {
+  progressTitle = "mocked progress title";
+
+  async execute(args: unknown, context: DriverContext): Promise<ExecutionResult> {
     if (process.env["ENV_VAR1"]) {
-      return ok(new Map([["OUTPUT_E", process.env["ENV_VAR1"]]]));
+      return {
+        result: ok(new Map([["OUTPUT_E", process.env["ENV_VAR1"]]])),
+        summaries: [],
+      };
     } else {
-      return err(mockedError);
+      return { result: err(mockedError), summaries: [] };
     }
   }
 }
@@ -176,8 +184,6 @@ describe("v3 lifecyle", () => {
       });
 
       const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(result.isErr() && result.error.name === "InvalidYmlActionNameError");
 
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(
@@ -198,20 +204,17 @@ describe("v3 lifecyle", () => {
         .withArgs(sandbox.match("DriverA"))
         .returns(true)
         .withArgs(sandbox.match("DriverB"))
-        .returns(true)
-        .withArgs(sandbox.match("DriverThatReturnsError"))
         .returns(true);
       sandbox
         .stub(Container, "get")
         .withArgs(sandbox.match("DriverA"))
         .returns(new DriverA())
         .withArgs(sandbox.match("DriverB"))
-        .returns(new DriverB())
-        .withArgs(sandbox.match("DriverThatReturnsError"))
-        .returns(new DriverThatReturnsError());
+        .returns(new DriverB());
     });
 
     after(() => {
+      mockedDriverContext.progressBar = undefined;
       sandbox.restore();
     });
 
@@ -229,14 +232,10 @@ describe("v3 lifecyle", () => {
       });
 
       const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(
-        result.isOk() &&
-          result.value.unresolvedPlaceHolders.length === 0 &&
-          result.value.env.size === 2 &&
-          result.value.env.get("OUTPUT_A") === "VALUE_A" &&
-          result.value.env.get("OUTPUT_B") === "VALUE_B"
-      );
+      const nextStub = sandbox.stub();
+      mockedDriverContext.progressBar = {
+        next: nextStub,
+      } as unknown as IProgressHandler;
 
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(
@@ -250,56 +249,8 @@ describe("v3 lifecyle", () => {
         summaries.length === 2 && summaries[0].length === 0 && summaries[1].length === 0,
         "summary list should have 2 empty items, since DriverA and DriverB doesn't implement execute()"
       );
-    });
 
-    it("should return error if one of the driver returns error", async () => {
-      const driverDefs: DriverDefinition[] = [];
-      driverDefs.push({
-        name: "xxx",
-        uses: "DriverA",
-        with: {},
-      });
-      driverDefs.push({
-        name: "xxx",
-        uses: "DriverB",
-        with: {},
-      });
-
-      driverDefs.push({
-        name: "xxx",
-        uses: "DriverThatReturnsError",
-        with: {},
-      });
-
-      const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(result.isErr() && result.error.name === "fakeError");
-
-      const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
-      assert(
-        execResult.isErr() &&
-          execResult.error.kind === "PartialSuccess" &&
-          execResult.error.reason.kind === "DriverError" &&
-          execResult.error.reason.failedDriver.uses === "DriverThatReturnsError" &&
-          execResult.error.reason.error.name === "fakeError" &&
-          execResult.error.env.size === 2 &&
-          execResult.error.env.get("OUTPUT_A") === "VALUE_A" &&
-          execResult.error.env.get("OUTPUT_B") === "VALUE_B"
-      );
-
-      assert(summaries.length === 3, "summary list should have 3 items");
-      assert(
-        summaries[0].length === 0,
-        "first summary should be empty, since DriverA doesn't implement execute()"
-      );
-      assert(
-        summaries[1].length === 0,
-        "second summary should be empty, since DriverB doesn't implement execute()"
-      );
-      assert(
-        summaries[2].length === 1 && summaries[2][0].includes("fake message"),
-        "third summary should be of size 1, since Driver returns an error"
-      );
+      assert.isTrue(nextStub.calledTwice);
     });
   });
 
@@ -326,29 +277,14 @@ describe("v3 lifecyle", () => {
     });
 
     it("should replace all placeholders", async () => {
-      let driverDefs: DriverDefinition[] = [];
+      const driverDefs: DriverDefinition[] = [];
       driverDefs.push({
         uses: "DriverThatCapitalize",
         with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
       });
 
-      let lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(
-        result.isOk() &&
-          result.value.unresolvedPlaceHolders.length === 0 &&
-          result.value.env.get("OUTPUT") === "HELLO XXX"
-      );
+      const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
 
-      assert((driverDefs[0].with as any).INPUT_A === "hello xxx");
-
-      driverDefs = [];
-      driverDefs.push({
-        uses: "DriverThatCapitalize",
-        with: { INPUT_A: "hello ${{ SOME_ENV_VAR }}" },
-      });
-
-      lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
       const { result: execResult, summaries } = await lifecycle.execute(mockedDriverContext);
       assert(execResult.isOk() && execResult.value.get("OUTPUT") === "HELLO XXX");
       assert(summaries.length === 1 && summaries[0].length === 0);
@@ -403,12 +339,6 @@ describe("v3 lifecyle", () => {
       });
 
       let lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(
-        result.isOk() &&
-          result.value.unresolvedPlaceHolders.length === 0 &&
-          result.value.env.get("OUTPUT") === "HELLO XXX AND YYY"
-      );
 
       driverDefs = [];
       driverDefs.push({
@@ -434,13 +364,6 @@ describe("v3 lifecyle", () => {
       });
 
       let lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(
-        result.isOk() &&
-          result.value.unresolvedPlaceHolders.length === 0 &&
-          result.value.env.get("OUTPUT") === "HELLO XXX" &&
-          result.value.env.get("OUTPUT_C") === "hello yyy"
-      );
 
       driverDefs = [];
       driverDefs.push({
@@ -473,12 +396,6 @@ describe("v3 lifecyle", () => {
       });
 
       let lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(
-        result.isOk() &&
-          result.value.unresolvedPlaceHolders.length === 0 &&
-          result.value.env.get("OUTPUT_D") === "hello xxx,hello yyy"
-      );
 
       driverDefs = [];
       driverDefs.push({
@@ -559,6 +476,7 @@ describe("v3 lifecyle", () => {
     });
 
     after(() => {
+      mockedDriverContext.progressBar = undefined;
       sandbox.restore();
     });
 
@@ -574,17 +492,6 @@ describe("v3 lifecyle", () => {
       });
 
       const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(
-        result.isOk() &&
-          result.value.unresolvedPlaceHolders.length === 5 &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "SOME_ENV_VAR") &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "AAA") &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "BBB") &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "CCC") &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "OTHER_ENV_VAR") &&
-          result.value.env.size === 0
-      );
 
       const unresolved = lifecycle.resolvePlaceholders();
       assert(
@@ -628,17 +535,6 @@ describe("v3 lifecyle", () => {
       });
 
       const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
-      const result = await lifecycle.run(mockedDriverContext);
-      assert(
-        result.isOk() &&
-          result.value.unresolvedPlaceHolders.length === 5 &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "SOME_ENV_VAR") &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "AAA") &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "BBB") &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "CCC") &&
-          result.value.unresolvedPlaceHolders.some((x) => x === "OTHER_ENV_VAR") &&
-          result.value.env.size === 0
-      );
 
       const unresolved = lifecycle.resolvePlaceholders();
       assert(
@@ -682,6 +578,10 @@ describe("v3 lifecyle", () => {
         });
 
         const lifecycle = new Lifecycle("configureApp", driverDefs, "1.0.0");
+        const nextStub = sandbox.stub();
+        mockedDriverContext.progressBar = {
+          next: nextStub,
+        } as unknown as IProgressHandler;
         const { result, summaries } = await lifecycle.execute(mockedDriverContext);
         assert(
           result.isErr() &&
@@ -696,6 +596,8 @@ describe("v3 lifecyle", () => {
             summaries[0].length === 1 &&
             summaries[0][0].includes("Unresolved placeholders")
         );
+
+        assert.isTrue(nextStub.calledOnce);
       });
     });
   });

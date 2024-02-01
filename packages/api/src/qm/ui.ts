@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { LocalFunc } from ".";
+import { LocalFunc, ValidateFunc } from ".";
 import { FxError } from "../error";
 import { OnSelectionChangeFunc, StaticOptions } from "../qm/question";
 import { Inputs, OptionItem } from "../types";
@@ -40,7 +40,7 @@ export interface UIConfig<T> {
   /**
    * default input value
    */
-  default?: T;
+  default?: T | (() => Promise<T>);
 
   /**
    * A function that will be called to validate input and to give a hint to the user.
@@ -61,6 +61,13 @@ export interface UIConfig<T> {
   buttons?: { icon: string; tooltip: string; command: string }[];
 }
 
+export interface ConfirmConfig extends UIConfig<boolean> {
+  /**
+   * display text for option true or false
+   */
+  transformer?: (value: boolean) => string;
+}
+
 /**
  * single selection UI config
  */
@@ -69,6 +76,9 @@ export interface SingleSelectConfig extends UIConfig<string> {
    * option array or a callback function which returns option array
    */
   options: StaticOptions | (() => Promise<StaticOptions>);
+
+  default?: string | (() => Promise<string>);
+
   /**
    * This config only works for option items with `OptionItem[]` type. If `returnObject` is true, the answer value is an `OptionItem` object; otherwise, the answer value is the `id` string of the `OptionItem`.
    * In case of option items with `string[]` type, whether `returnObject` is true or false, the returned answer value is always a string.
@@ -89,6 +99,9 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
    * option array or a callback function which returns option array
    */
   options: StaticOptions | (() => Promise<StaticOptions>);
+
+  default?: string[] | (() => Promise<string[]>);
+
   /**
    * This config only works for option items with `OptionItem[]` type. If `returnObject` is true, the answer value is an array of `OptionItem` objects; otherwise, the answer value is an array of `id` strings.
    * In case of option items with `string[]` type, whether `returnObject` is true or false, the returned answer value is always a string array.
@@ -116,6 +129,19 @@ export interface InputTextConfig extends UIConfig<string> {
    * If the input value should be hidden. Defaults to false.
    */
   password?: boolean;
+
+  default?: string | (() => Promise<string>);
+
+  /**
+   * A function that will be called to validate the input that user accepted.
+   *
+   * @param input The current value of the input to be validated.
+   * @return A human-readable string which is presented as diagnostic message.
+   * Return `undefined` when 'value' is valid.
+   */
+  additionalValidationOnAccept?: (
+    input: string
+  ) => string | undefined | Promise<string | undefined>;
 }
 
 /**
@@ -134,6 +160,8 @@ export type SelectFileConfig = UIConfig<string> & {
    * ```
    */
   filters?: { [name: string]: string[] };
+
+  default?: string | (() => Promise<string>);
 
   /**
    * Possible files that will be listed for users to select.
@@ -162,12 +190,16 @@ export type SelectFilesConfig = UIConfig<string[]> & {
    * ```
    */
   filters?: { [name: string]: string[] };
+
+  default?: string[] | (() => Promise<string[]>);
 };
 
 /**
  * folder selector config
  */
-export type SelectFolderConfig = UIConfig<string>;
+export type SelectFolderConfig = UIConfig<string> & {
+  default?: string | (() => Promise<string>);
+};
 
 /**
  * func execution config
@@ -186,7 +218,7 @@ export interface SingleFileOrInputConfig extends UIConfig<string> {
   /**
    * Config for the input box.
    */
-  inputBoxConfig: InputTextConfig;
+  inputBoxConfig: UIConfig<string>;
 
   /**
    * This will only take effect in VSC.
@@ -218,6 +250,8 @@ export interface InputResult<T> {
   result?: T;
 }
 
+export type ConfirmResult = InputResult<boolean>;
+
 export type SingleSelectResult = InputResult<string | OptionItem>;
 
 export type MultiSelectResult = InputResult<StaticOptions>;
@@ -234,6 +268,13 @@ export type SelectFolderResult = InputResult<string>;
  * Definition of user interaction, which is platform independent
  */
 export interface UserInteraction {
+  /**
+   * Shows confirm dialog
+   * @param config confirm config
+   * @returns A promise that resolves to the confirm result wrapper or FxError
+   * @throws FxError
+   */
+  confirm?: (config: ConfirmConfig) => Promise<Result<ConfirmResult, FxError>>;
   /**
    * Shows a single selection list
    * @param config single selection config
@@ -351,6 +392,8 @@ export interface UserInteraction {
     shell?: string;
     timeout?: number;
     env?: { [k: string]: string };
+    shellName?: string;
+    iconPath?: string;
   }): Promise<Result<string, FxError>>;
 
   /**

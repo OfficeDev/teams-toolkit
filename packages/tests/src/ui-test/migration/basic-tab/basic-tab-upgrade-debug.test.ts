@@ -1,6 +1,5 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { MigrationTestContext } from "../migrationContext";
 import {
   Timeout,
@@ -8,21 +7,21 @@ import {
   Notification,
   LocalDebugTaskLabel,
   CliVersion,
-} from "../../../constants";
+} from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import { initPage, validateTabNoneSSO } from "../../../playwrightOperation";
+import {
+  initPage,
+  validateTabNoneSSO,
+} from "../../../utils/playwrightOperation";
 import {
   validateNotification,
   startDebugging,
-  upgrade,
   waitForTerminal,
   validateUpgrade,
   upgradeByCommandPalette,
-} from "../../../vscodeOperation";
+} from "../../../utils/vscodeOperation";
 import { CliHelper } from "../../cliHelper";
-import { execCommand } from "../../../utils/execCommand";
-import { expect } from "chai";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -33,7 +32,7 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     mirgationDebugTestContext = new MigrationTestContext(
-      Capability.BasicTab,
+      Capability.TabNonSso,
       "javascript"
     );
     await mirgationDebugTestContext.before();
@@ -51,13 +50,6 @@ describe("Migration Tests", function () {
       author: "v-helzha@microsoft.com",
     },
     async () => {
-      // install v2 stable cli 1.2.6
-      await CliHelper.installCLI(CliVersion.V2TeamsToolkitStable425, false);
-      const result = await execCommand("./", "teamsfx -v");
-      console.log(result.stdout);
-      expect(
-        (result.stdout as string).includes(CliVersion.V2TeamsToolkitStable425)
-      ).to.be.true;
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
       // verify popup
@@ -68,8 +60,6 @@ describe("Migration Tests", function () {
       }
 
       // upgrade
-      // await startDebugging();
-      // await upgrade();
       await upgradeByCommandPalette();
       // verify upgrade
       await validateUpgrade();
@@ -78,7 +68,7 @@ describe("Migration Tests", function () {
 
       // local debug with TTK
       try {
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
         await waitForTerminal(
           LocalDebugTaskLabel.StartFrontend,
           "Compiled successfully!"

@@ -37,6 +37,7 @@ import {
 import { UserCancelError } from "../../../src/error/common";
 import { MockTools, randomAppName } from "../../core/utils";
 import { mockedResolveDriverInstances } from "./coordinator.test";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 const versionInfo: VersionInfo = {
   version: MetadataV3.projectVersion,
@@ -44,11 +45,13 @@ const versionInfo: VersionInfo = {
 };
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator provision", () => {
+  let envRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
   afterEach(() => {
     sandbox.restore();
+    envRestore?.();
   });
 
   beforeEach(() => {
@@ -70,12 +73,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -111,7 +108,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -174,12 +171,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -207,7 +198,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -242,12 +233,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -261,7 +246,7 @@ describe("coordinator provision", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "ensureSubscription").resolves(
       ok({
         subscriptionId: "mockSubId",
@@ -310,6 +295,9 @@ describe("coordinator provision", () => {
     assert.isTrue(res.isOk());
   });
   it("provision happy path: validate multi-env", async () => {
+    envRestore = mockedEnv({
+      TEAMSFX_ENV: "dev",
+    });
     const mockProjectModel: ProjectModel = {
       version: "1.0.0",
       provision: {
@@ -320,12 +308,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -341,7 +323,7 @@ describe("coordinator provision", () => {
     sandbox.stub(metadataUtil, "parse").resolves(ok(mockProjectModel));
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "ensureSubscription").resolves(
       ok({
         subscriptionId: "mockSubId",
@@ -419,12 +401,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -438,7 +414,7 @@ describe("coordinator provision", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "ensureSubscription").resolves(
       ok({
         subscriptionId: "mockSubId",
@@ -500,12 +476,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -519,7 +489,7 @@ describe("coordinator provision", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "ensureSubscription").resolves(
       ok({
         subscriptionId: "mockSubId",
@@ -572,12 +542,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -598,7 +562,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.ui, "selectOption").callsFake(async (config) => {
       if (config.name === "env") {
         return ok({ type: "success", result: "dev" });
@@ -634,12 +598,6 @@ describe("coordinator provision", () => {
             },
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -689,12 +647,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -729,7 +681,7 @@ describe("coordinator provision", () => {
       })
     );
 
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
       .resolves(undefined);
@@ -760,12 +712,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -801,7 +747,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -851,12 +797,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -903,7 +843,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -953,12 +893,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1021,12 +955,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1060,7 +988,7 @@ describe("coordinator provision", () => {
         tenantUserName: "mockM365UserName",
       })
     );
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
     sandbox
       .stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription")
@@ -1096,12 +1024,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1123,7 +1045,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1161,12 +1083,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1190,7 +1106,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1228,12 +1144,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1291,12 +1201,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1331,7 +1235,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1378,12 +1282,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1418,7 +1316,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1461,12 +1359,6 @@ describe("coordinator provision", () => {
       provision: {
         name: "configureApp",
         driverDefs: [],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -1503,12 +1395,6 @@ describe("coordinator provision", () => {
       provision: {
         name: "configureApp",
         driverDefs: [],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -1554,12 +1440,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1596,7 +1476,7 @@ describe("coordinator provision", () => {
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
     sandbox
       .stub(provisionUtils, "ensureM365TenantMatchesV3")
-      .resolves(err(new UserError("coordinator", "checkM365TenantError", "msg", "msg")));
+      .returns(err(new UserError("coordinator", "checkM365TenantError", "msg", "msg")));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1640,12 +1520,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: [],
-          });
-        },
         resolvePlaceholders: () => {
           return [];
         },
@@ -1666,7 +1540,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1700,12 +1574,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1741,7 +1609,7 @@ describe("coordinator provision", () => {
       })
     );
     sandbox.stub(provisionUtils, "askForProvisionConsentV3").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(tools.tokenProvider.azureAccountProvider, "getSelectedSubscription").resolves({
       subscriptionId: "mockSubId",
       tenantId: "mockTenantId",
@@ -1795,12 +1663,6 @@ describe("coordinator provision", () => {
             with: undefined,
           },
         ],
-        run: async (ctx: DriverContext) => {
-          return ok({
-            env: new Map(),
-            unresolvedPlaceHolders: ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"],
-          });
-        },
         resolvePlaceholders: () => {
           return ["AZURE_SUBSCRIPTION_ID", "AZURE_RESOURCE_GROUP_NAME"];
         },
@@ -1814,7 +1676,7 @@ describe("coordinator provision", () => {
     sandbox.stub(envUtil, "listEnv").resolves(ok(["dev", "prod"]));
     sandbox.stub(envUtil, "readEnv").resolves(ok({}));
     sandbox.stub(envUtil, "writeEnv").resolves(ok(undefined));
-    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").resolves(ok(undefined));
+    sandbox.stub(provisionUtils, "ensureM365TenantMatchesV3").returns(ok(undefined));
     sandbox.stub(provisionUtils, "getM365TenantId").resolves(
       ok({
         tenantIdInToken: "mockM365Tenant",

@@ -41,19 +41,33 @@ on:
         required: false
         type: string
 
-      target-testplan-id:
-        description: "target testplan id"
+      source-testplan-id:
+        description: "source testplan id: 24569079."
         required: false
         type: string
+        default: "24569079"
 
+      target-testplan-name:
+          description: "For example: CY230919. Sync test result to this test plan."
+          required: false
+          type: string
   schedule:
     - cron: "0 18 * * *"
+
+permissions:
+  actions: read
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     env:
       ADO_TOKEN: ${{ secrets.ADO_PAT }}
+      AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
+      TARGET_TEST_PLAN_NAME: ${{ github.event.inputs.target-testplan-name }}
+      AZURE_CLIENT_ID: ${{ secrets.TEST_AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.TEST_AZURE_CLIENT_SECRET }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+
     steps:
       - name: Init GitHub CLI
         run: |
@@ -91,13 +105,17 @@ jobs:
       - name: Setup node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
+      
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - name: create pvt file (random platform/node)
         if: ${{ github.event.schedule == '0 18 * * *' }} || ${{ github.event.inputs.test-case }} == ''
         working-directory: ./packages/tests
         run: |
-          npm install
+          pnpm --filter=@microsoft/teamsfx-test install
           npx ts-node ./scripts/createRandomPVT.ts
 
       - name: setup matrix
@@ -135,23 +153,26 @@ jobs:
             ./${{ steps.ttk.outputs.package }}
 
       - name: Archive Test Plan
-        if: contains(steps.ttk.outputs.version, 'alpha') == false
+        if: ${{ github.event.inputs.target-testplan-name != '' }}
         working-directory: ./packages/tests
         run: |
-          npm install
-          testplanid='${{ github.event.inputs.target-testplan-id }}'
-          if [ -z "$testplanid" ]; then
-            testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ steps.ttk.outputs.version }}`
-          fi
+          pnpm install
+          testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact
-        if: contains(steps.ttk.outputs.version, 'alpha') == false
+        if: ${{ github.event.inputs.target-testplan-name != '' }}
         uses: actions/upload-artifact@v3
         with:
           name: testplan
           path: |
             ./packages/tests/testplan.json
+      
+      - name: clean devtunnel
+        run: |
+          curl -sL https://aka.ms/DevTunnelCliInstall | bash
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ~/bin/devtunnel delete-all -f
 
     outputs:
       npm-tag: ${{ steps.bvt.outputs.npm-tag || steps.pvt.outputs.npm-tag }}
@@ -245,13 +266,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install azure-functions-core-tools-4
 
-      - name: Install Win tools (win)
-        if: matrix.os == 'windows-latest'
+      - name: Install devtunnel (ubuntu)
+        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         run: |
-          Start-process powershell -Verb RunAs -ArgumentList "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))" -Wait 
-          Write-Host "Finish Installing Choco."
-          Start-Process powershell -verb RunAs -ArgumentList "C:\ProgramData\Chocolatey\choco.exe install openssl -y --force" -wait 
-          Write-Host "Finish Installing openssl."
+          curl -sL https://aka.ms/DevTunnelCliInstall | bash
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+  
+      - name: Install devtunnel (windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          powershell Invoke-WebRequest -Uri https://aka.ms/TunnelsCliDownload/win-x64 -OutFile devtunnel.exe
+          $currentDirectory = (Get-Location).Path
+          $executablePath = Join-Path $currentDirectory "devtunnel.exe"
+          [System.Environment]::SetEnvironmentVariable("Path", "$currentPath;$executablePath", [System.EnvironmentVariableTarget]::Machine)
+          ./devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
 
       - name: Set cert (win)
         if: matrix.os == 'windows-latest'
@@ -264,10 +293,20 @@ jobs:
           New-Item -Path $certfolder -ItemType Directory
           Start-Process powershell -verb RunAs -ArgumentList $filePath -wait
 
+      - name: Update npm packages for UI Test
+        working-directory: packages/tests
+        run: |
+          npm install @microsoft/teamsfx-core@latest @microsoft/teamsfx-api@latest @microsoft/teamsapp-cli@latest
+
       - name: Install npm packages
         working-directory: packages/tests
         run: |
           npm install
+
+      - name: Download browsers for playwright
+        working-directory: packages/tests
+        run: |
+          npx playwright install
 
       - name: Download TTK
         uses: actions/download-artifact@v3
@@ -297,10 +336,18 @@ jobs:
         if: contains(matrix.test-case,  'upgrade') == false
         working-directory: packages/tests
         run: |
-          npm install @microsoft/teamsfx-cli@${{ needs.setup.outputs.npm-tag }}
+          npm install @microsoft/teamsapp-cli@${{ needs.setup.outputs.npm-tag }}
+
+      - name: Download samples (migration use v1.1.0)
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case,  'upgrade')
+        uses: actions/checkout@v3
+        with:
+          repository: OfficeDev/TeamsFx-Samples
+          ref: v1.1.0
+          path: ./packages/tests/resource
 
       - name: Download samples
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -308,7 +355,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples from another repo
-        if: contains(matrix.test-case, 'proactive-message')
+        if: contains(matrix.test-case, 'proactive-message') && contains(matrix.test-case,  'upgrade') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
@@ -320,6 +367,26 @@ jobs:
         run: |
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
           npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
+
+      - name: Extract VSCode & chromedriver(unix)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
+          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
+
+      - name: Extract VSCode & chromedriver(mac)
+        if: matrix.os == 'macos-latest' 
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+
+      - name: Extract VSCode & chromedriver(win)
+        if: matrix.os == 'windows-latest'
+        working-directory: packages/tests
+        run: |
+          7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
+          7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
 
       - name: M365 Login
         working-directory: packages/tests
@@ -398,19 +465,21 @@ jobs:
             ~/.fx/telemetryTest.log
 
       - name: Download TestPlan
-        if: always() && contains(needs.setup.outputs.ttk-version, 'alpha') == false
+        if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         uses: actions/download-artifact@v3
         with:
           name: testplan
           path: ./packages/tests
 
       - name: Sync to Azure DevOps Test Plan
-        if: always() && contains(needs.setup.outputs.ttk-version, 'alpha') == false
+        if: ${{ always() && github.event.inputs.target-testplan-name != '' }}
         working-directory: packages/tests
         run: |
           npx ts-node src/scripts/testPlan.ts report ./testplan.json ./mochawesome-report/mochawesome.json
 
   rerun:
+    permissions:
+      actions: write
     needs: main
     if: ${{ github.event_name == 'schedule' && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest
@@ -485,7 +554,7 @@ jobs:
 
             status=`echo $jobs | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion'`
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
-              emails="$emails;$email"
+              emails="$emails;$email;zhendr@microsoft.com"
             fi
 
             status=`echo $jobs | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion'`
@@ -522,7 +591,7 @@ jobs:
 
           done <<< $cases
 
-          body="Release: ${{ needs.setup.outputs.ttk-package }}. <br/> <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>OS</th> <th>NODE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $lists </table> <br />"
+          body="Dashboard App: <a href=\\\"https:\/\/teams.microsoft.com\/l\/entity\/34d3400d-aa60-4ad5-9746-9d1b525da16e\/_djb2_msteams_prefix_3816426998?context=%7B%22channelId%22%3A%2219%3A79488ced607f4fbf8d8433e931cad176%40thread.tacv2%22%7D&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\\\">Click Here to Open Dashboard App</a>  <br/> Release: ${{ needs.setup.outputs.ttk-package }}. <br/> <table class=\\\"w3-table w3-striped w3-bordered\\\"> <tr> <th>CASE</th> <th>OS</th> <th>NODE</th> <th>STATUS</th> <th>AUTHOR</th> <th>DURATION</th> </tr> $lists </table> <br />"
 
           total=$((passed+failed))
 
@@ -538,9 +607,11 @@ jobs:
           echo "subject=$subject" >> $GITHUB_OUTPUT
 
       - name: Send E-mail
-        run: |
-          curl \
-            --request POST \
-            --header "Content-Type: application/json" \
-            --data '{"to": "${{ steps.list-jobs.outputs.to }}", "body": "${{ steps.list-jobs.outputs.body }}", "subject": "${{ steps.list-jobs.outputs.subject }}", "apiKey": "${{ secrets.MAIL_API_KEY }}"}' \
-            'https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs'
+        uses: ./.github/actions/send-email-report
+        env:
+          TO: ${{ steps.list-jobs.outputs.to }}
+          BODY: '"${{ steps.list-jobs.outputs.body }}"'
+          SUBJECT: ${{ steps.list-jobs.outputs.subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}

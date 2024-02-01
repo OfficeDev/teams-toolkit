@@ -70,7 +70,7 @@ export class ConversationBot {
    * @remarks
    * Only work on server side.
    */
-  public async requestHandler(
+  public requestHandler(
     req: WebRequest,
     res: WebResponse,
     logic?: (context: TurnContext) => Promise<any>

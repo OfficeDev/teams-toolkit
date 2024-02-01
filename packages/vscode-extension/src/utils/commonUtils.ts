@@ -6,16 +6,11 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { format } from "util";
-import * as vscode from "vscode";
 
 import { ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
-import {
-  PluginNames,
-  initializePreviewFeatureFlags,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { PluginNames, isValidProject } from "@microsoft/teamsfx-core";
+import { glob } from "glob";
 import * as extensionPackage from "../../package.json";
-import { CONFIGURATION_PREFIX, ConfigurationKey } from "../constants";
 import * as commonUtils from "../debug/commonUtils";
 import { getV3TeamsAppId } from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
@@ -106,7 +101,7 @@ export async function getAppName(): Promise<string | undefined> {
   try {
     const ws = globalVariables.workspaceUri.fsPath;
     const nameRes = await core.getTeamsAppName(ws);
-    if (nameRes.isOk()) {
+    if (nameRes.isOk() && nameRes.value != "") {
       return nameRes.value;
     }
   } catch (e) {}
@@ -114,12 +109,8 @@ export async function getAppName(): Promise<string | undefined> {
 }
 
 export function openFolderInExplorer(folderPath: string): void {
-  const command = format('start "" %s', folderPath);
+  const command = format('start "" "%s"', folderPath);
   exec(command);
-}
-
-export async function isExistingTabApp(workspacePath: string): Promise<boolean> {
-  return false;
 }
 
 export async function isM365Project(workspacePath: string): Promise<boolean> {
@@ -139,82 +130,12 @@ export async function isM365Project(workspacePath: string): Promise<boolean> {
 }
 
 export function anonymizeFilePaths(stack?: string): string {
-  if (stack === undefined || stack === null) {
+  if (!stack) {
     return "";
   }
-
-  const cleanupPatterns: RegExp[] = [];
-
-  let updatedStack = stack;
-
-  const cleanUpIndexes: [number, number][] = [];
-
-  for (const regexp of cleanupPatterns) {
-    while (true) {
-      const result = regexp.exec(stack);
-
-      if (!result) {
-        break;
-      }
-
-      cleanUpIndexes.push([result.index, regexp.lastIndex]);
-    }
-  }
-
-  const nodeModulesRegex = /^[\\\/]?(node_modules|node_modules\.asar)[\\\/]/;
-
-  const fileRegex =
-    /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
-
-  let lastIndex = 0;
-
-  updatedStack = "";
-
-  while (true) {
-    const result = fileRegex.exec(stack);
-
-    if (!result) {
-      break;
-    }
-
-    // Anoynimize user file paths that do not need to be retained or cleaned up.
-
-    if (
-      !nodeModulesRegex.test(result[0]) &&
-      cleanUpIndexes.every(([x, y]) => result.index < x || result.index >= y)
-    ) {
-      updatedStack += stack.substring(lastIndex, result.index) + "<REDACTED: user-file-path>";
-
-      lastIndex = fileRegex.lastIndex;
-    }
-  }
-
-  if (lastIndex < stack.length) {
-    updatedStack += stack.substr(lastIndex);
-  }
-
-  // sanitize with configured cleanup patterns
-
-  for (const regexp of cleanupPatterns) {
-    updatedStack = updatedStack.replace(regexp, "");
-  }
-
-  return updatedStack;
-}
-
-export function getConfiguration(key: string): boolean {
-  const configuration: vscode.WorkspaceConfiguration =
-    vscode.workspace.getConfiguration(CONFIGURATION_PREFIX);
-
-  return configuration.get<boolean>(key, false);
-}
-
-export function syncFeatureFlags() {
-  process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
-    ConfigurationKey.BicepEnvCheckerEnable
-  ).toString();
-
-  initializePreviewFeatureFlags();
+  const filePathRegex = /\s\(([a-zA-Z]:(\\|\/)([^\\\/\s:]+(\\|\/))+|\/([^\s:\/]+\/)+)/g;
+  const redactedErrorMessage = stack.replace(filePathRegex, " (<REDACTED: user-file-path>/");
+  return redactedErrorMessage;
 }
 
 export class FeatureFlags {
@@ -222,6 +143,7 @@ export class FeatureFlags {
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
+  static readonly DevelopCopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting
@@ -239,7 +161,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 export function getAllFeatureFlags(): string[] | undefined {
   const result = Object.values(FeatureFlags)
 
-    .filter((featureFlag) => {
+    .filter((featureFlag: string) => {
       return isFeatureFlagEnabled(featureFlag);
     })
 
@@ -356,8 +278,8 @@ export function isTriggerFromWalkThrough(args?: any[]): boolean {
   if (!args || (args && args.length === 0)) {
     return false;
   } else if (
-    args[0].toString() === TelemetryTriggerFrom.WalkThrough ||
-    args[0].toString() === TelemetryTriggerFrom.Notification
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.WalkThrough ||
+    (args[0] as TelemetryTriggerFrom).toString() === TelemetryTriggerFrom.Notification
   ) {
     return true;
   }
@@ -373,7 +295,7 @@ export function getTriggerFromProperty(args?: any[]) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CommandPalette };
   }
 
-  switch (args[0].toString()) {
+  switch ((args[0] as TelemetryTriggerFrom).toString()) {
     case TelemetryTriggerFrom.TreeView:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView };
     case TelemetryTriggerFrom.ViewTitleNavigation:
@@ -399,4 +321,51 @@ export function getTriggerFromProperty(args?: any[]) {
     default:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Unknow };
   }
+}
+
+export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
+  // Skip large files which are unlikely to be adaptive cards to prevent performance impact.
+  const fileSizeLimit = 1024 * 1024;
+
+  if (globalVariables.workspaceUri) {
+    const files = await glob(globalVariables.workspaceUri.path + "/**/*.json", {
+      ignore: ["**/node_modules/**", "./node_modules/**"],
+    });
+    for (const file of files) {
+      let content = "";
+      let fd = -1;
+      try {
+        fd = await fs.open(file, "r");
+        const stat = await fs.fstat(fd);
+        // limit file size to prevent performance impact
+        if (stat.size > fileSizeLimit) {
+          continue;
+        }
+
+        // avoid security issue
+        // https://github.com/OfficeDev/TeamsFx/security/code-scanning/2664
+        const buffer = new Uint8Array(fileSizeLimit);
+        const { bytesRead } = await fs.read(fd, buffer, 0, buffer.byteLength, 0);
+        content = new TextDecoder().decode(buffer.slice(0, bytesRead));
+      } catch (e) {
+        // skip invalid files
+        continue;
+      } finally {
+        if (fd >= 0) {
+          fs.close(fd).catch(() => {});
+        }
+      }
+
+      if (isAdaptiveCard(content)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function isAdaptiveCard(content: string): boolean {
+  const pattern = /"type"\s*:\s*"AdaptiveCard"/;
+  return pattern.test(content);
 }

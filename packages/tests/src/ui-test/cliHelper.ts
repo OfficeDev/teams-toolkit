@@ -10,10 +10,9 @@ import {
 } from "../utils/commonUtils";
 import {
   TemplateProjectFolder,
-  Resource,
   ResourceToDeploy,
   Capability,
-} from "../constants";
+} from "../utils/constants";
 import { isV3Enabled } from "@microsoft/teamsfx-core";
 import path from "path";
 import * as chai from "chai";
@@ -21,42 +20,12 @@ import { Executor } from "../utils/executor";
 import * as os from "os";
 
 export class CliHelper {
-  static async setSubscription(
-    subscription: string,
-    projectPath: string,
-    processEnv?: NodeJS.ProcessEnv
-  ) {
-    const command = `teamsfx account set --subscription ${subscription}`;
-    const timeout = 100000;
-    try {
-      const result = await execAsync(command, {
-        cwd: projectPath,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
-      if (result.stderr) {
-        console.log(
-          `[Failed] set subscription for ${projectPath}. Error message: ${result.stderr}`
-        );
-      } else {
-        console.log(`[Successfully] set subscription for ${projectPath}`);
-      }
-    } catch (e: any) {
-      console.log(
-        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
-      );
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
-  }
-
   static async addEnv(
     env: string,
     projectPath: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const command = `teamsfx env add ${env} --env dev`;
+    const command = `teamsapp env add ${env} --env dev`;
     const timeout = 100000;
 
     try {
@@ -86,26 +55,43 @@ export class CliHelper {
     projectPath: string,
     env: "local" | "dev" = "local",
     v3 = true,
-    processEnv?: NodeJS.ProcessEnv
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 10 * 60 * 1000
   ) {
     if (!isV3Enabled() && env === "local") {
       chai.assert.fail("local env is not supported in v2");
     }
     console.log(`[Provision] ${projectPath}`);
-    const timeout = timeoutPromise(1000 * 60 * 10);
-    const version = await execAsyncWithRetry(`npx teamsfx -v `, {
-      cwd: projectPath,
-      env: processEnv ? processEnv : process.env,
-    });
+    const timeout = timeoutPromise(delay);
+    let command = "";
+    if (v3) {
+      command = `npx teamsapp -v`;
+    } else {
+      command = `npx teamsfx -v`;
+    }
+    const version = await execAsyncWithRetry(
+      command,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+      },
+      1
+    );
     console.log(`[Provision] cli version: ${version.stdout}`);
 
     if (v3) {
       const childProcess = spawnCommand(
         os.type() === "Windows_NT" ? "npx.cmd" : "npx",
-        ["teamsfx", "provision", "--env", env, "--verbose"],
+        ["teamsapp", "provision", "--env", env, "--verbose"],
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,
+        },
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          console.log(error);
         }
       );
       await Promise.all([timeout, childProcess]);
@@ -130,6 +116,12 @@ export class CliHelper {
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,
+        },
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          console.log(error);
         }
       );
       await Promise.all([timeout, childProcess]);
@@ -146,7 +138,7 @@ export class CliHelper {
   ) {
     console.log(`[publish] ${projectPath}`);
     const result = await execAsyncWithRetry(
-      `teamsfx publish --env ${env} --verbose  ${option}`,
+      `teamsapp publish --env ${env} --verbose  ${option}`,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
@@ -174,78 +166,6 @@ export class CliHelper {
     console.log(message);
   }
 
-  static async addApiConnection(
-    projectPath: string,
-    commonInputs: string,
-    authType: string,
-    options = ""
-  ) {
-    if (isV3Enabled()) {
-      console.log("add command is not supported in v3");
-    } else {
-      const result = await execAsyncWithRetry(
-        `teamsfx add api-connection ${authType} ${commonInputs} ${options} --interactive false`,
-        {
-          cwd: projectPath,
-          timeout: 0,
-        }
-      );
-
-      if (result.stderr) {
-        console.log(
-          `[Failed] addApiConnection for ${projectPath}. Error message: ${result.stderr}`
-        );
-      } else {
-        console.log(`[Successfully] addApiConnection for ${projectPath}`);
-      }
-    }
-  }
-
-  static async addCICDWorkflows(
-    projectPath: string,
-    option = "",
-    processEnv?: NodeJS.ProcessEnv
-  ) {
-    if (isV3Enabled()) {
-      console.log("add command is not supported in v3");
-    } else {
-      const result = await execAsyncWithRetry(`teamsfx add cicd ${option}`, {
-        cwd: projectPath,
-        env: processEnv ? processEnv : process.env,
-        timeout: 0,
-      });
-
-      if (result.stderr) {
-        console.log(
-          `[Failed] addCICDWorkflows for ${projectPath}. Error message: ${result.stderr}`
-        );
-      } else {
-        console.log(`[Successfully] addCICDWorkflows for ${projectPath}`);
-      }
-    }
-  }
-
-  static async addExistingApi(projectPath: string, option = "") {
-    if (isV3Enabled()) {
-      console.log("add command is not supported in v3");
-    } else {
-      const result = await execAsyncWithRetry(
-        `teamsfx add api-connection ${option}`,
-        {
-          cwd: projectPath,
-          timeout: 0,
-        }
-      );
-      if (result.stderr) {
-        console.log(
-          `[Failed] addExistingApi for ${projectPath}. Error message: ${result.stderr}`
-        );
-      } else {
-        console.log(`[Successfully] addExistingApi for ${projectPath}`);
-      }
-    }
-  }
-
   static async updateAadManifest(
     projectPath: string,
     option = "",
@@ -254,7 +174,7 @@ export class CliHelper {
     newCommand?: string
   ) {
     const result = await execAsyncWithRetry(
-      `teamsfx update aad-app ${option} --interactive false`,
+      `tamsapp entra-app update ${option} --interactive false`,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
@@ -274,36 +194,77 @@ export class CliHelper {
   static async deploy(
     projectPath: string,
     env: "local" | "dev" = "local",
-    option = "",
-    processEnv?: NodeJS.ProcessEnv,
-    retries?: number,
-    newCommand?: string
+    v3 = true,
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 10 * 60 * 1000
   ) {
     if (!isV3Enabled() && env === "local") {
       chai.assert.fail(`[error] provision local only support in V3 project`);
     }
     console.log(`[Deploy] ${projectPath}`);
-    const timeout = timeoutPromise(1000 * 60 * 10);
+    const timeout = timeoutPromise(delay);
 
-    const childProcess = spawnCommand(
-      os.type() === "Windows_NT" ? "npx.cmd" : "npx",
-      [
-        "teamsfx",
-        "deploy",
-        "--env",
-        env,
-        "--verbose",
-        "--interactive",
-        "false",
-      ],
+    let command = "";
+    if (v3) {
+      command = `npx teamsapp -v`;
+    } else {
+      command = `npx teamsfx -v`;
+    }
+    const version = await execAsyncWithRetry(
+      command,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
-      }
+      },
+      1
     );
-    await Promise.all([timeout, childProcess]);
-    // close process
-    childProcess.kill("SIGKILL");
+    console.log(`[Deploy] cli version: ${version.stdout}`);
+
+    if (v3) {
+      const childProcess = spawnCommand(
+        os.type() === "Windows_NT" ? "npx.cmd" : "npx",
+        ["teamsapp", "deploy", "--env", env, "--verbose"],
+        {
+          cwd: projectPath,
+          env: processEnv ? processEnv : process.env,
+        },
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+      await Promise.all([timeout, childProcess]);
+      // close process
+      childProcess.kill("SIGKILL");
+    } else {
+      const childProcess = spawnCommand(
+        os.type() === "Windows_NT" ? "npx.cmd" : "npx",
+        [
+          "teamsfx",
+          "deploy",
+          "--env",
+          env,
+          "--verbose",
+          "--interactive",
+          "false",
+        ],
+        {
+          cwd: projectPath,
+          env: processEnv ? processEnv : process.env,
+        },
+        (data) => {
+          console.log(data);
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+      await Promise.all([timeout, childProcess]);
+      // close process
+      childProcess.kill("SIGKILL");
+    }
   }
 
   static async deployProject(
@@ -318,7 +279,7 @@ export class CliHelper {
       console.log("add command is not supported in v3");
     } else {
       const result = await execAsyncWithRetry(
-        `teamsfx deploy ${resourceToDeploy} ${option}`,
+        `teamsapp deploy ${resourceToDeploy} ${option}`,
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,
@@ -343,7 +304,7 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ): Promise<void> {
-    const command = `teamsfx new --interactive false --runtime dotnet --app-name ${appName} --capabilities ${capability} ${options}`;
+    const command = `teamsapp new --interactive false --runtime dotnet --app-name ${appName} --capability ${capability} ${options}`;
     const timeout = 100000;
     try {
       const result = await execAsync(command, {
@@ -379,10 +340,50 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv
   ) {
     console.log("isV3Enabled: " + isV3Enabled());
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    const command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
     const timeout = 100000;
     try {
-      await Executor.execute("teamsfx -v", testFolder);
+      await Executor.execute("teamsapp -v", testFolder);
+      await Executor.execute(command, testFolder);
+      const message = `scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with capability ${capability}`;
+      console.log(`[Successfully] ${message}`);
+    } catch (e: any) {
+      console.log(
+        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
+      );
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
+    }
+  }
+
+  static async createProjectWithCapabilityMigration(
+    appName: string,
+    testFolder: string,
+    capability: Capability,
+    lang: "javascript" | "typescript" = "javascript",
+    options = "",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    console.log("isV3Enabled: " + isV3Enabled());
+    let command;
+    if (isV3Enabled()) {
+      command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options}`;
+    } else {
+      command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
+    }
+    const timeout = 100000;
+    try {
+      if (isV3Enabled()) {
+        const { stdout } = await Executor.execute("teamsapp -v", testFolder);
+        console.log(stdout);
+      } else {
+        const { stdout } = await Executor.execute("teamsfx -v", testFolder);
+        console.log(stdout);
+      }
       await Executor.execute(command, testFolder);
       const message = `scaffold project to ${path.resolve(
         testFolder,
@@ -405,22 +406,16 @@ export class CliHelper {
     V3: boolean,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    console.log("isV3Enabled: " + V3);
-    if (V3) {
-      process.env["TEAMSFX_V3"] = "true";
-      process.env["TEAMSFX_V3_MIGRATION"] = "true";
-    } else {
-      process.env["TEAMSFX_V3"] = "false";
-      process.env["TEAMSFX_V3_MIGRATION"] = "false";
-    }
-    const command = `teamsfx new template ${template} --interactive false `;
+    process.env["TEAMSFX_V3"] = V3 ? "true" : "false";
+    process.env["TEAMSFX_V3_MIGRATION"] = V3 ? "true" : "false";
+
+    console.log("TEAMSFX_V3: " + process.env["TEAMSFX_V3"]);
+    console.log(await Executor.execute("teamsapp -v", testFolder));
+
+    const command = `teamsapp new sample ${template} --interactive false `;
     const timeout = 100000;
     try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
+      const result = await Executor.execute(command, testFolder);
 
       const message = `scaffold project to ${path.resolve(
         template
@@ -445,128 +440,52 @@ export class CliHelper {
     projectPath: string,
     env: string
   ): Promise<string> {
-    let value = "";
-    const command = `teamsfx config get ${key} --env ${env}`;
-    const timeout = 100000;
-    try {
-      const result = await execAsync(command, {
-        cwd: projectPath,
-        env: process.env,
-        timeout: timeout,
-      });
+    const value = "";
+    // const command = `teamsfx config get ${key} --env ${env}`;
+    // const timeout = 100000;
+    // try {
+    //   const result = await execAsync(command, {
+    //     cwd: projectPath,
+    //     env: process.env,
+    //     timeout: timeout,
+    //   });
 
-      const message = `get user settings in ${projectPath}. Key: ${key}`;
-      if (result.stderr) {
-        console.log(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        const arr = (result.stdout as string).split(":");
-        if (!arr || arr.length <= 1) {
-          console.log(
-            `[Failed] ${message}. Failed to get value from cli result. result: ${result.stdout}`
-          );
-        } else {
-          value = arr[1].trim() as string;
-          console.log(`[Successfully] ${message}.`);
-        }
-      }
-    } catch (e: any) {
-      console.log(
-        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
-      );
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
+    //   const message = `get user settings in ${projectPath}. Key: ${key}`;
+    //   if (result.stderr) {
+    //     console.log(`[Failed] ${message}. Error message: ${result.stderr}`);
+    //   } else {
+    //     const arr = (result.stdout as string).split(":");
+    //     if (!arr || arr.length <= 1) {
+    //       console.log(
+    //         `[Failed] ${message}. Failed to get value from cli result. result: ${result.stdout}`
+    //       );
+    //     } else {
+    //       value = arr[1].trim() as string;
+    //       console.log(`[Successfully] ${message}.`);
+    //     }
+    //   }
+    // } catch (e: any) {
+    //   console.log(
+    //     `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
+    //   );
+    //   if (e.killed && e.signal == "SIGTERM") {
+    //     console.log(`Command ${command} killed due to timeout ${timeout}`);
+    //   }
+    // }
     return value;
-  }
-
-  static async initDebug(
-    appName: string,
-    testFolder: string,
-    editor: "vsc" | "vs",
-    capability: "tab" | "bot",
-    spfx: "true" | "false" | undefined,
-    processEnv?: NodeJS.ProcessEnv,
-    options = ""
-  ) {
-    const command = `teamsfx init debug --interactive false --editor ${editor} --capability ${capability} ${
-      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
-    } ${options}`;
-    const timeout = 100000;
-    try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
-      const message = `teamsfx init debug to ${path.resolve(
-        testFolder,
-        appName
-      )} with editor=${editor}, capability=${capability}, spfx=${spfx}`;
-      if (result.stderr) {
-        console.log(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        console.log(`[Successfully] ${message}`);
-      }
-    } catch (e: any) {
-      console.log(
-        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
-      );
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
-  }
-
-  static async initInfra(
-    appName: string,
-    testFolder: string,
-    editor: "vsc" | "vs",
-    capability: "tab" | "bot",
-    spfx: "true" | "false" | undefined,
-    processEnv?: NodeJS.ProcessEnv,
-    options = ""
-  ) {
-    const command = `teamsfx init infra --interactive false --editor ${editor} --capability ${capability} ${
-      capability === "tab" && editor === "vsc" ? "--spfx " + spfx : ""
-    } ${options}`;
-    const timeout = 100000;
-    try {
-      const result = await execAsync(command, {
-        cwd: testFolder,
-        env: processEnv ? processEnv : process.env,
-        timeout: timeout,
-      });
-      const message = `teamsfx init infra to ${path.resolve(
-        testFolder,
-        appName
-      )} with editor=${editor}, capability=${capability}, spfx=${spfx}`;
-      if (result.stderr) {
-        console.log(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        console.log(`[Successfully] ${message}`);
-      }
-    } catch (e: any) {
-      console.log(
-        `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`
-      );
-      if (e.killed && e.signal == "SIGTERM") {
-        console.log(`Command ${command} killed due to timeout ${timeout}`);
-      }
-    }
   }
 
   static async installCLI(version: string, global: boolean, cwd = "./") {
     console.log(`install CLI with version ${version}`);
     if (global) {
       const { success } = await Executor.execute(
-        `npm install -g @microsoft/teamsfx-cli@${version}`,
+        `npm install -g @microsoft/teamsapp-cli@${version}`,
         cwd
       );
       chai.expect(success).to.be.true;
     } else {
       const { success } = await Executor.execute(
-        `npm install @microsoft/teamsfx-cli@${version}`,
+        `npm install @microsoft/teamsapp-cli@${version}`,
         cwd
       );
       chai.expect(success).to.be.true;
@@ -584,20 +503,34 @@ export class CliHelper {
 
   static async debugProject(
     projectPath: string,
-    env: "local" | "dev",
-    option = "",
-    processEnv?: NodeJS.ProcessEnv,
-    retries?: number,
-    newCommand?: string
+    env: "local" | "dev" = "local",
+    v3 = true,
+    processEnv: NodeJS.ProcessEnv = process.env,
+    delay: number = 8 * 60 * 1000
   ) {
     console.log(`[start] ${env} debug ... `);
-    const timeout = timeoutPromise(1000 * 60 * 10);
+    const timeout = timeoutPromise(delay);
     const childProcess = spawnCommand(
-      os.type() === "Windows_NT" ? "teamsfx.cmd" : "teamsfx",
-      ["preview", `--${env}`],
+      os.type() === "Windows_NT"
+        ? v3
+          ? "teamsapp.cmd"
+          : "teamsfx.cmd"
+        : v3
+        ? "teamsapp"
+        : "teamsfx",
+      v3 ? ["preview", "--env", env] : ["preview", `--${env}`],
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
+      },
+      (data) => {
+        console.log(data);
+      },
+      (error) => {
+        console.log(error);
+        if (error.includes("Error:")) {
+          chai.assert.fail(error);
+        }
       }
     );
     await Promise.all([timeout, childProcess]);
@@ -605,43 +538,37 @@ export class CliHelper {
       // close process & port
       childProcess.kill("SIGKILL");
     } catch (error) {
-      console.log(`kill process failed`);
+      console.log(`kill process failed, cause by: `, error);
     }
     try {
-      await killPort(53000);
-      console.log(`close port 53000 successfully`);
+      const result = await killPort(53000);
+      console.log(`close port 53000 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 53000 failed`);
+      console.log(`close port 53000 failed, cause by: `, error);
     }
     try {
-      await killPort(7071);
-      console.log(`close port 7071 successfully`);
+      const result = await killPort(7071);
+      console.log(`close port 7071 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 7071 failed`);
+      console.log(`close port 7071 failed, cause by: `, error);
     }
     try {
-      await killPort(9229);
-      console.log(`close port 9229 successfully`);
+      const result = await killPort(9229);
+      console.log(`close port 9229 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 9229 failed`);
+      console.log(`close port 9229 failed, cause by: `, error);
     }
     try {
-      await killPort(3978);
-      console.log(`close port 3978 successfully`);
+      const result = await killPort(3978);
+      console.log(`close port 3978 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 3978 failed`);
+      console.log(`close port 3978 failed, cause by: `, error);
     }
     try {
-      await killPort(9239);
-      console.log(`close port 9239 successfully`);
+      const result = await killPort(9239);
+      console.log(`close port 9239 successfully, `, result.stdout);
     } catch (error) {
-      console.log(`close port 9239 failed`);
-    }
-    try {
-      await killNgrok();
-      console.log(`close Ngrok successfully`);
-    } catch (error) {
-      console.log(`close Ngrok failed`);
+      console.log(`close port 9239 failed, cause by: `, error);
     }
     console.log("[success] debug successfully !!!");
   }

@@ -8,13 +8,17 @@ import chaiAsPromised from "chai-as-promised";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 import { FeatureFlagName } from "../../src/common/constants";
-import { initializePreviewFeatureFlags } from "../../src/common/featureFlags";
-
+import {
+  initializePreviewFeatureFlags,
+  isApiKeyEnabled,
+  isMultipleParametersEnabled,
+  isTeamsFxRebrandingEnabled,
+} from "../../src/common/featureFlags";
 chai.use(chaiAsPromised);
 
 describe("featureFlags", () => {
   describe("initializePreviewFeatureFlags()", () => {
-    let mockedEnvRestore: RestoreFn;
+    let mockedEnvRestore: RestoreFn = () => {};
 
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({}, { clear: true });
@@ -27,6 +31,57 @@ describe("featureFlags", () => {
     it("successfully open all feature flags", async () => {
       initializePreviewFeatureFlags();
       chai.assert.isTrue(process.env[FeatureFlagName.BotNotification] === "true");
+    });
+  });
+
+  describe("isApiKeyEnabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "true" });
+      const res = isApiKeyEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "false" });
+      const res = isApiKeyEnabled();
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("isMultipleParametersEnabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "true" });
+      const res = isMultipleParametersEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "false" });
+      const res = isMultipleParametersEnabled();
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("isTeamsFxRebrandingEnabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_REBRANDING: "true" });
+      const res = isTeamsFxRebrandingEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_REBRANDING: "false" });
+      const res = isTeamsFxRebrandingEnabled();
+      chai.assert.isFalse(res);
     });
   });
 });

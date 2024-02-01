@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { addChoiceDetail, splitLongStringByWidth } from "../../../src/prompts/utils";
+import { addChoiceDetail, nextPosition, splitLongStringByWidth } from "../../../src/prompts/utils";
 import { expect } from "../utils";
 
 describe("Prompts Utils Tests", function () {
@@ -37,5 +37,24 @@ describe("Prompts Utils Tests", function () {
     expect(output.split("\n").length).equals(2);
     expect(output).includes("abcd abcd abcd abcd ");
     expect(output).not.includes("abcd abcd abcd abcd a");
+  });
+});
+
+describe("nextPosition", function () {
+  it("loop", () => {
+    const pos = nextPosition(1, 1, 2, true);
+    expect(pos).equals(0);
+  });
+  it("none loop", () => {
+    const pos = nextPosition(0, 1, 2, false);
+    expect(pos).equals(1);
+  });
+  it("none loop >= length", () => {
+    const pos = nextPosition(1, 1, 2, false);
+    expect(pos).equals(1);
+  });
+  it("none loop < 0", () => {
+    const pos = nextPosition(0, -1, 2, false);
+    expect(pos).equals(0);
   });
 });

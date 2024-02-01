@@ -13,14 +13,16 @@ import {
   sampleConcurrencyLimits,
   sampleDefaultRetryLimits,
 } from "./constant";
-import { SampleInfo, sampleProvider } from "../../common/samples";
+import { SampleConfig, sampleProvider } from "../../common/samples";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
-import sampleConfig from "../../common/samples-config-v3.json";
 import semver from "semver";
-import { CancelDownloading, ParseUrlError } from "./error";
+import { CancelDownloading } from "./error";
 import { deepCopy } from "../../common/tools";
+import { InvalidInputError } from "../../core/error";
+import { ProgrammingLanguage } from "../../question";
+import { AxiosError } from "axios";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -103,7 +105,7 @@ async function fetchTagList(url: string, tryLimits: number, timeoutInMs: number)
   return res.data;
 }
 
-export async function fetchTemplateZipUrl(
+export async function getTemplateLatestTag(
   name: string,
   tryLimits = defaultTryLimits,
   timeoutInMs = defaultTimeoutInMs
@@ -115,6 +117,14 @@ export async function fetchTemplateZipUrl(
   if (!selectedTag) {
     throw new Error(`Failed to find valid template for ${name}`);
   }
+  return selectedTag;
+}
+
+export function getTemplateLocalVersion(): string {
+  return templateConfig.localVersion;
+}
+
+export function getTemplateZipUrlByTag(name: string, selectedTag: string): string {
   return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
 }
 
@@ -140,21 +150,19 @@ export async function unzip(
   dstPath: string,
   nameReplaceFn?: (filePath: string, data: Buffer) => string,
   dataReplaceFn?: (filePath: string, data: Buffer) => Buffer | string,
-  relativePath?: string
-): Promise<void> {
-  let entries: AdmZip.IZipEntry[] = zip.getEntries().filter((entry) => !entry.isDirectory);
-  if (relativePath) {
-    entries = entries.filter((entry) => entry.entryName.startsWith(relativePath));
+  filterFn?: (filePath: string) => boolean
+): Promise<string[]> {
+  const output = [];
+  let entries = zip.getEntries().filter((entry) => !entry.isDirectory);
+  if (filterFn) {
+    entries = entries.filter((entry) => filterFn(entry.entryName));
   }
 
   for (const entry of entries) {
     const rawEntryData: Buffer = entry.getData();
-    let entryName: string = nameReplaceFn
+    const entryName: string = nameReplaceFn
       ? nameReplaceFn(entry.entryName, rawEntryData)
       : entry.entryName;
-    if (relativePath) {
-      entryName = entryName.replace(relativePath, "");
-    }
     const entryData: string | Buffer = dataReplaceFn
       ? dataReplaceFn(entry.name, rawEntryData)
       : rawEntryData;
@@ -162,7 +170,9 @@ export async function unzip(
     const dirPath: string = path.dirname(filePath);
     await fs.ensureDir(dirPath);
     await fs.writeFile(filePath, entryData);
+    output.push(entryName);
   }
+  return output;
 }
 
 export function renderTemplateFileData(
@@ -216,18 +226,14 @@ export function renderTemplateFileName(
   );
 }
 
-export function getSampleInfoFromName(sampleName: string): SampleInfo {
-  const sample = sampleProvider.SampleCollection.samples.find(
+export async function getSampleInfoFromName(sampleName: string): Promise<SampleConfig> {
+  const sample = (await sampleProvider.SampleCollection).samples.find(
     (sample) => sample.id.toLowerCase() === sampleName.toLowerCase()
   );
   if (!sample) {
-    throw Error(`invalid sample name: '${sampleName}'`);
+    throw InvalidInputError(`sample '${sampleName}' not found`);
   }
   return sample;
-}
-
-export function getSampleRelativePath(sampleName: string): string {
-  return `${sampleConfig.baseFolderName}/${sampleName}/`;
 }
 
 export function zipFolder(folderPath: string): AdmZip {
@@ -237,37 +243,37 @@ export function zipFolder(folderPath: string): AdmZip {
 }
 
 export async function downloadDirectory(
-  sampleUrl: string,
+  sampleInfo: SampleUrlInfo,
   dstPath: string,
   concurrencyLimits = sampleConcurrencyLimits,
   retryLimits = sampleDefaultRetryLimits
-): Promise<void> {
-  const urlInfo = parseSampleUrl(sampleUrl);
-  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(urlInfo, retryLimits);
+): Promise<string[]> {
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(sampleInfo, retryLimits);
   await downloadSampleFiles(
     fileUrlPrefix,
     samplePaths,
     dstPath,
-    urlInfo.dir,
+    sampleInfo.dir,
     retryLimits,
     concurrencyLimits
   );
+  return samplePaths;
 }
 
-type SampleUrlInfo = {
+export type SampleUrlInfo = {
   owner: string;
   repository: string;
   ref: string;
   dir: string;
 };
 
-function parseSampleUrl(url: string): SampleUrlInfo {
-  const urlParserRegex = /https:\/\/github.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)[/](.*)/;
-  const parsed = urlParserRegex.exec(url);
-  if (!parsed) throw new ParseUrlError(url);
-  const [owner, repository, ref, dir] = parsed.slice(1);
-  return { owner, repository, ref, dir };
-}
+type SampleFileInfo = {
+  tree: {
+    path: string;
+    type: string;
+  }[];
+  sha: string;
+};
 
 async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): Promise<any> {
   const fileInfoUrl = `https://api.github.com/repos/${urlInfo.owner}/${urlInfo.repository}/git/trees/${urlInfo.ref}?recursive=1`;
@@ -275,13 +281,12 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
     await sendRequestWithRetry(async () => {
       return await axios.get(fileInfoUrl);
     }, retryLimits)
-  ).data as any;
+  ).data as SampleFileInfo;
 
-  const fileInfoTree = fileInfo.tree as any[];
-  const samplePaths = fileInfoTree
-    .filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
+  const samplePaths = fileInfo?.tree
+    ?.filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
     .map((node) => node.path);
-  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo.sha}/`;
+  const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo?.sha}/`;
   return { samplePaths, fileUrlPrefix };
 }
 
@@ -294,12 +299,12 @@ async function downloadSampleFiles(
   concurrencyLimits: number
 ): Promise<void> {
   const downloadCallback = async (samplePath: string) => {
-    const file = await sendRequestWithRetry(async () => {
+    const file = (await sendRequestWithRetry(async () => {
       return await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
-    }, retryLimits);
+    }, retryLimits)) as unknown as any;
     const filePath = path.join(dstPath, path.relative(`${relativePath}/`, samplePath));
     await fs.ensureFile(filePath);
-    await fs.writeFile(filePath, Buffer.from(file.data as any));
+    await fs.writeFile(filePath, Buffer.from(file.data));
   };
   await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
 }
@@ -333,15 +338,44 @@ export async function runWithLimitedConcurrency<T>(
 
 export function convertToLangKey(programmingLanguage: string): string {
   switch (programmingLanguage) {
-    case "javascript": {
+    case ProgrammingLanguage.JS: {
       return "js";
     }
-    case "typescript": {
+    case ProgrammingLanguage.TS: {
       return "ts";
     }
-    case "csharp": {
+    case ProgrammingLanguage.CSharp: {
       return "csharp";
     }
   }
   return programmingLanguage;
+}
+
+export function convertToUrl(sampleInfo: SampleUrlInfo): string {
+  return `https://github.com/${sampleInfo.owner}/${sampleInfo.repository}/tree/${sampleInfo.ref}/${sampleInfo.dir}`;
+}
+
+export function simplifyAxiosError(error: AxiosError): Error {
+  const simplifiedError = {
+    message: error.message,
+    name: error.name,
+    config: error.config,
+    code: error.code,
+    stack: error.stack,
+    status: error.response?.status,
+    statusText: error.response?.statusText,
+    headers: error.response?.headers,
+    data: error.response?.data,
+  };
+  return simplifiedError;
+}
+
+export function isApiLimitError(error: Error): boolean {
+  //https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api?apiVersion=2022-11-28#exceeding-the-rate-limit
+  return (
+    axios.isAxiosError(error) &&
+    error.response?.status !== undefined &&
+    [403, 429].includes(error.response.status) &&
+    error.response?.headers?.["x-ratelimit-remaining"] === "0"
+  );
 }

@@ -1,5 +1,5 @@
 name: publish to VSCode marketplace
-run-name: Publish-${{ inputs.run_id }}-${{ github.ref_name }}-isPreview-${{ inputs.isPreview }}
+run-name: Publish-${{ inputs.run_id }}-${{ github.ref_name }}-isPreview-${{ inputs.isPreview }}-${{ inputs.series }}
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +11,10 @@ on:
         description: "Publish VSIX as a preview version(yes or no)"
         required: true
         default: "no"
+      series:
+        description: "release sprint series name"
+        required: false
+        default: ""
 
 jobs:
   publish-to-vscode-marketplace:
@@ -25,7 +29,7 @@ jobs:
 
       - uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CD_PAT }}
           ref: ${{ github.head_ref }}
 
       - name: Install VSCE command
@@ -37,7 +41,7 @@ jobs:
         with:
           run_id: ${{ github.event.inputs.run_id }}
           name: release
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.CD_PAT }}
           workflow: cd.yml
           path: .
       
@@ -52,7 +56,7 @@ jobs:
       - uses: mathieudutour/github-tag-action@v6.0
         if: ${{ github.event.inputs.isPreview != 'no' }}
         with: 
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.CD_PAT }}
           custom_tag: ${{ steps.vsc_ver.outputs.vsc_ver }}
           tag_prefix: ""
 

@@ -111,7 +111,7 @@ function getBlobUri(storageName: string): string {
   return `https://${storageName}.blob.core.windows.net`;
 }
 
-async function getBlobServiceClient(blobUri: string, sasToken: string): Promise<BlobServiceClient> {
+function getBlobServiceClient(blobUri: string, sasToken: string): Promise<BlobServiceClient> {
   const connectionString = `BlobEndpoint=${blobUri};SharedAccessSignature=${sasToken}`;
-  return BlobServiceClient.fromConnectionString(connectionString);
+  return Promise.resolve(BlobServiceClient.fromConnectionString(connectionString));
 }

@@ -12,6 +12,8 @@ import {
   Inputs,
   Result,
   TeamsAppManifest,
+  BotOrMeScopes,
+  ICommandList,
   UserError,
   err,
   ok,
@@ -31,11 +33,10 @@ import {
 } from "./driver/teamsApp/constants";
 import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
-import { TelemetryUtils } from "./driver/teamsApp/utils/telemetry";
 import {
   isBot,
-  isBotAndMessageExtension,
-  isMessageExtension,
+  isBotAndBotBasedMessageExtension,
+  isBotBasedMessageExtension,
   needTabAndBotCode,
   needTabCode,
 } from "./driver/teamsApp/utils/utils";
@@ -69,7 +70,7 @@ export class DeveloperPortalScaffoldUtils {
       return err(manifestRes.error);
     }
 
-    const envRes = await updateEnv(appDefinition.teamsAppId!, ctx.projectPath!);
+    const envRes = await updateEnv(appDefinition.teamsAppId!, ctx.projectPath);
     if (envRes.isErr()) {
       return err(envRes.error);
     }
@@ -88,7 +89,6 @@ async function updateManifest(
   appDefinition: AppDefinition,
   inputs: Inputs
 ): Promise<Result<undefined, FxError>> {
-  TelemetryUtils.init(ctx);
   const res = await appStudio.getAppPackage(
     appDefinition.teamsAppId!,
     ctx.tokenProvider!.m365TokenProvider,
@@ -136,6 +136,42 @@ async function updateManifest(
   // manifest
   const manifest = JSON.parse(appPackage.manifest.toString("utf8")) as TeamsAppManifest;
   manifest.id = "${{TEAMS_APP_ID}}";
+
+  // Adding a feature with groupChat scope in TDP won't pass validation for extendToM365 action.
+  if (!!manifest.configurableTabs && manifest.configurableTabs.length > 0) {
+    if (manifest.configurableTabs[0].scopes) {
+      {
+        manifest.configurableTabs[0].scopes = decapitalizeScope(
+          manifest.configurableTabs[0].scopes
+        ) as ("team" | "groupchat")[];
+      }
+    }
+  }
+  if (!!manifest.bots && manifest.bots.length > 0) {
+    if (manifest.bots[0].scopes) {
+      {
+        manifest.bots[0].scopes = decapitalizeScope(manifest.bots[0].scopes) as BotOrMeScopes;
+      }
+    }
+
+    if (manifest.bots[0].commandLists) {
+      manifest.bots[0].commandLists.forEach((commandList: ICommandList) => {
+        if (commandList.scopes) {
+          commandList.scopes = decapitalizeScope(commandList.scopes) as BotOrMeScopes;
+        }
+      });
+    }
+  }
+
+  if (!!manifest.composeExtensions && manifest.composeExtensions.length > 0) {
+    if (manifest.composeExtensions[0].scopes) {
+      {
+        manifest.composeExtensions[0].scopes = decapitalizeScope(
+          manifest.composeExtensions[0].scopes
+        ) as BotOrMeScopes;
+      }
+    }
+  }
 
   // manifest: tab
   const tabs = manifest.staticTabs;
@@ -197,7 +233,7 @@ async function updateManifest(
   }
 
   // manifest: no tab, bot or me selected on TDP before
-  if (!getTemplateId(appDefinition)) {
+  if (!getProjectTypeAndCapability(appDefinition)) {
     // which means user selects a capability through TTK UI.
     manifest.bots = existingManifestTemplate.bots;
     manifest.composeExtensions = existingManifestTemplate.composeExtensions;
@@ -289,7 +325,7 @@ function findTabBasedOnName(name: string, tabs: IStaticTab[]): IStaticTab | unde
   return tabs.find((o) => o.name === name);
 }
 
-export function getTemplateId(
+export function getProjectTypeAndCapability(
   teamsApp: AppDefinition
 ): { projectType: string; templateId: string } | undefined {
   // tab with bot, tab with message extension, tab with bot and message extension
@@ -303,12 +339,12 @@ export function getTemplateId(
   }
 
   // bot and message extension
-  if (isBotAndMessageExtension(teamsApp)) {
+  if (isBotAndBotBasedMessageExtension(teamsApp)) {
     return { projectType: "bot-me-type", templateId: CapabilityOptions.botAndMe().id };
   }
 
-  // message extension
-  if (isMessageExtension(teamsApp)) {
+  // bot based message extension
+  if (isBotBasedMessageExtension(teamsApp)) {
     return { projectType: "me-type", templateId: CapabilityOptions.me().id };
   }
 
@@ -318,6 +354,10 @@ export function getTemplateId(
   }
 
   return undefined;
+}
+
+function decapitalizeScope(scopes: string[]): string[] {
+  return scopes.map((o) => o.toLowerCase());
 }
 
 export function isFromDevPortal(inputs: Inputs | undefined): boolean {

@@ -3,7 +3,7 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import { Inputs, err } from "@microsoft/teamsfx-api";
 import _ from "lodash";
-import { environmentManager } from "../../core/environment";
+import { environmentNameManager } from "../../core/environmentName";
 import { NoProjectOpenedError } from "../../core/error";
 import { TOOLS } from "../../core/globalVars";
 import { CoreHookContext } from "../../core/types";
@@ -50,27 +50,30 @@ const envLoaderMWImpl = async (
     return;
   }
   if (inputs.ignoreEnvInfo) {
-    inputs.env = environmentManager.getDefaultEnvName();
+    inputs.env = environmentNameManager.getDefaultEnvName();
   }
   if (!inputs.env) {
-    if (skipLoadIfNoEnvInput) {
+    if (skipLoadIfNoEnvInput || inputs["ignore-env-file"] === true) {
+      process.env.TEAMSFX_ENV = "dev"; // set TEAMSFX_ENV = dev is to avoid unexpected error in other components that depends on this env variable
       await next();
       return;
     }
     const question = selectTargetEnvQuestion(QuestionNames.Env, !withLocalEnv, true);
     const res = await traverse({ data: question }, inputs, TOOLS.ui);
     if (res.isErr()) {
-      TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
+      TOOLS.logProvider.debug(`Failed to run question model for target environment.`);
       ctx.result = err(res.error);
       return;
     }
   }
-  const res = await envUtil.readEnv(projectPath, inputs.env!);
-  if (res.isErr()) {
-    ctx.result = err(res.error);
-    return;
+  if (inputs.env) {
+    const res = await envUtil.readEnv(projectPath, inputs.env);
+    if (res.isErr()) {
+      ctx.result = err(res.error);
+      return;
+    }
+    ctx.envVars = res.value;
   }
-  ctx.envVars = res.value;
   await next();
 };
 

@@ -6,25 +6,24 @@ import { Service } from "typedi";
 import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
+import isUUID from "validator/lib/isUUID";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { InvalidActionInputError, assembleError } from "../../../error/common";
+import {
+  BotChannelType,
+  IBotRegistration,
+} from "../../resource/botService/appStudio/interfaces/IBotRegistration";
+import { createOrUpdateBotRegistration } from "../../resource/botService/botRegistration/botFrameworkRegistration";
 import { wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
+import { InvalidBotIdUserError } from "./error/invalidBotIdError";
 import {
   CreateOrUpdateBotFrameworkBotArgs,
   MicrosoftTeamsChannelSettings,
 } from "./interface/createOrUpdateBotFrameworkBotArgs";
-import { createOrUpdateBotRegistration } from "../../resource/botService/botRegistration/botFrameworkRegistration";
-import {
-  BotChannelType,
-  IBotRegistration,
-} from "../../resource/botService/appStudio/interfaces/IBotRegistration";
-import { InvalidActionInputError, UnhandledError } from "../../../error/common";
-import isUUID from "validator/lib/isUUID";
-import { InvalidBotIdUserError } from "./error/invalidBotIdError";
 
 const actionName = "botFramework/create";
 const helpLink = "https://aka.ms/teamsfx-actions/botFramework-create";
@@ -34,11 +33,9 @@ const botUrl = "https://dev.botframework.com/bots?id=";
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
   description = getLocalizedString("driver.botFramework.description");
+  readonly progressTitle = getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot");
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: CreateOrUpdateBotFrameworkBotArgs,
     context: DriverContext
@@ -46,13 +43,10 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
     return wrapRun(async () => {
       const result = await this.handler(args, context);
       return result.output;
-    });
+    }, actionName);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.botFramework.progressBar.createOrUpdateBot")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateOrUpdateBotFrameworkBotArgs,
     ctx: DriverContext
@@ -62,7 +56,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
       const result = await this.handler(args, ctx);
       summaries = result.summaries;
       return result.output;
-    });
+    }, actionName);
     return {
       result: outputResult,
       summaries,
@@ -108,7 +102,8 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
 
       const result = await createOrUpdateBotRegistration(
         context.m365TokenProvider,
-        botRegistrationData
+        botRegistrationData,
+        context.logProvider
       );
 
       if (result.isErr()) {
@@ -135,7 +130,7 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledError(error as Error, actionName);
+      throw assembleError(error as Error, actionName);
     }
   }
 

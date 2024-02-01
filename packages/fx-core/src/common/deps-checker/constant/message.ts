@@ -51,6 +51,11 @@ export const Messages = {
   dotnetNotFound: () => getLocalizedString("depChecker.dotnetNotFound"),
   // depsNotFound: () => getLocalizedString("depChecker.depsNotFound"),
 
+  testToolVersionNotMatch: (version: string, expectedVersion: string) =>
+    getLocalizedString("depChecker.testToolVersionNotMatch", version, expectedVersion),
+  failToValidateTestTool: (errorMessage: string) =>
+    getLocalizedString("depChecker.failedToValidateTestTool", errorMessage),
+
   failToValidateVxTestAppInstallOptions: () =>
     getLocalizedString("depChecker.failToValidateVxTestAppInstallOptions"),
   failToValidateVxTestApp: () => getLocalizedString("depChecker.failToValidateVxTestApp"),

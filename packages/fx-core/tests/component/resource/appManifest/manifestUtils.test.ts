@@ -7,8 +7,9 @@ import "reflect-metadata";
 import sinon from "sinon";
 import * as uuid from "uuid";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import { MissingEnvironmentVariablesError } from "../../../../src/error/common";
+import { JSONSyntaxError, MissingEnvironmentVariablesError } from "../../../../src/error/common";
 import { newEnvInfoV3 } from "../../../helpers";
+import fs from "fs-extra";
 
 describe("getManifest V3", () => {
   const sandbox = sinon.createSandbox();
@@ -66,7 +67,7 @@ describe("getManifest V3", () => {
     sandbox.restore();
   });
 
-  it("getManifestV3 unresolved placeholder Error", async () => {
+  it("getManifestV3 MissingEnvironmentVariablesError", async () => {
     const envInfo = newEnvInfoV3();
     envInfo.envName = "dev";
     manifest.name.short = "${{MY_APP_NAME}}";
@@ -81,5 +82,35 @@ describe("getManifest V3", () => {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     const res = await manifestUtils.getManifestV3("");
     chai.assert.isTrue(res.isOk());
+  });
+
+  it("getOperationIds", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        botId: uuid.v4(),
+        commands: [
+          {
+            id: "GET /repairs",
+            title: "List repairs",
+          },
+        ],
+      },
+    ];
+    const ids = manifestUtils.getOperationIds(manifest);
+    chai.assert.equal(ids.length, 1);
+  });
+});
+
+describe("_readAppManifest", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("JSONSyntaxError", async () => {
+    sandbox.stub(fs, "pathExists").resolves(true);
+    sandbox.stub(fs, "readFile").resolves("invalid json" as any);
+    const res = await manifestUtils._readAppManifest("invalid json");
+    chai.assert.isTrue(res.isErr() && res.error instanceof JSONSyntaxError);
   });
 });

@@ -64,6 +64,30 @@ export function LatestPackageInstallError(): SystemError {
   );
 }
 
+export function PackageTargetVersionInstallError(
+  packageName: string,
+  version: string
+): SystemError {
+  const fxFolderPath = "HOME/.fx";
+  const packageInfo = `${packageName}@${version}`;
+  return new SystemError(
+    Constants.PLUGIN_NAME,
+    "PackageTargetVersionInstallError",
+    getDefaultString(
+      "plugins.spfx.error.installDependencyError",
+      fxFolderPath,
+      Constants.AddWebpartHelpLink,
+      packageInfo
+    ),
+    getLocalizedString(
+      "plugins.spfx.error.installDependencyError",
+      fxFolderPath,
+      Constants.AddWebpartHelpLink,
+      packageInfo
+    )
+  );
+}
+
 export function YoGeneratorScaffoldError(): UserError {
   return new UserError({
     source: Constants.PLUGIN_NAME,
@@ -80,12 +104,32 @@ export function YoGeneratorScaffoldError(): UserError {
   });
 }
 
+export function CopyExistingSPFxSolutionError(e: Error): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "CopyExistingSPFxSolutioinFailed",
+    message: getDefaultString("plugins.spfx.error.import.copySPFxSolution", e.message),
+    displayMessage: getLocalizedString("plugins.spfx.error.import.copySPFxSolution", e.message),
+    helpLink: Constants.IMPORT_HELP_LINK,
+  });
+}
+
 export function RetrieveSPFxInfoError(): UserError {
   return new UserError({
     source: Constants.PLUGIN_NAME,
     name: "RetrieveSPFxInfoFailed",
     message: getDefaultString("plugins.spfx.error.import.retrieveSolutionInfo"),
     displayMessage: getLocalizedString("plugins.spfx.error.import.retrieveSolutionInfo"),
+    helpLink: Constants.IMPORT_HELP_LINK,
+  });
+}
+
+export function UpdateSPFxTemplateError(e: Error): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "UpdateSPFxTemplateFailed",
+    message: getDefaultString("plugins.spfx.error.import.updateSPFxTemplate", e.message),
+    displayMessage: getLocalizedString("plugins.spfx.error.import.updateSPFxTemplate", e.message),
     helpLink: Constants.IMPORT_HELP_LINK,
   });
 }
@@ -106,5 +150,24 @@ export function PathAlreadyExistsError(path: string): UserError {
     name: "PathAlreadyExists",
     message: getDefaultString("core.QuestionAppName.validation.pathExist", path),
     displayMessage: getLocalizedString("core.QuestionAppName.validation.pathExist", path),
+  });
+}
+
+export function SolutionVersionMissingError(path: string): UserError {
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "SolutionVersionMissing",
+    message: getDefaultString("plugins.spfx.addWebPart.cannotFindSolutionVersion", path),
+    displayMessage: getLocalizedString("plugins.spfx.addWebPart.cannotFindSolutionVersion", path),
+  });
+}
+
+export function CannotFindPropertyfromJsonError(field: string): UserError {
+  const message = `Cannot find property "${field}" from json.`;
+  return new UserError({
+    source: Constants.PLUGIN_NAME,
+    name: "CannotFindPropertyfromJson",
+    message,
+    displayMessage: message, // This message won't be shown to users. No need to localize.
   });
 }

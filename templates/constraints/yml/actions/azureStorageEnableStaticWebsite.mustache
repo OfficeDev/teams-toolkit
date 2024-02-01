@@ -1,0 +1,10 @@
+  - uses: azureStorage/enableStaticWebsite
+    with:
+    {{#storageResourceId}}
+      storageResourceId: {{storageResourceId}}
+    {{/storageResourceId}}
+    {{^storageResourceId}}
+      storageResourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}}
+    {{/storageResourceId}}
+      indexPage: index.html
+      errorPage: error.html

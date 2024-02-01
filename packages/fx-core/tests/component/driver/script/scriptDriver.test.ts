@@ -9,18 +9,20 @@ import "mocha";
 import os from "os";
 import * as sinon from "sinon";
 import * as tools from "../../../../src/common/tools";
-import { DriverContext } from "../../../../src/component/driver/interface/commonArgs";
 import {
   convertScriptErrorToFxError,
+  defaultShell,
+  getStderrHandler,
   parseSetOutputCommand,
   scriptDriver,
 } from "../../../../src/component/driver/script/scriptDriver";
 import * as charsetUtils from "../../../../src/component/utils/charsetUtils";
 import { DefaultEncoding, getSystemEncoding } from "../../../../src/component/utils/charsetUtils";
 import { ScriptExecutionError, ScriptTimeoutError } from "../../../../src/error/script";
-import { MockUserInteraction } from "../../../core/utils";
+import { MockLogProvider, MockUserInteraction } from "../../../core/utils";
 import { TestAzureAccountProvider } from "../../util/azureAccountMock";
 import { TestLogProvider } from "../../util/logProviderMock";
+import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("Script Driver test", () => {
   const sandbox = sinon.createSandbox();
@@ -47,7 +49,7 @@ describe("Script Driver test", () => {
         end: async (): Promise<void> => {},
       } as IProgressHandler,
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isOk());
     if (res.result.isOk()) {
@@ -69,7 +71,7 @@ describe("Script Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
       projectPath: "./",
-    } as DriverContext;
+    } as any;
     const res = await scriptDriver.execute(args, context);
     assert.isTrue(res.result.isErr());
   });
@@ -159,5 +161,85 @@ describe("parseSetOutputCommand", () => {
       TAB_DOMAIN: "localhost:53000",
       TAB_ENDPOINT: "https://localhost:53000",
     });
+  });
+});
+
+describe("getStderrHandler", () => {
+  const sandbox = sinon.createSandbox();
+  beforeEach(() => {});
+  afterEach(async () => {
+    sandbox.restore();
+  });
+  it("happy path", async () => {
+    const logProvider = new MockLogProvider();
+    const systemEncoding = "utf-8";
+    const stderrStrings: string[] = [];
+    const handler = getStderrHandler(
+      logProvider,
+      systemEncoding,
+      stderrStrings,
+      async (data: string) => {}
+    );
+    await handler(Buffer.from("test"));
+    assert.deepEqual(stderrStrings, ["test"]);
+  });
+});
+
+describe("defaultShell", () => {
+  const sandbox = sinon.createSandbox();
+  let restoreEnv: RestoreFn = () => {};
+  afterEach(() => {
+    sandbox.restore();
+    restoreEnv();
+  });
+  it("SHELL", async () => {
+    restoreEnv = mockedEnv({ SHELL: "/bin/bash" });
+    const result = await defaultShell();
+    assert.equal(result, "/bin/bash");
+  });
+  it("darwin - /bin/zsh", async () => {
+    sandbox.stub(process, "platform").value("darwin");
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const result = await defaultShell();
+    assert.equal(result, "/bin/zsh");
+  });
+  it("darwin - /bin/bash", async () => {
+    sandbox.stub(process, "platform").value("darwin");
+    sandbox.stub(fs, "pathExists").onFirstCall().resolves(false).onSecondCall().resolves(true);
+    const result = await defaultShell();
+    assert.equal(result, "/bin/bash");
+  });
+  it("darwin - undefined", async () => {
+    sandbox.stub(process, "platform").value("darwin");
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const result = await defaultShell();
+    assert.isUndefined(result);
+  });
+
+  it("win32 - ComSpec", async () => {
+    sandbox.stub(process, "platform").value("win32");
+    restoreEnv = mockedEnv({ ComSpec: "cmd.exe" });
+    const result = await defaultShell();
+    assert.equal(result, "cmd.exe");
+  });
+  it("win32 - cmd.exe", async () => {
+    sandbox.stub(process, "platform").value("win32");
+    restoreEnv = mockedEnv({ ComSpec: undefined });
+    const result = await defaultShell();
+    assert.equal(result, "cmd.exe");
+  });
+
+  it("other OS - /bin/sh", async () => {
+    sandbox.stub(process, "platform").value("other");
+    sandbox.stub(fs, "pathExists").resolves(true);
+    const result = await defaultShell();
+    assert.equal(result, "/bin/sh");
+  });
+
+  it("other OS - undefined", async () => {
+    sandbox.stub(process, "platform").value("other");
+    sandbox.stub(fs, "pathExists").resolves(false);
+    const result = await defaultShell();
+    assert.isUndefined(result);
   });
 });

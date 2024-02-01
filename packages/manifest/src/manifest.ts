@@ -118,7 +118,7 @@ export interface ICommand {
 }
 
 export interface ICommandList {
-  scopes: ("team" | "personal" | "groupchat")[];
+  scopes: BotOrMeScopes;
   commands: ICommand[];
 }
 
@@ -150,7 +150,7 @@ export interface IBot {
   /**
    * Specifies whether the bot offers an experience in the context of a channel in a team, in a 1:1 or group chat, or in an experience scoped to an individual user alone. These options are non-exclusive.
    */
-  scopes: ("team" | "personal" | "groupchat")[];
+  scopes: BotOrMeScopes;
   /**
    * The list of commands that the bot supplies, including their usage, description, and the scope for which the commands are valid. A separate command list should be used for each scope.
    */
@@ -184,23 +184,37 @@ export interface IWebApplicationInfo {
   applicationPermissions?: string[];
 }
 
+export type BotOrMeScopes = ("team" | "personal" | "groupchat")[];
+
 export interface IComposeExtension {
   objectId?: string;
 
   /**
    * The Microsoft App ID specified for the bot powering the compose extension in the Bot Framework portal (https://dev.botframework.com/bots)
+   * It's not required for apiBased type
    */
-  botId: string;
+  botId?: string;
   /**
    * A value indicating whether the configuration of a compose extension can be updated by the user.
    */
   canUpdateConfiguration?: boolean;
+
+  scopes?: BotOrMeScopes;
 
   commands: IMessagingExtensionCommand[];
   /**
    * A list of handlers that allow apps to be invoked when certain conditions are met
    */
   messageHandlers?: IComposeExtensionMessageHandler[];
+
+  /**
+   * To support SME, denotes what powers the compose extension
+   */
+  composeExtensionType?: "apiBased" | "botBased";
+  /**
+   * To support SME, it's the relative path to api spec file in the manifest
+   */
+  apiSpecificationFile?: string;
 }
 
 export interface IComposeExtensionMessageHandler {
@@ -251,6 +265,10 @@ export interface IMessagingExtensionCommand {
   parameters?: IParameter[];
 
   taskInfo?: ITaskInfo;
+  /**
+   * To support SME
+   */
+  apiResponseRenderingTemplateFile?: string;
 }
 
 export interface IParameter {

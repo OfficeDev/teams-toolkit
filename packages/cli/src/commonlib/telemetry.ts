@@ -4,11 +4,10 @@
 
 import Reporter from "../telemetry/telemetryReporter";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
+import { Correlator, getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 import { TelemetryProperty } from "../telemetry/cliTelemetryEvents";
-import { CliConfigOptions } from "../userSetttings";
 import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
+import { logger } from "./logger";
 
 /**
  *  CLI telemetry reporter used by fx-core.
@@ -20,7 +19,8 @@ import { tryDetectCICDPlatform } from "./common/cicdPlatformDetector";
  *    extensionId = '<your extension unique name>', all events will be prefixed with this event name. eg: 'extensionId/eventname'
  */
 export class CliTelemetryReporter implements TelemetryReporter {
-  private readonly reporter: Reporter;
+  enable = true;
+  readonly reporter: Reporter;
   private rootFolder: string | undefined;
   private sharedProperties: { [key: string]: string } = {};
 
@@ -50,6 +50,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     measurements?: { [p: string]: number },
     errorProps?: string[]
   ): void {
+    if (!this.enable) return;
     if (!properties) {
       properties = { ...this.sharedProperties };
     } else {
@@ -59,9 +60,13 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
+    properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
+
+    void logger.debug(
+      `sendTelemetryErrorEvent ===> ${eventName}, properties: ${JSON.stringify(properties)}`
+    );
   }
 
   sendTelemetryEvent(
@@ -69,6 +74,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!this.enable) return;
     if (!properties) {
       properties = { ...this.sharedProperties };
     } else {
@@ -78,9 +84,13 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
+    properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryEvent(eventName, properties, measurements);
+
+    void logger.debug(
+      `sendTelemetryEvent ===> ${eventName}, properties: ${JSON.stringify(properties)}`
+    );
   }
 
   sendTelemetryException(
@@ -88,6 +98,7 @@ export class CliTelemetryReporter implements TelemetryReporter {
     properties?: { [p: string]: string },
     measurements?: { [p: string]: number }
   ): void {
+    if (!this.enable) return;
     if (!properties) {
       properties = { ...this.sharedProperties };
     } else {
@@ -97,12 +108,13 @@ export class CliTelemetryReporter implements TelemetryReporter {
     this.checkAndOverwriteSharedProperty(properties);
     properties[TelemetryProperty.CorrelationId] = Correlator.getId();
 
-    properties[CliConfigOptions.RunFrom] = tryDetectCICDPlatform();
+    properties[TelemetryProperty.RunFrom] = tryDetectCICDPlatform();
 
     this.reporter.sendTelemetryException(error, properties, measurements);
   }
 
   async flush(): Promise<void> {
+    if (!this.enable) return;
     await this.reporter.flush();
   }
 

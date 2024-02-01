@@ -79,6 +79,11 @@ describe("ExtTelemetry", () => {
       chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.AddWebpart);
     });
 
+    it("Stage.copilotPluginAddAPI", () => {
+      const stage = Stage.copilotPluginAddAPI;
+      chai.expect(ExtTelemetry.stageToEvent(stage)).equals(TelemetryEvent.CopilotPluginAddAPI);
+    });
+
     it("unknown", () => {
       const stage = "unknown";
       chai.expect(ExtTelemetry.stageToEvent(stage as Stage)).equals(undefined);
@@ -89,6 +94,7 @@ describe("ExtTelemetry", () => {
     const sandbox = sinon.createSandbox();
     before(() => {
       chai.util.addProperty(ExtTelemetry, "reporter", () => reporterSpy);
+      chai.util.addProperty(ExtTelemetry, "settingsVersion", () => "1.0.0");
       sandbox.stub(fs, "pathExistsSync").returns(false);
       sandbox.stub(globalVariables, "workspaceUri").value(Uri.file("test"));
       sandbox.stub(globalVariables, "isSPFxProject").value(false);
@@ -113,6 +119,7 @@ describe("ExtTelemetry", () => {
           component: "extension",
           "is-existing-user": "no",
           "is-spfx": "false",
+          "settings-version": "1.0.0",
         },
         { numericMeasure: 123 }
       );
@@ -141,27 +148,16 @@ describe("ExtTelemetry", () => {
           success: "no",
           "is-existing-user": "no",
           "is-spfx": "false",
+          "settings-version": "1.0.0",
           "error-type": "user",
-          "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
+          "error-name": "UserTestError",
+          "error-message": error.message,
+          "error-stack": error.stack,
           "error-code": "test.UserTestError",
-        },
-        { numericMeasure: 123 },
-        ["errorProps"]
-      );
-
-      chai.expect(reporterSpy.sendTelemetryErrorEvent).to.not.have.been.called.with(
-        "sampleEvent",
-        {
-          stringProp: "some string",
-          component: "extension",
-          success: "no",
-          "is-existing-user": "no",
-          "is-spfx": "false",
-          "error-type": "user",
-          "error-message": `${error.displayMessage}${
-            error.stack ? "\nstack:\n" + error.stack : ""
-          }`,
-          "error-code": "test.UserTestError",
+          "error-component": "",
+          "error-method": "",
+          "error-source": "",
+          "error-stage": "",
         },
         { numericMeasure: 123 },
         ["errorProps"]
@@ -183,6 +179,7 @@ describe("ExtTelemetry", () => {
           component: "extension",
           "is-existing-user": "no",
           "is-spfx": "false",
+          "settings-version": "1.0.0",
         },
         { numericMeasure: 123 }
       );

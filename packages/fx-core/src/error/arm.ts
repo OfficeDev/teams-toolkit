@@ -1,5 +1,9 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { UserError, UserErrorOptions } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
+import { ErrorCategory } from "./types";
 
 /**
  * Failed to compile bicep into ARM template
@@ -12,6 +16,8 @@ export class CompileBicepError extends UserError {
       name: "CompileBicepError",
       message: getDefaultString(key, filePath, error.message || ""),
       displayMessage: getLocalizedString(key, filePath, error.message || ""),
+      categories: [ErrorCategory.Internal],
+      error: error,
     };
     super(errorOptions);
   }
@@ -28,6 +34,8 @@ export class DeployArmError extends UserError {
       name: "DeployArmError",
       message: getDefaultString(key, deployName, resourceGroup, error.message || ""),
       displayMessage: getLocalizedString(key + ".Notification", deployName, resourceGroup),
+      error: error,
+      categories: [ErrorCategory.External],
     };
     super(errorOptions);
     if (error.stack) super.stack = error.stack;
@@ -55,6 +63,8 @@ export class GetArmDeploymentError extends UserError {
         deployName,
         resourceGroup
       ),
+      categories: [ErrorCategory.External],
+      error: deployError,
     };
     super(errorOptions);
   }
@@ -71,6 +81,7 @@ export class ConvertArmOutputError extends UserError {
       name: "ConvertArmOutputError",
       message: getDefaultString(key, outputKey),
       displayMessage: getLocalizedString(key, outputKey),
+      categories: [ErrorCategory.Internal],
     };
     super(errorOptions);
   }
@@ -87,6 +98,8 @@ export class DownloadBicepCliError extends UserError {
       name: "DownloadBicepCliError",
       message: getDefaultString(key, url, error.message),
       displayMessage: getLocalizedString(key, url, error.message),
+      categories: [ErrorCategory.External],
+      error: error,
     };
     super(errorOptions);
   }

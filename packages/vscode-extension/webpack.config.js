@@ -31,7 +31,6 @@ const config = {
   devtool: "source-map",
   externals: {
     vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    keytar: "keytar",
     ["original-fs"]: "commonjs original-fs", // original-fs package is builtin Electron package which we use to prevent special fs logic for .asar files, 📖 -> https://www.electronjs.org/docs/latest/tutorial/asar-archives#treating-an-asar-archive-as-a-normal-file
   },
   resolve: {
@@ -59,10 +58,15 @@ const config = {
         use: ["style-loader", "css-loader"],
       },
       {
-        test: /\.(jpg|png|svg|gif)$/,
+        test: /\.(jpg|png|gif)$/,
         use: {
           loader: "url-loader",
         },
+      },
+      {
+        test: /\.svg$/i,
+        issuer: /\.tsx?$/,
+        use: ["@svgr/webpack"],
       },
       {
         test: /node_modules[\\|/](yaml-language-server|vscode-languageserver|vscode-json-languageservice|prettier)/,
@@ -101,8 +105,12 @@ const config = {
           to: "../templates/",
         },
         {
-          from: "./WHATISNEW.md",
-          to: "../resource/WHATISNEW.md",
+          from: "./CHANGELOG.md",
+          to: "../resource/CHANGELOG.md",
+        },
+        {
+          from: "./PRERELEASE.md",
+          to: "../resource/PRERELEASE.md",
         },
         {
           from: "./node_modules/@vscode/codicons/dist/codicon.css",
@@ -111,6 +119,10 @@ const config = {
         {
           from: "./node_modules/@vscode/codicons/dist/codicon.ttf",
           to: "../resource/codicon.ttf",
+        },
+        {
+          from: "./node_modules/dompurify/dist/purify.min.js",
+          to: "../resource/purify.min.js",
         },
       ],
     }),

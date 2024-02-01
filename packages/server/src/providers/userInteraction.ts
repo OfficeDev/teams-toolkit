@@ -5,6 +5,8 @@ import { MessageConnection } from "vscode-jsonrpc";
 
 import {
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   FxError,
   InputTextConfig,
   InputTextResult,
@@ -36,7 +38,7 @@ export default class ServerUserInteraction implements UserInteraction {
   async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     const promise = this.connection.sendRequest(
       RequestTypes.ui.selectOption,
-      convertUIConfigToJson(config)
+      await convertUIConfigToJson(config)
     );
     return getResponseWithErrorHandling(promise);
   }
@@ -44,7 +46,7 @@ export default class ServerUserInteraction implements UserInteraction {
   async selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     const promise = this.connection.sendRequest(
       RequestTypes.ui.selectOptions,
-      convertUIConfigToJson(config)
+      await convertUIConfigToJson(config)
     );
     return getResponseWithErrorHandling(promise);
   }
@@ -52,7 +54,7 @@ export default class ServerUserInteraction implements UserInteraction {
   async inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
     const promise = this.connection.sendRequest(
       RequestTypes.ui.inputText,
-      convertUIConfigToJson(config)
+      await convertUIConfigToJson(config)
     );
     return getResponseWithErrorHandling(promise);
   }
@@ -70,7 +72,7 @@ export default class ServerUserInteraction implements UserInteraction {
   async selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     const promise = this.connection.sendRequest(
       RequestTypes.ui.selectFile,
-      convertUIConfigToJson(config)
+      await convertUIConfigToJson(config)
     );
     return getResponseWithErrorHandling(promise);
   }
@@ -78,7 +80,7 @@ export default class ServerUserInteraction implements UserInteraction {
   async selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
     const promise = this.connection.sendRequest(
       RequestTypes.ui.selectFiles,
-      convertUIConfigToJson(config)
+      await convertUIConfigToJson(config)
     );
     return getResponseWithErrorHandling(promise);
   }
@@ -86,7 +88,15 @@ export default class ServerUserInteraction implements UserInteraction {
   async selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
     const promise = this.connection.sendRequest(
       RequestTypes.ui.selectFolder,
-      convertUIConfigToJson(config)
+      await convertUIConfigToJson(config)
+    );
+    return getResponseWithErrorHandling(promise);
+  }
+
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    const promise = this.connection.sendRequest(
+      RequestTypes.ui.confirm,
+      await convertUIConfigToJson(config)
     );
     return getResponseWithErrorHandling(promise);
   }

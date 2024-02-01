@@ -11,14 +11,13 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { InvalidActionInputError, assembleError } from "../../../error/common";
 import { wrapRun } from "../../utils/common";
 import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { updateProgress } from "../middleware/updateProgress";
 import { GenerateEnvArgs } from "./interface/generateEnvArgs";
-import { InvalidActionInputError, UnhandledError } from "../../../error/common";
 
 const actionName = "file/createOrUpdateEnvironmentFile";
 const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentFile";
@@ -26,11 +25,9 @@ const helpLink = "https://aka.ms/teamsfx-actions/file-createOrUpdateEnvironmentF
 @Service(actionName) // DO NOT MODIFY the service name
 export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
   description = getLocalizedString("driver.file.createOrUpdateEnvironmentFile.description");
+  readonly progressTitle = getLocalizedString("driver.file.progressBar.env");
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.env")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async run(
     args: GenerateEnvArgs,
     context: DriverContext
@@ -38,20 +35,17 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
     return wrapRun(async () => {
       const result = await this.handler(args, context);
       return result.output;
-    });
+    }, actionName);
   }
 
-  @hooks([
-    addStartAndEndTelemetry(actionName, actionName),
-    updateProgress(getLocalizedString("driver.file.progressBar.env")),
-  ])
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(args: GenerateEnvArgs, ctx: DriverContext): Promise<ExecutionResult> {
     let summaries: string[] = [];
     const outputResult = await wrapRun(async () => {
       const result = await this.handler(args, ctx);
       summaries = result.summaries;
       return result.output;
-    });
+    }, actionName);
     return {
       result: outputResult,
       summaries,
@@ -70,10 +64,12 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
       const target = this.getAbsolutePath(args.target!, context.projectPath);
       await fs.ensureFile(target);
       const envs = dotenv.parse(await fs.readFile(target));
-      const content = Object.entries({ ...envs, ...args.envs })
-        .map(([key, value]) => `${key}=${value}`)
-        .join(os.EOL);
-      await fs.writeFile(target, content);
+      context.logProvider?.debug(`Existing envs: ${JSON.stringify(envs)}`);
+      const updatedEnvs = Object.entries({ ...envs, ...args.envs }).map(
+        ([key, value]) => `${key}=${value}`
+      );
+      context.logProvider?.debug(`Updated envs: ${JSON.stringify(updatedEnvs)}`);
+      await fs.writeFile(target, updatedEnvs.join(os.EOL));
       return {
         output: new Map<string, string>(),
         summaries: [
@@ -95,7 +91,7 @@ export class CreateOrUpdateEnvironmentFileDriver implements StepDriver {
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledError(error as Error, actionName);
+      throw assembleError(error as Error, actionName);
     }
   }
 

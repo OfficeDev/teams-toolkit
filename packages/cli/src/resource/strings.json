@@ -1,15 +1,17 @@
 {
-  "account.login.azure": "You have sucessfully logged into Azure.",
-  "account.login.m365": "You have sucessfully logged into Microsoft 365.",
+  "account.login.azure": "You have successfully logged into Azure.",
+  "account.login.m365": "You have successfully logged into Microsoft 365.",
   "account.show.azure": "Your Azure account is: %s. Your subscriptions are: %s",
   "account.show.m365": "Your Microsoft 365 account is: %s.",
   "account.show.info": "Your %s account is: %s.",
   "error.prefix": "(x) Error: ",
-  "error.MissingRequiredArgumentError": "The command '%s' can not be executed for missing required argument '%s'. Provide the argument via '--%s' and try again.",
+  "error.MissingRequiredOptionError": "The command '%s' can not be executed for missing required option '%s'. Provide the option via '%s' and try again.",
+  "error.MissingRequiredArgumentError": "The command '%s' can not be executed for missing required argument '%s'. Provide the argument and try again.",
   "error.ArgumentConflictError": "The command '%s' is designed to accept either argument '%s' or argument '%s', but not both simultaneously. Keep either of the two arguments and try again.",
+  "error.UnknownOptionError": "The command '%s' can not be executed for unknown option '%s'.",
+  "error.UnknownArgumentError": "The command '%s' can not be executed for unknown argument '%s'.",
   "error.InvalidOptionErrorReason": "'%s' is not in the valid option list: %s.",
-  "success.prefix": "(✓) Success: ",
-  "warning.prefix": "(!) Warning: ",
+  "error.InvalidChoiceError": "The command '%s' can not be executed for invalid choice '%s' for option/argument '%s', allowed values: %s.",
   "command": {
     "provision": {
       "description": "Run the provision stage in teamsapp.yml or teamsapp.local.yml."
@@ -26,6 +28,33 @@
         "force": "Force upgrade the project to work with the latest version of Teams Toolkit."
       },
       "success": "Upgrade project successfully."
+    },
+    "doctor": {
+      "account": {
+        "SideLoadingDisabled": "Your Microsoft 365 tenant admin hasn't enabled custom app upload permission for your account. You can't install your app to Teams!",
+        "NotSignIn": "You have not logged in to your Microsoft 365 account yet. Please use teamsapp auth login command to login to your Microsoft 365 account.",
+        "SignInSuccess": "Microsoft 365 Account (%s) is logged in and custom app upload permission is enabled."
+      },
+      "node" : {
+        "NotFound": "Cannot find Node.js. Node.js used for developing Teams apps with JavaScript or TypeScript using Teams Toolkit for Visual Studio Code. Visit https://nodejs.org to install the LTS version.",
+        "NotSupported": "Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version.",
+        "Success": "Node.js version (%s) is installed."
+      },
+      "dotnet" : {
+        "NotFound": "Cannot find .NET Core SDK. .NET Core SDK is used for developing Teams app in C# using Teams Toolkit for Visual Studio. Visit https://dotnet.microsoft.com/en-us/download to install the LTS version.",
+        "NotSupported": ".NET Core SDK (%s) is not the officially supported version (%s).",
+        "Success": ".NET Core SDK version (%s) is installed."
+      },
+      "func" : {
+        "NotFound": "Cannot find Azure Functions Core Tools.",
+        "NotSupported": "Azure Functions Core Tools (%s) is not the officially supported version (%s).",
+        "Success": "Azure Functions Core Tools version (%s) is installed."
+      },
+      "cert" : {
+        "NotFound": "Cannot find local Certificate.",
+        "FoundNotTrust": "Local Certificate is found but not trusted.",
+        "Success": "Local Certificate is found and is trusted."
+      }
     }
   }
 }

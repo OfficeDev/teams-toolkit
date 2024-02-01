@@ -1,3 +1,17 @@
+# 2.4.0
+- Support to set notification local store file name using environment variable `TEAMSFX_NOTIFICATION_STORE_FILENAME`.
+
+# 2.3.0
+
+- Fix `NotificationMiddleware` reference key generation when bot is added to a Team.
+- Update `botbuilder` dependencies
+
+# 2.2.0
+
+- Add `validationEnabled` to `GetPagedInstallationsAsync()` to enable or disable installation validation.
+- Add new API `ValidateInstallationAsync` to validate bot installation.
+- Deprecate the class `TeamsFx` and `MsGraphAuthProvider`. Please use `TokenCredential` and `GraphServiceClient(tokenCredential, new string[] { _scope })` instead to create Microsoft Graph Client instead.
+
 # 2.1.0
 
 - Add new interface `IConversationReferenceStore` to manage notification target references.

@@ -1,4 +1,6 @@
-// login m365 account via username and password for ui test
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   PublicClientApplication,
   LogLevel,
@@ -22,7 +24,7 @@ const cachePathEnd = ".json";
 // the friendly service name to store secret in keytar
 const serviceName = "Microsoft Teams Toolkit";
 
-const accountName = "appStudio";
+const accountName = "m365";
 const scopes = ["https://dev.teams.microsoft.com/AppDefinitions.ReadWrite"];
 
 const beforeCacheAccess = getBeforeCacheAccess(accountName);
@@ -289,10 +291,8 @@ const config = {
     },
   },
   cache: {
-    cachePlugin:
-      os.type() === "Windows_NT"
-        ? new CryptoCachePlugin(accountName)
-        : cachePluginNonWindows,
+    // The account cache will be saved to a file with no encryption since VS Code keytar is not available on Windows. Teams toolkit will use plain text when decryption fails.
+    cachePlugin: cachePluginNonWindows,
   },
 };
 

@@ -4,7 +4,7 @@
 import * as util from "util";
 import * as vscode from "vscode";
 
-import { LocalEnvironmentName, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import { SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import { M365Login } from "../commonlib/m365Login";
 import AzureAccountManager from "../commonlib/azureLogin";
@@ -15,14 +15,14 @@ import {
   getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
-  isExistingTabApp,
 } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
-import { AppStudioScopes } from "@microsoft/teamsfx-core";
+import { AppStudioScopes, environmentNameManager } from "@microsoft/teamsfx-core";
 
 enum EnvInfo {
   Local = "local",
+  TestTool = "testtool",
   LocalForExistingApp = "local-existing-app",
   RemoteEnv = "environment",
   ProvisionedRemoteEnv = "environment-provisioned",
@@ -56,7 +56,7 @@ export class EnvironmentNode extends DynamicNode {
     }
 
     const children: DynamicNode[] = [];
-    if (this.identifier !== LocalEnvironmentName) {
+    if (environmentNameManager.isRemoteEnvironment(this.identifier)) {
       // check account status
       const accountStatus = await this.checkAccountForEnvironment(this.identifier);
       if (!accountStatus.isM365AccountLogin || accountStatus.isAzureAccountLogin === false) {
@@ -100,7 +100,7 @@ export class EnvironmentNode extends DynamicNode {
     if (loginStatus && loginStatus.status == signedIn) {
       // Signed account doesn't match
       const m365TenantId = await getM365TenantFromEnv(env);
-      if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {
+      if (m365TenantId && loginStatus.accountInfo?.tid !== m365TenantId) {
         isM365AccountLogin = false;
         warnings.push(localize("teamstoolkit.commandsTreeViewProvider.m365AccountNotMatch"));
       }
@@ -111,10 +111,7 @@ export class EnvironmentNode extends DynamicNode {
     }
 
     // Check Azure account status
-    const isExistingTab = globalVariables.workspaceUri
-      ? await isExistingTabApp(globalVariables.workspaceUri.fsPath)
-      : false;
-    if (globalVariables.isSPFxProject || isExistingTab) {
+    if (globalVariables.isSPFxProject) {
       return {
         isM365AccountLogin,
         warnings,
@@ -155,14 +152,10 @@ export class EnvironmentNode extends DynamicNode {
 
   // Get the environment info for the given environment name.
   private async getCurrentEnvInfo(envName: string): Promise<EnvInfo> {
-    if (envName === LocalEnvironmentName) {
-      return (
-        globalVariables.workspaceUri
-          ? await isExistingTabApp(globalVariables.workspaceUri.fsPath)
-          : false
-      )
-        ? EnvInfo.LocalForExistingApp
-        : EnvInfo.Local;
+    if (envName === environmentNameManager.getLocalEnvName()) {
+      return EnvInfo.Local;
+    } else if (envName === environmentNameManager.getTestToolEnvName()) {
+      return EnvInfo.TestTool;
     } else {
       const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
       return provisionSucceeded ? EnvInfo.ProvisionedRemoteEnv : EnvInfo.RemoteEnv;
@@ -185,11 +178,11 @@ class WarningNode extends DynamicNode {
     this.tooltip = this.formatWarningMessages(accountStatus.warnings);
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     return null;
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {
     return this;
   }
 
@@ -214,14 +207,14 @@ class SubscriptionNode extends DynamicNode {
     this.iconPath = subscriptionIcon;
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     if (this.resourceGroupNode) {
       return [this.resourceGroupNode];
     }
     return null;
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override async getTreeItem(): Promise<vscode.TreeItem> {
     this.tooltip = this.subscriptionInfo.subscriptionName
       ? util.format(
           localize("teamstoolkit.envTree.subscriptionTooltip"),
@@ -257,11 +250,11 @@ class ResourceGroupNode extends DynamicNode {
     this.iconPath = resourceGroupIcon;
   }
 
-  public async getChildren(): Promise<DynamicNode[] | undefined | null> {
+  public override getChildren(): vscode.ProviderResult<DynamicNode[]> {
     return null;
   }
 
-  public async getTreeItem(): Promise<vscode.TreeItem> {
+  public override getTreeItem(): vscode.TreeItem | Promise<vscode.TreeItem> {
     return this;
   }
 }

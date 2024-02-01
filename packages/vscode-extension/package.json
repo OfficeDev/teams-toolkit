@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "5.0.1",
+  "version": "5.4.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "private": true,
@@ -57,7 +57,8 @@
     "workspaceContains:/.fx/**/*",
     "workspaceContains:teamsapp.yml",
     "onView:teamsfx-empty-project",
-    "onUri"
+    "onUri",
+    "workspaceContains:/**/manifest.json"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -251,8 +252,23 @@
         },
         {
           "command": "fx-extension.refreshSideloading",
-          "when": "view == teamsfx-accounts && viewItem == checkSideloading",
-          "group": "inline"
+          "when": "view == teamsfx-accounts && viewItem =~ /^checkSideloading$|^checkSideloading-info$/",
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.checkSideloading",
+          "when": "view == teamsfx-accounts && viewItem == checkSideloading-info",
+          "group": "inline@2"
+        },
+        {
+          "command": "fx-extension.refreshCopilot",
+          "when": "view == teamsfx-accounts && viewItem =~ /^checkCopilot$|^checkCopilot-info$/",
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.checkCopilotCallback",
+          "when": "view == teamsfx-accounts && viewItem == checkCopilot-info",
+          "group": "inline@2"
         },
         {
           "command": "fx-extension.azureAccountSettings",
@@ -280,6 +296,11 @@
         {
           "command": "fx-extension.localdebugWithIcon",
           "when": "view == teamsfx-environment && viewItem =~ /^local$/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.debugInTestToolWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /^testtool$/",
           "group": "inline@3"
         },
         {
@@ -365,6 +386,10 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.debugInTestToolWithIcon",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.m365AccountSettings",
           "when": "false"
         },
@@ -422,6 +447,18 @@
         },
         {
           "command": "fx-extension.refreshSideloading",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.checkSideloading",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.refreshCopilot",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.checkCopilotCallback",
           "when": "false"
         },
         {
@@ -633,6 +670,11 @@
         "icon": "$(debug-alt)"
       },
       {
+        "command": "fx-extension.debugInTestToolWithIcon",
+        "title": "%teamstoolkit.commands.debugInTestTool.title%",
+        "icon": "$(debug-alt)"
+      },
+      {
         "command": "fx-extension.m365AccountSettings",
         "title": "%teamstoolkit.commands.m365AccountSettings.title%",
         "icon": "$(settings-gear)"
@@ -707,6 +749,21 @@
         "icon": "$(refresh)"
       },
       {
+        "command": "fx-extension.checkSideloading",
+        "title": "%teamstoolkit.accountTree.sideloadingWarningTooltip%",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.refreshCopilot",
+        "title": "%teamstoolkit.commands.refresh.title%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "fx-extension.checkCopilotCallback",
+        "title": "%teamstoolkit.accountTree.copilotWarningTooltip%",
+        "icon": "$(info)"
+      },
+      {
         "command": "fx-extension.signOut",
         "title": "%teamstoolkit.commands.signOut.title%",
         "icon": "$(sign-out)"
@@ -775,6 +832,10 @@
                         {
                           "const": "m365Account",
                           "title": "%teamstoolkit.taskDefinitions.args.prerequisites.m365AccountTitle%"
+                        },
+                        {
+                          "const": "copilotAccess",
+                          "title": "%teamstoolkit.taskDefinitions.args.prerequisites.copilotAccessTitle%"
                         },
                         {
                           "const": "portOccupancy",
@@ -893,6 +954,12 @@
                       },
                       {}
                     ]
+                  },
+                  "expiration": {
+                    "type": "number",
+                    "description": "%teamstoolkit.taskDefinitions.args.expiration.title%",
+                    "minimum": 3600,
+                    "default": 3600
                   }
                 },
                 "additionalProperties": false
@@ -1168,13 +1235,33 @@
           }
         ]
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Teams Toolkit",
+      "properties": {
+        "fx-extension.developCopilotPlugin": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Enable to develop Copilot plugin (Reload Visual Studio Code after changing this setting to take effect). Visit [How to Extend Microsoft 365 Copilot](https://aka.ms/teamsfx-copilot-plugin) to learn more."
+        },
+        "fx-extension.logLevel": {
+          "type": "string",
+          "enum": [
+            "Info",
+            "Verbose",
+            "Debug"
+          ],
+          "default": "Info",
+          "markdownDescription": "Set the log level of Teams Toolkit. The default value is `Info`. The available values are `Debug`, `Verbose`, `Info`. The definitions of the log levels are:\n\n`Debug`:\n\n- HTTP request and response details from Teams Toolkit to external services such as Azure, Microsoft 365, and Teams Developer Portal.\n- Information related to Microsoft 365 and Azure accounts and access permissions.\n- Debugging information for each Teams Toolkit command execution, such as stack trace, ARM deployment information, etc.\n\n`Verbose`:\n\n- Progress information when executing lifecycle commands defined in the YAML file.\n- Execution details of each action that defined in the YAML file, including outcomes, result summaries, diagnostic information, etc.\n\n`Info`: Teams Toolkit command execution summaries.\n"
+        }
+      }
+    }
   },
   "scripts": {
     "lint:staged": "lint-staged",
     "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css out/src/",
-    "copy-md-files": "copyfiles WHATISNEW.md out/resource",
+    "copy-md-files": "copyfiles CHANGELOG.md PRERELEASE.md out/resource",
     "compile": "tsc -p ./ && npm run copy-files && npm run copy-md-files",
     "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
     "build-failpoint": "rimraf out && npx ttsc -p ./",
@@ -1194,16 +1281,16 @@
     "precommit": "npm run check-sensitive && lint-staged",
     "updateFont": "node ./scripts/updateFont.js",
     "previewFont": "start ./media/font/teamstoolkit.html",
-    "version": "bash ../../.github/scripts/vsc-version.sh"
+    "version": "bash ../../.github/scripts/vsc-version.sh",
+    "pack-local": "pnpm dlx vsce package --no-dependencies"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^5.0.0",
     "@azure/core-auth": "^1.4.0",
-    "@azure/identity-vscode": "^1.0.0",
     "@azure/ms-rest-azure-env": "^2.0.0",
-    "@fluentui/react": "^8.5.1",
+    "@fluentui/react": "^8.106.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
-    "@microsoft/eslint-plugin-teamsfx": "^0.0.3",
+    "@svgr/webpack": "^8.1.0",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
     "@types/chai-spies": "^1.0.3",
@@ -1211,9 +1298,9 @@
     "@types/express": "^4.17.14",
     "@types/fs-extra": "^9.0.5",
     "@types/jscodeshift": "^0.11.2",
-    "@types/keytar": "^4.4.2",
     "@types/lodash": "^4.14.181",
     "@types/mocha": "^8.0.4",
+    "@types/mock-fs": "^4.13.1",
     "@types/node": "^14.14.21",
     "@types/react": "^17.0.3",
     "@types/react-copy-to-clipboard": "^5.0.4",
@@ -1235,7 +1322,9 @@
     "copyfiles": "^2.4.1",
     "css-loader": "^5.1.3",
     "detect-port": "^1.3.0",
+    "dompurify": "^3.0.6",
     "eslint": "^8.1.0",
+    "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
@@ -1243,8 +1332,10 @@
     "html-webpack-plugin": "^5.3.1",
     "kill-port-process": "^3.0.1",
     "lint-staged": "^11.2.6",
+    "lodash": "^4.17.21",
     "mocha": "^10.0.0",
     "mocha-multi-reporters": "^1.5.1",
+    "mock-fs": "^5.2.0",
     "mock-require": "^3.0.3",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
@@ -1259,41 +1350,44 @@
     "sinon": "^9.2.2",
     "style-loader": "^2.0.0",
     "svgtofont": "^3.23.1",
-    "terser-webpack-plugin": "^4.2.3",
+    "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^8.0.3",
     "ts-node": "^9.1.1",
     "ts-sinon": "^2.0.2",
     "ttypescript": "^1.5.12",
     "typemoq": "^1.3.1",
-    "typescript": "^4.2.4",
+    "typescript": "4.3.2",
     "umd-compat-loader": "^2.1.2",
     "url-loader": "^4.1.1",
     "uuid": "^8.3.2",
     "verdaccio": "^5.25.0",
-    "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.2"
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   },
   "dependencies": {
     "@azure/identity": "^3.1.3",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.14.6",
-    "@microsoft/dev-tunnels-connections": "~1.0.7360",
-    "@microsoft/dev-tunnels-contracts": "~1.0.7360",
-    "@microsoft/dev-tunnels-management": "~1.0.7360",
-    "@microsoft/dev-tunnels-ssh": "~3.11.1",
-    "@microsoft/teamsfx-api": "^0.22.3",
-    "@microsoft/teamsfx-core": "^2.0.2",
+    "@microsoft/dev-tunnels-connections": "1.1.9",
+    "@microsoft/dev-tunnels-contracts": "1.1.9",
+    "@microsoft/dev-tunnels-management": "1.1.9",
+    "@microsoft/dev-tunnels-ssh": "3.11.36",
+    "@microsoft/teamsfx-api": "workspace:*",
+    "@microsoft/teamsfx-core": "workspace:*",
+    "@microsoft/vscode-ui": "workspace:*",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
-    "@vscode/webview-ui-toolkit": "^0.9.3",
+    "@vscode/webview-ui-toolkit": "^1.2.2",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.18.2",
+    "fuse.js": "^6.6.2",
+    "glob": "^10",
     "jscodeshift": "^0.14.0",
     "jsonc-parser": "^3.0.0",
-    "lodash": "^4.17.21",
-    "log4js": "^6.3.0",
+    "log4js": "^6.4.0",
     "node-rsa": "^1.1.1",
+    "query-string": "6.14.1",
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",

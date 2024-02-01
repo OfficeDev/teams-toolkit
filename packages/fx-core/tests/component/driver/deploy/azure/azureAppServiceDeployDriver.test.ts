@@ -15,10 +15,9 @@ import * as Models from "@azure/arm-appservice/src/models";
 import * as fileOpt from "../../../../../src/component/utils/fileOperation";
 import { AzureDeployImpl } from "../../../../../src/component/driver/deploy/azure/impl/azureDeployImpl";
 import { expect, assert } from "chai";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import { AzureAppServiceDeployDriver } from "../../../../../src/component/driver/deploy/azure/azureAppServiceDeployDriver";
 import { DeployConstant } from "../../../../../src/component/constant/deployConstant";
-import { DriverContext } from "../../../../../src/component/driver/interface/commonArgs";
 import { MyTokenCredential } from "../../../../plugins/solution/util";
 import { MockTelemetryReporter, MockUserInteraction } from "../../../../core/utils";
 import * as os from "os";
@@ -34,28 +33,51 @@ describe("Azure App Service Deploy Driver test", () => {
 
   before(async () => {
     await fs.mkdirs(testFolder);
+    await fs.writeFile(path.join(sysTmp, "ignore"), "ignore", {
+      encoding: "utf8",
+      flag: "a",
+    });
+    await fs.writeFile(path.join(testFolder, "test.txt"), "test");
+    sandbox.stub(fs, "mkdirs").resolves();
+    sandbox.stub(fs, "removeSync");
+    sandbox.stub(fs, "readdirSync").returns([new fs.Dirent(), new fs.Dirent()]);
+    sandbox.stub(fs, "readFileSync").resolves("test");
+    sandbox
+      .stub(fs, "createReadStream")
+      .withArgs(path.join(sysTmp, ".deployment/deployment.zip"))
+      .returns({
+        pipe: sandbox.stub().returns({
+          pipe: sandbox.stub().returns({
+            pipe: sandbox.stub().returns("responseMock"),
+          }),
+        }),
+        on: sandbox.spy(() => true),
+        destroy: sandbox.spy(() => true),
+      } as any);
   });
 
   after(async () => {
-    fs.rmSync(testFolder, { recursive: true, force: true });
+    if (fs.existsSync(testFolder)) {
+      if (fs.existsSync(path.join(testFolder, ".deployment"))) {
+        if (fs.existsSync(path.join(testFolder, ".deployment", "deployment.zip"))) {
+          fs.unlinkSync(path.join(testFolder, ".deployment", "deployment.zip"));
+        }
+        fs.rmSync(path.join(testFolder, ".deployment"), { recursive: true });
+      }
+      fs.rmSync(testFolder, { recursive: true });
+    }
   });
 
   beforeEach(async () => {
     sandbox.stub(tools, "waitSeconds").resolves();
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     sandbox.restore();
   });
 
   it("deploy happy path", async () => {
     const deploy = new AzureAppServiceDeployDriver();
-    const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
-    await fs.close(fh);
-    await fs.writeFile(path.join(sysTmp, "ignore"), "ignore", {
-      encoding: "utf8",
-      flag: "a",
-    });
     const args = {
       workingDirectory: sysTmp,
       artifactFolder: `./${folder}`,
@@ -65,8 +87,8 @@ describe("Azure App Service Deploy Driver test", () => {
       outputZipFile: ".deployment/deployment.zip",
     } as DeployArgs;
     const progressHandler: IProgressHandler = {
-      start: async (detail?: string): Promise<void> => {},
-      next: async (detail?: string): Promise<void> => {},
+      start: async (): Promise<void> => {},
+      next: async (): Promise<void> => {},
       end: async (): Promise<void> => {},
     };
     const ui = new MockUserInteraction();
@@ -78,28 +100,30 @@ describe("Azure App Service Deploy Driver test", () => {
       ui: ui,
       telemetryReporter: new MockTelemetryReporter(),
       progressBar: progressHandler,
-    } as DriverContext;
+    } as any;
     const credential = new MyTokenCredential();
     sandbox.stub(credential, "getToken").resolves(undefined);
     sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
     // ignore file
     sandbox.stub(fs, "pathExists").resolves(true);
     sandbox.stub(fs, "readFile").callsFake((file) => {
-      if (file === "ignore") {
+      if (file.toString().indexOf("ignore") >= 0) {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("any other content"));
     });
+    sandbox.stub(fs, "mkdirs").resolves();
+    sandbox.stub(fs, "removeSync");
+    sandbox.stub(fs, "readdirSync").returns([new fs.Dirent(), new fs.Dirent()]);
     const client = new appService.WebSiteManagementClient(credential, "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
-    sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
+    // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "post").resolves({
       status: 200,
       headers: {
@@ -122,22 +146,14 @@ describe("Azure App Service Deploy Driver test", () => {
       },
     });
     sandbox.stub(client.webApps, "restart").resolves();
-    const res = await deploy.run(args, context);
-    expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
-    // progress bar have 6 steps
-    expect(progressNextCaller.callCount).to.equal(1);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    // progress bar have 6 steps
+    expect(progressNextCaller.callCount).to.equal(1);
   });
 
   it("deploy happy path with response data is empty", async () => {
     const deploy = new AzureAppServiceDeployDriver();
-    const fh = await fs.open(path.join(sysTmp, folder, "test.txt"), "a");
-    await fs.close(fh);
-    await fs.writeFile(path.join(sysTmp, "ignore"), "ignore", {
-      encoding: "utf8",
-      flag: "a",
-    });
     const args = {
       workingDirectory: sysTmp,
       artifactFolder: `./${folder}`,
@@ -160,25 +176,17 @@ describe("Azure App Service Deploy Driver test", () => {
       ui: ui,
       telemetryReporter: new MockTelemetryReporter(),
       progressBar: progressHandler,
-    } as DriverContext;
+    } as any;
     const credential = new MyTokenCredential();
     sandbox.stub(credential, "getToken").resolves(undefined);
     sandbox.stub(context.azureAccountProvider, "getIdentityCredentialAsync").resolves(credential);
     // ignore file
-    sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(fs, "readFile").callsFake((file) => {
-      if (file === "ignore") {
-        return Promise.resolve(Buffer.from("node_modules"));
-      }
-      throw new Error("not found");
-    });
     const client = new appService.WebSiteManagementClient(credential, "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
     sandbox.stub(client.webApps, "beginListPublishingCredentialsAndWait").resolves({
       publishingUserName: "test-username",
       publishingPassword: "test-password",
     } as Models.WebAppsListPublishingCredentialsResponse);
-    sandbox.stub(fs, "readFileSync").resolves("test");
     // mock klaw
     // sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
@@ -193,12 +201,10 @@ describe("Azure App Service Deploy Driver test", () => {
       data: {},
     });
     sandbox.stub(client.webApps, "restart").resolves();
-    const res = await deploy.run(args, context);
-    expect(res.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
-    // progress bar have 6 steps
-    expect(progressNextCaller.callCount).to.equal(1);
     const rex = await deploy.execute(args, context);
     expect(rex.result.unwrapOr(new Map([["a", "a"]])).size).to.equal(0);
+    // progress bar have 6 steps
+    expect(progressNextCaller.callCount).to.equal(1);
   });
 
   it("resource id error", async () => {
@@ -213,10 +219,10 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     // await deploy.run(args, context);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("missing resource id", async () => {
@@ -228,10 +234,10 @@ describe("Azure App Service Deploy Driver test", () => {
     } as DeployArgs;
     const context = {
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     // await deploy.run(args, context);
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("deploy with ignore file not exists", async () => {
@@ -239,7 +245,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const args = {
       workingDirectory: sysTmp,
       artifactFolder: `./${folder}`,
-      ignoreFile: "./ignore",
+      ignoreFile: "",
       resourceId:
         "/subscriptions/e24d88be-bbbb-1234-ba25-aa11aaaa1aa1/resourceGroups/hoho-rg/providers/Microsoft.Web/sites/some-server-farm",
     } as DeployArgs;
@@ -247,7 +253,7 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       telemetryReporter: new MockTelemetryReporter(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -277,8 +283,8 @@ describe("Azure App Service Deploy Driver test", () => {
       .throws(new Error("test"));
     // mock klaw
     sandbox.stub(fileOpt, "forEachFileAndDir").resolves(undefined);
-    const res = await deploy.run(args, context);
-    expect(res.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
+    const res = await deploy.execute(args, context);
+    expect(res.result.unwrapOr(new Map([["a", "b"]])).size).to.equal(0);
   });
 
   it("zip deploy to azure error", async () => {
@@ -293,7 +299,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -319,8 +325,8 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("should thrown when deploy remote 500 error", async () => {
@@ -335,7 +341,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -366,8 +372,8 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("should thrown when deploy remote 400 error", async () => {
@@ -382,7 +388,7 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -413,8 +419,8 @@ describe("Azure App Service Deploy Driver test", () => {
     sandbox.stub(AzureDeployImpl.AXIOS_INSTANCE, "get").resolves({
       status: 200,
     });
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("working dir not exists", async () => {
@@ -429,9 +435,9 @@ describe("Azure App Service Deploy Driver test", () => {
     const context = {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
-    } as DriverContext;
-    const res = await deploy.run(args, context);
-    assert.equal(res.isErr(), true);
+    } as any;
+    const res = await deploy.execute(args, context);
+    assert.equal(res.result.isErr(), true);
   });
 
   it("test dry run", async () => {
@@ -464,7 +470,7 @@ describe("Azure App Service Deploy Driver test", () => {
       logProvider: new TestLogProvider(),
       ui: ui,
       progressBar: progressHandler,
-    } as DriverContext;
+    } as any;
     sandbox
       .stub(context.azureAccountProvider, "getIdentityCredentialAsync")
       .resolves(new MyTokenCredential());
@@ -474,7 +480,7 @@ describe("Azure App Service Deploy Driver test", () => {
       if (file === "ignore") {
         return Promise.resolve(Buffer.from("node_modules"));
       }
-      throw new Error("not found");
+      return Promise.resolve(Buffer.from("any other content"));
     });
     const client = new appService.WebSiteManagementClient(new MyTokenCredential(), "z");
     sandbox.stub(appService, "WebSiteManagementClient").returns(client);
@@ -526,7 +532,7 @@ describe("Azure App Service Deploy Driver test", () => {
       azureAccountProvider: new TestAzureAccountProvider(),
       logProvider: new TestLogProvider(),
       ui: new MockUserInteraction(),
-    } as DriverContext;
+    } as any;
     const credential = new MyTokenCredential();
     credential.getToken = async () => {
       return null;

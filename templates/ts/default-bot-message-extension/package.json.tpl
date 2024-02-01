@@ -1,5 +1,5 @@
 {
-    "name": "{{appName}}",
+    "name": "{{SafeProjectNameLowerCase}}",
     "version": "1.0.0",
     "description": "Microsoft Teams Toolkit hello world Bot sample",
     "engines": {
@@ -7,12 +7,12 @@
     },
     "author": "Microsoft",
     "license": "MIT",
-    "main": "./lib/index.js",
+    "main": "./lib/src/index.js",
     "scripts": {
         "dev:teamsfx": "env-cmd --silent -f .localConfigs npm run dev",
-        "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./index.ts",
-        "build": "tsc --build && shx cp -r ./adaptiveCards ./lib/",
-        "start": "node ./lib/index.js",
+        "dev": "nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register ./src/index.ts",
+        "build": "tsc --build",
+        "start": "node ./lib/src/index.js",
         "watch": "nodemon --exec \"npm run start\"",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
@@ -21,17 +21,18 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/adaptivecards-tools": "^1.0.0",
+        "adaptive-expressions": "^4.20.0",
+        "adaptivecards-templating": "^2.3.1",
+        "adaptivecards": "^3.0.1",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-        "@types/node": "^14.0.0",
+        "@types/node": "^16.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",
-        "nodemon": "^2.0.7",
-        "shx": "^0.3.3"
+        "nodemon": "^2.0.7"
     }
 }

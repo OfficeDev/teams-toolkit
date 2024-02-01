@@ -1,23 +1,25 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
-version: 1.0.0
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.4/yaml.schema.json
+# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+# Visit https://aka.ms/teamsfx-actions for details on actions
+version: v1.4
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
-  # Creates a new Azure Active Directory (AAD) app to authenticate users if
+  # Creates a new Microsoft Entra app to authenticate users if
   # the environment variable that stores clientId is empty
   - uses: aadApp/create
     with:
-      # Note: when you run aadApp/update, the AAD app name will be updated
+      # Note: when you run aadApp/update, the Microsoft Entra app name will be updated
       # based on the definition in manifest. If you don't want to change the
-      # name, make sure the name in AAD manifest is the same with the name
+      # name, make sure the name in Microsoft Entra manifest is the same with the name
       # defined here.
       name: {{appName}}
       # If the value is false, the action will not generate client secret for you
       generateClientSecret: true
       # Authenticate users with a Microsoft work or school account in your
-      # organization's Azure AD tenant (for example, single tenant).
+      # organization's Microsoft Entra tenant (for example, single tenant).
       signInAudience: AzureADMyOrg
     # Write the information of created resources into environment file for the
     # specified environment variable(s).
@@ -35,10 +37,10 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{APP_NAME_SUFFIX}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
-    writeToEnvironmentFile: 
+    writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
@@ -66,20 +68,22 @@ provision:
       # will use bicep CLI in PATH if you remove this config.
       bicepCliVersion: v0.9.1
 
-  - uses: azureStorage/enableStaticWebsite
+  # Get the deployment token from Azure Static Web Apps
+  - uses: azureStaticWebApps/getDeploymentToken
     with:
-      storageResourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}}
-      indexPage: index.html
-      errorPage: error.html
+      resourceId: ${{AZURE_STATIC_WEB_APPS_RESOURCE_ID}}
+    # Save deployment token to the environment file for the deployment action
+    writeToEnvironmentFile:
+      deploymentToken: SECRET_TAB_SWA_DEPLOYMENT_TOKEN
 
-  # Apply the AAD manifest to an existing AAD app. Will use the object id in
-  # manifest file to determine which AAD app to update.
+  # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
+  # manifest file to determine which Microsoft Entra app to update.
   - uses: aadApp/update
     with:
       # Relative path to this file. Environment variables in manifest will
-      # be replaced before apply to AAD app
+      # be replaced before apply to Microsoft Entra app
       manifestPath: ./aad.manifest.json
-      outputFilePath : ./build/aad.manifest.${{TEAMSFX_ENV}}.json
+      outputFilePath: ./build/aad.manifest.${{TEAMSFX_ENV}}.json
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
@@ -116,51 +120,38 @@ provision:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       args: install
-  # Run npm command
   - uses: cli/runNpmCommand
+    name: build app
+    with:
+      args: run build --if-present
     env:
       REACT_APP_CLIENT_ID: ${{AAD_APP_CLIENT_ID}}
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
       REACT_APP_FUNC_NAME: getUserProfile
       REACT_APP_FUNC_ENDPOINT: ${{API_FUNCTION_ENDPOINT}}
+  # Deploy bits to Azure Static Web Apps
+  - uses: cli/runNpxCommand
+    name: deploy to Azure Static Web Apps
     with:
-      args: run build --if-present
-  # Deploy bits to Azure Storage Static Website
-  - uses: azureStorage/deploy
-    with:
-      # Deploy base folder. This folder includes manifest files for AAD app and Teams app that should be ignored using the ignoreFile.
-      artifactFolder: build
-      # The resource id of the cloud resource to be deployed to
-      resourceId: ${{TAB_AZURE_STORAGE_RESOURCE_ID}}
+      args: '@azure/static-web-apps-cli deploy ./build -d ${{SECRET_TAB_SWA_DEPLOYMENT_TOKEN}} --env production'
   # Run npm command
   - uses: cli/runNpmCommand
+    name: install dependencies
     with:
       workingDirectory: api
       args: install
-  # Run npm command
   - uses: cli/runNpmCommand
+    name: build app
     with:
       workingDirectory: api
       args: run build --if-present
-  # Install development tool(s)
-  - uses: devTool/install
-    with:
-      dotnet: true
-    # Write the information of installed development tool(s) into environment
-    # file for the specified environment variable(s).
-    writeToEnvironmentFile:
-      dotnetPath: DOTNET_PATH
-  - uses: cli/runDotnetCommand
-    with:
-      workingDirectory: api
-      args: build extensions.csproj -o bin --ignore-failed-sources
-      execPath: ${{DOTNET_PATH}}
   # Deploy your application to Azure Functions using the zip deploy feature.
   # For additional details, see at https://aka.ms/zip-deploy-to-azure-functions
   - uses: azureFunctions/zipDeploy
@@ -170,16 +161,20 @@ deploy:
       artifactFolder: .
       # Ignore file location, leave blank will ignore nothing
       ignoreFile: .funcignore
-      # the resource id of the cloud resource to be deployed to
+      # The resource id of the cloud resource to be deployed to.
+      # This key will be generated by arm/deploy action automatically.
+      # You can replace it with your existing Azure Resource id
+      # or add it to your environment variable file.
       resourceId: ${{API_FUNCTION_RESOURCE_ID}}
 
-# Triggered when 'teamsfx publish' is executed
+# Triggered when 'teamsapp publish' is executed
 publish:
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:
       # Path to manifest template
       manifestPath: ./appPackage/manifest.json
+  # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage
     with:
       # Path to manifest template

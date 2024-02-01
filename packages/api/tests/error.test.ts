@@ -60,7 +60,7 @@ describe("error", function () {
             source: mySource,
             helpLink: myHelpLink,
           });
-          chai.assert.equal(error.name, "RangeError");
+          chai.assert.equal(error.name, "UserError");
           chai.assert.isTrue(error.message && error.message.includes(myMessage));
           chai.assert.equal(error.source, mySource);
           chai.assert.equal(error.helpLink, myHelpLink);
@@ -115,7 +115,7 @@ describe("error", function () {
             source: mySource,
             issueLink: myIssueLink,
           });
-          chai.assert.equal(error.name, "RangeError");
+          chai.assert.equal(error.name, "SystemError");
           chai.assert.equal(error.message, myMessage);
           chai.assert.equal(error.source, mySource);
           chai.assert.equal(error.issueLink, myIssueLink);
@@ -136,12 +136,12 @@ describe("error", function () {
             chai.assert.fail("Should not reach here");
           } catch (e) {
             const fxError = new SystemError({
-              error: e,
+              error: e as SystemError,
               source: mySource,
               name: "ReadFileError",
             });
             chai.assert.isTrue(fxError instanceof SystemError);
-            chai.assert.isTrue(fxError.message === e.message);
+            chai.assert.isTrue(fxError.message === (e as SystemError).message);
             chai.assert.isTrue(fxError.name === "ReadFileError");
             chai.assert.isTrue(fxError.source === mySource);
           }

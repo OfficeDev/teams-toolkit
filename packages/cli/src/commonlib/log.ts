@@ -5,10 +5,16 @@ import { Colors, ConfigFolderName, LogLevel, LogProvider } from "@microsoft/team
 import chalk from "chalk";
 import * as os from "os";
 import * as path from "path";
-import { SuccessText, TextType, WarningText, colorize, replaceTemplateString } from "../colorize";
+import {
+  ErrorPrefix,
+  SuccessText,
+  TextType,
+  WarningText,
+  colorize,
+  replaceTemplateString,
+} from "../colorize";
 import ScreenManager from "../console/screen";
 import { CLILogLevel } from "../constants";
-import { strings } from "../resource";
 import { getColorizedString } from "../utils";
 
 export class CLILogProvider implements LogProvider {
@@ -46,50 +52,46 @@ export class CLILogProvider implements LogProvider {
     return path.join(os.tmpdir(), `.${ConfigFolderName}`, "cli-log", this.logFileName);
   }
 
-  trace(message: string): Promise<boolean> {
-    return this.log(LogLevel.Trace, message);
+  verbose(message: string): void {
+    this.log(LogLevel.Verbose, message);
   }
 
-  debug(message: string): Promise<boolean> {
-    return this.log(LogLevel.Debug, message);
+  debug(message: string): void {
+    this.log(LogLevel.Debug, message);
   }
 
-  info(message: Array<{ content: string; color: Colors }>): Promise<boolean>;
+  info(message: Array<{ content: string; color: Colors }>): void;
 
-  info(message: string): Promise<boolean>;
+  info(message: string): void;
 
-  info(message: string | Array<{ content: string; color: Colors }>): Promise<boolean> {
+  info(message: string | Array<{ content: string; color: Colors }>): void {
     if (message instanceof Array) {
       message = getColorizedString(message);
     } else {
       message = chalk.whiteBright(message);
     }
-    return this.log(LogLevel.Info, message);
+    this.log(LogLevel.Info, message);
   }
 
   white(msg: string): string {
     return chalk.whiteBright(msg);
   }
 
-  warning(message: string): Promise<boolean> {
-    return this.log(LogLevel.Warning, message);
+  warning(message: string): void {
+    this.log(LogLevel.Warning, message);
   }
 
-  error(message: string): Promise<boolean> {
-    return this.log(LogLevel.Error, message);
-  }
-
-  fatal(message: string): Promise<boolean> {
-    return this.log(LogLevel.Fatal, message);
+  error(message: string): void {
+    this.log(LogLevel.Error, message);
   }
 
   linkColor(msg: string): string {
     return chalk.cyanBright.underline(msg);
   }
 
-  async log(logLevel: LogLevel, message: string): Promise<boolean> {
+  log(logLevel: LogLevel, message: string): void {
     switch (logLevel) {
-      case LogLevel.Trace:
+      case LogLevel.Verbose:
       case LogLevel.Debug:
         if (CLILogProvider.logLevel === CLILogLevel.debug) {
           this.outputDetails(message);
@@ -109,11 +111,12 @@ export class CLILogProvider implements LogProvider {
         }
         break;
       case LogLevel.Error:
-      case LogLevel.Fatal:
         this.outputError(message);
         break;
     }
-    return true;
+  }
+  async logInFile(logLevel: LogLevel, message: string): Promise<void> {
+    return new Promise((resolve) => resolve());
   }
 
   outputSuccess(template: string, ...args: string[]): void {
@@ -139,14 +142,14 @@ export class CLILogProvider implements LogProvider {
 
   outputError(template: string, ...args: string[]): void {
     ScreenManager.writeLine(
-      colorize(strings["error.prefix"] + replaceTemplateString(template, ...args), TextType.Error),
+      colorize(ErrorPrefix + replaceTemplateString(template, ...args), TextType.Error),
       true
     );
   }
 
   necessaryLog(logLevel: LogLevel, message: string, white = false) {
     switch (logLevel) {
-      case LogLevel.Trace:
+      case LogLevel.Verbose:
       case LogLevel.Debug:
         this.outputDetails(message);
         break;
@@ -161,7 +164,6 @@ export class CLILogProvider implements LogProvider {
         this.outputWarning(message);
         break;
       case LogLevel.Error:
-      case LogLevel.Fatal:
         this.outputError(message);
         break;
     }

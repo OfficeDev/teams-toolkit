@@ -1,0 +1,10 @@
+  # Validate using manifest schema
+  - uses: teamsApp/validateManifest
+    with:
+      # Path to manifest template
+    {{#localManifest}}
+      manifestPath: ./appPackage/manifest.local.json
+    {{/localManifest}}
+    {{^localManifest}}
+      manifestPath: ./appPackage/manifest.json
+    {{/localManifest}}

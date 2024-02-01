@@ -1,7 +1,8 @@
+const { OnBehalfOfUserCredential } = require("@microsoft/teamsfx");
+const { Client } = require("@microsoft/microsoft-graph-client");
 const {
-  OnBehalfOfUserCredential,
-  createMicrosoftGraphClientWithCredential,
-} = require("@microsoft/teamsfx");
+  TokenCredentialAuthenticationProvider,
+} = require("@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials");
 require("isomorphic-fetch");
 
 const oboAuthConfig = {
@@ -19,8 +20,16 @@ class ProfileSsoCommandHandler {
 
     // Init OnBehalfOfUserCredential instance with SSO token
     const oboCredential = new OnBehalfOfUserCredential(tokenResponse.ssoToken, oboAuthConfig);
-    // Add scope for your Azure AD app. For example: Mail.Read, etc.
-    const graphClient = createMicrosoftGraphClientWithCredential(oboCredential, ["User.Read"]);
+
+    // Create an instance of the TokenCredentialAuthenticationProvider by passing the tokenCredential instance and options to the constructor
+    const authProvider = new TokenCredentialAuthenticationProvider(oboCredential, {
+      scopes: ["User.Read"],
+    });
+
+    // Initialize Graph client instance with authProvider
+    const graphClient = Client.initWithMiddleware({
+      authProvider: authProvider,
+    });
 
     // Call graph api use `graph` instance to get user profile information
     const me = await graphClient.api("/me").get();

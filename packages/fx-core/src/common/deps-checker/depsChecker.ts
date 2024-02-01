@@ -37,6 +37,7 @@ export enum DepsType {
   ProjectNode = "project-node",
   Dotnet = "dotnet",
   FuncCoreTools = "func-core-tools",
+  TestTool = "test-tool",
   VxTestApp = "vx-test-app",
 }
 
@@ -51,4 +52,16 @@ export interface FuncInstallOptions {
   version: string;
 }
 
-export type InstallOptions = BaseInstallOptions | FuncInstallOptions;
+export interface TestToolInstallOptions {
+  releaseType: TestToolReleaseType;
+  symlinkDir?: string;
+  projectPath: string;
+  versionRange: string;
+}
+
+export enum TestToolReleaseType {
+  Npm = "npm",
+  Binary = "binary",
+}
+
+export type InstallOptions = BaseInstallOptions | FuncInstallOptions | TestToolInstallOptions;

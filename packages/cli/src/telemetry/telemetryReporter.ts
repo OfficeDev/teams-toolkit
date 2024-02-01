@@ -7,14 +7,12 @@ import * as os from "os";
 import * as appInsights from "applicationinsights";
 import { machineIdSync } from "node-machine-id";
 import logger from "../commonlib/log";
-import { UserSettings } from "../userSetttings";
 
 export default class TelemetryReporter {
   private appInsightsClient: appInsights.TelemetryClient | undefined;
   private cliName: string;
   private cliVersion: string;
   private machineId: string;
-  private userOptIn = true;
   private logging = true;
   private appRoot: string | undefined;
 
@@ -23,20 +21,7 @@ export default class TelemetryReporter {
     this.cliVersion = cliVersion;
     this.machineId = machineIdSync();
     this.appRoot = appRoot;
-    this.updateUserOptIn(key);
-  }
-
-  private updateUserOptIn(key: string): void {
-    const result = UserSettings.getTelemetrySetting();
-    if (result.isOk() && result.value === false) {
-      this.userOptIn = false;
-    } else {
-      this.userOptIn = true;
-    }
-
-    if (this.userOptIn) {
-      this.createAppInsightsClient(key);
-    }
+    this.createAppInsightsClient(key);
   }
 
   private createAppInsightsClient(key: string) {
@@ -185,7 +170,7 @@ export default class TelemetryReporter {
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ): void {
-    if (this.userOptIn && eventName && this.appInsightsClient) {
+    if (eventName && this.appInsightsClient) {
       const cleanProperties = this.cloneAndChange(properties, (key: string, prop: string) =>
         this.anonymizeFilePaths(prop)
       );
@@ -197,7 +182,7 @@ export default class TelemetryReporter {
       });
 
       if (this.logging) {
-        logger.debug(
+        void logger.debug(
           `Telemetry: ${this.cliName}/${eventName} ${JSON.stringify({
             properties,
             measurements,
@@ -214,7 +199,7 @@ export default class TelemetryReporter {
     measurements?: { [key: string]: number },
     _errorProps?: string[]
   ): void {
-    if (this.userOptIn && eventName && this.appInsightsClient) {
+    if (eventName && this.appInsightsClient) {
       const cleanProperties = this.cloneAndChange(properties, (key: string, prop: string) => {
         return this.anonymizeFilePaths(prop);
       });
@@ -226,7 +211,7 @@ export default class TelemetryReporter {
       });
 
       if (this.logging) {
-        logger.debug(
+        void logger.debug(
           `Telemetry: ${this.cliName}/${eventName} ${JSON.stringify({
             properties,
             measurements,
@@ -241,7 +226,7 @@ export default class TelemetryReporter {
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ): void {
-    if (this.userOptIn && error && this.appInsightsClient) {
+    if (error && this.appInsightsClient) {
       const cleanProperties = this.cloneAndChange(properties, (_key: string, prop: string) =>
         this.anonymizeFilePaths(prop)
       );
@@ -253,7 +238,7 @@ export default class TelemetryReporter {
       });
 
       if (this.logging) {
-        logger.debug(
+        void logger.debug(
           `Telemetry: ${this.cliName}/${error.name} ${error.message} ${JSON.stringify({
             properties,
             measurements,

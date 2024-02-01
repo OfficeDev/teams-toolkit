@@ -30,11 +30,6 @@ export class NpmBuildDriver extends BaseBuildStepDriver {
   }
 
   @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
-  async run(args: unknown, context: DriverContext): Promise<Result<Map<string, string>, FxError>> {
-    return super.run(args, context);
-  }
-
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     return super.execute(args, ctx);
   }

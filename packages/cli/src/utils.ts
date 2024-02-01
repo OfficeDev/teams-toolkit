@@ -1,94 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Colors,
-  IQTreeNode,
-  Inputs,
-  MultiSelectQuestion,
-  OptionItem,
-  Platform,
-  QTreeNode,
-  Question,
-  SingleSelectQuestion,
-} from "@microsoft/teamsfx-api";
-import { getSingleOption } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import fs from "fs-extra";
 import path from "path";
+import semver from "semver";
 import * as uuid from "uuid";
-import { parse } from "yaml";
-import { Options } from "yargs";
-import { teamsAppFileName } from "./constants";
-import CLIUIInstance from "./userInteraction";
 
-function getChoicesFromQTNodeQuestion(data: Question): string[] | undefined {
-  const option = "staticOptions" in data ? data.staticOptions : undefined;
-  if (option && option instanceof Array && option.length > 0) {
-    if (typeof option[0] === "string") {
-      return option as string[];
-    } else {
-      return (option as OptionItem[]).map((op) => op.cliName || toLocaleLowerCase(op.id));
-    }
-  } else {
-    return undefined;
-  }
-}
-
-export function getSingleOptionString(
-  q: SingleSelectQuestion | MultiSelectQuestion
-): string | string[] {
-  const singleOption = getSingleOption(q);
-  if (q.returnObject) {
-    if (q.type === "singleSelect") {
-      return typeof singleOption === "string" ? singleOption : singleOption.id;
-    } else {
-      return [singleOption[0].id];
-    }
-  } else {
-    return singleOption;
-  }
-}
-
-export async function toYargsOptions(data: Question): Promise<Options> {
-  const choices = getChoicesFromQTNodeQuestion(data);
-  let defaultValue = data.default;
-  if (typeof data.default === "function") {
-    defaultValue = await data.default({ platform: Platform.CLI_HELP });
-  }
-  let title: any = data.title;
-  if (typeof data.title === "function") {
-    title = await data.title({ platform: Platform.CLI_HELP });
-  }
-
-  if (defaultValue && defaultValue instanceof Array && defaultValue.length > 0) {
-    defaultValue = defaultValue.map((item) => item.toLocaleLowerCase());
-  } else if (defaultValue && typeof defaultValue === "string") {
-    defaultValue = defaultValue.toLocaleLowerCase();
-  } else {
-    defaultValue = undefined;
-  }
-
-  if (defaultValue === undefined) {
-    return {
-      array: data.type === "multiSelect",
-      description: title || "",
-      choices: choices,
-      hidden: !!(data as any).hide,
-      global: false,
-      type: "string",
-    };
-  }
-  return {
-    array: data.type === "multiSelect",
-    description: title || "",
-    default: defaultValue,
-    choices: choices,
-    hidden: !!(data as any).hide,
-    global: false,
-    type: "string",
-  };
-}
+import { Colors, Inputs, Platform } from "@microsoft/teamsfx-api";
+import { SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
 
 export function toLocaleLowerCase(arg: any): any {
   if (typeof arg === "string") {
@@ -98,55 +18,13 @@ export function toLocaleLowerCase(arg: any): any {
   } else return arg;
 }
 
-export function flattenNodes(node: IQTreeNode): IQTreeNode[] {
-  const nodeCopy = Object.assign({}, node);
-  const children = (nodeCopy.children || []).concat([]);
-  nodeCopy.children = undefined;
-  return [nodeCopy].concat(...children.map((nd) => flattenNodes(nd)));
-}
-
-export function isWorkspaceSupported(workspace: string): boolean {
-  const p = workspace;
-
-  const checklist = [p, path.join(p, teamsAppFileName)];
-
-  for (const fp of checklist) {
-    if (!fs.existsSync(path.resolve(fp))) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Only used for telemetry
-export function getSettingsVersion(rootFolder: string | undefined): string | undefined {
-  if (!rootFolder) {
-    return undefined;
-  }
-  if (isWorkspaceSupported(rootFolder)) {
-    const filePath = path.join(rootFolder, teamsAppFileName);
-    if (!fs.existsSync(filePath)) {
-      return undefined;
-    }
-
-    try {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
-      const configuration = parse(fileContent);
-      return configuration.version;
-    } catch (e) {
-      return undefined;
-    }
-  }
-  return undefined;
-}
-
 export function getSystemInputs(projectPath?: string, env?: string): Inputs {
   const systemInputs: Inputs = {
     platform: Platform.CLI,
     projectPath: projectPath,
     correlationId: uuid.v4(),
     env: env,
-    nonInteractive: !CLIUIInstance.interactive,
+    nonInteractive: false,
   };
   return systemInputs;
 }
@@ -179,11 +57,77 @@ export function getColorizedString(message: Array<{ content: string; color: Colo
 }
 
 /**
- * Shows in `teamsfx -v`.
- * @returns the version of teamsfx-cli.
+ * @returns the version of cli.
  */
+let version: string;
 export function getVersion(): string {
+  if (version) return version;
   const pkgPath = path.resolve(__dirname, "..", "package.json");
   const pkgContent = fs.readJsonSync(pkgPath);
-  return pkgContent.version;
+  version = pkgContent.version;
+  return version;
+}
+
+export interface Sample {
+  tags: string[];
+  name: string;
+  description: string;
+  id: string;
+  url?: string;
+}
+
+export async function getTemplates(): Promise<Sample[]> {
+  const version = getVersion();
+  const availableSamples = (await sampleProvider.SampleCollection).samples.filter(
+    (sample: SampleConfig) => {
+      if (sample.minimumCliVersion !== undefined) {
+        return semver.gte(version, sample.minimumCliVersion);
+      }
+      if (sample.maximumCliVersion !== undefined) {
+        return semver.lte(version, sample.maximumCliVersion);
+      }
+      return true;
+    }
+  );
+  const samples = availableSamples.map((sample: SampleConfig) => {
+    const info = sample.downloadUrlInfo;
+    return {
+      tags: sample.tags,
+      name: sample.title,
+      description: sample.shortDescription,
+      id: sample.id,
+      url: `https://github.com/${info.owner}/${info.repository}/tree/${info.ref}/${info.dir}`,
+    };
+  });
+  return samples;
+}
+
+export function editDistance(s1: string, s2: string): number {
+  const len1 = s1.length;
+  const len2 = s2.length;
+
+  // Create a 2D array to store the edit distances
+  const dp: number[][] = new Array(len1 + 1).fill(0).map(() => new Array(len2 + 1).fill(0));
+
+  // Initialize the first row and column
+  for (let i = 0; i <= len1; i++) {
+    dp[i][0] = i;
+  }
+  for (let j = 0; j <= len2; j++) {
+    dp[0][j] = j;
+  }
+
+  // Calculate the edit distance using dynamic programming
+  for (let i = 1; i <= len1; i++) {
+    for (let j = 1; j <= len2; j++) {
+      const cost = s1[i - 1] === s2[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1, // Deletion
+        dp[i][j - 1] + 1, // Insertion
+        dp[i - 1][j - 1] + cost // Substitution
+      );
+    }
+  }
+
+  return dp[len1][len2];
 }

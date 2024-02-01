@@ -24,6 +24,8 @@ import {
   CLIVersionCheck,
   getBotSiteEndpoint,
 } from "../../../utils/commonUtils";
+import path from "path";
+import { updatePakcageJson } from "./helper";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -56,6 +58,12 @@ describe("Migration Tests", function () {
     async () => {
       // create v2 project using CLI
       await mirgationDebugTestContext.createProjectCLI(false);
+
+      // update package.json in bot folder
+      await updatePakcageJson(
+        path.join(mirgationDebugTestContext.projectPath, "bot", "package.json")
+      );
+
       // verify popup
       await validateNotification(Notification.Upgrade);
 

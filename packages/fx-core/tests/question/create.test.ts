@@ -12,6 +12,7 @@ import {
   Platform,
   Question,
   SingleSelectQuestion,
+  StaticOptions,
   UserInteraction,
   ok,
 } from "@microsoft/teamsfx-api";
@@ -237,6 +238,9 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (none auth)", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.ApiKey]: "true",
+      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -312,6 +316,9 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (key auth)", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.ApiKey]: "true",
+      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -900,6 +907,9 @@ describe("scaffold question", () => {
         }
       });
       it("traverse in vscode Copilot Plugin from new API (no auth)", async () => {
+        mockedEnvRestore = mockedEnv({
+          [FeatureFlagName.ApiKey]: "true",
+        });
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -952,6 +962,9 @@ describe("scaffold question", () => {
       });
 
       it("traverse in vscode Copilot Plugin from new API (key auth)", async () => {
+        mockedEnvRestore = mockedEnv({
+          [FeatureFlagName.ApiKey]: "true",
+        });
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -1121,6 +1134,9 @@ describe("scaffold question", () => {
       });
 
       it("traverse in cli", async () => {
+        mockedEnvRestore = mockedEnv({
+          [FeatureFlagName.ApiKey]: "true",
+        });
         mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
         const inputs: Inputs = {
           platform: Platform.CLI,
@@ -2276,7 +2292,50 @@ describe("scaffold question", () => {
       const options = question.dynamicOptions!({ platform: Platform.VS });
       assert.deepEqual(options, CapabilityOptions.dotnetCaps());
     });
+
+    it("templates for TDP integration", () => {
+      mockedEnvRestore();
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "false",
+        [FeatureFlagName.TdpTemplateCliTest]: "true",
+      });
+      const question = capabilityQuestion();
+      const options = question.dynamicOptions!({
+        platform: Platform.CLI,
+        nonInteractive: true,
+      }) as OptionItem[];
+      assert.isTrue(options.findIndex((o: OptionItem) => o.id === CapabilityOptions.me().id) > -1);
+      assert.isTrue(
+        options.findIndex((o: OptionItem) => o.id === CapabilityOptions.botAndMe().id) > -1
+      );
+      assert.isTrue(
+        options.findIndex((o: OptionItem) => o.id === CapabilityOptions.nonSsoTabAndBot().id) > -1
+      );
+    });
+
+    it("templates for TDP integration dotnet", () => {
+      mockedEnvRestore();
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "false",
+        [FeatureFlagName.TdpTemplateCliTest]: "true",
+        [FeatureFlagName.CLIDotNet]: "true",
+      });
+      const question = capabilityQuestion();
+      const options = question.dynamicOptions!({
+        platform: Platform.CLI,
+        nonInteractive: true,
+        runtime: "dotnet",
+      }) as OptionItem[];
+      assert.isTrue(options.findIndex((o: OptionItem) => o.id === CapabilityOptions.me().id) > -1);
+      assert.isTrue(
+        options.findIndex((o: OptionItem) => o.id === CapabilityOptions.botAndMe().id) < 0
+      );
+      assert.isTrue(
+        options.findIndex((o: OptionItem) => o.id === CapabilityOptions.nonSsoTabAndBot().id) < 0
+      );
+    });
   });
+
   describe("ME copilot plugin template only", () => {
     const ui = new MockUserInteraction();
     let mockedEnvRestore: RestoreFn;

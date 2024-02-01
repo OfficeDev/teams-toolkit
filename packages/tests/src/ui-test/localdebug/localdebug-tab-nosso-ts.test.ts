@@ -6,7 +6,11 @@
  */
 import * as path from "path";
 import { startDebugging, waitForTerminal } from "../../utils/vscodeOperation";
-import { initPage, validateBasicTab } from "../../utils/playwrightOperation";
+import {
+  initPage,
+  validateBasicTab,
+  reopenPage,
+} from "../../utils/playwrightOperation";
 import { LocalDebugTestContext } from "./localdebugContext";
 import {
   Timeout,
@@ -22,13 +26,11 @@ import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
-import os from "os";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
-  let debugProcess: ChildProcessWithoutNullStreams;
-  let debugMethod: "cli" | "ttk";
+  let debugProcess: ChildProcessWithoutNullStreams | null;
   let successFlag = true;
   let errorMessage = "";
 
@@ -43,17 +45,12 @@ describe("Local Debug Tests", function () {
     this.timeout(Timeout.finishTestCase);
     if (debugProcess) {
       setTimeout(() => {
-        debugProcess.kill("SIGTERM");
+        debugProcess?.kill("SIGTERM");
       }, 2000);
     }
 
     await localDebugTestContext.after(false, true);
     this.timeout(Timeout.finishAzureTestCase);
-    // windows in cli can't stop debug
-    if (debugMethod === "cli" && os.type() === "Windows_NT") {
-      if (successFlag) process.exit(0);
-      else process.exit(1);
-    }
   });
 
   it(
@@ -70,54 +67,37 @@ describe("Local Debug Tests", function () {
         );
         validateFileExist(projectPath, "src/app.ts");
 
-        // local debug
-        debugMethod = ["cli", "ttk"][Math.floor(Math.random() * 2)] as
-          | "cli"
-          | "ttk";
-        if (debugMethod === "cli") {
-          // cli preview
-          console.log("======= debug with cli ========");
-          {
-            const { success } = await Executor.provision(projectPath, "local");
-            expect(success).to.be.true;
-          }
-          {
-            const { success } = await Executor.deploy(projectPath, "local");
-            expect(success).to.be.true;
-          }
-          debugProcess = Executor.debugProject(
-            projectPath,
-            "local",
-            true,
-            process.env,
-            (data) => {
-              if (data) {
-                console.log(data);
-              }
-            },
-            (error) => {
-              console.log(error);
-            }
-          );
-          await new Promise((resolve) => setTimeout(resolve, 2 * 30 * 1000));
-        } else {
-          console.log("======= debug with ttk ========");
-          await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
-          await waitForTerminal(
-            LocalDebugTaskLabel.StartApplication,
-            "restify listening to"
-          );
-        }
+        console.log("======= debug with ttk ========");
+        await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
+        await waitForTerminal(
+          LocalDebugTaskLabel.StartApplication,
+          "restify listening to"
+        );
 
         const teamsAppId = await localDebugTestContext.getTeamsAppId();
         expect(teamsAppId).to.not.be.empty;
-        const page = await initPage(
-          localDebugTestContext.context!,
-          teamsAppId,
-          Env.username,
-          Env.password
-        );
-        await validateBasicTab(page, ValidationContent.Tab);
+        {
+          const page = await initPage(
+            localDebugTestContext.context!,
+            teamsAppId,
+            Env.username,
+            Env.password
+          );
+          await validateBasicTab(page, ValidationContent.Tab);
+        }
+
+        // cli preview
+        const res = await Executor.cliPreview(projectPath, false);
+        debugProcess = res.debugProcess;
+        {
+          const page = await reopenPage(
+            localDebugTestContext.context!,
+            teamsAppId,
+            Env.username,
+            Env.password
+          );
+          await validateBasicTab(page, ValidationContent.Tab);
+        }
       } catch (error) {
         successFlag = false;
         errorMessage = "[Error]: " + error;

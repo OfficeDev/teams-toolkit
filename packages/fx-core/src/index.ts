@@ -23,7 +23,6 @@ export { LtsNodeChecker } from "./common/deps-checker/internal/nodeChecker";
 export { MetadataV3, VersionState } from "./common/versionMetadata";
 export * from "./component/constants";
 export * from "./component/migrate";
-export { TelemetryUtils } from "./component/driver/teamsApp/utils/telemetry";
 export { envUtil, DotenvOutput } from "./component/utils/envUtil";
 export { metadataUtil } from "./component/utils/metadataUtil";
 export { pathUtils } from "./component/utils/pathUtils";

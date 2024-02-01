@@ -24,7 +24,6 @@ import {
   ApiSecretRegistrationUserAccessType,
 } from "../teamsApp/interfaces/ApiSecretRegistration";
 import { ApiSecretRegistrationClientSecret } from "../teamsApp/interfaces/ApiSecretRegistrationClientSecret";
-import { TelemetryUtils } from "../teamsApp/utils/telemetry";
 import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvalid";
 import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
 import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
@@ -57,7 +56,6 @@ export class CreateApiKeyDriver implements StepDriver {
 
     try {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
-      TelemetryUtils.init(context);
 
       if (!outputEnvVarNames) {
         throw new OutputEnvironmentVariableUndefinedError(actionName);

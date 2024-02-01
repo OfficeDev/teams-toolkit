@@ -7,12 +7,34 @@ provision:
 
 {{#fileCreateOrUpdateJsonFile}} appsettings, BOT {{/fileCreateOrUpdateJsonFile}}
 
-{{#botFrameworkCreate}} {{/botFrameworkCreate}}
+{{#botFrameworkCreate}} m365extensions {{/botFrameworkCreate}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+
 {{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}
 
-{{#fileCreateOrUpdateJsonFile}} {"launchSettings": true, "applicationUrl": "\"https://localhost:7130;http://localhost:5130\"", "hotReload": true} {{/fileCreateOrUpdateJsonFile}}
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+
+{{#fileCreateOrUpdateJsonFile}}
+{
+  "launchSettings": true,
+  "profiles": [
+    {
+      "profileName": "Microsoft Teams (browser):",
+      "applicationUrl": "\"http://localhost:5130\"",
+      "launchUrl": "\"https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}\"",
+      "hotReload": true
+    },
+    {
+      "profileName": "Outlook (browser):",
+      "applicationUrl": "\"http://localhost:5130\"",
+      "launchUrl": "\"https://outlook.office.com/mail?login_hint=${{TEAMSFX_M365_USER_NAME}}\"",
+      "hotReload": true
+    }
+  ]
+}
+{{/fileCreateOrUpdateJsonFile}}

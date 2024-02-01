@@ -55,3 +55,11 @@ export function isApiKeyEnabled(): boolean {
 export function isMultipleParametersEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
 }
+
+export function isTeamsFxRebrandingEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.TeamsFxRebranding, false);
+}
+
+export function isTdpTemplateCliTestEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
+}

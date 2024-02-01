@@ -43,7 +43,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "repair/index.js");
+      validateFileExist(projectPath, "src/functions/repair.js");
       await startDebugging("Debug in Teams (Chrome)");
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(

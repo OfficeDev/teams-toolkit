@@ -13,7 +13,7 @@ import {
   Timeout,
   Notification,
 } from "../../utils/constants";
-import { RemoteDebugTestContext } from "./remotedebugContext";
+import { RemoteDebugTestContext, runDeploy } from "./remotedebugContext";
 import {
   execCommandIfExist,
   getNotification,
@@ -59,7 +59,7 @@ describe("Remote debug Tests", function () {
   });
 
   it(
-    "[auto] Add wweb part to SPFx project with React framework",
+    "[auto] Add web part to SPFx project with React framework",
     {
       testPlanCaseId: 17581722,
       author: "v-helzha@microsoft.com",
@@ -76,16 +76,7 @@ describe("Remote debug Tests", function () {
         Notification.ProvisionSucceeded,
         Timeout.shortTimeWait
       );
-      await clearNotifications();
-      await execCommandIfExist(CommandPaletteCommands.DeployCommand);
-      try {
-        const deployConfirmInput = await InputBox.create();
-        await deployConfirmInput.confirm();
-      } catch (error) {
-        console.log("No need to confirm to deploy.");
-      }
-      await driver.sleep(Timeout.spfxDeploy);
-      await getNotification(Notification.DeploySucceeded, Timeout.longTimeWait);
+      await runDeploy();
 
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath

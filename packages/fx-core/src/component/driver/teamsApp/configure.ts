@@ -13,7 +13,6 @@ import { ConfigureTeamsAppArgs } from "./interfaces/ConfigureTeamsAppArgs";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "./clients/appStudioClient";
 import { AppStudioResultFactory } from "./results";
-import { TelemetryUtils } from "./utils/telemetry";
 import { manifestUtils } from "./utils/ManifestUtils";
 import { AppStudioError } from "./errors";
 import { AppStudioScopes } from "../../../common/tools";
@@ -55,8 +54,6 @@ export class ConfigureTeamsAppDriver implements StepDriver {
     context: WrapDriverContext,
     outputEnvVarNames?: Map<string, string>
   ): Promise<Result<Map<string, string>, FxError>> {
-    TelemetryUtils.init(context);
-
     const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);

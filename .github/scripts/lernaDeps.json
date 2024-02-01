@@ -13,6 +13,7 @@
     "packages/manifest",
     "packages/api",
     "packages/fx-core",
+    "packages/vscode-ui",
     "packages/vscode-extension",
     "templates"
   ],

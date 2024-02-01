@@ -46,6 +46,6 @@ new AssistDashboardTestCase(
   {
     dashboardFlag: true,
     skipInit: true,
-    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
+    debug: "cli",
   } // [TODO] skipInit browser security block
 ).test();

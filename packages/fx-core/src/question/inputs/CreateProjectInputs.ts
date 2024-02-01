@@ -33,7 +33,10 @@ export interface CreateProjectInputs extends Inputs {
     | "link-unfurling"
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
-    | "copilot-plugin-openai-plugin";
+    | "copilot-plugin-openai-plugin"
+    | "message-extension"
+    | "BotAndMessageExtension"
+    | "TabNonSsoAndBot";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"

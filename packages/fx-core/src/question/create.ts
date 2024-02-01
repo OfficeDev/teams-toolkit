@@ -27,6 +27,7 @@ import {
   isCopilotPluginEnabled,
   isApiCopilotPluginEnabled,
   isApiKeyEnabled,
+  isTdpTemplateCliTestEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -380,13 +381,18 @@ export class CapabilityOptions {
   }
 
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
-    return [
+    const capabilities = [
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.bots(inputs, true),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),
     ];
+    if (isTdpTemplateCliTestEnabled()) {
+      capabilities.push(CapabilityOptions.me());
+    }
+
+    return capabilities;
   }
 
   /**
@@ -424,6 +430,15 @@ export class CapabilityOptions {
     ];
   }
 
+  static tdpIntegrationCapabilities(): OptionItem[] {
+    // templates that are used by TDP integration only
+    return [
+      CapabilityOptions.me(),
+      CapabilityOptions.botAndMe(),
+      CapabilityOptions.nonSsoTabAndBot(),
+    ];
+  }
+
   /**
    * static capability list, which does not depend on any feature flags
    */
@@ -433,6 +448,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.tdpIntegrationCapabilities(),
     ];
 
     return capabilityOptions;
@@ -449,6 +465,10 @@ export class CapabilityOptions {
     ];
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+    }
+    if (isTdpTemplateCliTestEnabled()) {
+      // test templates that are used by TDP integration only
+      capabilityOptions.push(...CapabilityOptions.tdpIntegrationCapabilities());
     }
     return capabilityOptions;
   }
@@ -756,6 +776,17 @@ export class NotificationTriggerOptions {
     };
   }
 
+  static functionsTimerTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "timer-functions-isolated",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.TIMER],
+      label: getLocalizedString("plugins.bot.triggers.timer-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.timer-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.timer-functions.detail"),
+    };
+  }
+
   static functionsHttpAndTimerTrigger(): HostTypeTriggerOptionItem {
     return {
       id: "http-and-timer-functions",
@@ -767,9 +798,31 @@ export class NotificationTriggerOptions {
     };
   }
 
+  static functionsHttpAndTimerTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "http-and-timer-functions-isolated",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
+      label: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.detail"),
+    };
+  }
+
   static functionsHttpTrigger(): HostTypeTriggerOptionItem {
     return {
       id: "http-functions",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.HTTP],
+      label: getLocalizedString("plugins.bot.triggers.http-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.http-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.http-functions.detail"),
+    };
+  }
+
+  static functionsHttpTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "http-functions-isolated",
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.HTTP],
       label: getLocalizedString("plugins.bot.triggers.http-functions.label"),
@@ -1785,8 +1838,9 @@ export function capabilitySubTree(): IQTreeNode {
       {
         condition: (inputs: Inputs) => {
           return (
-            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-            inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id
+            isApiKeyEnabled() &&
+            (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
+              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
           );
         },
         data: apiMessageExtensionAuthQuestion(),

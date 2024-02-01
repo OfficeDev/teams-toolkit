@@ -164,7 +164,7 @@ export class CreateAppPackageDriver implements StepDriver {
       }
     }
 
-    // M365 Copilot plugin, API specification and Adaptive card templates
+    // API ME, API specification and Adaptive card templates
     if (
       manifest.composeExtensions &&
       manifest.composeExtensions.length > 0 &&
@@ -175,18 +175,12 @@ export class CreateAppPackageDriver implements StepDriver {
         appDirectory,
         manifest.composeExtensions[0].apiSpecificationFile
       );
-      if (!(await fs.pathExists(apiSpecificationFile))) {
-        return err(
-          new FileNotFoundError(
-            actionName,
-            apiSpecificationFile,
-            "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
-          )
-        );
-      }
-      const relativePath = path.relative(appDirectory, apiSpecificationFile);
-      if (relativePath.startsWith("..")) {
-        return err(new InvalidFileOutsideOfTheDirectotryError(apiSpecificationFile));
+      const checkExistenceRes = await this.validateReferencedFile(
+        apiSpecificationFile,
+        appDirectory
+      );
+      if (checkExistenceRes.isErr()) {
+        return err(checkExistenceRes.error);
       }
       const expandedEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
         apiSpecificationFile,
@@ -211,24 +205,33 @@ export class CreateAppPackageDriver implements StepDriver {
               appDirectory,
               command.apiResponseRenderingTemplateFile
             );
-            if (!(await fs.pathExists(adaptiveCardFile))) {
-              return err(
-                new FileNotFoundError(
-                  actionName,
-                  adaptiveCardFile,
-                  "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
-                )
-              );
-            }
-            const relativePath = path.relative(appDirectory, adaptiveCardFile);
-            if (relativePath.startsWith("..")) {
-              return err(new InvalidFileOutsideOfTheDirectotryError(adaptiveCardFile));
+            const checkExistenceRes = await this.validateReferencedFile(
+              adaptiveCardFile,
+              appDirectory
+            );
+            if (checkExistenceRes.isErr()) {
+              return err(checkExistenceRes.error);
             }
             const dir = path.dirname(command.apiResponseRenderingTemplateFile);
             zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
           }
         }
       }
+    }
+
+    // API plugin
+    if (
+      manifest.apiPlugins &&
+      manifest.apiPlugins.length > 0 &&
+      manifest.apiPlugins[0].pluginFile
+    ) {
+      const pluginFile = path.resolve(appDirectory, manifest.apiPlugins[0].pluginFile);
+      const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
+      if (checkExistenceRes.isErr()) {
+        return err(checkExistenceRes.error);
+      }
+      const dir = path.dirname(manifest.apiPlugins[0].pluginFile);
+      zip.addLocalFile(pluginFile, dir === "." ? "" : dir);
     }
 
     zip.writeZip(zipFileName);
@@ -290,5 +293,27 @@ export class CreateAppPackageDriver implements StepDriver {
     } else {
       return ok(undefined);
     }
+  }
+
+  private async validateReferencedFile(
+    file: string,
+    directory: string
+  ): Promise<Result<undefined, FxError>> {
+    if (!(await fs.pathExists(file))) {
+      return err(
+        new FileNotFoundError(
+          actionName,
+          file,
+          "https://aka.ms/teamsfx-actions/teamsapp-zipAppPackage"
+        )
+      );
+    }
+
+    const relativePath = path.relative(directory, file);
+    if (relativePath.startsWith("..")) {
+      return err(new InvalidFileOutsideOfTheDirectotryError(file));
+    }
+
+    return ok(undefined);
   }
 }

@@ -192,6 +192,42 @@ describe("teamsApp/createAppPackage", async () => {
     }
   });
 
+  it("should throw error if pluginFile not exists for API plugin", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+    sinon.stub(fs, "pathExists").callsFake((filePath) => {
+      if (filePath.includes("plugin.json")) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+
+    const manifest = new TeamsAppManifest();
+    manifest.apiPlugins = [
+      {
+        pluginFile: "plugin.json",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isErr());
+    if (result.isErr()) {
+      chai.assert.isTrue(result.error instanceof FileNotFoundError);
+    }
+  });
+
   it("invalid param error", async () => {
     const args: CreateAppPackageArgs = {
       manifestPath: "",
@@ -472,6 +508,47 @@ describe("teamsApp/createAppPackage", async () => {
 
     const executeResult = await teamsAppDriver.execute(args, mockedDriverContext);
     chai.assert.isTrue(executeResult.result.isOk());
+  });
+
+  it("happy path - API plugin", async () => {
+    const args: CreateAppPackageArgs = {
+      manifestPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+      outputZipPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+      outputJsonPath:
+        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+    };
+
+    const manifest = new TeamsAppManifest();
+    manifest.apiPlugins = [
+      {
+        pluginFile: "resources/openai.yml",
+      },
+    ];
+    manifest.icons = {
+      color: "resources/color.png",
+      outline: "resources/outline.png",
+    };
+    manifest.localizationInfo = {
+      defaultLanguageTag: "en",
+      additionalLanguages: [
+        {
+          languageTag: "de",
+          file: "resources/de.json",
+        },
+      ],
+    };
+    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+    sinon.stub(fs, "chmod").callsFake(async () => {});
+    sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isOk());
+    if (await fs.pathExists(args.outputZipPath)) {
+      await fs.remove(args.outputZipPath);
+    }
   });
 
   it("invalid color file", async () => {

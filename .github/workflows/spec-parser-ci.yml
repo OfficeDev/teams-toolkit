@@ -1,0 +1,38 @@
+name: Spec-Parser CI
+
+on:
+  push:
+    paths:
+      - "packages/spec-parser/**"
+    branches: ["main", "dev", "prerelease", "spec-parser"]
+  pull_request:
+    paths:
+      - "packages/spec-parser/**"
+    branches: ["main", "dev", "prerelease", "spec-parser"]
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+       matrix:
+        version: [14, 16, 18]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.version }}
+
+      - name: Install
+        working-directory: packages/spec-parser/
+        run: |
+          npm install
+
+      - name: Test
+        working-directory: packages/spec-parser/
+        run: |
+          npm run test:unit

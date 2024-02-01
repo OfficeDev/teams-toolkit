@@ -13,9 +13,6 @@ on:
 
 jobs:
   test:
-    strategy:
-       matrix:
-        version: [14, 16, 18]
     runs-on: ubuntu-latest
 
     steps:

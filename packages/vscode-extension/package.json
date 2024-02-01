@@ -134,17 +134,17 @@
         {
           "id": "teamsfx-accounts",
           "name": "Accounts",
-          "when": "fx-extension.isTeamsFx"
+          "when": "fx-extension.isTeamsFx || fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-environment",
           "name": "Environment",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && isWorkspaceTrusted"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && isWorkspaceTrusted || fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "fx-extension.isTeamsFx"
+          "when": "fx-extension.isTeamsFx || fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-lifecycle",
@@ -154,7 +154,7 @@
         {
           "id": "teamsfx-utility",
           "name": "Utility",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 || fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-project-and-check-upgradeV3",
@@ -164,7 +164,7 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3",
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 || fx-extension.isOfficeAddIn",
           "visibility": "visible"
         },
         {

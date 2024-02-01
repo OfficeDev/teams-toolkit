@@ -47,6 +47,7 @@ import {
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  isOfficeAddInProject,
   setUriEventHandler,
   unsetIsTeamsFxProject,
   workspaceUri,
@@ -87,7 +88,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  if (isTeamsFxProject) {
+  if (isTeamsFxProject || isOfficeAddInProject) {
     activateTeamsFxRegistration(context);
   }
 
@@ -99,6 +100,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isOfficeAddIn",
+    isOfficeAddInProject
+  );
 
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 

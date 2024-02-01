@@ -9,7 +9,7 @@ import envTreeProviderInstance from "../environmentTreeViewProvider";
 import { AzureAccountNode } from "./azureNode";
 import { M365AccountNode } from "./m365Node";
 import { AppStudioScopes } from "@microsoft/teamsfx-core";
-import { isSPFxProject } from "../../globalVariables";
+import { isOfficeAddInProject, isSPFxProject } from "../../globalVariables";
 
 class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
   private static instance: AccountTreeViewProvider;
@@ -56,6 +56,8 @@ class AccountTreeViewProvider implements vscode.TreeDataProvider<DynamicNode> {
 
   private getAccountNodes(): DynamicNode[] {
     if (isSPFxProject) {
+      return [this.m365AccountNode];
+    } else if (isOfficeAddInProject) {
       return [this.m365AccountNode];
     } else {
       return [this.m365AccountNode, this.azureAccountNode];

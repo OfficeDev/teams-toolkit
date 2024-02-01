@@ -39,7 +39,7 @@ import {
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { ProgrammingLanguage } from "../../../question/create";
+import { CapabilityOptions, ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import {
@@ -65,6 +65,9 @@ const apiSpecJsonFileName = "openapi.json";
 const invalidApiSpecErrorName = "invalid-api-spec";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 const isRemoteUrlTelemetryProperty = "remote-url";
+
+const apiPluginFromApiSpecComponentName = "api-plugin-existing-api";
+const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
 
 function normalizePath(path: string): string {
   return "./" + path.replace(/\\/g, "/");
@@ -92,6 +95,16 @@ export class CopilotPluginGenerator {
     const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
       (api) => !!api.data.authName && apiOperations.includes(api.id)
     );
+    const capability = inputs[QuestionNames.Capabilities];
+    if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+      return await this.generateApiPlugin(
+        context,
+        inputs,
+        destinationPath,
+        fromApiSpecTemplateName,
+        fromApiSpecComponentName
+      );
+    }
     return await this.generateForME(
       context,
       inputs,
@@ -308,6 +321,59 @@ export class CopilotPluginGenerator {
       } else {
         return ok({ warnings: undefined });
       }
+    } catch (e) {
+      let error: FxError;
+      if (e instanceof SpecParserError) {
+        error = convertSpecParserErrorToFxError(e);
+      } else {
+        error = assembleError(e);
+      }
+      return err(error);
+    }
+  }
+
+  private static async generateApiPlugin(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    templateName: string,
+    componentName: string
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    try {
+      const appName = inputs[QuestionNames.AppName];
+      const language = inputs[QuestionNames.ProgrammingLanguage];
+      const safeProjectNameFromVS =
+        language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+
+      const apiSpecFolderPath = path.join(destinationPath, AppPackageFolderName, apiSpecFolderName);
+
+      let url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
+      url = url.trim();
+
+      let isYaml: boolean;
+      try {
+        isYaml = await isYamlSpecFile(url);
+      } catch (e) {
+        isYaml = false;
+      }
+
+      const openapiSpecFileName = isYaml ? apiSpecYamlFileName : apiSpecJsonFileName;
+      const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
+
+      // download template
+      const templateRes = await Generator.generateTemplate(
+        context,
+        destinationPath,
+        templateName,
+        language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
+      );
+      if (templateRes.isErr()) return err(templateRes.error);
+
+      context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
+        [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
+      });
+
+      return ok({ warnings: undefined });
     } catch (e) {
       let error: FxError;
       if (e instanceof SpecParserError) {

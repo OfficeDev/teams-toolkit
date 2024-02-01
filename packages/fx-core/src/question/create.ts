@@ -426,7 +426,7 @@ export class CapabilityOptions {
     return [
       CapabilityOptions.copilotPluginNewApi(),
       CapabilityOptions.copilotPluginApiSpec(),
-      CapabilityOptions.copilotPluginOpenAIPlugin(),
+      // CapabilityOptions.copilotPluginOpenAIPlugin(),
     ];
   }
 
@@ -673,7 +673,7 @@ export class MeArchitectureOptions {
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
       detail: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginNewApiOption.detail"
+        "core.createProjectQuestion.capability.messageExtensionNewApiOption.detail"
       ),
     };
   }
@@ -685,7 +685,7 @@ export class MeArchitectureOptions {
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
       ),
       detail: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail"
+        "core.createProjectQuestion.capability.messageExtensionApiSpecOption.detail"
       ),
     };
   }
@@ -1502,7 +1502,10 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 
 const maximumLengthOfDetailsErrorMessageInInputBox = 90;
 
-export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
+export function apiSpecLocationQuestion(
+  includeExistingAPIs = true,
+  isApiPlugin?: boolean
+): SingleFileOrInputQuestion {
   const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
   const validationOnAccept = async (
     input: string,
@@ -1677,23 +1680,43 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
   };
 }
 
-export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
+export function apiOperationQuestion(
+  includeExistingAPIs = true,
+  isApiPlugin?: boolean
+): MultiSelectQuestion {
   // export for unit test
+  let placeholder = "";
+  if (includeExistingAPIs) {
+    placeholder = getLocalizedString(
+      "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"
+    );
+  } else if (isApiPlugin) {
+    placeholder = ""; // TODO: add placeholder for api plugin
+  } else if (isApiKeyEnabled()) {
+    placeholder = getLocalizedString(
+      "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
+    );
+  } else {
+    placeholder = getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder");
+  }
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
-    title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    cliDescription: "Select Operation(s) Teams Can Interact with.",
+    title: isApiPlugin
+      ? getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
+      : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
+    cliDescription: isApiPlugin
+      ? "Select Operation(s) Copilot Can Interact with."
+      : "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
-    placeholder: includeExistingAPIs
-      ? isApiKeyEnabled()
-        ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.apikey.placeholder")
-        : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
-      : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
+    placeholder,
     forgetLastValue: true,
     staticOptions: [],
     validation: {
       validFunc: (input: string[], inputs?: Inputs): string | undefined => {
+        if (isApiPlugin) {
+          return undefined;
+        }
         if (input.length < 1 || input.length > 10) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
@@ -1805,33 +1828,37 @@ export function capabilitySubTree(): IQTreeNode {
         data: meArchitectureQuestion(),
       },
       {
-        // API ME from API Spec or Copilot plugin from API spec or AI Plugin
+        // API ME from API Spec
         condition: (inputs: Inputs) => {
-          return (
-            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
-            inputs[QuestionNames.Capabilities] ===
-              CapabilityOptions.copilotPluginOpenAIPlugin().id ||
-            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
-          );
+          return inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id;
         },
-        data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
+        data: { type: "group", name: QuestionNames.ApiMeExsitingApi },
         children: [
           {
             condition: (inputs: Inputs) => {
               return (
-                inputs[QuestionNames.Capabilities] ===
-                  CapabilityOptions.copilotPluginApiSpec().id ||
                 inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
               );
             },
             data: apiSpecLocationQuestion(),
           },
           {
-            condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
-            data: openAIPluginManifestLocationQuestion(),
+            data: apiOperationQuestion(),
+          },
+        ],
+      },
+      {
+        // API plugin from API spec
+        condition: (inputs: Inputs) => {
+          return inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
+        },
+        data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
+        children: [
+          {
+            data: apiSpecLocationQuestion(true, true),
           },
           {
-            data: apiOperationQuestion(),
+            data: apiOperationQuestion(true),
           },
         ],
       },

@@ -16,7 +16,6 @@ import { OpenAPIV3 } from "openapi-types";
 import { Utils } from "../../src/utils";
 import * as SwaggerParser from "@apidevtools/swagger-parser";
 
-// TODO: After SpecParser lib become a npm package, these tests should be running in browser environment
 describe("SpecParser in Browser", () => {
   afterEach(() => {
     sinon.restore();

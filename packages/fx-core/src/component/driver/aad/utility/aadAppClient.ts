@@ -90,27 +90,6 @@ export class AadAppClient {
     return <AADApplication>response.data;
   }
 
-  // @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  // public async listAadApp(): Promise<AADApplication[]> {
-  //   let response: any;
-  //   const results: AADApplication[] = [];
-  //   let path = "applications";
-  //   do {
-  //     response = await this.axios.get(path);
-  //     if (response.data?.value) {
-  //       results.push(...response.data.value);
-  //       if (response.data["@odata.nextLink"]) {
-  //         path = response.data["@odata.nextLink"].split(this.baseUrl)[1];
-  //       } else {
-  //         break;
-  //       }
-  //     } else {
-  //       break;
-  //     }
-  //   } while (true);
-  //   return results;
-  // }
-
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async deleteAadApp(id: string): Promise<void> {
     await this.axios.delete(`applications/${id}`);

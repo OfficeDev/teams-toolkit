@@ -26,6 +26,7 @@ import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
+import os from "os";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
@@ -43,14 +44,14 @@ describe("Local Debug Tests", function () {
 
   afterEach(async function () {
     this.timeout(Timeout.finishTestCase);
-    if (debugProcess) {
-      setTimeout(() => {
-        debugProcess?.kill("SIGTERM");
-      }, 2000);
-    }
-
     await localDebugTestContext.after(false, true);
-    this.timeout(Timeout.finishAzureTestCase);
+  });
+
+  after(() => {
+    if (os.type() === "Windows_NT") {
+      if (successFlag) process.exit(0);
+      else process.exit(1);
+    }
   });
 
   it(
@@ -104,6 +105,10 @@ describe("Local Debug Tests", function () {
         await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
         await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
+
+      // kill process
+      await Executor.closeProcess(debugProcess);
+
       expect(successFlag, errorMessage).to.true;
       console.log("debug finish!");
     }

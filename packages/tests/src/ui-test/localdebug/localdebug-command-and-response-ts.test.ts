@@ -31,6 +31,7 @@ import { ChildProcessWithoutNullStreams } from "child_process";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { getScreenshotName } from "../../utils/nameUtil";
+import os from "os";
 
 // TODO: Change preview test to normal test before rc release
 describe("Command And Response Bot Local Debug Tests", function () {
@@ -38,7 +39,6 @@ describe("Command And Response Bot Local Debug Tests", function () {
   let localDebugTestContext: LocalDebugTestContext;
   let devtunnelProcess: ChildProcessWithoutNullStreams | null;
   let debugProcess: ChildProcessWithoutNullStreams | null;
-  let tunnelName = "";
   let successFlag = true;
   let errorMessage = "";
 
@@ -53,30 +53,14 @@ describe("Command And Response Bot Local Debug Tests", function () {
   afterEach(async function () {
     process.env = oldEnv;
     this.timeout(Timeout.finishTestCase);
-    if (debugProcess) {
-      setTimeout(() => {
-        debugProcess?.kill("SIGTERM");
-      }, 2000);
-    }
-
-    if (tunnelName) {
-      setTimeout(() => {
-        devtunnelProcess?.kill("SIGTERM");
-      }, 2000);
-      Executor.deleteTunnel(
-        tunnelName,
-        (data) => {
-          if (data) {
-            console.log(data);
-          }
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    }
     await localDebugTestContext.after(false, true);
-    this.timeout(Timeout.finishAzureTestCase);
+  });
+
+  after(() => {
+    if (os.type() === "Windows_NT") {
+      if (successFlag) process.exit(0);
+      else process.exit(1);
+    }
   });
 
   it(
@@ -167,7 +151,6 @@ describe("Command And Response Bot Local Debug Tests", function () {
         // cli preview
         const res = await Executor.cliPreview(projectPath, true);
         devtunnelProcess = res.devtunnelProcess;
-        tunnelName = res.tunnelName;
         debugProcess = res.debugProcess;
         {
           const page = await reopenPage(
@@ -188,6 +171,11 @@ describe("Command And Response Bot Local Debug Tests", function () {
         await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
         await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
+
+      // kill process
+      await Executor.closeProcess(debugProcess);
+      await Executor.closeProcess(devtunnelProcess);
+
       expect(successFlag, errorMessage).to.true;
       console.log("debug finish!");
     }

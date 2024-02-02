@@ -33,7 +33,8 @@ This app has adopted [On-Behalf-Of flow](https://learn.microsoft.com/en-us/azure
 | `appPackage` | Templates for the Teams application manifest        |
 | `env`        | Environment files                                   |
 | `infra`      | Templates for provisioning Azure resources          |
-| `src`        | The source code for the Teams application |
+| `src`        | The source code for the frontend of the Tab application. Implemented with Fluent UI Framework. |
+| `api`        | The source code for the backend of the Tab application. Implemented single-sign-on with OBO flow using Azure Function. |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

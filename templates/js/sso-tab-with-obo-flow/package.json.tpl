@@ -25,7 +25,7 @@
     "env-cmd": "^10.1.0"
   },
   "scripts": {
-    "dev:teamsfx": "concurrently \"npm dev-tab:teamsfx\" \"npm run dev-api:teamsfx\"",
+    "dev:teamsfx": "concurrently \"npm run dev-tab:teamsfx\" \"npm run dev-api:teamsfx\"",
     "dev-tab:teamsfx": "env-cmd --silent -f .localConfigs npm run start",
     "dev-api:teamsfx": "cd api && npm run dev:teamsfx",
     "start": "react-scripts start",

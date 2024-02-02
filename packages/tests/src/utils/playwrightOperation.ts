@@ -304,14 +304,14 @@ export async function reopenPage(
   }
   await page.waitForTimeout(Timeout.shortTimeLoading);
 
+  await page.close();
+  console.log(`open teams page`);
+  page = await context.newPage();
   // add app
   await RetryHandler.retry(async (retries: number) => {
     if (retries > 0) {
       console.log(`Retried to run adding app for ${retries} times.`);
     }
-    await page.close();
-    console.log(`open teams page`);
-    page = await context.newPage();
     await Promise.all([
       page.goto(
         `https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true`
@@ -393,6 +393,7 @@ export async function reopenPage(
         }
       }
       console.log("[success] app loaded");
+      await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
       await page.screenshot({
         path: getPlaywrightScreenshotPath("add_error"),
@@ -400,9 +401,7 @@ export async function reopenPage(
       });
       assert.fail("[Error] add app failed");
     }
-    await page.waitForTimeout(Timeout.shortTimeLoading);
   });
-
   return page;
 }
 

@@ -26,6 +26,7 @@ import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
+import { initDebugPort } from "../../utils/commonUtils";
 import os from "os";
 
 describe("Local Debug Tests", function () {
@@ -108,6 +109,7 @@ describe("Local Debug Tests", function () {
 
       // kill process
       await Executor.closeProcess(debugProcess);
+      await initDebugPort();
 
       expect(successFlag, errorMessage).to.true;
       console.log("debug finish!");

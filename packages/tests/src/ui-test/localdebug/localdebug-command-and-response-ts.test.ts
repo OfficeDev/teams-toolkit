@@ -31,6 +31,7 @@ import { ChildProcessWithoutNullStreams } from "child_process";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { getScreenshotName } from "../../utils/nameUtil";
+import { initDebugPort } from "../../utils/commonUtils";
 import os from "os";
 
 // TODO: Change preview test to normal test before rc release
@@ -175,6 +176,7 @@ describe("Command And Response Bot Local Debug Tests", function () {
       // kill process
       await Executor.closeProcess(debugProcess);
       await Executor.closeProcess(devtunnelProcess);
+      await initDebugPort();
 
       expect(successFlag, errorMessage).to.true;
       console.log("debug finish!");

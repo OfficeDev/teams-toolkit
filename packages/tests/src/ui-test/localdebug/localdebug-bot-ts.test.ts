@@ -26,6 +26,7 @@ import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
 import os from "os";
+import { initDebugPort } from "../../utils/commonUtils";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
@@ -111,6 +112,7 @@ describe("Local Debug Tests", function () {
       // kill process
       await Executor.closeProcess(debugProcess);
       await Executor.closeProcess(devtunnelProcess);
+      await initDebugPort();
 
       expect(successFlag, errorMessage).to.true;
       console.log("debug finish!");

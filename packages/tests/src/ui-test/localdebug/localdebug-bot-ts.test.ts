@@ -48,13 +48,6 @@ describe("Local Debug Tests", function () {
     await localDebugTestContext.after(false, true);
   });
 
-  after(() => {
-    if (os.type() === "Windows_NT") {
-      if (successFlag) process.exit(0);
-      else process.exit(1);
-    }
-  });
-
   it(
     "[auto] [Typescript] Local Debug for bot project",
     {

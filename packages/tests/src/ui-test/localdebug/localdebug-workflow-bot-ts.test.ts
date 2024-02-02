@@ -115,13 +115,13 @@ describe("Workflow Bot Local Debug Tests", function () {
           try {
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
-              LocalDebugTaskInfo.StartBotAppInfo
+              LocalDebugTaskInfo.StartBotInfo
             );
             // check if there is error "Debug Anyway"
             await driver.sleep(Timeout.startdebugging);
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
-              LocalDebugTaskInfo.StartBotAppInfo
+              LocalDebugTaskInfo.StartBotInfo
             );
           } catch {
             const dialog = new ModalDialog();

@@ -1,0 +1,51 @@
+{
+  "name": "teams-agent-poc",
+  "publisher": "Microsoft",
+  "version": "0.1.0",
+  "displayName": "Teams Chat Agent",
+  "description": "Copilot chat agent for Teams",
+  "repository": {
+    "type": "git",
+    "url": "https://dev.azure.com/devdiv/DevDiv/_git/teamsagentPoc"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "extensionDependencies": [
+    "github.copilot-chat"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "enabledApiProposals": [
+    "chat",
+    "chatAgents2",
+    "chatAgents2Additions",
+    "chatProvider",
+    "chatRequestAccess",
+    "interactive"
+  ],
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "build": "tsc -p ./",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.5",
+    "dotenv": "^16.4.1",
+    "dree": "^4.6.2",
+    "fs-extra": "^11.2.0"
+  }
+}

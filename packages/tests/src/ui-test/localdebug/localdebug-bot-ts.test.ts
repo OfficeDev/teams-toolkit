@@ -43,9 +43,15 @@ describe("Local Debug Tests", function () {
     await localDebugTestContext.before();
   });
 
-  afterEach(async function () {
+  after(async function () {
     this.timeout(Timeout.finishTestCase);
     await localDebugTestContext.after(false, true);
+    setTimeout(() => {
+      if (os.type() === "Windows_NT") {
+        if (successFlag) process.exit(0);
+        else process.exit(1);
+      }
+    }, 30000);
   });
 
   it(

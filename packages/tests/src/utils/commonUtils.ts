@@ -167,7 +167,7 @@ export async function killPort(
 ): Promise<{ stdout: string; stderr: string }> {
   // windows
   if (process.platform === "win32") {
-    const command = `for /f "tokens=5" %a in ('netstat -ano ^| find "${port}"') do @taskkill /f /pid %a`;
+    const command = `for /f "tokens=5" %a in ('netstat -ano ^| find ":${port}"') do taskkill /PID %a /F`;
     console.log("run command: ", command);
     const result = await execAsync(command);
     return result;

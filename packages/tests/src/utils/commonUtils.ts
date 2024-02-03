@@ -184,30 +184,35 @@ export async function initDebugPort() {
     await killPort(53000);
     console.log(`close port 53000 successfully`);
   } catch (error) {
+    console.log(error);
     console.log(`close port 53000 failed`);
   }
   try {
     await killPort(3978);
     console.log(`close port 3978 successfully`);
   } catch (error) {
+    console.log(error);
     console.log(`close port 3978 failed`);
   }
   try {
     await killPort(9239);
     console.log(`close port 9239 successfully`);
   } catch (error) {
+    console.log(error);
     console.log(`close port 9239 failed`);
   }
   try {
     await killPort(7071);
     console.log(`close port 7071 successfully`);
   } catch (error) {
+    console.log(error);
     console.log(`close port 7071 failed`);
   }
   try {
     await killPort(9229);
     console.log(`close port 9229 successfully`);
   } catch (error) {
+    console.log(error);
     console.log(`close port 9229 failed`);
   }
 }

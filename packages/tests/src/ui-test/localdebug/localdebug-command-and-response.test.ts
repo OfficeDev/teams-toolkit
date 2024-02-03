@@ -51,17 +51,15 @@ describe("Command And Response Bot Local Debug Tests", function () {
     await localDebugTestContext.before();
   });
 
-  afterEach(async function () {
-    process.env = oldEnv;
+  after(async function () {
     this.timeout(Timeout.finishTestCase);
     await localDebugTestContext.after(false, true);
-  });
-
-  after(() => {
-    if (os.type() === "Windows_NT") {
-      if (successFlag) process.exit(0);
-      else process.exit(1);
-    }
+    setTimeout(() => {
+      if (os.type() === "Windows_NT") {
+        if (successFlag) process.exit(0);
+        else process.exit(1);
+      }
+    }, 30000);
   });
 
   it(

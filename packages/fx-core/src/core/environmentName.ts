@@ -14,6 +14,7 @@ class EnvironmentNameManager {
   private readonly defaultEnvName = "dev";
   private readonly localEnvName = "local";
   private readonly testToolEnvName = "testtool";
+  private readonly officeLocalEnvName = "local";
 
   public getDefaultEnvName() {
     return this.defaultEnvName;
@@ -23,12 +24,16 @@ class EnvironmentNameManager {
     return this.localEnvName;
   }
 
+  public getOfficeLocalEnvName() {
+    return this.officeLocalEnvName;
+  }
+
   public getTestToolEnvName() {
     return this.testToolEnvName;
   }
 
   public getNonRemoteEnvNames(): string[] {
-    return [this.localEnvName, this.testToolEnvName];
+    return [this.localEnvName, this.testToolEnvName, this.officeLocalEnvName];
   }
 
   public isRemoteEnvironment(env: string) {

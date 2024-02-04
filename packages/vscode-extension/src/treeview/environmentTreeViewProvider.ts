@@ -5,7 +5,7 @@ import { Mutex } from "async-mutex";
 import * as vscode from "vscode";
 
 import { FxError, ok, Result, Void } from "@microsoft/teamsfx-api";
-import { isValidProject } from "@microsoft/teamsfx-core";
+import { isValidProject, isValidOfficeAddInProject } from "@microsoft/teamsfx-core";
 import { environmentManager } from "@microsoft/teamsfx-core";
 
 import * as globalVariables from "../globalVariables";
@@ -33,7 +33,11 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
   }
 
   public async reloadEnvironments(): Promise<Result<Void, FxError>> {
-    if (!globalVariables.workspaceUri || !isValidProject(globalVariables.workspaceUri.fsPath)) {
+    if (
+      !globalVariables.workspaceUri ||
+      (!isValidProject(globalVariables.workspaceUri.fsPath) &&
+        !isValidOfficeAddInProject(globalVariables.workspaceUri.fsPath))
+    ) {
       return ok(Void);
     }
     return await this.mutex.runExclusive(() => {
@@ -76,6 +80,16 @@ class EnvironmentTreeViewProvider implements vscode.TreeDataProvider<DynamicNode
     const workspacePath: string = globalVariables.workspaceUri.fsPath;
     return await this.mutex.runExclusive(async () => {
       if (this.needRefresh) {
+        if (globalVariables.isOfficeAddInProject) {
+          const officeEnvNames = await environmentManager.getOfficeLocalEnv(workspacePath);
+          if (officeEnvNames.isErr()) {
+            this.needRefresh = false;
+            return null;
+          }
+          this.environments = officeEnvNames.value.map((env: string) => new EnvironmentNode(env));
+          this.needRefresh = false;
+          return this.environments;
+        }
         const envNamesResult = await environmentManager.listRemoteEnvConfigs(workspacePath);
         if (envNamesResult.isErr()) {
           this.needRefresh = false;

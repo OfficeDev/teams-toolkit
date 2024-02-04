@@ -195,7 +195,7 @@
       "view/title": [
         {
           "command": "fx-extension.addEnvironmentWithIcon",
-          "when": "view == teamsfx-environment",
+          "when": "view == teamsfx-environment && !fx-extension.isOfficeAddIn",
           "group": "navigation@1"
         },
         {

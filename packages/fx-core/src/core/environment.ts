@@ -8,6 +8,7 @@ import fs from "fs-extra";
 import { envUtil } from "../component/utils/envUtil";
 import { FileNotFoundError, NoEnvFilesError } from "../error/common";
 import { environmentNameManager } from "./environmentName";
+import path from "path";
 
 class EnvironmentManager {
   private readonly ajv;
@@ -58,6 +59,17 @@ class EnvironmentManager {
         : []),
       environmentNameManager.getLocalEnvName(),
     ];
+  }
+
+  public async getOfficeLocalEnv(projectPath: string): Promise<Result<string[], FxError>> {
+    if (!(await fs.pathExists(projectPath))) {
+      return err(new FileNotFoundError("EnvironmentManager", projectPath));
+    }
+    const officeLocalManifest = path.join(projectPath, "manifest.xml");
+    if (!(await fs.pathExists(officeLocalManifest))) {
+      return err(new FileNotFoundError("EnvironmentManager", projectPath));
+    }
+    return ok([environmentNameManager.getOfficeLocalEnvName()]);
   }
 }
 

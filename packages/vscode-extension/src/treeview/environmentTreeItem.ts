@@ -18,10 +18,15 @@ import {
 } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { DynamicNode } from "./dynamicNode";
-import { AppStudioScopes, environmentNameManager } from "@microsoft/teamsfx-core";
+import {
+  AppStudioScopes,
+  environmentManager,
+  environmentNameManager,
+} from "@microsoft/teamsfx-core";
 
 enum EnvInfo {
   Local = "local",
+  OfficeLocal = "local",
   TestTool = "testtool",
   LocalForExistingApp = "local-existing-app",
   RemoteEnv = "environment",
@@ -156,6 +161,8 @@ export class EnvironmentNode extends DynamicNode {
       return EnvInfo.Local;
     } else if (envName === environmentNameManager.getTestToolEnvName()) {
       return EnvInfo.TestTool;
+    } else if (envName === environmentNameManager.getOfficeLocalEnvName()) {
+      return EnvInfo.OfficeLocal;
     } else {
       const provisionSucceeded = await getProvisionSucceedFromEnv(envName);
       return provisionSucceeded ? EnvInfo.ProvisionedRemoteEnv : EnvInfo.RemoteEnv;

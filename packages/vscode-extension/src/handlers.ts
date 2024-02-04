@@ -1114,7 +1114,10 @@ export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "account",
   });
-  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-account"));
+  const accountLink = globalVariables.isOfficeAddInProject
+    ? "https://developer.microsoft.com/en-us/microsoft-365/dev-program"
+    : "https://aka.ms/teamsfx-treeview-account";
+  return env.openExternal(Uri.parse(accountLink));
 }
 
 export async function createAccountHandler(args: any[]): Promise<void> {
@@ -1162,7 +1165,10 @@ export async function openEnvLinkHandler(args: any[]): Promise<boolean> {
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "environment",
   });
-  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-environment"));
+  const envLink = globalVariables.isOfficeAddInProject
+    ? "https://learn.microsoft.com/en-us/office/dev/add-ins/overview/set-up-your-dev-environment?tabs=yeomangenerator"
+    : "https://aka.ms/teamsfx-treeview-environment";
+  return env.openExternal(Uri.parse(envLink));
 }
 
 export async function openDevelopmentLinkHandler(args: any[]): Promise<boolean> {
@@ -1170,7 +1176,10 @@ export async function openDevelopmentLinkHandler(args: any[]): Promise<boolean> 
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "development",
   });
-  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-development"));
+  const developmentLink = globalVariables.isOfficeAddInProject
+    ? "https://learn.microsoft.com/en-us/office/dev/add-ins/develop/develop-overview"
+    : "https://aka.ms/teamsfx-treeview-development";
+  return env.openExternal(Uri.parse(developmentLink));
 }
 
 export async function openLifecycleLinkHandler(args: any[]): Promise<boolean> {
@@ -1178,7 +1187,10 @@ export async function openLifecycleLinkHandler(args: any[]): Promise<boolean> {
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "lifecycle",
   });
-  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-deployment"));
+  const lifeCyleLink = globalVariables.isOfficeAddInProject
+    ? "https://learn.microsoft.com/en-us/office/dev/add-ins/overview/core-concepts-office-add-ins"
+    : "https://aka.ms/teamsfx-treeview-deployment";
+  return env.openExternal(Uri.parse(lifeCyleLink));
 }
 
 export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean> {
@@ -1186,7 +1198,10 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
     ...getTriggerFromProperty(args),
     [TelemetryProperty.DocumentationName]: "help&feedback",
   });
-  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
+  const helpLink = globalVariables.isOfficeAddInProject
+    ? "https://learn.microsoft.com/en-us/answers/tags/9/m365"
+    : "https://aka.ms/teamsfx-treeview-helpnfeedback";
+  return env.openExternal(Uri.parse(helpLink));
 }
 export async function openWelcomeHandler(args?: any[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));

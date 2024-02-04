@@ -93,8 +93,8 @@ export default function PrepareM365Account() {
           </p>
           <blockquote>
             <p>
-              You will use the Administrator account (email address *.onmicrosoft.com) email address
-              created in this step to login to your development environment.
+              You will use the Administrator account (email address *.onmicrosoft.com) created in
+              this step to login to your development environment.
             </p>
           </blockquote>
         </CollapsibleStep>

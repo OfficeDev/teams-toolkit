@@ -1,63 +1,32 @@
-# How to create a free Microsoft 365 test tenant?
+# Prepare a Qualified Microsoft 365 Account for Teams App Development
 
-Microsoft 365 test tenant is to get you an instant sandbox of Microsoft 365 developer environment. Instead of making you provison all your Microsoft 365 apps and install your data packs one by one, it contains pre-installed sample data packs so you can quickly work on this tenant.
+## Account Requirements
 
-## Prequisitives
+The following two conditions are required for Teams app development:
 
-- A personal Microsoft account, or a work or school account.
+1. The Microsoft 365 account should be your work or school account, not your personal account.
+2. The Microsoft 365 account should be granted with permission to upload custom app in Teams.
 
-## Steps to create instant sandbox
+You can contact your tenant administrator to turn on the upload custom app permission for your organization.
 
-- Sign In [Microsoft 365 Dev program](https://developer.microsoft.com/en-us/microsoft-365/dev-program) with your personal Microsoft account or your work or school account.
+Or if you are a Visual Studio Subscriber, you can create a qualified Microsoft 365 developer account to resolve the account issues you may have. You will need to join Microsoft 365 Developer Program to get the developer account. [Learn more about Microsoft 365 Developer Program](https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program).
 
-![Sign in](./m365.png)
+## How
 
-If you don't have a personal Microsoft account, or a work or school account. You can click `Create one` to create an account.
+### Step 1. Create Microsoft 365 Development Account
 
-![Create account](./createone.png)
+[Sign up for Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program) to create an instant sandbox and get your developer account.
 
->Note: Please do not Sign in Microsoft 365 Dev program with a *.onmicrosoft.com account. Otherwise, you will meet the following error in the next step.
+![Join Now](joinnow.png)
 
-![Sign in with wrong account](./joinnowerror.png)
+For more information, visit the [Set up a developer subscription documentation](https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program-get-started).
 
-- Click `Join now`, this will navigate you to instant sandbox creation page.
+> You will use the Administrator account (email address \*.onmicrosoft.com) created in this step to login to your development environment.
 
-![Join now](./joinnow.png)
+### Step 2. Use your development account in Teams Toolkit for Visual Studio Code
 
-- (Optional) If you already have a normal subscription before, you can click `Start` button on dashboard page to setup an instant sandbox.
+Open Teams Toolkit for Visual Studio Code and log into the Teams Toolkit extension using your developer account created in step 1.
 
-![questions](./withnormalsubscription.png)
+The upload custom app permission has already been configured.
 
-- Answer some questions to customize your Developer Program experience
-
-![questions](./m365questions1.png)
-
-![questions2](./m365questions2.png)
-
-- Setup your Microsoft 365 E5 sandbox
-
-![setup Microsoft 365 sandbox](./setupm365.png)
-
-![setup Microsoft 365 sandbox step 2](./setupm3652.png)
-
-- You may need to add a phone number for security verification.
-
-![Phone verification](./phoneverification.png)
-
-## Now you have an instant sandbox.
-
->Note: You can use the newly created *.onmicorosoft.com accounts to log in to Teams Toolkit for VS Code. The sideloading permission has already been configured.
-
-![Instant sandbox](./m365-dev-program-instant-sandbox.png)
-
-## (Optional) Check whether sideloading option is on
-
-- Sign in to [Teams Admin Center](https://admin.teams.microsoft.com) with your admin credentials.
-
-- Navigate to `Teams apps > Setup Policies > Global`.
-
-- Check whether `Upload custom apps` is `On`.
-
-![Instant sandbox](./turn-on-sideload.png)
-
-- Select `Save`.
+![Developer Account](../../img/webview/accountHelp/ttk-m365-account.png)

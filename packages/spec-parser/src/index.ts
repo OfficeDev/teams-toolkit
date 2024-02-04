@@ -11,5 +11,6 @@ export {
   WarningResult,
   ErrorResult,
   ListAPIResult,
+  APIInfo, 
+  ValidateResult,
 } from "./interfaces";
-export { ConstantString } from "./constants";

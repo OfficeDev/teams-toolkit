@@ -1,22 +1,22 @@
 {
   "name": "@microsoft/m365-spec-parser",
   "version": "0.0.1",
-  "type": "module",
   "description": "OpenAPI specification files Parser for M365 Apps",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
   "module": "dist/index.esm2017.mjs",
   "esm5": "dist/index.esm5.js",
-  "types": "types/index.d.ts",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "rollup -c",
-    "test:unit:node": "c8 --no-clean -- mocha --require ts-node/register \"test/*.test.ts\" -r config/mocha.env.ts --config config/.mocharc.json",
+    "test:unit:node": "nyc --no-clean -- mocha \"test/*.test.ts\" -r config/mocha.env.ts --config config/.mocharc.json",
     "test:unit:browser": "karma start karma.conf.cjs --single-run --unit",
     "test:unit": "npm run test:unit:node && npm run test:unit:browser "
   },
   "files": [
     "dist/*js",
-    "dist/*js.map"
+    "dist/*js.map",
+    "dist/src/*d.ts"
   ],
   "repository": "https://github.com/OfficeDev/TeamsFx",
   "engines": {

@@ -14,3 +14,5 @@ export {
   APIInfo, 
   ValidateResult,
 } from "./interfaces";
+
+export { ConstantString } from "./constants";

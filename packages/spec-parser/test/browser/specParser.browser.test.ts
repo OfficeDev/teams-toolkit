@@ -14,7 +14,7 @@ import { SpecParserError } from "../../src/specParserError";
 import { ConstantString } from "../../src/constants";
 import { OpenAPIV3 } from "openapi-types";
 import { Utils } from "../../src/utils";
-import * as SwaggerParser from "@apidevtools/swagger-parser";
+import SwaggerParser from "@apidevtools/swagger-parser";
 
 describe("SpecParser in Browser", () => {
   afterEach(() => {

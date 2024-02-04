@@ -3,13 +3,64 @@ run-name: Spec-Parser-${{ github.run_id }}-${{ github.ref_name }}
 
 on:
   workflow_dispatch:
+    inputs:
+      preid:
+        description: "preid name(alpha, rc, stable)"
+        required: true
+        default: "alpha"
 
 jobs:
   cd:
     runs-on: ubuntu-latest
     steps:
-      - name: Output
-        if: ${{ github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/spec-parser' }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Install
+        working-directory: packages/spec-parser/
         run: |
-          echo It's not allowed to run CD on other branch except spec-parser.
-          exit 1
+          npm install
+
+      - name: Package
+        working-directory: packages/spec-parser/
+        run: |
+          npm run package
+
+      - name: Setup npm registry
+        run: |
+          echo "${{ secrets.NPMRC }}" > ~/.npmrc
+
+      - name: Version alpha
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha' }}
+        working-directory: packages/spec-parser/
+        run: |
+          npm version prerelease --preid=alpha
+
+      - name: Version rc
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        working-directory: packages/spec-parser/
+        run: |
+          npm version prerelease --preid=rc
+
+      - name: publish alpha release to npm org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'alpha' }}
+        working-directory: packages/spec-parser/
+        run: |
+          npm publish --tag alpha
+
+      - name: publish rc release to npm org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        working-directory: packages/spec-parser/
+        run: |
+          npm publish --tag rc
+
+      - name: publish stable release to npm org
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
+        working-directory: packages/spec-parser/
+        run: |
+          npm publish

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import * as SwaggerParser from "@apidevtools/swagger-parser";
+import SwaggerParser from "@apidevtools/swagger-parser";
 import { OpenAPIV3 } from "openapi-types";
 import {
   APIInfo,

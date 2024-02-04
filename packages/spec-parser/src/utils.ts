@@ -3,7 +3,7 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import SwaggerParser from "@apidevtools/swagger-parser";
+import SwaggerParser from '@apidevtools/swagger-parser';
 import { ConstantString } from "./constants";
 import {
   AuthSchema,

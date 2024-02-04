@@ -1107,6 +1107,22 @@ export async function openDocumentHandler(args?: any[]): Promise<Result<boolean,
   if (documentName === "learnmore") {
     url = "https://aka.ms/teams-toolkit-5.0-upgrade";
   }
+  if (globalVariables.isOfficeAddInProject) {
+    url = "https://learn.microsoft.com/en-us/office/dev/add-ins/";
+  }
+  return VS_CODE_UI.openUrl(url);
+}
+
+export async function openGetStartedLinkDevelopmentHandler(
+  args?: any[]
+): Promise<Result<boolean, FxError>> {
+  const url =
+    "https://learn.microsoft.com/en-us/office/dev/add-ins/overview/learning-path-beginner";
+  return VS_CODE_UI.openUrl(url);
+}
+
+export async function openTutorialLinkHandler(args?: any[]): Promise<Result<boolean, FxError>>{
+  const url = "https://learn.microsoft.com/en-us/office/dev/add-ins/overview/office-add-ins";
   return VS_CODE_UI.openUrl(url);
 }
 
@@ -1491,7 +1507,10 @@ export async function openBotManagement(args?: any[]) {
 
 export async function openReportIssues(args?: any[]): Promise<Result<boolean, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ReportIssues, getTriggerFromProperty(args));
-  return VS_CODE_UI.openUrl("https://github.com/OfficeDev/TeamsFx/issues");
+  const url = globalVariables.isOfficeAddInProject
+    ? "https://learn.microsoft.com/en-us/answers/questions/ask/"
+    : "https://github.com/OfficeDev/TeamsFx/issues";
+  return VS_CODE_UI.openUrl(url);
 }
 
 export async function openExternalHandler(args?: any[]) {

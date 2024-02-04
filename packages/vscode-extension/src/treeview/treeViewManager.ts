@@ -354,7 +354,7 @@ class TreeViewManager {
       new TreeViewCommand(
         "Get started",
         "Get started",
-        "fx-extension.getStartedAddIn",
+        "fx-extension.openGetStartedAddIn",
         undefined,
         { name: "book", custom: false },
         TreeCategory.GettingStarted
@@ -362,7 +362,7 @@ class TreeViewManager {
       new TreeViewCommand(
         "Tutorials",
         "Tutorials",
-        "fx-extension.addInTutorials",
+        "fx-extension.openAddInTutorials",
         undefined,
         { name: "book", custom: false },
         TreeCategory.GettingStarted
@@ -370,7 +370,7 @@ class TreeViewManager {
       new TreeViewCommand(
         "Documentation",
         "Documentation",
-        "fx-extension.addInDocumentation",
+        "fx-extension.openDocument",
         undefined,
         { name: "book", custom: false },
         TreeCategory.GettingStarted

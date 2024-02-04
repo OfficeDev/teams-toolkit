@@ -500,11 +500,22 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validateApplication);
 
-  const openManifestCmd = vscode.commands.registerCommand(
-    "fx-extension.editManifest",
-    (...args) => Correlator.run(handlers.editOfficeAddInManifest, args)
+  const openManifestCmd = vscode.commands.registerCommand("fx-extension.editManifest", (...args) =>
+    Correlator.run(handlers.editOfficeAddInManifest, args)
   );
   context.subscriptions.push(openManifestCmd);
+
+  const aiAssistantCmd = vscode.commands.registerCommand(
+    "fx-extension.AIAssistant",
+    (...args) => {}
+  );
+  context.subscriptions.push(aiAssistantCmd);
+
+  const analyzeComVstoAddInCmd = vscode.commands.registerCommand(
+    "fx-extension.AnalyzeComVstoAddIn",
+    (...args) => {}
+  );
+  context.subscriptions.push(analyzeComVstoAddInCmd);
 }
 
 /**
@@ -606,11 +617,17 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openHelpFeedbackLinkCmd);
 
-  const openDocumentLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.openDocumentLink",
-    (...args) => Correlator.run(handlers.openDocumentLinkHandler, args)
+  const openGetStartedLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openGetStartedAddIn",
+    (...args) => Correlator.run(handlers.openGetStartedLinkDevelopmentHandler, args)
   );
-  context.subscriptions.push(openDocumentLinkCmd);
+  context.subscriptions.push(openGetStartedLinkCmd);
+
+  const openTutorialLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openAddInTutorials",
+    (...args) => Correlator.run(handlers.openTutorialLinkHandler, args)
+  );
+  context.subscriptions.push(openTutorialLinkCmd);
 
   const aadManifestTemplateCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.openPreviewAadFile",

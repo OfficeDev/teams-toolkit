@@ -182,12 +182,12 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn"
         }
       ]
     },
@@ -601,7 +601,7 @@
       {
         "command": "fx-extension.openReportIssues",
         "title": "%teamstoolkit.commands.reportIssue.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx || fx-extension.isOfficeAddIn",
         "category": "Teams"
       },
       {
@@ -777,7 +777,18 @@
         "title": "%teamstoolkit.commmands.addWebpart.title%",
         "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
+      },
+      {
+        "command": "fx-extension.AIAssistant",
+        "title": "AI Assistant",
+        "enablement": "false"
+      },
+      {
+        "command": "fx-extension.AnalyzeComVstoAddIn",
+        "title": "Analyze existing COM / VSTO add-ins",
+        "enablement": "false"
       }
+
     ],
     "taskDefinitions": [
       {

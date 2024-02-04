@@ -556,7 +556,7 @@ export class Executor {
   ): Promise<{ stdout: string; stderr: string }> {
     // windows
     if (process.platform === "win32") {
-      const command = `taskkill /F /PID $(netstat -ano | findstr :${port} | awk '{print $5}' | sed 's/\/.*//')`;
+      const command = `for /f "tokens=5" %a in ('netstat -ano ^| find ":${port}"') do taskkill /PID %a /F`;
       console.log("run command: ", command);
       const result = await execAsync(command);
       return result;

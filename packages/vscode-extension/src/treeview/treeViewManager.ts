@@ -296,7 +296,7 @@ class TreeViewManager {
       new TreeViewCommand(
         "Validate Application",
         "Validate Application",
-        "fx-extension.ValidateApplication",
+        "fx-extension.validateApplication",
         undefined,
         {
           name: "package",

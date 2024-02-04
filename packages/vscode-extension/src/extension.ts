@@ -66,6 +66,7 @@ import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { configMgr } from "./config";
+import { OfficeDevTaskProvider } from "./debug/officeDevTaskProvider";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -166,6 +167,12 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   const taskProvider: TeamsfxTaskProvider = new TeamsfxTaskProvider();
   context.subscriptions.push(
     vscode.tasks.registerTaskProvider(TeamsfxTaskProvider.type, taskProvider)
+  );
+
+  // Register office dev task provider
+  const officeDevProvider: OfficeDevTaskProvider = new OfficeDevTaskProvider();
+  context.subscriptions.push(
+    vscode.tasks.registerTaskProvider(OfficeDevTaskProvider.type, officeDevProvider)
   );
 
   context.subscriptions.push(
@@ -486,6 +493,18 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkCopilotCallback, args)
   );
   context.subscriptions.push(checkCopilotCallback);
+
+  const validateApplication = vscode.commands.registerCommand(
+    "fx-extension.validateApplication",
+    (...args) => Correlator.run(handlers.validateOfficeAddInManifest, args)
+  );
+  context.subscriptions.push(validateApplication);
+
+  const openManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.editManifest",
+    (...args) => Correlator.run(handlers.editOfficeAddInManifest, args)
+  );
+  context.subscriptions.push(openManifestCmd);
 }
 
 /**

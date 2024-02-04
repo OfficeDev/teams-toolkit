@@ -75,6 +75,7 @@ import {
   manifestUtils,
   JSONSyntaxError,
   MetadataV3,
+  FileNotFoundError,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -2947,6 +2948,26 @@ export function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError
       }
     })
     .catch((_error) => {});
+  return Promise.resolve(ok(null));
+}
+
+export function validateOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {
+  vscode.commands.executeCommand("workbench.action.tasks.runTask", {
+    type: "officedev",
+    task: "officedev:validate",
+  });
+  return Promise.resolve(ok(null));
+}
+
+export async function editOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {
+  const workspacePath = globalVariables.workspaceUri?.fsPath;
+  if (!workspacePath) return err(new FileNotFoundError("editManifest", "workspace"));
+
+  const manifestPath = path.join(workspacePath, "manifest.xml");
+  const manifestFileUri = vscode.Uri.file(manifestPath);
+  if (!manifestPath) return err(new FileNotFoundError("editManifest", manifestPath));
+
+  vscode.window.showTextDocument(manifestFileUri, { viewColumn: vscode.ViewColumn.One });
   return Promise.resolve(ok(null));
 }
 

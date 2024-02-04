@@ -986,6 +986,22 @@
             ]
           }
         }
+      },
+      {
+        "type": "officedev",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "anyOf": [
+              {
+                "const": "validate-manifest",
+                "description": "Validate the office add in manifest"
+              }
+            ]
+          }
+        }
       }
     ],
     "problemMatchers": [

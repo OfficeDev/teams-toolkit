@@ -10,7 +10,7 @@ const { version } = require("./package.json");
 
 process.env.PKG_CACHE_PATH = path.resolve("./.pkg-cache");
 
-const target = "node14-win-x64";
+const target = "node18-win-x64";
 const [nodeRange, platform, arch] = target.split("-");
 
 (async () => {

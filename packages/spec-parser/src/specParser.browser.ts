@@ -62,7 +62,11 @@ export class SpecParser {
     try {
       try {
         await this.loadSpec();
-        await this.parser.validate(this.spec!);
+        await this.parser.validate(this.spec!, {
+          validate: {
+            schema: false
+          }
+        });
       } catch (e) {
         return {
           status: ValidationStatus.Error,

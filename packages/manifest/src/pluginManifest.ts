@@ -51,7 +51,7 @@ export interface IAuth {
 export interface IRuntime {
   type: "openApi" | "localPlugin";
   auth: IAuth;
-  run_for_functions: string[];
+  run_for_functions?: string[];
   spec: ISpec;
 }
 

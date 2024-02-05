@@ -61,7 +61,7 @@ function getCreateSystemPrompt(sampleConfig): string {
   - If you have found the best matched Teams app sample, you must let developer know the Teams App sample id and describe the sample based on its information.
   - If there is no matched Teams App sample in sample list, you should just let the developer know.
   - Here's the sample list: ${JSON.stringify(sampleConfig.samples)}.
-  `
+  `;
 }
 
 export async function createCommand(sampleIds: string[]) {
@@ -82,12 +82,18 @@ export async function createCommand(sampleIds: string[]) {
     sampleId = sample.id as string;
   }
   // Let user choose the project folder
-  const folderChoice = await vscode.window.showQuickPick(["Current workspace", "Browse..."]);
-  if (!folderChoice) {
-    return;
+  let dstPath = "";
+  let folderChoice: string | undefined = undefined;
+  if (vscode.workspace.workspaceFolders !== undefined && vscode.workspace.workspaceFolders.length > 0) {
+    folderChoice = await vscode.window.showQuickPick(["Current workspace", "Browse..."]);
+    if (!folderChoice) {
+      return;
+    }
+    if (folderChoice === "Current workspace") {
+      dstPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    }
   }
-  let dstPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
-  if (folderChoice === "Browse...") {
+  if (dstPath === "") {
     const customFolder = await vscode.window.showOpenDialog({
       title: "Choose where to save your project",
       openLabel: "Select Folder",
@@ -119,7 +125,7 @@ export async function createCommand(sampleIds: string[]) {
     2,
     20
   );
-  if (folderChoice === "Browse...") {
+  if (folderChoice !== "Current workspace") {
     void vscode.commands.executeCommand(
       "vscode.openFolder",
       vscode.Uri.file(dstPath),

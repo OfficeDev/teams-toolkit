@@ -3,11 +3,16 @@
 
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 import { execAsync, editDotEnvFile } from "./commonUtils";
-import { TemplateProjectFolder, Capability } from "./constants";
+import {
+  TemplateProjectFolder,
+  Capability,
+  LocalDebugError,
+} from "./constants";
 import path from "path";
 import fs from "fs-extra";
 import * as os from "os";
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
+import { expect } from "chai";
 
 export class Executor {
   static async execute(
@@ -381,6 +386,7 @@ export class Executor {
         env: process.env,
       }
     );
+    console.log("delete tunnel: ", tunnelName);
     child.stdout.on("data", (data) => {
       const dataString = data.toString();
       if (onData) {
@@ -463,15 +469,13 @@ export class Executor {
     } catch (error) {
       console.log("read file error", error);
     }
+    const domainRegex = /Connect via browser: https:\/\/(\S+)/;
+    const endpointRegex = /Connect via browser: (\S+)/;
+    const tunnelNameRegex = /Ready to accept connections for tunnel: (\S+)/;
     const devtunnelProcess = Executor.startDevtunnel(
       (data) => {
         if (data) {
           // start devtunnel
-          const domainRegex = /Connect via browser: https:\/\/(\S+)/;
-          const endpointRegex = /Connect via browser: (\S+)/;
-          const tunnelNameRegex =
-            /Ready to accept connections for tunnel: (\S+)/;
-          console.log(data);
           const domainFound = data.match(domainRegex);
           const endpointFound = data.match(endpointRegex);
           const tunnelNameFound = data.match(tunnelNameRegex);
@@ -481,11 +485,11 @@ export class Executor {
               const endpoint = endpointFound[1];
               try {
                 console.log(endpoint);
-                console.log(tunnelName);
                 envContent += `\nBOT_ENDPOINT=${endpoint}`;
                 envContent += `\nBOT_DOMAIN=${domain}`;
                 envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
                 fs.writeFileSync(envFile, envContent);
+                console.log(envContent);
               } catch (error) {
                 console.log(error);
               }
@@ -494,6 +498,7 @@ export class Executor {
           if (tunnelNameFound) {
             if (tunnelNameFound[1]) {
               tunnelName = tunnelNameFound[1];
+              console.log(tunnelName);
             }
           }
         }
@@ -507,6 +512,7 @@ export class Executor {
 
   static async cliPreview(projectPath: string, includeBot: boolean) {
     console.log("======= debug with cli ========");
+    console.log("botFlag: ", includeBot);
     let tunnelName = "";
     let devtunnelProcess = null;
     if (includeBot) {
@@ -526,7 +532,15 @@ export class Executor {
         }
       },
       (error) => {
-        console.log(error);
+        const errorMsg = error.toString();
+        if (
+          // skip warning messages
+          errorMsg.includes(LocalDebugError.WarningError)
+        ) {
+          console.log("[skip error] ", error);
+        } else {
+          expect.fail(errorMsg);
+        }
       }
     );
     await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
@@ -535,5 +549,41 @@ export class Executor {
       devtunnelProcess,
       debugProcess,
     };
+  }
+
+  static async killPort(
+    port: number
+  ): Promise<{ stdout: string; stderr: string }> {
+    // windows
+    if (process.platform === "win32") {
+      const command = `for /f "tokens=5" %a in ('netstat -ano ^| find ":${port}"') do taskkill /PID %a /F`;
+      console.log("run command: ", command);
+      const result = await execAsync(command);
+      return result;
+    } else {
+      const command = `kill -9 $(lsof -t -i:${port})`;
+      console.log("run command: ", command);
+      const result = await execAsync(command);
+      return result;
+    }
+  }
+
+  static async closeProcess(
+    childProcess: ChildProcessWithoutNullStreams | null
+  ) {
+    if (childProcess) {
+      try {
+        if (os.type() === "Windows_NT") {
+          console.log(`taskkill /F /PID "${childProcess.pid}"`);
+          await execAsync(`taskkill /F /PID "${childProcess.pid}"`);
+          childProcess.kill("SIGKILL");
+        } else {
+          console.log("kill process", childProcess.spawnargs.join(" "));
+          childProcess.kill("SIGKILL");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
   }
 }

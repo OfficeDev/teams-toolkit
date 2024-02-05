@@ -32,6 +32,8 @@ import { ChildProcessWithoutNullStreams } from "child_process";
 import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { getScreenshotName } from "../../utils/nameUtil";
+import { initDebugPort } from "../../utils/commonUtils";
+import os from "os";
 
 // TODO: Change preview test to normal test before rc release
 describe("Workflow Bot Local Debug Tests", function () {
@@ -39,7 +41,6 @@ describe("Workflow Bot Local Debug Tests", function () {
   let localDebugTestContext: LocalDebugTestContext;
   let devtunnelProcess: ChildProcessWithoutNullStreams | null;
   let debugProcess: ChildProcessWithoutNullStreams | null;
-  let tunnelName = "";
   let successFlag = true;
   let errorMessage = "";
 
@@ -50,32 +51,15 @@ describe("Workflow Bot Local Debug Tests", function () {
     await localDebugTestContext.before();
   });
 
-  afterEach(async function () {
+  after(async function () {
     this.timeout(Timeout.finishTestCase);
-    if (debugProcess) {
-      setTimeout(() => {
-        debugProcess?.kill("SIGTERM");
-      }, 2000);
-    }
-
-    if (tunnelName) {
-      setTimeout(() => {
-        devtunnelProcess?.kill("SIGTERM");
-      }, 2000);
-      Executor.deleteTunnel(
-        tunnelName,
-        (data) => {
-          if (data) {
-            console.log(data);
-          }
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    }
     await localDebugTestContext.after(false, true);
-    this.timeout(Timeout.finishAzureTestCase);
+    setTimeout(() => {
+      if (os.type() === "Windows_NT") {
+        if (successFlag) process.exit(0);
+        else process.exit(1);
+      }
+    }, 30000);
   });
 
   it(
@@ -100,7 +84,7 @@ describe("Workflow Bot Local Debug Tests", function () {
         await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
         await waitForTerminal(
           LocalDebugTaskLabel.StartBotApp,
-          LocalDebugTaskInfo.StartBotAppInfo
+          LocalDebugTaskInfo.StartBotInfo
         );
 
         // check if there is error "Could not attach to main target"
@@ -108,7 +92,7 @@ describe("Workflow Bot Local Debug Tests", function () {
         try {
           await waitForTerminal(
             LocalDebugTaskLabel.StartBotApp,
-            LocalDebugTaskInfo.StartBotAppInfo
+            LocalDebugTaskInfo.StartBotInfo
           );
         } catch {
           const dialog = new ModalDialog();
@@ -130,13 +114,13 @@ describe("Workflow Bot Local Debug Tests", function () {
           try {
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
-              LocalDebugTaskInfo.StartBotAppInfo
+              LocalDebugTaskInfo.StartBotInfo
             );
             // check if there is error "Debug Anyway"
             await driver.sleep(Timeout.startdebugging);
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
-              LocalDebugTaskInfo.StartBotAppInfo
+              LocalDebugTaskInfo.StartBotInfo
             );
           } catch {
             const dialog = new ModalDialog();
@@ -146,7 +130,7 @@ describe("Workflow Bot Local Debug Tests", function () {
             await driver.sleep(Timeout.shortTimeLoading);
             await waitForTerminal(
               LocalDebugTaskLabel.StartBotApp,
-              LocalDebugTaskInfo.StartBotAppInfo
+              LocalDebugTaskInfo.StartBotInfo
             );
           }
         }
@@ -167,7 +151,6 @@ describe("Workflow Bot Local Debug Tests", function () {
         // cli preview
         const res = await Executor.cliPreview(projectPath, true);
         devtunnelProcess = res.devtunnelProcess;
-        tunnelName = res.tunnelName;
         debugProcess = res.debugProcess;
         {
           const page = await reopenPage(
@@ -188,6 +171,12 @@ describe("Workflow Bot Local Debug Tests", function () {
         await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
         await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
+
+      // kill process
+      await Executor.closeProcess(debugProcess);
+      await Executor.closeProcess(devtunnelProcess);
+      await initDebugPort();
+
       expect(successFlag, errorMessage).to.true;
       console.log("debug finish!");
     }

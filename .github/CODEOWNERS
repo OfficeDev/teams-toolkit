@@ -13,7 +13,7 @@
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
-/packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn
+/packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/README.md @therealjohn @sffamily
@@ -22,7 +22,7 @@
 /packages/vscode-extension/PRERELEASE.md @therealjohn @sffamily
 
 /packages/cli @chagong @Alive-Fish @LongOddCode @jayzhang
-/packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn
+/packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish
@@ -274,7 +274,7 @@ packages/fx-core/src/component/driver/script/baseBuildStepDriver.ts @Siglud @Yuk
 packages/fx-core/src/component/driver/script/dotnetBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 
-/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
+/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/fx-core/resource/package.nls.cs.json @HuihuiWu-Microsoft @chagong @jayzhang
 /packages/fx-core/resource/package.nls.de.json @HuihuiWu-Microsoft @chagong @jayzhang
 /packages/fx-core/resource/package.nls.es.json @HuihuiWu-Microsoft @chagong @jayzhang

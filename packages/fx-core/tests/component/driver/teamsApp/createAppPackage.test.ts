@@ -192,40 +192,114 @@ describe("teamsApp/createAppPackage", async () => {
     }
   });
 
-  it("should throw error if pluginFile not exists for API plugin", async () => {
-    const args: CreateAppPackageArgs = {
-      manifestPath:
-        "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
-      outputZipPath:
-        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
-      outputJsonPath:
-        "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
-    };
-    sinon.stub(fs, "pathExists").callsFake((filePath) => {
-      if (filePath.includes("plugin.json")) {
-        return false;
-      } else {
-        return true;
+  describe("api plugin error case", async () => {
+    it("should throw error if pluginFile not exists for API plugin", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+      sinon.stub(fs, "pathExists").callsFake((filePath) => {
+        if (filePath.includes("plugin.json")) {
+          return false;
+        } else {
+          return true;
+        }
+      });
+
+      const manifest = new TeamsAppManifest();
+      manifest.apiPlugins = [
+        {
+          pluginFile: "plugin.json",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof FileNotFoundError);
       }
     });
 
-    const manifest = new TeamsAppManifest();
-    manifest.apiPlugins = [
-      {
-        pluginFile: "plugin.json",
-      },
-    ];
-    manifest.icons = {
-      color: "resources/color.png",
-      outline: "resources/outline.png",
-    };
-    sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+    it("should throw error if api spec not exists for API plugin", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+      sinon.stub(fs, "pathExists").callsFake((filePath) => {
+        if (filePath.includes("openai.yml")) {
+          return false;
+        } else {
+          return true;
+        }
+      });
 
-    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
-    chai.assert(result.isErr());
-    if (result.isErr()) {
-      chai.assert.isTrue(result.error instanceof FileNotFoundError);
-    }
+      const manifest = new TeamsAppManifest();
+      manifest.apiPlugins = [
+        {
+          pluginFile: "resources/ai-plugin.json",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof FileNotFoundError);
+      }
+    });
+
+    it("should throw error if response template not exists for API plugin", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+      sinon.stub(fs, "pathExists").callsFake((filePath) => {
+        if (filePath.includes("repairs.json")) {
+          return false;
+        } else {
+          return true;
+        }
+      });
+
+      const manifest = new TeamsAppManifest();
+      manifest.apiPlugins = [
+        {
+          pluginFile: "resources/ai-plugin.json",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert(result.isErr());
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof FileNotFoundError);
+      }
+    });
   });
 
   it("invalid param error", async () => {
@@ -523,30 +597,32 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.apiPlugins = [
       {
-        pluginFile: "resources/openai.yml",
+        pluginFile: "resources/ai-plugin.json",
       },
     ];
     manifest.icons = {
       color: "resources/color.png",
       outline: "resources/outline.png",
     };
-    manifest.localizationInfo = {
-      defaultLanguageTag: "en",
-      additionalLanguages: [
-        {
-          languageTag: "de",
-          file: "resources/de.json",
-        },
-      ],
-    };
     sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
-
     sinon.stub(fs, "chmod").callsFake(async () => {});
     sinon.stub(fs, "writeFile").callsFake(async () => {});
 
     const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
-    chai.assert(result.isOk());
-    if (await fs.pathExists(args.outputZipPath)) {
+    if (result.isErr()) {
+      console.log(result.error);
+    }
+    chai.assert.isTrue(result.isOk());
+    const outputExist = await fs.pathExists(args.outputZipPath);
+    chai.assert.isTrue(outputExist);
+    if (outputExist) {
+      const zip = new AdmZip(args.outputZipPath);
+      const openapiContent = zip.getEntry("resources/openai.yml")?.getData();
+      const aiPluginContent = zip.getEntry("resources/ai-plugin.json")?.getData();
+      const template = zip.getEntry("resources/repairs.json")?.getData();
+      chai.assert(
+        openapiContent != undefined && aiPluginContent != undefined && template != undefined
+      );
       await fs.remove(args.outputZipPath);
     }
   });

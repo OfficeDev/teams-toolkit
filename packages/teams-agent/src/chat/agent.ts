@@ -5,31 +5,19 @@
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
+
 import { CREATE_SAMPLE_COMMAND_ID } from '../const';
-import { ext } from "../extensionVariables";
-import { createCommand, getCreateCommand } from "../subCommand/createSlashCommand";
+import { ext } from '../extensionVariables';
+import { createCommand, getCreateCommand } from '../subCommand/createSlashCommand';
+import { getAgentHelpCommand, helpCommandName } from '../subCommand/helpSlashCommand';
 import {
-  getAgentHelpCommand,
-  helpCommandName,
-} from "../subCommand/helpSlashCommand";
-import {
-  DefaultNextStep,
-  EXECUTE_COMMAND_ID,
-  executeCommand,
-  getNextStepCommand,
-} from "../subCommand/nextStepSlashCommand";
-import {
-  agentDescription,
-  agentFullName,
-  agentName,
-  maxFollowUps,
-} from "./agentConsts";
-import { verbatimCopilotInteraction } from "./copilotInteractions";
-import {
-  SlashCommandsOwner,
-  type SlashCommandHandlerResult,
-} from "./slashCommands";
+  DefaultNextStep, EXECUTE_COMMAND_ID, executeCommand, getNextStepCommand
+} from '../subCommand/nextStepSlashCommand';
+import { getTestCommand } from '../subCommand/testCommand';
+import { agentDescription, agentFullName, agentName, maxFollowUps } from './agentConsts';
+import { verbatimCopilotInteraction } from './copilotInteractions';
+import { SlashCommandHandlerResult, SlashCommandsOwner } from './slashCommands';
 
 export interface ITeamsChatAgentResult extends vscode.ChatAgentResult2 {
   slashCommand?: string;
@@ -71,6 +59,7 @@ agentSlashCommandsOwner.addInvokeableSlashCommands(
     getCreateCommand(),
     getNextStepCommand(),
     getAgentHelpCommand(agentSlashCommandsOwner),
+    getTestCommand(),
   ])
 );
 

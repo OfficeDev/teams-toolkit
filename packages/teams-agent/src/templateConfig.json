@@ -1,0 +1,44 @@
+[
+  {
+    "id": "bot",
+    "type": "template",
+    "name": "Basic Bot",
+    "description": "A very simple and basic implementation of a Teams bot app. It demonstrates the ability of bot scenario by echoing user’s input. You can easily customize this app to add business logic."
+  },
+  {
+    "id": "ai-bot",
+    "type": "template",
+    "name": "AI Chat Bot",
+    "description": "A basic Teams bot app using Teams AI library. It showcases a bot app that responds to user questions like an AI assistant. You can use it to build AI-based Teams app."
+  },
+  {
+    "id": "ai-assistant-bot",
+    "type": "template",
+    "name": "AI Assistant Bot",
+    "description": "A custom AI assistant bot in Teams using Teams AI library and OpenAI Assistants API. It provides a script to help you easily create assistants. You can change the instructions and settings in the script to customize the assistant."
+  },
+  {
+    "id": "notification",
+    "type": "template",
+    "name": "Chat Notification Message",
+    "description": "A basic implementation of Teams bot app that notifies and informs user with a message displayed in Teams chats. It can be triggered at specific times or by HTTP request. You can easily customize this app to add business logic."
+  },
+  {
+    "id": "tab-non-sso",
+    "type": "template",
+    "name": "Basic Tab",
+    "description": "A very simple and basic implementation of a Teams tab app. It shows a web page in Teams. You can easily customize this app to add business logic."
+  },
+  {
+    "id": "command-bot",
+    "type": "template",
+    "name": "Chat Command",
+    "description": "Trigger work with custom chat commands in Teams chats. This app demonstrates how to create a bot that responds to specific commands in chat. You can easily customize this app to add business logic."
+  },
+  {
+    "id": "tab-spfx",
+    "type": "template",
+    "name": "SPFx",
+    "description": "Build UI with SharePoint Framework. This app demonstrates how to create a tab app using SharePoint Framework. You can easily customize this app to add business logic."
+  }
+]

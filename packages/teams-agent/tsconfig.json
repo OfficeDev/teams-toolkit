@@ -12,6 +12,7 @@
     "noImplicitReturns": true,
     "strictNullChecks": true,
     "noUnusedParameters": false,
+    "resolveJsonModule": true,
   },
   "exclude": [
     "node_modules",

@@ -160,7 +160,7 @@ export function getBooleanFieldFromCopilotResponseMaybeWithStrJson(copilotRespon
   }
 }
 
-function parseCopilotResponseMaybeWithStrJson(copilotResponseMaybeWithStrJson: string): { [key: string]: (string | boolean | number | object) } {
+export function parseCopilotResponseMaybeWithStrJson(copilotResponseMaybeWithStrJson: string): { [key: string]: (string | boolean | number | object) } {
   try {
     copilotResponseMaybeWithStrJson = copilotResponseMaybeWithStrJson
       .trim()

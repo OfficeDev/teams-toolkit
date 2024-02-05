@@ -29,4 +29,4 @@ Open Teams Toolkit for Visual Studio Code and log into the Teams Toolkit extensi
 
 The upload custom app permission has already been configured.
 
-![Developer Account](../../img/webview/accountHelp/ttk-m365-account.png)
+![Developer Account](ttk-m365-account.png)

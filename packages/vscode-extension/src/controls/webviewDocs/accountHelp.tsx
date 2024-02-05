@@ -41,10 +41,7 @@ export default function PrepareM365Account() {
             The Microsoft 365 account should be your work or school account, not your personal
             account.
           </li>
-          <li>
-            The Microsoft 365 account should be granted with permission to upload custom app in
-            Teams.
-          </li>
+          <li>The Microsoft 365 account needs permission to upload custom app in Teams.</li>
         </ol>
       </p>
       <p>
@@ -52,9 +49,8 @@ export default function PrepareM365Account() {
         your organization.{" "}
       </p>
       <p>
-        Or if you are a Visual Studio Subscriber, you can create a qualified Microsoft 365 developer
-        account to resolve the account issues you may have. You will need to join Microsoft 365
-        Developer Program to get the developer account.{" "}
+        Or, if you're a Visual Studio subscriber, create a Microsoft 365 developer account to
+        resolve your account issues.{" "}
         <ExternalLink
           title="Learn more about Microsoft 365 Developer Program"
           link="https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program"
@@ -93,8 +89,8 @@ export default function PrepareM365Account() {
           </p>
           <blockquote>
             <p>
-              You will use the Administrator account (email address *.onmicrosoft.com) created in
-              this step to login to your development environment.
+              Use the Administrator account (*.onmicrosoft.com) email address to log in to your
+              development environment.
             </p>
           </blockquote>
         </CollapsibleStep>
@@ -110,7 +106,7 @@ export default function PrepareM365Account() {
             Open Teams Toolkit for Visual Studio Code and log into the Teams Toolkit extension using
             your developer account created in step 1.
           </p>
-          <p>The upload custom app permission has already been configured.</p>
+          <p>The permission to upload custom app is already set up.</p>
           <p>
             <img src={M365Account} alt="Teams Toolkit Microsoft 365 account" />
           </p>

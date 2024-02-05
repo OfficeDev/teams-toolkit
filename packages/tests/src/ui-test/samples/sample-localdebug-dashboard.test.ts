@@ -7,12 +7,34 @@
 
 import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import { validateDashboardTab } from "../../utils/playwrightOperation";
+import {
+  validateDashboardTab,
+  reopenPage,
+} from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
+import { Env } from "../../utils/env";
+import { SampledebugContext } from "./sampledebugContext";
 
 class DashboardTestCase extends CaseFactory {
   override async onValidate(page: Page): Promise<void> {
     return await validateDashboardTab(page);
+  }
+  public override async onCliValidate(page: Page): Promise<void> {
+    return await validateDashboardTab(page);
+  }
+  public override async onReopenPage(
+    sampledebugContext: SampledebugContext,
+    teamsAppId: string
+  ): Promise<Page> {
+    return await reopenPage(
+      sampledebugContext.context!,
+      teamsAppId,
+      Env.username,
+      Env.password,
+      undefined,
+      true,
+      true
+    );
   }
 }
 

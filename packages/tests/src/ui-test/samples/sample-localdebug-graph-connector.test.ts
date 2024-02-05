@@ -12,10 +12,7 @@ import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
 
 class GraphConnectorTestCase extends CaseFactory {
-  override async onValidate(
-    page: Page,
-    options?: { displayName: string }
-  ): Promise<void> {
+  override async onValidate(page: Page): Promise<void> {
     return await validateGraphConnector(page, { displayName: Env.displayName });
   }
 }

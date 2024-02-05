@@ -7,9 +7,10 @@
 
 import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import { validateTab } from "../../utils/playwrightOperation";
+import { validateTab, reopenPage } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
+import { SampledebugContext } from "./sampledebugContext";
 
 class HelloWorldTabBackEndTestCase extends CaseFactory {
   override async onValidate(
@@ -20,6 +21,29 @@ class HelloWorldTabBackEndTestCase extends CaseFactory {
       displayName: Env.displayName,
       includeFunction: options?.includeFunction,
     });
+  }
+  override async onCliValidate(
+    page: Page,
+    options?: { includeFunction: boolean }
+  ): Promise<void> {
+    return await validateTab(page, {
+      displayName: Env.displayName,
+      includeFunction: options?.includeFunction,
+    });
+  }
+  public override async onReopenPage(
+    sampledebugContext: SampledebugContext,
+    teamsAppId: string
+  ): Promise<Page> {
+    return await reopenPage(
+      sampledebugContext.context!,
+      teamsAppId,
+      Env.username,
+      Env.password,
+      undefined,
+      true,
+      true
+    );
   }
 }
 

@@ -7,9 +7,10 @@
 
 import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import { validateTodoList } from "../../utils/playwrightOperation";
+import { validateTodoList, reopenPage } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
+import { Env } from "../../utils/env";
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
@@ -29,6 +30,26 @@ class TodoListM365TestCase extends CaseFactory {
     options?: { displayName: string }
   ): Promise<void> {
     return await validateTodoList(page, { displayName: options?.displayName });
+  }
+  override async onCliValidate(
+    page: Page,
+    options?: { displayName: string }
+  ): Promise<void> {
+    return await validateTodoList(page, { displayName: options?.displayName });
+  }
+  public override async onReopenPage(
+    sampledebugContext: SampledebugContext,
+    teamsAppId: string
+  ): Promise<Page> {
+    return await reopenPage(
+      sampledebugContext.context!,
+      teamsAppId,
+      Env.username,
+      Env.password,
+      undefined,
+      true,
+      true
+    );
   }
 }
 

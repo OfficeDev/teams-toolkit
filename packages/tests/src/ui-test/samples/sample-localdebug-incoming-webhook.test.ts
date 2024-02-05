@@ -5,7 +5,6 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
@@ -36,5 +35,5 @@ new IncomingWebhookTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartWebhook],
-  { skipInit: true }
+  { skipDebug: true }
 ).test();

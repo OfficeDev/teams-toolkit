@@ -13,7 +13,7 @@ import {
   MockedLogProvider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import { FileNotFoundError } from "../../../../src/error/common";
+import { FileNotFoundError, JSONSyntaxError } from "../../../../src/error/common";
 import { FeatureFlagName } from "../../../../src/common/constants";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
@@ -298,6 +298,37 @@ describe("teamsApp/createAppPackage", async () => {
       chai.assert(result.isErr());
       if (result.isErr()) {
         chai.assert.isTrue(result.error instanceof FileNotFoundError);
+      }
+    });
+
+    it("should throw error if parse json error", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+      sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readJSON").throws(new Error("fake error"));
+
+      const manifest = new TeamsAppManifest();
+      manifest.apiPlugins = [
+        {
+          pluginFile: "resources/ai-plugin.json",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      chai.assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof JSONSyntaxError);
       }
     });
   });

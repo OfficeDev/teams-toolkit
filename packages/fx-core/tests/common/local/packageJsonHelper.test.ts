@@ -81,7 +81,7 @@ describe("packageJsonHelper", () => {
 
       const devScript = await loadTeamsFxDevScript(testFolder);
       chai.assert.isDefined(devScript);
-      chai.assert.equal(devScript, "npx func start");
+      chai.assert.equal(devScript, "npm run dev");
     });
 
     it("file not found", async () => {

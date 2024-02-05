@@ -1,27 +1,25 @@
 @maxLength(20)
 @minLength(4)
 param resourceBaseName string
-param storageSku string
+param staticWebAppSku string
 
-param storageName string = resourceBaseName
-param location string = resourceGroup().location
+param staticWebAppName string = resourceBaseName
 
-// Azure Storage that hosts your static web site
-resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  kind: 'StorageV2'
-  location: location
-  name: storageName
-  properties: {
-    supportsHttpsTrafficOnly: true
-  }
+// Azure Static Web Apps that hosts your static web site
+resource swa 'Microsoft.Web/staticSites@2022-09-01' = {
+  name: staticWebAppName
+  // SWA do not need location setting
+  location: 'centralus'
   sku: {
-    name: storageSku
+    name: staticWebAppSku
+    tier: staticWebAppSku
   }
+  properties:{}
 }
 
-var siteDomain = replace(replace(storage.properties.primaryEndpoints.web, 'https://', ''), '/', '')
+var siteDomain = swa.properties.defaultHostname
 
 // The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
-output ADDIN_AZURE_STORAGE_RESOURCE_ID string = storage.id // used in deploy stage
+output AZURE_STATIC_WEB_APPS_RESOURCE_ID string = swa.id
 output ADDIN_DOMAIN string = siteDomain
 output ADDIN_ENDPOINT string = 'https://${siteDomain}'

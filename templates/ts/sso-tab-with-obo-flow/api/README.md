@@ -40,7 +40,6 @@ const response = await axios.default.get(endpoint + "/api/" + functionName, {
 ### Add More Functions
 
 - From Visual Studio Code, open the command palette, select `Teams: Add Resources` and select `Azure Function App`.
-- From TeamsFx CLI: run command `teamsapp resource add azure-function --function-name <your-function-name>` in your project directory.
 
 ## Change Node.js runtime version
 

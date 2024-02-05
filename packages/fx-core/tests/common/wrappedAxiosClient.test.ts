@@ -5,6 +5,7 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import { v4 as uuid } from "uuid";
+import axios, { AxiosInstance } from "axios";
 import { WrappedAxiosClient } from "../../src/common/wrappedAxiosClient";
 import {
   APP_STUDIO_API_NAMES,
@@ -23,8 +24,71 @@ describe("Wrapped Axios Client Test", () => {
     sinon.restore();
   });
 
+  it("create", async () => {
+    const testAxiosInstance = {
+      interceptors: {
+        request: {
+          use: sinon.stub(),
+        },
+        response: {
+          use: sinon.stub(),
+        },
+      },
+    } as any as AxiosInstance;
+    sinon.stub(axios, "create").returns(testAxiosInstance);
+    WrappedAxiosClient.create();
+  });
+
   it("No telemetry reporter", async () => {
     setTools({} as any);
+
+    const mockedRequest = {
+      method: "POST",
+      baseURL: getAppStudioEndpoint(),
+      url: "/amer/api/appdefinitions/v2/import",
+      params: {
+        overwriteIfAppAlreadyExists: true,
+      },
+      status: 200,
+      data: {},
+    } as any;
+    WrappedAxiosClient.onRequest(mockedRequest);
+
+    const mockedResponse = {
+      request: {
+        method: "GET",
+        host: getAppStudioEndpoint(),
+        path: "/api/appdefinitions/manifest",
+      },
+      config: {
+        params: {},
+      },
+      status: 200,
+      data: {},
+    } as any;
+    WrappedAxiosClient.onResponse(mockedResponse);
+
+    const mockedError = {
+      request: {
+        method: "GET",
+        host: getAppStudioEndpoint(),
+        path: "/api/appdefinitions/fakeId",
+      },
+      config: {
+        data: "Invalid JSON",
+      },
+      response: {
+        status: 404,
+        headers: {
+          "x-ms-correlation-id": uuid(),
+        },
+      },
+    } as any;
+    WrappedAxiosClient.onRejected(mockedError);
+  });
+
+  it("TOOLS not initialized", async () => {
+    setTools(undefined as any);
 
     const mockedRequest = {
       method: "POST",

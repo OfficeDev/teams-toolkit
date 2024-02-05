@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.4.1 - Feb 07, 2024
+Hotfix version.
+
+We made UI and docs updates to multiple places where we introduce Microsoft 365 Developer Program in Teams Toolkit, according to the latest update of Microsoft 365 Developer Program. For more details of the updates, see [announcement - Latest updates to the Microsoft 365 Developer Program](https://devblogs.microsoft.com/microsoft365dev/stay-ahead-of-the-game-with-the-latest-updates-to-the-microsoft-365-developer-program/).
+
 ## 5.4.0 - Dec 18, 2023
 
 This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include the Adaptive Card Previewer, Teams App Test Tool, new project templates for AI Assistant Bot, and a refreshed Sample Gallery. We previously shared these incremental changes in the prerelease version and through a series of blog posts:

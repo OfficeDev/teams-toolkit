@@ -18,7 +18,7 @@ import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import semver from "semver";
-import { CancelDownloading } from "./error";
+import { UnzipError } from "./error";
 import { deepCopy } from "../../common/tools";
 import { InvalidInputError } from "../../core/error";
 import { ProgrammingLanguage } from "../../question";
@@ -30,12 +30,7 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     : "";
   const templateVersion = templateConfig.version;
   const templateTagPrefix = templateConfig.tagPrefix;
-  const useLocal = templateConfig.useLocalTemplate;
   const versionPattern = preRelease || templateVersion;
-
-  if (useLocal.toString() === "true") {
-    throw new CancelDownloading();
-  }
 
   const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
@@ -118,10 +113,6 @@ export async function getTemplateLatestTag(
     throw new Error(`Failed to find valid template for ${name}`);
   }
   return selectedTag;
-}
-
-export function getTemplateLocalVersion(): string {
-  return templateConfig.localVersion;
 }
 
 export function getTemplateZipUrlByTag(name: string, selectedTag: string): string {

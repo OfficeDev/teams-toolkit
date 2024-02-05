@@ -807,15 +807,14 @@ describe("Generator happy path", async () => {
     assert.equal(vars.SafeProjectNameLowerCase, "test");
   });
 
-  it("Generate templates from local when remote download processing fails", async () => {
+  it("generate templates from local when remote download processing fails", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
-    const foobarTemplateZip = new AdmZip();
     const actionContext: ActionContext = {
       telemetryProps: {},
     };
-    await buildFakeTemplateZip(templateName, mockFileName);
+    const foobarTemplateZip = await buildFakeTemplateZip(templateName, mockFileName);
 
     sandbox.replace(templateConfig, "useLocalTemplate", false);
     sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);

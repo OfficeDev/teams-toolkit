@@ -6,8 +6,6 @@ import { LogProvider } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-const npmRunDevRegex = /npm[\s]+run[\s]+dev/im;
-
 export async function loadPackageJson(path: string, logger?: LogProvider): Promise<any> {
   if (!(await fs.pathExists(path))) {
     logger?.error(`Cannot load package.json from ${path}. File not found.`);
@@ -28,7 +26,7 @@ export async function loadTeamsFxDevScript(componentRoot: string): Promise<strin
   const packageJson = await loadPackageJson(path.join(componentRoot, "package.json"));
   if (packageJson && packageJson.scripts && packageJson.scripts["dev:teamsfx"]) {
     const devTeamsfx: string = packageJson.scripts["dev:teamsfx"];
-    return npmRunDevRegex.test(devTeamsfx) ? packageJson.scripts["dev"] : devTeamsfx;
+    return devTeamsfx;
   } else {
     return undefined;
   }

@@ -10,7 +10,7 @@
     "teamstoolkit.accountTree.copilotWarningTooltip": "Microsoft 365 account administrator hasn't enabled Copilot access for this account. Contact your Teams administrator to resolve this issue by enrolling in Microsoft 365 Copilot Early Access program. Visit: https://aka.ms/PluginsEarlyAccess",
     "teamstoolkit.accountTree.m365AccountTooltip": "Microsoft 365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.",
     "teamstoolkit.accountTree.sideloadingLearnMore": "Learn More",
-    "teamstoolkit.accountTree.sideloadingMessage": "[custom app upload](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is disabled in your Microsoft 365 account. Contact your Teams administrator to resolve this issue or get a testing tenant.",
+    "teamstoolkit.accountTree.sideloadingMessage": "[Custom app upload](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading) is disabled in your Microsoft 365 account. Contact your Teams administrator to resolve this issue or get a testing tenant.",
     "teamstoolkit.accountTree.sideloadingPass": "Custom App Upload Enabled",
     "teamstoolkit.accountTree.sideloadingPassTooltip": "You have custom app upload permission already. You're good to install your app to Teams!",
     "teamstoolkit.accountTree.sideloadingStatusUnknown": "Custom App Upload Check Failed",

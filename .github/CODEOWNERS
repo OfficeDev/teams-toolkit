@@ -13,7 +13,7 @@
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
-/packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn
+/packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/README.md @therealjohn @sffamily
@@ -274,22 +274,22 @@ packages/fx-core/src/component/driver/script/baseBuildStepDriver.ts @Siglud @Yuk
 packages/fx-core/src/component/driver/script/dotnetBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 
-/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn
-/packages/fx-core/resource/package.nls.cs.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.de.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.es.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.fr.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.it.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.ja.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.ko.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.pl.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.pt-BR.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.ru.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.tr.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.zh-Hans.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.zh-Hant.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.zh-cn.json @HuihuiWu-Microsoft @chagong @jayzhang
-/packages/fx-core/resource/package.nls.zh-tw.json @HuihuiWu-Microsoft @chagong @jayzhang
+/packages/fx-core/resource/package.nls.json @timngmsft @sffamily @therealjohn @supkasar
+/packages/fx-core/resource/package.nls.cs.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.de.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.es.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.fr.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.it.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.ja.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.ko.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.pl.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.pt-BR.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.ru.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.tr.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.zh-Hans.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.zh-Hant.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.zh-cn.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
+/packages/fx-core/resource/package.nls.zh-tw.json @HuihuiWu-Microsoft @chagong @jayzhang @supkasar
 /packages/fx-core/resource/yaml-schema @jayzhang @wenytang-ms @kuojianlu @Siglud
 /packages/fx-core/src/core @jayzhang @LongOddCode @jayzhang @nliu-ms @xzf0587 @hund030
 

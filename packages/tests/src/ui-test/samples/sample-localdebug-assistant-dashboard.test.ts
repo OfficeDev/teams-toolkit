@@ -17,6 +17,9 @@ class AssistDashboardTestCase extends CaseFactory {
   override async onValidate(page: Page): Promise<void> {
     return await validateDashboardTab(page);
   }
+  public override async onCliValidate(page: Page): Promise<void> {
+    return await validateDashboardTab(page);
+  }
 
   override async onAfterCreate(
     sampledebugContext: SampledebugContext,

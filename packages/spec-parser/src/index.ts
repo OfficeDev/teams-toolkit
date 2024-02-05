@@ -16,3 +16,4 @@ export {
 } from "./interfaces";
 
 export { ConstantString } from "./constants";
+export { Utils } from "./utils";

@@ -22,7 +22,7 @@
 /packages/vscode-extension/PRERELEASE.md @therealjohn @sffamily
 
 /packages/cli @chagong @Alive-Fish @LongOddCode @jayzhang
-/packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn
+/packages/cli/src/resource/strings.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish

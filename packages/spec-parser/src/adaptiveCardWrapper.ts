@@ -66,7 +66,10 @@ export function inferPreviewCardTemplate(card: AdaptiveCard): PreviewCardTemplat
     if (!result.title && Utils.isWellKnownName(text, ConstantString.WellknownTitleName)) {
       result.title = text;
       textBlockElements.delete(element);
-    } else if (!result.subtitle && Utils.isWellKnownName(text, ConstantString.WellknownSubtitleName)) {
+    } else if (
+      !result.subtitle &&
+      Utils.isWellKnownName(text, ConstantString.WellknownSubtitleName)
+    ) {
       result.subtitle = text;
       textBlockElements.delete(element);
     } else if (!result.image && Utils.isWellKnownName(text, ConstantString.WellknownImageName)) {

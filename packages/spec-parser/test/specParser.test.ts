@@ -7,11 +7,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import converter from "swagger2openapi";
 import { SpecParser } from "../src/specParser";
-import {
-  ErrorType,
-  ValidationStatus,
-  WarningType,
-} from "../src/interfaces";
+import { ErrorType, ValidationStatus, WarningType } from "../src/interfaces";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";

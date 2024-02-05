@@ -38,7 +38,7 @@ export class ManifestUpdater {
         apiSpecificationFile: ManifestUpdater.getRelativePath(manifestPath, outputSpecPath),
         commands: commands,
       };
-  
+
       if (auth) {
         if (Utils.isAPIKeyAuth(auth)) {
           auth = auth as OpenAPIV3.ApiKeySecurityScheme;
@@ -58,14 +58,14 @@ export class ManifestUpdater {
               supportsSingleSignOn: true,
             },
           };
-  
+
           updatedPart.webApplicationInfo = {
             id: "${{AAD_APP_CLIENT_ID}}",
             resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
           };
         }
       }
-  
+
       updatedPart.description = {
         short: spec.info.title.slice(0, ConstantString.ShortDescriptionMaxLens),
         full: (spec.info.description ?? originalManifest.description.full)?.slice(
@@ -73,17 +73,17 @@ export class ManifestUpdater {
           ConstantString.FullDescriptionMaxLens
         ),
       };
-  
+
       updatedPart.composeExtensions = [composeExtension];
-  
+
       const updatedManifest = { ...originalManifest, ...updatedPart };
-  
+
       return [updatedManifest, warnings];
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.UpdateManifestFailed);
     }
   }
-  
+
   static async generateCommands(
     spec: OpenAPIV3.Document,
     adaptiveCardFolder: string,
@@ -98,23 +98,26 @@ export class ManifestUpdater {
         const pathItem = paths[pathUrl];
         if (pathItem) {
           const operations = pathItem;
-  
+
           // Currently only support GET and POST method
           for (const method in operations) {
             if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
               const operationItem = operations[method];
               if (operationItem) {
-                const [command, warning] = Utils.parseApiInfo(operationItem, allowMultipleParameters);
-  
+                const [command, warning] = Utils.parseApiInfo(
+                  operationItem,
+                  allowMultipleParameters
+                );
+
                 const adaptiveCardPath = path.join(adaptiveCardFolder, command.id + ".json");
                 command.apiResponseRenderingTemplateFile = (await fs.pathExists(adaptiveCardPath))
                   ? ManifestUpdater.getRelativePath(manifestPath, adaptiveCardPath)
                   : "";
-  
+
                 if (warning) {
                   warnings.push(warning);
                 }
-  
+
                 commands.push(command);
               }
             }
@@ -122,10 +125,10 @@ export class ManifestUpdater {
         }
       }
     }
-  
+
     return [commands, warnings];
   }
-  
+
   static getRelativePath(from: string, to: string): string {
     const relativePath = path.relative(path.dirname(from), to);
     return path.normalize(relativePath).replace(/\\/g, "/");

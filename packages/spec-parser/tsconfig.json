@@ -31,7 +31,7 @@
     "resolveJsonModule": true,
     "downlevelIteration": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
   "exclude": ["dist/**/*", "config/*"]
 }

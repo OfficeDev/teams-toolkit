@@ -148,7 +148,15 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
+    const actualSpec = SpecFilter.specFilter(
+      filter,
+      unResolveSpec,
+      unResolveSpec,
+      true,
+      false,
+      false,
+      false
+    );
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -189,7 +197,15 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
+    const actualSpec = SpecFilter.specFilter(
+      filter,
+      unResolveSpec,
+      unResolveSpec,
+      true,
+      false,
+      false,
+      false
+    );
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 

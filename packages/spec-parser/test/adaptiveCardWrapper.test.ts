@@ -4,10 +4,7 @@
 import { expect } from "chai";
 import "mocha";
 import sinon from "sinon";
-import {
-  inferPreviewCardTemplate,
-  wrapAdaptiveCard,
-} from "../src/adaptiveCardWrapper";
+import { inferPreviewCardTemplate, wrapAdaptiveCard } from "../src/adaptiveCardWrapper";
 import { AdaptiveCard } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 

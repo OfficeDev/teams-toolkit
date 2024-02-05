@@ -64,8 +64,8 @@ export class SpecParser {
         await this.loadSpec();
         await this.parser.validate(this.spec!, {
           validate: {
-            schema: false
-          }
+            schema: false,
+          },
         });
       } catch (e) {
         return {

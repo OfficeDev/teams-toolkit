@@ -11,7 +11,7 @@ export {
   WarningResult,
   ErrorResult,
   ListAPIResult,
-  APIInfo, 
+  APIInfo,
   ValidateResult,
 } from "./interfaces";
 

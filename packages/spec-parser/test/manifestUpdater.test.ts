@@ -832,7 +832,13 @@ describe("manifestUpdater", () => {
     const spec = {} as any;
     const readJSONStub = sinon.stub(fs, "readJSON").rejects(new Error("readJSON error"));
     try {
-      await ManifestUpdater.updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec, false);
+      await ManifestUpdater.updateManifest(
+        manifestPath,
+        outputSpecPath,
+        adaptiveCardFolder,
+        spec,
+        false
+      );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
       expect(err).to.be.instanceOf(SpecParserError);

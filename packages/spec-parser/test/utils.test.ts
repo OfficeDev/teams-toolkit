@@ -2133,7 +2133,8 @@ describe("utils", () => {
       expect(Utils.isWellKnownName("carData", ConstantString.WellknownResultNames)).to.be.true;
       expect(Utils.isWellKnownName("productItems", ConstantString.WellknownResultNames)).to.be.true;
       expect(Utils.isWellKnownName("rootValue", ConstantString.WellknownResultNames)).to.be.true;
-      expect(Utils.isWellKnownName("matchesResult", ConstantString.WellknownResultNames)).to.be.true;
+      expect(Utils.isWellKnownName("matchesResult", ConstantString.WellknownResultNames)).to.be
+        .true;
       expect(Utils.isWellKnownName("DataQueries", ConstantString.WellknownResultNames)).to.be.true;
       expect(Utils.isWellKnownName("productLists", ConstantString.WellknownResultNames)).to.be.true;
       expect(Utils.isWellKnownName("outputData", ConstantString.WellknownResultNames)).to.be.true;

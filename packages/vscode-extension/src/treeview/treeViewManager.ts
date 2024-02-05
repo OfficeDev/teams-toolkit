@@ -247,14 +247,14 @@ class TreeViewManager {
         "Edit manifest file",
         "fx-extension.editManifest",
         undefined,
-        { name: "library", custom: false }
+        { name: "pencil", custom: false }
       ),
       new TreeViewCommand(
         "Publish to AppSource",
         "Publish to AppSource",
         "fx-extension.publishToAppSource",
         undefined,
-        { name: "library", custom: false }
+        { name: "repo-push", custom: false }
       ),
     ];
   }
@@ -290,7 +290,7 @@ class TreeViewManager {
   private getOfficeUtilityCommands(): TreeViewCommand[] {
     const officeUtilityCommands = [
       new TreeViewCommand("AI Assistant", "AI Assistant", "fx-extension.AIAssistant", undefined, {
-        name: "package",
+        name: "copilot",
         custom: false,
       }),
       new TreeViewCommand(
@@ -299,7 +299,7 @@ class TreeViewManager {
         "fx-extension.validateApplication",
         undefined,
         {
-          name: "package",
+          name: "cloud-upload",
           custom: false,
         }
       ),
@@ -309,7 +309,7 @@ class TreeViewManager {
         "fx-extension.AnalyzeComVstoAddIn",
         undefined,
         {
-          name: "package",
+          name: "circuit-board",
           custom: false,
         }
       ),
@@ -356,7 +356,7 @@ class TreeViewManager {
         "Get started",
         "fx-extension.openGetStartedAddIn",
         undefined,
-        { name: "book", custom: false },
+        { name: "symbol-event", custom: false },
         TreeCategory.GettingStarted
       ),
       new TreeViewCommand(
@@ -364,7 +364,7 @@ class TreeViewManager {
         "Tutorials",
         "fx-extension.openAddInTutorials",
         undefined,
-        { name: "book", custom: false },
+        { name: "github-action", custom: false },
         TreeCategory.GettingStarted
       ),
       new TreeViewCommand(

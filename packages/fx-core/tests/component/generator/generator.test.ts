@@ -14,6 +14,7 @@ import {
   renderTemplateFileName,
   simplifyAxiosError,
   isApiLimitError,
+  getTemplateZipUrlByTag,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
 import {
@@ -27,10 +28,8 @@ import AdmZip from "adm-zip";
 import { createSandbox } from "sinon";
 import {
   GeneratorContext,
-  fetchUrlForHotfixOnlyAction,
-  fetchTemplateFromLocalAction,
-  fetchZipFromUrlAction,
-  unzipAction,
+  RemoteTemplateAction,
+  LocalTemplateAction,
   fetchSampleInfoAction,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
@@ -501,35 +500,9 @@ describe("Generator error", async () => {
     sandbox.restore();
   });
 
-  it("no zip url", async () => {
-    sandbox.stub(generatorUtils, "fetchZipFromUrl").rejects();
-    const generatorContext: GeneratorContext = {
-      name: "test",
-      destination: "test",
-      logProvider: tools.logProvider,
-      filterFn: (filename) => filename.startsWith("/"),
-      onActionError: templateDefaultOnActionError,
-    };
-    try {
-      try {
-        await fetchZipFromUrlAction.run(generatorContext);
-      } catch (error) {
-        if (generatorContext.onActionError) {
-          await generatorContext.onActionError(fetchZipFromUrlAction, generatorContext, error);
-        } else {
-          throw error;
-        }
-      }
-    } catch (error) {
-      assert.notExists(error);
-      assert.fail("Should not reach here.");
-    }
-    assert.isTrue(generatorContext.cancelDownloading);
-  });
-
   it("template fallback error", async () => {
-    sandbox.stub(fetchUrlForHotfixOnlyAction, "run").throws(new Error("test"));
-    sandbox.stub(fetchTemplateFromLocalAction, "run").throws(new Error("test"));
+    sandbox.stub(RemoteTemplateAction, "run").resolves();
+    sandbox.stub(folderUtils, "getTemplatesFolder").resolves("foobar");
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
       assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
@@ -538,16 +511,14 @@ describe("Generator error", async () => {
     }
   });
 
-  it("unzip error", async () => {
-    sandbox.stub(fetchUrlForHotfixOnlyAction, "run").resolves();
-    sandbox.stub(fetchZipFromUrlAction, "run").resolves();
-    sandbox.stub(fetchTemplateFromLocalAction, "run").resolves();
-    sandbox.stub(unzipAction, "run").throws(new Error("test"));
+  it("template not found error", async () => {
+    sandbox.stub(RemoteTemplateAction, "run").resolves();
+    sandbox.stub(generatorUtils, "unzip").resolves();
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "UnzipError");
+      assert.equal(result.error.innerError.name, "TemplateNotFoundError");
     } else {
-      assert.fail("upzip error should be thrown.");
+      assert.fail("template not found error should be thrown.");
     }
   });
 
@@ -836,28 +807,7 @@ describe("Generator happy path", async () => {
     assert.equal(vars.SafeProjectNameLowerCase, "test");
   });
 
-  it("template from source code", async () => {
-    const templateName = "test";
-    const language = "ts";
-    const mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.DebugTemplate]: "true",
-      NODE_ENV: "development",
-    });
-    sandbox.stub(generatorUtils, "unzip").resolves();
-    sandbox.stub(generatorUtils, "zipFolder").returns(new AdmZip());
-
-    let success = false;
-    try {
-      await Generator.generateTemplate(context, tmpDir, templateName, language);
-      success = true;
-    } catch (e) {
-      assert.fail(e.toString());
-    }
-    assert.isTrue(success);
-    mockedEnvRestore();
-  });
-
-  it("template from fallback when remote zip processing fails", async () => {
+  it("Generate templates from local when remote download processing fails", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";

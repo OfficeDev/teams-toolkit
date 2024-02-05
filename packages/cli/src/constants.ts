@@ -21,5 +21,5 @@ export const AddFeatureFunc = {
 };
 
 export const FooterText = `For more information about the Teams Toolkit: ${chalk.cyanBright(
-  "https://aka.ms/teamsfx-cli"
+  "https://aka.ms/teamsfx-toolkit-cli"
 )}.`;

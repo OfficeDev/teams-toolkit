@@ -24,7 +24,7 @@ export class SpecFilter {
       for (const filterItem of filter) {
         const [method, path] = filterItem.split(" ");
         const methodName = method.toLowerCase();
-  
+
         if (
           !Utils.isSupportedApi(
             methodName,
@@ -38,24 +38,24 @@ export class SpecFilter {
         ) {
           continue;
         }
-  
+
         if (!newPaths[path]) {
           newPaths[path] = { ...unResolveSpec.paths[path] };
           for (const m of ConstantString.AllOperationMethods) {
             delete (newPaths[path] as any)[m];
           }
         }
-  
+
         (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
-  
+
         // Add the operationId if missing
         if (!(newPaths[path] as any)[methodName].operationId) {
-          (newPaths[path] as any)[methodName].operationId = `${methodName}${Utils.convertPathToCamelCase(
-            path
-          )}`;
+          (newPaths[path] as any)[
+            methodName
+          ].operationId = `${methodName}${Utils.convertPathToCamelCase(path)}`;
         }
       }
-  
+
       newSpec.paths = newPaths;
       return newSpec;
     } catch (err) {

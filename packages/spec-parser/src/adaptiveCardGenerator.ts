@@ -15,14 +15,12 @@ import { ConstantString } from "./constants";
 import { SpecParserError } from "./specParserError";
 
 export class AdaptiveCardGenerator {
-  static generateAdaptiveCard(
-    operationItem: OpenAPIV3.OperationObject
-  ): [AdaptiveCard, string] {
+  static generateAdaptiveCard(operationItem: OpenAPIV3.OperationObject): [AdaptiveCard, string] {
     try {
       const json = Utils.getResponseJson(operationItem);
-  
+
       let cardBody: Array<TextBlockElement | ImageElement | ArrayElement> = [];
-  
+
       let schema = json.schema as OpenAPIV3.SchemaObject;
       let jsonPath = "$";
       if (schema && Object.keys(schema).length > 0) {
@@ -30,10 +28,10 @@ export class AdaptiveCardGenerator {
         if (jsonPath !== "$") {
           schema = schema.properties![jsonPath] as OpenAPIV3.SchemaObject;
         }
-  
+
         cardBody = AdaptiveCardGenerator.generateCardFromResponse(schema, "");
       }
-  
+
       // if no schema, try to use example value
       if (cardBody.length === 0 && (json.examples || json.example)) {
         cardBody = [
@@ -44,7 +42,7 @@ export class AdaptiveCardGenerator {
           },
         ];
       }
-  
+
       // if no example value, use default success response
       if (cardBody.length === 0) {
         cardBody = [
@@ -55,20 +53,20 @@ export class AdaptiveCardGenerator {
           },
         ];
       }
-  
+
       const fullCard: AdaptiveCard = {
         type: ConstantString.AdaptiveCardType,
         $schema: ConstantString.AdaptiveCardSchema,
         version: ConstantString.AdaptiveCardVersion,
         body: cardBody,
       };
-  
+
       return [fullCard, jsonPath];
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.GenerateAdaptiveCardFailed);
     }
   }
-  
+
   static generateCardFromResponse(
     schema: OpenAPIV3.SchemaObject,
     name: string,
@@ -85,14 +83,18 @@ export class AdaptiveCardGenerator {
           },
         ];
       }
-  
-      const obj = AdaptiveCardGenerator.generateCardFromResponse(schema.items as OpenAPIV3.SchemaObject, "", name);
+
+      const obj = AdaptiveCardGenerator.generateCardFromResponse(
+        schema.items as OpenAPIV3.SchemaObject,
+        "",
+        name
+      );
       const template = {
         type: ConstantString.ContainerType,
         $data: name ? `\${${name}}` : "${$root}",
         items: Array<TextBlockElement | ImageElement | ArrayElement>(),
       };
-  
+
       template.items.push(...obj);
       return [template];
     }
@@ -108,12 +110,12 @@ export class AdaptiveCardGenerator {
         );
         result.push(...obj);
       }
-  
+
       if (schema.additionalProperties) {
         // TODO: better ways to handler warnings.
         console.warn(ConstantString.AdditionalPropertiesNotSupported);
       }
-  
+
       return result;
     }
     if (
@@ -136,7 +138,7 @@ export class AdaptiveCardGenerator {
           // string array: photoUrls: ["1", "2"]
           text = `${parentArrayName}: ` + "${$data}";
         }
-  
+
         return [
           {
             type: ConstantString.TextBlockType,
@@ -164,14 +166,14 @@ export class AdaptiveCardGenerator {
         }
       }
     }
-  
+
     if (schema.oneOf || schema.anyOf || schema.not || schema.allOf) {
       throw new Error(Utils.format(ConstantString.SchemaNotSupported, JSON.stringify(schema)));
     }
-  
+
     throw new Error(Utils.format(ConstantString.UnknownSchema, JSON.stringify(schema)));
   }
-  
+
   // Find the first array property in the response schema object with the well-known name
   static getResponseJsonPathFromSchema(schema: OpenAPIV3.SchemaObject): string {
     if (schema.type === "object" || (!schema.type && schema.properties)) {
@@ -186,10 +188,10 @@ export class AdaptiveCardGenerator {
         }
       }
     }
-  
+
     return "$";
   }
-  
+
   static isImageUrlProperty(
     schema: OpenAPIV3.NonArraySchemaObject,
     name: string,

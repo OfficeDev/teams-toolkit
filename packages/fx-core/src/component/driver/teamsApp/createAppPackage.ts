@@ -214,7 +214,7 @@ export class CreateAppPackageDriver implements StepDriver {
               return err(checkExistenceRes.error);
             }
             const dir = path.dirname(command.apiResponseRenderingTemplateFile);
-            zip.addLocalFile(adaptiveCardFile, dir === "." ? "" : dir);
+            this.addFileInZip(zip, dir, adaptiveCardFile);
           }
         }
       }
@@ -232,7 +232,7 @@ export class CreateAppPackageDriver implements StepDriver {
         return err(checkExistenceRes.error);
       }
       const dir = path.dirname(manifest.apiPlugins[0].pluginFile);
-      zip.addLocalFile(pluginFile, dir === "." ? "" : dir);
+      this.addFileInZip(zip, dir, pluginFile);
 
       // Add API spec and templates
       const addResponseTemplateRes = await this.addPluginRelatedFiles(
@@ -349,8 +349,9 @@ export class CreateAppPackageDriver implements StepDriver {
           if (checkExistenceRes.isErr()) {
             return err(checkExistenceRes.error);
           }
+
           const dir = path.relative(appDirectory, path.dirname(specFile));
-          zip.addLocalFile(specFile, dir === "." ? "" : dir);
+          this.addFileInZip(zip, dir, specFile);
         }
       }
     }
@@ -368,12 +369,16 @@ export class CreateAppPackageDriver implements StepDriver {
               return err(checkExistenceRes.error);
             }
             const dir = path.relative(appDirectory, path.dirname(templateFile));
-            zip.addLocalFile(templateFile, dir === "." ? "" : dir);
+            this.addFileInZip(zip, dir, templateFile);
           }
         }
       }
     }
 
     return ok(undefined);
+  }
+
+  private addFileInZip(zip: AdmZip, dir: string, filePath: string) {
+    zip.addLocalFile(filePath, dir === "." ? "" : dir);
   }
 }

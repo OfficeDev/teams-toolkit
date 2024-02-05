@@ -1,0 +1,6 @@
+**/src/generated/
+**/*.d.ts
+
+coverage/
+.nyc_output/
+.prettierignore

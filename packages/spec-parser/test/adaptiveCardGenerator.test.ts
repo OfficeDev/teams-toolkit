@@ -402,7 +402,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -430,7 +434,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -458,7 +466,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -478,7 +490,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -497,7 +513,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -542,7 +562,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -587,7 +611,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -650,7 +678,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -713,7 +745,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -776,7 +812,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -830,7 +870,11 @@ describe("adaptiveCardGenerator", () => {
         },
       ];
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
 
       expect(actual).to.deep.equal(expected);
     });
@@ -849,9 +893,9 @@ describe("adaptiveCardGenerator", () => {
       const name = "person";
       const parentArrayName = "";
 
-      expect(() => AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
-        Utils.format(ConstantString.SchemaNotSupported, JSON.stringify(schema))
-      );
+      expect(() =>
+        AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName)
+      ).to.throw(Utils.format(ConstantString.SchemaNotSupported, JSON.stringify(schema)));
     });
 
     it("should throw an error for unknown schema types", () => {
@@ -861,9 +905,9 @@ describe("adaptiveCardGenerator", () => {
       const name = "person";
       const parentArrayName = "";
 
-      expect(() => AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName)).to.throw(
-        Utils.format(ConstantString.UnknownSchema, JSON.stringify(schema))
-      );
+      expect(() =>
+        AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName)
+      ).to.throw(Utils.format(ConstantString.UnknownSchema, JSON.stringify(schema)));
     });
 
     it("should ignore additionalProperties", () => {
@@ -888,7 +932,11 @@ describe("adaptiveCardGenerator", () => {
 
       const warnSpy = sinon.spy(console, "warn");
 
-      const actual = AdaptiveCardGenerator.generateCardFromResponse(schema as any, name, parentArrayName);
+      const actual = AdaptiveCardGenerator.generateCardFromResponse(
+        schema as any,
+        name,
+        parentArrayName
+      );
       sinon.assert.calledOnce(warnSpy);
       expect(actual).to.deep.equal(expected);
       sinon.assert.calledWithExactly(warnSpy, ConstantString.AdditionalPropertiesNotSupported);
@@ -901,7 +949,7 @@ describe("adaptiveCardGenerator", () => {
       //   .throws(new Error("getResponseJson error"));
       sinon.stub(Utils, "getResponseJson").callsFake(() => {
         throw new Error("getResponseJson error");
-      })
+      });
 
       try {
         AdaptiveCardGenerator.generateAdaptiveCard(operationItem);

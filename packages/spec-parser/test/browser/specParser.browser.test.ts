@@ -5,11 +5,7 @@ import "mocha";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SpecParser } from "../../src/specParser.browser";
-import {
-  ErrorType,
-  ValidationStatus,
-  WarningType,
-} from "../../src/interfaces";
+import { ErrorType, ValidationStatus, WarningType } from "../../src/interfaces";
 import { SpecParserError } from "../../src/specParserError";
 import { ConstantString } from "../../src/constants";
 import { OpenAPIV3 } from "openapi-types";
@@ -322,7 +318,7 @@ describe("SpecParser in Browser", () => {
     it("should throw an error when the SwaggerParser library throws an error", async () => {
       const specPath = "invalid-spec.yaml";
       const specParser = new SpecParser(specPath);
-      sinon.stub(SwaggerParser.prototype,  "validate").rejects(new Error("Invalid specification"));
+      sinon.stub(SwaggerParser.prototype, "validate").rejects(new Error("Invalid specification"));
       const parseStub = sinon
         .stub(specParser.parser, "parse")
         .rejects(new Error("Invalid specification"));

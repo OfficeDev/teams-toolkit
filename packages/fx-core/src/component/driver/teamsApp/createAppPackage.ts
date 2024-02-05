@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Colors, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Colors, FxError, PluginBManifest, Result, err, ok } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";
@@ -12,6 +12,7 @@ import { ErrorContextMW } from "../../../core/globalVars";
 import {
   FileNotFoundError,
   InvalidActionInputError,
+  JSONSyntaxError,
   MissingEnvironmentVariablesError,
 } from "../../../error/common";
 import { DriverContext } from "../interface/commonArgs";
@@ -232,6 +233,16 @@ export class CreateAppPackageDriver implements StepDriver {
       }
       const dir = path.dirname(manifest.apiPlugins[0].pluginFile);
       zip.addLocalFile(pluginFile, dir === "." ? "" : dir);
+
+      // Add API spec and templates
+      const addResponseTemplateRes = await this.addPluginRelatedFiles(
+        zip,
+        pluginFile,
+        appDirectory
+      );
+      if (addResponseTemplateRes.isErr()) {
+        return err(addResponseTemplateRes.error);
+      }
     }
 
     zip.writeZip(zipFileName);
@@ -312,6 +323,55 @@ export class CreateAppPackageDriver implements StepDriver {
     const relativePath = path.relative(directory, file);
     if (relativePath.startsWith("..")) {
       return err(new InvalidFileOutsideOfTheDirectotryError(file));
+    }
+
+    return ok(undefined);
+  }
+
+  private async addPluginRelatedFiles(
+    zip: AdmZip,
+    pluginFile: string,
+    appDirectory: string
+  ): Promise<Result<undefined, FxError>> {
+    let pluginContent;
+    try {
+      pluginContent = (await fs.readJSON(pluginFile)) as PluginBManifest;
+    } catch (e) {
+      return err(new JSONSyntaxError(pluginFile, e, actionName));
+    }
+    const runtimes = pluginContent.runtimes;
+    if (runtimes && runtimes.length > 0) {
+      for (const runtime of runtimes) {
+        if (runtime.type === "openApi" && runtime.spec?.url) {
+          const specFile = path.resolve(path.dirname(pluginFile), runtime.spec.url);
+          // add openapi spec
+          const checkExistenceRes = await this.validateReferencedFile(specFile, appDirectory);
+          if (checkExistenceRes.isErr()) {
+            return err(checkExistenceRes.error);
+          }
+          const dir = path.relative(appDirectory, path.dirname(specFile));
+          zip.addLocalFile(specFile, dir === "." ? "" : dir);
+        }
+      }
+    }
+
+    const functions = pluginContent.functions;
+    if (functions && functions.length > 0) {
+      for (const func of functions) {
+        const templates = func.capabilities?.rendering_templates;
+        if (templates) {
+          for (const key of Object.keys(templates)) {
+            const template = templates[key];
+            const templateFile = path.resolve(path.dirname(pluginFile), template.template_url);
+            const checkExistenceRes = await this.validateReferencedFile(templateFile, appDirectory);
+            if (checkExistenceRes.isErr()) {
+              return err(checkExistenceRes.error);
+            }
+            const dir = path.relative(appDirectory, path.dirname(templateFile));
+            zip.addLocalFile(templateFile, dir === "." ? "" : dir);
+          }
+        }
+      }
     }
 
     return ok(undefined);

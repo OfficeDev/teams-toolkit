@@ -28,7 +28,7 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
-import { getTemplate } from "../../../question/create";
+import { ProjectTypeOptions, getTemplate } from "../../../question/create";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 const componentName = "office-addin";
@@ -61,8 +61,9 @@ export class OfficeAddinGenerator {
       context,
       destinationPath,
       templateName,
-      lang != "No Options" ? (lang === "TypeScript" ? "ts" : "js") : undefined
+      lang != "No Options" ? (lang === "typescript" ? "ts" : "js") : undefined
     );
+
     if (templateRes.isErr()) return err(templateRes.error);
 
     return ok(undefined);
@@ -82,7 +83,6 @@ export class OfficeAddinGenerator {
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
     const language = inputs[QuestionNames.ProgrammingLanguage];
-    const host = inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
     const importProgress = context.userInteraction.createProgressBar(
       getLocalizedString("core.generator.officeAddin.importProject.title"),
@@ -94,7 +94,18 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const jsonData = new projectsJsonData();
-        const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
+        let projectRepoBranchInfo;
+        if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
+          const framework = inputs[QuestionNames.OfficeAddinFramework];
+          projectRepoBranchInfo = jsonData.getProjectRepoAndBranchNew(
+            template,
+            language,
+            framework,
+            true
+          );
+        } else {
+          projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
+        }
 
         // Copy project template files from project repository
         if (projectRepoBranchInfo.repo) {
@@ -104,9 +115,19 @@ export class OfficeAddinGenerator {
             projectRepoBranchInfo.branch
           );
 
-          // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
-          await OfficeAddinGenerator.childProcessExec(cmdLine);
+          let host;
+          if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
+            // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(
+              "wxpo" // support word, excel, powerpoint, outlook
+            )} ${"json"}`;
+            await OfficeAddinGenerator.childProcessExec(cmdLine);
+          } else {
+            host = inputs[QuestionNames.OfficeAddinHost];
+            // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
+            await OfficeAddinGenerator.childProcessExec(cmdLine);
+          }
 
           const manifestPath = jsonData.getManifestPath(template) as string;
           // modify manifest guid and DisplayName
@@ -153,7 +174,7 @@ export class OfficeAddinGenerator {
 
 // TODO: update to handle different hosts when support for them is implemented
 // TODO: handle multiple scopes
-type OfficeHost = "Outlook"; // | "Word" | "OneNote" | "PowerPoint" | "Project" | "Excel"
+type OfficeHost = "Outlook" | "Word" | "PowerPoint" | "Excel"; // | "Project" | "OneNote"
 async function getHost(addinManifestPath: string): Promise<OfficeHost> {
   // Read add-in manifest file
   const addinManifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
@@ -161,7 +182,7 @@ async function getHost(addinManifestPath: string): Promise<OfficeHost> {
   );
   let host: OfficeHost = "Outlook";
   switch (addinManifest.extensions?.[0].requirements?.scopes?.[0]) {
-    // case "document":
+    // case "document":  // TODO yueli
     //   host = "Word";
     case "mail":
       host = "Outlook";

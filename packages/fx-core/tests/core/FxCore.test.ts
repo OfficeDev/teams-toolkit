@@ -1461,6 +1461,7 @@ describe("isEnvFile", async () => {
           "me-architecture",
           "api-me-auth",
           "programming-language",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1490,6 +1491,7 @@ describe("isEnvFile", async () => {
           "me-architecture",
           "api-me-auth",
           "programming-language",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1522,6 +1524,7 @@ describe("isEnvFile", async () => {
           "api-operation",
           "api-me-auth",
           "programming-language",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1552,6 +1555,7 @@ describe("isEnvFile", async () => {
           "me-architecture",
           "api-me-auth",
           "programming-language",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);

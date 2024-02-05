@@ -61,9 +61,9 @@ export default class projectsJsonData {
       for (const template in this.projectJsonData.projectTypes[projectType].templates) {
         let scriptType = "";
         if (template === "javascript") {
-          scriptType = "JavaScript";
+          scriptType = "javascript";
         } else if (template === "typescript") {
-          scriptType = "TypeScript";
+          scriptType = "typescript";
         }
 
         scriptTypes.push(scriptType);
@@ -120,7 +120,6 @@ export default class projectsJsonData {
     scriptType: string,
     prerelease: boolean
   ): { repo: string | undefined; branch: string | undefined } {
-    scriptType = scriptType === "TypeScript" ? "typescript" : "javascript";
     const repoBranchInfo: { repo: string | undefined; branch: string | undefined } = {
       repo: <string>(<unknown>null),
       branch: <string>(<unknown>null),
@@ -132,5 +131,65 @@ export default class projectsJsonData {
       : undefined;
 
     return repoBranchInfo;
+  }
+
+  getProjectRepoAndBranchNew(
+    projectTypeKey: string,
+    scriptType: string,
+    frameworkType: string,
+    prerelease: boolean
+  ): { repo: string | undefined; branch: string | undefined } {
+    const repoBranchInfo: { repo: string | undefined; branch: string | undefined } = {
+      repo: <string>(<unknown>null),
+      branch: <string>(<unknown>null),
+    };
+
+    repoBranchInfo.repo = this.getProjectTemplateRepositoryNew(
+      projectTypeKey,
+      scriptType,
+      frameworkType
+    );
+    repoBranchInfo.branch = repoBranchInfo.repo
+      ? this.getProjectTemplateBranchNameNew(projectTypeKey, scriptType, frameworkType, prerelease)
+      : undefined;
+
+    return repoBranchInfo;
+  }
+
+  getProjectTemplateRepositoryNew(
+    projectTypeKey: string,
+    scriptType: string,
+    frameworkType: string
+  ): string | undefined {
+    for (const key in this.projectJsonData.projectTypes) {
+      if (_.toLower(projectTypeKey) == key) {
+        return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+          frameworkType
+        ].repository;
+      }
+    }
+    return undefined;
+  }
+
+  getProjectTemplateBranchNameNew(
+    projectTypeKey: string,
+    scriptType: string,
+    frameworkType: string,
+    prerelease: boolean
+  ): string | undefined {
+    for (const key in this.projectJsonData.projectTypes) {
+      if (_.toLower(projectTypeKey) == key) {
+        if (prerelease) {
+          return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+            frameworkType
+          ].prerelease;
+        } else {
+          return this.projectJsonData.projectTypes[key].templates[scriptType].frameworks[
+            frameworkType
+          ].branch;
+        }
+      }
+    }
+    return undefined;
   }
 }

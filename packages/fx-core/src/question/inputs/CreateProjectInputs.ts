@@ -66,6 +66,6 @@ export interface CreateProjectInputs extends Inputs {
   "api-me-auth"?: "none" | "api-key";
   /** @description Programming Language */
   "programming-language"?: "javascript" | "typescript" | "csharp";
-  /** @description Application name */
+  /** @description Application Name */
   "app-name"?: string;
 }

@@ -1136,7 +1136,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
   const programmingLanguageQuestion: SingleSelectQuestion = {
     name: QuestionNames.ProgrammingLanguage,
     cliShortName: "l",
-    title: "Programming Language",
+    title: getLocalizedString("core.ProgrammingLanguageQuestion.title"),
     type: "singleSelect",
     staticOptions: [
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
@@ -1199,7 +1199,7 @@ export function appNameQuestion(): TextInputQuestion {
     type: "text",
     name: QuestionNames.AppName,
     cliShortName: "n",
-    title: "Application name",
+    title: getLocalizedString("core.question.appName.title"),
     required: true,
     default: async (inputs: Inputs) => {
       let defaultName = undefined;
@@ -1255,7 +1255,7 @@ export function appNameQuestion(): TextInputQuestion {
         return undefined;
       },
     },
-    placeholder: "Application name",
+    placeholder: getLocalizedString("core.question.appName.placeholder"),
   };
   return question;
 }

@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { ChildProcess, spawn } from "child_process";
+import cp from "child_process";
 import { err, FxError, LogLevel, ok, Result } from "@microsoft/teamsfx-api";
 import treeKill from "tree-kill";
 import { ServiceLogWriter } from "./serviceLogWriter";
@@ -33,7 +33,7 @@ export class Task {
   private options?: TaskOptions;
 
   private resolved = false;
-  private task: ChildProcess | undefined;
+  private task: cp.ChildProcess | undefined;
 
   constructor(
     taskTitle: string,
@@ -61,27 +61,25 @@ export class Task {
     ) => Promise<FxError | null>
   ): Promise<Result<TaskResult, FxError>> {
     await startCallback(this.taskTitle, this.background);
-    this.task = spawn(this.command, this.args, this.options);
+    this.task = cp.spawn(this.command, this.args, this.options);
     const stdout: string[] = [];
     const stderr: string[] = [];
     return new Promise((resolve) => {
       this.task?.stdout?.on("data", (data) => {
-        // TODO: log
         stdout.push(data.toString());
       });
       this.task?.stderr?.on("data", (data) => {
-        // TODO: log
         stderr.push(data.toString());
       });
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      this.task?.on("exit", async () => {
+      this.task?.on("exit", async (code) => {
         const result: TaskResult = {
           command: this.command,
           options: this.options,
-          success: this.task?.exitCode === 0,
+          success: code === 0,
           stdout: stdout,
           stderr: stderr,
-          exitCode: this.task?.exitCode === undefined ? null : this.task?.exitCode,
+          exitCode: code,
         };
         const error = await stopCallback(this.taskTitle, this.background, result);
         if (error) {
@@ -117,7 +115,7 @@ export class Task {
       `${this.command} ${this.args ? this.args?.join(" ") : ""}\n`
     );
     await startCallback(this.taskTitle, this.background, serviceLogWriter);
-    this.task = spawn(this.command, this.args, this.options);
+    this.task = cp.spawn(this.command, this.args, this.options);
     const stdout: string[] = [];
     const stderr: string[] = [];
     return new Promise((resolve) => {
@@ -129,7 +127,7 @@ export class Task {
             const result: TaskResult = {
               command: this.command,
               options: this.options,
-              success: true,
+              success: false,
               stdout: stdout,
               stderr: stderr,
               exitCode: null,
@@ -204,7 +202,7 @@ export class Task {
       });
 
       // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      this.task?.on("exit", async () => {
+      this.task?.on("exit", async (code) => {
         if (!this.resolved) {
           this.resolved = true;
           const result: TaskResult = {
@@ -213,7 +211,7 @@ export class Task {
             success: false,
             stdout: stdout,
             stderr: stderr,
-            exitCode: this.task?.exitCode === undefined ? null : this.task?.exitCode,
+            exitCode: code,
           };
           const error = await stopCallback(this.taskTitle, this.background, result);
           if (error) {

@@ -2980,11 +2980,17 @@ export function validateOfficeAddInManifest(args?: any[]): Promise<Result<null, 
 
 export async function editOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {
   const workspacePath = globalVariables.workspaceUri?.fsPath;
-  if (!workspacePath) return err(new FileNotFoundError("editManifest", "workspace"));
+  if (!workspacePath) {
+    VS_CODE_UI.showMessage("error", `Not valid workspace path`, false);
+    return Promise.resolve(err(new FileNotFoundError("editManifest", "workspace")));
+  }
 
   const manifestPath = path.join(workspacePath, "manifest.xml");
   const manifestFileUri = vscode.Uri.file(manifestPath);
-  if (!manifestPath) return err(new FileNotFoundError("editManifest", manifestPath));
+  if (!(await fs.pathExists(manifestPath))) {
+    VS_CODE_UI.showMessage("error", `${manifestPath} not exist`, false);
+    return err(new FileNotFoundError("editManifest", manifestPath));
+  }
 
   vscode.window.showTextDocument(manifestFileUri, { viewColumn: vscode.ViewColumn.One });
   return Promise.resolve(ok(null));

@@ -32,6 +32,7 @@ import {
   fetchZipFromUrlAction,
   unzipAction,
   fetchSampleInfoAction,
+  TemplateActionSeq,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
@@ -957,6 +958,25 @@ describe("Generator happy path", async () => {
       assert.fail("local template creation failure");
     }
     assert.isTrue(result.isOk());
+  });
+
+  it("telemetry contains correct template name", async () => {
+    const templateName = "test";
+    const language = "ts";
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+
+    sandbox.replace(TemplateActionSeq, "values", () => [] as any);
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      language,
+      actionContext
+    );
+
+    assert.equal(actionContext.telemetryProps?.["template-name"], `${templateName}-${language}`);
   });
 
   it("template from downloading when local version is not higher than online version", async () => {

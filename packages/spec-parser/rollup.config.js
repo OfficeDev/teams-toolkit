@@ -1,7 +1,7 @@
 import json from "@rollup/plugin-json";
 import typescriptPlugin from "rollup-plugin-typescript2";
 import typescript from "typescript";
-import pkg from "./package.json" assert { type: "json" };
+import pkg from "./package.json";
 
 const deps = Object.keys(Object.assign({}, pkg.peerDependencies, pkg.dependencies));
 

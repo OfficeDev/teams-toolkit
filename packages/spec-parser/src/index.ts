@@ -13,6 +13,7 @@ export {
   ListAPIResult,
   APIInfo,
   ValidateResult,
+  ParseOptions,
 } from "./interfaces";
 
 export { ConstantString } from "./constants";

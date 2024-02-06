@@ -68,6 +68,12 @@ enum OpenAIPluginManifestErrorType {
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
 export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
+export const generateType = "generate-type";
+
+export enum GenerateType {
+  ME = "api-me",
+  ApiPlugin = "api-plugin",
+}
 
 export interface ErrorResult {
   /**

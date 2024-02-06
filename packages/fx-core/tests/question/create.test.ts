@@ -931,7 +931,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
           } else if (question.name === QuestionNames.ApiMEAuth) {
             const select = question as SingleSelectQuestion;
@@ -986,7 +986,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
           } else if (question.name === QuestionNames.ApiMEAuth) {
             const select = question as SingleSelectQuestion;
@@ -1044,7 +1044,7 @@ describe("scaffold question", () => {
               (question.title as any)!(inputs),
               getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title")
             );
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginApiSpec().id });
           } else if (question.name === QuestionNames.ApiSpecLocation) {
             const validRes = await (question as any).inputBoxConfig.validation!.validFunc(
@@ -1101,7 +1101,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 2);
             return ok({
               type: "success",
               result: CapabilityOptions.copilotPluginOpenAIPlugin().id,
@@ -1275,7 +1275,7 @@ describe("scaffold question", () => {
           };
 
           const validationSchema = question.validation as FuncValidation<string[]>;
-          const placeholder = question.placeholder as string;
+          const placeholder = (question as any).placeholder(inputs) as string;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
           assert.isTrue(placeholder.includes("API key"));
@@ -1537,6 +1537,7 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox.stub(fs, "pathExists").resolves(true);
           sandbox.stub(SpecParser.prototype, "list").resolves([
             {
               api: "get operation1",

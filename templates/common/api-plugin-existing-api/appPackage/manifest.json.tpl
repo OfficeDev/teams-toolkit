@@ -23,7 +23,7 @@
         "full": "Full description for {{appName}}"
     },
     "accentColor": "#FFFFFF",
-    "composeExtensions": [],
+    "apiPlugins": [],
     "permissions": [
         "identity",
         "messageTeamMembers"

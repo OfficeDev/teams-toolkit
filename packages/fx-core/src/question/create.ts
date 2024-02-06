@@ -1502,10 +1502,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 
 const maximumLengthOfDetailsErrorMessageInInputBox = 90;
 
-export function apiSpecLocationQuestion(
-  includeExistingAPIs = true,
-  isApiPlugin?: boolean
-): SingleFileOrInputQuestion {
+export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
   const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
   const validationOnAccept = async (
     input: string,
@@ -1680,43 +1677,51 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
   };
 }
 
-export function apiOperationQuestion(
-  includeExistingAPIs = true,
-  isApiPlugin?: boolean
-): MultiSelectQuestion {
+export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
   // export for unit test
   let placeholder = "";
-  if (includeExistingAPIs) {
-    placeholder = getLocalizedString(
-      "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"
+
+  const isApiPlugin = (inputs?: Inputs): boolean => {
+    return (
+      !!inputs && inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id
     );
-  } else if (isApiPlugin) {
-    placeholder = ""; // TODO: add placeholder for api plugin
-  } else if (isApiKeyEnabled()) {
-    placeholder = getLocalizedString(
-      "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
-    );
-  } else {
-    placeholder = getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder");
-  }
+  };
+
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
-    title: isApiPlugin
-      ? getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
-      : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
-    cliDescription: isApiPlugin
-      ? "Select Operation(s) Copilot Can Interact with."
-      : "Select Operation(s) Teams Can Interact with.",
+    title: (inputs: Inputs) => {
+      return isApiPlugin(inputs)
+        ? getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
+        : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title");
+    },
+    cliDescription: "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
-    placeholder,
+    placeholder: (inputs: Inputs) => {
+      const isApiPlugin =
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
+      if (!includeExistingAPIs) {
+        placeholder = getLocalizedString(
+          "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"
+        );
+      } else if (isApiPlugin) {
+        placeholder = ""; // TODO: add placeholder for api plugin
+      } else if (isApiKeyEnabled()) {
+        placeholder = getLocalizedString(
+          "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
+        );
+      } else {
+        placeholder = getLocalizedString(
+          "core.createProjectQuestion.apiSpec.operation.placeholder"
+        );
+      }
+
+      return placeholder;
+    },
     forgetLastValue: true,
     staticOptions: [],
     validation: {
       validFunc: (input: string[], inputs?: Inputs): string | undefined => {
-        if (isApiPlugin) {
-          return undefined;
-        }
         if (input.length < 1 || input.length > 10) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
@@ -1828,37 +1833,33 @@ export function capabilitySubTree(): IQTreeNode {
         data: meArchitectureQuestion(),
       },
       {
-        // API ME from API Spec
+        // API ME from API Spec or Copilot plugin from API spec or AI Plugin
         condition: (inputs: Inputs) => {
-          return inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id;
+          return (
+            inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+            inputs[QuestionNames.Capabilities] ===
+              CapabilityOptions.copilotPluginOpenAIPlugin().id ||
+            inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
+          );
         },
-        data: { type: "group", name: QuestionNames.ApiMeExsitingApi },
+        data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
             condition: (inputs: Inputs) => {
               return (
+                inputs[QuestionNames.Capabilities] ===
+                  CapabilityOptions.copilotPluginApiSpec().id ||
                 inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
               );
             },
             data: apiSpecLocationQuestion(),
           },
+          // {
+          //   condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
+          //   data: openAIPluginManifestLocationQuestion(),
+          // },
           {
             data: apiOperationQuestion(),
-          },
-        ],
-      },
-      {
-        // API plugin from API spec
-        condition: (inputs: Inputs) => {
-          return inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
-        },
-        data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
-        children: [
-          {
-            data: apiSpecLocationQuestion(true, true),
-          },
-          {
-            data: apiOperationQuestion(true),
           },
         ],
       },
@@ -1972,9 +1973,6 @@ export function createProjectCliHelpNode(): IQTreeNode {
   ];
   if (!isCLIDotNetEnabled()) {
     deleteNames.push(QuestionNames.Runtime);
-  }
-  if (!isApiCopilotPluginEnabled()) {
-    deleteNames.push(QuestionNames.CopilotPluginExistingApi);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;

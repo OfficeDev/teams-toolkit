@@ -197,6 +197,11 @@ export async function generateCliOptions(
         ? data.default
         : await data.default({ platform: Platform.CLI_HELP })
       : undefined;
+    const cliDescription = data.cliDescription
+      ? typeof data.cliDescription !== "function"
+        ? data.cliDescription
+        : await data.cliDescription({ platform: Platform.CLI_HELP })
+      : undefined;
 
     const propDocDescription = title || data.name;
 
@@ -205,7 +210,7 @@ export async function generateCliOptions(
       questionName: questionName === cliName ? undefined : questionName,
       type: getOptionType(data),
       shortName: data.cliShortName,
-      description: data.cliDescription || propDocDescription,
+      description: cliDescription || propDocDescription,
       required: data.required,
       default: data.isBoolean ? Boolean(defaultValue as any) : (defaultValue as any),
     };

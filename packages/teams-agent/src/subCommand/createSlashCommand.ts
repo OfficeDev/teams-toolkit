@@ -6,7 +6,7 @@ import { SampleUrlInfo, fetchOnlineSampleConfig } from '../sample';
 import { downloadSampleFiles, getSampleFileInfo } from "../util";
 
 const createCommandName = "create";
-const CREATE_SAMPLE_COMMAND_ID = 'teamsAgent.createSample';
+export const CREATE_SAMPLE_COMMAND_ID = 'teamsAgent.createSample';
 
 export function getCreateCommand(): SlashCommand {
   return [createCommandName,

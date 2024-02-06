@@ -392,13 +392,13 @@ export abstract class CaseFactory {
               }
               await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
               await Executor.provision(sampledebugContext.projectPath, "local");
-              await VSBrowser.instance.takeScreenshot(
-                getScreenshotName("after_provision")
-              );
-              await VSBrowser.instance.driver.sleep(
-                Timeout.playwrightDefaultTimeout
-              );
-              await Executor.deploy(sampledebugContext.projectPath, "local");
+              try {
+                await Executor.deploy(sampledebugContext.projectPath, "local");
+              } catch (error) {
+                await VSBrowser.instance.takeScreenshot(
+                  getScreenshotName("deploy_error")
+                );
+              }
 
               const teamsAppId = await sampledebugContext.getTeamsAppId(env);
               expect(teamsAppId).to.not.be.empty;

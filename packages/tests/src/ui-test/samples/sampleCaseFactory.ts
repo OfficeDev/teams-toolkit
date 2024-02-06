@@ -391,15 +391,34 @@ export abstract class CaseFactory {
                 devtunnelProcess = tunnel.devtunnelProcess;
               }
               await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
-              await Executor.provision(sampledebugContext.projectPath, "local");
-              try {
-                await Executor.deploy(sampledebugContext.projectPath, "local");
-              } catch (error) {
-                await VSBrowser.instance.takeScreenshot(
-                  getScreenshotName("deploy_error")
-                );
-              }
-
+              Executor.spawnCommand(
+                sampledebugContext.projectPath,
+                "teamsapp",
+                ["provision", "--env", env],
+                (data) => {
+                  console.log(data);
+                },
+                (error) => {
+                  console.log(error);
+                }
+              );
+              await new Promise((resolve) =>
+                setTimeout(resolve, 3 * 60 * 1000)
+              );
+              Executor.spawnCommand(
+                sampledebugContext.projectPath,
+                "teamsapp",
+                ["deploy", "--env", env],
+                (data) => {
+                  console.log(data);
+                },
+                (error) => {
+                  console.log(error);
+                }
+              );
+              await new Promise((resolve) =>
+                setTimeout(resolve, 5 * 60 * 1000)
+              );
               const teamsAppId = await sampledebugContext.getTeamsAppId(env);
               expect(teamsAppId).to.not.be.empty;
 

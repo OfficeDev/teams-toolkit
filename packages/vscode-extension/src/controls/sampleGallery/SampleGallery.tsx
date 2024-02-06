@@ -87,9 +87,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       const featuredSamples = (this.state.filteredSamples ?? this.samples).filter(
         (sample) => sample.suggested
       );
-      const normalSamples = (this.state.filteredSamples ?? this.samples).filter(
-        (sample) => !sample.suggested
-      );
+      const filteredSamples = this.state.filteredSamples ?? this.samples;
       return (
         <div className="sample-gallery">
           {titleSection}
@@ -141,7 +139,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
               )}
               <div className={`sample-section ${this.state.layout}`}>
                 {this.state.layout === "grid"
-                  ? normalSamples.map((sample: SampleInfo) => {
+                  ? filteredSamples.map((sample: SampleInfo) => {
                       return (
                         <SampleCard
                           key={sample.id}
@@ -153,7 +151,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                         />
                       );
                     })
-                  : normalSamples.map((sample: SampleInfo) => {
+                  : filteredSamples.map((sample: SampleInfo) => {
                       return (
                         <SampleListItem
                           key={sample.id}

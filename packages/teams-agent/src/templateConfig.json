@@ -3,42 +3,78 @@
     "id": "bot",
     "type": "template",
     "name": "Basic Bot",
-    "description": "A very simple and basic implementation of a Teams bot app. It demonstrates the ability of bot scenario by echoing user’s input. You can easily customize this app to add business logic."
+    "description": "This project is a Basic Bot template designed for Microsoft Teams. The bot can be used in various scenarios such as notifying about build failures, providing information about the weather, bus schedules, or travel information. The bot interaction can range from a simple question and answer to a complex conversation. As a cloud application, the bot can provide valuable and secure access to cloud services and corporate resources."
   },
   {
     "id": "ai-bot",
     "type": "template",
     "name": "AI Chat Bot",
-    "description": "A basic Teams bot app using Teams AI library. It showcases a bot app that responds to user questions like an AI assistant. You can use it to build AI-based Teams app."
+    "description": "This project is an AI Chat Bot template for Microsoft Teams. The bot responds to user questions like an AI assistant, providing information to users within Teams. The template is built using the Teams AI library, which enables the development of AI-based Teams applications."
   },
   {
     "id": "ai-assistant-bot",
     "type": "template",
     "name": "AI Assistant Bot",
-    "description": "A custom AI assistant bot in Teams using Teams AI library and OpenAI Assistants API. It provides a script to help you easily create assistants. You can change the instructions and settings in the script to customize the assistant."
-  },
-  {
-    "id": "notification",
-    "type": "template",
-    "name": "Chat Notification Message",
-    "description": "A basic implementation of Teams bot app that notifies and informs user with a message displayed in Teams chats. It can be triggered at specific times or by HTTP request. You can easily customize this app to add business logic."
-  },
-  {
-    "id": "tab-non-sso",
-    "type": "template",
-    "name": "Basic Tab",
-    "description": "A very simple and basic implementation of a Teams tab app. It shows a web page in Teams. You can easily customize this app to add business logic."
+    "description": "This project is an AI Assistant Bot template for Microsoft Teams. It utilizes the Teams AI library and OpenAI Assistants API to create an intelligent chat bot capable of assisting users with specific tasks using natural language. The bot can be used directly within Teams conversations. You can change the instructions and settings in the script to customize the assistant."
   },
   {
     "id": "command-bot",
     "type": "template",
     "name": "Chat Command",
-    "description": "Trigger work with custom chat commands in Teams chats. This app demonstrates how to create a bot that responds to specific commands in chat. You can easily customize this app to add business logic."
+    "description": "This project is a Command bot template designed for Microsoft Teams. The bot responds to chat commands by displaying a user interface using an Adaptive Card. This functionality allows users to type simple messages in Teams, and the bot will provide an appropriate response based on the message content. The Command bot template is built using the TeamsFx SDK. This SDK provides a simplified set of functions over the Microsoft Bot Framework, making it easier to implement this scenario."
+  },
+  {
+    "id": "workflow-bot",
+    "type": "template",
+    "name": "Sequential Workflow in Chat",
+    "description": "This project is a Workflow bot template for Microsoft Teams. The bot responds to chat commands by displaying a user interface using an Adaptive Card. The card includes a button that can receive user input, perform an action like calling an API, and update the card's UI. This functionality can be further customized to create a more complex sequence of steps, forming a complete workflow."
+  },
+  {
+    "id": "tab-non-sso",
+    "type": "template",
+    "name": "Basic Tab",
+    "description": "A very simple and basic implementation of a Teams tab app. It is based on the Basic Tab template, which demonstrates the capability of Microsoft Teams to run web-based UI within \"custom tabs\". These tabs can be installed by users either for personal use or within a team or group chat context."
+  },
+  {
+    "id": "sso-launch-page",
+    "type": "template",
+    "name": "React with Fluent UI",
+    "description": "This project is a template for creating a web application using React and Fluent UI. The application is designed to be visually appealing and can be embedded into various Microsoft platforms such as Microsoft Teams, Outlook, and the Microsoft 365 app. The template serves as a starting point for developers looking to create applications that integrate seamlessly with these Microsoft services."
+  },
+  {
+    "id": "dashboard-tab",
+    "type": "template",
+    "name": "Dashboard",
+    "description": "This app is a template for creating a dashboard application that can be embedded within Microsoft Teams. The dashboard consists of multiple cards that provide an overview of content from various apps and services. The template allows for integration with the Graph API to visualize data and supports the creation of customizable dashboards to track information across multiple areas and departments."
   },
   {
     "id": "tab-spfx",
     "type": "template",
     "name": "SPFx",
-    "description": "Build UI with SharePoint Framework. This app demonstrates how to create a tab app using SharePoint Framework. You can easily customize this app to add business logic."
+    "description": "This project is a SharePoint Framework (SPFx) application designed for Microsoft Teams. SPFx is a model that supports client-side SharePoint development, allowing for easy integration with SharePoint data. In this project, the capabilities of SPFx are leveraged to extend the functionality of Microsoft Teams, providing a more integrated and enhanced user experience."
+  },
+  {
+    "id": "search-app",
+    "type": "template",
+    "name": "Custom Search Results",
+    "description": "The project is a Custom Search Results app template designed for Microsoft Teams. It builds a message extension from a new API or existing OpenAPI description document or Bot Framework. This template enhances Teams' capabilities by enabling direct interaction with third-party data, apps, and services. Key features include: 1. Retrieving real-time information, such as the latest news coverage on a product launch. 2. Fetching knowledge-based information, like a team’s design files in Figma."
+  },
+  {
+    "id": "collect-form-message-extension",
+    "type": "template",
+    "name": "Collect Form Input and Process Data",
+    "description": "This project is a template for creating a Message Extension in Microsoft Teams. The extension allows users to interact with a web service while composing messages. Users can search or initiate actions in an external system from the compose message area, the command box, or directly from a message. The template implements an action command that presents users with a modal pop-up, known as a task module, in Teams. This task module is used to collect or display information. After the user interaction, it processes the information and sends it back to Teams."
+  },
+  {
+    "id": "link-unfurling",
+    "type": "template",
+    "name": "Link Unfurling",
+    "description": "The project is a Link Unfurling app template. This application is designed to unfurl links into adaptive cards when URLs from a specific domain are pasted into the compose message area in Microsoft Teams or the email body in Outlook. The functionality is showcased in the hero image provided in the README."
+  },
+  {
+    "id": "outlook-addin-type",
+    "type": "template",
+    "name": "Outlook Add-in",
+    "description": "This project involves building Outlook add-ins using the Teams Toolkit. Outlook add-ins are integrations developed by third parties that are incorporated into Outlook using a web-based platform. This project provides the capability to create a single distribution unit for all Microsoft 365 extensions using the same manifest format and schema, which is based on the current JSON-formatted Teams manifest."
   }
 ]

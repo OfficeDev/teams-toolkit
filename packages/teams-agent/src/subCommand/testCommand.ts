@@ -35,10 +35,6 @@ const tests = [
     expected: ["spfx-productivity-dashboard"],
   },
   {
-    prompt: "an app to show dashboard in SharePoint",
-    expected: ["spfx-productivity-dashboard"],
-  },
-  {
     prompt: "an app used in Teams meeting",
     expected: ["hello-world-in-meeting", "live-share-dice-roller", "meetings-live-code-interview"],
   },

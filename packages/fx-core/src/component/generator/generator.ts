@@ -99,7 +99,9 @@ export class Generator {
       filterFn: (fileName) => fileName.replace(/\\/g, "/").startsWith(`${scenario}/`),
       onActionError: templateDefaultOnActionError,
     };
-    const templateName = `${scenario}-${generatorContext.name}`;
+    const templateName = generatorContext.language
+      ? `${scenario}-${generatorContext.language}`
+      : scenario;
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.TemplateName]: templateName,
     });

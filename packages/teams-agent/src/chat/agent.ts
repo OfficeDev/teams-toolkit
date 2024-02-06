@@ -7,9 +7,8 @@
 
 import * as vscode from 'vscode';
 
-import { CREATE_SAMPLE_COMMAND_ID } from '../const';
 import { ext } from '../extensionVariables';
-import { createCommand, getCreateCommand } from '../subCommand/createSlashCommand';
+import { CREATE_SAMPLE_COMMAND_ID, createCommand, getCreateCommand } from '../subCommand/createSlashCommand';
 import { getAgentHelpCommand, helpCommandName } from '../subCommand/helpSlashCommand';
 import {
   DefaultNextStep, EXECUTE_COMMAND_ID, executeCommand, getNextStepCommand

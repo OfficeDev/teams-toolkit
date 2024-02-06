@@ -55,7 +55,7 @@ export interface IRuntime {
   spec: ISpec;
 }
 
-export interface PluginBManifest {
+export interface PluginManifest {
   /**
    * The schema version of the manifest
    */

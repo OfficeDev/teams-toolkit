@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Colors, FxError, PluginBManifest, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Colors, FxError, PluginManifest, Result, err, ok } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";
@@ -335,7 +335,7 @@ export class CreateAppPackageDriver implements StepDriver {
   ): Promise<Result<undefined, FxError>> {
     let pluginContent;
     try {
-      pluginContent = (await fs.readJSON(pluginFile)) as PluginBManifest;
+      pluginContent = (await fs.readJSON(pluginFile)) as PluginManifest;
     } catch (e) {
       return err(new JSONSyntaxError(pluginFile, e, actionName));
     }

@@ -27,7 +27,7 @@
   {
     "id": "workflow-bot",
     "name": "Sequential Workflow in Chat",
-    "description": "This project is a Workflow bot template for Microsoft Teams. The bot responds to chat commands by displaying a user interface using an Adaptive Card. The card includes a button that can receive user input, perform an action like calling an API, and update the card's UI. This functionality can be further customized to create a more complex sequence of steps, forming a complete workflow."
+    "description": "This project is a workflow bot template for Microsoft Teams. User can interact with multi-step processes. The bot responds to chat commands by displaying a user interface using an Adaptive Card. The card includes a button that can receive user input, perform an action like calling an API, and update the card's UI. This functionality can be further customized to create a more complex sequence of steps, forming a complete workflow."
   },
   {
     "id": "tab-non-sso",
@@ -37,7 +37,7 @@
   {
     "id": "sso-launch-page",
     "name": "React with Fluent UI",
-    "description": "This project is a template for creating a web application using React and Fluent UI. The application is designed to be visually appealing and can be embedded into various Microsoft platforms such as Microsoft Teams, Outlook, and the Microsoft 365 app. The template serves as a starting point for developers looking to create applications that integrate seamlessly with these Microsoft services."
+    "description": "This project is a template for creating a web application using React framework and Fluent UI. The application is designed to be visually appealing and can be embedded into various Microsoft platforms such as Microsoft Teams, Outlook, and the Microsoft 365 app. The template serves as a starting point for developers looking to create applications that integrate seamlessly with these Microsoft services."
   },
   {
     "id": "dashboard-tab",

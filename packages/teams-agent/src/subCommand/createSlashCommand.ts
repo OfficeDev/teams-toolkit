@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { AgentRequest } from "../chat/agent";
 import { verbatimCopilotInteraction } from "../chat/copilotInteractions";
 import { SlashCommand, SlashCommandHandlerResult } from "../chat/slashCommands";
+import { ProjectMetadata, matchProject } from "../projectMatch";
 import { SampleUrlInfo, fetchOnlineSampleConfig } from '../sample';
 import { downloadSampleFiles, getSampleFileInfo } from "../util";
 
@@ -19,49 +20,31 @@ export function getCreateCommand(): SlashCommand {
 }
 
 async function createHandler(request: AgentRequest): Promise<SlashCommandHandlerResult> {
-  const sampleConfig = await fetchOnlineSampleConfig();
-
-  const { copilotResponded, copilotResponse } = await verbatimCopilotInteraction(
-    getCreateSystemPrompt(sampleConfig),
-    request
-  );
-  if (!copilotResponded) {
+  const matchedResult = await matchProject(request);
+  if (matchedResult.length === 0) {
     request.progress.report({
       content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
     });
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
-  } else {
-    const candidates: Set<string> = new Set();
-    for (const sample of sampleConfig.samples) {
-      if (copilotResponse.includes(sample.id as string) || copilotResponse.includes(sample.title as string)) {
-        candidates.add(sample.id as string);
-      }
-    }
-    if (candidates.size > 0) {
-      let followupAction: vscode.ChatAgentFollowup = {
-        commandId: CREATE_SAMPLE_COMMAND_ID,
-        args: [[...candidates.values()]],
-        title: vscode.l10n.t('Create Sample')
-      };
-
-      return { chatAgentResult: { slashCommand: 'create' }, followUp: [followupAction] };
-    }
-
-    return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
+  const firstMatch = matchedResult[0];
+  await describeProject(firstMatch, request);
+  const followupAction: vscode.ChatAgentFollowup = {
+    commandId: CREATE_SAMPLE_COMMAND_ID,
+    args: [[firstMatch.id]],
+    title: vscode.l10n.t('Scaffold this project')
+  };
+  return { chatAgentResult: { slashCommand: 'create' }, followUp: [followupAction] };
 }
 
-function getCreateSystemPrompt(sampleConfig): string {
-  return `
-  - You are an advisor for Teams App developers.
-  - You want to help them to find the right Teams App sample from the sample list for their needs.
-  - You need to get all Teams App samples from sample list.
-  - You should analyze the Teams App samples from its title, description, types and tags etc to match user's requirement.
-  - If there are multiple Teams App samples in sample list that meets requirement, you must list all of them including Teams app sample id and description sentences.
-  - If you have found the best matched Teams app sample, you must let developer know the Teams App sample id and describe the sample based on its information.
-  - If there is no matched Teams App sample in sample list, you should just let the developer know.
-  - Here's the sample list: ${JSON.stringify(sampleConfig.samples)}.
-  `;
+async function describeProject(projectMetadata: ProjectMetadata, request: AgentRequest): Promise<void> {
+  const originPrompt = request.userPrompt;
+  request.userPrompt = `The project you are looking for is '${JSON.stringify(projectMetadata)}'.`;
+  await verbatimCopilotInteraction(
+    `You are an advisor for Teams App developers. You need to describe the project based on name and description field of user's JSON content. You should control the output between 50 and 80 words.`,
+    request
+  );
+  request.userPrompt = originPrompt;
 }
 
 export async function createCommand(sampleIds: string[]) {

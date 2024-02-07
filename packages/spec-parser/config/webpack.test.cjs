@@ -30,7 +30,7 @@ module.exports = {
     modules: ["node_modules"],
     mainFields: ["browser", "module", "main"],
     extensions: [".js", ".ts"],
-    symlinks: false,
+    symlinks: true,
     fallback: {
       url: require.resolve("url/"),
       http: require.resolve('stream-http'),

@@ -39,7 +39,10 @@ import mockedEnv from "mocked-env";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { sampleProvider, SampleConfig } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
-import { placeholderDelimiters } from "../../../src/component/generator/constant";
+import {
+  commonTemplateName,
+  placeholderDelimiters,
+} from "../../../src/component/generator/constant";
 import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
 import * as folderUtils from "../../../../fx-core/src/folder";
@@ -977,6 +980,27 @@ describe("Generator happy path", async () => {
     );
 
     assert.equal(actionContext.telemetryProps?.["template-name"], `${templateName}-${language}`);
+  });
+
+  it("telemetry contains correct template name when language undefined", async () => {
+    const templateName = "test";
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+
+    sandbox.replace(TemplateActionSeq, "values", () => [] as any);
+    const result = await Generator.generateTemplate(
+      context,
+      tmpDir,
+      templateName,
+      undefined,
+      actionContext
+    );
+
+    assert.equal(
+      actionContext.telemetryProps?.["template-name"],
+      `${templateName}-${commonTemplateName}`
+    );
   });
 
   it("template from downloading when local version is not higher than online version", async () => {

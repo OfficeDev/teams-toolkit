@@ -27,14 +27,24 @@ async function createHandler(request: AgentRequest): Promise<SlashCommandHandler
     });
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
+  // TODO: handle multiple matches
   const firstMatch = matchedResult[0];
-  await describeProject(firstMatch, request);
-  const followupAction: vscode.ChatAgentFollowup = {
-    commandId: CREATE_SAMPLE_COMMAND_ID,
-    args: [[firstMatch.id]],
-    title: vscode.l10n.t('Scaffold this project')
-  };
-  return { chatAgentResult: { slashCommand: 'create' }, followUp: [followupAction] };
+  if (firstMatch.type === 'sample') {
+    await describeProject(firstMatch, request);
+    // TODO: display project folder structure
+    const followupAction: vscode.ChatAgentFollowup = {
+      commandId: CREATE_SAMPLE_COMMAND_ID,
+      args: [[firstMatch.id]],
+      title: vscode.l10n.t('Scaffold this project')
+    };
+    return { chatAgentResult: { slashCommand: 'create' }, followUp: [followupAction] };
+  } else {
+    // TODO: Call TTK to create template
+    request.progress.report({
+      content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
+    });
+    return { chatAgentResult: { slashCommand: '' }, followUp: [] };
+  }
 }
 
 async function describeProject(projectMetadata: ProjectMetadata, request: AgentRequest): Promise<void> {

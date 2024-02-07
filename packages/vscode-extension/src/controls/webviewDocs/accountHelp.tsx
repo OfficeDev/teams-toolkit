@@ -41,20 +41,21 @@ export default function PrepareM365Account() {
             The Microsoft 365 account should be your work or school account, not your personal
             account.
           </li>
-          <li>
-            The Microsoft 365 account should be granted with sideloading permission to update the
-            Teams app.
-          </li>
+          <li>The Microsoft 365 account needs permission to upload custom app in Teams.</li>
         </ol>
       </p>
       <p>
-        Sideloading is the permission of your Microsoft 365 account to upload the Teams app to Teams
-        client. You can contact your tenant administrator to turn on the sideloading permission for
+        You can contact your tenant administrator to turn on the upload custom app permission for
         your organization.{" "}
       </p>
       <p>
-        Or you can create a free qualified Microsoft 365 development account to resolve the above
-        issues you may have.
+        Or, if you're a Visual Studio subscriber, create a Microsoft 365 developer account to
+        resolve your account issues.{" "}
+        <ExternalLink
+          title="Learn more about Microsoft 365 Developer Program"
+          link="https://learn.microsoft.com/en-us/office/developer-program/microsoft-365-developer-program"
+          triggerFrom={TelemetryTriggerFrom.AccountHelp}
+        />
       </p>
 
       <h2 id="how">How</h2>
@@ -88,8 +89,8 @@ export default function PrepareM365Account() {
           </p>
           <blockquote>
             <p>
-              You will use the Administrator (*.onmicrosoft.com) email address created in this step
-              to login to your development environment.
+              Use the Administrator account (*.onmicrosoft.com) email address to log in to your
+              development environment.
             </p>
           </blockquote>
         </CollapsibleStep>
@@ -105,7 +106,7 @@ export default function PrepareM365Account() {
             Open Teams Toolkit for Visual Studio Code and log into the Teams Toolkit extension using
             your developer account created in step 1.
           </p>
-          <p>The sideloading permission has already been configured.</p>
+          <p>The permission to upload custom app is already set up.</p>
           <p>
             <img src={M365Account} alt="Teams Toolkit Microsoft 365 account" />
           </p>

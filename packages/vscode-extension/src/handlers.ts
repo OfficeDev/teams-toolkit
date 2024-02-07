@@ -1122,7 +1122,7 @@ export async function createAccountHandler(args: any[]): Promise<void> {
   const m365Option: OptionItem = {
     id: "createAccountM365",
     label: `$(add) ${localize("teamstoolkit.commands.createAccount.m365")}`,
-    description: localize("teamstoolkit.commands.createAccount.free"),
+    description: localize("teamstoolkit.commands.createAccount.requireSubscription"),
   };
   const azureOption: OptionItem = {
     id: "createAccountAzure",

@@ -216,7 +216,7 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               configuration: "",
               gifPath: "",
               suggested: false,
-              minimumCliVersion: "2.1.0",
+              minimumCliVersion: "3.1.0",
             },
           ],
         };

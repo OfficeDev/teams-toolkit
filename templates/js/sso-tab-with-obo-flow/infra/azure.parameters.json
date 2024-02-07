@@ -20,11 +20,8 @@
     "functionAppSKU": {
       "value": "B1"
     },
-    "storageSKU": {
-      "value": "Standard_LRS"
-    },
-    "functionStorageSKU": {
-      "value": "Standard_LRS"
+    "staticWebAppSku": {
+      "value": "Free"
     }
   }
 }

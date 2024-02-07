@@ -45,7 +45,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "copilot-plugin-existing-api",
       "copilot-plugin-openai-plugin",
     ],
-    choiceListCommand: "teamsfx list templates",
+    choiceListCommand: "teamsapp list templates",
   },
   {
     name: "bot-host-type-trigger",
@@ -120,6 +120,13 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "array",
     shortName: "o",
     description: "Select Operation(s) Teams Can Interact with.",
+  },
+  {
+    name: "api-me-auth",
+    type: "string",
+    description: "The authentication type for the API.",
+    default: "none",
+    choices: ["none", "api-key"],
   },
   {
     name: "programming-language",

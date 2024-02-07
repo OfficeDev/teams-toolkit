@@ -25,6 +25,7 @@ import { zipFolderAsync } from "../../../../utils/fileOperation";
 import { DeployZipPackageError } from "../../../../../error/deploy";
 import { ErrorContextMW } from "../../../../../core/globalVars";
 import { hooks } from "@feathersjs/hooks";
+import { ReadStream } from "fs-extra";
 
 export class AzureZipDeployImpl extends AzureDeployImpl {
   pattern =
@@ -129,7 +130,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
    * @param context log provider etc..
    * @protected
    */
-  protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<Buffer> {
+  protected async packageToZip(args: DeployStepArgs, context: DeployContext): Promise<ReadStream> {
     const ig = await this.handleIgnore(args, context);
     this.zipFilePath = this.zipFilePath
       ? path.isAbsolute(this.zipFilePath)
@@ -159,7 +160,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
   @hooks([ErrorContextMW({ source: "Azure", component: "AzureZipDeployImpl" })])
   async zipDeployPackage(
     zipDeployEndpoint: string,
-    zipBuffer: Buffer,
+    zipBuffer: ReadStream,
     config: AzureUploadConfig,
     logger: LogProvider
   ): Promise<string> {
@@ -233,6 +234,8 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
           logger.error(`Upload zip file failed with error: ${JSON.stringify(e)}`);
           throw new DeployZipPackageError(zipDeployEndpoint, e as Error, this.helpLink);
         }
+      } finally {
+        zipBuffer.destroy();
       }
     }
 

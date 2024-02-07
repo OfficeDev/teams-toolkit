@@ -120,6 +120,10 @@ const config = {
           from: "./node_modules/@vscode/codicons/dist/codicon.ttf",
           to: "../resource/codicon.ttf",
         },
+        {
+          from: "./node_modules/dompurify/dist/purify.min.js",
+          to: "../resource/purify.min.js",
+        },
       ],
     }),
   ],

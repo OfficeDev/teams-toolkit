@@ -5,7 +5,7 @@ version: 1.0.0
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
     with:
@@ -38,7 +38,7 @@ provision:
       indexPage: index.html
       errorPage: error.html
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
   # Run npm command
   - uses: cli/runNpmCommand

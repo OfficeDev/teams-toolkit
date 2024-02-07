@@ -10,12 +10,12 @@ namespace Microsoft.TeamsFx.Conversation
     [Obsolete]
     internal sealed class LocalFileStorage : INotificationTargetStorage
     {
-        private const string LocalFileName = ".notification.localstore.json";
         private readonly string _filePath;
 
         public LocalFileStorage(string dirName)
         {
-            _filePath = Path.Combine(dirName, LocalFileName);
+            var localFileName = Environment.GetEnvironmentVariable("TEAMSFX_NOTIFICATION_STORE_FILENAME") ?? ".notification.localstore.json";
+            _filePath = Path.Combine(dirName, localFileName);
         }
 
         public async Task<ConversationReference> Read(string key, CancellationToken cancellationToken = default)

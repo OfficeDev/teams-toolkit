@@ -6,7 +6,7 @@ import axios from "axios";
 import * as chai from "chai";
 import MockAzureAccountProvider, {
   AzureAccountProviderUserPassword,
-} from "@microsoft/teamsfx-cli/src/commonlib/azureLoginUserPassword";
+} from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import {
   getActivePluginsFromProjectSetting,
   getAzureAccountObjectId,

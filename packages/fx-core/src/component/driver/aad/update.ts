@@ -1,24 +1,24 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
-import { Service } from "typedi";
-import { AadAppClient } from "./utility/aadAppClient";
-import axios from "axios";
-import { SystemError, UserError, ok, err } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
+import axios from "axios";
+import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { logMessageKeys, descriptionMessageKeys } from "./utility/constants";
-import { buildAadManifest } from "./utility/buildAadManifest";
-import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
 import {
   HttpClientError,
   HttpServerError,
   InvalidActionInputError,
-  UnhandledError,
+  assembleError,
 } from "../../../error/common";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { UpdateAadAppArgs } from "./interface/updateAadAppArgs";
+import { UpdateAadAppOutput } from "./interface/updateAadAppOutput";
+import { AadAppClient } from "./utility/aadAppClient";
+import { buildAadManifest } from "./utility/buildAadManifest";
+import { descriptionMessageKeys, logMessageKeys } from "./utility/constants";
 
 export const actionName = "aadApp/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-update";
@@ -114,7 +114,7 @@ export class UpdateAadAppDriver implements StepDriver {
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
       return {
-        result: err(new UnhandledError(error as Error, actionName)),
+        result: err(assembleError(error as Error, actionName)),
         summaries: summaries,
       };
     } finally {

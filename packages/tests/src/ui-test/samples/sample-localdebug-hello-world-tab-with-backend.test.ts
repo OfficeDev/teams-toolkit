@@ -32,5 +32,6 @@ new HelloWorldTabBackEndTestCase(
     LocalDebugTaskLabel.StartFrontend,
     LocalDebugTaskLabel.WatchBackend,
     LocalDebugTaskLabel.StartBackend,
-  ]
+  ],
+  { debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk" }
 ).test();

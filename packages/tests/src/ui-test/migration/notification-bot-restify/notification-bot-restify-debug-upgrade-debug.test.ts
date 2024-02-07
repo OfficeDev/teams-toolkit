@@ -61,7 +61,7 @@ describe("Migration Tests", function () {
       await validateNotification(Notification.Upgrade);
 
       // local debug
-      await mirgationDebugTestContext.debugWithCLI("local");
+      await mirgationDebugTestContext.debugWithCLI("local", false);
 
       // upgrade
       await upgradeByTreeView();
@@ -71,7 +71,7 @@ describe("Migration Tests", function () {
       CliHelper.setV3Enable();
 
       // local debug with TTK
-      await startDebugging();
+      await startDebugging("Debug (Chrome)");
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       try {
         await waitForTerminal(

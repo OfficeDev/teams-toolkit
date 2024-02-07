@@ -6,15 +6,17 @@ import * as sinon from "sinon";
 import { AadAppClient } from "../../../../src/component/driver/aad/utility/aadAppClient";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, isAxiosError } from "axios";
 import { MockedLogProvider, MockedM365Provider } from "../../../plugins/solution/util";
 import axiosRetry from "axios-retry";
 import MockAdapter from "axios-mock-adapter";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { AADManifest } from "../../../../src/component/driver/aad/interface/AADManifest";
-import { IAADDefinition } from "../../../../src/component/driver/aad/interface/IAADDefinition";
 import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
-import { DeleteOrUpdatePermissionFailedError } from "../../../../src/component/driver/aad/error/aadManifestError";
+import {
+  DeleteOrUpdatePermissionFailedError,
+  HostNameNotOnVerifiedDomainError,
+} from "../../../../src/component/driver/aad/error/aadManifestError";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -158,6 +160,27 @@ describe("AadAppClient", async () => {
       expect(createAadAppResult.id).to.equal(expectedObjectId);
       expect(createAadAppResult.signInAudience).to.equal("AzureADMultipleOrgs");
     });
+
+    it("should send debug log when sending request and receiving response", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply(201, {
+        id: expectedObjectId,
+        displayName: expectedDisplayName,
+      });
+      const debugLogs: string[] = [];
+
+      sinon.stub(MockedLogProvider.prototype, "debug").callsFake((log: string) => {
+        debugLogs.push(log);
+      });
+
+      const createAadResult = await aadAppClient.createAadApp(
+        expectedDisplayName,
+        SignInAudience.AzureADMultipleOrgs
+      );
+      expect(debugLogs.length).to.equal(2);
+      expect(debugLogs[0].includes("Sending API request")).to.be.true;
+      expect(debugLogs[1].includes("Received API response")).to.be.true;
+    });
   });
 
   describe("generateClientSecret", async () => {
@@ -209,6 +232,25 @@ describe("AadAppClient", async () => {
         .then((error) => {
           expect(error.response.data).to.deep.equal(expectedError);
         });
+    });
+
+    it("should send debug log when sending request and receiving response", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
+        .reply(200, {
+          secretText: expectedSecretText,
+        });
+      const debugLogs: string[] = [];
+
+      sinon.stub(MockedLogProvider.prototype, "debug").callsFake((log: string) => {
+        debugLogs.push(log);
+      });
+
+      const createSecretResult = await aadAppClient.generateClientSecret(expectedObjectId);
+      expect(debugLogs.length).to.equal(2);
+      expect(debugLogs[0].includes("Sending API request")).to.be.true;
+      expect(debugLogs[1].includes("Received API response")).to.be.true;
     });
 
     // generateClientSecret has different retry policy, need to test again
@@ -326,6 +368,51 @@ describe("AadAppClient", async () => {
       );
     });
 
+    it("should throw error when request failed with HostNameNotOnVerifiedDomain", async () => {
+      const expectedError = {
+        error: {
+          code: "HostNameNotOnVerifiedDomain",
+          message: "Mocked error message",
+        },
+      };
+
+      sinon.stub(axiosInstance, "patch").rejects({
+        isAxiosError: true,
+        response: {
+          status: 400,
+          data: expectedError,
+        },
+      });
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.rejected.then(
+        (err) => {
+          expect(err instanceof HostNameNotOnVerifiedDomainError).to.be.true;
+          expect(err.source).equals("AadAppClient");
+          expect(err.name).equals("HostNameNotOnVerifiedDomain");
+          expect(err.message).equals(
+            "Unable to set identifierUri because the value is not on verified domain: Mocked error message"
+          );
+          expect(err.helpLink).equals("https://aka.ms/teamsfx-multi-tenant");
+        }
+      );
+    });
+
+    it("should throw error when request failed with no error property", async () => {
+      const expectedError = {};
+
+      sinon.stub(axiosInstance, "patch").rejects({
+        isAxiosError: true,
+        response: {
+          status: 400,
+          data: expectedError,
+        },
+      });
+      await expect(aadAppClient.updateAadApp(mockedManifest)).to.eventually.be.rejected.then(
+        (err) => {
+          expect(isAxiosError(err)).to.be.true;
+        }
+      );
+    });
+
     it("should throw error when request fail", async () => {
       const expectedError = {
         error: {
@@ -343,6 +430,23 @@ describe("AadAppClient", async () => {
         .then((error) => {
           expect(error.response.data).to.deep.equal(expectedError);
         });
+    });
+
+    it("should send debug log when sending request and receiving response", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPatch(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}`)
+        .reply(204, "success");
+      const debugLogs: string[] = [];
+
+      sinon.stub(MockedLogProvider.prototype, "debug").callsFake((log: string) => {
+        debugLogs.push(log);
+      });
+
+      const updateAadResult = await aadAppClient.updateAadApp(mockedManifest);
+      expect(debugLogs.length).to.equal(2);
+      expect(debugLogs[0].includes("Sending API request")).to.be.true;
+      expect(debugLogs[1].includes("Received API response")).to.be.true;
     });
 
     // it("should retry when get 404 response", async () => {
@@ -426,6 +530,31 @@ describe("AadAppClient", async () => {
         });
     });
 
+    it("should send debug log when sending request and receiving response", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onGet(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/owners`)
+        .reply(200, {
+          value: [
+            {
+              id: "id",
+              displayName: "displayName",
+              mail: "mail",
+            },
+          ],
+        });
+      const debugLogs: string[] = [];
+
+      sinon.stub(MockedLogProvider.prototype, "debug").callsFake((log: string) => {
+        debugLogs.push(log);
+      });
+
+      const getOwnerResult = await aadAppClient.getOwners(expectedObjectId);
+      expect(debugLogs.length).to.equal(2);
+      expect(debugLogs[0].includes("Sending API request")).to.be.true;
+      expect(debugLogs[1].includes("Received API response")).to.be.true;
+    });
+
     // it("should retry when get 404 response", async () => {
     //   nock("https://graph.microsoft.com/v1.0")
     //     .get(`/applications/${expectedObjectId}/owners`)
@@ -493,6 +622,35 @@ describe("AadAppClient", async () => {
         .then((error) => {
           expect(error.response.data).to.deep.equal(expectedError);
         });
+    });
+
+    it("should send debug log when sending request and receiving response", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/owners/$ref`)
+        .reply(200);
+      const debugLogs: string[] = [];
+
+      sinon.stub(MockedLogProvider.prototype, "debug").callsFake((log: string) => {
+        debugLogs.push(log);
+      });
+
+      const addOwnerResult = await aadAppClient.addOwner(expectedObjectId, mockedUserObjectId);
+      expect(debugLogs.length).to.equal(2);
+      expect(debugLogs[0].includes("Sending API request")).to.be.true;
+      expect(debugLogs[1].includes("Received API response")).to.be.true;
+    });
+
+    it("should not send debug log when log provider is undefined", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/owners/$ref`)
+        .reply(200);
+      const debugLogs: string[] = [];
+
+      const mockAadAppClient = new AadAppClient(new MockedM365Provider(), undefined);
+      const addOwnerResult = await aadAppClient.addOwner(expectedObjectId, mockedUserObjectId);
+      expect(debugLogs.length).to.equal(0);
     });
 
     // it("should retry when get 404 response", async () => {

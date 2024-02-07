@@ -71,7 +71,7 @@ describe("Migration Tests", function () {
 
       // local debug with TTK
       try {
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
         console.log("wait frontend start");
         await waitForTerminal(
           LocalDebugTaskLabel.StartFrontend,

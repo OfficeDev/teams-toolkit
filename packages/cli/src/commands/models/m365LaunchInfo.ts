@@ -24,11 +24,11 @@ export const m365LaunchInfoCommand: CLICommand = {
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} launchinfo --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Get launch information of the acquired M365 App by Title ID",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} launchinfo --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Get launch information of the acquired M365 App by Manifest ID",
     },
   ],

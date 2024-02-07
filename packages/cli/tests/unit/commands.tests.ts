@@ -60,6 +60,7 @@ import { logger } from "../../src/commonlib/logger";
 import M365TokenProvider from "../../src/commonlib/m365Login";
 import { MissingRequiredOptionError } from "../../src/error";
 import * as utils from "../../src/utils";
+import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
 
@@ -89,7 +90,7 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
 
       const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "teamsfx new" },
+        command: { ...getCreateCommand(), fullName: "new" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -112,7 +113,7 @@ describe("CLI commands", () => {
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
       const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "teamsfx new" },
+        command: { ...getCreateCommand(), fullName: "new" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -135,7 +136,7 @@ describe("CLI commands", () => {
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
 
       const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "teamsfx new" },
+        command: { ...getCreateCommand(), fullName: "new" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -154,7 +155,7 @@ describe("CLI commands", () => {
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "teamsfx new" },
+        command: { ...getCreateCommand(), fullName: "new" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -170,7 +171,7 @@ describe("CLI commands", () => {
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createSampleProject").resolves(ok({ projectPath: "..." }));
       const ctx: CLIContext = {
-        command: { ...createSampleCommand, fullName: "teamsfx new sample" },
+        command: { ...createSampleCommand, fullName: "new sample" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -183,7 +184,7 @@ describe("CLI commands", () => {
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
-        command: { ...createSampleCommand, fullName: "teamsfx new sample" },
+        command: { ...createSampleCommand, fullName: "new sample" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -197,7 +198,7 @@ describe("CLI commands", () => {
     it("happy path", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
-        command: { ...listSamplesCommand, fullName: "teamsfx list samples" },
+        command: { ...listSamplesCommand, fullName: "teamsapp list samples" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -212,7 +213,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": false },
         globalOptionValues: {},
         argumentValues: [],
@@ -225,7 +226,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": true },
         globalOptionValues: {},
         argumentValues: [],
@@ -238,7 +239,7 @@ describe("CLI commands", () => {
       sandbox.stub(AzureTokenProvider, "signout");
       sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginAzureCommand, fullName: "teamsfx account login azure" },
+        command: { ...accountLoginAzureCommand, fullName: "teamsapp auth login azure" },
         optionValues: { "service-principal": false, username: "abc" },
         globalOptionValues: {},
         argumentValues: [],
@@ -253,7 +254,7 @@ describe("CLI commands", () => {
       sandbox.stub(M365TokenProvider, "signout");
       sandbox.stub(accountUtils, "outputM365Info").resolves();
       const ctx: CLIContext = {
-        command: { ...accountLoginM365Command, fullName: "teamsfx account login m365" },
+        command: { ...accountLoginM365Command, fullName: "teamsapp auth login m365" },
         optionValues: { "service-principal": false },
         globalOptionValues: {},
         argumentValues: [],
@@ -268,7 +269,7 @@ describe("CLI commands", () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "addWebpart").resolves(ok(undefined));
       const ctx: CLIContext = {
-        command: { ...addSPFxWebpartCommand, fullName: "teamsfx add spfx-web-part" },
+        command: { ...addSPFxWebpartCommand, fullName: "add spfx-web-part" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -295,7 +296,7 @@ describe("CLI commands", () => {
   describe("envAddCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       const ctx: CLIContext = {
         command: { ...envAddCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -306,9 +307,9 @@ describe("CLI commands", () => {
       const res = await envAddCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("isWorkspaceSupported: false", async () => {
+    it("isValidProjectV3: false", async () => {
       sandbox.stub(FxCore.prototype, "createEnv").resolves(ok(undefined));
-      sandbox.stub(utils, "isWorkspaceSupported").returns(false);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(false);
       const ctx: CLIContext = {
         command: { ...envAddCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -322,7 +323,7 @@ describe("CLI commands", () => {
   });
   describe("envListCommand", async () => {
     it("success", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       sandbox.stub(envUtil, "listEnv").resolves(ok(["dev"]));
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
@@ -334,8 +335,8 @@ describe("CLI commands", () => {
       const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
-    it("isWorkspaceSupported: false", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(false);
+    it("isValidProjectV3: false", async () => {
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(false);
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
         optionValues: { projectPath: "." },
@@ -347,7 +348,7 @@ describe("CLI commands", () => {
       assert.isTrue(res.isErr());
     });
     it("listEnv error", async () => {
-      sandbox.stub(utils, "isWorkspaceSupported").returns(true);
+      sandbox.stub(settingHelper, "isValidProjectV3").returns(true);
       sandbox.stub(envUtil, "listEnv").resolves(err(new UserCancelError()));
       const ctx: CLIContext = {
         command: { ...envListCommand, fullName: "teamsfx" },
@@ -1020,7 +1021,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(AzureTokenProvider, "getStatus").resolves({ status: signedOut });
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth list" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -1037,7 +1038,7 @@ describe("CLI read-only commands", () => {
       const outputAzureInfo = sandbox.stub(accountUtils, "outputAzureInfo").resolves();
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth list" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -1059,7 +1060,7 @@ describe("CLI read-only commands", () => {
       const outputAccountInfoOffline = sandbox.stub(accountUtils, "outputAccountInfoOffline");
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth list" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -1073,7 +1074,7 @@ describe("CLI read-only commands", () => {
       sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
       messages = [];
       const ctx: CLIContext = {
-        command: { ...accountShowCommand, fullName: "teamsfx account show" },
+        command: { ...accountShowCommand, fullName: "teamsapp auth list" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -1088,7 +1089,7 @@ describe("CLI read-only commands", () => {
     it("azure success", async () => {
       sandbox.stub(AzureTokenProvider, "signout").resolves(true);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["azure"],
@@ -1101,7 +1102,7 @@ describe("CLI read-only commands", () => {
     it("azure fail", async () => {
       sandbox.stub(AzureTokenProvider, "signout").resolves(false);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["azure"],
@@ -1114,7 +1115,7 @@ describe("CLI read-only commands", () => {
     it("m365 success", async () => {
       sandbox.stub(M365TokenProvider, "signout").resolves(true);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["m365"],
@@ -1126,7 +1127,7 @@ describe("CLI read-only commands", () => {
     it("m365 fail", async () => {
       sandbox.stub(M365TokenProvider, "signout").resolves(false);
       const ctx: CLIContext = {
-        command: { ...accountLogoutCommand, fullName: "teamsfx account logout" },
+        command: { ...accountLogoutCommand, fullName: "teamsapp auth logout" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: ["m365"],
@@ -1146,7 +1147,7 @@ describe("CLI read-only commands", () => {
     });
     it("happy path", async () => {
       const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "teamsfx list" },
+        command: { ...listTemplatesCommand, fullName: "list" },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -1160,7 +1161,7 @@ describe("CLI read-only commands", () => {
         DEVELOP_COPILOT_PLUGIN: "false",
       });
       const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "..." },
         optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
@@ -1172,7 +1173,7 @@ describe("CLI read-only commands", () => {
     });
     it("table with description", async () => {
       const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "..." },
         optionValues: { format: "table", description: true },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
@@ -1183,7 +1184,7 @@ describe("CLI read-only commands", () => {
     });
     it("table without description", async () => {
       const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "..." },
         optionValues: { format: "table", description: false },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
@@ -1199,7 +1200,7 @@ describe("CLI read-only commands", () => {
         API_COPILOT_PLUGIN: "false",
       });
       const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "..." },
         optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
@@ -1216,7 +1217,7 @@ describe("CLI read-only commands", () => {
         API_COPILOT_PLUGIN: "true",
       });
       const ctx: CLIContext = {
-        command: { ...listTemplatesCommand, fullName: "teamsfx ..." },
+        command: { ...listTemplatesCommand, fullName: "..." },
         optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
@@ -1231,7 +1232,7 @@ describe("CLI read-only commands", () => {
     it("json", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
-        command: { ...listSamplesCommand, fullName: "teamsfx ..." },
+        command: { ...listSamplesCommand, fullName: "..." },
         optionValues: { format: "json" },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
@@ -1243,7 +1244,7 @@ describe("CLI read-only commands", () => {
     it("table with filter + description", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
-        command: { ...listSamplesCommand, fullName: "teamsfx ..." },
+        command: { ...listSamplesCommand, fullName: "..." },
         optionValues: { tag: "tab", format: "table", description: true },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
@@ -1255,7 +1256,7 @@ describe("CLI read-only commands", () => {
     it("table without description", async () => {
       sandbox.stub(utils, "getTemplates").resolves([]);
       const ctx: CLIContext = {
-        command: { ...listSamplesCommand, fullName: "teamsfx ..." },
+        command: { ...listSamplesCommand, fullName: "..." },
         optionValues: { format: "table", description: false },
         globalOptionValues: {},
         argumentValues: ["key", "value"],
@@ -1268,7 +1269,7 @@ describe("CLI read-only commands", () => {
   describe("helpCommand", async () => {
     it("happy", async () => {
       const ctx: CLIContext = {
-        command: { ...helpCommand, fullName: "teamsfx ..." },
+        command: { ...helpCommand, fullName: "..." },
         optionValues: {},
         globalOptionValues: {},
         argumentValues: [],
@@ -1316,7 +1317,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and sideloading permission is enabled");
+        assert.include(account, "is logged in and custom app upload permission is enabled");
       });
       it("checkM365Account - error", async () => {
         sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
@@ -1360,10 +1361,10 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and sideloading permission is enabled");
+        assert.include(account, "is logged in and custom app upload permission is enabled");
       });
 
-      it("checkM365Account - no sideloading permission", async () => {
+      it("checkM365Account - no custom app upload permission", async () => {
         const token = "test-token";
         const tenantId = "test-tenant-id";
         const upn = "test-user";
@@ -1386,7 +1387,7 @@ describe("CLI read-only commands", () => {
         const value = (accountRes as any).value;
         assert.include(
           value,
-          "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account"
+          "Your Microsoft 365 tenant admin hasn't enabled custom app upload permission for your account"
         );
       });
     });

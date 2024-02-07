@@ -1,11 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, InputsWithProjectPath, err } from "@microsoft/teamsfx-api";
-import { CreateEnvArguments, CreateEnvInputs, CreateEnvOptions } from "@microsoft/teamsfx-core";
+import {
+  CreateEnvArguments,
+  CreateEnvInputs,
+  CreateEnvOptions,
+  isValidProjectV3,
+} from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { isWorkspaceSupported } from "../../utils";
 import { ProjectFolderOption } from "../common";
 
 export const envAddCommand: CLICommand = {
@@ -19,7 +23,7 @@ export const envAddCommand: CLICommand = {
   defaultInteractiveOption: false,
   handler: async (ctx) => {
     const inputs = ctx.optionValues as CreateEnvInputs & InputsWithProjectPath;
-    if (!isWorkspaceSupported(inputs.projectPath)) {
+    if (!isValidProjectV3(inputs.projectPath)) {
       return err(WorkspaceNotSupported(inputs.projectPath));
     }
     const core = getFxCore();

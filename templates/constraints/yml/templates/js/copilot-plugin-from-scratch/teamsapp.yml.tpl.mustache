@@ -2,7 +2,7 @@
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
 {{#teamsAppCreate}} {{/teamsAppCreate}}
 
@@ -18,13 +18,13 @@ provision:
 
 {{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
 {{#cliRunNpmCommand}} install, args: install --production {{/cliRunNpmCommand}}
 
 {{#azureFunctionsZipDeploy}} resourceId: ${{API_FUNCTION_RESOURCE_ID}}, ignoreFile: .funcignore {{/azureFunctionsZipDeploy}}
 
-# Triggered when 'teamsfx publish' is executed
+# Triggered when 'teamsapp publish' is executed
 publish:
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}

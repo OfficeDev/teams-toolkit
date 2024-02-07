@@ -955,7 +955,7 @@ describe("selectAadManifestQuestion", async () => {
   });
 });
 
-describe("resourceGroupQuestionNode", async () => {
+describe("apiKeyQuestion", async () => {
   const sandbox = sinon.createSandbox();
   let mockedEnvRestore: RestoreFn = () => {};
   afterEach(() => {
@@ -972,6 +972,8 @@ describe("resourceGroupQuestionNode", async () => {
     const condition = question.condition;
     const res = await (condition as ConditionFunc)(inputs);
     assert.equal(res, true);
+    const confirmQuesion = question.children![0];
+    assert.equal(confirmQuesion.data.name, "api-key-confirm");
   });
 
   it("will not pop up question due to api key exists", async () => {
@@ -993,7 +995,7 @@ describe("resourceGroupQuestionNode", async () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       outputEnvVarNames: new Map<string, string>(),
-      clientSecret: "fakeClientSecret",
+      primaryClientSecret: "fakeClientSecret",
     };
     const question = apiSpecApiKeyQuestion();
     const condition = question.condition;

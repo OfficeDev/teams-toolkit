@@ -11,6 +11,7 @@ import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../constant/commonConstant";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { ExecutionResult } from "../interface/stepDriver";
+import { addSWADeployTelemetry } from "../middleware/addSWADeployTelemetry";
 
 const ACTION_NAME = "cli/runNpxCommand";
 
@@ -18,7 +19,10 @@ const ACTION_NAME = "cli/runNpxCommand";
 export class NpxBuildDriver extends BaseBuildStepDriver {
   readonly description: string = getLocalizedString("driver.script.npxDescription");
 
-  @hooks([addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT)])
+  @hooks([
+    addStartAndEndTelemetry(ACTION_NAME, TelemetryConstant.SCRIPT_COMPONENT),
+    addSWADeployTelemetry(ACTION_NAME),
+  ])
   execute(args: unknown, ctx: DriverContext): Promise<ExecutionResult> {
     return super.execute(args, ctx);
   }

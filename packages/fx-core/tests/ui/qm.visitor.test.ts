@@ -3,6 +3,9 @@
 
 import {
   Colors,
+  ConfirmConfig,
+  ConfirmQuestion,
+  ConfirmResult,
   FolderQuestion,
   FxError,
   IProgressHandler,
@@ -136,6 +139,9 @@ class MockUserInteraction implements UserInteraction {
     config: SingleFileOrInputConfig
   ): Promise<Result<InputResult<string>, FxError>> {
     throw new Error("Method not implemented.");
+  }
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    return ok({ type: "success", result: true });
   }
 }
 
@@ -850,6 +856,19 @@ describe("Question Model - Visitor Test", () => {
           name: "test",
           title: "test",
         },
+      };
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const res = await questionVisitor(question, tools.ui, inputs);
+      assert.isTrue(res.isOk() && res.value.type === "success");
+    });
+    it("confirm", async () => {
+      sandbox.stub(tools.ui, "confirm").resolves(ok({ type: "success", result: true }));
+      const question: ConfirmQuestion = {
+        type: "confirm",
+        name: "test",
+        title: "test",
       };
       const inputs: Inputs = {
         platform: Platform.VSCode,

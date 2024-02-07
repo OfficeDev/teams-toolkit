@@ -47,7 +47,7 @@ Enhancement:
 - Teams Toolkit CLI Enhancement including: Commands have been reorganized into a hierarchical structure, added a teamsfx list command, improve the help command readability, outputs have been refreshed and log      levels have been streamlined for clarity.
 - Update Teams AI chat bot template to use latest teams-ai library.
 
-Bug Fixs:
+Bug Fixes:
 
 - Resolved an issue causing an No localized strings file found error in Visual Studio Code output. ([#10090](https://github.com/OfficeDev/TeamsFx/pull/10090))
 - Fixed a flickering issue when selecting an option in Quick Pick. ([#10100](https://github.com/OfficeDev/TeamsFx/pull/10100))
@@ -303,7 +303,7 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 
 New Features:
 
-- Provide multiple entry points of creating testing tenant/accounts to unblock user from Microsoft 365 account issues, like Microsoft 365 account does not have sideloading permission or user does not have Microsoft 365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "Create an account" option in `Teams: Accounts` Command and improved Get Started page.
+- Provide multiple entry points of creating testing tenant/accounts to unblock user from Microsoft 365 account issues, like Microsoft 365 account does not have custom app upload permission or user does not have Microsoft 365 account at all. These entry points include an Add(+) button besides ACCOUNTS in sidebar, an new "Create an account" option in `Teams: Accounts` Command and improved Get Started page.
 
 Enhancement:
 
@@ -476,7 +476,7 @@ New Feature:
 
 - Support projects migration from Teams Toolkit V1 to V2. If your Teams projects are created using Teams Toolkit V1, try migrate your project follow the [migration instructions](https://aka.ms/teamsfx-migrate-v1).
 - Support local debug experience for Teams Tab/Bot/Messaging extension project migrated from Teams Toolkit V1.
-- Check permission to turn-on Teams custom app uploading when user sign-in to Microsoft 365 account. Learn more about [Teams app uploading or sideloading permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
+- Check permission to turn-on Teams custom app uploading when user sign-in to Microsoft 365 account. Learn more about [custom app upload permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
 - (Preview Feature) Support provision cloud resources using Azure Resource Manager. To enable this feature, please follow [instructions](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit).
 
 Enhancement:

@@ -150,7 +150,17 @@ describe("userInteraction", () => {
         );
       });
     });
-
+    it("confirm", () => {
+      const config = {
+        name: "test name",
+        title: "test title",
+      };
+      const res = ui.confirm(config);
+      res.then((data) => {
+        expect(data).equal("test");
+        expect(stub).is.called.with(RequestTypes.ui.confirm, config);
+      });
+    });
     it("createProgressBar", async () => {
       expect(ui.createProgressBar("test title", 5)).to.not.throw;
       const a = ui.createProgressBar("test title", 5);

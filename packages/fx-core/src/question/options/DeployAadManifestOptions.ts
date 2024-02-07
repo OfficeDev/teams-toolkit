@@ -12,7 +12,7 @@ import { CLICommandOption, CLICommandArgument } from "@microsoft/teamsfx-api";
 
 export const DeployAadManifestOptions: CLICommandOption[] = [
   {
-    name: "aad-manifest-file",
+    name: "entra-app-manifest-file",
     questionName: "manifest-file-path",
     type: "string",
     shortName: "a",

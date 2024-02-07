@@ -1,0 +1,35 @@
+{{#header}} version: v1.4 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsapp provision' is executed
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#armDeploy}} deploymentName: Create-resources-for-sme {{/armDeploy}}
+
+{{#apiKeyRegister}}ApiSpecAuthName: x-api-key, primaryClientSecret: ${{SECRET_API_KEY}}, apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml, ApiSpecAuthRegistrationIdEnvName: X_API_KEY_REGISTRATION_ID{{/apiKeyRegister}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+
+# Triggered when 'teamsapp deploy' is executed
+deploy:
+{{#cliRunNpmCommand}} install, args: install --production {{/cliRunNpmCommand}}
+
+{{#azureFunctionsZipDeploy}} resourceId: ${{API_FUNCTION_RESOURCE_ID}}, ignoreFile: .funcignore {{/azureFunctionsZipDeploy}}
+
+# Triggered when 'teamsapp publish' is executed
+publish:
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}

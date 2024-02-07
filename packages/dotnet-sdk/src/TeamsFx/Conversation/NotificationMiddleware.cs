@@ -101,8 +101,11 @@ namespace Microsoft.TeamsFx.Conversation
             }
             else if ("channel".Equals(conversationType, StringComparison.OrdinalIgnoreCase))
             {
-                var teamId = turnContext.Activity.GetChannelData<TeamsChannelData>()?.Team?.Id;
-                if (teamId != null)
+                var channelData = turnContext.Activity.GetChannelData<TeamsChannelData>();
+                var teamId = channelData?.Team?.Id;
+                var channelId = channelData?.Channel?.Id;
+                // `teamId == channelId` means General channel. Ignore messaging in non-General channel.
+                if (teamId != null && (channelId == null || string.Equals(teamId, channelId)))
                 {
                     var channelReference = reference.Clone();
                     channelReference.Conversation.Id = teamId;

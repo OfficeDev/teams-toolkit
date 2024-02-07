@@ -21,8 +21,8 @@ import {
   IncompatibleProjectError,
   VersionState,
   assembleError,
+  fillinProjectTypeProperties,
   getHashedEnv,
-  isCliV3Enabled,
   isUserCancelError,
 } from "@microsoft/teamsfx-core";
 import { cloneDeep, pick } from "lodash";
@@ -44,7 +44,6 @@ import {
 import CliTelemetry from "../telemetry/cliTelemetry";
 import { TelemetryComponentType, TelemetryProperty } from "../telemetry/cliTelemetryEvents";
 import UI from "../userInteraction";
-import { CliConfigOptions } from "../userSetttings";
 import { editDistance, getSystemInputs } from "../utils";
 import { helper } from "./helper";
 
@@ -90,7 +89,7 @@ class CLIEngine {
       telemetryProperties: {
         [TelemetryProperty.CommandName]: foundCommand.fullName,
         [TelemetryProperty.Component]: TelemetryComponentType,
-        [CliConfigOptions.RunFrom]: tryDetectCICDPlatform(),
+        [TelemetryProperty.RunFrom]: tryDetectCICDPlatform(),
         [TelemetryProperty.BinName]: rootCmd.name,
       },
     };
@@ -122,11 +121,10 @@ class CLIEngine {
     // load project meta in telemetry properties
     if (context.optionValues.projectPath) {
       const core = getFxCore();
-      const res = await core.getProjectMetadata(context.optionValues.projectPath as string);
+      const res = await core.checkProjectType(context.optionValues.projectPath as string);
       if (res.isOk()) {
-        const value = res.value;
-        context.telemetryProperties[TelemetryProperty.ProjectId] = value.projectId || "";
-        context.telemetryProperties[TelemetryProperty.SettingsVersion] = value.version || "";
+        const projectTypeResult = res.value;
+        fillinProjectTypeProperties(context.telemetryProperties, projectTypeResult);
       }
     }
 
@@ -189,8 +187,7 @@ class CLIEngine {
       ) {
         logger.info(
           `Some arguments/options are useless because the interactive mode is opened.` +
-            ` If you want to run the command non-interactively, add '--interactive false' after your command` +
-            ` or set the global setting by '${process.env.TEAMSFX_CLI_BIN_NAME} config set interactive false'.`
+            ` If you want to run the command non-interactively, add '--interactive false' after your command.`
         );
         context.optionValues = trimOptionValues;
         context.argumentValues = [];
@@ -207,12 +204,7 @@ class CLIEngine {
     // 6. version check
     const inputs = getSystemInputs(context.optionValues.projectPath as string);
     inputs.ignoreEnvInfo = true;
-    const skipCommands = [
-      "new",
-      "sample",
-      "upgrade",
-      ...(isCliV3Enabled() ? ["update", "package", "publish", "validate"] : []),
-    ];
+    const skipCommands = ["new", "sample", "upgrade", "update", "package", "publish", "validate"];
     if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
       const core = getFxCore();
       const res = await core.projectVersionCheck(inputs);
@@ -491,6 +483,11 @@ class CLIEngine {
       }
     }
 
+    // read CI_ENABLED from env
+    if (process.env.CI_ENABLED === "true") {
+      context.globalOptionValues.interactive = false;
+    }
+
     // set interactive into inputs, usage: if required inputs is not preset in non-interactive mode, FxCore will return Error instead of trigger UI
     context.optionValues.nonInteractive = !context.globalOptionValues.interactive;
     context.optionValues.correlationId = uuid.v4();
@@ -611,6 +608,7 @@ class CLIEngine {
     }
     if (fxError) {
       this.printError(fxError);
+      process.exit(1);
     }
   }
 

@@ -3,11 +3,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import * as tmp from "tmp";
-import * as util from "util";
-
-import axios from "axios";
-import AdmZip from "adm-zip";
 
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import { Messages, vxTestAppInstallHelpLink } from "../constant";
@@ -17,6 +12,7 @@ import { DepsTelemetry } from "../depsTelemetry";
 import { DepsChecker, DependencyStatus, DepsType, BaseInstallOptions } from "../depsChecker";
 import { isMacOS, isWindows } from "../util";
 import { createSymlink } from "../util/fileHelper";
+import { downloadToTempFile, unzip } from "../util/downloadHelper";
 
 interface InstallOptionsSafe {
   version: string;
@@ -43,53 +39,6 @@ const VxTestAppDownloadTimeoutMillis = 5 * 60 * 1000;
 // TODO: change to GitHub release after new VxTestApp is released.
 const VxTestAppDownloadUrlTemplate =
   "https://github.com/microsoft/teams-videoapp-sample/releases/download/testApp-v@version/video-extensibility-test-app-@platform-@arch-portable.zip";
-
-/**
- * Download a file from URL and save to a temporary file.
- * The temp file can only be used during callback. After that the temp file is deleted.
- *  */
-async function downloadToTempFile(
-  url: string,
-  callback: (filePath: string) => Promise<void>
-): Promise<void> {
-  // name is full path
-  const { name, removeCallback } = tmp.fileSync();
-  try {
-    const writer = fs.createWriteStream(name, { flags: "w" /* Open for write */ });
-    const response = await axios.get(url, {
-      responseType: "stream",
-      timeout: VxTestAppDownloadTimeoutMillis,
-    });
-    response.data.pipe(writer);
-    if (response.status !== 200) {
-      throw new Error(
-        Messages.failToDownloadFromUrl()
-          .replace(/@Url/g, url)
-          .replace(/@Status/g, response.status.toString())
-      );
-    }
-
-    await new Promise<void>((resolve, reject) => {
-      writer.on("error", (err) => {
-        reject(err);
-      });
-      writer.on("finish", () => {
-        resolve();
-      });
-    });
-
-    await callback(name);
-  } finally {
-    removeCallback();
-  }
-}
-
-async function unzip(zipFilePath: string, destinationPath: string): Promise<void> {
-  // Create all parent dirs of destinationPath.
-  await fs.mkdir(destinationPath, { recursive: true });
-  const zip = new AdmZip(zipFilePath);
-  await util.promisify(zip.extractAllToAsync)(destinationPath, true);
-}
 
 export class VxTestAppChecker implements DepsChecker {
   private readonly _logger: DepsLogger;
@@ -179,9 +128,13 @@ export class VxTestAppChecker implements DepsChecker {
 
   private async installVersion(version: string, installDir: string): Promise<void> {
     const downloadUrl = this.getDownloadUrl(version);
-    await downloadToTempFile(downloadUrl, async (zipFilePath: string) => {
-      await unzip(zipFilePath, installDir);
-    });
+    await downloadToTempFile(
+      downloadUrl,
+      { timeout: VxTestAppDownloadTimeoutMillis },
+      async (zipFilePath: string) => {
+        await unzip(zipFilePath, installDir);
+      }
+    );
   }
 
   private getDownloadUrl(version: string): string {

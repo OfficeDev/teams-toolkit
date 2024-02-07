@@ -3,7 +3,7 @@
 
 import { AzureScopes } from "@microsoft/teamsfx-core/build/common/tools";
 import * as chai from "chai";
-import MockAzureAccountProvider from "@microsoft/teamsfx-cli/src/commonlib/azureLoginUserPassword";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import {
   getActivePluginsFromProjectSetting,
   getProvisionParameterValueByKey,

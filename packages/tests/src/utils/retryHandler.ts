@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import { VSBrowser } from "vscode-extension-tester";
 
 export class RetryHandler {
@@ -20,7 +22,11 @@ export class RetryHandler {
         ++executionIndex;
       }
     }
-    await VSBrowser.instance.takeScreenshot("error");
+    try {
+      await VSBrowser.instance.takeScreenshot("error");
+    } catch (e: any) {
+      console.log("Failed to take screen shot.");
+    }
     throw error;
   }
 }

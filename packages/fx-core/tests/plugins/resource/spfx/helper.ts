@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 import {
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   FxError,
   IProgressHandler,
   InputTextConfig,
@@ -102,6 +104,9 @@ export class MockUserInteraction implements UserInteraction {
       end: async (): Promise<void> => {},
     };
     return handler;
+  }
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    return ok({ type: "success", result: true });
   }
 }
 

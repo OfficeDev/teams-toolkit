@@ -8,6 +8,7 @@ import fs from "fs-extra";
 import { ManifestUtil } from "@microsoft/teamsfx-api";
 import { ValidateManifestDriver } from "../../../../src/component/driver/teamsApp/validate";
 import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { IAppValidationNote } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IValidationResult";
 import { ValidateAppPackageDriver } from "../../../../src/component/driver/teamsApp/validateAppPackage";
 import { ValidateAppPackageArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { AppStudioError } from "../../../../src/component/driver/teamsApp/errors";
@@ -17,7 +18,6 @@ import {
   MockedM365Provider,
   MockedUserInteraction,
 } from "../../../plugins/solution/util";
-import * as tools from "../../../../src/common/tools";
 import { Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { Constants } from "../../../../src/component/driver/teamsApp/constants";
@@ -318,6 +318,11 @@ describe("teamsApp/validateAppPackage", async () => {
           content: "Schema URL is present.",
           title: "schema",
         },
+        {
+          id: "632652a7-0cf8-43c7-a65d-6a19e5822467",
+          title: "Manifest Version is valid",
+          code: "The app is using manifest version '1.16'",
+        } as any as IAppValidationNote,
       ],
       addInDetails: {
         displayName: "fake name",
@@ -607,6 +612,11 @@ describe("teamsApp/validateAppPackage", async () => {
           content: "Schema URL is present.",
           title: "schema",
         },
+        {
+          id: "632652a7-0cf8-43c7-a65d-6a19e5822467",
+          title: "Manifest Version is valid",
+          code: "The app is using manifest version '1.16'",
+        } as any as IAppValidationNote,
       ],
       addInDetails: {
         displayName: "fake name",

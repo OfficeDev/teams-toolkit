@@ -3,7 +3,6 @@
 
 import {
   AsyncPromptConfig,
-  Separator,
   createPrompt,
   isDownKey,
   isEnterKey,
@@ -19,31 +18,27 @@ import type {} from "@inquirer/type";
 import ansiEscapes from "ansi-escapes";
 import chalk from "chalk";
 import figures from "figures";
-import { addChoiceDetail } from "./utils";
+import { addChoiceDetail, computePrefixWidth, nextPosition } from "./utils";
 
 export type Choice = {
   id: string;
   title: string;
   detail?: string;
   checked?: boolean;
-  disabled?: boolean | string;
 };
 
 export type Config = AsyncPromptConfig & {
   prefix?: string;
   pageSize?: number;
   instructions?: string | boolean;
-  choices: ReadonlyArray<Choice | Separator>;
+  choices: ReadonlyArray<Choice>;
   defaultValues?: ReadonlyArray<string>;
   validateValues?: (value: string[]) => string | Promise<string | undefined> | undefined;
+  loop?: boolean;
 };
 
-function isSelectableChoice(choice: undefined | Separator | Choice): choice is Choice {
-  return choice != null && !Separator.isSeparator(choice) && !choice.disabled;
-}
-
 export const checkbox = createPrompt(
-  (config: Config, done: (value: Array<string>) => void): [string, string | undefined] => {
+  (config: Config, done: (value: Array<string>) => void): string => {
     const {
       prefix = usePrefix(),
       instructions,
@@ -52,13 +47,9 @@ export const checkbox = createPrompt(
     } = config;
 
     const [status, setStatus] = useState("pending");
-    const [choices, setChoices] = useState<Array<Separator | Choice>>(() =>
+    const [choices, setChoices] = useState<Array<Choice>>(() =>
       config.choices.map((choice) => {
-        if (!Separator.isSeparator(choice)) {
-          return { ...choice, checked: defaultValues.includes(choice.id) };
-        }
-
-        return choice;
+        return { ...choice, checked: defaultValues.includes(choice.id) };
       })
     );
     const [cursorPosition, setCursorPosition] = useState(0);
@@ -70,7 +61,7 @@ export const checkbox = createPrompt(
       let newCursorPosition = cursorPosition;
       if (isEnterKey(key)) {
         const answer = choices
-          .filter((choice) => isSelectableChoice(choice) && choice.checked)
+          .filter((choice) => choice.checked)
           .map((choice) => (choice as Choice).id);
 
         const validationRes = await validateValues(answer);
@@ -86,8 +77,13 @@ export const checkbox = createPrompt(
         const offset = isUpKey(key) ? -1 : 1;
         let selectedOption;
 
-        while (!isSelectableChoice(selectedOption)) {
-          newCursorPosition = (newCursorPosition + offset + choices.length) % choices.length;
+        while (!selectedOption) {
+          newCursorPosition = nextPosition(
+            newCursorPosition,
+            offset,
+            choices.length,
+            config.loop === true
+          );
           selectedOption = choices[newCursorPosition];
         }
 
@@ -97,7 +93,7 @@ export const checkbox = createPrompt(
         setShowHelpTip(false);
         setChoices(
           choices.map((choice, i) => {
-            if (i === cursorPosition && isSelectableChoice(choice)) {
+            if (i === cursorPosition && !!choice) {
               return { ...choice, checked: !choice.checked };
             }
 
@@ -106,20 +102,12 @@ export const checkbox = createPrompt(
         );
       } else if (key.name === "a") {
         setError(undefined);
-        const selectAll = Boolean(
-          choices.find((choice) => isSelectableChoice(choice) && !choice.checked)
-        );
-        setChoices(
-          choices.map((choice) =>
-            isSelectableChoice(choice) ? { ...choice, checked: selectAll } : choice
-          )
-        );
+        const selectAll = Boolean(choices.find((choice) => choice && !choice.checked));
+        setChoices(choices.map((choice) => (choice ? { ...choice, checked: selectAll } : choice)));
       } else if (key.name === "i") {
         setError(undefined);
         setChoices(
-          choices.map((choice) =>
-            isSelectableChoice(choice) ? { ...choice, checked: !choice.checked } : choice
-          )
+          choices.map((choice) => (choice ? { ...choice, checked: !choice.checked } : choice))
         );
       } else if (isNumberKey(key)) {
         setError(undefined);
@@ -127,17 +115,16 @@ export const checkbox = createPrompt(
         const position = Number(key.name) - 1;
 
         // Abort if the choice doesn't exists or if disabled
-        if (!isSelectableChoice(choices[position])) {
+        if (!choices[position]) {
           return;
         }
 
         setCursorPosition(position);
         setChoices(
           choices.map((choice, i) => {
-            if (i === position && isSelectableChoice(choice)) {
+            if (i === position && choice) {
               return { ...choice, checked: !choice.checked };
             }
-
             return choice;
           })
         );
@@ -145,50 +132,27 @@ export const checkbox = createPrompt(
     });
 
     const message = chalk.bold(config.message);
-    const allChoices = choices
-      .map((choice, index) => {
-        if (Separator.isSeparator(choice)) {
-          return choice.separator;
-        }
+    const pageSize = config.pageSize || 7;
+    const prefixWidth = computePrefixWidth(cursorPosition, pageSize, choices);
+    const renderChoice = (choice: Choice, index: number) => {
+      let output = "";
+      if (index === cursorPosition) {
+        output += `${getCheckbox(!!choice.checked)} ${chalk.blueBright(choice.title)}`;
+      } else {
+        output += `${getCheckbox(!!choice.checked)} ${choice.title}`;
+      }
+      if (choice.detail) {
+        output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
+      }
+      return output;
+    };
 
-        if (choice.disabled) {
-          const disabledLabel =
-            typeof choice.disabled === "string" ? choice.disabled : "(disabled)";
-          return chalk.dim(`--- ${choice.title} ${disabledLabel}`);
-        }
-
-        let prefixWidth = 1;
-        (choices as Choice[]).forEach((choice) => {
-          prefixWidth = Math.max(
-            prefixWidth,
-            choice.disabled || !choice.title ? 0 : choice.title.length + 1
-          );
-        });
-
-        let output = "";
-        if (index === cursorPosition) {
-          output += `${getCheckbox(!!choice.checked)} ${chalk.blueBright(choice.title)}`;
-        } else {
-          output += `${getCheckbox(!!choice.checked)} ${choice.title}`;
-        }
-
-        if (choice.detail) {
-          output = addChoiceDetail(output, choice.detail, choice.title.length, prefixWidth);
-        }
-
-        return output;
-      })
-      .join("\n");
-    /// not infinit
-    if (cursorPosition === 0) {
-      usePagination(allChoices, {
-        active: cursorPosition,
-        pageSize: config.pageSize,
-      });
-    }
-    const windowedChoices = usePagination(allChoices, {
+    const windowedChoices = usePagination({
+      items: choices,
       active: cursorPosition,
       pageSize: config.pageSize,
+      loop: false,
+      renderItem: (item) => renderChoice(item.item as Choice, item.index),
     });
 
     let error = "";
@@ -197,9 +161,9 @@ export const checkbox = createPrompt(
     }
     if (status === "done") {
       const selection = choices
-        .filter((choice) => isSelectableChoice(choice) && choice.checked)
+        .filter((choice) => choice && choice.checked)
         .map((choice) => (choice as Choice).title);
-      return [`${prefix} ${message} ${chalk.cyan(selection.join(", "))}`, error];
+      return `${prefix} ${message} ${chalk.cyan(selection.join(", "))}${error ? "\n" + error : ""}`;
     }
 
     let helpTip = "";
@@ -216,8 +180,9 @@ export const checkbox = createPrompt(
         helpTip = ` (Press ${keys.join(", ")})`;
       }
     }
-
-    return [`${prefix} ${message}${helpTip}\n${windowedChoices}${ansiEscapes.cursorHide}`, error];
+    return `${prefix} ${message}${helpTip}\n${windowedChoices}${ansiEscapes.cursorHide}${
+      error ? "\n" + error : ""
+    }`;
   }
 );
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import * as fs from "fs-extra";
-import * as os from "os";
 import * as path from "path";
 import {
   Timeout,
@@ -68,12 +67,7 @@ export class SampledebugContext extends TestContext {
       this.appName = getSampleAppName(sampleName);
     }
     // fix eslint error
-    if (
-      originSample === TemplateProjectFolder.TodoListBackend ||
-      originSample === TemplateProjectFolder.TodoListM365
-    )
-      this.testRootFolder = path.resolve(os.homedir(), "resourse");
-    else this.testRootFolder = testRootFolder;
+    this.testRootFolder = testRootFolder;
     this.projectPath = path.resolve(this.testRootFolder, this.appName);
     this.env = "dev";
     this.rgName = `${this.appName}-dev-rg`;
@@ -331,8 +325,8 @@ export class SampledebugContext extends TestContext {
     await CliHelper.publishProject(this.projectPath, env);
   }
 
-  public async debugWithCLI(env: "local" | "dev"): Promise<void> {
-    await CliHelper.debugProject(this.projectPath, env);
+  public async debugWithCLI(env: "local" | "dev", v3?: boolean): Promise<void> {
+    await CliHelper.debugProject(this.projectPath, env, v3);
   }
 
   public async getTeamsAppId(env: "local" | "dev" = "local"): Promise<string> {

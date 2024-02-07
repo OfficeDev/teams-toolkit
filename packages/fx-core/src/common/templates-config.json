@@ -6,5 +6,5 @@
     "templateReleaseURL": "https://github.com/OfficeDev/TeamsFx/releases/expanded_assets",
     "templateDownloadBasePath": "/OfficeDev/TeamsFx/releases/download",
     "templateExt": ".zip",
-    "useLocalTemplate": false
+    "useLocalTemplate": true
 }

@@ -7,6 +7,8 @@ import isUUID from "validator/lib/isUUID";
 import { getPermissionMap } from "../permissions";
 import {
   AadManifestErrorMessage,
+  MissingResourceAccessIdUserError,
+  MissingResourceAppIdUserError,
   UnknownResourceAccessIdUserError,
   UnknownResourceAccessTypeUserError,
   UnknownResourceAppIdUserError,
@@ -217,6 +219,9 @@ export class AadManifestHelper {
     manifest.requiredResourceAccess?.forEach((requiredResourceAccessItem) => {
       const resourceIdOrName = requiredResourceAccessItem.resourceAppId;
       let resourceId = resourceIdOrName;
+      if (!resourceIdOrName) {
+        throw new MissingResourceAppIdUserError(componentName);
+      }
       if (!isUUID(resourceIdOrName)) {
         resourceId = map[resourceIdOrName]?.id;
         if (!resourceId) {
@@ -227,6 +232,9 @@ export class AadManifestHelper {
 
       requiredResourceAccessItem.resourceAccess?.forEach((resourceAccessItem) => {
         const resourceAccessIdOrName = resourceAccessItem.id;
+        if (!resourceAccessIdOrName) {
+          throw new MissingResourceAccessIdUserError(componentName);
+        }
         if (!isUUID(resourceAccessIdOrName)) {
           let resourceAccessId;
           if (resourceAccessItem.type === "Scope") {

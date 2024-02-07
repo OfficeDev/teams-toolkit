@@ -10,8 +10,8 @@ import path from "path";
 import { it } from "@microsoft/extra-shot-mocha";
 import { environmentNameManager } from "@microsoft/teamsfx-core";
 import { describe } from "mocha";
-import M365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
-import { AadValidator, FrontendValidator } from "../../commonlib";
+import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
+import { AadValidator, StaticSiteValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import {
@@ -22,6 +22,7 @@ import {
   getUniqueAppName,
   readContextMultiEnvV3,
   removeTeamsAppExtendToM365,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
@@ -50,7 +51,10 @@ describe("Deploy to customized resource group", function () {
 
       // Create empty resource group
       const customizedRgName = `${appName}-customized-rg`;
-      await createResourceGroup(customizedRgName, "eastus");
+      await createResourceGroup(customizedRgName, "westus");
+
+      // workaround free tier quota
+      await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
 
       await CliHelper.provisionProject(projectPath, undefined, "dev", {
         ...process.env,
@@ -66,10 +70,9 @@ describe("Deploy to customized resource group", function () {
         const aad = AadValidator.init(context, false, M365Login);
         await AadValidator.validate(aad);
 
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateProvision(frontend);
-        await FrontendValidator.validateDeploy(frontend);
+        // Validate deployment
+        const staticSite = StaticSiteValidator.init(context);
+        await StaticSiteValidator.validateDeploy(staticSite);
       }
 
       await deleteResourceGroupByName(customizedRgName);

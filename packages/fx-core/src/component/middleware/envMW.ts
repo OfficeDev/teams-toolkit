@@ -53,7 +53,7 @@ const envLoaderMWImpl = async (
     inputs.env = environmentNameManager.getDefaultEnvName();
   }
   if (!inputs.env) {
-    if (skipLoadIfNoEnvInput) {
+    if (skipLoadIfNoEnvInput || inputs["ignore-env-file"] === true) {
       await next();
       return;
     }
@@ -65,12 +65,14 @@ const envLoaderMWImpl = async (
       return;
     }
   }
-  const res = await envUtil.readEnv(projectPath, inputs.env!);
-  if (res.isErr()) {
-    ctx.result = err(res.error);
-    return;
+  if (inputs.env) {
+    const res = await envUtil.readEnv(projectPath, inputs.env);
+    if (res.isErr()) {
+      ctx.result = err(res.error);
+      return;
+    }
+    ctx.envVars = res.value;
   }
-  ctx.envVars = res.value;
   await next();
 };
 

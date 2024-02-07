@@ -5,7 +5,7 @@ version: 1.1.0
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
   # Creates a Teams app
   - uses: teamsApp/create

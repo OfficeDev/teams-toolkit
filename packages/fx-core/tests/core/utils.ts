@@ -5,6 +5,8 @@ import { TokenCredential } from "@azure/core-auth";
 import {
   AzureAccountProvider,
   Colors,
+  ConfirmConfig,
+  ConfirmResult,
   CryptoProvider,
   FxError,
   InputResult,
@@ -260,6 +262,10 @@ export class MockUserInteraction implements UserInteraction {
     env?: { [k: string]: string };
   }): Promise<Result<string, FxError>> {
     throw new Error(`Method openUrl not implemented: runCommand`);
+  }
+
+  async confirm(config: ConfirmConfig): Promise<Result<ConfirmResult, FxError>> {
+    return ok({ type: "success", result: true });
   }
 }
 

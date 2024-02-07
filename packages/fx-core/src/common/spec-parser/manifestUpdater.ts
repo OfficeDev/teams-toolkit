@@ -6,7 +6,12 @@ import { OpenAPIV3 } from "openapi-types";
 import fs from "fs-extra";
 import path from "path";
 import { ErrorType, WarningResult } from "./interfaces";
-import { getSafeRegistrationIdEnvName, parseApiInfo } from "./utils";
+import {
+  getSafeRegistrationIdEnvName,
+  isAPIKeyAuth,
+  isBearerTokenAuth,
+  parseApiInfo,
+} from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
 import {
@@ -20,41 +25,60 @@ export async function updateManifest(
   outputSpecPath: string,
   adaptiveCardFolder: string,
   spec: OpenAPIV3.Document,
-  apiKeyAuthName?: string
+  allowMultipleParameters: boolean,
+  auth?: OpenAPIV3.SecuritySchemeObject
 ): Promise<[TeamsAppManifest, WarningResult[]]> {
   try {
     const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
-
-    const [commands, warnings] = await generateCommands(spec, adaptiveCardFolder, manifestPath);
-    const ComposeExtension: IComposeExtension = {
+    const updatedPart: any = {};
+    const [commands, warnings] = await generateCommands(
+      spec,
+      adaptiveCardFolder,
+      manifestPath,
+      allowMultipleParameters
+    );
+    const composeExtension: IComposeExtension = {
       composeExtensionType: "apiBased",
       apiSpecificationFile: getRelativePath(manifestPath, outputSpecPath),
       commands: commands,
     };
 
-    if (apiKeyAuthName) {
-      const safeApiSecretRegistrationId = getSafeRegistrationIdEnvName(
-        `${apiKeyAuthName}_${ConstantString.RegistrationIdPostfix}`
-      );
+    if (auth) {
+      if (isAPIKeyAuth(auth)) {
+        auth = auth as OpenAPIV3.ApiKeySecurityScheme;
+        const safeApiSecretRegistrationId = getSafeRegistrationIdEnvName(
+          `${auth.name}_${ConstantString.RegistrationIdPostfix}`
+        );
+        (composeExtension as any).authorization = {
+          authType: "apiSecretServiceAuth",
+          apiSecretServiceAuthConfiguration: {
+            apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
+          },
+        };
+      } else if (isBearerTokenAuth(auth)) {
+        (composeExtension as any).authorization = {
+          authType: "microsoftEntra",
+          microsoftEntraConfiguration: {
+            supportsSingleSignOn: true,
+          },
+        };
 
-      (ComposeExtension as any).authorization = {
-        authType: "apiSecretServiceAuth",
-        apiSecretServiceAuthConfiguration: {
-          apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
-        },
-      };
+        updatedPart.webApplicationInfo = {
+          id: "${{AAD_APP_CLIENT_ID}}",
+          resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
+        };
+      }
     }
 
-    const updatedPart = {
-      description: {
-        short: spec.info.title.slice(0, ConstantString.ShortDescriptionMaxLens),
-        full: (spec.info.description ?? originalManifest.description.full)?.slice(
-          0,
-          ConstantString.FullDescriptionMaxLens
-        ),
-      },
-      composeExtensions: [ComposeExtension],
+    updatedPart.description = {
+      short: spec.info.title.slice(0, ConstantString.ShortDescriptionMaxLens),
+      full: (spec.info.description ?? originalManifest.description.full)?.slice(
+        0,
+        ConstantString.FullDescriptionMaxLens
+      ),
     };
+
+    updatedPart.composeExtensions = [composeExtension];
 
     const updatedManifest = { ...originalManifest, ...updatedPart };
 
@@ -67,7 +91,8 @@ export async function updateManifest(
 export async function generateCommands(
   spec: OpenAPIV3.Document,
   adaptiveCardFolder: string,
-  manifestPath: string
+  manifestPath: string,
+  allowMultipleParameters: boolean
 ): Promise<[IMessagingExtensionCommand[], WarningResult[]]> {
   const paths = spec.paths;
   const commands: IMessagingExtensionCommand[] = [];
@@ -83,7 +108,7 @@ export async function generateCommands(
           if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
             const operationItem = operations[method];
             if (operationItem) {
-              const [command, warning] = parseApiInfo(operationItem);
+              const [command, warning] = parseApiInfo(operationItem, allowMultipleParameters);
 
               const adaptiveCardPath = path.join(adaptiveCardFolder, command.id + ".json");
               command.apiResponseRenderingTemplateFile = (await fs.pathExists(adaptiveCardPath))

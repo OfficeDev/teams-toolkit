@@ -10,9 +10,11 @@ import {
 import { getDefaultString, getLocalizedString } from "../common/localizeUtils";
 import { ErrorCategory } from "./types";
 import { Constants } from "../component/driver/teamsApp/constants";
+import { matchDnsError } from "./common";
 
 export class DeveloperPortalAPIFailedError extends SystemError {
   constructor(e: any, correlationId: string, apiName: string, extraData: string) {
+    const displayMessage = matchDnsError(e.message);
     const errorOptions: SystemErrorOptions = {
       source: Constants.PLUGIN_NAME,
       error: e,
@@ -24,8 +26,8 @@ export class DeveloperPortalAPIFailedError extends SystemError {
         correlationId,
         extraData
       ),
-      displayMessage: getLocalizedString("error.appstudio.apiFailed"),
-      categories: [ErrorCategory.Unhandled],
+      displayMessage: displayMessage || getLocalizedString("error.appstudio.apiFailed"),
+      categories: [ErrorCategory.Unhandled, apiName],
     };
     super(errorOptions);
   }

@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, err, Tools, ok } from "@microsoft/teamsfx-api";
-import { FxCore, UnhandledError, isCliNewUxEnabled } from "@microsoft/teamsfx-core";
+import { FxError, Result, Tools, err, ok } from "@microsoft/teamsfx-api";
+import { FxCore, UnhandledError } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
-import CLILogProvider from "./commonlib/log";
+import { logger } from "./commonlib/logger";
 import M365Login from "./commonlib/m365Login";
+import { cliSource } from "./constants";
 import CliTelemetry from "./telemetry/cliTelemetry";
 import CLIUserInteraction from "./userInteraction";
-import { cliSource } from "./constants";
-import { logger } from "./commonlib/logger";
 
 export default async function activate(
   rootPath?: string,
@@ -39,7 +38,7 @@ export function resetFxCore(): void {
 export function getFxCore(): FxCore {
   if (fxCore) return fxCore;
   const tools: Tools = {
-    logProvider: isCliNewUxEnabled() ? logger : CLILogProvider,
+    logProvider: logger,
     tokenProvider: {
       azureAccountProvider: AzureAccountManager,
       m365TokenProvider: M365Login,

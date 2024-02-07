@@ -117,6 +117,6 @@
                 "order": 1
             },
             "stopAll": true
-        },
+        }
     ]
 }

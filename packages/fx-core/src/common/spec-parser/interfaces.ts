@@ -160,10 +160,18 @@ export interface WrappedAdaptiveCard {
   previewCardTemplate: PreviewCardTemplate;
 }
 
+export interface ChoicesItem {
+  title: string;
+  value: string;
+}
+
 export interface Parameter {
   name: string;
   title: string;
   description: string;
+  inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
+  value?: string;
+  choices?: ChoicesItem[];
 }
 
 export interface CheckParamResult {
@@ -176,6 +184,8 @@ export interface ParseOptions {
   allowMissingId?: boolean;
   allowSwagger?: boolean;
   allowAPIKeyAuth?: boolean;
+  allowMultipleParameters?: boolean;
+  allowOauth2?: boolean;
 }
 
 export interface APIInfo {
@@ -192,5 +202,10 @@ export interface ListAPIResult {
   api: string;
   server: string;
   operationId: string;
-  auth?: OpenAPIV3.ApiKeySecurityScheme;
+  auth?: OpenAPIV3.SecuritySchemeObject;
+}
+
+export interface AuthSchema {
+  authSchema: OpenAPIV3.SecuritySchemeObject;
+  name: string;
 }

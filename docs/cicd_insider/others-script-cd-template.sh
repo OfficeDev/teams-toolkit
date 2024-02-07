@@ -42,9 +42,6 @@ cd tabs && npm ci && npm run build && cd -
 # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
 cd tabs && npm run test && cd -
 
-# Set for non-interactive mode.
-npx teamsfx config set -g interactive false
-
 # Login Azure by service principal
 npx teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}
 

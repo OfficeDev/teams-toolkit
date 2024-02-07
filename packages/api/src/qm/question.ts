@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { Inputs, OptionItem } from "../types";
-import { InputTextConfig } from "./ui";
 import {
   ConditionFunc,
   FuncValidation,
@@ -109,7 +108,8 @@ export interface UserInputQuestion extends BaseQuestion {
     | "folder"
     | "text"
     | "singleFileOrText"
-    | "innerText";
+    | "innerText"
+    | "confirm";
   /**
    * title is required for human input question
    */
@@ -127,7 +127,7 @@ export interface UserInputQuestion extends BaseQuestion {
   /**
    * default value of the question
    */
-  default?: string | string[] | LocalFunc<string | string[] | undefined>;
+  default?: string | string[] | boolean | LocalFunc<string | string[] | boolean | undefined>;
   /**
    * validation schema for the answer value, which can be static validation schema or dynamic customized validation function
    */
@@ -226,6 +226,28 @@ export interface SingleSelectQuestion extends UserInputQuestion {
    * whether to skip validation against allowed list in non-interactive mode, default false
    */
   skipValidation?: boolean;
+}
+
+/**
+ * Definition of single selection question
+ */
+export interface ConfirmQuestion extends UserInputQuestion {
+  type: "confirm";
+
+  /**
+   * display text for option true or false
+   */
+  transformer?: (value: boolean) => string;
+
+  /**
+   * answer value: true or false
+   */
+  value?: boolean;
+
+  /**
+   * The default selected `id` value of the option item
+   */
+  default?: boolean | LocalFunc<boolean>;
 }
 
 /**
@@ -448,7 +470,8 @@ export type Question =
   | MultiFileQuestion
   | FolderQuestion
   | SingleFileQuestion
-  | SingleFileOrInputQuestion;
+  | SingleFileOrInputQuestion
+  | ConfirmQuestion;
 
 /**
  * IQTreeNode is the tree node data structure, which have three main properties:

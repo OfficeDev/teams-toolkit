@@ -40,7 +40,7 @@ Version|Date|Comments
 1. Open the project with VSCode, click `Provision` in LIFECYCLE panel of Teams Toolkit extension.
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
-    `teamsfx provision`
+    `teamsapp provision`
 
     It will provision an app in Teams App Studio. You may need to login with your Microsoft 365 tenant admin account.
 
@@ -48,13 +48,13 @@ Version|Date|Comments
     - Click `Deploy` in LIFECYCLE panel of Teams Toolkit extension, or run `Teams: Deploy` from command palette. This will generate a SharePoint package (*.sppkg) under sharepoint/solution folder.
   
     Or you can use TeamsFx CLI with running this cmd under your project path:
-        `teamsfx deploy`
+        `teamsapp deploy`
 
     - After building the *.sppkg, the Teams Toolkit extension will upload and deploy it to your tenant App Catalog. Only tenant App Catalog site admin has permission to do it. You can create your test tenant following [Setup your Microsoft 365 tenant](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant).
 3. Go back to Teams Toolkit extension, click `Teams: Publish` in LIFECYCLE panel.
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
-        `teamsfx publish`
+        `teamsapp publish`
 
     You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box. Click the item and select `Publish` in the Publishing status.
 

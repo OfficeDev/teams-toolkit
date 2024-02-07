@@ -22,7 +22,6 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import { assign, cloneDeep } from "lodash";
-import { isCliNewUxEnabled } from "../common/featureFlags";
 import {
   EmptyOptionError,
   InputValidationError,
@@ -106,7 +105,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
   }
 
   // non-interactive mode
-  if (inputs.nonInteractive && isCliNewUxEnabled()) {
+  if (inputs.nonInteractive) {
     // first priority: use single option as value
     if (question.type === "singleSelect" || question.type === "multiSelect") {
       if (question.skipSingleOption) {
@@ -150,6 +149,7 @@ export const questionVisitor: QuestionTreeVisitor = async function (
     | string[]
     | (() => Promise<string>)
     | (() => Promise<string[]>)
+    | boolean
     | undefined = undefined;
   if (question.forgetLastValue !== true && question.value)
     defaultValue = question.value as string | string[];
@@ -313,6 +313,15 @@ export const questionVisitor: QuestionTreeVisitor = async function (
       step: step,
       totalSteps: totalSteps,
       validation: validationFunc,
+    });
+    return res;
+  } else if (question.type === "confirm" && ui.confirm) {
+    const res = await ui.confirm({
+      name: question.name,
+      title: title,
+      default: defaultValue as boolean,
+      step: step,
+      totalSteps: totalSteps,
     });
     return res;
   }

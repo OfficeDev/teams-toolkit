@@ -32,7 +32,7 @@ class CheckAssignedIssueForAppStudio extends Action {
 			}
 			setOutput('to', email);
 			setOutput('subject', '[Github Issue] app studio service issue assigned to you');
-			setOutput("body", `There is a github issue about app studio service  assigned to you: <a> https://github.com/OfficeDev/TeamsFx/issues/${this.issue.number} </a>`);
+			setOutput("body", `There is a github issue about app studio service assigned to you: <a> https://github.com/OfficeDev/TeamsFx/issues/${this.issue.number} </a>`);
 		} else {
 			safeLog(`Issue ${this.issue.number} is not an app studio issue, ignore`);
 			return;

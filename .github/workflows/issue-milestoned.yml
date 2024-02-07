@@ -36,6 +36,7 @@ jobs:
         run: npm run build --prefix ./action-base
       
       - name: Create AZDO Item 
+        id: create
         uses: ./action-base/issue-milestoned
         with:
           token: ${{secrets.GITHUB_TOKEN}}
@@ -49,3 +50,14 @@ jobs:
           bug-iteration-path: "Microsoft Teams Extensibility"
         env:
           ISSUE_NUMBER: ${{github.event.inputs.issueNumber}}
+
+      - name: Send Alert Email
+        uses: ./.github/actions/send-email-report
+        if: ${{ steps.create.outputs.alert_to != '' }}
+        env:
+          TO: ${{ steps.create.outputs.alert_to }}
+          BODY: '"${{ steps.create.outputs.alert_body }}"'
+          SUBJECT: ${{ steps.create.outputs.alert_subject }}
+          MAIL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+          MAIL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+          MAIL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}        

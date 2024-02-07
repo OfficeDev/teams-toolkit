@@ -13,6 +13,7 @@ import { SampledebugContext } from "./sampledebugContext";
 import { editDotEnvFile } from "../../utils/commonUtils";
 import * as path from "path";
 import * as uuid from "uuid";
+import * as os from "os";
 
 class TodoListM365TestCase extends CaseFactory {
   public override async onAfter(
@@ -51,5 +52,8 @@ new TodoListM365TestCase(
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { skipValidation: true }
+  {
+    skipValidation: true,
+    testRootFolder: path.resolve(os.homedir(), "resourse"), // fix eslint error
+  }
 ).test();

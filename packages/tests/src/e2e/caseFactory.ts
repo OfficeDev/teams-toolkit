@@ -29,7 +29,7 @@ import {
   BotValidator,
   FunctionValidator,
 } from "../commonlib";
-import m365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
+import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 
 export abstract class CaseFactory {
   public capability: Capability;
@@ -158,7 +158,7 @@ export abstract class CaseFactory {
 
           await onBeforeProvision(projectPath);
 
-          const result = await createResourceGroup(appName + "-rg", "eastus");
+          const result = await createResourceGroup(appName + "-rg", "westus");
           expect(result).to.be.true;
           process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
 

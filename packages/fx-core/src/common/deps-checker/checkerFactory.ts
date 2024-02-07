@@ -7,6 +7,7 @@ import { DepsTelemetry } from "./depsTelemetry";
 import { DotnetChecker } from "./internal/dotnetChecker";
 import { FuncToolChecker } from "./internal/funcToolChecker";
 import { LtsNodeChecker, ProjectNodeChecker } from "./internal/nodeChecker";
+import { TestToolChecker } from "./internal/testToolChecker";
 import { VxTestAppChecker } from "./internal/vxTestAppChecker";
 
 export class CheckerFactory {
@@ -26,6 +27,8 @@ export class CheckerFactory {
         return new FuncToolChecker(logger, telemetry);
       case DepsType.VxTestApp:
         return new VxTestAppChecker(logger, telemetry);
+      case DepsType.TestTool:
+        return new TestToolChecker();
       default:
         throw Error("dependency type is undefined");
     }

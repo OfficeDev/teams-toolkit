@@ -1,8 +1,8 @@
-{{#header}} version: 1.0.0 {{/header}}
+{{#header}} version: v1.4 {{/header}}
 
 environmentFolderPath: ./env
 
-# Triggered when 'teamsfx provision' is executed
+# Triggered when 'teamsapp provision' is executed
 provision:
 {{#aadAppCreate}} {{/aadAppCreate}}
 
@@ -10,7 +10,7 @@ provision:
 
 {{#armDeploy}} deploymentName: Create-resources-for-tab {{/armDeploy}}
 
-{{#azureStorageEnableStaticWebsite}} {{/azureStorageEnableStaticWebsite}}
+{{#azureStaticWebAppGetDeploymentToken}} {{/azureStaticWebAppGetDeploymentToken}}
 
 {{#aadAppUpdate}} {{/aadAppUpdate}}
 
@@ -20,7 +20,7 @@ provision:
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}
 {{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
-# Triggered when 'teamsfx deploy' is executed
+# Triggered when 'teamsapp deploy' is executed
 deploy:
 {{#cliRunNpmCommand}} install, args: install {{/cliRunNpmCommand}}
 {{#cliRunNpmCommand}} args: run build --if-present, build {{/cliRunNpmCommand}}
@@ -29,14 +29,12 @@ deploy:
       REACT_APP_START_LOGIN_PAGE_URL: ${{TAB_ENDPOINT}}/auth-start.html
       REACT_APP_FUNC_NAME: getUserProfile
       REACT_APP_FUNC_ENDPOINT: ${{API_FUNCTION_ENDPOINT}}
-{{#azureStorageDeploy}} artifactFolder: build, ignoreFile {{/azureStorageDeploy}}
+{{#azureStaticWebAppDeploy}} artifactFolder: ./build {{/azureStaticWebAppDeploy}}
 {{#cliRunNpmCommand}} install, workingDirectory: api, args: install {{/cliRunNpmCommand}}
 {{#cliRunNpmCommand}} workingDirectory: api, args: run build --if-present, build {{/cliRunNpmCommand}}
-{{#devToolInstall}} dotnet {{/devToolInstall}}
-{{#cliRunDotnetCommand}} extensions, workingDirectory: api {{/cliRunDotnetCommand}}
 {{#azureFunctionsZipDeploy}} workingDirectory: api, resourceId: ${{API_FUNCTION_RESOURCE_ID}}, ignoreFile: .funcignore {{/azureFunctionsZipDeploy}}
 
-# Triggered when 'teamsfx publish' is executed
+# Triggered when 'teamsapp publish' is executed
 publish:
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}

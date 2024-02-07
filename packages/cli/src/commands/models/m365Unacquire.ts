@@ -1,17 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, LogLevel, err, ok } from "@microsoft/teamsfx-api";
-import { PackageService, isCliV3Enabled } from "@microsoft/teamsfx-core";
+import { PackageService } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import { MissingRequiredOptionError } from "../../error";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { m365utils, sideloadingServiceEndpoint } from "./m365Sideloading";
 
-const commandName = isCliV3Enabled() ? "uninstall" : "unacquire";
-
 export const m365UnacquireCommand: CLICommand = {
-  name: commandName,
-  aliases: isCliV3Enabled() ? ["unacquire"] : ["uninstall"],
+  name: "uninstall",
+  aliases: ["unacquire"],
   description: "Remove an acquired M365 App.",
   options: [
     {
@@ -27,11 +25,11 @@ export const m365UnacquireCommand: CLICommand = {
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 ${commandName} --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} uninstall --title-id U_xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Remove the acquired M365 App by Title ID",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} m365 ${commandName} --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} uninstall --manifest-id xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
       description: "Remove the acquired M365 App by Manifest ID",
     },
   ],

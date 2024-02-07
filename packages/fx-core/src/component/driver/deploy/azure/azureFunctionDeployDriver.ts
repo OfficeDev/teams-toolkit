@@ -7,7 +7,6 @@
 import { Service } from "typedi";
 import { ExecutionResult, StepDriver } from "../../interface/stepDriver";
 import { DriverContext } from "../../interface/commonArgs";
-import { FxError, Result } from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks";
 import { addStartAndEndTelemetry } from "../../middleware/addStartAndEndTelemetry";
 import { TelemetryConstant } from "../../../constant/commonConstant";

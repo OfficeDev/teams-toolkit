@@ -1,32 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ExecutionResult, StepDriver } from "../interface/stepDriver";
-import { DriverContext } from "../interface/commonArgs";
-import { Service } from "typedi";
-import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
-import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
-import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { performance } from "perf_hooks";
-import axios from "axios";
-import { wrapRun } from "../../utils/common";
 import { hooks } from "@feathersjs/hooks/lib";
-import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { logMessageKeys, progressBarKeys } from "./utility/constants";
+import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
+import axios from "axios";
+import { performance } from "perf_hooks";
+import { Service } from "typedi";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
-import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
 import {
   HttpClientError,
   HttpServerError,
   InvalidActionInputError,
-  UnhandledError,
-  UnhandledUserError,
+  assembleError,
 } from "../../../error/common";
-import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
-import { AadAppClient } from "../aad/utility/aadAppClient";
-import { SignInAudience } from "../aad/interface/signInAudience";
+import { wrapRun } from "../../utils/common";
 import { AadAppNameTooLongError } from "../aad/error/aadAppNameTooLongError";
+import { SignInAudience } from "../aad/interface/signInAudience";
+import { AadAppClient } from "../aad/utility/aadAppClient";
+import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
+import { DriverContext } from "../interface/commonArgs";
+import { ExecutionResult, StepDriver } from "../interface/stepDriver";
+import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
+import { loadStateFromEnv, mapStateToEnv } from "../util/utils";
+import { UnexpectedEmptyBotPasswordError } from "./error/unexpectedEmptyBotPasswordError";
+import { CreateBotAadAppArgs } from "./interface/createBotAadAppArgs";
+import { CreateBotAadAppOutput } from "./interface/createBotAadAppOutput";
+import { logMessageKeys, progressBarKeys } from "./utility/constants";
 
 const actionName = "botAadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/botaadapp-create";
@@ -156,14 +155,14 @@ export class CreateBotAadAppDriver implements StepDriver {
       }
 
       if (error.name === "AadCreateAppError") {
-        throw new UnhandledUserError(error, actionName);
+        throw assembleError(error, actionName);
       }
 
       const message = JSON.stringify(error);
       context.logProvider?.error(
         getLocalizedString(logMessageKeys.failExecuteDriver, actionName, message)
       );
-      throw new UnhandledError(error as Error, actionName);
+      throw assembleError(error as Error, actionName);
     }
   }
 

@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import { tryDetectCICDPlatform } from "../../../src/commonlib/common/cicdPlatformDetector";
-import { CliConfigRunFrom } from "../../../src/userSetttings";
 import "mocha";
 import { expect } from "../utils";
+import { CliConfigRunFrom } from "../../../src/telemetry/cliTelemetryEvents";
 
 function backupAndSetEnv(key: string, value: string) {
   if (key in process.env) {

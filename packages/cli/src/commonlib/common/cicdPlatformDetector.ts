@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { CliConfigRunFrom } from "../../userSetttings";
+import { CliConfigRunFrom } from "../../telemetry/cliTelemetryEvents";
 
 export function tryDetectCICDPlatform(): CliConfigRunFrom {
   if (process.env.GITHUB_ACTIONS === "true") {

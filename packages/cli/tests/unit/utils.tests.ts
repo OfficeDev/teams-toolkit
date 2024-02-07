@@ -11,15 +11,12 @@ import * as core from "@microsoft/teamsfx-core";
 
 import activate from "../../src/activate";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
-import { UserSettings } from "../../src/userSetttings";
 import {
   editDistance,
   getColorizedString,
-  getSettingsVersion,
   getSystemInputs,
   getTemplates,
   getVersion,
-  isWorkspaceSupported,
   toLocaleLowerCase,
 } from "../../src/utils";
 import { expect } from "./utils";
@@ -35,68 +32,6 @@ describe("Utils Tests", function () {
     expect(toLocaleLowerCase("MiNe")).equals("mine");
     expect(toLocaleLowerCase(["ItS", "HiS"])).deep.equals(["its", "his"]);
     expect(toLocaleLowerCase(undefined)).equals(undefined);
-  });
-
-  describe("getSettingsVersion", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readFileSync").callsFake((path: any) => {
-        if (path.includes("realbuterror")) {
-          throw Error("realbuterror");
-        } else {
-          return `
-version: 1.0.0
-projectId: 00000000-0000-0000-0000-000000000000`;
-        }
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path in V3", () => {
-      const result = getSettingsVersion("real");
-      expect(result).deep.equals("1.0.0");
-    });
-
-    it("Real Path but cannot read", () => {
-      const result = getSettingsVersion("realbuterror");
-      expect(result).equals(undefined);
-    });
-
-    it("Fake Path", () => {
-      const result = getSettingsVersion("fake");
-      expect(result).equals(undefined);
-    });
-  });
-
-  describe("isWorkspaceSupported", async () => {
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("Real Path in V3", async () => {
-      const result = isWorkspaceSupported("real");
-      expect(result).equals(true);
-    });
-
-    it("Fake Path", async () => {
-      const result = isWorkspaceSupported("fake");
-      expect(result).equals(false);
-    });
   });
 
   it("getSystemInputs", async () => {
@@ -140,8 +75,8 @@ projectId: 00000000-0000-0000-0000-000000000000`;
     });
 
     it("filters samples have maximum cli verion", async () => {
-      sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
-        core.sampleProvider["samplesConfig"] = {
+      sandbox.stub(core.sampleProvider, "SampleCollection").value(
+        Promise.resolve({
           filterOptions: {
             capabilities: ["Tab"],
             languages: ["TS"],
@@ -158,8 +93,14 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               tags: [],
               time: "1hr to run",
               configuration: "",
-              gifPath: "",
+              thumbnailPath: "",
               suggested: false,
+              downloadUrlInfo: {
+                owner: "",
+                repository: "",
+                ref: "",
+                dir: "",
+              },
             },
             {
               id: "test1",
@@ -171,20 +112,26 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               tags: [],
               time: "1hr to run",
               configuration: "",
-              gifPath: "",
+              thumbnailPath: "",
               suggested: false,
               maximumCliVersion: "1.0.0",
+              downloadUrlInfo: {
+                owner: "",
+                repository: "",
+                ref: "",
+                dir: "",
+              },
             },
           ],
-        };
-      });
+        })
+      );
       const templates = await getTemplates();
       expect(templates.length).equals(1);
     });
 
     it("filters samples have minimum cli verion", async () => {
-      sandbox.stub(core.sampleProvider, "fetchSampleConfig").callsFake(async () => {
-        core.sampleProvider["samplesConfig"] = {
+      sandbox.stub(core.sampleProvider, "SampleCollection").value(
+        Promise.resolve({
           filterOptions: {
             capabilities: ["Tab"],
             languages: ["TS"],
@@ -201,8 +148,14 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               tags: [],
               time: "1hr to run",
               configuration: "",
-              gifPath: "",
+              thumbnailPath: "",
               suggested: false,
+              downloadUrlInfo: {
+                owner: "",
+                repository: "",
+                ref: "",
+                dir: "",
+              },
             },
             {
               id: "test1",
@@ -214,41 +167,22 @@ projectId: 00000000-0000-0000-0000-000000000000`;
               tags: [],
               time: "1hr to run",
               configuration: "",
-              gifPath: "",
+              thumbnailPath: "",
               suggested: false,
               minimumCliVersion: "3.1.0",
+              downloadUrlInfo: {
+                owner: "",
+                repository: "",
+                ref: "",
+                dir: "",
+              },
             },
           ],
-        };
-      });
+        })
+      );
       const templates = await getTemplates();
       expect(templates.length).equals(1);
     });
-  });
-});
-
-describe("UserSettings", async () => {
-  const sandbox = sinon.createSandbox();
-  afterEach(() => {
-    sandbox.restore();
-  });
-  it("getConfigSync WriteFileError", async () => {
-    sandbox.stub(fs, "pathExistsSync").throws(new Error("error"));
-    const res = UserSettings.getConfigSync();
-    expect(res.isErr()).equals(true);
-    if (res.isErr()) {
-      expect(res.error instanceof core.WriteFileError).equals(true);
-    }
-  });
-  it("setConfigSync WriteFileError", async () => {
-    sandbox.stub(UserSettings, "getConfigSync").returns(apis.ok({}));
-    sandbox.stub(UserSettings, "getUserSettingsFile").returns("");
-    sandbox.stub(fs, "writeJSONSync").throws(new Error("error"));
-    const res = UserSettings.setConfigSync({});
-    expect(res.isErr()).equals(true);
-    if (res.isErr()) {
-      expect(res.error instanceof core.WriteFileError).equals(true);
-    }
   });
 });
 

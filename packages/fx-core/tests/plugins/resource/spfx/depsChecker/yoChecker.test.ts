@@ -14,6 +14,7 @@ import { cpUtils } from "../../../../../src/common/deps-checker/util/cpUtils";
 import { createContextV3 } from "../../../../../src/component/utils";
 import { setTools } from "../../../../../src/core/globalVars";
 import { MockTools } from "../../../../core/utils";
+import { Utils } from "../../../../../src/component/generator/spfx/utils/utils";
 
 const ryc = rewire("../../../../../src/component/generator/spfx/depsChecker/yoChecker");
 
@@ -73,7 +74,7 @@ describe("Yo checker", () => {
     });
 
     try {
-      await yc.install();
+      await yc.install("latest");
     } catch {
       assert.callCount(cleanStub, 2);
     }
@@ -91,7 +92,7 @@ describe("Yo checker", () => {
     });
 
     try {
-      await yc.install();
+      await yc.install("latest");
     } catch (e) {
       expect(e.name).equal("NpmInstallFailed");
     }
@@ -101,13 +102,15 @@ describe("Yo checker", () => {
     const yc = new YoChecker(new StubLogger());
     stub(fs, "existsSync").returns(false);
     stub(fs, "emptyDir").throws("Failed to empty dir");
+    stub(cpUtils, "executeCommand").resolves();
+    stub(fs, "pathExists").callsFake(async () => {
+      return true;
+    });
     const logErrorSpy = spy(StubLogger.prototype, "error");
 
-    try {
-      await yc.install();
-    } catch {
-      assert.callCount(logErrorSpy, 1);
-    }
+    await yc.install("latest");
+
+    assert.callCount(logErrorSpy, 1);
   });
 
   it("findGloballyInstalledVersion: returns version", async () => {
@@ -224,13 +227,14 @@ describe("Yo checker", () => {
       });
 
       stub(YoChecker.prototype, <any>"queryVersion").throws("error");
+      stub(Utils, "findLatestVersion").throws("error");
 
       const result = await yc.isLatestInstalled();
       expect(result).is.false;
     });
   });
 
-  describe("ensureLatestDependency", () => {
+  describe("ensureDependency", () => {
     setTools(new MockTools());
     it("install successfully", async () => {
       const yc = new YoChecker(new StubLogger());
@@ -241,7 +245,7 @@ describe("Yo checker", () => {
 
       const context = createContextV3();
 
-      const result = await yc.ensureLatestDependency(context);
+      const result = await yc.ensureDependency(context, "latest");
       expect(result.isOk()).to.be.true;
     });
 
@@ -253,7 +257,7 @@ describe("Yo checker", () => {
 
       const context = createContextV3();
 
-      const result = await yc.ensureLatestDependency(context);
+      const result = await yc.ensureDependency(context, "latest");
       expect(result.isErr()).to.be.true;
     });
   });

@@ -92,7 +92,9 @@ export class NotificationMiddleware implements Middleware {
       await this.conversationReferenceStore.add(getKey(reference), reference, { overwrite: false });
     } else if (conversationType === "channel") {
       const teamId = context.activity?.channelData?.team?.id;
-      if (teamId !== undefined) {
+      const channelId = context.activity.channelData?.channel?.id;
+      // `teamId === channelId` means General channel. Ignore messaging in non-General channel.
+      if (teamId !== undefined && (channelId === undefined || teamId === channelId)) {
         const teamReference = cloneConversation(reference);
         teamReference.conversation.id = teamId;
         await this.conversationReferenceStore.add(getKey(teamReference), teamReference, {

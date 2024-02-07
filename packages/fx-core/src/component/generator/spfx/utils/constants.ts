@@ -16,11 +16,16 @@ export class Constants {
   public static readonly YeomanPackageName = "yo";
   public static readonly DEFAULT_WEBPART_NAME = "helloworld";
   public static readonly ScaffoldHelpLink = "https://aka.ms/teamsfx-spfx-help-v5";
+  public static readonly AddWebpartHelpLink = "https://aka.ms/teamsfx-spfx-help-v5";
   public static readonly DevProgramLink =
     "https://developer.microsoft.com/en-us/microsoft-365/dev-program";
   public static readonly YO_RC_SOLUTION_NAME = "solutionName";
   public static readonly IMPORT_HELP_LINK = "https://aka.ms/teamsfx-spfx-help-v5";
   public static readonly TEAMS_APP_NAME_MAX_LENGTH = 30;
+  public static readonly YO_RC_VERSION = "version";
+  public static readonly YO_RC_FILE = ".yo-rc.json";
+  public static readonly DEFAULT_NODE_VERSION = "16 || 18";
+  public static readonly PACKAGE_JSON_FILE = "package.json";
 }
 
 export class TelemetryKey {

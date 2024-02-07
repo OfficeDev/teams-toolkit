@@ -277,7 +277,7 @@ describe("Notification Middleware Tests - Node", () => {
     assert.deepStrictEqual(testStorage.items, {});
   });
 
-  it("onTurn should correctly handle bot messaged in channel (new)", async () => {
+  it("onTurn should correctly handle bot messaged in general channel (new)", async () => {
     const testContext = {
       activity: {
         type: "message",
@@ -310,7 +310,7 @@ describe("Notification Middleware Tests - Node", () => {
     });
   });
 
-  it("onTurn should correctly handle bot messaged in channel (exist)", async () => {
+  it("onTurn should correctly handle bot messaged in general channel (exist)", async () => {
     testStorage.items = {
       _a_X: {
         channelId: "1",
@@ -351,6 +351,88 @@ describe("Notification Middleware Tests - Node", () => {
         },
       },
     });
+  });
+
+  it("onTurn should correctly handle bot messaged in general channel (channelId)", async () => {
+    const testContext = {
+      activity: {
+        type: "message",
+        channelId: "1",
+        channelData: {
+          team: {
+            id: "X",
+          },
+          channel: {
+            id: "X",
+          },
+        },
+        conversation: {
+          id: "1",
+          conversationType: "channel",
+          tenantId: "a",
+        },
+        recipient: {
+          id: "A",
+        },
+      },
+    };
+    await middleware.onTurn(testContext as any, async () => {});
+    assert.deepStrictEqual(testStorage.items, {
+      _a_X: {
+        channelId: "1",
+        conversation: {
+          id: "X",
+          conversationType: "channel",
+          tenantId: "a",
+        },
+      },
+    });
+  });
+
+  it("onTurn should ignore bot messaged in non-general channel", async () => {
+    const testContext = {
+      activity: {
+        type: "message",
+        channelId: "1",
+        channelData: {
+          team: {
+            id: "X",
+          },
+          channel: {
+            id: "X-channel",
+          },
+        },
+        conversation: {
+          id: "1",
+          conversationType: "channel",
+          tenantId: "a",
+        },
+        recipient: {
+          id: "A",
+        },
+      },
+    };
+    await middleware.onTurn(testContext as any, async () => {});
+    assert.deepStrictEqual(testStorage.items, {});
+  });
+
+  it("onTurn should ignore bot messaged in channel (invalid data)", async () => {
+    const testContext = {
+      activity: {
+        type: "message",
+        channelId: "1",
+        conversation: {
+          id: "1",
+          conversationType: "channel",
+          tenantId: "a",
+        },
+        recipient: {
+          id: "A",
+        },
+      },
+    };
+    await middleware.onTurn(testContext as any, async () => {});
+    assert.deepStrictEqual(testStorage.items, {});
   });
 
   it("onTurn should correctly handle bot messaged in chat (new)", async () => {

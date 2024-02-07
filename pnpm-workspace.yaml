@@ -11,4 +11,5 @@ packages:
   -  "packages/sdk"
   -  "packages/sdk-react"
   -  "packages/server"
+  -  "packages/vscode-ui"
   -  "templates"

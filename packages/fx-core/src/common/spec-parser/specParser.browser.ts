@@ -35,6 +35,8 @@ export class SpecParser {
     allowMissingId: false,
     allowSwagger: false,
     allowAPIKeyAuth: false,
+    allowMultipleParameters: false,
+    allowOauth2: false,
   };
 
   /**
@@ -84,7 +86,9 @@ export class SpecParser {
         this.parser,
         !!this.isSwaggerFile,
         this.options.allowMissingId,
-        this.options.allowAPIKeyAuth
+        this.options.allowAPIKeyAuth,
+        this.options.allowMultipleParameters,
+        this.options.allowOauth2
       );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -106,7 +110,10 @@ export class SpecParser {
           continue;
         }
 
-        const [command, warning] = parseApiInfo(pathObjectItem);
+        const [command, warning] = parseApiInfo(
+          pathObjectItem,
+          this.options.allowMultipleParameters
+        );
 
         const apiInfo: APIInfo = {
           method: method,
@@ -179,6 +186,8 @@ export class SpecParser {
     const result = listSupportedAPIs(
       spec,
       this.options.allowMissingId,
+      this.options.allowAPIKeyAuth,
+      this.options.allowMultipleParameters,
       this.options.allowAPIKeyAuth
     );
     this.apiMap = result;

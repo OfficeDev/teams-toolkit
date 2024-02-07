@@ -22,11 +22,13 @@ export interface StepDriver {
    * @param ctx logger, telemetry, progress bar, etc.
    * @param outputEnvVarNames the environment variable names for each output
    * @param schemaVersion schema version of the executed yaml file
+   * @param name name of the executed yaml section
    */
   execute(
     args: unknown,
     ctx: DriverContext,
     outputEnvVarNames?: Map<string, string>,
-    schemaVersion?: string
+    schemaVersion?: string,
+    name?: string
   ): Promise<ExecutionResult>;
 }

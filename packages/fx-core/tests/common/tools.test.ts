@@ -17,15 +17,18 @@ import {
   ConvertTokenToJson,
   getFixedCommonProjectSettings,
   getSPFxToken,
+  getCopilotStatus,
   getSideloadingStatus,
   isVideoFilterProject,
   listDevTunnels,
   setRegion,
   deepCopy,
+  isUserCancelError,
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
 import { isV3Enabled } from "../../src/common/featureFlags";
+import { UserCancelError } from "../../src/error";
 
 chai.use(chaiAsPromised);
 
@@ -130,6 +133,41 @@ describe("tools", () => {
       chai.assert.isUndefined(result);
       chai.assert.equal(events, 0);
       chai.assert.equal(errors, 3);
+    });
+  });
+
+  describe("getCopilotStatus", () => {
+    let mockGet: () => AxiosResponse;
+    let errors: number;
+    beforeEach(() => {
+      sinon.restore();
+
+      const mockInstance = axios.create();
+      sinon.stub(mockInstance, "get").callsFake(async () => mockGet());
+      sinon.stub(axios, "create").returns(mockInstance);
+
+      errors = 0;
+      sinon.stub(telemetry, "sendTelemetryErrorEvent").callsFake(() => {
+        ++errors;
+      });
+    });
+
+    it("copilot status unknown", async () => {
+      mockGet = () => {
+        return {
+          status: 200,
+          data: {
+            value: {
+              foo: "bar",
+            },
+          },
+        } as AxiosResponse;
+      };
+
+      const result = await getCopilotStatus("fake-token");
+
+      chai.assert.isUndefined(result);
+      chai.assert.equal(errors, 1);
     });
   });
 
@@ -366,6 +404,14 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       const obj = {};
       const copy = deepCopy(obj);
       chai.expect(copy).equal(obj);
+    });
+  });
+
+  describe("isUserCancelError()", () => {
+    it("should return true if error is UserCancelError", () => {
+      const error = new Error();
+      error.name = "UserCancelError";
+      chai.expect(isUserCancelError(error)).is.true;
     });
   });
 });

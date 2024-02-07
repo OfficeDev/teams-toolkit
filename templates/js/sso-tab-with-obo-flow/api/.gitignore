@@ -9,7 +9,6 @@ node_modules
 bin
 obj
 appsettings.json
-local.settings.json
 
 # misc
 .DS_Store

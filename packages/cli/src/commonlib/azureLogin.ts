@@ -3,30 +3,34 @@
 
 "use strict";
 
-import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
-import {
-  AzureAccountProvider,
-  UserError,
-  SubscriptionInfo,
-  OptionItem,
-  SingleSelectConfig,
-  ConfigFolderName,
-  Result,
-  FxError,
-} from "@microsoft/teamsfx-api";
-import { CodeFlowLogin, ConvertTokenToJson, checkIsOnline } from "./codeFlowLogin";
-import { MemoryCache } from "./memoryCache";
-import CLILogProvider from "./log";
-import { AzureSpCrypto, CryptoCachePlugin } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
+import { AccessToken, GetTokenOptions, TokenCredential } from "@azure/core-auth";
 import { LogLevel } from "@azure/msal-node";
 import {
+  AzureAccountProvider,
+  ConfigFolderName,
+  FxError,
+  LogLevel as LLevel,
+  OptionItem,
+  Result,
+  SingleSelectConfig,
+  SubscriptionInfo,
+  UserError,
+} from "@microsoft/teamsfx-api";
+import { AzureScopes, isValidProjectV3 } from "@microsoft/teamsfx-core";
+import * as fs from "fs-extra";
+import * as path from "path";
+import CLIUIInstance from "../userInteraction";
+import { AzureSpCrypto, CryptoCachePlugin } from "./cacheAccess";
+import { CodeFlowLogin, ConvertTokenToJson, checkIsOnline } from "./codeFlowLogin";
+import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
+import {
+  MFACode,
   changeLoginTenantMessage,
   env,
   envDefaultJsonFile,
   failToFindSubscription,
   loginComponent,
-  MFACode,
   noSubscriptionFound,
   selectSubscription,
   signedIn,
@@ -34,14 +38,9 @@ import {
   subscription,
   subscriptionInfoFile,
 } from "./common/constant";
-import { login, LoginStatus } from "./common/login";
-import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
-import { CodeFlowTenantLogin } from "./codeFlowTenantLogin";
-import CLIUIInstance from "../userInteraction";
-import * as path from "path";
-import * as fs from "fs-extra";
-import { isWorkspaceSupported } from "../utils";
-import { AzureScopes } from "@microsoft/teamsfx-core";
+import { LoginStatus, login } from "./common/login";
+import CLILogProvider from "./log";
+import { MemoryCache } from "./memoryCache";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -473,7 +472,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   getSubscriptionInfoPath(): Promise<string | undefined> {
     if (AzureAccountManager.rootPath) {
-      if (isWorkspaceSupported(AzureAccountManager.rootPath)) {
+      if (isValidProjectV3(AzureAccountManager.rootPath)) {
         const subscriptionFile = path.join(
           AzureAccountManager.rootPath,
           `.${ConfigFolderName}`,
@@ -490,7 +489,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   async getSubscriptionInfoFromEnv(): Promise<SubscriptionInfo | undefined> {
     if (AzureAccountManager.rootPath) {
-      if (!isWorkspaceSupported(AzureAccountManager.rootPath)) {
+      if (!isValidProjectV3(AzureAccountManager.rootPath)) {
         return undefined;
       }
       const envDefalultFile = path.join(
@@ -539,9 +538,9 @@ async function listAll<T>(
   return all;
 }
 
-import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
-import AzureLoginCI from "./azureLoginCI";
 import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
+import AzureLoginCI from "./azureLoginCI";
+import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
 
 const ciEnabled = process.env.CI_ENABLED;
 // todo delete ciEnabled

@@ -23,6 +23,9 @@ This app template allows Teams to interact directly with third-party data, apps,
 4. Select `Preview in Teams (Edge)` or `Preview in Teams (Chrome)` from the launch configuration dropdown.
 5. When Teams launches in the browser, you can navigate to a chat message and [trigger your search commands from compose message area](https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=dotnet#search-commands).
 
+> [!NOTE]
+> Teams Toolkit will ask you for your API key during provision. The API key will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.
+
 ## What's included in the template
 
 | Folder       | Contents                                     |

@@ -121,7 +121,7 @@ function generateConstraintFromSolution(ymlString, options) {
   const lifecycleHeader = (lifecycle, isLocal) =>
     isLocal
       ? `${lifecycle}:${os.EOL}`
-      : `# Triggered when 'teamsfx ${lifecycle}' is executed${os.EOL}${lifecycle}:${os.EOL}`;
+      : `# Triggered when 'teamsapp ${lifecycle}' is executed${os.EOL}${lifecycle}:${os.EOL}`;
 
   const provisionLifecycle = addLifecycle(lifecycleHeader("provision", isLocal), yml.provision);
   const deployLifecycle = addLifecycle(lifecycleHeader("deploy", isLocal), yml.deploy);

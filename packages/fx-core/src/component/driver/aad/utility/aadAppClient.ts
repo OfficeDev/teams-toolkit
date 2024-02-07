@@ -3,19 +3,22 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import { LogProvider, M365TokenProvider } from "@microsoft/teamsfx-api";
-import axios, { AxiosError, AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestHeaders } from "axios";
 import axiosRetry, { IAxiosRetryConfig } from "axios-retry";
+import { getLocalizedString } from "../../../../common/localizeUtils";
 import { AadOwner } from "../../../../common/permissionInterface";
 import { GraphScopes } from "../../../../common/tools";
 import { ErrorContextMW } from "../../../../core/globalVars";
-import { DeleteOrUpdatePermissionFailedError } from "../error/aadManifestError";
+import {
+  DeleteOrUpdatePermissionFailedError,
+  HostNameNotOnVerifiedDomainError,
+} from "../error/aadManifestError";
 import { AADApplication } from "../interface/AADApplication";
 import { AADManifest } from "../interface/AADManifest";
 import { IAADDefinition } from "../interface/IAADDefinition";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadManifestHelper } from "./aadManifestHelper";
 import { aadErrorCode, constants } from "./constants";
-import { getLocalizedString } from "../../../../common/localizeUtils";
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
 
@@ -41,7 +44,7 @@ export class AadAppClient {
       baseURL: this.baseUrl,
     });
     this.axios.interceptors.request.use(async (config) => {
-      this.logProvider?.info(
+      this.logProvider?.debug(
         getLocalizedString("core.common.SendingApiRequest", config.url, JSON.stringify(config.data))
       );
 
@@ -52,14 +55,14 @@ export class AadAppClient {
       const token = tokenResponse.value;
 
       if (!config.headers) {
-        config.headers = {};
+        config.headers = {} as AxiosRequestHeaders;
       }
       config.headers["Authorization"] = `Bearer ${token}`;
 
       return config;
     });
     this.axios.interceptors.response.use((response) => {
-      this.logProvider?.info(
+      this.logProvider?.debug(
         getLocalizedString("core.common.ReceiveApiResponse", JSON.stringify(response.data))
       );
       return response;
@@ -125,13 +128,16 @@ export class AadAppClient {
         },
       });
     } catch (err) {
-      if (
-        axios.isAxiosError(err) &&
-        err.response &&
-        err.response.status === 400 &&
-        err.response.data.error.code === aadErrorCode.permissionErrorCode
-      ) {
-        throw new DeleteOrUpdatePermissionFailedError(AadAppClient.name);
+      if (axios.isAxiosError(err) && err.response && err.response.status === 400) {
+        if (err.response.data.error?.code === aadErrorCode.permissionErrorCode) {
+          throw new DeleteOrUpdatePermissionFailedError(AadAppClient.name);
+        }
+        if (err.response.data.error?.code === aadErrorCode.hostNameNotOnVerifiedDomain) {
+          throw new HostNameNotOnVerifiedDomainError(
+            AadAppClient.name,
+            err.response.data.error.message
+          );
+        }
       }
       throw err;
     }

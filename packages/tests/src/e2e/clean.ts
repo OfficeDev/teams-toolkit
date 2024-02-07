@@ -31,9 +31,10 @@ export async function cleanUpResourceGroup(
         })
       : groups;
 
-  const promises = filteredGroups.map((rg: { name?: string }) =>
-    ResourceGroupManager.deleteResourceGroup(rg.name!, retryTimes)
-  );
+  const promises = filteredGroups.map((rg: { name?: string }) => {
+    ResourceGroupManager.deleteResourceGroup(rg.name!, retryTimes);
+    console.log(`[Successfully] clean up ${rg.name} resource group.`);
+  });
   await Promise.all(promises);
   console.log(
     `[Successfully] clean up ${promises.length} Azure resource groups.`
@@ -46,13 +47,5 @@ export async function cleanUpResourceGroup(
   const promise3 = cleanUpResourceGroup("fx_e_2_e_");
   const promise4 = cleanUpResourceGroup("teamsfxt_");
   const promise5 = cleanUpResourceGroup("fx_");
-  const promise6 = cleanUpResourceGroup("fxui");
-  await Promise.all([
-    promise1,
-    promise2,
-    promise3,
-    promise4,
-    promise5,
-    promise6,
-  ]);
+  await Promise.all([promise1, promise2, promise3, promise4, promise5]);
 })();

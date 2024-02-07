@@ -38,7 +38,7 @@ The following files can be customized and demonstrate an example implementation 
 | --------------------------------------------- | ---------------------------------------------------------------------------- |
 | `repair/function.json`                        | A configuration file that defines the function’s trigger and other settings. |
 | `repair/index.ts`                             | The main file of a function in Azure Functions.                              |
-| `appPackage/apiSpecificationFiles/repair.yml` | A file that describes the structure and behavior of the repair API.          |
+| `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.          |
 | `appPackage/responseTemplates/repair.json`    | A generated Adaptive Card that used to render API response.                  |
 | `repairsData.json`                            | The data source for the repair API                                           |
 

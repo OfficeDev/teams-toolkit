@@ -15,6 +15,9 @@ to install the app to.
 3. Right-click your project and select `Teams Toolkit > Preview in > Teams`.
 4. When Teams launches in the browser, you can navigate to a chat message and [trigger your search commands from compose message area](https://learn.microsoft.com/microsoftteams/platform/messaging-extensions/what-are-messaging-extensions?tabs=dotnet#search-commands).
 
+> [!NOTE]
+> Teams Toolkit will ask you for your API key during provision. The API key will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.
+
 ## Learn more
 
 - [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)

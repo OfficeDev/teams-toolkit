@@ -5,9 +5,6 @@
     "resourceBaseName": {
       "value": "tab${{RESOURCE_SUFFIX}}"
     },
-    "storageSku": {
-      "value": "Standard_LRS"
-    },
     "botAadAppClientId": {
       "value": "${{BOT_ID}}"
     },
@@ -19,6 +16,9 @@
     },
     "botDisplayName": {
       "value": "{{appName}}"
+    },
+    "staticWebAppSku": {
+      "value": "Free",
     }
   }
 }

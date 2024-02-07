@@ -86,20 +86,29 @@ export async function wrapRun(
   try {
     return ok(await exec());
   } catch (error) {
-    if (errorHandler) {
-      await errorHandler();
-    }
-    if (error instanceof BaseComponentInnerError) {
-      if (error.detail) {
-        logProvider?.debug(`Error occurred: ${error.detail}`);
-      }
-      return err(error.toFxError());
-    } else if (error instanceof UserError || error instanceof SystemError) {
-      return err(error);
-    }
-    // always return error as SystemError
-    return err(BaseComponentInnerError.unknownError(errorSource, error).toFxError());
+    return await errorHandle(error, errorSource, logProvider, errorHandler);
   }
+}
+
+export async function errorHandle(
+  error: unknown,
+  errorSource: string,
+  logProvider?: LogProvider,
+  errorHandler?: () => Promise<void>
+): Promise<Result<Map<string, string>, FxError>> {
+  if (errorHandler) {
+    await errorHandler();
+  }
+  if (error instanceof BaseComponentInnerError) {
+    if (error.detail) {
+      logProvider?.debug(`Error occurred: ${error.detail}`);
+    }
+    return err(error.toFxError());
+  } else if (error instanceof UserError || error instanceof SystemError) {
+    return err(error);
+  }
+  // always return error as SystemError
+  return err(BaseComponentInnerError.unknownError(errorSource, error).toFxError());
 }
 
 export async function wrapSummary(
@@ -117,12 +126,15 @@ export async function wrapSummary(
 }
 
 // Expand environment variables in content. The format of referencing environment variable is: ${{ENV_NAME}}
-export function expandEnvironmentVariable(content: string): string {
+export function expandEnvironmentVariable(
+  content: string,
+  envs?: { [key in string]: string }
+): string {
   const placeholders = content.match(placeholderRegex);
   if (placeholders) {
     for (const placeholder of placeholders) {
       const envName = placeholder.slice(3, -2).trim(); // removes `${{` and `}}`
-      const envValue = process.env[envName];
+      const envValue = envs ? envs[envName] : process.env[envName];
       if (envName === "APP_NAME_SUFFIX") {
         if (envValue !== undefined && envValue !== null) {
           content = content.replace(placeholder, envValue);

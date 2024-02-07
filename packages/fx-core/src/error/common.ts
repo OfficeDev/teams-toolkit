@@ -276,6 +276,34 @@ export class MissingRequiredFileError extends UserError {
   }
 }
 
+export class NetworkError extends UserError {
+  constructor(source: string, reason: string) {
+    const key = "error.common.NetworkError";
+    const errorOptions: UserErrorOptions = {
+      source: camelCase(source),
+      name: "NetworkError",
+      message: getDefaultString(key, reason),
+      displayMessage: getLocalizedString(key, reason),
+      categories: [ErrorCategory.Internal],
+    };
+    super(errorOptions);
+  }
+}
+
+export function matchDnsError(message?: string): string | undefined {
+  if (!message) return undefined;
+  const domainPattern = /(?:getaddrinfo\s(?:EAI_AGAIN)\s)([^\s,]+)/;
+  // Use the regular expression to extract the domain from the error message
+  const match = message.match(domainPattern);
+  let res;
+  // Check if a match is found
+  if (match && match.length > 1) {
+    const domain = match[1];
+    res = getLocalizedString("error.common.NetworkError.EAI_AGAIN", domain);
+  }
+  return res;
+}
+
 export class HttpClientError extends UserError {
   constructor(error: any, actionName: string, responseBody: string, helpLink?: string) {
     const messageKey = "error.common.HttpClientError";
@@ -380,6 +408,11 @@ export class InternalError extends UserError {
 export function assembleError(e: any, source?: string): FxError {
   if (e instanceof UserError || e instanceof SystemError) return e;
   if (!source) source = "unknown";
+  source = camelCase(source);
+  const msg = matchDnsError(e.message);
+  if (msg) {
+    return new NetworkError(source, msg);
+  }
   const type = typeof e;
   if (type === "string") {
     return new UnhandledError(new Error(e as string), source);

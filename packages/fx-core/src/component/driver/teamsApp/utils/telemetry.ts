@@ -23,11 +23,12 @@ export enum TelemetryPropertyKey {
   region = "region",
 }
 
-enum TelemetryPropertyValue {
+export enum TelemetryPropertyValue {
   UserError = "user",
   SystemError = "system",
   success = "yes",
   failure = "no",
+  Global = "global",
 }
 
 export enum TelemetryEventName {

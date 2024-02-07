@@ -79,7 +79,42 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret, mockedClientSecret2",
+      primaryClientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
+    if (result.result.isOk()) {
+      expect(result.result.value.get(outputKeys.registrationId)).to.equal("mockedRegistrationId");
+      expect(result.summaries.length).to.equal(1);
+    }
+  });
+
+  it("happy path: create registraionid, read domain from api spec, clientSecret and secondaryClientSecret from input", async () => {
+    sinon.stub(AppStudioClient, "createApiKeyRegistration").resolves({
+      id: "mockedRegistrationId",
+      clientSecrets: [],
+      targetUrlsShouldStartWith: [],
+      applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves([
+      {
+        api: "api",
+        server: "https://test",
+        operationId: "get",
+        auth: {
+          type: "apiKey",
+          name: "test",
+          in: "header",
+        },
+      },
+    ]);
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      primaryClientSecret: "mockedClientSecret",
+      secondaryClientSecret: "mockedSecondaryClientSecret",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
@@ -137,7 +172,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret",
+      primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "mockedPath",
     };
     envRestore = mockedEnv({
@@ -155,7 +190,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret",
+      primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, undefined);
@@ -172,7 +207,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret",
+      primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
@@ -190,7 +225,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret",
+      primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "mockedPath",
     };
     envRestore = mockedEnv({
@@ -204,7 +239,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret",
+      primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
@@ -218,7 +253,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "a".repeat(129),
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret",
+      primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
@@ -232,7 +267,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "",
-      clientSecret: "mockedClientSecret",
+      primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
@@ -243,24 +278,28 @@ describe("CreateApiKeyDriver", () => {
   });
 
   it("should throw error if invalid clientSecret", async () => {
-    let args: any = {
+    const args: any = {
       name: "test",
       appId: "",
-      clientSecret: "secret",
+      primaryClientSecret: "secret",
       apiSpecPath: "mockedPath",
     };
-    let result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.name).to.equal("ApiKeyClientSecretInvalid");
     }
+  });
 
-    args = {
+  it("should throw error if invalid secondaryClientSecret", async () => {
+    const args: any = {
       name: "test",
       appId: "",
-      clientSecret: "mockedSecret, mockedSecret2, mockedSecret3",
+      primaryClientSecret: "mockedClientSecret",
+      secondaryClientSecret: "secret",
+      apiSpecPath: "mockedPath",
     };
-    result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.name).to.equal("ApiKeyClientSecretInvalid");
@@ -271,7 +310,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret",
+      primaryClientSecret: "mockedClientSecret",
       apiSpecPath: "",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
@@ -285,7 +324,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedSecret",
+      primaryClientSecret: "mockedSecret",
       apiSpecPath: "mockedPath",
     };
     sinon.stub(SpecParser.prototype, "list").resolves([
@@ -321,7 +360,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedSecret",
+      primaryClientSecret: "mockedSecret",
       apiSpecPath: "mockedPath",
     };
     sinon.stub(SpecParser.prototype, "list").resolves([]);
@@ -352,7 +391,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret, mockedClientSecret2",
+      primaryClientSecret: "mockedClientSecret, mockedClientSecret2",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
@@ -367,7 +406,7 @@ describe("CreateApiKeyDriver", () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
-      clientSecret: "mockedClientSecret, mockedClientSecret2",
+      primaryClientSecret: "mockedClientSecret, mockedClientSecret2",
       apiSpecPath: "mockedPath",
     };
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);

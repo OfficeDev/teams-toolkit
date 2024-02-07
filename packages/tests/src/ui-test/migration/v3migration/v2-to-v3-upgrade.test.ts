@@ -47,7 +47,7 @@ describe("Migration Tests", function () {
 
       // verify popup
       await validateNotification(Notification.Upgrade);
-      await startDebugging();
+      await startDebugging("Debug (Chrome)");
 
       // upgrade
       await upgrade();

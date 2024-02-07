@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>{{TargetFramework}}</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="build/**/*" />
-    <Content Remove="build/**/*" />
+    <None Include="appPackage/**/*" />
   </ItemGroup>
 
 </Project>

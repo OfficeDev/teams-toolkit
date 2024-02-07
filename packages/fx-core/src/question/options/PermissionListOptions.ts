@@ -26,7 +26,7 @@ export const PermissionListOptions: CLICommandOption[] = [
     description: "Specifies the environment name for the project.",
   },
   {
-    name: "aad-manifest-file",
+    name: "entra-app-manifest-file",
     questionName: "manifest-file-path",
     type: "string",
     shortName: "a",

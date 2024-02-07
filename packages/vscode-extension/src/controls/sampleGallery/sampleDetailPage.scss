@@ -1,42 +1,65 @@
-.sampleDetail{
-    margin: 20px auto;
-    min-width: 256px;
-    max-width: 1166px;
+.sample-detail-page {
+    margin: 20px 100px;
+    display: flex;
+    flex-direction: column;
+    min-width: 568px;
     color: var(--vscode-editor-foreground);
 
-    button{
-        width: 51px;
+    button {
         height: 16px;
         font-size: 13px;
         padding: 0;
-        margin: 0;
+        margin-bottom: 24px;
         color: var(--vscode-textLink-foreground);
 
-        span>i{
-                font-size: 12px;
-                width: 14px;
-                height: 14px;
-                color: var(--vscode-textLink-foreground);
+        span>i {
+            font-size: 12px;
+            width: 14px;
+            height: 14px;
+            color: var(--vscode-textLink-foreground);
         }
 
-        :active{
+        :active {
             color: var(--vscode-textLink-foreground);
         }
     }
 
-    .header{
+    .upgrade-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 40px;
+    
+        .tooltip {
+            display: flex;
+            align-items: center;
+        }
+
+        .codicon {
+            margin-left: 8px;
+            margin-right: 4px;
+            color: var(--vscode-symbolIcon-interfaceForeground);
+        }
+
+        vscode-button {
+            flex-shrink: 0;
+            height: 28px;
+        }
+    }
+
+    .header {
         display: grid;
         grid-template-columns: auto max-content;
-        margin: 44px 0 12px 0;
+        margin: 16px 0 12px 0;
 
-        .contents{
+        .contents {
             min-width: 205px;
             grid-column: 1/2;
         }
 
-        h2{
+        h2 {
             font-size: 26px;
-            margin: auto 0 12px 0;
+            margin: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -44,12 +67,12 @@
             line-height: 31px;
         }
 
-        .buttons{
+        .buttons {
             grid-column: 2/3;
             margin: 0 0 auto auto;
             display: flex;
 
-            vscode-button{
+            vscode-button {
                 margin-left: 8px;
                 margin-right: 0px;
                 width: max-content;
@@ -57,92 +80,50 @@
         }
     }
 
-    .tags{
-        vscode-tag{
-            margin-right: 8px;
-        }
-    }
-
-    .info{
+    .tags {
         display: flex;
-        height: 24px;
-        font-size: 11px;
-        line-height: 11px;  
-
-        .ms-Image{
-            width: 16px;
+        .tag {
+            margin-right: 8px;
+            flex-shrink: 0;
             height: 16px;
-            margin: auto 0; 
-        }
+            font-size: 13px;
+            padding: 2px 8px;
+            border: 0;
+            border-radius: 2px;
 
-        label{
-            padding-left: 4px;
-            margin: auto 0;
-        }
-    }
-
-    .estimation-time{
-        margin-top: 8px;
-
-        .watch{
-            width: 16px;
-            height: 16px;
-            margin-top: auto;
-            margin-bottom: auto;
-        }
-    }
-
-    .configuration{
-        margin-top: 4px;
-        margin-bottom: 16px;
-
-        .setting{
-            width: 16px;
-            height: 16px;
-            margin-top: auto;
-            margin-bottom: auto;
-        }
-    }
-
-    .description{
-        margin-top: 16px;
-        word-break: break-all;
-    }
-}
-
-@media only screen and (max-width: 1366px) {
-  .sampleDetail{
-    margin: 20px 100px;
-  }
-}
-
-@media only screen and (max-width: 640px) {
-  .sampleDetail{
-    margin: 20px 32px;
-
-    .header{
-        grid-template-columns: 100%;
-
-        h2{
-            word-break: break-all;
-            overflow:inherit;
-            text-overflow:inherit;
-            white-space: normal;
-        }
-
-        .contents{
-            grid-column: 1/2;
-        }
-
-        .buttons{
-            margin: 12px auto auto 0;
-            grid-column: 1/2;
-    
-            vscode-button{
-                margin-left: 0px;
-                margin-right: 8px;
+            span {
+                display: inline-block;
+                height: 16px;
+                top: -1px;
+                position: relative;
             }
         }
     }
-  }
+
+    .markdown-body {
+        margin: 45px 0 0 0;
+        padding: 0;
+    }
+}
+
+body.vscode-light {
+    .tag {
+        background-color: #E5E5E5;
+        color: #606060;
+    }
+
+    .upgrade-banner {
+        background-color: #F0F0F0;
+    }
+}
+
+body.vscode-dark {
+    .tag {
+        background-color: #333333;
+        color: #CCCCCC;
+    }
+
+    .upgrade-banner {
+        background-color: #303031;
+    }
 }

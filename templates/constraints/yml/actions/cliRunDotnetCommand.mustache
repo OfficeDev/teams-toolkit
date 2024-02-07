@@ -7,7 +7,7 @@
       workingDirectory: {{{workingDirectory}}}
     {{/workingDirectory}}
     {{#publish}}
-      args: publish --configuration Release --runtime win-x86 --self-contained
+      args: publish --configuration Release
     {{/publish}}
     {{#extensions}}
       args: build extensions.csproj -o bin --ignore-failed-sources

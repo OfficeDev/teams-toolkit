@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Separator } from "@inquirer/prompts";
 import { render } from "@inquirer/testing";
 import figures from "figures";
 import "mocha";
@@ -46,14 +45,14 @@ describe("checkbox prompt", () => {
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [ ] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        [ ] title 3 detail 3
+        [ ] title 4 detail 4
+        [ ] title 5 detail 5
+        [ ] title 6 detail 6
+        [ ] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("down");
@@ -64,14 +63,14 @@ describe("checkbox prompt", () => {
     expect(getScreen()).equal(
       trimOutput(`
         ? Select a string
-        [ ] title 1  detail 1
-        [X] title 2  detail 2
-        [X] title 3  detail 3
-        [ ] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [X] title 2 detail 2
+        [X] title 3 detail 3
+        [ ] title 4 detail 4
+        [ ] title 5 detail 5
+        [ ] title 6 detail 6
+        [ ] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -92,14 +91,14 @@ describe("checkbox prompt", () => {
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [X] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        [ ] title 3 detail 3
+        [X] title 4 detail 4
+        [ ] title 5 detail 5
+        [ ] title 6 detail 6
+        [ ] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -120,9 +119,9 @@ describe("checkbox prompt", () => {
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -150,7 +149,7 @@ describe("checkbox prompt", () => {
         [ ] title 8  detail 8
         [ ] title 9  detail 9
         [ ] title 10 detail 10
-        (Move up and down to reveal more choices)`)
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -162,15 +161,16 @@ describe("checkbox prompt", () => {
       message: "Select a string",
       choices: choices,
       pageSize: 2,
+      loop: true,
     });
 
     expect(getScreen()).equal(
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("up");
@@ -181,158 +181,13 @@ describe("checkbox prompt", () => {
     expect(getScreen()).equal(
       trimOutput(`
         ? Select a string
+        [ ] title 10 detail 10
         [X] title 11 detail 11
-        [X] title 12 detail 12
-        (Move up and down to reveal more choices)`)
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
     expect(await answer).to.be.deep.equal(["id11", "id12"]);
-  });
-
-  it("skip disabled options by arrow keys", async () => {
-    const { answer, events, getScreen } = await render(checkbox, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: true },
-        { id: "pepperoni", title: "Pepperoni" },
-      ],
-    });
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Press <space> to select, <a> to toggle all, <i> to invert
-        selection, and <enter> to proceed)
-        [ ] Ham
-        --- Pineapple (disabled)
-        [ ] Pepperoni`)
-    );
-
-    events.keypress("down");
-    events.keypress("space");
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping
-        [ ] Ham
-        --- Pineapple (disabled)
-        [X] Pepperoni`)
-    );
-
-    events.keypress("enter");
-    await Promise.resolve();
-    expect(getScreen()).equal("? Select a topping Pepperoni");
-
-    expect(await answer).to.be.deep.equal(["pepperoni"]);
-  });
-
-  it("skip disabled options by number key", async () => {
-    const { answer, events, getScreen } = await render(checkbox, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        { id: "pineapple", title: "Pineapple", disabled: true },
-        { id: "pepperoni", title: "Pepperoni" },
-      ],
-    });
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Press <space> to select, <a> to toggle all, <i> to invert
-        selection, and <enter> to proceed)
-        [ ] Ham
-        --- Pineapple (disabled)
-        [ ] Pepperoni`)
-    );
-
-    events.keypress("2");
-    events.keypress("space");
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping
-        [X] Ham
-        --- Pineapple (disabled)
-        [ ] Pepperoni`)
-    );
-
-    events.keypress("enter");
-    await Promise.resolve();
-    expect(getScreen()).equal("? Select a topping Ham");
-
-    expect(await answer).to.be.deep.equal(["ham"]);
-  });
-
-  it("skip separator by arrow keys", async () => {
-    const { answer, events, getScreen } = await render(checkbox, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        new Separator(),
-        { id: "pepperoni", title: "Pepperoni" },
-      ],
-    });
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Press <space> to select, <a> to toggle all, <i> to invert
-        selection, and <enter> to proceed)
-        [ ] Ham
-        ──────────────
-        [ ] Pepperoni`)
-    );
-
-    events.keypress("down");
-    events.keypress("space");
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping
-        [ ] Ham
-        ──────────────
-        [X] Pepperoni`)
-    );
-
-    events.keypress("enter");
-    await Promise.resolve();
-    expect(getScreen()).equal("? Select a topping Pepperoni");
-
-    expect(await answer).to.be.deep.equal(["pepperoni"]);
-  });
-
-  it("skip separator by number key", async () => {
-    const { answer, events, getScreen } = await render(checkbox, {
-      message: "Select a topping",
-      choices: [
-        { id: "ham", title: "Ham" },
-        new Separator(),
-        { id: "pepperoni", title: "Pepperoni" },
-      ],
-    });
-
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping (Press <space> to select, <a> to toggle all, <i> to invert
-        selection, and <enter> to proceed)
-        [ ] Ham
-        ──────────────
-        [ ] Pepperoni`)
-    );
-
-    events.keypress("2");
-    events.keypress("space");
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a topping
-        [X] Ham
-        ──────────────
-        [ ] Pepperoni`)
-    );
-
-    events.keypress("enter");
-    await Promise.resolve();
-    expect(getScreen()).equal("? Select a topping Ham");
-
-    expect(await answer).to.be.deep.equal(["ham"]);
   });
 
   it("allow select all", async () => {
@@ -341,34 +196,19 @@ describe("checkbox prompt", () => {
       choices: choices,
     });
 
-    events.keypress("4");
-    expect(getScreen()).equal(
-      trimOutput(`
-        ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
-        selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [X] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)`)
-    );
-
     events.keypress("a");
     expect(getScreen()).equal(
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [X] title 1  detail 1
-        [X] title 2  detail 2
-        [X] title 3  detail 3
-        [X] title 4  detail 4
-        [X] title 5  detail 5
-        [X] title 6  detail 6
-        [X] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [X] title 1 detail 1
+        [X] title 2 detail 2
+        [X] title 3 detail 3
+        [X] title 4 detail 4
+        [X] title 5 detail 5
+        [X] title 6 detail 6
+        [X] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("a");
@@ -377,14 +217,14 @@ describe("checkbox prompt", () => {
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [X] title 1  detail 1
-        [X] title 2  detail 2
-        [X] title 3  detail 3
-        [X] title 4  detail 4
-        [X] title 5  detail 5
-        [X] title 6  detail 6
-        [X] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [X] title 1 detail 1
+        [X] title 2 detail 2
+        [X] title 3 detail 3
+        [X] title 4 detail 4
+        [X] title 5 detail 5
+        [X] title 6 detail 6
+        [X] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("a");
@@ -403,14 +243,14 @@ describe("checkbox prompt", () => {
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [X] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        [ ] title 3 detail 3
+        [X] title 4 detail 4
+        [ ] title 5 detail 5
+        [ ] title 6 detail 6
+        [ ] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("a");
@@ -429,14 +269,14 @@ describe("checkbox prompt", () => {
     expect(getScreen()).equal(
       trimOutput(`
         ? Select a string
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [ ] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        [ ] title 3 detail 3
+        [ ] title 4 detail 4
+        [ ] title 5 detail 5
+        [ ] title 6 detail 6
+        [ ] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -458,14 +298,14 @@ describe("checkbox prompt", () => {
       trimOutput(`
         ? Select a string (Pulse <space> para seleccionar, <a> para alternar todos, <i>
         para invertir selección, y <enter> para continuar)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [ ] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        [ ] title 3 detail 3
+        [ ] title 4 detail 4
+        [ ] title 5 detail 5
+        [ ] title 6 detail 6
+        [ ] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -488,14 +328,14 @@ describe("checkbox prompt", () => {
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [ ] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)`)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        [ ] title 3 detail 3
+        [ ] title 4 detail 4
+        [ ] title 5 detail 5
+        [ ] title 6 detail 6
+        [ ] title 7 detail 7
+        (Use arrow keys to reveal more choices)`)
     );
 
     events.keypress("enter");
@@ -504,14 +344,14 @@ describe("checkbox prompt", () => {
       trimOutput(`
         ? Select a string (Press <space> to select, <a> to toggle all, <i> to invert
         selection, and <enter> to proceed)
-        [ ] title 1  detail 1
-        [ ] title 2  detail 2
-        [ ] title 3  detail 3
-        [ ] title 4  detail 4
-        [ ] title 5  detail 5
-        [ ] title 6  detail 6
-        [ ] title 7  detail 7
-        (Move up and down to reveal more choices)
+        [ ] title 1 detail 1
+        [ ] title 2 detail 2
+        [ ] title 3 detail 3
+        [ ] title 4 detail 4
+        [ ] title 5 detail 5
+        [ ] title 6 detail 6
+        [ ] title 7 detail 7
+        (Use arrow keys to reveal more choices)
         > invalid selections`)
     );
   });

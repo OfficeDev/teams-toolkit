@@ -98,13 +98,13 @@ export const doctorResult = {
   NodeNotFound: `Cannot find Node.js.`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not the officially supported version (@SupportedVersions). Your project may continue to work but we recommend to install the supported version.`,
   NodeSuccess: `Node.js version (@Version) is installed`,
-  InstallNode: "Go to https://nodejs.org/about/releases/ to install LTS Node.js.",
+  InstallNode: "Go to https://nodejs.org to install LTS Node.js.",
   InstallNodeV3:
-    "The supported node versions are specified in the package.json. Go to https://nodejs.org/about/releases/ to install a supported Node.js.",
+    "The supported node versions are specified in the package.json. Go to https://nodejs.org to install a supported Node.js.",
   SideLoadingDisabled:
-    "Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
+    "Your Microsoft 365 tenant admin hasn't enabled custom app upload permission for your account. You can't install your app to Teams!",
   NotSignIn: "No Microsoft 365 account login",
-  SignInSuccess: `Microsoft 365 Account (@account) is logged in and sideloading permission enabled`,
+  SignInSuccess: `Microsoft 365 Account (@account) is logged in and custom app upload permission is enabled`,
   SkipTrustingCert: "Skip trusting development certificate for localhost",
   HelpLink: `Please refer to @Link for more information.`,
   NgrokWarning:
@@ -119,7 +119,7 @@ export const runCommand = {
 };
 
 export const manifestChangesHintMessage =
-  "If you changed the manifest file, please run 'teamsfx provision %s' to install app again.";
+  "If you changed the manifest file, please run 'teamsapp provision %s' to install app again.";
 export const m365TenantHintMessage =
   "WARN: Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect. Please click https://aka.ms/teamsfx-m365-apps-prerequisites for more information about setting up dev environment for extending Teams apps across Microsoft 365.";
 export const m365SwitchedMessage =

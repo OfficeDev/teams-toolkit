@@ -1,16 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsfx-api";
-import { assign } from "lodash";
 import { getFxCore } from "../../activate";
 import { strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { EnvOption, ProjectFolderOption } from "../common";
+import { EnvOption, IgnoreLoadEnvOption, ProjectFolderOption } from "../common";
 
 export const publishCommand: CLICommand = {
   name: "publish",
   description: strings.command.publish.description,
-  options: [EnvOption, ProjectFolderOption],
+  options: [EnvOption, ProjectFolderOption, IgnoreLoadEnvOption],
   telemetry: {
     event: TelemetryEvent.Publish,
   },

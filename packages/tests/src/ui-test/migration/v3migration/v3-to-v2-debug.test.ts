@@ -44,7 +44,7 @@ describe("Migration Tests", function () {
 
       // verify popup
       await validateNotification(Notification.Incompatible);
-      await startDebugging();
+      await startDebugging("Debug (Chrome)");
       VSBrowser.instance.driver.sleep(Timeout.shortTimeWait);
       await stopDebugging();
       await validateNotification(Notification.TaskError);

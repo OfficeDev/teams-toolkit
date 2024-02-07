@@ -6,7 +6,7 @@
   "scripts": {
     "setup": "pnpm install && npm run build",
     "watch": "pnpm --parallel -r run watch",
-    "build": "pnpm -r run --filter=!@microsoft/teamsfx-react build && pnpm run --filter=@microsoft/teamsfx-react build",
+    "build": "pnpm -r run build",
     "precommit": "lint-staged",
     "clean": "pnpm -r exec rimraf node_modules",
     "prepare": "husky install"

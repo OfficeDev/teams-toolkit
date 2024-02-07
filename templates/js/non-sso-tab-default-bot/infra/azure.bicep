@@ -1,7 +1,6 @@
 @maxLength(20)
 @minLength(4)
 param resourceBaseName string
-param storageSku string
 
 @description('Required when create Azure Bot service')
 param botAadAppClientId string
@@ -14,25 +13,28 @@ param webAppSKU string
 
 @maxLength(42)
 param botDisplayName string
-
+param staticWebAppSku string
 param serverfarmsName string = resourceBaseName
 param webAppName string = resourceBaseName
 
 param storageName string = resourceBaseName
 param location string = resourceGroup().location
 
-// Azure Storage that hosts your static web site
-resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
-  kind: 'StorageV2'
-  location: location
-  name: storageName
-  properties: {
-    supportsHttpsTrafficOnly: true
-  }
+param staticWebAppName string = resourceBaseName
+
+// Azure Static Web App that hosts your static web site
+resource swa 'Microsoft.Web/staticSites@2022-09-01' = {
+  name: staticWebAppName
+  // SWA do not need location setting
+  location: 'centralus'
   sku: {
-    name: storageSku
+    name: staticWebAppSku
+    tier: staticWebAppSku
   }
+  properties:{}
 }
+
+var siteDomain = swa.properties.defaultHostname
 
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
@@ -92,10 +94,8 @@ module azureBotRegistration './botRegistration/azurebot.bicep' = {
   }
 }
 
-var siteDomain = replace(replace(storage.properties.primaryEndpoints.web, 'https://', ''), '/', '')
-
 // The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
-output TAB_AZURE_STORAGE_RESOURCE_ID string = storage.id // used in deploy stage
+output AZURE_STATIC_WEB_APPS_RESOURCE_ID string = swa.id
 output TAB_DOMAIN string = siteDomain
 output TAB_ENDPOINT string = 'https://${siteDomain}'
 output BOT_AZURE_APP_SERVICE_RESOURCE_ID string = webApp.id

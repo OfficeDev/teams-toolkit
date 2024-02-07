@@ -132,13 +132,26 @@
               "hidden": true
           },
           "internalConsoleOptions": "neverOpen"
+      },
+      {
+          "name": "Attach to Local Service",
+          "type": "node",
+          "request": "attach",
+          "port": 9229,
+          "restart": true,
+          "presentation": {
+              "group": "all",
+              "hidden": true
+          },
+          "internalConsoleOptions": "neverOpen"
       }
   ],
   "compounds": [
       {
           "name": "Debug in Teams (Edge)",
           "configurations": [
-              "Attach to Frontend in Teams (Edge)"
+              "Attach to Frontend in Teams (Edge)",
+              "Attach to Local Service"
           ],
           "preLaunchTask": "Start Teams App Locally",
           "presentation": {
@@ -150,7 +163,8 @@
       {
           "name": "Debug in Teams (Chrome)",
           "configurations": [
-              "Attach to Frontend in Teams (Chrome)"
+              "Attach to Frontend in Teams (Chrome)",
+              "Attach to Local Service"
           ],
           "preLaunchTask": "Start Teams App Locally",
           "presentation": {
@@ -162,7 +176,8 @@
       {
           "name": "Debug in Outlook (Edge)",
           "configurations": [
-              "Attach to Frontend in Outlook (Edge)"
+              "Attach to Frontend in Outlook (Edge)",
+              "Attach to Local Service"
           ],
           "preLaunchTask": "Start Teams App Locally",
           "presentation": {
@@ -174,7 +189,8 @@
       {
           "name": "Debug in Outlook (Chrome)",
           "configurations": [
-              "Attach to Frontend in Outlook (Chrome)"
+              "Attach to Frontend in Outlook (Chrome)",
+              "Attach to Local Service"
           ],
           "preLaunchTask": "Start Teams App Locally",
           "presentation": {
@@ -186,7 +202,8 @@
       {
           "name": "Debug in the Microsoft 365 app (Edge)",
           "configurations": [
-              "Attach to Frontend in the Microsoft 365 app (Edge)"
+              "Attach to Frontend in the Microsoft 365 app (Edge)",
+              "Attach to Local Service"
           ],
           "preLaunchTask": "Start Teams App Locally",
           "presentation": {
@@ -198,7 +215,8 @@
       {
           "name": "Debug in the Microsoft 365 app (Chrome)",
           "configurations": [
-              "Attach to Frontend in the Microsoft 365 app (Chrome)"
+              "Attach to Frontend in the Microsoft 365 app (Chrome)",
+              "Attach to Local Service"
           ],
           "preLaunchTask": "Start Teams App Locally",
           "presentation": {

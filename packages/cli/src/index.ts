@@ -31,11 +31,6 @@ export function initTelemetryReporter(): void {
  */
 export async function start(binName: "teamsfx" | "teamsapp"): Promise<void> {
   initTelemetryReporter();
-  if (binName === "teamsfx") {
-    logger.warning(
-      "Warning: We are planning to depreate 'teamsfx' as command signagure and move to 'teamsapp' instead in the next major version of Teams Toolkit CLI."
-    );
-  }
   cliTelemetry.reporter?.addSharedProperty(TelemetryProperty.BinName, binName); // trigger binary name for telemetry
   return startNewUX(binName);
 }

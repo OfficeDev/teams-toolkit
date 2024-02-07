@@ -67,7 +67,7 @@ describe("Remote debug Tests", function () {
   it(
     "[auto] [TypeScript] Run workflow app in remote environment (Azure)",
     {
-      testPlanCaseId: 15638185,
+      testPlanCaseId: 15638327,
       author: "v-annefu@microsoft.com",
     },
     async function () {

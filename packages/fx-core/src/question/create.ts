@@ -382,7 +382,7 @@ export class CapabilityOptions {
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     return [
       ...CapabilityOptions.copilotPlugins(),
-      ...CapabilityOptions.bots(),
+      ...CapabilityOptions.bots(inputs, true),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),
@@ -569,7 +569,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
     cliDescription: "Specifies the Microsoft Teams App capability.",
     cliName: CliQuestionName.Capability,
     cliShortName: "c",
-    cliChoiceListCommand: "teamsfx list templates",
+    cliChoiceListCommand: "teamsapp list templates",
     type: "singleSelect",
     staticOptions: CapabilityOptions.staticAll(),
     dynamicOptions: (inputs: Inputs) => {
@@ -756,6 +756,17 @@ export class NotificationTriggerOptions {
     };
   }
 
+  static functionsTimerTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "timer-functions-isolated",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.TIMER],
+      label: getLocalizedString("plugins.bot.triggers.timer-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.timer-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.timer-functions.detail"),
+    };
+  }
+
   static functionsHttpAndTimerTrigger(): HostTypeTriggerOptionItem {
     return {
       id: "http-and-timer-functions",
@@ -767,9 +778,31 @@ export class NotificationTriggerOptions {
     };
   }
 
+  static functionsHttpAndTimerTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "http-and-timer-functions-isolated",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.HTTP, NotificationTriggers.TIMER],
+      label: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.http-and-timer-functions.detail"),
+    };
+  }
+
   static functionsHttpTrigger(): HostTypeTriggerOptionItem {
     return {
       id: "http-functions",
+      hostType: HostType.Functions,
+      triggers: [NotificationTriggers.HTTP],
+      label: getLocalizedString("plugins.bot.triggers.http-functions.label"),
+      description: getLocalizedString("plugins.bot.triggers.http-functions.description"),
+      detail: getLocalizedString("plugins.bot.triggers.http-functions.detail"),
+    };
+  }
+
+  static functionsHttpTriggerIsolated(): HostTypeTriggerOptionItem {
+    return {
+      id: "http-functions-isolated",
       hostType: HostType.Functions,
       triggers: [NotificationTriggers.HTTP],
       label: getLocalizedString("plugins.bot.triggers.http-functions.label"),
@@ -1165,6 +1198,21 @@ export function appNameQuestion(): TextInputQuestion {
           pattern: AppNamePattern,
           maxLength: 30,
         };
+        if (input.length === 25) {
+          // show warning notification because it may exceed the Teams app name max length after appending suffix
+          const context = createContextV3();
+          if (previousInputs?.platform === Platform.VSCode) {
+            void context.userInteraction.showMessage(
+              "warn",
+              getLocalizedString("core.QuestionAppName.validation.lengthWarning"),
+              false
+            );
+          } else {
+            context.logProvider.warning(
+              getLocalizedString("core.QuestionAppName.validation.lengthWarning")
+            );
+          }
+        }
         const appName = input;
         const validateResult = jsonschema.validate(appName, schema);
         if (validateResult.errors && validateResult.errors.length > 0) {
@@ -1198,7 +1246,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
     name: QuestionNames.Samples,
     cliName: "sample-name",
     cliDescription: "Specifies the Microsoft Teams App sample name.",
-    cliChoiceListCommand: "teamsfx list samples",
+    cliChoiceListCommand: "teamsapp list samples",
     skipValidation: true,
     cliType: "argument",
     title: getLocalizedString("core.SampleSelect.title"),
@@ -1232,8 +1280,7 @@ function sampleSelectQuestion(): SingleSelectQuestion {
       "graph-connector-bot",
     ], //using a static list instead of dynamic list to avoid the delay of fetching sample list for CLL_HELP
     dynamicOptions: async () => {
-      await sampleProvider.fetchSampleConfig();
-      return sampleProvider.SampleCollection.samples.map((sample) => {
+      return (await sampleProvider.SampleCollection).samples.map((sample) => {
         return {
           id: sample.id,
           label: sample.title,
@@ -1393,6 +1440,25 @@ function getBotOptions(inputs: Inputs): OptionItem[] {
     options.push(botOptionItem(true, messageExtensionId));
   }
   return options;
+}
+
+export class ApiMessageExtensionAuthOptions {
+  static none(): OptionItem {
+    return {
+      id: "none",
+      label: "None",
+    };
+  }
+  static apiKey(): OptionItem {
+    return {
+      id: "api-key",
+      label: "API Key",
+    };
+  }
+
+  static all(): OptionItem[] {
+    return [ApiMessageExtensionAuthOptions.none(), ApiMessageExtensionAuthOptions.apiKey()];
+  }
 }
 
 function selectBotIdsQuestion(): MultiSelectQuestion {
@@ -1577,6 +1643,20 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   };
 }
 
+export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.ApiMEAuth,
+    title: getLocalizedString("core.createProjectQuestion.apiMessageExtensionAuth.title"),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.apiMessageExtensionAuth.placeholder"
+    ),
+    cliDescription: "The authentication type for the API.",
+    staticOptions: ApiMessageExtensionAuthOptions.all(),
+    default: ApiMessageExtensionAuthOptions.none().id,
+  };
+}
+
 export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
   // export for unit test
   return {
@@ -1734,6 +1814,16 @@ export function capabilitySubTree(): IQTreeNode {
             data: apiOperationQuestion(),
           },
         ],
+      },
+      {
+        condition: (inputs: Inputs) => {
+          return (
+            isApiKeyEnabled() &&
+            (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
+              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+          );
+        },
+        data: apiMessageExtensionAuthQuestion(),
       },
       {
         // programming language

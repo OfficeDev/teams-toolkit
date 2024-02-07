@@ -27,7 +27,7 @@ import {
   getSiteNameFromResourceId,
   getWebappSettings,
 } from "../../commonlib/utilities";
-import MockAzureAccountProvider from "@microsoft/teamsfx-cli/src/commonlib/azureLoginUserPassword";
+import MockAzureAccountProvider from "@microsoft/teamsapp-cli/src/commonlib/azureLoginUserPassword";
 import axios from "axios";
 
 describe("Basic Tab", function () {
@@ -72,7 +72,7 @@ describe("Basic Tab", function () {
         removeTeamsAppExtendToM365(path.join(projectPath, "teamsapp.yml"));
 
         // Provision
-        const result = await createResourceGroup(resourceGroupName, "eastus");
+        const result = await createResourceGroup(resourceGroupName, "westus");
         assert.isTrue(result);
 
         await setProvisionParameterValueV3(projectPath, envName, {

@@ -12,7 +12,13 @@ export type SampleGalleryState = {
   // keep filtering state here to recover after navigating back from detail page
   layout: "grid" | "list";
   query: string;
-  filterTags: SampleFilterOptionType;
+  filterTags: string[];
+};
+
+export type SampleDetailState = {
+  loading: boolean;
+  readme: string;
+  error?: Error;
 };
 
 export interface SampleInfo {
@@ -44,6 +50,7 @@ export type SampleProps = {
   selectSample: (id: string, triggerFrom: TelemetryTriggerFrom) => void;
   createSample: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
   viewGitHub: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
+  upgradeToolkit: (sample: SampleInfo, triggerFrom: TelemetryTriggerFrom) => void;
 };
 
 export type SampleFilterOptionType = {
@@ -57,8 +64,8 @@ export type SampleFilterProps = {
   filterOptions: SampleFilterOptionType;
   layout: "grid" | "list";
   query: string;
-  filterTags: SampleFilterOptionType;
+  filterTags: string[];
 
   onLayoutChanged: (layout: "grid" | "list") => void;
-  onFilterConditionChanged: (query: string, filterTags: SampleFilterOptionType) => void;
+  onFilterConditionChanged: (query: string, filterTags: string[]) => void;
 };

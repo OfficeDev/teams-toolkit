@@ -19,6 +19,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { editDotEnvFile } from "../../utils/commonUtils";
 import { Env } from "../../utils/env";
+import * as os from "os";
 
 class TodoListBackendTestCase extends CaseFactory {
   public sqlUserName: string;
@@ -134,5 +135,6 @@ new TodoListBackendTestCase(
   {
     teamsAppName: "toDoList-dev",
     skipValidation: true,
+    testRootFolder: path.resolve(os.homedir(), "resourse"), // fix eslint error
   }
 ).test();

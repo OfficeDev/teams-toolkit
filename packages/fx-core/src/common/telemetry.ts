@@ -4,6 +4,8 @@
 import { FxError, SystemError } from "@microsoft/teamsfx-api";
 import { TelemetryConstants } from "../component/constants";
 import { TOOLS, globalVars } from "../core/globalVars";
+import { ProjectTypeResult } from "./projectTypeChecker";
+import { assign } from "lodash";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -121,6 +123,21 @@ export enum TelemetryEvent {
   SkipDeploy = "skip-deploy",
   PublishInDeveloperPortal = "publish-in-developer-portal",
   MetaData = "metadata",
+  ProjectType = "project-type",
+}
+
+export enum ProjectTypeProps {
+  IsTeamsFx = "is-teamsfx",
+  TeamsfxConfigType = "teamsfx-config-type",
+  TeamsfxConfigVersion = "teamsfx-config-version",
+  TeamsfxVersionState = "teamsfx-version-state",
+  TeamsfxProjectId = "teamsfx-project-id",
+  TeamsManifest = "has-manifest",
+  TeamsManifestVersion = "manifest-version",
+  TeamsManifestAppId = "manifest-app-id",
+  TeamsManifestCapabilities = "manifest-capabilities",
+  TeamsJs = "teams-js",
+  Lauguages = "languages",
 }
 
 export enum TelemetrySuccess {
@@ -242,4 +259,25 @@ export function fillInTelemetryPropsForFxError(
     props[TelemetryConstants.properties.errorCat2] = error.categories[1];
     props[TelemetryConstants.properties.errorCat3] = error.categories[2];
   }
+}
+
+export function fillinProjectTypeProperties(
+  props: Record<string, string>,
+  projectTypeRes: ProjectTypeResult
+) {
+  const newProps = {
+    [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
+    [ProjectTypeProps.TeamsfxConfigType]: projectTypeRes.teamsfxConfigType || "",
+    [ProjectTypeProps.TeamsfxConfigVersion]: projectTypeRes.teamsfxConfigVersion || "",
+    [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",
+    [ProjectTypeProps.TeamsJs]: projectTypeRes.dependsOnTeamsJs ? "true" : "false",
+    [ProjectTypeProps.TeamsManifest]: projectTypeRes.hasTeamsManifest ? "true" : "false",
+    [ProjectTypeProps.TeamsManifestVersion]: projectTypeRes.manifestVersion || "",
+    [ProjectTypeProps.TeamsManifestAppId]: projectTypeRes.manifestAppId || "",
+    [ProjectTypeProps.TeamsfxProjectId]: projectTypeRes.teamsfxProjectId || "",
+    [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
+    [ProjectTypeProps.TeamsManifestCapabilities]:
+      projectTypeRes.manifestCapabilities?.join(",") || "",
+  };
+  assign(props, newProps);
 }

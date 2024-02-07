@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as inquirer from "@inquirer/prompts";
 import {
   InputTextConfig,
   MultiSelectConfig,
@@ -8,18 +9,13 @@ import {
   UserError,
   err,
 } from "@microsoft/teamsfx-api";
-import {
-  InputValidationError,
-  SelectSubscriptionError,
-  UnhandledError,
-} from "@microsoft/teamsfx-core";
+import { SelectSubscriptionError, UnhandledError } from "@microsoft/teamsfx-core";
 import { assert } from "chai";
-import fs from "fs-extra";
 import "mocha";
 import * as sinon from "sinon";
 import UI from "../../src/userInteraction";
 
-describe("UserInteraction(CLI)", () => {
+describe("UserInteraction(CLI) 2", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -149,6 +145,9 @@ describe("UserInteraction(CLI)", () => {
   });
 
   describe("inputText", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
     it("load default value error", async () => {
       const res = await UI.inputText({
         title: "test",
@@ -159,66 +158,16 @@ describe("UserInteraction(CLI)", () => {
       });
       assert.isTrue(res.isErr());
     });
-    it("InputValidationError", async () => {
-      const config: InputTextConfig = {
-        name: "testInput",
-        title: "input text",
-        validation: (input: string) => {
-          return "failed";
-        },
-      };
-      UI.updatePresetAnswer("testInput", "valuebrabrabra");
-      const result = await UI.inputText(config);
-      assert.isTrue(result.isErr());
-      if (result.isErr()) {
-        assert.isTrue(result.error instanceof InputValidationError);
-      }
-    });
     it("UnhandledError", async () => {
       sandbox.stub(UI, "input").resolves(err(new UnhandledError(new Error("test"))));
       const config: InputTextConfig = {
         name: "testInput",
         title: "input text",
       };
-      UI.interactive = true;
-      UI.clearPresetAnswers();
       const result = await UI.inputText(config);
       assert.isTrue(result.isErr());
       if (result.isErr()) {
         assert.isTrue(result.error instanceof UnhandledError);
-      }
-    });
-    it("InputValidationError - pass validation but failed on additionalValidation", async () => {
-      const config: InputTextConfig = {
-        name: "testInput",
-        title: "input text",
-        validation: (input: string) => {
-          return undefined;
-        },
-        additionalValidationOnAccept: (input: string) => {
-          return "failed";
-        },
-      };
-      UI.updatePresetAnswer("testInput", "somevalue");
-      const result = await UI.inputText(config);
-      assert.isTrue(result.isErr());
-      if (result.isErr()) {
-        assert.isTrue(result.error instanceof InputValidationError);
-      }
-    });
-    it("InputValidationError -failed on additionalValidation", async () => {
-      const config: InputTextConfig = {
-        name: "testInput",
-        title: "input text",
-        additionalValidationOnAccept: (input: string) => {
-          return "failed";
-        },
-      };
-      UI.updatePresetAnswer("testInput", "somevalue");
-      const result = await UI.inputText(config);
-      assert.isTrue(result.isErr());
-      if (result.isErr()) {
-        assert.isTrue(result.error instanceof InputValidationError);
       }
     });
   });
@@ -264,7 +213,7 @@ describe("UserInteraction(CLI)", () => {
 
   describe("selectFileOrInput", () => {
     it("happy path", async () => {
-      UI.updatePresetAnswer("test", "path");
+      sandbox.stub(inquirer, "input").resolves("somevalue");
       const res = await UI.selectFileOrInput({
         name: "test",
         title: "test",

@@ -23,17 +23,26 @@ import {
   Correlator,
   FxCore,
   environmentManager,
+  getCopilotStatus,
   getSideloadingStatus,
   setRegion,
   listDevTunnels,
   HubOptions,
   environmentNameManager,
+  TestToolInstallOptions,
+  DependencyStatus,
+  DepsManager,
+  assembleError,
+  DepsType,
+  CoreDepsLoggerAdapter,
+  CoreDepsTelemetryAdapter,
+  EmptyTelemetry,
 } from "@microsoft/teamsfx-core";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { VersionCheckRes } from "@microsoft/teamsfx-core/build/core/types";
 import path from "path";
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
-import { IServerConnection, Namespaces } from "./apis";
+import { DependencyStatusRPC, IServerConnection, Namespaces } from "./apis";
 import { callFunc } from "./customizedFuncAdapter";
 import LogProvider from "./providers/logger";
 import TelemetryReporter from "./providers/telemetry";
@@ -70,6 +79,7 @@ export default class ServerConnection implements IServerConnection {
       this.buildArtifactsRequest.bind(this),
       this.publishApplicationRequest.bind(this),
       this.deployTeamsAppManifestRequest.bind(this),
+      this.getCopilotStatusRequest.bind(this),
       this.getSideloadingStatusRequest.bind(this),
       this.getLaunchUrlRequest.bind(this),
 
@@ -85,6 +95,7 @@ export default class ServerConnection implements IServerConnection {
       this.copilotPluginAddAPIRequest.bind(this),
       this.loadOpenAIPluginManifestRequest.bind(this),
       this.listOpenAPISpecOperationsRequest.bind(this),
+      this.checkAndInstallTestTool.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -328,6 +339,16 @@ export default class ServerConnection implements IServerConnection {
     return ok(String(res));
   }
 
+  public async getCopilotStatusRequest(
+    accountToken: {
+      token: string;
+    },
+    token: CancellationToken
+  ): Promise<Result<string, FxError>> {
+    const res = await getCopilotStatus(accountToken.token, true);
+    return ok(String(res));
+  }
+
   public async addSsoRequest(inputs: Inputs, token: CancellationToken) {
     const corrId = inputs.correlationId ? inputs.correlationId : "";
     const func: Func = {
@@ -451,5 +472,39 @@ export default class ServerConnection implements IServerConnection {
       );
     }
     return standardizeResult(ok(res.value));
+  }
+
+  public async checkAndInstallTestTool(
+    options: TestToolInstallOptions & { correlationId: string },
+    token: CancellationToken
+  ): Promise<Result<DependencyStatusRPC, FxError>> {
+    const corrId = options.correlationId || "";
+    const depsManager = new DepsManager(
+      new CoreDepsLoggerAdapter(this.tools.logProvider),
+      this.tools.telemetryReporter
+        ? new CoreDepsTelemetryAdapter(this.tools.telemetryReporter)
+        : new EmptyTelemetry()
+    );
+    const res = await Correlator.runWithId(
+      corrId,
+      async (): Promise<Result<DependencyStatusRPC, FxError>> => {
+        try {
+          const depStatus = await depsManager.ensureDependency(DepsType.TestTool, false, options);
+          // convert DependencyStatus to pure JSON because after the default JSON.stringify and error message will be lost
+          return ok({
+            isInstalled: depStatus.isInstalled,
+            command: depStatus.command,
+            details: depStatus.details,
+            ...(depStatus.error !== undefined
+              ? { error: { message: depStatus.error.message, helpLink: depStatus.error.helpLink } }
+              : {}),
+          });
+        } catch (error: unknown) {
+          const fxError = assembleError(error, "Fx-VS");
+          return err(fxError);
+        }
+      }
+    );
+    return standardizeResult(res);
   }
 }

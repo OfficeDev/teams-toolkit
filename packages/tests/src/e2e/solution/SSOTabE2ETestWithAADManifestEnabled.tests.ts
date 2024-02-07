@@ -9,8 +9,8 @@ import { it } from "@microsoft/extra-shot-mocha";
 import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
-import M365Login from "@microsoft/teamsfx-cli/src/commonlib/m365Login";
-import { AadValidator, FrontendValidator } from "../../commonlib";
+import M365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
+import { AadValidator } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../utils/constants";
 import {
@@ -20,6 +20,7 @@ import {
   readContextMultiEnvV3,
   setAadManifestIdentifierUrisV3,
   createResourceGroup,
+  setStaticWebAppSkuNameToStandardBicep,
 } from "../commonUtils";
 import { Executor } from "../../utils/executor";
 
@@ -62,9 +63,11 @@ describe("SSO Tab with aad manifest enabled", () => {
 
       {
         // provision
-        const result = await createResourceGroup(appName + "-rg", "eastus");
+        const result = await createResourceGroup(appName + "-rg", "westus");
         expect(result).to.be.true;
         process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
+        // workaround free tier quota
+        await setStaticWebAppSkuNameToStandardBicep(projectPath, "dev");
         const { success } = await Executor.provision(projectPath);
         expect(success).to.be.true;
         console.log(`[Successfully] provision for ${projectPath}`);
@@ -75,10 +78,6 @@ describe("SSO Tab with aad manifest enabled", () => {
       // Validate Aad App
       const aad = AadValidator.init(context, false, M365Login);
       await AadValidator.validate(aad);
-
-      // Validate Tab Frontend
-      const frontend = FrontendValidator.init(context);
-      await FrontendValidator.validateProvision(frontend);
 
       const firstIdentifierUri =
         "api://first.com/291fc1b5-1146-4d33-b7b8-ec4c441b6b33";

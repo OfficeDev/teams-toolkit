@@ -313,7 +313,7 @@ describe("botAadAppCreate", async () => {
       );
       expect.fail();
     } catch (e) {
-      expect(e instanceof UnhandledUserError).to.be.true;
+      expect(e instanceof UnhandledError).to.be.true;
     }
   });
 });

@@ -50,7 +50,7 @@ import {
 } from "../../../common/spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
-import { isApiKeyEnabled } from "../../../common/featureFlags";
+import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
@@ -58,7 +58,7 @@ const fromApiSpecWithApiKeyComponentName = "copilot-plugin-existing-api-api-key"
 const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
-const apiSpecFolderName = "apiSpecificationFiles";
+const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 
@@ -160,15 +160,24 @@ export class CopilotPluginGenerator {
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
       if (apiKeyAuthData?.authName) {
-        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS, {
-          authName: apiKeyAuthData.authName,
-          openapiSpecPath: normalizePath(
-            path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
-          ),
-          registrationIdEnvName: `${apiKeyAuthData.authName.toUpperCase()}_REGISTRATION_ID`,
-        });
+        context.templateVariables = Generator.getDefaultVariables(
+          appName,
+          safeProjectNameFromVS,
+          inputs.targetFramework,
+          {
+            authName: apiKeyAuthData.authName,
+            openapiSpecPath: normalizePath(
+              path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
+            ),
+            registrationIdEnvName: `${apiKeyAuthData.authName.toUpperCase()}_REGISTRATION_ID`,
+          }
+        );
       } else {
-        context.templateVariables = Generator.getDefaultVariables(appName, safeProjectNameFromVS);
+        context.templateVariables = Generator.getDefaultVariables(
+          appName,
+          safeProjectNameFromVS,
+          inputs.targetFramework
+        );
       }
       const filters = inputs[QuestionNames.ApiOperation] as string[];
 
@@ -187,7 +196,8 @@ export class CopilotPluginGenerator {
 
       // validate API spec
       const allowAPIKeyAuth = isApiKeyEnabled();
-      const specParser = new SpecParser(url, { allowAPIKeyAuth });
+      const allowMultipleParameters = isMultipleParametersEnabled();
+      const specParser = new SpecParser(url, { allowAPIKeyAuth, allowMultipleParameters });
       const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
       const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);

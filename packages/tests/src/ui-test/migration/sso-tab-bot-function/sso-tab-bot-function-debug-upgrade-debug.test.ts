@@ -68,7 +68,7 @@ describe("Migration Tests", function () {
       await updateFunctionAuthorizationPolicy("4.2.5", projectPath);
 
       // local debug
-      await mirgationDebugTestContext.debugWithCLI("local");
+      await mirgationDebugTestContext.debugWithCLI("local", false);
 
       // upgrade
       await upgradeByTreeView();
@@ -79,7 +79,7 @@ describe("Migration Tests", function () {
 
       // local debug with TTK
       try {
-        await startDebugging();
+        await startDebugging("Debug (Chrome)");
         await waitForTerminal(
           LocalDebugTaskLabel.StartLocalTunnel,
           LocalDebugTaskResult.StartSuccess

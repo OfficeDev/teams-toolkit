@@ -46,8 +46,8 @@ export function happyPathTest(runtime: Runtime): void {
     it("Provision Resource: workflow bot", async function () {
       const cmd =
         runtime === Runtime.Node
-          ? `teamsfx new --interactive false --app-name ${appName} --capability workflow-bot --programming-language typescript`
-          : `teamsfx new --interactive false --runtime ${runtime} --app-name ${appName} --capability workflow-bot`;
+          ? `teamsapp new --interactive false --app-name ${appName} --capability workflow-bot --programming-language typescript`
+          : `teamsapp new --interactive false --runtime ${runtime} --app-name ${appName} --capability workflow-bot`;
       await execAsync(cmd, {
         cwd: testFolder,
         env: env,
@@ -56,7 +56,7 @@ export function happyPathTest(runtime: Runtime): void {
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
       // provision
-      const result = await createResourceGroup(appName + "-rg", "eastus");
+      const result = await createResourceGroup(appName + "-rg", "westus");
       expect(result).to.be.true;
       process.env["AZURE_RESOURCE_GROUP_NAME"] = appName + "-rg";
       const { success } = await Executor.provision(projectPath, envName);
@@ -74,7 +74,7 @@ export function happyPathTest(runtime: Runtime): void {
       }
 
       // deploy
-      await execAsyncWithRetry(`teamsfx deploy`, {
+      await execAsyncWithRetry(`teamsapp deploy`, {
         cwd: projectPath,
         env: env,
         timeout: 0,
@@ -93,14 +93,14 @@ export function happyPathTest(runtime: Runtime): void {
       }
 
       // test (validate)
-      await execAsyncWithRetry(`teamsfx validate --env ${envName}`, {
+      await execAsyncWithRetry(`teamsapp validate --env ${envName}`, {
         cwd: projectPath,
         env: env,
         timeout: 0,
       });
 
       // package
-      await execAsyncWithRetry(`teamsfx package --env ${envName}`, {
+      await execAsyncWithRetry(`teamsapp package --env ${envName}`, {
         cwd: projectPath,
         env: env,
         timeout: 0,

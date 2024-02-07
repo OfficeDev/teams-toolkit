@@ -59,6 +59,8 @@ export interface CreateProjectInputs extends Inputs {
   "openai-plugin-manifest"?: string;
   /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
+  /** @description Authentication Type */
+  "api-me-auth"?: "none" | "api-key";
   /** @description Programming Language */
   "programming-language"?: "javascript" | "typescript" | "csharp";
   /** @description Application name */

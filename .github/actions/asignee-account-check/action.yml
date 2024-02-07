@@ -1,0 +1,10 @@
+name: Issue Assignee Account Check
+description: Check if the issue assignee has a associated Microsoft account
+inputs:
+  token:
+    description: GitHub token with issue, comment, and label read/write permissions
+    required: true
+    
+runs:
+  using: 'node16'
+  main: 'index.js'

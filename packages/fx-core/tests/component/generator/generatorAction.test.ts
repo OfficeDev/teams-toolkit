@@ -11,6 +11,7 @@ import {
   GeneratorContext,
 } from "../../../src/component/generator/generatorAction";
 import { MockTools } from "../../core/utils";
+import { sampleDefaultOnActionError } from "../../../src/component/generator/generator";
 
 describe("Generator Actions", async () => {
   const tools = new MockTools();
@@ -20,6 +21,7 @@ describe("Generator Actions", async () => {
       name: "test",
       destination: "test",
       logProvider: tools.logProvider,
+      onActionError: sampleDefaultOnActionError,
     };
     try {
       downloadDirectoryAction.run(generatorContext);

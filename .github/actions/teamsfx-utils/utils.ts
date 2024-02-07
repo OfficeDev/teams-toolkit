@@ -23,3 +23,12 @@ export function getEmail(githubUser?: string): string {
         return "";
     }
 }
+
+export function sendAlert(subject: string, message: string, email?: string) {
+    if (!email) {
+        email = "zhaofengxu@microsoft.com"
+    }
+    setOutput('alert_to', email);
+    setOutput('alert_subject', subject);
+    setOutput('alert_body', message);
+}

@@ -11,7 +11,7 @@
         "send": "^0.18.0"
     },
     "devDependencies": {
-        "@types/node": "^14.0.0",
+        "@types/node": "^18.0.0",
         "@types/restify": "^8.5.6",
         "@types/send": "^0.17.1",
         "env-cmd": "^10.1.0",

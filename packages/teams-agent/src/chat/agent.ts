@@ -144,10 +144,10 @@ function getSubCommands(
 async function defaultHandler(
   request: AgentRequest
 ): Promise<SlashCommandHandlerResult> {
-  const defaultSystemPrompt1 = `You are an expert in all things Teams App development. The user needs your help with something related to either Azure and/or the Azure Extensions for VS Code. Do your best to answer their question. The user is currently using VS Code and has one or more Azure Extensions for VS Code installed. Do not overwhelm the user with too much information. Keep responses short and sweet.`;
+  const defaultSystemPrompt = `You are an expert in Teams Toolkit Extension for VS Code. The user wants to use Teams Toolkit Extension for VS Code. They want to use them to solve a problem or accomplish a task. Your job is to help the user learn about how they can use Teams Toolkit Extension for VS Code to solve a problem or accomplish a task. Do not suggest using any other tools other than what has been previously mentioned. Assume the the user is only interested in using Teams Toolkit Extension to develop teams app. Finally, do not overwhelm the user with too much information. Keep responses short and sweet.`;
 
   const { copilotResponded } = await verbatimCopilotInteraction(
-    defaultSystemPrompt1,
+    defaultSystemPrompt,
     request
   );
   if (!copilotResponded) {

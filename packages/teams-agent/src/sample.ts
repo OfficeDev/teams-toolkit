@@ -2,7 +2,7 @@ import axios from "axios";
 import { sendRequestWithTimeout } from "./util";
 
 type SampleConfigType = {
-  samples: Array<Record<string, unknown>>;
+  samples: SampleConfig[];
   filterOptions: Record<string, Array<string>>;
 };
 
@@ -12,6 +12,29 @@ export type SampleUrlInfo = {
   ref: string;
   dir: string;
 };
+
+export interface SampleConfig {
+  id: string;
+  onboardDate: Date;
+  title: string;
+  shortDescription: string;
+  fullDescription: string;
+  // matches the Teams app type when creating a new project
+  types: string[];
+  tags: string[];
+  time: string;
+  configuration: string;
+  suggested: boolean;
+  thumbnailUrl: string;
+  gifUrl?: string;
+  // maximum TTK & CLI version to run sample
+  maximumToolkitVersion?: string;
+  maximumCliVersion?: string;
+  // these 2 fields are used when external sample is upgraded and breaks in old TTK version.
+  minimumToolkitVersion?: string;
+  minimumCliVersion?: string;
+  downloadUrlInfo: SampleUrlInfo;
+}
 
 let cachedSamplesConfig: SampleConfigType | undefined;
 

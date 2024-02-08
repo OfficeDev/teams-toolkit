@@ -34,6 +34,7 @@ class ChefBotTestCase extends CaseFactory {
     console.log(`add OPENAI_API_KEY ${OPENAI_API_KEY} to .env.${env} file`);
   }
   override async onValidate(page: Page): Promise<void> {
+    console.log("Moked api key. Only verify happy path...");
     return await validateWelcomeAndReplyBot(page, {
       hasCommandReplyValidation: true,
       botCommand: "helloWorld",
@@ -41,6 +42,7 @@ class ChefBotTestCase extends CaseFactory {
     });
   }
   public override async onCliValidate(page: Page): Promise<void> {
+    console.log("Moked api key. Only verify happy path...");
     return await validateWelcomeAndReplyBot(page, {
       hasCommandReplyValidation: true,
       botCommand: "helloWorld",

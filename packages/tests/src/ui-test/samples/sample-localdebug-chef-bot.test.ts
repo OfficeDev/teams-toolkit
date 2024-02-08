@@ -5,9 +5,15 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
+import { Page } from "playwright";
+import {
+  TemplateProject,
+  LocalDebugTaskLabel,
+  ValidationContent,
+} from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
+import { validateWelcomeAndReplyBot } from "../../utils/playwrightOperation";
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
@@ -26,6 +32,20 @@ class ChefBotTestCase extends CaseFactory {
     OPENAI_API_KEY += "\nSECRET_OPENAI_API_KEY=yourapikey";
     fs.writeFileSync(envFile, OPENAI_API_KEY);
     console.log(`add OPENAI_API_KEY ${OPENAI_API_KEY} to .env.${env} file`);
+  }
+  override async onValidate(page: Page): Promise<void> {
+    return await validateWelcomeAndReplyBot(page, {
+      hasCommandReplyValidation: true,
+      botCommand: "helloWorld",
+      expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+    });
+  }
+  public override async onCliValidate(page: Page): Promise<void> {
+    return await validateWelcomeAndReplyBot(page, {
+      hasCommandReplyValidation: true,
+      botCommand: "helloWorld",
+      expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+    });
   }
 }
 

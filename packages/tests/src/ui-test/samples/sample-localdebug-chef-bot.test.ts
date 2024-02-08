@@ -42,7 +42,7 @@ class ChefBotTestCase extends CaseFactory {
     });
   }
   public override async onCliValidate(page: Page): Promise<void> {
-    console.log("Moked api key. Only verify happy path...");
+    console.log("Mocked api key. Only verify happy path...");
     return await validateWelcomeAndReplyBot(page, {
       hasCommandReplyValidation: true,
       botCommand: "helloWorld",

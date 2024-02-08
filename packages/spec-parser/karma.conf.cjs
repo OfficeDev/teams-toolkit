@@ -9,9 +9,7 @@ const karmaConfig = {
   // base path that will be used to resolve all patterns (eg. files, exclude)
   basePath: "./",
 
-  files: [
-    { pattern: './test/browser/*.browser.test.ts', type: 'module' },
-  ],
+  files: [{ pattern: "./test/browser/*.browser.test.ts", type: "module" }],
 
   plugins: [
     "karma-mocha",
@@ -29,9 +27,7 @@ const karmaConfig = {
   frameworks: ["mocha", "webpack"],
 
   // list of files / patterns to exclude
-  exclude: [
-    "src/*.ts",
-  ],
+  exclude: ["src/*.ts"],
 
   // preprocess matching files before serving them to the browser
   // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor

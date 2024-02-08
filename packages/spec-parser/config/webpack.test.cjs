@@ -1,4 +1,4 @@
-const webpack = require('webpack')
+const webpack = require("webpack");
 module.exports = {
   mode: "development",
   devtool: "source-map",
@@ -33,20 +33,20 @@ module.exports = {
     symlinks: true,
     fallback: {
       url: require.resolve("url/"),
-      http: require.resolve('stream-http'),
-      https: require.resolve('https-browserify'),
-      stream: require.resolve('stream-browserify'),
+      http: require.resolve("stream-http"),
+      https: require.resolve("https-browserify"),
+      stream: require.resolve("stream-browserify"),
       buffer: require.resolve("buffer"),
-      'process/browser': require.resolve('process/browser'),
+      "process/browser": require.resolve("process/browser"),
       util: false,
     },
   },
   plugins: [
     new webpack.ProvidePlugin({
-      process: 'process/browser',
+      process: "process/browser",
     }),
     new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
-  }),
+      Buffer: ["buffer", "Buffer"],
+    }),
   ],
 };

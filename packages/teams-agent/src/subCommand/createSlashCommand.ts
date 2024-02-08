@@ -1,10 +1,13 @@
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as tmp from "tmp";
 import * as vscode from "vscode";
 import { AgentRequest } from "../chat/agent";
 import { verbatimCopilotInteraction } from "../chat/copilotInteractions";
 import { SlashCommand, SlashCommandHandlerResult } from "../chat/slashCommands";
 import { ProjectMetadata, matchProject } from "../projectMatch";
 import { SampleUrlInfo, fetchOnlineSampleConfig } from '../sample';
-import { downloadSampleFiles, getSampleFileInfo } from "../util";
+import { buildFileTree, getSampleFileInfo } from "../util";
 
 const createCommandName = "create";
 export const CREATE_SAMPLE_COMMAND_ID = 'teamsAgent.createSample';
@@ -22,27 +25,23 @@ export function getCreateCommand(): SlashCommand {
 async function createHandler(request: AgentRequest): Promise<SlashCommandHandlerResult> {
   const matchedResult = await matchProject(request);
   if (matchedResult.length === 0) {
-    request.progress.report({
-      content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
-    });
+    request.response.text(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
   // TODO: handle multiple matches
   const firstMatch = matchedResult[0];
   if (firstMatch.type === 'sample') {
     await describeProject(firstMatch, request);
-    // TODO: display project folder structure
+    const folder = await showFileTree(firstMatch, request);
     const followupAction: vscode.ChatAgentFollowup = {
       commandId: CREATE_SAMPLE_COMMAND_ID,
-      args: [[firstMatch.id]],
+      args: [folder],
       title: vscode.l10n.t('Scaffold this project')
     };
     return { chatAgentResult: { slashCommand: 'create' }, followUp: [followupAction] };
   } else {
     // TODO: Call TTK to create template
-    request.progress.report({
-      content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
-    });
+    request.response.text(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
 }
@@ -57,23 +56,32 @@ async function describeProject(projectMetadata: ProjectMetadata, request: AgentR
   request.userPrompt = originPrompt;
 }
 
-export async function createCommand(sampleIds: string[]) {
+async function showFileTree(projectMetadata: ProjectMetadata, request: AgentRequest): Promise<string> {
+  request.response.text(vscode.l10n.t('\nHere is the files of the sample project.'));
+  const downloadUrlInfo = await getSampleDownloadUrlInfo(projectMetadata.id);
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
+  const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
+  const root = await buildFileTree(fileUrlPrefix, samplePaths, tempFolder, downloadUrlInfo.dir, 2, 20);
+  request.response.files(root);
+  return path.join(tempFolder, downloadUrlInfo.dir);
+}
+
+async function getSampleDownloadUrlInfo(sampleId: string): Promise<SampleUrlInfo> {
   const sampleConfig = await fetchOnlineSampleConfig();
-  const samples = sampleConfig.samples.filter((sample) => sampleIds.findIndex((id) => id === sample.id as string) >= 0);
-  if (!samples) {
-    return;
+  const sample = sampleConfig.samples.find((sample) => sample.id === sampleId);
+  let downloadUrlInfo = {
+    owner: "OfficeDev",
+    repository: "TeamsFx-Samples",
+    ref: "dev",
+    dir: sampleId,
+  };
+  if (sample && sample["downloadUrlInfo"]) {
+    downloadUrlInfo = sample["downloadUrlInfo"] as SampleUrlInfo;
   }
-  let sampleId = samples[0].id as string;
-  let sample = samples[0];
-  if (samples.length > 1) {
-    const sampleNames = samples.map((sample) => sample.title as string);
-    const sampleChoice = await vscode.window.showQuickPick(sampleNames);
-    if (!sampleChoice) {
-      return;
-    }
-    sample = samples.find((sample) => sample.title === sampleChoice)!;
-    sampleId = sample.id as string;
-  }
+  return downloadUrlInfo;
+}
+
+export async function createCommand(folder: string) {
   // Let user choose the project folder
   let dstPath = "";
   let folderChoice: string | undefined = undefined;
@@ -99,31 +107,19 @@ export async function createCommand(sampleIds: string[]) {
     }
     dstPath = customFolder[0].fsPath;
   }
-
-  let downloadUrlInfo = {
-    owner: "OfficeDev",
-    repository: "TeamsFx-Samples",
-    ref: "dev",
-    dir: sampleId,
-  };
-  if (sample["downloadUrlInfo"]) {
-    downloadUrlInfo = sample["downloadUrlInfo"] as SampleUrlInfo;
-  }
-  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
-  await downloadSampleFiles(
-    fileUrlPrefix,
-    samplePaths,
-    dstPath,
-    downloadUrlInfo.dir,
-    2,
-    20
-  );
-  if (folderChoice !== "Current workspace") {
-    void vscode.commands.executeCommand(
-      "vscode.openFolder",
-      vscode.Uri.file(dstPath),
-    );
-  } else {
-    vscode.window.showInformationMessage('Project is created in current workspace.');
+  try {
+    await fs.copy(folder, dstPath);
+    if (folderChoice !== "Current workspace") {
+      void vscode.commands.executeCommand(
+        "vscode.openFolder",
+        vscode.Uri.file(dstPath),
+      );
+    } else {
+      vscode.window.showInformationMessage('Project is created in current workspace.');
+      vscode.commands.executeCommand('workbench.view.extension.teamsfx');
+    }
+  } catch (error) {
+    console.error('Error copying files:', error);
+    vscode.window.showErrorMessage('Project cannot be created.');
   }
 }

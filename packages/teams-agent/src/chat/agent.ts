@@ -29,7 +29,7 @@ export type AgentRequest = {
   variables: Record<string, vscode.ChatVariableValue[]>;
 
   context: vscode.ChatAgentContext;
-  progress: vscode.Progress<vscode.ChatAgentExtendedProgress>;
+  response: vscode.ChatAgentExtendedResponseStream;
   token: vscode.CancellationToken;
 };
 
@@ -83,7 +83,7 @@ export function registerChatAgent() {
 async function handler(
   request: vscode.ChatAgentRequest,
   context: vscode.ChatAgentContext,
-  progress: vscode.Progress<vscode.ChatAgentExtendedProgress>,
+  response: vscode.ChatAgentExtendedResponseStream,
   token: vscode.CancellationToken
 ): Promise<vscode.ChatAgentResult2 | undefined> {
   const agentRequest: AgentRequest = {
@@ -91,7 +91,7 @@ async function handler(
     userPrompt: request.prompt,
     variables: request.variables,
     context: context,
-    progress: progress,
+    response: response,
     token: token,
   };
   let handleResult: SlashCommandHandlerResult | undefined;
@@ -151,7 +151,7 @@ async function defaultHandler(
     request
   );
   if (!copilotResponded) {
-    request.progress.report({
+    request.response.report({
       content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
     });
     return { chatAgentResult: { slashCommand: "" }, followUp: [] };

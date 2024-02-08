@@ -24,7 +24,7 @@ async function testHandler(request: AgentRequest): Promise<SlashCommandHandlerRe
   };
   for (const test of [...templateTests, ...sampleTests]) {
     request.userPrompt = test.prompt;
-    request.progress.report({
+    request.response.report({
       content: `test: ${test.prompt}    expected: ${test.expected}\n\n`
     });
     const result = await matchProject(request);
@@ -46,11 +46,11 @@ async function testHandler(request: AgentRequest): Promise<SlashCommandHandlerRe
     } else {
       statistics.failed++;
     }
-    request.progress.report({
+    request.response.report({
       content: `[${matched ? (isFirstResult ? "Passed" : "Acceptable") : "Failed"}] response: ${JSON.stringify(result.map((r) => r.id))}\n\n`
     });
   }
-  request.progress.report({
+  request.response.report({
     content: `${statistics.passed} passed. ${statistics.acceptable} acceptable. ${statistics.failed} failed.\n\n`
   });
 

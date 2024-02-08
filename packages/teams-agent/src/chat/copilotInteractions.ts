@@ -33,7 +33,7 @@ export async function verbatimCopilotInteraction(systemPrompt: string, request: 
   let joinedFragements = "";
   await queueCopilotInteraction((fragment) => {
     joinedFragements += fragment;
-    request.progress.report({ content: fragment });
+    request.response.report({ content: fragment });
   }, systemPrompt, request);
   if (joinedFragements === "") {
     return { copilotResponded: false, copilotResponse: undefined };
@@ -50,7 +50,7 @@ export async function getResponseAsStringCopilotInteraction(systemPrompt: string
   await queueCopilotInteraction((fragment) => {
     joinedFragements += fragment;
   }, systemPrompt, request);
-  debugCopilotInteraction(request.progress, `Copilot response:\n\n${joinedFragements}\n`);
+  debugCopilotInteraction(request.response, `Copilot response:\n\n${joinedFragements}\n`);
   return joinedFragements;
 }
 
@@ -104,15 +104,15 @@ async function doCopilotInteraction(onResponseFragment: (fragment: string) => vo
       },
     ];
 
-    debugCopilotInteraction(agentRequest.progress, `System Prompt:\n\n${systemPrompt}\n`);
-    debugCopilotInteraction(agentRequest.progress, `User Content:\n\n${agentRequest.userPrompt}\n`);
+    debugCopilotInteraction(agentRequest.response, `System Prompt:\n\n${systemPrompt}\n`);
+    debugCopilotInteraction(agentRequest.response, `User Content:\n\n${agentRequest.userPrompt}\n`);
 
     const request = access.makeRequest(messages, {}, agentRequest.token);
     for await (const fragment of request.response) {
       onResponseFragment(fragment);
     }
   } catch (e) {
-    debugCopilotInteraction(agentRequest.progress, `Failed to do copilot interaction with system prompt '${systemPrompt}'. Error: ${JSON.stringify(e)}`);
+    debugCopilotInteraction(agentRequest.response, `Failed to do copilot interaction with system prompt '${systemPrompt}'. Error: ${JSON.stringify(e)}`);
   }
 }
 

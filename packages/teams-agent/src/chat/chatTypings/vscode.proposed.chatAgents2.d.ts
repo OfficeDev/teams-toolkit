@@ -5,9 +5,23 @@
 
 declare module 'vscode' {
 
+  /**
+   * One request/response pair in chat history.
+   */
   export interface ChatAgentHistoryEntry {
+    /**
+     * The request that was sent to the chat agent.
+     */
     request: ChatAgentRequest;
-    response: ChatAgentContentProgress[];
+
+    /**
+     * The content that was received from the chat agent. Only the progress parts that represent actual content (not metadata) are represented.
+     */
+    response: (ChatAgentContentProgress | ChatResponseTextPart | ChatResponseMarkdownPart | ChatResponseFilesPart | ChatResponseAnchorPart)[];
+
+    /**
+     * The result that was received from the chat agent.
+     */
     result: ChatAgentResult2;
   }
 
@@ -50,6 +64,9 @@ declare module 'vscode' {
      * If the request resulted in an error, this property defines the error details.
      */
     errorDetails?: ChatAgentErrorDetails;
+
+    // TODO@API
+    // add CATCH-all signature [name:string]: string|boolean|number instead of `T extends...`
   }
 
   /**
@@ -167,7 +184,7 @@ declare module 'vscode' {
   /**
    * Will be invoked once after each request to get suggested followup questions to show the user. The user can click the followup to send it to the chat.
    */
-  export interface FollowupProvider<TResult extends ChatAgentResult2> {
+  export interface ChatAgentFollowupProvider<TResult extends ChatAgentResult2> {
     /**
      *
      * @param result The same instance of the result object that was returned by the chat agent, and it can be extended with arbitrary properties if needed.
@@ -215,7 +232,7 @@ declare module 'vscode' {
     /**
      * This provider will be called once after each request to retrieve suggested followup questions.
      */
-    followupProvider?: FollowupProvider<TResult>;
+    followupProvider?: ChatAgentFollowupProvider<TResult>;
 
     /**
      * When the user clicks this agent in `/help`, this text will be submitted to this subCommand
@@ -253,13 +270,6 @@ declare module 'vscode' {
     agentId: string;
 
     /**
-     * The {@link ChatAgentSubCommand subCommand} that was selected for this request. It is guaranteed that the passed subCommand
-     * is an instance that was previously returned from the {@link ChatAgentSubCommandProvider.provideSubCommands subCommand provider}.
-     * @deprecated this will be replaced by `subCommand`
-     */
-    slashCommand?: ChatAgentSubCommand;
-
-    /**
      * The name of the {@link ChatAgentSubCommand subCommand} that was selected for this request.
      */
     subCommand?: string;
@@ -267,16 +277,89 @@ declare module 'vscode' {
     variables: Record<string, ChatVariableValue[]>;
   }
 
+  export interface ChatAgentResponseStream {
+
+    text(value: string): ChatAgentResponseStream;
+
+    markdown(value: string | MarkdownString): ChatAgentResponseStream;
+
+    files(value: ChatAgentFileTreeData): ChatAgentResponseStream;
+
+    anchor(value: Uri | Location, title?: string): ChatAgentResponseStream;
+
+    // TODO@API this influences the rendering, it inserts new lines which is likely a bug
+    progress(value: string): ChatAgentResponseStream;
+
+    // TODO@API support non-file uris, like http://example.com
+    // TODO@API support mapped edits
+    reference(value: Uri | Location): ChatAgentResponseStream;
+
+    /**
+     * @deprecated use above methods instread
+     */
+    report(value: ChatAgentProgress): void;
+  }
+
+  // TODO@API
+  // support ChatResponseCommandPart
+  // support ChatResponseTextEditPart
+  // support ChatResponseCodeReferencePart
+
+  // TODO@API should the name suffix differentiate between rendered items (XYZPart)
+  // and metadata like XYZItem
+  export class ChatResponseTextPart {
+    value: string;
+    constructor(value: string);
+  }
+
+  export class ChatResponseMarkdownPart {
+    value: string | MarkdownString;
+    constructor(value: string | MarkdownString);
+  }
+
+  export class ChatResponseFilesPart {
+    value: ChatAgentFileTreeData;
+    constructor(value: ChatAgentFileTreeData);
+  }
+
+  export class ChatResponseAnchorPart {
+    value: Uri | Location | SymbolInformation;
+    title?: string;
+    constructor(value: Uri | Location | SymbolInformation, title?: string);
+  }
+
+  export class ChatResponseProgressPart {
+    value: string;
+    constructor(value: string);
+  }
+
+  export class ChatResponseReferencePart {
+    value: Uri | Location;
+    constructor(value: Uri | Location);
+  }
+
+  export type ChatResponsePart = ChatResponseTextPart | ChatResponseMarkdownPart | ChatResponseFilesPart | ChatResponseAnchorPart
+    | ChatResponseProgressPart | ChatResponseReferencePart;
+
+  /**
+   * @deprecated use ChatAgentResponseStream instead
+   */
   export type ChatAgentContentProgress =
     | ChatAgentContent
     | ChatAgentFileTree
     | ChatAgentInlineContentReference;
 
+  /**
+   * @deprecated use ChatAgentResponseStream instead
+   */
   export type ChatAgentMetadataProgress =
     | ChatAgentUsedContext
     | ChatAgentContentReference
     | ChatAgentProgressMessage;
 
+  /**
+   * @deprecated use ChatAgentResponseStream instead
+   */
   export type ChatAgentProgress = ChatAgentContentProgress | ChatAgentMetadataProgress;
 
   /**
@@ -373,7 +456,7 @@ declare module 'vscode' {
     documents: ChatAgentDocumentContext[];
   }
 
-  export type ChatAgentHandler = (request: ChatAgentRequest, context: ChatAgentContext, progress: Progress<ChatAgentProgress>, token: CancellationToken) => ProviderResult<ChatAgentResult2>;
+  export type ChatAgentHandler = (request: ChatAgentRequest, context: ChatAgentContext, response: ChatAgentResponseStream, token: CancellationToken) => ProviderResult<ChatAgentResult2>;
 
   export namespace chat {
 

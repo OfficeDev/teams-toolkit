@@ -1,0 +1,86 @@
+[
+  {
+    "prompt": "a bot app",
+    "expected": [
+      "bot"
+    ]
+  },
+  {
+    "prompt": "a bot app that uses AI to chat",
+    "expected": [
+      "ai-bot"
+    ]
+  },
+  {
+    "prompt": "a bot app that act as an assistant",
+    "expected": [
+      "ai-assistant-bot"
+    ]
+  },
+  {
+    "prompt": "an app that sends notification to me everyday",
+    "expected": [
+      "notification"
+    ]
+  },
+  {
+    "prompt": "a bot app that responds to chat commands",
+    "expected": [
+      "command-bot"
+    ]
+  },
+  {
+    "prompt": "an app that performs some multi-step tasks",
+    "expected": [
+      "workflow-bot"
+    ]
+  },
+  {
+    "prompt": "a tab app",
+    "expected": [
+      "tab-non-sso"
+    ]
+  },
+  {
+    "prompt": "a tab app using React framework",
+    "expected": [
+      "sso-launch-page"
+    ]
+  },
+  {
+    "prompt": "an app showing dashboard",
+    "expected": [
+      "dashboard-tab"
+    ]
+  },
+  {
+    "prompt": "an app shown in sharepoint",
+    "expected": [
+      "tab-spfx"
+    ]
+  },
+  {
+    "prompt": "an app that shows searched data when user types in Teams chat",
+    "expected": [
+      "search-app"
+    ]
+  },
+  {
+    "prompt": "an app that shows an interactive form when user types in Teams chat",
+    "expected": [
+      "collect-form-message-extension"
+    ]
+  },
+  {
+    "prompt": "an app that displays link contents when user types in Teams chat",
+    "expected": [
+      "link-unfurling"
+    ]
+  },
+  {
+    "prompt": "an outlook add-in app",
+    "expected": [
+      "outlook-addin-type"
+    ]
+  }
+]

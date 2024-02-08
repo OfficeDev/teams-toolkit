@@ -1,0 +1,156 @@
+[
+  {
+    "prompt": "an app that manages to-do list and works in Outlook",
+    "expected": [
+      "todo-list-with-Azure-backend-M365"
+    ]
+  },
+  {
+    "prompt": "an app to send notification to a lot of users",
+    "expected": [
+      "large-scale-notification"
+    ]
+  },
+  {
+    "prompt": "an app to show dashboard in SharePoint",
+    "expected": [
+      "spfx-productivity-dashboard"
+    ]
+  },
+  {
+    "prompt": "an app used in Teams meeting",
+    "expected": [
+      "hello-world-in-meeting",
+      "live-share-dice-roller",
+      "meetings-live-code-interview"
+    ]
+  },
+  {
+    "prompt": "an app that sends weather forcast to me everyday",
+    "expected": [
+      "stocks-update-notification-bot",
+      "notification"
+    ]
+  },
+  {
+    "prompt": "An app to manage projects, assign tasks, track progress, and set deadlines within Teams.",
+    "expected": [
+      "workflow-bot"
+    ]
+  },
+  {
+    "prompt": "An app to schedule meetings, send reminders, and manage RSVPs directly from Teams.",
+    "expected": [
+      "team-central-dashboard"
+    ]
+  },
+  {
+    "prompt": "An app to create, share, and collaboratively edit documents within Teams.",
+    "expected": [
+      "hello-world-teams-tab-and-outlook-add-in"
+    ]
+  },
+  {
+    "prompt": "An app to recognize and reward employees for their achievements, visible to the whole team.",
+    "expected": [
+      "team-central-dashboard"
+    ]
+  },
+  {
+    "prompt": "An app to track time spent on different tasks and projects within Teams.",
+    "expected": [
+      "todo-list-with-Azure-backend-M365"
+    ]
+  },
+  {
+    "prompt": "An app to submit, approve, and track expenses without leaving Teams.",
+    "expected": [
+      "workflow-bot"
+    ]
+  },
+  {
+    "prompt": "An app to provide mental health resources, mindfulness exercises, and stress management techniques within Teams.",
+    "expected": [
+      "ai-assistant-bot"
+    ]
+  },
+  {
+    "prompt": "An app to provide training materials, e-learning courses, and skill development resources within Teams.",
+    "expected": [
+      "ai-assistant-bot"
+    ]
+  },
+  {
+    "prompt": "An app to create and distribute surveys and polls, and collect responses within Teams.",
+    "expected": [
+      "notification"
+    ]
+  },
+  {
+    "prompt": "An app to facilitate virtual team building activities and games within Teams.",
+    "expected": [
+      "team-central-dashboard"
+    ]
+  },
+  {
+    "prompt": "An app to display real-time sales data and KPIs within Teams.",
+    "expected": [
+      "dashboard-tab"
+    ]
+  },
+  {
+    "prompt": "An app to manage customer support tickets and communication within Teams.",
+    "expected": [
+      "workflow-bot"
+    ]
+  },
+  {
+    "prompt": "An app to promote healthy habits, provide wellness tips, and track fitness goals within Teams.",
+    "expected": [
+      "notification"
+    ]
+  },
+  {
+    "prompt": "An app to submit, discuss, and vote on new ideas within Teams.",
+    "expected": [
+      "team-central-dashboard"
+    ]
+  },
+  {
+    "prompt": "An app to streamline the onboarding process for new hires within Teams.",
+    "expected": [
+      "workflow-bot"
+    ]
+  },
+  {
+    "prompt": "An app to sync and display your calendar within Teams.",
+    "expected": [
+      "graph-toolkit-one-productivity-hub"
+    ]
+  },
+  {
+    "prompt": "An app to submit, review, and discuss code within Teams.",
+    "expected": [
+      "meetings-live-code-interview",
+      "live-share-dice-roller"
+    ]
+  },
+  {
+    "prompt": "An app to manage business travel requests and approvals within Teams.",
+    "expected": [
+      "workflow-bot"
+    ]
+  },
+  {
+    "prompt": "An app to conduct and manage performance reviews within Teams.",
+    "expected": [
+      "workflow-bot"
+    ]
+  },
+  {
+    "prompt": "An app to create, share, and search for information within a company's knowledge base, directly from Teams.",
+    "expected": [
+      "search-app"
+    ]
+  }
+]

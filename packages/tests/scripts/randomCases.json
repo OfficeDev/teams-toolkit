@@ -49,6 +49,9 @@
             },
             "ubuntu-latest": {
                 "node-18": []
+            },
+            "macos-latest": {
+                "node-18": []
             }
         },
         "cases": [

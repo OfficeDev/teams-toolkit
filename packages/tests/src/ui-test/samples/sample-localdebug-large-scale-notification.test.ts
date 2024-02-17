@@ -5,10 +5,12 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
 import { AzServiceBusHelper } from "../../utils/azureCliHelper";
 import { SampledebugContext } from "./sampledebugContext";
+import { validateLargeNotificationBot } from "../../utils/playwrightOperation";
 import * as path from "path";
 import * as fs from "fs";
 
@@ -43,6 +45,20 @@ class BotSSOTestCase extends CaseFactory {
       azServiceBusHelper.connectString;
     fs.writeFileSync(configFilePath, JSON.stringify(configFile));
     console.log(`update connect string to ${configFilePath} file`);
+  }
+
+  override async onValidate(page: Page): Promise<void> {
+    return await validateLargeNotificationBot(
+      page,
+      "http://127.0.0.1:3978/api/notification"
+    );
+  }
+
+  public override async onCliValidate(page: Page): Promise<void> {
+    return await validateLargeNotificationBot(
+      page,
+      "http://127.0.0.1:3978/api/notification"
+    );
   }
 }
 

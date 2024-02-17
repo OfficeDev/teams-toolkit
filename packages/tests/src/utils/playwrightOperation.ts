@@ -2597,16 +2597,15 @@ export async function validateLargeNotificationBot(
     await RetryHandler.retry(async () => {
       try {
         const result = await axios.post(notificationEndpoint);
-        if (result.status !== 202) {
+        console.log("status code: ", result.status);
+        if (result.status !== 200) {
           throw new Error(
             `POST /api/notification failed: status code: '${result.status}', body: '${result.data}'`
           );
         }
         console.log("Successfully sent notification");
       } catch (e: any) {
-        console.log(
-          `[Command "welcome" not executed successfully] ${e.message}`
-        );
+        console.log(e);
       }
       try {
         await frame?.waitForSelector('p:has-text("Hello World")');

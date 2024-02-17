@@ -201,7 +201,7 @@ export class AzServiceBusHelper {
   public location: string;
   constructor(resourceGroupName: string, location?: string) {
     this.resourceGroupName = resourceGroupName;
-    this.namespaceName = "MyNameSpace123";
+    this.namespaceName = "MyNameSpace" + uuid.v4().substring(0, 4);
     this.location = location || "westus";
     this.connectString = "";
     this.queueName = "notification-messages";

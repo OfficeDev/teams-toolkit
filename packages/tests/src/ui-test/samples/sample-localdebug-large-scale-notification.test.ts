@@ -5,11 +5,8 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
-import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import { validateBot } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
-import { Env } from "../../utils/env";
 import { AzServiceBusHelper } from "../../utils/azureCliHelper";
 import { SampledebugContext } from "./sampledebugContext";
 import * as path from "path";
@@ -22,7 +19,7 @@ class BotSSOTestCase extends CaseFactory {
   ): Promise<void> {
     // create service bus
     const rgName = `${sampledebugContext.appName}-dev-rg`;
-    const azServiceBusHelper = new AzServiceBusHelper(rgName, "westus");
+    const azServiceBusHelper = new AzServiceBusHelper(rgName);
     await azServiceBusHelper.createServiceBus();
 
     // add service bus name into env file

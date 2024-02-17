@@ -197,12 +197,14 @@ export class AzServiceBusHelper {
   public resourceGroupName: string;
   public namespaceName: string;
   public connectString: string;
+  public queueName: string;
   public location: string;
   constructor(resourceGroupName: string, location?: string) {
     this.resourceGroupName = resourceGroupName;
     this.namespaceName = "MyNameSpace123";
     this.location = location || "westus";
     this.connectString = "";
+    this.queueName = "notification-messages";
   }
 
   public async createServiceBus() {
@@ -231,6 +233,11 @@ export class AzServiceBusHelper {
     console.log("Connect String:", connectString);
     this.connectString = connectString;
 
+    // create queue in namespace
+    console.log(`Create queue in namespace...`);
+    const { success: queueSuccess } = await this.createQueue();
+    expect(queueSuccess).to.be.true;
+
     console.log(`Service Bus created successfully`);
     return true;
   }
@@ -250,6 +257,12 @@ export class AzServiceBusHelper {
 
   public async createResourceGroup() {
     const command = `az group create -n ${this.resourceGroupName} -l ${this.location}`;
+    return await Executor.execute(command, process.cwd());
+  }
+
+  public async createQueue() {
+    const command = `az servicebus queue create --resource-group ${this.resourceGroupName} --namespace-name ${this.namespaceName} --name ${this.queueName}
+    `;
     return await Executor.execute(command, process.cwd());
   }
 

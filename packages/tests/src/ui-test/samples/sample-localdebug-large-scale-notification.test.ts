@@ -23,6 +23,7 @@ class BotSSOTestCase extends CaseFactory {
     // create service bus
     const rgName = `${sampledebugContext.appName}-dev-rg`;
     const azServiceBusHelper = new AzServiceBusHelper(rgName, "westus");
+    await azServiceBusHelper.createServiceBus();
 
     // add service bus name into env file
     const envFile = path.resolve(
@@ -31,7 +32,7 @@ class BotSSOTestCase extends CaseFactory {
       `.env.${env}`
     );
     let envFileString = fs.readFileSync(envFile, "utf-8");
-    envFileString += `\nSERVICE_BUS_QUEUE_NAME=${azServiceBusHelper.createServiceBus}`;
+    envFileString += `\nSERVICE_BUS_QUEUE_NAME=${azServiceBusHelper.namespaceName}`;
     fs.writeFileSync(envFile, envFileString);
     console.log(`add endpoint ${envFileString} to .env.${env} file`);
 
@@ -43,7 +44,7 @@ class BotSSOTestCase extends CaseFactory {
     const configFile = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
     configFile["Values"]["SERVICE_BUS_CONNECTION_STRING"] =
       azServiceBusHelper.connectString;
-    fs.writeFileSync(configFilePath, configFile);
+    fs.writeFileSync(configFilePath, JSON.stringify(configFile));
     console.log(`update connect string to ${configFilePath} file`);
   }
 }

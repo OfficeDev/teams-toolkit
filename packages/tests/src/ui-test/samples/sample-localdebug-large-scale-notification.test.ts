@@ -74,6 +74,6 @@ new LargeNotiTestCase(
     LocalDebugTaskLabel.StartApplication,
   ],
   {
-    debug: "cli",
+    debug: "ttk",
   }
 ).test();

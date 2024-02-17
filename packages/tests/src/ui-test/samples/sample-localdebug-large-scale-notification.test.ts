@@ -32,7 +32,7 @@ class BotSSOTestCase extends CaseFactory {
       `.env.${env}`
     );
     let envFileString = fs.readFileSync(envFile, "utf-8");
-    envFileString += `\nSERVICE_BUS_QUEUE_NAME=${azServiceBusHelper.namespaceName}`;
+    envFileString += `\nSERVICE_BUS_QUEUE_NAME=${azServiceBusHelper.queueName}`;
     fs.writeFileSync(envFile, envFileString);
     console.log(`add endpoint ${envFileString} to .env.${env} file`);
 

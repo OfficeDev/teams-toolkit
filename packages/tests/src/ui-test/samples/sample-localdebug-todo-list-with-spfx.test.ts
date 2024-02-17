@@ -49,6 +49,5 @@ new TodoListSpfxTestCase(
   {
     teamsAppName: "TodoListSPFx-local",
     type: "spfx",
-    skipValidation: true,
   }
 ).test();

@@ -9,7 +9,7 @@ import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import {
   initTeamsPage,
-  reopenTeamsPage,
+  validateTodoList,
 } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
@@ -35,29 +35,8 @@ class TodoListSpfxTestCase extends CaseFactory {
       }
     );
   }
-  public override async onReopenPage(
-    sampledebugContext: SampledebugContext,
-    teamsAppId: string,
-    options?:
-      | {
-          teamsAppName: string;
-          includeFunction: boolean;
-          npmName: string;
-          dashboardFlag: boolean;
-          type: string;
-        }
-      | undefined
-  ): Promise<Page> {
-    return await reopenTeamsPage(
-      sampledebugContext.context!,
-      teamsAppId,
-      Env.username,
-      Env.password,
-      {
-        teamsAppName: options?.teamsAppName,
-        type: options?.type,
-      }
-    );
+  public override async onValidate(page: Page): Promise<void> {
+    return await validateTodoList(page);
   }
 }
 

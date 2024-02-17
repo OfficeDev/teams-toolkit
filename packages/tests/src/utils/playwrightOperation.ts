@@ -2598,7 +2598,7 @@ export async function validateLargeNotificationBot(
       try {
         const result = await axios.post(notificationEndpoint);
         console.log("status code: ", result.status);
-        if (result.status !== 200) {
+        if (result.status !== 202) {
           throw new Error(
             `POST /api/notification failed: status code: '${result.status}', body: '${result.data}'`
           );

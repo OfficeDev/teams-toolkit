@@ -14,7 +14,7 @@ import { validateLargeNotificationBot } from "../../utils/playwrightOperation";
 import * as path from "path";
 import * as fs from "fs";
 
-class BotSSOTestCase extends CaseFactory {
+class LargeNotiTestCase extends CaseFactory {
   public override async onAfterCreate(
     sampledebugContext: SampledebugContext,
     env: "local" | "dev"
@@ -62,7 +62,7 @@ class BotSSOTestCase extends CaseFactory {
   }
 }
 
-new BotSSOTestCase(
+new LargeNotiTestCase(
   TemplateProject.LargeScaleBot,
   25929282,
   "v-ivanchen@microsoft.com",

@@ -43,22 +43,17 @@ class LargeNotiTestCase extends CaseFactory {
     const configFile = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
     configFile["Values"]["SERVICE_BUS_CONNECTION_STRING"] =
       azServiceBusHelper.connectString;
+    console.log(JSON.stringify(configFile));
     fs.writeFileSync(configFilePath, JSON.stringify(configFile));
     console.log(`update connect string to ${configFilePath} file`);
   }
 
   override async onValidate(page: Page): Promise<void> {
-    return await validateLargeNotificationBot(
-      page,
-      "http://127.0.0.1:3978/api/notification"
-    );
+    return await validateLargeNotificationBot(page);
   }
 
   public override async onCliValidate(page: Page): Promise<void> {
-    return await validateLargeNotificationBot(
-      page,
-      "http://127.0.0.1:3978/api/notification"
-    );
+    return await validateLargeNotificationBot(page);
   }
 }
 

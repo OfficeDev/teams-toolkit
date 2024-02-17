@@ -7,12 +7,10 @@
 
 import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import {
-  initTeamsPage,
-  reopenTeamsPage,
-} from "../../utils/playwrightOperation";
+import { initTeamsPage } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
+import { validateTodoList } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 
 class TodoListSpfxTestCase extends CaseFactory {
@@ -35,29 +33,8 @@ class TodoListSpfxTestCase extends CaseFactory {
       }
     );
   }
-  public override async onReopenPage(
-    sampledebugContext: SampledebugContext,
-    teamsAppId: string,
-    options?:
-      | {
-          teamsAppName: string;
-          includeFunction: boolean;
-          npmName: string;
-          dashboardFlag: boolean;
-          type: string;
-        }
-      | undefined
-  ): Promise<Page> {
-    return await reopenTeamsPage(
-      sampledebugContext.context!,
-      teamsAppId,
-      Env.username,
-      Env.password,
-      {
-        teamsAppName: options?.teamsAppName,
-        type: options?.type,
-      }
-    );
+  override async onValidate(page: Page): Promise<void> {
+    return await validateTodoList(page);
   }
 }
 
@@ -70,6 +47,5 @@ new TodoListSpfxTestCase(
   {
     teamsAppName: "TodoListSPFx-local",
     type: "spfx",
-    skipValidation: true,
   }
 ).test();

@@ -476,6 +476,13 @@ export async function initTeamsPage(
       );
       const frame = await frameElementHandle?.contentFrame();
 
+      try {
+        console.log("dismiss message");
+        await page.click('button:has-text("Dismiss")');
+      } catch (error) {
+        console.log("no message to dismiss");
+      }
+
       // default
       const addBtn = await frame?.waitForSelector(
         "button>span:has-text('Add')"

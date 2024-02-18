@@ -1080,8 +1080,9 @@ describe("scaffold question", () => {
       it("traverse in cli", async () => {
         mockedEnvRestore = mockedEnv({
           [FeatureFlagName.ApiKey]: "true",
+          TEAMSFX_CLI_DOTNET: "false",
         });
-        mockedEnvRestore = mockedEnv({ TEAMSFX_CLI_DOTNET: "false" });
+
         const inputs: Inputs = {
           platform: Platform.CLI,
         };

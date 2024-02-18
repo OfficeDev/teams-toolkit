@@ -3,11 +3,11 @@ import * as path from "path";
 import * as tmp from "tmp";
 import * as vscode from "vscode";
 import { AgentRequest } from "../chat/agent";
-import { verbatimCopilotInteraction } from "../chat/copilotInteractions";
+import { getResponseAsStringCopilotInteraction, verbatimCopilotInteraction } from "../chat/copilotInteractions";
 import { SlashCommand, SlashCommandHandlerResult } from "../chat/slashCommands";
 import { ProjectMetadata, matchProject } from "../projectMatch";
 import { SampleUrlInfo, fetchOnlineSampleConfig } from '../sample';
-import { buildFileTree, getSampleFileInfo } from "../util";
+import { buildFileTree, downloadSampleFiles, getSampleFileInfo } from "../util";
 
 const createCommandName = "create";
 export const CREATE_SAMPLE_COMMAND_ID = 'teamsAgent.createSample';
@@ -24,13 +24,15 @@ export function getCreateCommand(): SlashCommand {
 
 async function createHandler(request: AgentRequest): Promise<SlashCommandHandlerResult> {
   const matchedResult = await matchProject(request);
-  if (matchedResult.length === 0) {
-    request.response.markdown(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
+  // TODO: Call TTK to create templates
+  const matchedSamples = matchedResult.filter((result) => result.type === 'sample');
+
+  if (matchedSamples.length === 0) {
+    request.response.progress(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
-  // TODO: handle multiple matches
-  const firstMatch = matchedResult[0];
-  if (firstMatch.type === 'sample') {
+  if (matchedSamples.length === 1) {
+    const firstMatch = matchedSamples[0];
     await describeProject(firstMatch, request);
     const folder = await showFileTree(firstMatch, request);
     const createButton: vscode.Command = {
@@ -41,9 +43,20 @@ async function createHandler(request: AgentRequest): Promise<SlashCommandHandler
     request.response.button(createButton);
     return { chatAgentResult: { slashCommand: 'create' }, followUp: [] };
   } else {
-    // TODO: Call TTK to create template
-    request.response.markdown(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
-    return { chatAgentResult: { slashCommand: '' }, followUp: [] };
+    request.response.markdown(`I found ${matchedSamples.slice(0, 3).length} projects that match your description.\n`);
+    for (const project of matchedSamples.slice(0, 3)) {
+      const introduction = await getResponseAsStringCopilotInteraction(
+        `You are an advisor for Teams App developers. You need to describe the project based on name and description field of user's JSON content. You should control the output between 30 and 40 words.`,
+        request
+      );
+      request.response.markdown(`- ${project.name}: ${introduction}\n`);
+      request.response.button({
+        command: CREATE_SAMPLE_COMMAND_ID,
+        arguments: [project],
+        title: vscode.l10n.t('Scaffold this project')
+      });
+    }
+    return { chatAgentResult: { slashCommand: 'create' }, followUp: [] };
   }
 }
 
@@ -82,7 +95,7 @@ async function getSampleDownloadUrlInfo(sampleId: string): Promise<SampleUrlInfo
   return downloadUrlInfo;
 }
 
-export async function createCommand(folder: string) {
+export async function createCommand(folderOrSample: string | ProjectMetadata) {
   // Let user choose the project folder
   let dstPath = "";
   let folderChoice: string | undefined = undefined;
@@ -109,7 +122,13 @@ export async function createCommand(folder: string) {
     dstPath = customFolder[0].fsPath;
   }
   try {
-    await fs.copy(folder, dstPath);
+    if (typeof folderOrSample === "string") {
+      await fs.copy(folderOrSample, dstPath);
+    } else {
+      const downloadUrlInfo = await getSampleDownloadUrlInfo(folderOrSample.id);
+      const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
+      await downloadSampleFiles(fileUrlPrefix, samplePaths, dstPath, downloadUrlInfo.dir, 2, 20);
+    }
     if (folderChoice !== "Current workspace") {
       void vscode.commands.executeCommand(
         "vscode.openFolder",

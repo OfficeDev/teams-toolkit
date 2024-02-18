@@ -28,7 +28,7 @@ async function createHandler(request: AgentRequest): Promise<SlashCommandHandler
   const matchedSamples = matchedResult.filter((result) => result.type === 'sample');
 
   if (matchedSamples.length === 0) {
-    request.response.progress(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
+    request.response.markdown(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
   if (matchedSamples.length === 1) {

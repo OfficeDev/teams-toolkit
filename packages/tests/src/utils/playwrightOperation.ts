@@ -476,12 +476,6 @@ export async function initTeamsPage(
       );
       const frame = await frameElementHandle?.contentFrame();
 
-      try {
-        console.log("dismiss message");
-        await page.click('button:has-text("Dismiss")');
-      } catch (error) {
-        console.log("no message to dismiss");
-      }
       // default
       const addBtn = await frame?.waitForSelector(
         "button>span:has-text('Add')"
@@ -2584,19 +2578,15 @@ export async function validateTodoListSpfx(page: Page) {
     console.log("start to verify todo list spfx");
     try {
       // add task
-      const frameElementHandle = await page.waitForSelector(
-        "iframe[name='embedded-page-container']"
-      );
-      const frame = await frameElementHandle.contentFrame();
       console.log("Finding add task button...");
-      const taskBtn = await frame?.waitForSelector(
+      const taskBtn = await page?.waitForSelector(
         'span:has-text("+ Add task")'
       );
       console.log("Try to click task button");
       await taskBtn?.click();
-      await frame?.waitForTimeout(Timeout.shortTimeLoading);
+      await page?.waitForTimeout(Timeout.shortTimeLoading);
       console.log("Finding input box...");
-      const inputBox = await frame?.waitForSelector(
+      const inputBox = await page?.waitForSelector(
         'div.add div.description input[type="text"]'
       );
       console.log("Try to input 'Hello World'...");
@@ -2604,11 +2594,11 @@ export async function validateTodoListSpfx(page: Page) {
       await page.waitForTimeout(Timeout.shortTimeLoading);
       await inputBox?.press("Enter");
       console.log("check result...");
-      await frame?.waitForSelector(
+      await page?.waitForSelector(
         'div.item div.description input[type="text"]:has-text("Hello World")'
       );
       console.log("delete list");
-      const actionBtn = await frame?.waitForSelector("div.action button");
+      const actionBtn = await page?.waitForSelector("div.action button");
       await actionBtn?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
 

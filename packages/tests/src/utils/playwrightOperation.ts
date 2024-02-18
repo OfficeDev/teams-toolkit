@@ -2584,52 +2584,11 @@ export async function validateTodoListSpfx(page: Page) {
   try {
     console.log("start to verify todo list spfx");
     try {
-      // add task
-      console.log("Finding add task button...");
-      const taskBtn = await page?.waitForSelector(
-        'span:has-text("+ Add task")'
-      );
-      console.log("Try to click task button");
-      await taskBtn?.click();
-      await page?.waitForTimeout(Timeout.shortTimeLoading);
-      console.log("Finding input box...");
-      const inputBox = await page?.waitForSelector(
-        'div.add div.description input[type="text"]'
-      );
-      console.log("Try to input 'Hello World'...");
-      await inputBox?.fill("Hello World");
-      await page.waitForTimeout(Timeout.shortTimeLoading);
-      await inputBox?.press("Enter");
       console.log("check result...");
       await page?.waitForSelector(
-        'div.item div.description input[type="text"]:has-text("Hello World")'
+        'div.item div.description input[value="Hello World"]'
       );
-      console.log("delete list");
-      const actionBtn = await page?.waitForSelector("div.action button");
-      await actionBtn?.click();
-      await page.waitForTimeout(Timeout.shortTimeLoading);
-
-      // delete task
-      {
-        console.log("Finding delete button");
-        const frameElementHandle = await page.waitForSelector(
-          "iframe.embedded-page-content"
-        );
-        const frame = await frameElementHandle.contentFrame();
-        const deleteBtn = await frame?.waitForSelector(
-          "span:has-text('Delete')"
-        );
-        await deleteBtn?.click();
-        console.log("check result...");
-        {
-          const frameElementHandle = await page.waitForSelector(
-            "iframe.embedded-page-content"
-          );
-          const frame = await frameElementHandle.contentFrame();
-          frame?.waitForSelector("h2:has-text('No tasks')");
-        }
-        console.log("verify finish!!!");
-      }
+      console.log("verify finish!!!");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({

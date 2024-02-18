@@ -2585,11 +2585,13 @@ export async function validateTodoListSpfx(page: Page) {
     try {
       // add task
       const frameElementHandle = await page.waitForSelector(
-        "iframe.embedded-page-content"
+        "iframe[name='embedded-page-container']"
       );
       const frame = await frameElementHandle.contentFrame();
       console.log("Finding add task button...");
-      const taskBtn = await frame?.waitForSelector('span:has-text("Add task")');
+      const taskBtn = await frame?.waitForSelector(
+        'span:has-text("+ Add task")'
+      );
       console.log("Try to click task button");
       await taskBtn?.click();
       await frame?.waitForTimeout(Timeout.shortTimeLoading);

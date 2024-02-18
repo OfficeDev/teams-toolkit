@@ -26,7 +26,7 @@ export interface ITeamsChatAgentResult extends vscode.ChatAgentResult2 {
 export type AgentRequest = {
   slashCommand?: string;
   userPrompt: string;
-  variables: Record<string, vscode.ChatVariableValue[]>;
+  variables: readonly vscode.ChatAgentResolvedVariable[];
 
   context: vscode.ChatAgentContext;
   response: vscode.ChatAgentExtendedResponseStream;
@@ -72,7 +72,7 @@ export function registerChatAgent() {
       "resources",
       "teams.png"
     );
-    agent2.subCommandProvider = { provideSubCommands: getSubCommands };
+    agent2.commandProvider = { provideCommands: getCommands };
     agent2.followupProvider = { provideFollowups: followUpProvider };
     registerVSCodeCommands(agent2);
   } catch (e) {
@@ -87,7 +87,7 @@ async function handler(
   token: vscode.CancellationToken
 ): Promise<vscode.ChatAgentResult2 | undefined> {
   const agentRequest: AgentRequest = {
-    slashCommand: request.subCommand,
+    slashCommand: request.command,
     userPrompt: request.prompt,
     variables: request.variables,
     context: context,
@@ -132,9 +132,9 @@ function followUpProvider(
   return followUp;
 }
 
-function getSubCommands(
+function getCommands(
   _token: vscode.CancellationToken
-): vscode.ProviderResult<vscode.ChatAgentSubCommand[]> {
+): vscode.ProviderResult<vscode.ChatAgentCommand[]> {
   return agentSlashCommandsOwner.getSlashCommands().map(([name, config]) => ({
     name: name,
     description: config.shortDescription,
@@ -161,14 +161,11 @@ async function defaultHandler(
 }
 
 function registerVSCodeCommands(
-  agent2: vscode.ChatAgent2<vscode.ChatAgentResult2>
+  agent2: vscode.ChatAgent2
 ) {
   ext.context.subscriptions.push(
     agent2,
-    vscode.commands.registerCommand(CREATE_SAMPLE_COMMAND_ID, createCommand)
-  );
-  ext.context.subscriptions.push(
-    agent2,
+    vscode.commands.registerCommand(CREATE_SAMPLE_COMMAND_ID, createCommand),
     vscode.commands.registerCommand(EXECUTE_COMMAND_ID, executeCommand)
   );
 }

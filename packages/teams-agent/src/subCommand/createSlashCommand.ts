@@ -25,7 +25,7 @@ export function getCreateCommand(): SlashCommand {
 async function createHandler(request: AgentRequest): Promise<SlashCommandHandlerResult> {
   const matchedResult = await matchProject(request);
   if (matchedResult.length === 0) {
-    request.response.text(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
+    request.response.markdown(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
   // TODO: handle multiple matches
@@ -33,15 +33,16 @@ async function createHandler(request: AgentRequest): Promise<SlashCommandHandler
   if (firstMatch.type === 'sample') {
     await describeProject(firstMatch, request);
     const folder = await showFileTree(firstMatch, request);
-    const followupAction: vscode.ChatAgentFollowup = {
-      commandId: CREATE_SAMPLE_COMMAND_ID,
-      args: [folder],
+    const createButton: vscode.Command = {
+      command: CREATE_SAMPLE_COMMAND_ID,
+      arguments: [folder],
       title: vscode.l10n.t('Scaffold this project')
     };
-    return { chatAgentResult: { slashCommand: 'create' }, followUp: [followupAction] };
+    request.response.button(createButton);
+    return { chatAgentResult: { slashCommand: 'create' }, followUp: [] };
   } else {
     // TODO: Call TTK to create template
-    request.response.text(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
+    request.response.markdown(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
 }
@@ -57,12 +58,12 @@ async function describeProject(projectMetadata: ProjectMetadata, request: AgentR
 }
 
 async function showFileTree(projectMetadata: ProjectMetadata, request: AgentRequest): Promise<string> {
-  request.response.text(vscode.l10n.t('\nHere is the files of the sample project.'));
+  request.response.markdown(vscode.l10n.t('\nHere is the files of the sample project.'));
   const downloadUrlInfo = await getSampleDownloadUrlInfo(projectMetadata.id);
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
-  const root = await buildFileTree(fileUrlPrefix, samplePaths, tempFolder, downloadUrlInfo.dir, 2, 20);
-  request.response.files(root);
+  const nodes = await buildFileTree(fileUrlPrefix, samplePaths, tempFolder, downloadUrlInfo.dir, 2, 20);
+  request.response.filetree(nodes, vscode.Uri.file(path.join(tempFolder, downloadUrlInfo.dir)));
   return path.join(tempFolder, downloadUrlInfo.dir);
 }
 

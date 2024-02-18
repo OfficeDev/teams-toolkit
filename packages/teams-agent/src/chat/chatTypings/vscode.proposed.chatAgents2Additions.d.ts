@@ -5,137 +5,284 @@
 
 declare module 'vscode' {
 
-  export interface ChatAgent2<TResult extends ChatAgentResult2> {
-    onDidPerformAction: Event<ChatAgentUserActionEvent>;
-    supportIssueReporting?: boolean;
-  }
+	export interface ChatAgent2 {
+		onDidPerformAction: Event<ChatAgentUserActionEvent>;
+		supportIssueReporting?: boolean;
+	}
 
-  export interface ChatAgentErrorDetails {
-    /**
-     * If set to true, the message content is completely hidden. Only ChatAgentErrorDetails#message will be shown.
-     */
-    responseIsRedacted?: boolean;
-  }
+	export interface ChatAgentErrorDetails {
+		/**
+		 * If set to true, the message content is completely hidden. Only ChatAgentErrorDetails#message will be shown.
+		 */
+		responseIsRedacted?: boolean;
+	}
 
-  /**
-   * This is temporary until inline references are fully supported and adopted
-   */
-  export interface ChatAgentMarkdownContent {
-    markdownContent: MarkdownString;
-  }
+	/** @deprecated */
+	export interface ChatAgentMarkdownContent {
+		markdownContent: MarkdownString;
+	}
 
-  export interface ChatAgentDetectedAgent {
-    agentName: string;
-    command?: ChatAgentSubCommand;
-  }
+	// TODO@API fit this into the stream
+	export interface ChatAgentDetectedAgent {
+		agentName: string;
+		command?: ChatAgentCommand;
+	}
 
-  export interface ChatAgentVulnerability {
-    title: string;
-    description: string;
-    // id: string; // Later we will need to be able to link these across multiple content chunks.
-  }
+	// TODO@API fit this into the stream
+	export interface ChatAgentVulnerability {
+		title: string;
+		description: string;
+		// id: string; // Later we will need to be able to link these across multiple content chunks.
+	}
 
-  export interface ChatAgentContent {
-    vulnerabilities?: ChatAgentVulnerability[];
-  }
+	// TODO@API fit this into the stream
+	export interface ChatAgentContent {
+		vulnerabilities?: ChatAgentVulnerability[];
+	}
 
-  export type ChatAgentExtendedProgress = ChatAgentProgress
-    | ChatAgentMarkdownContent
-    | ChatAgentDetectedAgent;
+	/**
+	 * @deprecated use ChatAgentResponseStream instead
+	 */
+	export type ChatAgentContentProgress =
+		| ChatAgentContent
+		| ChatAgentInlineContentReference
+		| ChatAgentCommandButton;
 
-  export type ChatAgentExtendedResponseStream = ChatAgentResponseStream & Progress<ChatAgentExtendedProgress>;
+	/**
+	 * @deprecated use ChatAgentResponseStream instead
+	 */
+	export type ChatAgentMetadataProgress =
+		| ChatAgentUsedContext
+		| ChatAgentContentReference
+		| ChatAgentProgressMessage;
 
-  export interface ChatAgent2<TResult extends ChatAgentResult2> {
-    /**
-     * Provide a set of variables that can only be used with this agent.
-     */
-    agentVariableProvider?: { provider: ChatAgentCompletionItemProvider; triggerCharacters: string[] };
-  }
+	/**
+	 * @deprecated use ChatAgentResponseStream instead
+	 */
+	export type ChatAgentProgress = ChatAgentContentProgress | ChatAgentMetadataProgress;
 
-  export interface ChatAgentCompletionItemProvider {
-    provideCompletionItems(query: string, token: CancellationToken): ProviderResult<ChatAgentCompletionItem[]>;
-  }
+	/** @deprecated */
+	export interface ChatAgentProgressMessage {
+		message: string;
+	}
 
-  export class ChatAgentCompletionItem {
-    label: string | CompletionItemLabel;
-    values: ChatVariableValue[];
-    insertText?: string;
-    detail?: string;
-    documentation?: string | MarkdownString;
+	/** @deprecated */
 
-    constructor(label: string | CompletionItemLabel, values: ChatVariableValue[]);
-  }
+	export interface ChatAgentContentReference {
+		/**
+		 * The resource that was referenced.
+		 */
+		reference: Uri | Location;
+	}
 
-  export type ChatAgentExtendedHandler = (request: ChatAgentRequest, context: ChatAgentContext, response: ChatAgentExtendedResponseStream, token: CancellationToken) => ProviderResult<ChatAgentResult2>;
+	/**
+	 * A reference to a piece of content that will be rendered inline with the markdown content.
+	 */
+	export interface ChatAgentInlineContentReference {
+		/**
+		 * The resource being referenced.
+		 */
+		inlineReference: Uri | Location;
 
-  export namespace chat {
-    /**
-     * Create a chat agent with the extended progress type
-     */
-    export function createChatAgent<TResult extends ChatAgentResult2>(name: string, handler: ChatAgentExtendedHandler): ChatAgent2<TResult>;
-  }
+		/**
+		 * An alternate title for the resource.
+		 */
+		title?: string;
+	}
 
-  /*
-   * User action events
-   */
+	/**
+	 * Displays a {@link Command command} as a button in the chat response.
+	 */
+	export interface ChatAgentCommandButton {
+		command: Command;
+	}
 
-  export enum ChatAgentCopyKind {
-    // Keyboard shortcut or context menu
-    Action = 1,
-    Toolbar = 2
-  }
+	/**
+	 * A piece of the chat response's content. Will be merged with other progress pieces as needed, and rendered as markdown.
+	 */
+	export interface ChatAgentContent {
+		/**
+		 * The content as a string of markdown source.
+		 */
+		content: string;
+	}
 
-  export interface ChatAgentCopyAction {
-    // eslint-disable-next-line local/vscode-dts-string-type-literals
-    kind: 'copy';
-    codeBlockIndex: number;
-    copyKind: ChatAgentCopyKind;
-    copiedCharacters: number;
-    totalCharacters: number;
-    copiedText: string;
-  }
+	export interface ChatAgentDocumentContext {
+		uri: Uri;
+		version: number;
+		ranges: Range[];
+	}
 
-  export interface ChatAgentInsertAction {
-    // eslint-disable-next-line local/vscode-dts-string-type-literals
-    kind: 'insert';
-    codeBlockIndex: number;
-    totalCharacters: number;
-    newFile?: boolean;
-  }
+	// TODO@API fit this into the stream
+	export interface ChatAgentUsedContext {
+		documents: ChatAgentDocumentContext[];
+	}
 
-  export interface ChatAgentTerminalAction {
-    // eslint-disable-next-line local/vscode-dts-string-type-literals
-    kind: 'runInTerminal';
-    codeBlockIndex: number;
-    languageId?: string;
-  }
+	export interface ChatAgentResponseStream {
+		/**
+		 * @deprecated use above methods instread
+		 */
+		report(value: ChatAgentProgress): void;
+	}
 
-  export interface ChatAgentCommandAction {
-    // eslint-disable-next-line local/vscode-dts-string-type-literals
-    kind: 'command';
-    command: ChatAgentCommandFollowup;
-  }
+	/** @deprecated */
+	export type ChatAgentExtendedProgress = ChatAgentProgress
+		| ChatAgentMarkdownContent
+		| ChatAgentDetectedAgent;
 
-  export interface ChatAgentSessionFollowupAction {
-    // eslint-disable-next-line local/vscode-dts-string-type-literals
-    kind: 'followUp';
-    followup: ChatAgentFollowup;
-  }
+	export type ChatAgentExtendedResponseStream = ChatAgentResponseStream & {
+		/**
+		 * @deprecated
+		 */
+		report(value: ChatAgentExtendedProgress): void;
+	};
 
-  export interface ChatAgentBugReportAction {
-    // eslint-disable-next-line local/vscode-dts-string-type-literals
-    kind: 'bug';
-  }
+	export interface ChatAgent2 {
+		/**
+		 * Provide a set of variables that can only be used with this agent.
+		 */
+		agentVariableProvider?: { provider: ChatAgentCompletionItemProvider; triggerCharacters: string[] };
+	}
 
-  export interface ChatAgentUserActionEvent {
-    readonly result: ChatAgentResult2;
-    readonly action: ChatAgentCopyAction | ChatAgentInsertAction | ChatAgentTerminalAction | ChatAgentCommandAction | ChatAgentSessionFollowupAction | ChatAgentBugReportAction;
-  }
+	export interface ChatAgentCompletionItemProvider {
+		provideCompletionItems(query: string, token: CancellationToken): ProviderResult<ChatAgentCompletionItem[]>;
+	}
 
-  export interface ChatVariableValue {
-    /**
-     * An optional type tag for extensions to communicate the kind of the variable. An extension might use it to interpret the shape of `value`.
-     */
-    kind?: string;
-  }
+	export class ChatAgentCompletionItem {
+		label: string | CompletionItemLabel;
+		values: ChatVariableValue[];
+		insertText?: string;
+		detail?: string;
+		documentation?: string | MarkdownString;
+
+		constructor(label: string | CompletionItemLabel, values: ChatVariableValue[]);
+	}
+
+	export type ChatAgentExtendedRequestHandler = (request: ChatAgentRequest, context: ChatAgentContext, response: ChatAgentExtendedResponseStream, token: CancellationToken) => ProviderResult<ChatAgentResult2>;
+
+	export namespace chat {
+		/**
+		 * Create a chat agent with the extended progress type
+		 */
+		export function createChatAgent(name: string, handler: ChatAgentExtendedRequestHandler): ChatAgent2;
+	}
+
+	/*
+	 * User action events
+	 */
+
+	export enum ChatAgentCopyKind {
+		// Keyboard shortcut or context menu
+		Action = 1,
+		Toolbar = 2
+	}
+
+	export interface ChatAgentCopyAction {
+		// eslint-disable-next-line local/vscode-dts-string-type-literals
+		kind: 'copy';
+		codeBlockIndex: number;
+		copyKind: ChatAgentCopyKind;
+		copiedCharacters: number;
+		totalCharacters: number;
+		copiedText: string;
+	}
+
+	export interface ChatAgentInsertAction {
+		// eslint-disable-next-line local/vscode-dts-string-type-literals
+		kind: 'insert';
+		codeBlockIndex: number;
+		totalCharacters: number;
+		newFile?: boolean;
+	}
+
+	export interface ChatAgentTerminalAction {
+		// eslint-disable-next-line local/vscode-dts-string-type-literals
+		kind: 'runInTerminal';
+		codeBlockIndex: number;
+		languageId?: string;
+	}
+
+	export interface ChatAgentCommandAction {
+		// eslint-disable-next-line local/vscode-dts-string-type-literals
+		kind: 'command';
+		commandButton: ChatAgentCommandButton;
+	}
+
+	export interface ChatAgentFollowupAction {
+		// eslint-disable-next-line local/vscode-dts-string-type-literals
+		kind: 'followUp';
+		followup: ChatAgentFollowup;
+	}
+
+	export interface ChatAgentBugReportAction {
+		// eslint-disable-next-line local/vscode-dts-string-type-literals
+		kind: 'bug';
+	}
+
+	export interface ChatAgentUserActionEvent {
+		readonly result: ChatAgentResult2;
+		readonly action: ChatAgentCopyAction | ChatAgentInsertAction | ChatAgentTerminalAction | ChatAgentCommandAction | ChatAgentFollowupAction | ChatAgentBugReportAction;
+	}
+
+	export interface ChatVariableValue {
+		/**
+		 * An optional type tag for extensions to communicate the kind of the variable. An extension might use it to interpret the shape of `value`.
+		 */
+		kind?: string;
+	}
+
+	export interface ChatAgentCommand {
+		readonly isSticky2?: {
+			/**
+			 * Indicates that the command should be automatically repopulated.
+			 */
+			isSticky: true;
+
+			/**
+			 * This can be set to a string to use a different placeholder message in the input box when the command has been repopulated.
+			 */
+			placeholder?: string;
+		};
+	}
+
+	export interface ChatVariableResolverResponseStream {
+		/**
+		 * Push a progress part to this stream. Short-hand for
+		 * `push(new ChatResponseProgressPart(value))`.
+		 *
+		 * @param value
+		 * @returns This stream.
+		 */
+		progress(value: string): ChatVariableResolverResponseStream;
+
+		/**
+		 * Push a reference to this stream. Short-hand for
+		 * `push(new ChatResponseReferencePart(value))`.
+		 *
+		 * *Note* that the reference is not rendered inline with the response.
+		 *
+		 * @param value A uri or location
+		 * @returns This stream.
+		 */
+		reference(value: Uri | Location): ChatVariableResolverResponseStream;
+
+		/**
+		 * Pushes a part to this stream.
+		 *
+		 * @param part A response part, rendered or metadata
+		 */
+		push(part: ChatVariableResolverResponsePart): ChatVariableResolverResponseStream;
+	}
+
+	export type ChatVariableResolverResponsePart = ChatResponseProgressPart | ChatResponseReferencePart;
+
+	export interface ChatVariableResolver {
+		/**
+		 * A callback to resolve the value of a chat variable.
+		 * @param name The name of the variable.
+		 * @param context Contextual information about this chat request.
+		 * @param token A cancellation token.
+		 */
+		resolve2?(name: string, context: ChatVariableContext, stream: ChatVariableResolverResponseStream, token: CancellationToken): ProviderResult<ChatVariableValue[]>;
+	}
 }

@@ -9,10 +9,10 @@ import { type AgentRequest } from "./agent";
 export type CopilotInteractionResult = { copilotResponded: true, copilotResponse: string } | { copilotResponded: false, copilotResponse: undefined };
 
 const maxCachedAccessAge = 1000 * 30;
-let cachedAccess: { access: vscode.ChatAccess, requestedAt: number } | undefined;
-async function getChatAccess(): Promise<vscode.ChatAccess> {
+let cachedAccess: { access: vscode.LanguageModelAccess, requestedAt: number } | undefined;
+async function getChatAccess(): Promise<vscode.LanguageModelAccess> {
   if (cachedAccess === undefined || cachedAccess.access.isRevoked || cachedAccess.requestedAt < Date.now() - maxCachedAccessAge) {
-    const newAccess = await vscode.chat.requestChatAccess("copilot");
+    const newAccess = await vscode.lm.requestLanguageModelAccess("copilot-gpt-3.5-turbo");
     cachedAccess = { access: newAccess, requestedAt: Date.now() };
   }
   return cachedAccess.access;
@@ -93,22 +93,16 @@ async function runCopilotInteractionQueue() {
 async function doCopilotInteraction(onResponseFragment: (fragment: string) => void, systemPrompt: string, agentRequest: AgentRequest): Promise<void> {
   try {
     const access = await getChatAccess();
-    const messages = [
-      {
-        role: vscode.ChatMessageRole.System,
-        content: systemPrompt
-      },
-      {
-        role: vscode.ChatMessageRole.User,
-        content: agentRequest.userPrompt
-      },
+    const messages: vscode.LanguageModelMessage[] = [
+      new vscode.LanguageModelSystemMessage(systemPrompt),
+      new vscode.LanguageModelUserMessage(agentRequest.userPrompt),
     ];
 
     debugCopilotInteraction(agentRequest.response, `System Prompt:\n\n${systemPrompt}\n`);
     debugCopilotInteraction(agentRequest.response, `User Content:\n\n${agentRequest.userPrompt}\n`);
 
-    const request = access.makeRequest(messages, {}, agentRequest.token);
-    for await (const fragment of request.response) {
+    const request = access.makeChatRequest(messages, {}, agentRequest.token);
+    for await (const fragment of request.stream) {
       onResponseFragment(fragment);
     }
   } catch (e) {

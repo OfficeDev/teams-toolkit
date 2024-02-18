@@ -104,11 +104,9 @@ export async function buildFileTree(
   relativeFolderName: string,
   retryLimits: number,
   concurrencyLimits: number
-): Promise<vscode.ChatAgentFileTreeData> {
-  const root: vscode.ChatAgentFileTreeData = {
-    label: relativeFolderName,
-    uri: vscode.Uri.file(""),
-    type: vscode.FileType.Directory,
+): Promise<vscode.ChatResponseFileTree[]> {
+  const root: vscode.ChatResponseFileTree = {
+    name: relativeFolderName,
     children: [],
   };
   const downloadCallback = async (samplePath: string) => {
@@ -122,10 +120,10 @@ export async function buildFileTree(
     await fs.writeFile(filePath, Buffer.from(file.data));
   };
   await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
-  return root;
+  return root.children ?? [];
 }
 
-function fileTreeAdd(root: vscode.ChatAgentFileTreeData, relativePath: string, filePath: string) {
+function fileTreeAdd(root: vscode.ChatResponseFileTree, relativePath: string, filePath: string) {
   const filename = path.basename(relativePath);
   const folderName = path.dirname(relativePath);
   const segments = path.sep === "\\" ? folderName.split("\\") : folderName.split("/");
@@ -135,12 +133,10 @@ function fileTreeAdd(root: vscode.ChatAgentFileTreeData, relativePath: string, f
     if (segment === ".") {
       continue;
     }
-    let child = parent.children?.find((child) => child.label === segment);
+    let child = parent.children?.find((child) => child.name === segment);
     if (!child) {
       child = {
-        label: segment,
-        uri: vscode.Uri.file(filePath),
-        type: vscode.FileType.Directory,
+        name: segment,
         children: [],
       };
       parent.children?.push(child);
@@ -148,9 +144,7 @@ function fileTreeAdd(root: vscode.ChatAgentFileTreeData, relativePath: string, f
     parent = child;
   }
   parent.children?.push({
-    label: filename,
-    uri: vscode.Uri.file(filePath),
-    type: vscode.FileType.File,
+    name: filename,
   });
 }
 

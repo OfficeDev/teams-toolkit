@@ -108,15 +108,15 @@ export class CodeToCloud {
       .fsPath as string;
   }
 
-  async requsetChat(chatMessages: vscode.ChatMessage[]): Promise<string> {
-    const access = await vscode.chat.requestChatAccess("copilot");
-    const chatRequest = await access.makeRequest(
+  async requsetChat(chatMessages: vscode.LanguageModelMessage[]): Promise<string> {
+    const access = await vscode.lm.requestLanguageModelAccess("copilot");
+    const chatRequest = await access.makeChatRequest(
       chatMessages,
       { response_format: { type: "json_object" } }, // TODO: seems not work
       this.token
     );
     let response = "";
-    for await (const fragment of chatRequest.response) {
+    for await (const fragment of chatRequest.stream) {
       response += fragment;
     }
     return response;
@@ -199,7 +199,7 @@ export class CodeToCloud {
   async scanProject(): Promise<ScanProjectResult[]> {
     const folderStructureString = await this.constructFolderStructure();
 
-    const chatMessages: vscode.ChatMessage[] = scanProjectChatMessage(
+    const chatMessages: vscode.LanguageModelMessage[] = scanProjectChatMessage(
       folderStructureString,
       this.topN
     );
@@ -232,7 +232,7 @@ export class CodeToCloud {
     );
     const fileContentStr = Buffer.from(fileContent).toString("utf8");
 
-    const chatMessages: vscode.ChatMessage[] = analyzeSingleFileChatMessage(
+    const chatMessages: vscode.LanguageModelMessage[] = analyzeSingleFileChatMessage(
       filePath,
       fileContentStr
     );
@@ -295,18 +295,16 @@ export class CodeToCloud {
 const scanProjectChatMessage = (
   folderStructure: string,
   topNumber: number = 10
-): vscode.ChatMessage[] => {
-  const chatMessages: vscode.ChatMessage[] = [];
+): vscode.LanguageModelMessage[] => {
+  const chatMessages: vscode.LanguageModelMessage[] = [];
 
   // system message
-  const systemMessage: vscode.ChatMessage = new vscode.ChatMessage(
-    vscode.ChatMessageRole.System,
+  const systemMessage: vscode.LanguageModelMessage = new vscode.LanguageModelSystemMessage(
     "As a senior developer and consultant specializing in Azure services, your task is to examine the provided code file and recommend the most suitable Azure services for deploying the application."
   );
 
   // user message
-  const userMessage: vscode.ChatMessage = new vscode.ChatMessage(
-    vscode.ChatMessageRole.User,
+  const userMessage: vscode.LanguageModelMessage = new vscode.LanguageModelUserMessage(
     `
 Analyze the project with the given [Folder Structure], determine which source files need to be examined for recommending an Azure service. Proceed step by step and follow the [Guidance Rules] throughout the process. Response the answer follow by [Response Rules].
 
@@ -376,19 +374,17 @@ response:
 const analyzeSingleFileChatMessage = (
   filePath: string,
   fileContent: string
-): vscode.ChatMessage[] => {
-  const chatMessage: vscode.ChatMessage[] = [];
+): vscode.LanguageModelSystemMessage[] => {
+  const chatMessage: vscode.LanguageModelSystemMessage[] = [];
 
   // system message
-  const systemMessage: vscode.ChatMessage = new vscode.ChatMessage(
-    vscode.ChatMessageRole.System,
+  const systemMessage: vscode.LanguageModelSystemMessage = new vscode.LanguageModelSystemMessage(
     "As a senior developer and consultant specializing in Azure services, your task is to examine the provided code file"
   );
   chatMessage.push(systemMessage);
 
   // user message
-  const userMessage: vscode.ChatMessage = new vscode.ChatMessage(
-    vscode.ChatMessageRole.User,
+  const userMessage: vscode.LanguageModelSystemMessage = new vscode.LanguageModelUserMessage(
     `
 Analyze the source code or document of ${filePath} provided in the [Code or Document] section, offering precise and detailed information about the project's components, along with evidence and reasoning. Follow the [Guidance Rules] step by step. Response the answer follow by [Response Rules].
 

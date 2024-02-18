@@ -9,7 +9,7 @@ import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import {
   initTeamsPage,
-  validateTodoList,
+  validateTodoListSpfx,
 } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 import { SampledebugContext } from "./sampledebugContext";
@@ -36,7 +36,7 @@ class TodoListSpfxTestCase extends CaseFactory {
     );
   }
   public override async onValidate(page: Page): Promise<void> {
-    return await validateTodoList(page);
+    return await validateTodoListSpfx(page);
   }
 }
 

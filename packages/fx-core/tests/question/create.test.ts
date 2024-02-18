@@ -1126,6 +1126,9 @@ describe("scaffold question", () => {
           mockedEnvRestore();
         });
         it(" list operations successfully", async () => {
+          mockedEnvRestore = mockedEnv({
+            [FeatureFlagName.ApiKey]: "false",
+          });
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,

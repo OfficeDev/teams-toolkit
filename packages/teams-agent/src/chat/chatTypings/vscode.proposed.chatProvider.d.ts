@@ -5,40 +5,47 @@
 
 declare module 'vscode' {
 
-  export interface ChatResponseFragment {
-    index: number;
-    part: string;
-  }
+	export interface ChatResponseFragment {
+		index: number;
+		part: string;
+	}
 
-  // @API extension ship a d.ts files for their options
+	// @API extension ship a d.ts files for their options
 
-  /**
-   * Represents a large language model that accepts ChatML messages and produces a streaming response
-   */
-  export interface ChatResponseProvider {
-    provideChatResponse(messages: ChatMessage[], options: { [name: string]: any }, progress: Progress<ChatResponseFragment>, token: CancellationToken): Thenable<any>;
-  }
+	/**
+	 * Represents a large language model that accepts ChatML messages and produces a streaming response
+	 */
+	export interface ChatResponseProvider {
+		provideLanguageModelResponse2(messages: LanguageModelMessage[], options: { [name: string]: any }, extensionId: string, progress: Progress<ChatResponseFragment>, token: CancellationToken): Thenable<any>;
+	}
 
-  export interface ChatResponseProviderMetadata {
-    /**
-     * The name of the model that is used for this chat access. It is expected that the model name can
-     * be used to lookup properties like token limits and ChatML support
-     */
-    // TODO@API rename to model
-    name: string;
-  }
+	export interface ChatResponseProviderMetadata {
+		/**
+		 * The name of the model that is used for this chat access. It is expected that the model name can
+		 * be used to lookup properties like token limits and ChatML support
+		 */
+		// TODO@API rename to model
+		name: string;
 
-  export namespace chat {
+		/**
+		 * When present, this gates the use of `requestLanguageModelAccess` behind an authorization flow where
+		 * the user must approve of another extension accessing the models contributed by this extension.
+		 * Additionally, the extension can provide a label that will be shown in the UI.
+		 */
+		auth?: true | { label: string };
+	}
 
-    /**
-     * Register a LLM as chat response provider to the editor.
-     *
-     *
-     * @param id
-     * @param provider
-     * @param metadata
-     */
-    export function registerChatResponseProvider(id: string, provider: ChatResponseProvider, metadata: ChatResponseProviderMetadata): Disposable;
-  }
+	export namespace chat {
+
+		/**
+		 * Register a LLM as chat response provider to the editor.
+		 *
+		 *
+		 * @param id
+		 * @param provider
+		 * @param metadata
+		 */
+		export function registerChatResponseProvider(id: string, provider: ChatResponseProvider, metadata: ChatResponseProviderMetadata): Disposable;
+	}
 
 }

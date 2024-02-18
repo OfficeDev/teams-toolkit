@@ -97,6 +97,57 @@ export async function downloadSampleFiles(
   await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
 }
 
+export async function buildFileTree(
+  fileUrlPrefix: string,
+  samplePaths: string[],
+  dstPath: string,
+  relativeFolderName: string,
+  retryLimits: number,
+  concurrencyLimits: number
+): Promise<vscode.ChatResponseFileTree[]> {
+  const root: vscode.ChatResponseFileTree = {
+    name: relativeFolderName,
+    children: [],
+  };
+  const downloadCallback = async (samplePath: string) => {
+    const file = (await sendRequestWithRetry(async () => {
+      return await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
+    }, retryLimits)) as unknown as any;
+    const relativePath = path.relative(`${relativeFolderName}/`, samplePath);
+    const filePath = path.join(dstPath, samplePath);
+    fileTreeAdd(root, relativePath, filePath);
+    await fs.ensureFile(filePath);
+    await fs.writeFile(filePath, Buffer.from(file.data));
+  };
+  await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
+  return root.children ?? [];
+}
+
+function fileTreeAdd(root: vscode.ChatResponseFileTree, relativePath: string, filePath: string) {
+  const filename = path.basename(relativePath);
+  const folderName = path.dirname(relativePath);
+  const segments = path.sep === "\\" ? folderName.split("\\") : folderName.split("/");
+  let parent = root;
+  for (let i = 0; i < segments.length; i++) {
+    const segment = segments[i];
+    if (segment === ".") {
+      continue;
+    }
+    let child = parent.children?.find((child) => child.name === segment);
+    if (!child) {
+      child = {
+        name: segment,
+        children: [],
+      };
+      parent.children?.push(child);
+    }
+    parent = child;
+  }
+  parent.children?.push({
+    name: filename,
+  });
+}
+
 export function detectExtensionInstalled(extensionId: string): boolean {
   const res = vscode.extensions.getExtension(extensionId);
   return res !== undefined;

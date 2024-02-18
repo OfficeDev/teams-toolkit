@@ -9,7 +9,7 @@
     "url": "https://dev.azure.com/devdiv/DevDiv/_git/teamsagentPoc"
   },
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.86.0"
   },
   "extensionDependencies": [
     "github.copilot-chat"
@@ -18,12 +18,10 @@
     "onStartupFinished"
   ],
   "enabledApiProposals": [
-    "chat",
     "chatAgents2",
     "chatAgents2Additions",
     "chatProvider",
-    "chatRequestAccess",
-    "interactive"
+    "languageModels"
   ],
   "main": "./out/extension.js",
   "scripts": {
@@ -36,7 +34,8 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.11.0",
-    "@types/vscode": "^1.85.0",
+    "@types/tmp": "^0.2.6",
+    "@types/vscode": "^1.86.0",
     "@typescript-eslint/eslint-plugin": "^6.20.0",
     "@typescript-eslint/parser": "^6.20.0",
     "eslint": "^8.56.0",
@@ -46,6 +45,7 @@
     "axios": "^1.6.5",
     "dotenv": "^16.4.1",
     "dree": "^4.6.2",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.2.0",
+    "tmp": "^0.2.1"
   }
 }

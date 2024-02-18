@@ -8,7 +8,10 @@
 import * as vscode from 'vscode';
 
 import { ext } from '../extensionVariables';
-import { CREATE_SAMPLE_COMMAND_ID, createCommand, getCreateCommand } from '../subCommand/createSlashCommand';
+import {
+  CREATE_SAMPLE_COMMAND_ID, createCommand,
+  getCreateCommand
+} from '../subCommand/createSlashCommand';
 import { getAgentHelpCommand, helpCommandName } from '../subCommand/helpSlashCommand';
 import {
   DefaultNextStep, EXECUTE_COMMAND_ID, executeCommand, getNextStepCommand
@@ -26,10 +29,10 @@ export interface ITeamsChatAgentResult extends vscode.ChatAgentResult2 {
 export type AgentRequest = {
   slashCommand?: string;
   userPrompt: string;
-  variables: Record<string, vscode.ChatVariableValue[]>;
+  variables: readonly vscode.ChatAgentResolvedVariable[];
 
   context: vscode.ChatAgentContext;
-  progress: vscode.Progress<vscode.ChatAgentExtendedProgress>;
+  response: vscode.ChatAgentExtendedResponseStream;
   token: vscode.CancellationToken;
 };
 
@@ -72,7 +75,7 @@ export function registerChatAgent() {
       "resources",
       "teams.png"
     );
-    agent2.subCommandProvider = { provideSubCommands: getSubCommands };
+    agent2.commandProvider = { provideCommands: getCommands };
     agent2.followupProvider = { provideFollowups: followUpProvider };
     registerVSCodeCommands(agent2);
   } catch (e) {
@@ -83,15 +86,15 @@ export function registerChatAgent() {
 async function handler(
   request: vscode.ChatAgentRequest,
   context: vscode.ChatAgentContext,
-  progress: vscode.Progress<vscode.ChatAgentExtendedProgress>,
+  response: vscode.ChatAgentExtendedResponseStream,
   token: vscode.CancellationToken
 ): Promise<vscode.ChatAgentResult2 | undefined> {
   const agentRequest: AgentRequest = {
-    slashCommand: request.subCommand,
+    slashCommand: request.command,
     userPrompt: request.prompt,
     variables: request.variables,
     context: context,
-    progress: progress,
+    response: response,
     token: token,
   };
   let handleResult: SlashCommandHandlerResult | undefined;
@@ -132,9 +135,9 @@ function followUpProvider(
   return followUp;
 }
 
-function getSubCommands(
+function getCommands(
   _token: vscode.CancellationToken
-): vscode.ProviderResult<vscode.ChatAgentSubCommand[]> {
+): vscode.ProviderResult<vscode.ChatAgentCommand[]> {
   return agentSlashCommandsOwner.getSlashCommands().map(([name, config]) => ({
     name: name,
     description: config.shortDescription,
@@ -151,7 +154,7 @@ async function defaultHandler(
     request
   );
   if (!copilotResponded) {
-    request.progress.report({
+    request.response.report({
       content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
     });
     return { chatAgentResult: { slashCommand: "" }, followUp: [] };
@@ -161,14 +164,11 @@ async function defaultHandler(
 }
 
 function registerVSCodeCommands(
-  agent2: vscode.ChatAgent2<vscode.ChatAgentResult2>
+  agent2: vscode.ChatAgent2
 ) {
   ext.context.subscriptions.push(
     agent2,
-    vscode.commands.registerCommand(CREATE_SAMPLE_COMMAND_ID, createCommand)
-  );
-  ext.context.subscriptions.push(
-    agent2,
+    vscode.commands.registerCommand(CREATE_SAMPLE_COMMAND_ID, createCommand),
     vscode.commands.registerCommand(EXECUTE_COMMAND_ID, executeCommand)
   );
 }

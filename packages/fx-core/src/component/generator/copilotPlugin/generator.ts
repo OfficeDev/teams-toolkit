@@ -53,7 +53,6 @@ import {
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
-import { merge } from "lodash";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";

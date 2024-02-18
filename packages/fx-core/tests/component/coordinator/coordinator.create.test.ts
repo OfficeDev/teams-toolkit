@@ -842,7 +842,7 @@ describe("Office Addin", async () => {
   });
 });
 
-describe("Copilot plugin", async () => {
+describe("Copilot Plugin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   tools.ui = new MockedUserInteraction();

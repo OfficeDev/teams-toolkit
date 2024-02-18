@@ -33,7 +33,7 @@ import {
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { assert, expect } from "chai";
 import { createContextV3 } from "../../../src/component/utils";
-import { ProgrammingLanguage, QuestionNames } from "../../../src/question";
+import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../src/question";
 import {
   generateScaffoldingSummary,
   OpenAIPluginManifestHelper,
@@ -146,6 +146,7 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(getDefaultVariables.calledOnce);
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
+    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api");
   });
 
   it("success with api key auth", async function () {
@@ -175,6 +176,37 @@ describe("copilotPluginGenerator", function () {
     assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api-api-key");
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
+  });
+
+  it("API plugin success", async function () {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "path",
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.ApiSpecLocation]: "https://test.com",
+      [QuestionNames.ApiOperation]: ["operation1"],
+      supportedApisFromApiSpec: apiOperations,
+    };
+    const context = createContextV3();
+    sandbox
+      .stub(SpecParser.prototype, "validate")
+      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
+    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
+    const generateBasedOnSpec = sandbox
+      .stub(SpecParser.prototype, "generate")
+      .resolves({ allSuccess: true, warnings: [] });
+    const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
+    const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+
+    const result = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, "projectPath");
+
+    assert.isTrue(result.isOk());
+    assert.isTrue(getDefaultVariables.calledOnce);
+    assert.isTrue(downloadTemplate.calledOnce);
+    assert.isTrue(generateBasedOnSpec.calledOnce);
+    assert.equal(downloadTemplate.args[0][2], "api-plugin-existing-api");
   });
 
   it("success with api spec warning and generate warnings", async function () {

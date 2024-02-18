@@ -1,0 +1,7 @@
+# Build results
+dist/
+types/
+coverage-browser/
+test-results*.xml
+node_modules/
+*.tgz

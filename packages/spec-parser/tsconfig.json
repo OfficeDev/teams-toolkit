@@ -1,0 +1,37 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "module": "ES2015",
+    "outDir": "dist",
+    "declarationDir": "./dist",
+    "target": "es2016",
+    "lib": [
+      "es5",
+      "dom",
+      "es2015.promise",
+      "es2015.symbol",
+      "es2015.iterable",
+      "es2015.collection",
+      "es2015.symbol.wellknown",
+      "es2015.core",
+      "es2017.object",
+      "es2017.string"
+    ],
+    "declaration": true,
+    "sourceMap": true,
+    "importHelpers": true,
+    "strict": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": false, // TODO: temporarily disabled
+    "noUnusedParameters": false, // TODO: temporarily disabled
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "downlevelIteration": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
+  },
+  "exclude": ["dist/**/*", "config/*"]
+}

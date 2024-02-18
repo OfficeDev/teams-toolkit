@@ -1,6 +1,6 @@
 {
-    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
-    "manifestVersion": "1.16",
+    "$schema": "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.schema.json",
+    "manifestVersion": "devPreview",
     "version": "1.0.0",
     "id": "${{TEAMS_APP_ID}}",
     "packageName": "com.microsoft.teams.extension",
@@ -37,12 +37,14 @@
                     "description": "Find NuGet package according to the NuGet package name",
                     "title": "Find NuGet Package",
                     "type": "query",
+                    "semanticDescription": "This command retrieves detailed information about an npm package using the provided npm package name.",
                     "parameters": [
                         {
                             "name": "NuGetPackageName",
                             "title": "NuGet Package Name",
                             "description": "The name of the NuGet package to be searched",
-                            "inputType": "text"
+                            "inputType": "text",
+                            "semanticDescription": "This parameter is used to identify the specific npm package to be queried. Users should provide the exact name of the npm package they want to retrieve information for as the value of this parameter."
                         }
                     ]
                 }

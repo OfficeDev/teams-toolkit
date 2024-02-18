@@ -125,6 +125,9 @@ import {
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import "../component/feature/sso";
+import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
+import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
+import { AppStudioScopes } from "../common/tools";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -217,6 +220,77 @@ export class FxCore {
       } catch (e) {}
     }
   }
+
+  /**
+   * clean up provisioned resources
+   */
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "clean", reset: true }),
+    ErrorHandlerMW,
+    ProjectMigratorMWV3,
+    EnvLoaderMW(true, false),
+    ConcurrentLockerMW,
+    ContextInjectorMW,
+    EnvWriterMW,
+  ])
+  async clean(ctx: Context, inputs: InputsWithProjectPath): Promise<Result<undefined, FxError>> {
+    const templatePath = pathUtils.getYmlFilePath(inputs.projectPath, inputs.env);
+    const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
+    if (maybeProjectModel.isErr()) {
+      return err(maybeProjectModel.error);
+    }
+    const projectModel = maybeProjectModel.value;
+    let teamsAppId;
+    let botId;
+    let aadClientId;
+    let m365TitleId;
+    for (const action of projectModel.provision?.driverDefs ?? []) {
+      if (action.uses === "teamsApp/create") {
+        const keyName = action.writeToEnvironmentFile?.teamsAppId || "TEAMS_APP_ID";
+        teamsAppId = process.env[keyName];
+      } else if (action.uses === "botAadApp/create") {
+        const keyName = action.writeToEnvironmentFile?.botId || "BOT_ID";
+        botId = process.env[keyName];
+      } else if (action.uses === "aadApp/create") {
+        const keyName = action.writeToEnvironmentFile?.clientId || "AAD_APP_CLIENT_ID";
+        aadClientId = process.env[keyName];
+      } else if (action.uses === "teamsApp/extendToM365") {
+        const keyName = action.writeToEnvironmentFile?.titleId || "M365_TITLE_ID";
+        m365TitleId = process.env[keyName];
+      }
+    }
+    if (teamsAppId) {
+      // delete teams app in tdp
+      const appStudioTokenRes = await ctx.tokenProvider!.m365TokenProvider.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
+      const token = appStudioTokenRes.value;
+      await AppStudioClient.deleteApp(teamsAppId, token, ctx.logProvider);
+      // remove sideloaded app in teams
+      if (m365TitleId) {
+        // uninstall m365 app
+      }
+    }
+    if (botId) {
+      // delete bot reg in tdp
+      const appStudioTokenRes = await ctx.tokenProvider!.m365TokenProvider.getAccessToken({
+        scopes: AppStudioScopes,
+      });
+      if (appStudioTokenRes.isErr()) {
+        return err(appStudioTokenRes.error);
+      }
+      const token = appStudioTokenRes.value;
+      await BotAppStudioClient.deleteBot(token, botId);
+    }
+    if (aadClientId) {
+      // delete aad app
+    }
+    return ok(undefined);
+  }
+
   /**
    * lifecycle commands: deploy
    */

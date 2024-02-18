@@ -1151,10 +1151,60 @@ describe("scaffold question", () => {
           };
 
           const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+          const placeholder = (question as any).placeholder(inputs) as string;
+          const title = (question as any).title(inputs) as string;
 
           assert.isTrue(options.length === 2);
           assert.isTrue(options[0].id === "operation1");
           assert.isTrue(options[1].id === "operation2");
+          assert.equal(
+            placeholder,
+            getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+          );
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.apiSpec.operation.title")
+          );
+        });
+
+        it(" list operations for API plugin successfully", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+            ],
+          };
+
+          const options = (await question.dynamicOptions!(inputs)) as OptionItem[];
+          const placeholder = (question as any).placeholder(inputs) as string;
+          const title = (question as any).title(inputs) as string;
+
+          assert.isTrue(options.length === 2);
+          assert.isTrue(options[0].id === "operation1");
+          assert.isTrue(options[1].id === "operation2");
+          assert.equal(placeholder, "");
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
+          );
         });
 
         it(" validate operations successfully", async () => {

@@ -1503,7 +1503,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 const maximumLengthOfDetailsErrorMessageInInputBox = 90;
 
 export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
-  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
+  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will lose correlation id when user accepts the value.
   const validationOnAccept = async (
     input: string,
     inputs?: Inputs

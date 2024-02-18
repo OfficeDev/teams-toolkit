@@ -36,8 +36,6 @@ import {
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
   isYamlSpecFile,
-  generateType,
-  GenerateType,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -53,10 +51,10 @@ import {
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
+import { merge } from "lodash";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
-const fromApiSpecWithApiKeyComponentName = "copilot-plugin-existing-api-api-key";
 const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
@@ -66,10 +64,19 @@ const apiSpecJsonFileName = "openapi.json";
 
 const invalidApiSpecErrorName = "invalid-api-spec";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
-const isRemoteUrlTelemetryProperty = "remote-url";
 
-const apiPluginFromApiSpecComponentName = "api-plugin-existing-api";
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
+
+const enum telemetryProperties {
+  templateName = "template-name",
+  generateType = "generate-type",
+  isRemoteUrlTelemetryProperty = "remote-url",
+}
+
+enum GenerateType {
+  ME = "api-me",
+  ApiPlugin = "api-plugin",
+}
 
 function normalizePath(path: string): string {
   return "./" + path.replace(/\\/g, "/");
@@ -105,11 +112,9 @@ export class CopilotPluginGenerator {
       : authApi
       ? fromApiSpecWithApiKeyTemplateName
       : fromApiSpecTemplateName;
-    const componentName = isApiPlugin
-      ? apiPluginFromApiSpecComponentName
-      : authApi
-      ? fromApiSpecWithApiKeyComponentName
-      : fromApiSpecComponentName;
+    const componentName = fromApiSpecComponentName;
+
+    merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
 
     return await this.generate(
       context,
@@ -120,26 +125,6 @@ export class CopilotPluginGenerator {
       isApiPlugin,
       authApi?.data
     );
-  }
-
-  @hooks([
-    ActionExecutionMW({
-      enableTelemetry: true,
-      telemetryComponentName: apiPluginFromApiSpecComponentName,
-      telemetryEventName: TelemetryEvents.Generate,
-      errorSource: apiPluginFromApiSpecComponentName,
-    }),
-  ])
-  public static async generateApiPluginFromApiSpec(
-    context: Context,
-    inputs: Inputs,
-    destinationPath: string,
-    actionContext?: ActionContext
-  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    const templateName = apiPluginFromApiSpecTemplateName;
-    const componentName = apiPluginFromApiSpecComponentName;
-
-    return await this.generate(context, inputs, destinationPath, templateName, componentName, true);
   }
 
   @hooks([
@@ -234,8 +219,8 @@ export class CopilotPluginGenerator {
       if (templateRes.isErr()) return err(templateRes.error);
 
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
-        [isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
-        [generateType]: type,
+        [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
+        [telemetryProperties.generateType]: type,
       });
 
       // validate API spec
@@ -298,7 +283,7 @@ export class CopilotPluginGenerator {
       );
 
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
-        [generateType]: type,
+        [telemetryProperties.generateType]: type,
         [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)

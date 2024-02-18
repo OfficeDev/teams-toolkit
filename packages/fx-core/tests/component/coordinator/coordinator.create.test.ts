@@ -861,7 +861,7 @@ describe("Copilot Plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generateApiPluginFromApiSpec")
+      .stub(CopilotPluginGenerator, "generateFromApiSpec")
       .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
     const inputs: Inputs = {
@@ -881,7 +881,7 @@ describe("Copilot Plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generateApiPluginFromApiSpec")
+      .stub(CopilotPluginGenerator, "generateFromApiSpec")
       .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
 
     const inputs: Inputs = {

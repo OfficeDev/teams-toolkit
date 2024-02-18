@@ -259,18 +259,10 @@ class Coordinator {
         if (res.isErr()) {
           return err(res.error);
         }
-      } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
-        const res = await CopilotPluginGenerator.generateApiPluginFromApiSpec(
-          context,
-          inputs,
-          projectPath
-        );
-        if (res.isErr()) {
-          return err(res.error);
-        } else {
-          warnings = res.value.warnings;
-        }
-      } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
+      } else if (
+        meArchitecture === MeArchitectureOptions.apiSpec().id ||
+        capability === CapabilityOptions.copilotPluginApiSpec().id
+      ) {
         const res = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);

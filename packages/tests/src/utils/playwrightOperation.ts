@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { BrowserContext, Page, Frame } from "playwright";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
 import { getPlaywrightScreenshotPath } from "./nameUtil";
@@ -2585,9 +2585,26 @@ export async function validateTodoListSpfx(page: Page) {
     console.log("start to verify todo list spfx");
     try {
       console.log("check result...");
-      await page?.waitForSelector(
-        'div.item div.description input[value="Hello World"]'
+      const frameElementHandle = await page.waitForSelector(
+        "iframe.embedded-page-content"
       );
+      const frame = await frameElementHandle?.contentFrame();
+      const spfxFrame = frame?.childFrames()[0];
+      // title
+      console.log("check title");
+      const title = await spfxFrame?.waitForSelector(
+        "h2:has-text('To Do List')"
+      );
+      const titleContext = await title?.innerText();
+      expect(titleContext).to.equal("To Do List");
+      // task check
+      console.log("check task");
+      const task = await spfxFrame?.waitForSelector(
+        "div.item input[value='Hello World']"
+      );
+      console.log(await task?.inputValue());
+      expect(task).to.not.be.undefined;
+
       console.log("verify finish!!!");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);

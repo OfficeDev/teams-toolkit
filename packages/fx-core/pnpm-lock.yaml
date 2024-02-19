@@ -41,6 +41,9 @@ dependencies:
   '@microsoft/dev-tunnels-management':
     specifier: 1.1.9
     version: 1.1.9
+  '@microsoft/m365-spec-parser':
+    specifier: workspace:^
+    version: link:../spec-parser
   '@microsoft/teamsfx-api':
     specifier: workspace:*
     version: link:../api

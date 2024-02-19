@@ -47,7 +47,7 @@ import {
   SpecParser,
   ValidationStatus,
   WarningType,
-} from "../../../common/spec-parser";
+} from "@microsoft/m365-spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";

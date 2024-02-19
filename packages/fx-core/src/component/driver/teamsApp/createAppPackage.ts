@@ -342,7 +342,7 @@ export class CreateAppPackageDriver implements StepDriver {
     const runtimes = pluginContent.runtimes;
     if (runtimes && runtimes.length > 0) {
       for (const runtime of runtimes) {
-        if (runtime.type === "openApi" && runtime.spec?.url) {
+        if (runtime.type === "openapi" && runtime.spec?.url) {
           const specFile = path.resolve(path.dirname(pluginFile), runtime.spec.url);
           // add openapi spec
           const checkExistenceRes = await this.validateReferencedFile(specFile, appDirectory);

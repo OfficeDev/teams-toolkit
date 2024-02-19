@@ -5,7 +5,7 @@
     "runtimes": 
     [
         { 
-          "type": "openApi", 
+          "type": "openapi", 
           "auth": { "type": "none" },
           "spec": { "url": "./openai.yml" }
         }

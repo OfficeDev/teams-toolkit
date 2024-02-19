@@ -40,7 +40,8 @@ import { setTools } from "../../../src/core/globalVars";
 import { QuestionNames } from "../../../src/question";
 import { MockTools } from "../../core/utils";
 import * as fetch from "node-fetch";
-import { AccessGithubError, ReadFileError } from "../../../src/error";
+import { AccessGithubError, ReadFileError, UserCancelError } from "../../../src/error";
+import { Readable } from "stream";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -143,6 +144,24 @@ describe("OfficeAddinGenerator", function () {
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);
+  });
+
+  it("should scaffold taskpane failed, throw error", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+    };
+    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.OfficeAddinFolder] = undefined;
+    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+
+    sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
+    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(new UserCancelError());
+    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
+    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
   });
 
   it("should copy addin files and updateManifest if addin folder is specified with json manifest", async () => {
@@ -388,7 +407,19 @@ describe("helperMethods", async () => {
     afterEach(() => {
       sandbox.restore();
     });
-
+    it("should fetch fail", async () => {
+      const resp = new ResponseData();
+      sandbox.stub(fetch, "default").rejects(new Error());
+      const mockedStream = new MockedWriteStream();
+      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+      try {
+        await HelperMethods.downloadProjectTemplateZipFile("", "", "");
+        chai.assert.fail("should not reach here");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof AccessGithubError);
+      }
+    });
     it("should download project template zip file", async () => {
       const resp = new ResponseData();
       sandbox.stub(fetch, "default").resolves({ body: resp } as any);
@@ -461,22 +492,33 @@ describe("helperMethods", async () => {
       }
     }
 
-    beforeEach(() => {
-      sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
-      sandbox.stub<any, any>(unzip, "Extract").returns({});
-    });
-
     afterEach(() => {
       sandbox.restore();
     });
 
     it("work as expected", async () => {
+      sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
+      sandbox.stub<any, any>(unzip, "Extract").returns({});
       try {
-        HelperMethods.unzipProjectTemplate("");
+        await HelperMethods.unzipProjectTemplate("");
       } catch (err) {
         chai.assert.fail(err);
       }
     });
+
+    // it("Extract throws error ", async () => {
+    //   const mockStream = {} as any;
+    //   sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
+    //   sandbox.stub<any, any>(unzip, "Extract").throws(mockStream);
+    //   try {
+    //     // mockStream.read = () => {}; // _read is required for a readable stream
+    //     process.nextTick(() => mockStream.emit("error", new Error("Mock error")));
+    //     await HelperMethods.unzipProjectTemplate("");
+    //     chai.assert.fail("should not reach here");
+    //   } catch (err) {
+    //     chai.assert.isTrue(err instanceof ReadFileError);
+    //   }
+    // });
   });
 
   describe("moveUnzippedFiles", () => {

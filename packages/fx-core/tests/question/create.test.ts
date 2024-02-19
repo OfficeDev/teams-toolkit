@@ -1126,7 +1126,7 @@ describe("scaffold question", () => {
         afterEach(() => {
           mockedEnvRestore();
         });
-        it(" list operations successfully", async () => {
+        it("list operations successfully", async () => {
           mockedEnvRestore = mockedEnv({
             [FeatureFlagName.ApiKey]: "false",
           });
@@ -1171,7 +1171,7 @@ describe("scaffold question", () => {
           );
         });
 
-        it(" list operations for API plugin successfully", async () => {
+        it("list operations for API plugin successfully", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -1399,7 +1399,7 @@ describe("scaffold question", () => {
           );
         });
 
-        it(" list operations error", async () => {
+        it("list operations error", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,

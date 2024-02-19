@@ -11,6 +11,7 @@ import * as path from "path";
 import * as unzip from "unzipper";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import fetch from "node-fetch";
+import { AccessGithubError, ReadFileError } from "../../../error/common";
 
 const zipFile = "project.zip";
 
@@ -21,16 +22,19 @@ export class HelperMethods {
     projectBranch?: string
   ): Promise<void> {
     const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
-    const response = await fetch(projectTemplateZipFile, { method: "GET" });
+    let response: any;
+    try {
+      response = await fetch(projectTemplateZipFile, { method: "GET" });
+    } catch (e: any) {
+      throw new AccessGithubError(projectTemplateZipFile, "OfficeAddinGenerator", e);
+    }
+
     return new Promise<void>((resolve, reject) => {
       if (response.body) {
         response.body
           .pipe(fs.createWriteStream(path.resolve(projectFolder, zipFile)))
-          .on("error", (err) => {
-            reject(
-              // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-              `Unable to download project zip file for "${projectTemplateZipFile}".\n${err}`
-            );
+          .on("error", (err: Error) => {
+            reject(new AccessGithubError(projectTemplateZipFile, "OfficeAddinGenerator", err));
           })
           .on("close", () => {
             HelperMethods.unzipProjectTemplate(projectFolder)
@@ -42,7 +46,13 @@ export class HelperMethods {
               });
           });
       } else {
-        reject(`Response body is null.`);
+        reject(
+          new AccessGithubError(
+            projectTemplateZipFile,
+            "OfficeAddinGenerator",
+            new Error(`Response body of GET "${projectTemplateZipFile}" is null.`)
+          )
+        );
       }
     });
   }
@@ -53,9 +63,12 @@ export class HelperMethods {
       const readStream = fs.createReadStream(path.resolve(`${projectFolder}/${zipFile}`));
       readStream
         .pipe(unzip.Extract({ path: projectFolder }))
-        .on("error", function (err: unknown) {
+        .on("error", function (err: Error) {
           // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          reject(`Unable to unzip project zip file for "${projectFolder}".\n${err}`);
+          if (err.message) {
+            err.message = `Unable to unzip project zip file for "${projectFolder}", reason: ${err.message}`;
+          }
+          reject(new ReadFileError(err, "OfficeAddinGenerator"));
         })
         .on("close", () => {
           HelperMethods.moveUnzippedFiles(projectFolder);

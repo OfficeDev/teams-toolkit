@@ -30,6 +30,7 @@ import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
 import { getTemplate } from "../../../question/create";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { assembleError } from "../../../error";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -94,7 +95,7 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const jsonData = new projectsJsonData();
-        const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
+        const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, false);
 
         // Copy project template files from project repository
         if (projectRepoBranchInfo.repo) {
@@ -146,7 +147,7 @@ export class OfficeAddinGenerator {
     } catch (e) {
       process.chdir(workingDir);
       await importProgress.end(false, true);
-      return err(CopyFileError(e as Error));
+      return err(assembleError(e as Error));
     }
   }
 }

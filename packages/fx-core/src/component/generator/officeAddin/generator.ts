@@ -94,7 +94,7 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const jsonData = new projectsJsonData();
-        const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
+        const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, false);
 
         // Copy project template files from project repository
         if (projectRepoBranchInfo.repo) {

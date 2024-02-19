@@ -25,7 +25,7 @@ import * as path from "path";
 import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
 import { getLocalizedString } from "../../src/common/localizeUtils";
-import { ErrorType, ValidationStatus, WarningType, SpecParser } from "../../src/common/spec-parser";
+import { ErrorType, ValidationStatus, WarningType, SpecParser } from "@microsoft/m365-spec-parser";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { setTools } from "../../src/core/globalVars";

@@ -29,7 +29,7 @@ import {
   ValidationStatus,
   WarningType,
   SpecParserError,
-} from "../../../src/common/spec-parser";
+} from "@microsoft/m365-spec-parser";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { assert, expect } from "chai";
 import { createContextV3 } from "../../../src/component/utils";
@@ -44,7 +44,7 @@ import * as CopilotPluginHelper from "../../../src/component/generator/copilotPl
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../src/common/localizeUtils";
-import { ErrorResult } from "../../../src/common/spec-parser/interfaces";
+import { ErrorResult } from "@microsoft/m365-spec-parser";
 
 const openAIPluginManifest = {
   schema_version: "v1",

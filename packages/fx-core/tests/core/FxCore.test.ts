@@ -39,7 +39,7 @@ import {
   SpecParserError,
   ValidationStatus,
   WarningType,
-} from "../../src/common/spec-parser";
+} from "@microsoft/m365-spec-parser";
 import {
   DriverDefinition,
   DriverInstance,

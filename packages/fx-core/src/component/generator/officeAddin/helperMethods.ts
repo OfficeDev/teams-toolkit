@@ -64,11 +64,7 @@ export class HelperMethods {
       readStream
         .pipe(unzip.Extract({ path: projectFolder }))
         .on("error", function (err: Error) {
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-          if (err.message) {
-            err.message = `Unable to unzip project zip file for "${projectFolder}", reason: ${err.message}`;
-          }
-          reject(new ReadFileError(err, "OfficeAddinGenerator"));
+          unzipErrorHandler(projectFolder, reject, err);
         })
         .on("close", () => {
           HelperMethods.moveUnzippedFiles(projectFolder);
@@ -173,4 +169,11 @@ export class HelperMethods {
       }
     }
   }
+}
+
+export function unzipErrorHandler(projectFolder: string, reject: any, error: Error): void {
+  if (error.message) {
+    error.message = `Unable to unzip project zip file for "${projectFolder}", reason: ${error.message}`;
+  }
+  reject(new ReadFileError(error, "OfficeAddinGenerator"));
 }

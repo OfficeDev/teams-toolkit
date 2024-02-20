@@ -34,7 +34,10 @@ import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/Mani
 import { Generator } from "../../../src/component/generator/generator";
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
-import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
+import {
+  HelperMethods,
+  unzipErrorHandler,
+} from "../../../src/component/generator/officeAddin/helperMethods";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { QuestionNames } from "../../../src/question";
@@ -508,19 +511,14 @@ describe("helperMethods", async () => {
       }
     });
 
-    // it("Extract throws error ", async () => {
-    //   const mockStream = {} as any;
-    //   sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
-    //   sandbox.stub<any, any>(unzip, "Extract").throws(mockStream);
-    //   try {
-    //     mockStream.read = () => {}; // _read is required for a readable stream
-    //     process.nextTick(() => mockStream.emit("error", new Error("Mock error")));
-    //     HelperMethods.unzipProjectTemplate("");
-    //     chai.assert.fail("should not reach here");
-    //   } catch (err) {
-    //     chai.assert.isTrue(err instanceof ReadFileError);
-    //   }
-    // });
+    it("unzipErrorHandler", async () => {
+      let i = 0;
+      const reject = () => {
+        i++;
+      };
+      unzipErrorHandler("", reject, new Error());
+      chai.assert.equal(i, 1);
+    });
   });
 
   describe("moveUnzippedFiles", () => {

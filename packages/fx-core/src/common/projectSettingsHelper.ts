@@ -57,6 +57,19 @@ export function isValidProject(workspacePath?: string): boolean {
   }
 }
 
+export function isValidOfficeAddInProject(workspacePath?: string): boolean {
+  if (!workspacePath) return false;
+  try {
+    const manifestFilePath = path.join(workspacePath, "manifest.xml");
+    if (fs.pathExistsSync(manifestFilePath)) {
+      return true;
+    }
+    return false;
+  } catch (e) {
+    return false;
+  }
+}
+
 export function isValidProjectV3(workspacePath: string): boolean {
   const ymlFilePath = path.join(workspacePath, MetadataV3.configFile);
   const localYmlPath = path.join(workspacePath, MetadataV3.localConfigFile);

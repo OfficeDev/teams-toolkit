@@ -47,6 +47,7 @@ import {
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  isOfficeAddInProject,
   setUriEventHandler,
   unsetIsTeamsFxProject,
   workspaceUri,
@@ -87,7 +88,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
-  if (isTeamsFxProject) {
+  if (isTeamsFxProject || isOfficeAddInProject) {
     activateTeamsFxRegistration(context);
   }
 
@@ -99,6 +100,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isOfficeAddIn",
+    isOfficeAddInProject
+  );
 
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
@@ -217,6 +224,13 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // Documentation
   registerInCommandController(context, "fx-extension.openDocument", handlers.openDocumentHandler);
+
+  // Publish to App Source documentation
+  const publishAppSource = vscode.commands.registerCommand(
+    "fx-extension.publishToAppSource",
+    () => {}
+  );
+  context.subscriptions.push(publishAppSource);
 
   // README
   const openReadMeCmd = vscode.commands.registerCommand("fx-extension.openReadMe", (...args) =>
@@ -479,6 +493,36 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.checkCopilotCallback, args)
   );
   context.subscriptions.push(checkCopilotCallback);
+
+  const validateApplication = vscode.commands.registerCommand(
+    "fx-extension.validateApplication",
+    (...args) => {}
+  );
+  context.subscriptions.push(validateApplication);
+
+  const openManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.editManifest",
+    (...args) => {}
+  );
+  context.subscriptions.push(openManifestCmd);
+
+  const generateManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.generateManifestGUID",
+    (...args) => {}
+  );
+  context.subscriptions.push(generateManifestCmd);
+
+  const aiAssistantCmd = vscode.commands.registerCommand(
+    "fx-extension.AIAssistant",
+    (...args) => {}
+  );
+  context.subscriptions.push(aiAssistantCmd);
+
+  const analyzeComVstoAddInCmd = vscode.commands.registerCommand(
+    "fx-extension.AnalyzeComVstoAddIn",
+    (...args) => {}
+  );
+  context.subscriptions.push(analyzeComVstoAddInCmd);
 }
 
 /**
@@ -580,11 +624,17 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openHelpFeedbackLinkCmd);
 
-  const openDocumentLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.openDocumentLink",
-    (...args) => Correlator.run(handlers.openDocumentLinkHandler, args)
+  const openGetStartedLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openGetStartedAddIn",
+    (...args) => {}
   );
-  context.subscriptions.push(openDocumentLinkCmd);
+  context.subscriptions.push(openGetStartedLinkCmd);
+
+  const openTutorialLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openAddInTutorials",
+    (...args) => {}
+  );
+  context.subscriptions.push(openTutorialLinkCmd);
 
   const aadManifestTemplateCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.openPreviewAadFile",

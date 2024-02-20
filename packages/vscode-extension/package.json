@@ -45,6 +45,7 @@
     "onCommand:fx-extension.createFromWalkthrough",
     "onCommand:fx-extension.openLifecycleTreeview",
     "onCommand:fx-extension.openDocument",
+    "onCommand:fx-extension.publishToAppSource",
     "onCommand:fx-extension.openReadMe",
     "onCommand:fx-extension.openSamples",
     "onCommand:fx-extension.openWelcome",
@@ -142,9 +143,19 @@
           "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 && isWorkspaceTrusted"
         },
         {
+          "id": "office-addin-debug",
+          "name": "Debug",
+          "when": "fx-extension.isOfficeAddIn"
+        },
+        {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "fx-extension.isTeamsFx"
+          "when": "fx-extension.isTeamsFx || fx-extension.isOfficeAddIn"
+        },
+        {
+          "id": "teamsfx-deployment",
+          "name": "Deployment",
+          "when": "fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-lifecycle",
@@ -154,7 +165,7 @@
         {
           "id": "teamsfx-utility",
           "name": "Utility",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3"
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 || fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-project-and-check-upgradeV3",
@@ -164,7 +175,7 @@
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3",
+          "when": "fx-extension.isTeamsFx && !fx-extension.canUpgradeV3 || fx-extension.isOfficeAddIn",
           "visibility": "visible"
         },
         {
@@ -182,12 +193,12 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn"
         }
       ]
     },
@@ -217,6 +228,11 @@
           "command": "fx-extension.openEnvLink",
           "when": "view == teamsfx-environment",
           "group": "navigation@3"
+        },
+        {
+          "command": "fx-extension.openDebugLink",
+          "when": "view == office-addin-debug",
+          "group": "navigation@1"
         },
         {
           "command": "fx-extension.openDevelopmentLink",
@@ -601,7 +617,7 @@
       {
         "command": "fx-extension.openReportIssues",
         "title": "%teamstoolkit.commands.reportIssue.title%",
-        "enablement": "fx-extension.isTeamsFx",
+        "enablement": "fx-extension.isTeamsFx || fx-extension.isOfficeAddIn",
         "category": "Teams"
       },
       {
@@ -777,7 +793,18 @@
         "title": "%teamstoolkit.commmands.addWebpart.title%",
         "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
+      },
+      {
+        "command": "fx-extension.AIAssistant",
+        "title": "AI Assistant",
+        "enablement": "false"
+      },
+      {
+        "command": "fx-extension.AnalyzeComVstoAddIn",
+        "title": "Analyze existing COM / VSTO add-ins",
+        "enablement": "false"
       }
+
     ],
     "taskDefinitions": [
       {
@@ -982,6 +1009,22 @@
                   }
                 },
                 "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      {
+        "type": "officedev",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "anyOf": [
+              {
+                "const": "validate-manifest",
+                "description": "Validate the office add in manifest"
               }
             ]
           }

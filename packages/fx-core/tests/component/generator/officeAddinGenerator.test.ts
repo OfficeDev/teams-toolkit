@@ -500,9 +500,11 @@ describe("helperMethods", async () => {
       sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
       sandbox.stub<any, any>(unzip, "Extract").returns({});
       try {
-        await HelperMethods.unzipProjectTemplate("");
+        HelperMethods.unzipProjectTemplate("");
       } catch (err) {
         chai.assert.fail(err);
+      } finally {
+        sandbox.restore();
       }
     });
 
@@ -511,9 +513,9 @@ describe("helperMethods", async () => {
     //   sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
     //   sandbox.stub<any, any>(unzip, "Extract").throws(mockStream);
     //   try {
-    //     // mockStream.read = () => {}; // _read is required for a readable stream
+    //     mockStream.read = () => {}; // _read is required for a readable stream
     //     process.nextTick(() => mockStream.emit("error", new Error("Mock error")));
-    //     await HelperMethods.unzipProjectTemplate("");
+    //     HelperMethods.unzipProjectTemplate("");
     //     chai.assert.fail("should not reach here");
     //   } catch (err) {
     //     chai.assert.isTrue(err instanceof ReadFileError);

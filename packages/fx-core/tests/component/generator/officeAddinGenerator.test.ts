@@ -687,10 +687,10 @@ describe("projectsJsonData", () => {
       "json-preview-yo-office"
     );
 
-    chai.assert.deepEqual(data.getProjectRepoAndBranch("taskpane", "TypeScript", false), {
-      repo: "https://github.com/OfficeDev/Office-Addin-TaskPane",
-      branch: "json-preview-yo-office",
-    });
+    chai.assert.deepEqual(
+      data.getProjectDownloadLink("taskpane", "TypeScript"),
+      "https://aka.ms/teams-toolkit/office-addin-taskpane"
+    );
 
     chai.assert.isDefined(data.getParsedProjectJsonData());
     chai.assert.isFalse(data.projectBothScriptTypes("taskpane"));

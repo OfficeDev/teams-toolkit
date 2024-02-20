@@ -35,7 +35,7 @@ configuration:
       then:
       - removeLabel:
           label: no recent activity
-    - description: "[Idle Issue Management] Replace needs more info label with needs attention label when a non-member comments created on an issue"
+    - description: "[Idle Issue Management] Replace needs more info label with needs attention label when a non-member comment created on an issue"
       if:
       - payloadType: Issue_Comment
       - isOpen

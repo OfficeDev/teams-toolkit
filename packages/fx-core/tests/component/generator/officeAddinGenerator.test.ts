@@ -417,7 +417,7 @@ describe("helperMethods", async () => {
       const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
       try {
-        await HelperMethods.downloadProjectTemplateZipFile("", "", "");
+        await HelperMethods.downloadProjectTemplateZipFile("", "");
         chai.assert.fail("should not reach here");
       } catch (e) {
         chai.assert.isTrue(e instanceof AccessGithubError);
@@ -429,7 +429,7 @@ describe("helperMethods", async () => {
       const mockedStream = new MockedWriteStream();
       const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
       // manully wait for the close event to be registered
       await new Promise((resolve) => setTimeout(resolve, 100));
       resp.emit("close");
@@ -443,7 +443,7 @@ describe("helperMethods", async () => {
       const mockedStream = new MockedWriteStream();
       sandbox.stub(HelperMethods, "unzipProjectTemplate").rejects(new Error());
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
       // manully wait for the close event to be registered
       await new Promise((resolve) => setTimeout(resolve, 100));
       resp.emit("close");
@@ -459,7 +459,7 @@ describe("helperMethods", async () => {
       const mockedStream = new MockedWriteStream();
       const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
       // manully wait for the close event to be registered
       await new Promise((resolve) => setTimeout(resolve, 100));
       resp.emit("error", new Error());
@@ -472,7 +472,7 @@ describe("helperMethods", async () => {
 
     it("Response body is null.", async () => {
       sandbox.stub(fetch, "default").resolves({ body: null } as any);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
       try {
         await promise;
         chai.assert.fail("should throw error");

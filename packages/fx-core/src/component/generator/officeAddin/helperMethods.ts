@@ -18,10 +18,9 @@ const zipFile = "project.zip";
 export class HelperMethods {
   static async downloadProjectTemplateZipFile(
     projectFolder: string,
-    projectRepo: string,
-    projectBranch?: string
+    projectRepo: string
   ): Promise<void> {
-    const projectTemplateZipFile = `${projectRepo}/archive/${projectBranch || ""}.zip`;
+    const projectTemplateZipFile = projectRepo;
     let response: any;
     try {
       response = await fetch(projectTemplateZipFile, { method: "GET" });

@@ -95,15 +95,11 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const jsonData = new projectsJsonData();
-        const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, false);
+        const projectLink = jsonData.getProjectDownloadLink(template, language);
 
         // Copy project template files from project repository
-        if (projectRepoBranchInfo.repo) {
-          await HelperMethods.downloadProjectTemplateZipFile(
-            addinRoot,
-            projectRepoBranchInfo.repo,
-            projectRepoBranchInfo.branch
-          );
+        if (projectLink) {
+          await HelperMethods.downloadProjectTemplateZipFile(addinRoot, projectLink);
 
           // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;

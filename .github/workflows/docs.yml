@@ -35,8 +35,7 @@ jobs:
               continue
             fi
             redirect=`curl -LIs -o /dev/null -w %{url_effective} $link`
-            status=`curl -ILs $link --silent | tac| grep -m1 HTTP | awk {'print $2'}`
-            echo $link "=>" $redirect  "=>" $status >> akas.data
+            echo $link "=>" $redirect >> akas.data
           done <<< $links
 
       - name: Upload akas to artifacts
@@ -67,9 +66,9 @@ jobs:
             do
               aka=`echo $line | awk -F '=>' '{print $1}'`
               redirect=`echo $line | awk -F '=>' '{print $2}'`
-              status=`echo $line | awk -F '=>' '{print $3}'`
+
               label=""
-              if [[ $redirect == *"bing.com"* ]] || [[ $status -ne 200 ]];
+              if [[ $redirect == *"bing.com"* ]];
               then
                 label="INVALID"
               elif [[ $redirect == *"white list"* ]];

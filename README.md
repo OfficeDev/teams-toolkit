@@ -56,6 +56,7 @@ This repository contains the following packages:
 | **API** [packages/api](https://github.com/OfficeDev/TeamsFx/tree/main/packages/api) | The API package is a collection of contracts supported by the IDE Extensions and CLI. It enables developers to write plugins to extend TeamsFx with new capabilities. |
 | **Core** [packages/fx-core](https://github.com/OfficeDev/TeamsFx/tree/main/packages/fx-core) | The Core package centralizes implementation of capabilities shared by the IDE Extensions and the CLI. |
 | **Azure Functions Support** [packages/function-extension](https://github.com/OfficeDev/TeamsFx/tree/main/packages/function-extension) | Teams Toolkit helps developers include server-side code in their Teams application backed by [Azure Functions](https://docs.microsoft.com/azure/azure-functions/). This plugin adds support to simplify the integration of an authentication-aware Azure Function into your Teams app. |
+| **Spec Parser** [packages/spec-parser](https://github.com/OfficeDev/TeamsFx/tree/main/packages/spec-parser) | Teams Toolkit automates the process of generating [API-based message extensions](https://learn.microsoft.com/en-us/microsoftteams/platform/messaging-extensions/api-based-overview) and Adaptive Cards by parsing the OpenAPI description document. |
 
 ## Contributions
 

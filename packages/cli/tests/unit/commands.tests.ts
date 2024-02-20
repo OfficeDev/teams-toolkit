@@ -106,28 +106,6 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
 
-    it("createProjectOptions - API copilot plugin enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "true",
-      });
-      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-      const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "new" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await getCreateCommand().handler!(ctx);
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 1
-      );
-      assert.isTrue(res.isOk());
-    });
-
     it("createProjectOptions - API copilot plugin disabled but bot Copilot plugin enabled", async () => {
       mockedEnvRestore = mockedEnv({
         DEVELOP_COPILOT_PLUGIN: "true",

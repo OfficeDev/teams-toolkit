@@ -36,7 +36,7 @@ import {
   ErrorType,
   ErrorResult as ApiSpecErrorResult,
   ListAPIResult,
-} from "../../../common/spec-parser";
+} from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { MissingRequiredInputError } from "../../../error";

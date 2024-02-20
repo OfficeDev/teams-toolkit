@@ -6,22 +6,17 @@ import "mocha";
 import { expect } from "chai";
 import sinon from "sinon";
 import converter from "swagger2openapi";
-import { SpecParser } from "../../../src/common/spec-parser/specParser";
-import {
-  ErrorType,
-  ValidationStatus,
-  WarningType,
-} from "../../../src/common/spec-parser/interfaces";
+import { SpecParser } from "../src/specParser";
+import { ErrorType, ValidationStatus, WarningType } from "../src/interfaces";
 import SwaggerParser from "@apidevtools/swagger-parser";
-import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
-import { ConstantString } from "../../../src/common/spec-parser/constants";
+import { SpecParserError } from "../src/specParserError";
+import { ConstantString } from "../src/constants";
 import { OpenAPIV3 } from "openapi-types";
-import * as SpecFilter from "../../../src/common/spec-parser/specFilter";
-import * as ManifestUpdater from "../../../src/common/spec-parser/manifestUpdater";
-import * as AdaptiveCardGenerator from "../../../src/common/spec-parser/adaptiveCardGenerator";
-import * as utils from "../../../src/common/spec-parser/utils";
+import { SpecFilter } from "../src/specFilter";
+import { ManifestUpdater } from "../src/manifestUpdater";
+import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
+import { Utils } from "../src/utils";
 import jsyaml from "js-yaml";
-import { format } from "../../../src/common/spec-parser/utils";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
 describe("SpecParser", () => {
@@ -35,7 +30,7 @@ describe("SpecParser", () => {
       try {
         await specParser.listSupportedAPIInfo();
         expect.fail("Should throw not implemented error");
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal("Method not implemented.");
       }
     });
@@ -273,7 +268,7 @@ describe("SpecParser", () => {
         errors: [
           {
             type: ErrorType.UrlProtocolNotSupported,
-            content: format(ConstantString.UrlProtocolNotSupported, "http"),
+            content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
@@ -435,7 +430,7 @@ describe("SpecParser", () => {
         warnings: [
           {
             type: WarningType.OperationIdMissing,
-            content: format(ConstantString.MissingOperationId, "GET /pet"),
+            content: Utils.format(ConstantString.MissingOperationId, "GET /pet"),
             data: ["GET /pet"],
           },
         ],
@@ -542,11 +537,11 @@ describe("SpecParser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(utils as any, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");
-      } catch (err) {
+      } catch (err: any) {
         expect(err).to.be.instanceOf(SpecParserError);
         expect(err.errorType).to.equal(ErrorType.ValidateFailed);
         expect(err.message).to.equal("Error: validateSpec error");
@@ -1092,7 +1087,7 @@ describe("SpecParser", () => {
           "path/to/adaptiveCardFolder"
         );
         expect.fail("Expected generate to throw a SpecParserError");
-      } catch (err) {
+      } catch (err: any) {
         expect(err).to.be.instanceOf(SpecParserError);
         expect(err.errorType).to.equal(ErrorType.GenerateFailed);
         expect(err.message).to.equal("Error: outputFile error");
@@ -1128,7 +1123,7 @@ describe("SpecParser", () => {
           "path/to/adaptiveCardFolder"
         );
         expect.fail("Expected generate to throw a SpecParserError");
-      } catch (err) {
+      } catch (err: any) {
         expect(err).to.be.instanceOf(SpecParserError);
         expect(err.errorType).to.equal(ErrorType.FilterSpecFailed);
         expect(err.message).to.equal("specFilter error");

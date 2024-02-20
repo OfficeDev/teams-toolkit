@@ -519,6 +519,14 @@ describe("helperMethods", async () => {
       unzipErrorHandler("", reject, new Error());
       chai.assert.equal(i, 1);
     });
+    it("unzipErrorHandler 2", async () => {
+      let i = 0;
+      const reject = () => {
+        i++;
+      };
+      unzipErrorHandler("", reject, new Error("test"));
+      chai.assert.equal(i, 1);
+    });
   });
 
   describe("moveUnzippedFiles", () => {

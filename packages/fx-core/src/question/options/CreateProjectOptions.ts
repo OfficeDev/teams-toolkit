@@ -43,7 +43,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "link-unfurling",
       "copilot-plugin-new-api",
       "copilot-plugin-existing-api",
-      "copilot-plugin-openai-plugin",
       "custom-copilot-basic",
       "custom-copilot-rag",
       "custom-copilot-assistant",

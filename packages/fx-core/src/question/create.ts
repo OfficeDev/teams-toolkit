@@ -692,7 +692,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         return getLocalizedString(
           "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
         );
-      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.copilotPlugin().id) {
+      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.customCopilot().id) {
         return getLocalizedString(
           "core.createProjectQuestion.projectType.customCopilot.placeholder"
         );

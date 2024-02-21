@@ -110,9 +110,6 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
-    if (!generatorContext.outputs?.length) {
-      return err(new TemplateNotFoundError(scenario).toFxError());
-    }
     return ok(undefined);
   }
 

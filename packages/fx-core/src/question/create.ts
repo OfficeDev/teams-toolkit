@@ -128,9 +128,9 @@ export class ProjectTypeOptions {
   static copilotPlugin(platform?: Platform): OptionItem {
     return {
       id: "copilot-plugin-type",
-      label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
-        "core.createProjectQuestion.projectType.copilotPlugin.label"
-      )}`,
+      label: `${
+        platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
+      }${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
     };
   }
@@ -138,9 +138,9 @@ export class ProjectTypeOptions {
   static customCopilot(platform?: Platform): OptionItem {
     return {
       id: "custom-copilot-type",
-      label: `${platform === Platform.VSCode ? "$(sparkle) " : ""}${getLocalizedString(
-        "core.createProjectQuestion.projectType.customCopilot.label"
-      )}`,
+      label: `${
+        platform === Platform.VSCode ? "$(teamsfx-custom-copilot) " : ""
+      }${getLocalizedString("core.createProjectQuestion.projectType.customCopilot.label")}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.customCopilot.detail"),
     };
   }

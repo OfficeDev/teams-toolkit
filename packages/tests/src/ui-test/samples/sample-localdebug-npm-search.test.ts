@@ -27,6 +27,5 @@ new NpmSearchTestCase(
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
   {
     npmName: "axios",
-    debug: "cli",
   }
 ).test();

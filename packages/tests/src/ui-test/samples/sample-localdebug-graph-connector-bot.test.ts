@@ -21,6 +21,12 @@ class GraphConnectorBotTestCase extends CaseFactory {
       expected: ValidationContent.GraphBot,
     });
   }
+  override async onCliValidate(page: Page): Promise<void> {
+    return await validateBot(page, {
+      botCommand: "welcome",
+      expected: ValidationContent.GraphBot,
+    });
+  }
 }
 
 new GraphConnectorBotTestCase(

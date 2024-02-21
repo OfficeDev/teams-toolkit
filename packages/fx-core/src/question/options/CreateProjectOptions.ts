@@ -43,7 +43,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "link-unfurling",
       "copilot-plugin-new-api",
       "copilot-plugin-existing-api",
-      "copilot-plugin-openai-plugin",
       "message-extension",
       "BotAndMessageExtension",
       "TabNonSsoAndBot",
@@ -111,12 +110,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     shortName: "a",
     description: "OpenAPI description document location.",
-  },
-  {
-    name: "openai-plugin-manifest",
-    type: "string",
-    shortName: "m",
-    description: "OpenAI plugin website domain or manifest URL.",
   },
   {
     name: "api-operation",

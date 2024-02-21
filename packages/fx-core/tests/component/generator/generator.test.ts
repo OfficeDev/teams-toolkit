@@ -14,28 +14,21 @@ import {
   renderTemplateFileName,
   simplifyAxiosError,
   isApiLimitError,
-  getTemplateZipUrlByTag,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import {
-  Generator,
-  templateDefaultOnActionError,
-} from "../../../src/component/generator/generator";
+import { Generator } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
 import { createSandbox } from "sinon";
 import {
-  GeneratorContext,
   RemoteTemplateAction,
-  LocalTemplateAction,
   fetchSampleInfoAction,
   TemplateActionSeq,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
-import { FeatureFlagName } from "../../../src/common/constants";
 import { sampleProvider, SampleConfig } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import {

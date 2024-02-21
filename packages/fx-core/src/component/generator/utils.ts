@@ -18,7 +18,6 @@ import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import semver from "semver";
-import { UnzipError } from "./error";
 import { deepCopy } from "../../common/tools";
 import { InvalidInputError } from "../../core/error";
 import { ProgrammingLanguage } from "../../question";

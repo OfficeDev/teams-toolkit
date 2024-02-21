@@ -115,22 +115,9 @@ export default class projectsJsonData {
     return undefined;
   }
 
-  getProjectRepoAndBranch(
-    projectTypeKey: string,
-    scriptType: string,
-    prerelease: boolean
-  ): { repo: string | undefined; branch: string | undefined } {
+  getProjectDownloadLink(projectTypeKey: string, scriptType: string): string {
     scriptType = scriptType === "TypeScript" ? "typescript" : "javascript";
-    const repoBranchInfo: { repo: string | undefined; branch: string | undefined } = {
-      repo: <string>(<unknown>null),
-      branch: <string>(<unknown>null),
-    };
-
-    repoBranchInfo.repo = this.getProjectTemplateRepository(projectTypeKey, scriptType);
-    repoBranchInfo.branch = repoBranchInfo.repo
-      ? this.getProjectTemplateBranchName(projectTypeKey, scriptType, prerelease)
-      : undefined;
-
-    return repoBranchInfo;
+    return this.projectJsonData.projectTypes[projectTypeKey].templates[scriptType]
+      .archive as string;
   }
 }

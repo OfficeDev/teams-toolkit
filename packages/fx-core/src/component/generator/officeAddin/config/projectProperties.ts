@@ -12,6 +12,7 @@ export const projectProperties = {
           repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
           branch: "json-preview-yo-office",
           prerelease: "json-preview-yo-office-prerelease",
+          archive: "https://aka.ms/teams-toolkit/office-addin-taskpane",
         },
       },
       supportedHosts: ["Outlook"],

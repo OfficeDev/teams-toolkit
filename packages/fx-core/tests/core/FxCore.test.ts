@@ -39,7 +39,7 @@ import {
   SpecParserError,
   ValidationStatus,
   WarningType,
-} from "../../src/common/spec-parser";
+} from "@microsoft/m365-spec-parser";
 import {
   DriverDefinition,
   DriverInstance,
@@ -1459,6 +1459,8 @@ describe("isEnvFile", async () => {
           "spfx-webpart-name",
           "spfx-folder",
           "me-architecture",
+          "openapi-spec-location",
+          "api-operation",
           "api-me-auth",
           "programming-language",
           "folder",
@@ -1488,6 +1490,8 @@ describe("isEnvFile", async () => {
           "spfx-webpart-name",
           "spfx-folder",
           "me-architecture",
+          "openapi-spec-location",
+          "api-operation",
           "api-me-auth",
           "programming-language",
           "folder",
@@ -1518,7 +1522,6 @@ describe("isEnvFile", async () => {
           "spfx-folder",
           "me-architecture",
           "openapi-spec-location",
-          "openai-plugin-manifest",
           "api-operation",
           "api-me-auth",
           "programming-language",
@@ -1550,6 +1553,8 @@ describe("isEnvFile", async () => {
           "spfx-webpart-name",
           "spfx-folder",
           "me-architecture",
+          "openapi-spec-location",
+          "api-operation",
           "api-me-auth",
           "programming-language",
           "folder",

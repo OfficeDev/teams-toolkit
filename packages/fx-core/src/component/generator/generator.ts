@@ -39,7 +39,7 @@ import {
   renderTemplateFileName,
 } from "./utils";
 import { enableTestToolByDefault } from "../../common/featureFlags";
-import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
+import { Utils } from "@microsoft/m365-spec-parser";
 
 export class Generator {
   public static getDefaultVariables(
@@ -50,7 +50,7 @@ export class Generator {
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
-    const safeRegistrationIdEnvName = getSafeRegistrationIdEnvName(
+    const safeRegistrationIdEnvName = Utils.getSafeRegistrationIdEnvName(
       apiKeyAuthData?.registrationIdEnvName ?? ""
     );
 

@@ -6,15 +6,11 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import os from "os";
 import "mocha";
-import {
-  updateManifest,
-  generateCommands,
-  getRelativePath,
-} from "../../../src/common/spec-parser/manifestUpdater";
-import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
-import { ErrorType, WarningType } from "../../../src/common/spec-parser/interfaces";
-import { ConstantString } from "../../../src/common/spec-parser/constants";
-import { format } from "../../../src/common/spec-parser/utils";
+import { ManifestUpdater } from "../src/manifestUpdater";
+import { SpecParserError } from "../src/specParserError";
+import { ErrorType, WarningType } from "../src/interfaces";
+import { ConstantString } from "../src/constants";
+import { Utils } from "../src/utils";
 
 describe("manifestUpdater", () => {
   const spec: any = {
@@ -111,7 +107,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -264,7 +260,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -364,7 +360,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -449,7 +445,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -515,7 +511,7 @@ describe("manifestUpdater", () => {
       name: "api_key_name",
       in: "header",
     };
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -593,7 +589,7 @@ describe("manifestUpdater", () => {
         },
       },
     };
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -653,7 +649,7 @@ describe("manifestUpdater", () => {
       type: "http" as const,
       scheme: "basic",
     };
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -720,7 +716,7 @@ describe("manifestUpdater", () => {
       name: "*api-key_name",
       in: "header",
     };
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -811,7 +807,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -823,7 +819,7 @@ describe("manifestUpdater", () => {
     expect(warnings).to.deep.equal([
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
-        content: format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
+        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
         data: "createPet",
       },
     ]);
@@ -836,9 +832,15 @@ describe("manifestUpdater", () => {
     const spec = {} as any;
     const readJSONStub = sinon.stub(fs, "readJSON").rejects(new Error("readJSON error"));
     try {
-      await updateManifest(manifestPath, outputSpecPath, adaptiveCardFolder, spec, false);
+      await ManifestUpdater.updateManifest(
+        manifestPath,
+        outputSpecPath,
+        adaptiveCardFolder,
+        spec,
+        false
+      );
       expect.fail("Expected updateManifest to throw a SpecParserError");
-    } catch (err) {
+    } catch (err: any) {
       expect(err).to.be.instanceOf(SpecParserError);
       expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
       expect(err.message).to.equal("Error: readJSON error");
@@ -900,7 +902,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -967,7 +969,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const [result, warnings] = await updateManifest(
+    const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       adaptiveCardFolder,
@@ -988,14 +990,14 @@ describe("getRelativePath", () => {
   it("should return the correct relative path", () => {
     const from = "/path/to/from";
     const to = "/path/to/file.txt";
-    const result = getRelativePath(from, to);
+    const result = ManifestUpdater.getRelativePath(from, to);
     expect(result).to.equal("file.txt");
   });
 
   it("should get relative path with subfolder", () => {
     const from = "/path/to/from";
     const to = "/path/to/subfolder/file.txt";
-    const result = getRelativePath(from, to);
+    const result = ManifestUpdater.getRelativePath(from, to);
     expect(result).to.equal("subfolder/file.txt");
   });
 
@@ -1003,7 +1005,7 @@ describe("getRelativePath", () => {
     if (os.platform() === "win32") {
       const from = "c:\\path\\to\\from";
       const to = "c:\\path\\to\\subfolder\\file.txt";
-      const result = getRelativePath(from, to);
+      const result = ManifestUpdater.getRelativePath(from, to);
       expect(result).to.equal("subfolder/file.txt");
     }
   });
@@ -1116,7 +1118,7 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(
+    const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,
@@ -1171,7 +1173,7 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(
+    const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,
@@ -1219,7 +1221,7 @@ describe("generateCommands", () => {
     };
     sinon.stub(fs, "pathExists").resolves(true);
 
-    const [result, warnings] = await generateCommands(
+    const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,
@@ -1260,12 +1262,12 @@ describe("generateCommands", () => {
     expect(warnings).to.deep.equal([
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
-        content: format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
+        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
         data: "getPets",
       },
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
-        content: format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
+        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
         data: "createPet",
       },
     ]);
@@ -1301,7 +1303,7 @@ describe("generateCommands", () => {
     };
     sinon.stub(fs, "pathExists").resolves(true);
 
-    const [result, warnings] = await generateCommands(
+    const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,
@@ -1360,7 +1362,7 @@ describe("generateCommands", () => {
     };
     sinon.stub(fs, "pathExists").resolves(true);
 
-    const [result, warnings] = await generateCommands(
+    const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,
@@ -1430,7 +1432,7 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(
+    const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,
@@ -1486,7 +1488,7 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(
+    const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,
@@ -1497,7 +1499,7 @@ describe("generateCommands", () => {
     expect(warnings).to.deep.equal([
       {
         type: WarningType.OperationOnlyContainsOptionalParam,
-        content: format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
+        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
         data: "getPets",
       },
     ]);
@@ -1545,7 +1547,7 @@ describe("generateCommands", () => {
       },
     ];
 
-    const [result, warnings] = await generateCommands(
+    const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       adaptiveCardFolder,
       manifestPath,

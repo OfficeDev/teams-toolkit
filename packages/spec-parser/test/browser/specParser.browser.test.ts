@@ -3,21 +3,15 @@
 
 import "mocha";
 import { expect } from "chai";
-import sinon from "sinon";
-import { SpecParser } from "../../../src/common/spec-parser/specParser.browser";
-import {
-  ErrorType,
-  ValidationStatus,
-  WarningType,
-} from "../../../src/common/spec-parser/interfaces";
-import { SpecParserError } from "../../../src/common/spec-parser/specParserError";
-import { ConstantString } from "../../../src/common/spec-parser/constants";
+import * as sinon from "sinon";
+import { SpecParser } from "../../src/specParser.browser";
+import { ErrorType, ValidationStatus, WarningType } from "../../src/interfaces";
+import { SpecParserError } from "../../src/specParserError";
+import { ConstantString } from "../../src/constants";
 import { OpenAPIV3 } from "openapi-types";
-import * as utils from "../../../src/common/spec-parser/utils";
+import { Utils } from "../../src/utils";
 import SwaggerParser from "@apidevtools/swagger-parser";
-import { format } from "../../../src/common/spec-parser/utils";
 
-// TODO: After SpecParser lib become a npm package, these tests should be running in browser environment
 describe("SpecParser in Browser", () => {
   afterEach(() => {
     sinon.restore();
@@ -180,7 +174,7 @@ describe("SpecParser in Browser", () => {
           description: "Get user by user id, balabala",
           warning: {
             type: WarningType.OperationOnlyContainsOptionalParam,
-            content: format(ConstantString.OperationOnlyContainsOptionalParam, "getUserById"),
+            content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getUserById"),
             data: "getUserById",
           },
         },
@@ -239,7 +233,7 @@ describe("SpecParser in Browser", () => {
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const listSupportedAPIsSyp = sinon.spy(utils, "listSupportedAPIs");
+      const listSupportedAPIsSyp = sinon.spy(Utils, "listSupportedAPIs");
       let result = await specParser.listSupportedAPIInfo();
       result = await specParser.listSupportedAPIInfo();
       expect(result).to.deep.equal([
@@ -324,7 +318,7 @@ describe("SpecParser in Browser", () => {
     it("should throw an error when the SwaggerParser library throws an error", async () => {
       const specPath = "invalid-spec.yaml";
       const specParser = new SpecParser(specPath);
-      sinon.stub(SwaggerParser, "validate").rejects(new Error("Invalid specification"));
+      sinon.stub(SwaggerParser.prototype, "validate").rejects(new Error("Invalid specification"));
       const parseStub = sinon
         .stub(specParser.parser, "parse")
         .rejects(new Error("Invalid specification"));
@@ -477,7 +471,7 @@ describe("SpecParser in Browser", () => {
         errors: [
           {
             type: ErrorType.UrlProtocolNotSupported,
-            content: utils.format(ConstantString.UrlProtocolNotSupported, "http"),
+            content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
           { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
@@ -639,7 +633,7 @@ describe("SpecParser in Browser", () => {
         warnings: [
           {
             type: WarningType.OperationIdMissing,
-            content: utils.format(ConstantString.MissingOperationId, "GET /pet"),
+            content: Utils.format(ConstantString.MissingOperationId, "GET /pet"),
             data: ["GET /pet"],
           },
         ],
@@ -746,11 +740,11 @@ describe("SpecParser in Browser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(utils as any, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");
-      } catch (err) {
+      } catch (err: any) {
         expect(err).to.be.instanceOf(SpecParserError);
         expect(err.errorType).to.equal(ErrorType.ValidateFailed);
         expect(err.message).to.equal("Error: validateSpec error");
@@ -771,7 +765,7 @@ describe("SpecParser in Browser", () => {
           "path/to/adaptiveCardFolder"
         );
         expect.fail("Should throw not implemented error");
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal("Method not implemented.");
       }
     });
@@ -784,7 +778,7 @@ describe("SpecParser in Browser", () => {
         const specParser = new SpecParser(specPath);
         await specParser.list();
         expect.fail("Should throw not implemented error");
-      } catch (error) {
+      } catch (error: any) {
         expect(error.message).to.equal("Method not implemented.");
       }
     });

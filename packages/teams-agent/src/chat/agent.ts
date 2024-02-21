@@ -21,7 +21,7 @@ import { agentDescription, agentFullName, agentName, maxFollowUps } from './agen
 import { verbatimCopilotInteraction } from './copilotInteractions';
 import { SlashCommandHandlerResult, SlashCommandsOwner } from './slashCommands';
 
-export interface ITeamsChatAgentResult extends vscode.ChatAgentResult2 {
+export interface ITeamsChatAgentResult extends vscode.ChatResult {
   slashCommand?: string;
   sampleIds?: string[];
 }
@@ -29,10 +29,10 @@ export interface ITeamsChatAgentResult extends vscode.ChatAgentResult2 {
 export type AgentRequest = {
   slashCommand?: string;
   userPrompt: string;
-  variables: readonly vscode.ChatAgentResolvedVariable[];
+  variables: readonly vscode.ChatResolvedVariable[];
 
-  context: vscode.ChatAgentContext;
-  response: vscode.ChatAgentExtendedResponseStream;
+  context: vscode.ChatContext;
+  response: vscode.ChatExtendedResponseStream;
   token: vscode.CancellationToken;
 };
 
@@ -41,9 +41,9 @@ export interface IAgentRequestHandler {
     request: AgentRequest
   ): Promise<SlashCommandHandlerResult>;
   getFollowUpForLastHandledSlashCommand(
-    result: vscode.ChatAgentResult2,
+    result: vscode.ChatResult,
     token: vscode.CancellationToken
-  ): vscode.ChatAgentFollowup[] | undefined;
+  ): vscode.ChatFollowup[] | undefined;
 }
 
 /**
@@ -67,28 +67,28 @@ agentSlashCommandsOwner.addInvokeableSlashCommands(
 
 export function registerChatAgent() {
   try {
-    const agent2 = vscode.chat.createChatAgent(agentName, handler);
-    agent2.description = agentDescription;
-    agent2.fullName = agentFullName;
-    agent2.iconPath = vscode.Uri.joinPath(
+    const participant = vscode.chat.createChatParticipant(agentName, handler);
+    participant.description = agentDescription;
+    participant.fullName = agentFullName;
+    participant.iconPath = vscode.Uri.joinPath(
       ext.context.extensionUri,
       "resources",
       "teams.png"
     );
-    agent2.commandProvider = { provideCommands: getCommands };
-    agent2.followupProvider = { provideFollowups: followUpProvider };
-    registerVSCodeCommands(agent2);
+    participant.commandProvider = { provideCommands: getCommands };
+    participant.followupProvider = { provideFollowups: followUpProvider };
+    registerVSCodeCommands(participant);
   } catch (e) {
     console.log(e);
   }
 }
 
 async function handler(
-  request: vscode.ChatAgentRequest,
-  context: vscode.ChatAgentContext,
-  response: vscode.ChatAgentExtendedResponseStream,
+  request: vscode.ChatRequest,
+  context: vscode.ChatContext,
+  response: vscode.ChatExtendedResponseStream,
   token: vscode.CancellationToken
-): Promise<vscode.ChatAgentResult2 | undefined> {
+): Promise<vscode.ChatResult | undefined> {
   const agentRequest: AgentRequest = {
     slashCommand: request.command,
     userPrompt: request.prompt,
@@ -118,10 +118,10 @@ async function handler(
 function followUpProvider(
   result: ITeamsChatAgentResult,
   token: vscode.CancellationToken
-): vscode.ProviderResult<vscode.ChatAgentFollowup[]> {
+): vscode.ProviderResult<vscode.ChatFollowup[]> {
   const providers = [agentSlashCommandsOwner];
 
-  let followUp: vscode.ChatAgentFollowup[] | undefined;
+  let followUp: vscode.ChatFollowup[] | undefined;
   for (const provider of providers) {
     followUp = provider.getFollowUpForLastHandledSlashCommand(result, token);
     if (followUp !== undefined) {
@@ -137,7 +137,7 @@ function followUpProvider(
 
 function getCommands(
   _token: vscode.CancellationToken
-): vscode.ProviderResult<vscode.ChatAgentCommand[]> {
+): vscode.ProviderResult<vscode.ChatCommand[]> {
   return agentSlashCommandsOwner.getSlashCommands().map(([name, config]) => ({
     name: name,
     description: config.shortDescription,
@@ -164,10 +164,10 @@ async function defaultHandler(
 }
 
 function registerVSCodeCommands(
-  agent2: vscode.ChatAgent2
+  participant: vscode.ChatParticipant
 ) {
   ext.context.subscriptions.push(
-    agent2,
+    participant,
     vscode.commands.registerCommand(CREATE_SAMPLE_COMMAND_ID, createCommand),
     vscode.commands.registerCommand(EXECUTE_COMMAND_ID, executeCommand)
   );

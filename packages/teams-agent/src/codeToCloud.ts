@@ -93,13 +93,13 @@ const buildMarkdownTableForRecommendationResult = (
 
 export class CodeToCloud {
   topN = 10;
-  progress: vscode.Progress<vscode.ChatAgentProgress>;
+  progress: vscode.Progress<vscode.ChatProgress>;
   token: vscode.CancellationToken;
   folderStructure?: dree.Dree;
   currentWorkspaceFolder: string;
   agentServerURL = process.env.AGENT_SERVER_URL || "http://localhost:8000";
   constructor(
-    progress: vscode.Progress<vscode.ChatAgentProgress>,
+    progress: vscode.Progress<vscode.ChatProgress>,
     token: vscode.CancellationToken
   ) {
     this.progress = progress;

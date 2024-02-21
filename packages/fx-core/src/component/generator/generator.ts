@@ -37,7 +37,7 @@ import {
   renderTemplateFileName,
 } from "./utils";
 import { enableTestToolByDefault } from "../../common/featureFlags";
-import { getSafeRegistrationIdEnvName } from "../../common/spec-parser/utils";
+import { Utils } from "@microsoft/m365-spec-parser";
 
 export class Generator {
   public static getDefaultVariables(
@@ -48,7 +48,7 @@ export class Generator {
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
-    const safeRegistrationIdEnvName = getSafeRegistrationIdEnvName(
+    const safeRegistrationIdEnvName = Utils.getSafeRegistrationIdEnvName(
       apiKeyAuthData?.registrationIdEnvName ?? ""
     );
 
@@ -83,9 +83,10 @@ export class Generator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const replaceMap = ctx.templateVariables ?? {};
+    const lang = language ?? commonTemplateName;
     const generatorContext: GeneratorContext = {
       name: scenario,
-      language: language ?? commonTemplateName,
+      language: lang,
       destination: destinationPath,
       logProvider: ctx.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>
@@ -97,7 +98,7 @@ export class Generator {
       filterFn: (fileName) => fileName.replace(/\\/g, "/").startsWith(`${scenario}/`),
       onActionError: templateDefaultOnActionError,
     };
-    const templateName = `${scenario}-${generatorContext.name}`;
+    const templateName = `${scenario}-${lang}`;
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.TemplateName]: templateName,
     });

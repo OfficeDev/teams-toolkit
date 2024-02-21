@@ -18,7 +18,6 @@
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
             "sample-localdebug-proactive-message",
-            "sample-localdebug-assistant-dashboard",
             "basic-tab-debug-upgrade-debug",
             "bot-debug-upgrade-debug",
             "bot-upgrade-debug"
@@ -49,6 +48,9 @@
             },
             "ubuntu-latest": {
                 "node-18": []
+            },
+            "macos-latest": {
+                "node-18": []
             }
         },
         "cases": [
@@ -67,14 +69,10 @@
             }
         },
         "cases": [
-            "sample-localdebug-hello-world-meeting",
-            "sample-localdebug-contact-exporter",
             "sample-localdebug-todo-list-with-m365",
-            "sample-localdebug-one-productivity-hub",
             "sample-localdebug-todo-list-sql",
             "sample-localdebug-hello-world-tab-with-backend",
             "sample-localdebug-npm-search",
-            "sample-localdebug-hello-world-tab-outlook",
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
@@ -137,7 +135,12 @@
             "sample-localdebug-adaptive-card",
             "sample-localdebug-graph-connector",
             "sample-localdebug-share-now",
-            "sample-localdebug-dashboard"
+            "sample-localdebug-dashboard",
+            "sample-localdebug-hello-world-tab-outlook",
+            "sample-localdebug-one-productivity-hub",
+            "sample-localdebug-contact-exporter",
+            "sample-localdebug-hello-world-meeting",
+            "sample-localdebug-assistant-dashboard"
         ]
     }
 ]

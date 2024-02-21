@@ -19,7 +19,10 @@ on:
     branches: [main, dev, hotfix/**, release/**]
   schedule:
     - cron: "15 20 * * 1"
-
+permissions:
+      security-events: write  # for github/codeql-action/analyze to upload SARIF results
+      pull-requests: read
+      actions: read
 jobs:
   analyze:
     name: Analyze

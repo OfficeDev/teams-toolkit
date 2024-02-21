@@ -33,7 +33,9 @@ export interface CreateProjectInputs extends Inputs {
     | "link-unfurling"
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
-    | "copilot-plugin-openai-plugin";
+    | "message-extension"
+    | "BotAndMessageExtension"
+    | "TabNonSsoAndBot";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
@@ -55,14 +57,12 @@ export interface CreateProjectInputs extends Inputs {
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
   /** @description OpenAPI Description Document */
   "openapi-spec-location"?: string;
-  /** @description OpenAI Plugin Manifest */
-  "openai-plugin-manifest"?: string;
   /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
   /** @description Authentication Type */
   "api-me-auth"?: "none" | "api-key";
   /** @description Programming Language */
   "programming-language"?: "javascript" | "typescript" | "csharp";
-  /** @description Application name */
+  /** @description Application Name */
   "app-name"?: string;
 }

@@ -43,7 +43,9 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "link-unfurling",
       "copilot-plugin-new-api",
       "copilot-plugin-existing-api",
-      "copilot-plugin-openai-plugin",
+      "message-extension",
+      "BotAndMessageExtension",
+      "TabNonSsoAndBot",
     ],
     choiceListCommand: "teamsapp list templates",
   },
@@ -110,12 +112,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "OpenAPI description document location.",
   },
   {
-    name: "openai-plugin-manifest",
-    type: "string",
-    shortName: "m",
-    description: "OpenAI plugin website domain or manifest URL.",
-  },
-  {
     name: "api-operation",
     type: "array",
     shortName: "o",
@@ -148,7 +144,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "app-name",
     type: "string",
     shortName: "n",
-    description: "Application name",
+    description: "Application Name",
     required: true,
   },
 ];

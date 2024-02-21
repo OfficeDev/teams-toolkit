@@ -503,10 +503,12 @@ export async function azureParameterMigration(context: MigrationContext): Promis
       continue;
     }
 
-    const content = await fs.readFile(
-      path.join(context.projectPath, configFolderPath, fileName),
-      "utf-8"
-    );
+    const parameterPath = path.join(context.projectPath, configFolderPath, fileName);
+    // double confirm for file existence as fsReadDirSync may return deleted file names
+    if (!fs.pathExistsSync(parameterPath)) {
+      continue;
+    }
+    const content = await fs.readFile(parameterPath, "utf-8");
 
     const newContent = replacePlaceholdersForV3(content, bicepContent);
     await context.fsWriteFile(path.join(azureFolderPath, fileName), newContent);

@@ -264,6 +264,30 @@ class EnvUtil {
     const envName = matches && matches[1];
     return envName || undefined;
   }
+
+  async resetEnv(projectPath: string, env: string, ignoreKeys: string[]): Promise<void> {
+    const envFilePathRes = await pathUtils.getEnvFilePath(projectPath, env);
+    if (envFilePathRes.isErr()) return;
+    const envFilePath = envFilePathRes.value;
+    if (!envFilePath) return;
+    await this.resetEnvFile(envFilePath, ignoreKeys);
+    const dotEnvSecretFilePath = envFilePath + ".user";
+    if (await fs.pathExists(dotEnvSecretFilePath)) {
+      await this.resetEnvFile(dotEnvSecretFilePath, ignoreKeys);
+    }
+  }
+
+  async resetEnvFile(envFilePath: string, ignoreKeys: string[]): Promise<void> {
+    const parseResult = dotenvUtil.deserialize(
+      await fs.readFile(envFilePath, { encoding: "utf8" })
+    );
+    for (const key of Object.keys(parseResult.obj)) {
+      if (!ignoreKeys.includes(key)) {
+        parseResult.obj[key] = "";
+      }
+    }
+    await fs.writeFile(envFilePath, dotenvUtil.serialize(parseResult), { encoding: "utf8" });
+  }
 }
 
 export const envUtil = new EnvUtil();

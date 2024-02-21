@@ -46,7 +46,7 @@ describe("Local Debug Tests", function () {
         localDebugTestContext.testRootFolder,
         localDebugTestContext.appName
       );
-      validateFileExist(projectPath, "repair/index.ts");
+      validateFileExist(projectPath, "src/functions/repair.ts");
       await startDebugging("Debug in Teams (Chrome)");
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);
       await waitForTerminal(

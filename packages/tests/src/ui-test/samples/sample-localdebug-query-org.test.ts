@@ -12,10 +12,10 @@ import { CaseFactory } from "./sampleCaseFactory";
 import { Env } from "../../utils/env";
 
 class QueryOrgTestCase extends CaseFactory {
-  override async onValidate(
-    page: Page,
-    option?: { displayName: string }
-  ): Promise<void> {
+  override async onValidate(page: Page): Promise<void> {
+    return await validateQueryOrg(page, { displayName: Env.displayName });
+  }
+  override async onCliValidate(page: Page): Promise<void> {
     return await validateQueryOrg(page, { displayName: Env.displayName });
   }
 }
@@ -28,6 +28,6 @@ new QueryOrgTestCase(
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
   {
     skipValidation: true,
-    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
+    debug: "cli",
   }
 ).test();

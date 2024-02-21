@@ -27,6 +27,13 @@ class Milestoned extends Action {
 	async onMilestoned(issue: OctoKitIssue) {
 		const content = await issue.getIssue();
 		const milestoneTitle = content.milestone?.title ?? "";
+		let sprintPath = "";
+		if (content.milestone?.description) {
+			const match = content.milestone?.description.match(/Sprint path is:(.*)/);
+			if (match && match.length > 1) {
+				sprintPath = match[1];
+			}
+		}
 		if (milestoneTitle.startsWith(milestonePrefix)) {
 			safeLog(`the issue ${content.number} is milestoned with ${milestoneTitle}`);
 			let client = await this.createClient();
@@ -45,15 +52,15 @@ class Milestoned extends Action {
 			let workItem: WorkItemTrackingInterfaces.WorkItem;
 			if (featureLabel && content.labels.includes(featureLabel)) {
 				safeLog(`issue labeled with ${featureLabel}. Feature work item will be created.`);
-				workItem = await client.createFeatureItem(title, asignee, undefined, url);
+				workItem = await client.createFeatureItem(title, asignee, undefined, url, sprintPath);
 			} else if (content.labels.includes(bugLabel)) {
 				safeLog(`issue labeled with ${bugLabel}. Bug work item will be created.`);
-				workItem = await client.createBugItem(title, asignee, undefined, url);
+				workItem = await client.createBugItem(title, asignee, undefined, url, sprintPath);
 			} else {
 				safeLog(
 					`issue labeled without feature label(${featureLabel}) and bug label(${bugLabel}). Default bug work item will be created.`,
 				);
-				workItem = await client.createBugItem(title, asignee, undefined, url);
+				workItem = await client.createBugItem(title, asignee, undefined, url, sprintPath);
 			}
 			safeLog(`finished to create work item.`);
 			const workItemUrl = workItem._links?.html?.href;

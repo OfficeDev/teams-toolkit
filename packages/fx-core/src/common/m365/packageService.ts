@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import axios from "axios";
+import AdmZip from "adm-zip";
 import FormData from "form-data";
 import fs from "fs-extra";
 
@@ -21,6 +21,7 @@ import {
   sendTelemetryErrorEvent,
   sendTelemetryEvent,
 } from "../telemetry";
+import { WrappedAxiosClient } from "../wrappedAxiosClient";
 
 const M365ErrorSource = "M365";
 const M365ErrorComponent = "PackageService";
@@ -44,7 +45,7 @@ export class PackageService {
   }
 
   public constructor(endpoint: string, logger?: LogProvider) {
-    this.axiosInstance = axios.create({
+    this.axiosInstance = WrappedAxiosClient.create({
       timeout: 30000,
     });
     this.initEndpoint = endpoint;
@@ -142,6 +143,7 @@ export class PackageService {
   @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
   public async sideLoading(token: string, manifestPath: string): Promise<[string, string]> {
     try {
+      this.checkZip(manifestPath);
       const data = await fs.readFile(manifestPath);
       const content = new FormData();
       content.append("package", data);
@@ -443,5 +445,15 @@ export class PackageService {
     }
 
     return error;
+  }
+
+  private checkZip(path: string) {
+    try {
+      const zip = new AdmZip(path, {});
+      zip.getEntries();
+    } catch (error: any) {
+      this.logger?.debug(`Invalid input zip ${path}. ${error.message as string}`);
+      this.logger?.warning(`Please make sure input path is a valid app package zip. ${path}`);
+    }
   }
 }

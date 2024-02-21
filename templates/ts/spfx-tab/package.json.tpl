@@ -10,8 +10,5 @@
         "dev:teamsfx": "cd ./src && npx gulp serve --nobrowser",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "devDependencies": {
-        "@microsoft/teamsfx-cli": "1.*"
-    },
     "license": "MIT"
 }

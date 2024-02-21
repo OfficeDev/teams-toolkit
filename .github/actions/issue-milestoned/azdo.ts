@@ -71,6 +71,7 @@ export class DevopsClient {
 		asigneeValue: string | undefined,
 		tagsValue: string | undefined,
 		url: string,
+		sprintPath: string,
 	): Promise<WorkItemTrackingInterfaces.WorkItem> {
 		return this.createItem(
 			titleValue,
@@ -80,6 +81,7 @@ export class DevopsClient {
 			tagsValue,
 			url,
 			'Feature',
+			sprintPath,
 		);
 	}
 
@@ -88,6 +90,7 @@ export class DevopsClient {
 		asigneeValue: string | undefined,
 		tagsValue: string | undefined,
 		url: string,
+		sprintPath: string,
 	): Promise<WorkItemTrackingInterfaces.WorkItem> {
 		return this.createItem(
 			titleValue,
@@ -97,6 +100,7 @@ export class DevopsClient {
 			tagsValue,
 			url,
 			'Bug',
+			sprintPath,
 		);
 	}
 
@@ -108,6 +112,7 @@ export class DevopsClient {
 		tagsValue: string | undefined,
 		url: string,
 		type: string,
+		sprintPath: string,
 	): Promise<WorkItemTrackingInterfaces.WorkItem> {
 		let document: JsonPatchOperation[] = [];
 
@@ -137,7 +142,7 @@ export class DevopsClient {
 		const iteration: JsonPatchOperation = {
 			path: '/fields/System.IterationPath',
 			op: Operation.Add,
-			value: iterationValue,
+			value: sprintPath ?? iterationValue,
 		};
 		document.push(iteration);
 

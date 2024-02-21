@@ -852,6 +852,34 @@ describe("envUtils", () => {
       assert.equal(process.env.KEY, "VALUE");
     });
   });
+
+  describe("resetEnvFile", () => {
+    it("happy path", async () => {
+      const obj: any = { obj: { IKEY: "IKEY", KEY: "KEY" } };
+      sandbox.stub(dotenvUtil, "deserialize").returns(obj);
+      sandbox.stub(fs, "readFile").resolves("" as any);
+      sandbox.stub(fs, "writeFile").resolves();
+      await envUtil.resetEnvFile(" ", ["IKEY"]);
+      assert.equal(obj.obj.KEY, "");
+    });
+  });
+
+  describe("resetEnv", () => {
+    it("happy path", async () => {
+      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(".env.dev"));
+      sandbox.stub(envUtil, "resetEnvFile").resolves();
+      sandbox.stub(fs, "pathExists").resolves(true);
+      await envUtil.resetEnv(" ", "dev", ["IKEY"]);
+    });
+    it("getEnvFilePath error", async () => {
+      sandbox.stub(pathUtils, "getEnvFilePath").resolves(err(new UserCancelError()));
+      await envUtil.resetEnv(" ", "dev", ["IKEY"]);
+    });
+    it("getEnvFilePath return undefined", async () => {
+      sandbox.stub(pathUtils, "getEnvFilePath").resolves(ok(undefined));
+      await envUtil.resetEnv(" ", "dev", ["IKEY"]);
+    });
+  });
 });
 
 describe("parseSetOutputCommand", () => {

@@ -7,7 +7,6 @@ import { initializePreviewFeatureFlags } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import * as path from "path";
 import { start as startNewUX } from "./commands/index";
-import { logger } from "./commonlib/logger";
 import { CliTelemetryReporter } from "./commonlib/telemetry";
 import "./console/screen";
 import * as constants from "./constants";

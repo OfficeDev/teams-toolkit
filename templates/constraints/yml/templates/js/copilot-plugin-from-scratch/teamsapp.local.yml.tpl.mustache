@@ -16,6 +16,6 @@ provision:
 {{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
 
 deploy:
-{{#devToolInstall}} func {{/devToolInstall}}
+{{#devToolInstall}} func, funcToolsVersion: ~4.0.5455 {{/devToolInstall}}
 
 {{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}

@@ -9,16 +9,16 @@
     "build": "rimraf out && tsc -p ./",
     "test:e2e": "npm run test:e2e:clean && npm run test:e2e:parallel",
     "test:e2e:clean": "NODE_OPTIONS=\"--unhandled-rejections=strict\" ts-node src/e2e/clean.ts",
-    "test:e2e:parallel": "mocha --parallel --reporter @mochajs/json-file-reporter \"src/e2e/**/*.tests.ts\"",
-    "test:e2e:smoke": "mocha --reporter @mochajs/json-file-reporter \"src/e2e/smoke/*.tests.ts\"",
-    "test:e2e:others": "mocha --reporter @mochajs/json-file-reporter \"src/e2e/{,!(smoke)}/*.tests.ts\"",
+    "test:e2e:parallel": "mocha --parallel --exit --reporter @mochajs/json-file-reporter \"src/e2e/**/*.tests.ts\"",
+    "test:e2e:smoke": "mocha --exit --reporter @mochajs/json-file-reporter \"src/e2e/smoke/*.tests.ts\"",
+    "test:e2e:others": "mocha --exit --reporter @mochajs/json-file-reporter \"src/e2e/{,!(smoke)}/*.tests.ts\"",
     "precommit": "lint-staged"
   },
   "devDependencies": {
-    "@microsoft/dev-tunnels-connections": "1.0.7445",
-    "@microsoft/dev-tunnels-contracts": "1.0.7445",
-    "@microsoft/dev-tunnels-management": "1.0.7445",
-    "@microsoft/dev-tunnels-ssh": "3.11.31",
+    "@microsoft/dev-tunnels-connections": "1.1.9",
+    "@microsoft/dev-tunnels-contracts": "1.1.9",
+    "@microsoft/dev-tunnels-management": "1.1.9",
+    "@microsoft/dev-tunnels-ssh": "3.11.36",
     "@microsoft/extra-shot-mocha": "0.0.1",
     "@microsoft/teamsfx-core": "workspace:*",
     "@types/chai": "^4.2.19",
@@ -82,7 +82,7 @@
     "ms-rest-azure": "^3.0.1",
     "querystring": "^0.2.1",
     "semver": "^7.5.2",
-    "yaml": "^2.2.1"
+    "yaml": "^2.2.2"
   },
   "optionalDependencies": {
     "keytar": "^7.7.0"

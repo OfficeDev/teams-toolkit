@@ -14,6 +14,7 @@ import {
 import {
   RemoteDebugTestContext,
   configSpfxGlobalEnv,
+  runDeploy,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -73,16 +74,7 @@ describe("Remote debug Tests", function () {
         Notification.ProvisionSucceeded,
         Timeout.shortTimeWait
       );
-      await clearNotifications();
-      await execCommandIfExist(CommandPaletteCommands.DeployCommand);
-      try {
-        const deployConfirmInput = await InputBox.create();
-        await deployConfirmInput.confirm();
-      } catch (error) {
-        console.log("No need to confirm to deploy.");
-      }
-      await driver.sleep(Timeout.spfxDeploy);
-      await getNotification(Notification.DeploySucceeded, Timeout.longTimeWait);
+      await runDeploy();
 
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath

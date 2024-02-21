@@ -89,6 +89,12 @@ export class AadAppClient {
 
     return <AADApplication>response.data;
   }
+
+  @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
+  public async deleteAadApp(id: string): Promise<void> {
+    await this.axios.delete(`applications/${id}`);
+  }
+
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async generateClientSecret(objectId: string): Promise<string> {
     const requestBody = {

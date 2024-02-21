@@ -167,7 +167,7 @@ export async function killPort(
 ): Promise<{ stdout: string; stderr: string }> {
   // windows
   if (process.platform === "win32") {
-    const command = `for /f "tokens=5" %a in ('netstat -ano ^| find "${port}"') do @taskkill /f /pid %a`;
+    const command = `for /f "tokens=5" %a in ('netstat -ano ^| find ":${port}"') do taskkill /PID %a /F`;
     console.log("run command: ", command);
     const result = await execAsync(command);
     return result;
@@ -176,6 +176,39 @@ export async function killPort(
     console.log("run command: ", command);
     const result = await execAsync(command);
     return result;
+  }
+}
+
+export async function initDebugPort() {
+  try {
+    await killPort(53000);
+    console.log(`close port 53000 successfully`);
+  } catch (error) {
+    console.log(`close port 53000 failed`);
+  }
+  try {
+    await killPort(3978);
+    console.log(`close port 3978 successfully`);
+  } catch (error) {
+    console.log(`close port 3978 failed`);
+  }
+  try {
+    await killPort(9239);
+    console.log(`close port 9239 successfully`);
+  } catch (error) {
+    console.log(`close port 9239 failed`);
+  }
+  try {
+    await killPort(7071);
+    console.log(`close port 7071 successfully`);
+  } catch (error) {
+    console.log(`close port 7071 failed`);
+  }
+  try {
+    await killPort(9229);
+    console.log(`close port 9229 successfully`);
+  } catch (error) {
+    console.log(`close port 9229 failed`);
   }
 }
 

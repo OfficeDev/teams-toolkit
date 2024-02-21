@@ -93,9 +93,6 @@ export const LocalTemplateAction: GeneratorAction = {
       context.fileDataReplaceFn,
       context.filterFn
     );
-    if (!context.outputs?.length) {
-      throw new TemplateNotFoundError(context.name);
-    }
   },
 };
 

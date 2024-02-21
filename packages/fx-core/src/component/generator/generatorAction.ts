@@ -8,12 +8,7 @@ import path from "path";
 import { LogProvider } from "@microsoft/teamsfx-api";
 
 import { getTemplatesFolder } from "../../folder";
-import {
-  MissKeyError,
-  SampleNotFoundError,
-  TemplateNotFoundError,
-  TemplateZipFallbackError,
-} from "./error";
+import { MissKeyError, SampleNotFoundError, TemplateNotFoundError } from "./error";
 import {
   downloadDirectory,
   fetchZipFromUrl,
@@ -91,9 +86,6 @@ export const LocalTemplateAction: GeneratorAction = {
 
     const data: Buffer = await fs.readFile(zipPath);
     const zip = new AdmZip(data);
-    if (zip.getEntries().length === 0) {
-      throw new TemplateZipFallbackError();
-    }
     context.outputs = await unzip(
       zip,
       context.destination,

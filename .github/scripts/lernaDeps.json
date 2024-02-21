@@ -49,5 +49,8 @@
     "packages/api",
     "packages/vscode-ui"
   ],
-  "spec-parser": ["packages/spec-parser"]
+  "spec-parser": [
+    "packages/spec-parser",
+    "packages/manifest"
+  ]
 }

@@ -12,7 +12,7 @@ import { detectIntent } from "./intentDetection";
  */
 export type SlashCommandName = string;
 
-interface ITeamsChatAgentResult extends vscode.ChatAgentResult2 {
+interface ITeamsChatAgentResult extends vscode.ChatResult {
   slashCommand: string;
   sampleIds?: string[];
 }
@@ -28,7 +28,7 @@ export type SlashCommandHandlerResult = {
   /**
    * Any follow-up messages to be given for this result.
    */
-  followUp?: vscode.ChatAgentFollowup[],
+  followUp?: vscode.ChatFollowup[],
   /**
    * The chain of slash command handlers that were invoked to produce this result.
    */
@@ -126,7 +126,7 @@ export class SlashCommandsOwner implements IAgentRequestHandler {
     }
   }
 
-  public getFollowUpForLastHandledSlashCommand(result: vscode.ChatAgentResult2, _token: vscode.CancellationToken): vscode.ChatAgentFollowup[] | undefined {
+  public getFollowUpForLastHandledSlashCommand(result: vscode.ChatResult, _token: vscode.CancellationToken): vscode.ChatFollowup[] | undefined {
     if (result === this._previousSlashCommandHandlerResult?.chatAgentResult) {
       const followUpForLastHandledSlashCommand = this._previousSlashCommandHandlerResult?.followUp;
       this._previousSlashCommandHandlerResult = undefined;

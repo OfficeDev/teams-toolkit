@@ -60,7 +60,7 @@ async function nextStepHandler(
     });
     return { chatAgentResult: { slashCommand: "" }, followUp: [] };
   } else {
-    const recommandedNextStepFollowUps: vscode.ChatAgentFollowup[] = [];
+    const recommandedNextStepFollowUps: vscode.ChatFollowup[] = [];
     for (const nextStep of AllSteps.filter((s) => s.condition(status))) {
       if (
         copilotResponse
@@ -111,10 +111,10 @@ export interface ProjectStatus {
   remoteEnv?: dotenv.DotenvParseOutput;
 }
 
-export const DefaultNextStep: vscode.ChatAgentFollowup = {
+export const DefaultNextStep: vscode.ChatFollowup = {
   prompt: "",
   command: "nextstep",
-  title: vscode.l10n.t("What's next I could do?"),
+  label: vscode.l10n.t("What's next I could do?"),
 };
 
 export const AllSteps: {
@@ -122,7 +122,7 @@ export const AllSteps: {
   title: string;
   description: string;
   docLink: string;
-  followUp: vscode.ChatAgentFollowup;
+  followUp: vscode.ChatFollowup;
   priorty: number;
   condition: (status: ProjectStatus) => boolean;
 }[] = [
@@ -157,7 +157,7 @@ export const AllSteps: {
       followUp: {
         prompt: "list some samples",
         command: "create",
-        title: "Create a sample",
+        label: "Create a sample",
       },
       priorty: 1,
       condition: (status: ProjectStatus) => !status.hasTeamsApp,

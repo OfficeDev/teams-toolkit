@@ -19,7 +19,7 @@ async function getChatAccess(): Promise<vscode.LanguageModelAccess> {
 }
 
 const showDebugCopilotInteractionAsProgress = false;
-function debugCopilotInteraction(progress: vscode.Progress<vscode.ChatAgentExtendedProgress>, msg: string) {
+function debugCopilotInteraction(progress: vscode.Progress<vscode.ChatExtendedProgress>, msg: string) {
   if (showDebugCopilotInteractionAsProgress) {
     progress.report({ content: `\n\n${new Date().toISOString()} >> \`${msg.replace(/\n/g, "").trim()}\`\n\n` });
   }

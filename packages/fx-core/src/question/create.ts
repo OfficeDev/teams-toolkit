@@ -1130,6 +1130,7 @@ export enum ProgrammingLanguage {
   JS = "javascript",
   TS = "typescript",
   CSharp = "csharp",
+  PY = "python",
 }
 
 export function programmingLanguageQuestion(): SingleSelectQuestion {
@@ -1142,6 +1143,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
       { id: ProgrammingLanguage.TS, label: "TypeScript" },
       { id: ProgrammingLanguage.CSharp, label: "C#" },
+      { id: ProgrammingLanguage.PY, label: "python" },
     ],
     dynamicOptions: getLanguageOptions,
     default: (inputs: Inputs) => {

@@ -1,0 +1,7 @@
+.venv/
+.vscode/
+.env
+env/
+README.md
+teamsapp.yml
+teamsapp.local.yml

@@ -24,37 +24,51 @@ export function getCreateCommand(): SlashCommand {
 
 async function createHandler(request: AgentRequest): Promise<SlashCommandHandlerResult> {
   const matchedResult = await matchProject(request);
-  // TODO: Call TTK to create templates
-  const matchedSamples = matchedResult.filter((result) => result.type === 'sample');
 
-  if (matchedSamples.length === 0) {
+  if (matchedResult.length === 0) {
     request.response.markdown(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
     return { chatAgentResult: { slashCommand: '' }, followUp: [] };
   }
-  if (matchedSamples.length === 1) {
-    const firstMatch = matchedSamples[0];
+  if (matchedResult.length === 1) {
+    const firstMatch = matchedResult[0];
     await describeProject(firstMatch, request);
-    const folder = await showFileTree(firstMatch, request);
-    const createButton: vscode.Command = {
-      command: CREATE_SAMPLE_COMMAND_ID,
-      arguments: [folder],
-      title: vscode.l10n.t('Scaffold this project')
-    };
-    request.response.button(createButton);
+    if (firstMatch.type === 'sample') {
+      const folder = await showFileTree(firstMatch, request);
+      request.response.button({
+        command: CREATE_SAMPLE_COMMAND_ID,
+        arguments: [folder],
+        title: vscode.l10n.t('Scaffold this sample')
+      });
+    } else if (firstMatch.type === 'template') {
+      request.response.button({
+        command: "fx-extension.create",
+        arguments: ["CopilotChat", firstMatch.data],
+        title: vscode.l10n.t('Create this template')
+      });
+    }
+
     return { chatAgentResult: { slashCommand: 'create' }, followUp: [] };
   } else {
-    request.response.markdown(`I found ${matchedSamples.slice(0, 3).length} projects that match your description.\n`);
-    for (const project of matchedSamples.slice(0, 3)) {
+    request.response.markdown(`I found ${matchedResult.slice(0, 3).length} projects that match your description.\n`);
+    for (const project of matchedResult.slice(0, 3)) {
       const introduction = await getResponseAsStringCopilotInteraction(
         `You are an advisor for Teams App developers. You need to describe the project based on name and description field of user's JSON content. You should control the output between 30 and 40 words.`,
         request
       );
       request.response.markdown(`- ${project.name}: ${introduction}\n`);
-      request.response.button({
-        command: CREATE_SAMPLE_COMMAND_ID,
-        arguments: [project],
-        title: vscode.l10n.t('Scaffold this project')
-      });
+      if (project.type === 'sample') {
+        request.response.button({
+          command: CREATE_SAMPLE_COMMAND_ID,
+          arguments: [project],
+          title: vscode.l10n.t('Scaffold this sample')
+        });
+      } else if (project.type === 'template') {
+        request.response.button({
+          command: "fx-extension.create",
+          arguments: ["CopilotChat", project.data],
+          title: vscode.l10n.t('Create this template')
+        });
+      }
     }
     return { chatAgentResult: { slashCommand: 'create' }, followUp: [] };
   }

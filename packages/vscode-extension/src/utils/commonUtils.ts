@@ -314,6 +314,8 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification };
     case TelemetryTriggerFrom.WalkThrough:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThrough };
+    case TelemetryTriggerFrom.CopilotChat:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat };
     case TelemetryTriggerFrom.Auto:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto };
     case TelemetryTriggerFrom.Other:

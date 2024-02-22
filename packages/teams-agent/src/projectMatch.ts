@@ -9,6 +9,7 @@ export type ProjectMetadata = {
   platform: "Teams" | "WXP";
   name: string;
   description: string;
+  data?: unknown;
 };
 
 export async function matchProject(request: AgentRequest): Promise<ProjectMetadata[]> {
@@ -82,6 +83,10 @@ function getTeamsTemplateMetadata(): ProjectMetadata[] {
       platform: "Teams",
       name: config.name,
       description: config.description,
+      data: {
+        capabilities: config.id,
+        "project-type": config["project-type"]
+      }
     };
   });
 }

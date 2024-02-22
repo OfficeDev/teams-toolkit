@@ -384,6 +384,7 @@ export enum TelemetryTriggerFrom {
   SideloadingDisabled = "SideloadingDisabled",
   SampleGallery = "SampleGallery",
   SampleDetailPage = "SampleDetailPage",
+  CopilotChat = "CopilotChat",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

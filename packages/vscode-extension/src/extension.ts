@@ -48,11 +48,13 @@ import {
   isExistingUser,
   isSPFxProject,
   isTeamsFxProject,
+  isOfficeAddInProject,
   setUriEventHandler,
   unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
+import * as officeDevHandlers from "./officeDevHandlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
@@ -92,6 +94,10 @@ export async function activate(context: vscode.ExtensionContext) {
     activateTeamsFxRegistration(context);
   }
 
+  if (isOfficeAddInProject) {
+    activateOfficeDevRegistration(context);
+  }
+
   // Call activate function of toolkit core.
   handlers.activate();
 
@@ -100,6 +106,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isOfficeAddIn",
+    isOfficeAddInProject
+  );
 
   void VsCodeLogInstance.info("Teams Toolkit extension is now active!");
 
@@ -165,6 +177,11 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
   );
+}
+
+function activateOfficeDevRegistration(context: vscode.ExtensionContext) {
+  registerOfficeDevMenuCommands(context);
+  TreeViewManagerInstance.registerOfficeDevTreeViews(context);
 }
 
 /**
@@ -660,6 +677,103 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(refreshCopilot);
 }
 
+/**
+ * Commands used in office dev tree view menus, e.g. Explorer context & view item title/context
+ */
+function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
+  // development
+  const openDevelopmentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openOfficeDevDevelopmentLink",
+    (...args) => Correlator.run(officeDevHandlers.openDevelopmentLinkHandler, args)
+  );
+  context.subscriptions.push(openDevelopmentLinkCmd);
+
+  //fx-extension.create and fx-extension.openSamples are registered in registerActivateCommands
+  const installDependencyCmd = vscode.commands.registerCommand(
+    "fx-extension.installDependency",
+    () => Correlator.run(officeDevHandlers.installOfficeAddInDependencies)
+  );
+  context.subscriptions.push(installDependencyCmd);
+
+  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", () =>
+    Correlator.run(handlers.treeViewLocalDebugHandler)
+  );
+  context.subscriptions.push(localDebug);
+
+  const stopDebugging = vscode.commands.registerCommand("fx-extension.stopDebugging", () =>
+    Correlator.run(officeDevHandlers.stopOfficeAddInDebug)
+  );
+  context.subscriptions.push(stopDebugging);
+
+  // lifecycle
+  const openLifecycleLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openOfficeDevLifecycleLink",
+    (...args) => Correlator.run(officeDevHandlers.openLifecycleLinkHandler, args)
+  );
+  context.subscriptions.push(openLifecycleLinkCmd);
+
+  const openDeployLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.officeDevDeploy",
+    (...args) => Correlator.run(officeDevHandlers.openOfficeDevDeployHandler, args)
+  );
+  context.subscriptions.push(openDeployLinkCmd);
+
+  const publishToAppSourceCmd = vscode.commands.registerCommand(
+    "fx-extension.publishToAppSource",
+    () => Correlator.run(officeDevHandlers.publishToAppSourceHandler)
+  );
+  context.subscriptions.push(publishToAppSourceCmd);
+
+  // utility
+  const validateManifest = vscode.commands.registerCommand(
+    "fx-extension.validateApplication",
+    (...args) => Correlator.run(officeDevHandlers.validateOfficeAddInManifest, args)
+  );
+  context.subscriptions.push(validateManifest);
+
+  const openManifestCmd = vscode.commands.registerCommand("fx-extension.editManifest", (...args) =>
+    Correlator.run(officeDevHandlers.editOfficeAddInManifest, args)
+  );
+  context.subscriptions.push(openManifestCmd);
+
+  const generateManifestGUID = vscode.commands.registerCommand(
+    "fx-extension.generateManifestGUID",
+    () => Correlator.run(officeDevHandlers.generateManifestGUID)
+  );
+  context.subscriptions.push(generateManifestGUID);
+
+  const openOfficePartnerCenterLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.officePartnerCenter",
+    (...args) => Correlator.run(officeDevHandlers.openOfficePartnerCenterHandler, args)
+  );
+  context.subscriptions.push(openOfficePartnerCenterLinkCmd);
+
+  // help and feedback
+  const openHelpFeedbackLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openOfficeDevHelpFeedbackLink",
+    (...args) => Correlator.run(officeDevHandlers.openHelpFeedbackLinkHandler, args)
+  );
+  context.subscriptions.push(openHelpFeedbackLinkCmd);
+
+  const openOfficeDevDocumentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openOfficeDevDocument",
+    (...args) => Correlator.run(officeDevHandlers.openDocumentHandler, args)
+  );
+  context.subscriptions.push(openOfficeDevDocumentLinkCmd);
+
+  const openGetStartedLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openGetStarted",
+    (...args) => Correlator.run(officeDevHandlers.openGetStartedLinkHandler, args)
+  );
+  context.subscriptions.push(openGetStartedLinkCmd);
+
+  const reportIssueCmd = vscode.commands.registerCommand(
+    "fx-extension.openOfficeDevReportIssues",
+    (...args) => Correlator.run(officeDevHandlers.openReportIssues, args)
+  );
+  context.subscriptions.push(reportIssueCmd);
+}
+
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
   await vscode.commands.executeCommand("setContext", "fx-extension.isSPFx", isSPFxProject);
 
@@ -913,9 +1027,11 @@ async function runBackgroundAsyncTasks(
   const releaseNote = new ReleaseNote(context);
   await releaseNote.show();
 
-  await openWelcomePageAfterExtensionInstallation();
+  if (!isOfficeAddInProject) {
+    await openWelcomePageAfterExtensionInstallation();
+  }
 
-  if (isTeamsFxProject) {
+  if (isTeamsFxProject || isOfficeAddInProject) {
     await runTeamsFxBackgroundTasks();
   }
 
@@ -929,7 +1045,7 @@ async function runBackgroundAsyncTasks(
 
 async function runTeamsFxBackgroundTasks() {
   const upgradeable = await checkProjectUpgradable();
-  if (isTeamsFxProject) {
+  if (isTeamsFxProject || isOfficeAddInProject) {
     await handlers.autoOpenProjectHandler();
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   }

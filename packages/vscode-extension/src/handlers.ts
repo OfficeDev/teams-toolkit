@@ -69,6 +69,7 @@ import {
   globalStateUpdate,
   isUserCancelError,
   isValidProject,
+  isValidOfficeAddInProject,
   pathUtils,
   setRegion,
   manifestUtils,
@@ -138,6 +139,7 @@ import {
   openTestToolMessage,
   RecommendedOperations,
 } from "./debug/constants";
+import { popupOfficeAddInDependenciesMessage } from "./officeDevHandlers";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -414,6 +416,10 @@ export async function updateAutoOpenGlobalKey(
 
   if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
     globalStateUpdate(GlobalKey.AutoInstallDependency, true);
+  }
+
+  if (isValidOfficeAddInProject(projectUri.fsPath)) {
+    await globalStateUpdate(GlobalKey.AutoInstallDependency, true);
   }
 }
 
@@ -1249,7 +1255,9 @@ export async function autoOpenProjectHandler(): Promise<void> {
     }
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
-    await showLocalDebugMessage();
+    if (!globalVariables.isOfficeAddInProject) {
+      await showLocalDebugMessage();
+    }
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
@@ -1262,14 +1270,22 @@ export async function autoOpenProjectHandler(): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
   if (autoInstallDependency) {
-    await autoInstallDependencyHandler();
+    if (!globalVariables.isOfficeAddInProject) {
+      await autoInstallDependencyHandler();
+    }
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
+  }
+  if (
+    globalVariables.isOfficeAddInProject &&
+    !globalVariables.checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "")
+  ) {
+    popupOfficeAddInDependenciesMessage();
   }
 }
 
 export async function openReadMeHandler(args: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickOpenReadMe, getTriggerFromProperty(args));
-  if (!globalVariables.isTeamsFxProject) {
+  if (!globalVariables.isTeamsFxProject && !globalVariables.isOfficeAddInProject) {
     const createProject = {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {

@@ -6,35 +6,64 @@
 import * as vscode from "vscode";
 import { type AgentRequest } from "./agent";
 
-export type CopilotInteractionResult = { copilotResponded: true, copilotResponse: string } | { copilotResponded: false, copilotResponse: undefined };
+export type CopilotInteractionResult =
+  | { copilotResponded: true; copilotResponse: string }
+  | { copilotResponded: false; copilotResponse: undefined };
+export type LanguageModelID = "copilot-gpt-3.5-turbo" | "copilot-gpt-4";
 
 const maxCachedAccessAge = 1000 * 30;
-let cachedAccess: { access: vscode.LanguageModelAccess, requestedAt: number } | undefined;
-async function getChatAccess(): Promise<vscode.LanguageModelAccess> {
-  if (cachedAccess === undefined || cachedAccess.access.isRevoked || cachedAccess.requestedAt < Date.now() - maxCachedAccessAge) {
-    const newAccess = await vscode.lm.requestLanguageModelAccess("copilot-gpt-3.5-turbo");
+let cachedAccess:
+  | { access: vscode.LanguageModelAccess; requestedAt: number }
+  | undefined;
+async function getChatAccess(
+  languageModelID: LanguageModelID = "copilot-gpt-3.5-turbo"
+): Promise<vscode.LanguageModelAccess> {
+  if (
+    cachedAccess === undefined ||
+    cachedAccess.access.isRevoked ||
+    cachedAccess.requestedAt < Date.now() - maxCachedAccessAge
+  ) {
+    const newAccess = await vscode.lm.requestLanguageModelAccess(
+      languageModelID
+    );
     cachedAccess = { access: newAccess, requestedAt: Date.now() };
   }
   return cachedAccess.access;
 }
 
 const showDebugCopilotInteractionAsProgress = false;
-function debugCopilotInteraction(progress: vscode.Progress<vscode.ChatExtendedProgress>, msg: string) {
+function debugCopilotInteraction(
+  progress: vscode.Progress<vscode.ChatExtendedProgress>,
+  msg: string
+) {
   if (showDebugCopilotInteractionAsProgress) {
-    progress.report({ content: `\n\n${new Date().toISOString()} >> \`${msg.replace(/\n/g, "").trim()}\`\n\n` });
+    progress.report({
+      content: `\n\n${new Date().toISOString()} >> \`${msg
+        .replace(/\n/g, "")
+        .trim()}\`\n\n`,
+    });
   }
-  console.log(`${new Date().toISOString()} >> \`${msg.replace(/\n/g, "").trim()}\``);
+  console.log(
+    `${new Date().toISOString()} >> \`${msg.replace(/\n/g, "").trim()}\``
+  );
 }
 
 /**
  * Feeds {@link systemPrompt} and {@link userContent} to Copilot and redirects the response directly to ${@link progress}.
  */
-export async function verbatimCopilotInteraction(systemPrompt: string, request: AgentRequest): Promise<CopilotInteractionResult> {
+export async function verbatimCopilotInteraction(
+  systemPrompt: string,
+  request: AgentRequest
+): Promise<CopilotInteractionResult> {
   let joinedFragements = "";
-  await queueCopilotInteraction((fragment) => {
-    joinedFragements += fragment;
-    request.response.report({ content: fragment });
-  }, systemPrompt, request);
+  await queueCopilotInteraction(
+    (fragment) => {
+      joinedFragements += fragment;
+      request.response.report({ content: fragment });
+    },
+    systemPrompt,
+    request
+  );
   if (joinedFragements === "") {
     return { copilotResponded: false, copilotResponse: undefined };
   } else {
@@ -45,22 +74,46 @@ export async function verbatimCopilotInteraction(systemPrompt: string, request: 
 /**
  * Feeds {@link systemPrompt} and {@link userContent} to Copilot and directly returns its response.
  */
-export async function getResponseAsStringCopilotInteraction(systemPrompt: string, request: AgentRequest): Promise<string | undefined> {
+export async function getResponseAsStringCopilotInteraction(
+  systemPrompt: string,
+  request: AgentRequest
+): Promise<string | undefined> {
   let joinedFragements = "";
-  await queueCopilotInteraction((fragment) => {
-    joinedFragements += fragment;
-  }, systemPrompt, request);
-  debugCopilotInteraction(request.response, `Copilot response:\n\n${joinedFragements}\n`);
+  await queueCopilotInteraction(
+    (fragment) => {
+      joinedFragements += fragment;
+    },
+    systemPrompt,
+    request
+  );
+  debugCopilotInteraction(
+    request.response,
+    `Copilot response:\n\n${joinedFragements}\n`
+  );
   return joinedFragements;
 }
 
 let copilotInteractionQueueRunning = false;
-type CopilotInteractionQueueItem = { onResponseFragment: (fragment: string) => void, systemPrompt: string, request: AgentRequest, resolve: () => void };
+type CopilotInteractionQueueItem = {
+  onResponseFragment: (fragment: string) => void;
+  systemPrompt: string;
+  request: AgentRequest;
+  resolve: () => void;
+};
 const copilotInteractionQueue: CopilotInteractionQueueItem[] = [];
 
-export async function queueCopilotInteraction(onResponseFragment: (fragment: string) => void, systemPrompt: string, request: AgentRequest): Promise<void> {
+export async function queueCopilotInteraction(
+  onResponseFragment: (fragment: string) => void,
+  systemPrompt: string,
+  request: AgentRequest
+): Promise<void> {
   return new Promise<void>((resolve) => {
-    copilotInteractionQueue.push({ onResponseFragment: onResponseFragment, systemPrompt: systemPrompt, request: request, resolve: resolve });
+    copilotInteractionQueue.push({
+      onResponseFragment: onResponseFragment,
+      systemPrompt: systemPrompt,
+      request: request,
+      resolve: resolve,
+    });
     if (!copilotInteractionQueueRunning) {
       copilotInteractionQueueRunning = true;
       void runCopilotInteractionQueue();
@@ -77,36 +130,69 @@ async function runCopilotInteractionQueue() {
       continue;
     }
 
-    const timeSinceLastCopilotInteraction = Date.now() - lastCopilotInteractionRunTime;
+    const timeSinceLastCopilotInteraction =
+      Date.now() - lastCopilotInteractionRunTime;
     if (timeSinceLastCopilotInteraction < timeBetweenCopilotInteractions) {
-      await new Promise((resolve) => setTimeout(resolve, timeBetweenCopilotInteractions - timeSinceLastCopilotInteraction));
+      await new Promise((resolve) =>
+        setTimeout(
+          resolve,
+          timeBetweenCopilotInteractions - timeSinceLastCopilotInteraction
+        )
+      );
     }
 
     lastCopilotInteractionRunTime = Date.now();
 
-    await doCopilotInteraction(queueItem.onResponseFragment, queueItem.systemPrompt, queueItem.request);
+    await doCopilotInteraction(
+      queueItem.onResponseFragment,
+      queueItem.systemPrompt,
+      queueItem.request
+    );
     queueItem.resolve();
   }
   copilotInteractionQueueRunning = false;
 }
 
-async function doCopilotInteraction(onResponseFragment: (fragment: string) => void, systemPrompt: string, agentRequest: AgentRequest): Promise<void> {
+async function doCopilotInteraction(
+  onResponseFragment: (fragment: string) => void,
+  systemPrompt: string,
+  agentRequest: AgentRequest
+): Promise<void> {
   try {
-    const access = await getChatAccess();
+    const languageModelID: LanguageModelID =
+      agentRequest.commandVariables?.languageModelID || "copilot-gpt-3.5-turbo";
+    const access = await getChatAccess(languageModelID);
+
     const messages: vscode.LanguageModelMessage[] = [
       new vscode.LanguageModelSystemMessage(systemPrompt),
-      new vscode.LanguageModelUserMessage(agentRequest.userPrompt),
     ];
+    const chatMessageHistory =
+      agentRequest.commandVariables?.chatMessageHistory;
+    if (chatMessageHistory !== undefined && chatMessageHistory.length > 0) {
+      messages.push(...chatMessageHistory);
+    }
+    messages.push(new vscode.LanguageModelUserMessage(agentRequest.userPrompt));
 
-    debugCopilotInteraction(agentRequest.response, `System Prompt:\n\n${systemPrompt}\n`);
-    debugCopilotInteraction(agentRequest.response, `User Content:\n\n${agentRequest.userPrompt}\n`);
+    debugCopilotInteraction(
+      agentRequest.response,
+      `System Prompt:\n\n${systemPrompt}\n`
+    );
+    debugCopilotInteraction(
+      agentRequest.response,
+      `User Content:\n\n${agentRequest.userPrompt}\n`
+    );
 
     const request = access.makeChatRequest(messages, {}, agentRequest.token);
     for await (const fragment of request.stream) {
       onResponseFragment(fragment);
     }
   } catch (e) {
-    debugCopilotInteraction(agentRequest.response, `Failed to do copilot interaction with system prompt '${systemPrompt}'. Error: ${JSON.stringify(e)}`);
+    debugCopilotInteraction(
+      agentRequest.response,
+      `Failed to do copilot interaction with system prompt '${systemPrompt}'. Error: ${JSON.stringify(
+        e
+      )}`
+    );
   }
 }
 
@@ -116,15 +202,27 @@ async function doCopilotInteraction(onResponseFragment: (fragment: string) => vo
  * @param fieldNameOrNames The name of the field to get from the stringified JSON object. Will first look for fields that are an exact match, then will look for fields that contain the {@link fieldName}.
  * @param filter An optional list of strings to filter contains-matches by if there are multiple fields that contain the {@link fieldName}.
  */
-export function getStringFieldFromCopilotResponseMaybeWithStrJson(copilotResponseMaybeWithStrJson: string | undefined, fieldNameOrNames: string | string[], filter?: string[]): string | undefined {
+export function getStringFieldFromCopilotResponseMaybeWithStrJson(
+  copilotResponseMaybeWithStrJson: string | undefined,
+  fieldNameOrNames: string | string[],
+  filter?: string[]
+): string | undefined {
   if (copilotResponseMaybeWithStrJson === undefined) {
     return undefined;
   }
 
   try {
-    const parsedCopilotResponse = parseCopilotResponseMaybeWithStrJson(copilotResponseMaybeWithStrJson);
-    return findPossibleValuesOfFieldFromParsedCopilotResponse(parsedCopilotResponse, fieldNameOrNames, filter)
-      .find((value): value is string => value !== undefined && value !== "" && typeof value === "string");
+    const parsedCopilotResponse = parseCopilotResponseMaybeWithStrJson(
+      copilotResponseMaybeWithStrJson
+    );
+    return findPossibleValuesOfFieldFromParsedCopilotResponse(
+      parsedCopilotResponse,
+      fieldNameOrNames,
+      filter
+    ).find(
+      (value): value is string =>
+        value !== undefined && value !== "" && typeof value === "string"
+    );
   } catch (e) {
     console.log(e);
     return undefined;
@@ -137,24 +235,49 @@ export function getStringFieldFromCopilotResponseMaybeWithStrJson(copilotRespons
  * @param fieldName The name of the field to get from the stringified JSON object. Will first look for fields that are an exact match, then will look for fields that contain the {@link fieldName}.
  * @param filter An optional list of strings to filter contains-matches by if there are multiple fields that contain the {@link fieldName}.
  */
-export function getBooleanFieldFromCopilotResponseMaybeWithStrJson(copilotResponseMaybeWithStrJson: string | undefined, fieldName: string, filter?: string[]): boolean | undefined {
+export function getBooleanFieldFromCopilotResponseMaybeWithStrJson(
+  copilotResponseMaybeWithStrJson: string | undefined,
+  fieldName: string,
+  filter?: string[]
+): boolean | undefined {
   if (copilotResponseMaybeWithStrJson === undefined) {
     return undefined;
   }
 
   try {
-    const parsedCopilotResponse = parseCopilotResponseMaybeWithStrJson(copilotResponseMaybeWithStrJson);
-    return findPossibleValuesOfFieldFromParsedCopilotResponse(parsedCopilotResponse, fieldName, filter)
-      .filter((value): value is boolean | string => value !== undefined && (typeof value === "boolean" || typeof value === "string"))
-      .map((value): string | boolean | undefined => typeof value === "boolean" ? value : value.toLowerCase() === "true" || value.toLowerCase() === "false" ? JSON.parse(value.toLowerCase()) as boolean : undefined)
-      .find((value): value is boolean => value !== undefined && typeof value === "boolean");
+    const parsedCopilotResponse = parseCopilotResponseMaybeWithStrJson(
+      copilotResponseMaybeWithStrJson
+    );
+    return findPossibleValuesOfFieldFromParsedCopilotResponse(
+      parsedCopilotResponse,
+      fieldName,
+      filter
+    )
+      .filter(
+        (value): value is boolean | string =>
+          value !== undefined &&
+          (typeof value === "boolean" || typeof value === "string")
+      )
+      .map((value): string | boolean | undefined =>
+        typeof value === "boolean"
+          ? value
+          : value.toLowerCase() === "true" || value.toLowerCase() === "false"
+          ? (JSON.parse(value.toLowerCase()) as boolean)
+          : undefined
+      )
+      .find(
+        (value): value is boolean =>
+          value !== undefined && typeof value === "boolean"
+      );
   } catch (e) {
     console.log(e);
     return undefined;
   }
 }
 
-export function parseCopilotResponseMaybeWithStrJson(copilotResponseMaybeWithStrJson: string): { [key: string]: (string | boolean | number | object) } {
+export function parseCopilotResponseMaybeWithStrJson(
+  copilotResponseMaybeWithStrJson: string
+): { [key: string]: string | boolean | number | object } {
   try {
     copilotResponseMaybeWithStrJson = copilotResponseMaybeWithStrJson
       .trim()
@@ -163,28 +286,57 @@ export function parseCopilotResponseMaybeWithStrJson(copilotResponseMaybeWithStr
       copilotResponseMaybeWithStrJson = "{" + copilotResponseMaybeWithStrJson;
     }
     if (copilotResponseMaybeWithStrJson.endsWith(",")) {
-      copilotResponseMaybeWithStrJson = copilotResponseMaybeWithStrJson.substring(0, copilotResponseMaybeWithStrJson.length - 1);
+      copilotResponseMaybeWithStrJson =
+        copilotResponseMaybeWithStrJson.substring(
+          0,
+          copilotResponseMaybeWithStrJson.length - 1
+        );
     }
     if (copilotResponseMaybeWithStrJson.indexOf("}") === -1) {
       copilotResponseMaybeWithStrJson = copilotResponseMaybeWithStrJson + "}";
     }
-    const maybeJsonCopilotResponse = copilotResponseMaybeWithStrJson.substring(copilotResponseMaybeWithStrJson.indexOf("{"), copilotResponseMaybeWithStrJson.lastIndexOf("}") + 1);
-    return JSON.parse(maybeJsonCopilotResponse) as { [key: string]: (string | boolean | number | object) };
+    const maybeJsonCopilotResponse = copilotResponseMaybeWithStrJson.substring(
+      copilotResponseMaybeWithStrJson.indexOf("{"),
+      copilotResponseMaybeWithStrJson.lastIndexOf("}") + 1
+    );
+    return JSON.parse(maybeJsonCopilotResponse) as {
+      [key: string]: string | boolean | number | object;
+    };
   } catch (e) {
-    console.log(`Failed to parse copilot response maybe with string JSON, response: '${copilotResponseMaybeWithStrJson}'. Error: ${JSON.stringify(e)}`);
+    console.log(
+      `Failed to parse copilot response maybe with string JSON, response: '${copilotResponseMaybeWithStrJson}'. Error: ${JSON.stringify(
+        e
+      )}`
+    );
     return {};
   }
 }
 
-function findPossibleValuesOfFieldFromParsedCopilotResponse(parsedCopilotResponse: { [key: string]: (string | boolean | number | object) }, fieldNameOrNames: string | string[], filter?: string[]): (string | boolean | number | object)[] {
-  const filedNames = Array.isArray(fieldNameOrNames) ? fieldNameOrNames : [fieldNameOrNames];
+function findPossibleValuesOfFieldFromParsedCopilotResponse(
+  parsedCopilotResponse: { [key: string]: string | boolean | number | object },
+  fieldNameOrNames: string | string[],
+  filter?: string[]
+): (string | boolean | number | object)[] {
+  const filedNames = Array.isArray(fieldNameOrNames)
+    ? fieldNameOrNames
+    : [fieldNameOrNames];
   for (const fieldName of filedNames) {
-    const exactMatches = Object.keys(parsedCopilotResponse)
-      .filter((key) => key.toLowerCase() === fieldName.toLowerCase());
+    const exactMatches = Object.keys(parsedCopilotResponse).filter(
+      (key) => key.toLowerCase() === fieldName.toLowerCase()
+    );
     const containsMatches = Object.keys(parsedCopilotResponse)
       .filter((key) => key.toLowerCase().includes(fieldName.toLowerCase()))
-      .filter((key) => filter === undefined || filter.every((filterValue) => !key.toLowerCase().includes(filterValue.toLowerCase())));
-    const matchValues = [...exactMatches, ...containsMatches].map((key) => parsedCopilotResponse[key]);
+      .filter(
+        (key) =>
+          filter === undefined ||
+          filter.every(
+            (filterValue) =>
+              !key.toLowerCase().includes(filterValue.toLowerCase())
+          )
+      );
+    const matchValues = [...exactMatches, ...containsMatches].map(
+      (key) => parsedCopilotResponse[key]
+    );
     if (matchValues.length > 0) {
       return matchValues;
     }

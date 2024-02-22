@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
@@ -20,8 +20,7 @@ import {
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
   FetchSampleInfoError,
-  TemplateNotFoundError,
-  TemplateZipFallbackError,
+  ScaffoldLocalTemplateError,
 } from "./error";
 import {
   SampleActionSeq,
@@ -172,17 +171,17 @@ export function templateDefaultOnActionError(
   error: Error
 ): Promise<void> {
   switch (action.name) {
-    case GeneratorActionName.RemoteTemplate:
+    case GeneratorActionName.ScaffoldRemoteTemplate:
       context.fallback = true;
       context.logProvider.debug(error.message);
-      context.logProvider.debug(LogMessages.getTemplateFromLocal);
+      context.logProvider.info(LogMessages.getTemplateFromLocal);
       break;
-    case GeneratorActionName.LocalTemplate:
+    case GeneratorActionName.ScaffoldLocalTemplate:
       if (error instanceof BaseComponentInnerError) {
         return Promise.reject(error.toFxError());
       } else {
         context.logProvider.error(error.message);
-        return Promise.reject(new TemplateZipFallbackError().toFxError());
+        return Promise.reject(new ScaffoldLocalTemplateError().toFxError());
       }
     default:
       return Promise.reject(new Error(error.message));

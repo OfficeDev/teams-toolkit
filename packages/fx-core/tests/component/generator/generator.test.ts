@@ -23,7 +23,7 @@ import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
 import { createSandbox } from "sinon";
 import {
-  RemoteTemplateAction,
+  ScaffoldRemoteTemplateAction,
   fetchSampleInfoAction,
   TemplateActionSeq,
 } from "../../../src/component/generator/generatorAction";
@@ -498,18 +498,18 @@ describe("Generator error", async () => {
   });
 
   it("template fallback error", async () => {
-    sandbox.stub(RemoteTemplateAction, "run").resolves();
+    sandbox.stub(ScaffoldRemoteTemplateAction, "run").resolves();
     sandbox.stub(folderUtils, "getTemplatesFolder").resolves("foobar");
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
+      assert.equal(result.error.innerError.name, "ScaffoldLocalTemplateError");
     } else {
       assert.fail("template fallback error should be thrown.");
     }
   });
 
   it("template not found error", async () => {
-    sandbox.stub(RemoteTemplateAction, "run").resolves();
+    sandbox.stub(ScaffoldRemoteTemplateAction, "run").resolves();
     sandbox.stub(generatorUtils, "unzip").resolves();
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
@@ -815,7 +815,7 @@ describe("Generator happy path", async () => {
 
     sandbox.replace(templateConfig, "useLocalTemplate", true);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
-    sandbox.stub(RemoteTemplateAction, "run").throws(new Error("test"));
+    sandbox.stub(ScaffoldRemoteTemplateAction, "run").throws(new Error("test"));
 
     const result = await Generator.generateTemplate(
       context,

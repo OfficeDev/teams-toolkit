@@ -50,14 +50,14 @@ export interface GeneratorAction {
 }
 
 export enum GeneratorActionName {
-  RemoteTemplate = "RemoteTemplate",
-  LocalTemplate = "LocalTemplate",
+  ScaffoldRemoteTemplate = "ScaffoldRemoteTemplate",
+  ScaffoldLocalTemplate = "ScaffoldLocalTemplate",
   FetchSampleInfo = "FetchSampleInfo",
   DownloadDirectory = "DownloadDirectory",
 }
 
-export const RemoteTemplateAction: GeneratorAction = {
-  name: GeneratorActionName.RemoteTemplate,
+export const ScaffoldRemoteTemplateAction: GeneratorAction = {
+  name: GeneratorActionName.ScaffoldRemoteTemplate,
   run: async (context: GeneratorContext) => {
     const templateUrl = await determineTemplateSource(context);
     if (templateUrl === "local") {
@@ -75,8 +75,8 @@ export const RemoteTemplateAction: GeneratorAction = {
   },
 };
 
-export const LocalTemplateAction: GeneratorAction = {
-  name: GeneratorActionName.LocalTemplate,
+export const ScaffoldLocalTemplateAction: GeneratorAction = {
+  name: GeneratorActionName.ScaffoldLocalTemplate,
   run: async (context: GeneratorContext) => {
     if (context.outputs?.length) {
       return;
@@ -105,13 +105,13 @@ export const LocalTemplateAction: GeneratorAction = {
 async function determineTemplateSource(context: GeneratorContext) {
   let url = "local";
   if (!Boolean(templateConfig.useLocalTemplate)) {
-    const latestTag = await getTemplateLatestTag(
+    let latestTag = await getTemplateLatestTag(
       context.language!,
       context.tryLimits,
       context.timeoutInMs
     );
-    const latestVer = latestTag.split("@")[1];
-    if (semver.gt(latestVer, templateConfig.localVersion)) {
+    latestTag = latestTag.replace(templateConfig.tagPrefix, "").trim();
+    if (semver.gt(latestTag, templateConfig.localVersion)) {
       // git tag version is higher than the local version, download template from github
       url = `${templateConfig.templateDownloadBaseURL}/${latestTag}/${context.language!}.zip`;
     }
@@ -142,6 +142,9 @@ export const downloadDirectoryAction: GeneratorAction = {
   },
 };
 
-export const TemplateActionSeq: GeneratorAction[] = [RemoteTemplateAction, LocalTemplateAction];
+export const TemplateActionSeq: GeneratorAction[] = [
+  ScaffoldRemoteTemplateAction,
+  ScaffoldLocalTemplateAction,
+];
 
 export const SampleActionSeq: GeneratorAction[] = [fetchSampleInfoAction, downloadDirectoryAction];

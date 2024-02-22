@@ -174,8 +174,8 @@ export function templateDefaultOnActionError(
   switch (action.name) {
     case GeneratorActionName.RemoteTemplate:
       context.fallback = true;
-      context.logProvider.info(error.message);
-      context.logProvider.info(LogMessages.getTemplateFromLocal);
+      context.logProvider.debug(error.message);
+      context.logProvider.debug(LogMessages.getTemplateFromLocal);
       break;
     case GeneratorActionName.LocalTemplate:
       if (error instanceof BaseComponentInnerError) {

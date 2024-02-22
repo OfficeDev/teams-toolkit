@@ -60,7 +60,9 @@ export const RemoteTemplateAction: GeneratorAction = {
   name: GeneratorActionName.RemoteTemplate,
   run: async (context: GeneratorContext) => {
     const templateUrl = await determineTemplateSource(context);
-    if (templateUrl === "local") return;
+    if (templateUrl === "local") {
+      return;
+    }
 
     const zip = await fetchZipFromUrl(templateUrl, context.tryLimits, context.timeoutInMs);
     context.outputs = await unzip(

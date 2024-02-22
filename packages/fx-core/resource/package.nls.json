@@ -325,7 +325,7 @@
   "core.createProjectQuestion.capability.customCopilotAssistantNewOption.label": "Build New",
   "core.createProjectQuestion.capability.customCopilotAssistantNewOption.detail": "Build your own AI Assistant from scratch using Teams AI Library",
   "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.label": "Build with Assistants API",
-  "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.detail": "Build an intelligent AI Assistant with OpenAI Assistants API and Teams AI Library's built-in corrdination",
+  "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.detail": "Build an intelligent AI Assistant with OpenAI Assistants API and Teams AI Library's built-in coordination",
   "core.createProjectQuestion.capability.customCopilotAssistant.title": "AI Assistant",
   "core.createProjectQuestion.capability.customCopilotAssistant.placeholder": "Choose how you want to manage your AI tasks",
   "core.createProjectQuestion.llmService.title": "Service for Large Language Model (LLM)",

@@ -15,7 +15,10 @@ export async function sendRequestWithTimeout<T>(
     source.cancel();
   }, timeoutInMs);
   try {
-    const res = await sendRequestWithRetry(() => requestFn(source.token), tryLimits);
+    const res = await sendRequestWithRetry(
+      () => requestFn(source.token),
+      tryLimits
+    );
     clearTimeout(timeout);
     return res;
   } catch (err: unknown) {
@@ -31,7 +34,8 @@ async function sendRequestWithRetry<T>(
   tryLimits: number
 ): Promise<AxiosResponse<T>> {
   // !status means network error, see https://github.com/axios/axios/issues/383
-  const canTry = (status: number | undefined) => !status || (status >= 500 && status < 600);
+  const canTry = (status: number | undefined) =>
+    !status || (status >= 500 && status < 600);
 
   let status: number | undefined;
   let error: Error;
@@ -63,7 +67,10 @@ type SampleFileInfo = {
   sha: string;
 };
 
-export async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): Promise<any> {
+export async function getSampleFileInfo(
+  urlInfo: SampleUrlInfo,
+  retryLimits: number
+): Promise<any> {
   const fileInfoUrl = `https://api.github.com/repos/${urlInfo.owner}/${urlInfo.repository}/git/trees/${urlInfo.ref}?recursive=1`;
   const fileInfo = (
     await sendRequestWithRetry(async () => {
@@ -72,7 +79,9 @@ export async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: num
   ).data as SampleFileInfo;
 
   const samplePaths = fileInfo?.tree
-    ?.filter((node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree")
+    ?.filter(
+      (node) => node.path.startsWith(`${urlInfo.dir}/`) && node.type !== "tree"
+    )
     .map((node) => node.path);
   const fileUrlPrefix = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${fileInfo?.sha}/`;
   return { samplePaths, fileUrlPrefix };
@@ -88,13 +97,22 @@ export async function downloadSampleFiles(
 ): Promise<void> {
   const downloadCallback = async (samplePath: string) => {
     const file = (await sendRequestWithRetry(async () => {
-      return await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
+      return await axios.get(fileUrlPrefix + samplePath, {
+        responseType: "arraybuffer",
+      });
     }, retryLimits)) as unknown as any;
-    const filePath = path.join(dstPath, path.relative(`${relativePath}/`, samplePath));
+    const filePath = path.join(
+      dstPath,
+      path.relative(`${relativePath}/`, samplePath)
+    );
     await fs.ensureFile(filePath);
     await fs.writeFile(filePath, Buffer.from(file.data));
   };
-  await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
+  await runWithLimitedConcurrency(
+    samplePaths,
+    downloadCallback,
+    concurrencyLimits
+  );
 }
 
 export async function buildFileTree(
@@ -111,7 +129,9 @@ export async function buildFileTree(
   };
   const downloadCallback = async (samplePath: string) => {
     const file = (await sendRequestWithRetry(async () => {
-      return await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
+      return await axios.get(fileUrlPrefix + samplePath, {
+        responseType: "arraybuffer",
+      });
     }, retryLimits)) as unknown as any;
     const relativePath = path.relative(`${relativeFolderName}/`, samplePath);
     const filePath = path.join(dstPath, samplePath);
@@ -119,14 +139,23 @@ export async function buildFileTree(
     await fs.ensureFile(filePath);
     await fs.writeFile(filePath, Buffer.from(file.data));
   };
-  await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
+  await runWithLimitedConcurrency(
+    samplePaths,
+    downloadCallback,
+    concurrencyLimits
+  );
   return root.children ?? [];
 }
 
-function fileTreeAdd(root: vscode.ChatResponseFileTree, relativePath: string, filePath: string) {
+function fileTreeAdd(
+  root: vscode.ChatResponseFileTree,
+  relativePath: string,
+  filePath: string
+) {
   const filename = path.basename(relativePath);
   const folderName = path.dirname(relativePath);
-  const segments = path.sep === "\\" ? folderName.split("\\") : folderName.split("/");
+  const segments =
+    path.sep === "\\" ? folderName.split("\\") : folderName.split("/");
   let parent = root;
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
@@ -153,7 +182,7 @@ export function detectExtensionInstalled(extensionId: string): boolean {
   return res !== undefined;
 }
 
-async function runWithLimitedConcurrency<T>(
+export async function runWithLimitedConcurrency<T>(
   items: T[],
   callback: (arg: T) => any,
   concurrencyLimit: number
@@ -180,8 +209,12 @@ async function runWithLimitedConcurrency<T>(
   await Promise.all(queue);
 }
 
-export function getTeamsApps(folders?: readonly vscode.WorkspaceFolder[]): string[] | undefined {
-  const teamsApps = folders?.map(folder => folder.uri.fsPath).filter(p => isValidProjectV3(p));
+export function getTeamsApps(
+  folders?: readonly vscode.WorkspaceFolder[]
+): string[] | undefined {
+  const teamsApps = folders
+    ?.map((folder) => folder.uri.fsPath)
+    .filter((p) => isValidProjectV3(p));
   return teamsApps;
 }
 
@@ -209,9 +242,11 @@ export const MetadataV3 = {
     "# This file includes environment variables that will not be committed to git by default. You can set these environment variables in your CI/CD system for your project." +
     EOL,
   secretComment:
-    "# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs." + EOL,
+    "# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs." +
+    EOL,
   envFileDevComment:
-    "# This file includes environment variables that will be committed to git by default." + EOL,
+    "# This file includes environment variables that will be committed to git by default." +
+    EOL,
   envFileLocalComment:
     "# This file includes environment variables that can be committed to git. It's gitignored by default because it represents your local development environment." +
     EOL,

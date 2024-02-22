@@ -5,26 +5,46 @@
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
-import { ext } from '../extensionVariables';
+import { ext } from "../extensionVariables";
 import {
-  CREATE_SAMPLE_COMMAND_ID, createCommand,
-  getCreateCommand
-} from '../subCommand/createSlashCommand';
-import { getAgentHelpCommand, helpCommandName } from '../subCommand/helpSlashCommand';
+  CREATE_SAMPLE_COMMAND_ID,
+  createCommand,
+  getCreateCommand,
+} from "../subCommand/createSlashCommand";
 import {
-  DefaultNextStep, EXECUTE_COMMAND_ID, executeCommand, getNextStepCommand
-} from '../subCommand/nextStepSlashCommand';
-import { getTestCommand } from '../subCommand/testCommand';
-import { agentDescription, agentFullName, agentName, maxFollowUps } from './agentConsts';
-import { verbatimCopilotInteraction } from './copilotInteractions';
-import { SlashCommandHandlerResult, SlashCommandsOwner } from './slashCommands';
+  getAgentHelpCommand,
+  helpCommandName,
+} from "../subCommand/helpSlashCommand";
+import {
+  DefaultNextStep,
+  EXECUTE_COMMAND_ID,
+  executeCommand,
+  getNextStepCommand,
+} from "../subCommand/nextStepSlashCommand";
+import { getTestCommand } from "../subCommand/testCommand";
+import {
+  agentDescription,
+  agentFullName,
+  agentName,
+  maxFollowUps,
+} from "./agentConsts";
+import {
+  LanguageModelID,
+  verbatimCopilotInteraction,
+} from "./copilotInteractions";
+import { SlashCommandHandlerResult, SlashCommandsOwner } from "./slashCommands";
 
 export interface ITeamsChatAgentResult extends vscode.ChatResult {
   slashCommand?: string;
   sampleIds?: string[];
 }
+
+export type CommandVariables = {
+  languageModelID?: LanguageModelID;
+  chatMessageHistory?: vscode.LanguageModelMessage[];
+};
 
 export type AgentRequest = {
   slashCommand?: string;
@@ -34,6 +54,8 @@ export type AgentRequest = {
   context: vscode.ChatContext;
   response: vscode.ChatExtendedResponseStream;
   token: vscode.CancellationToken;
+
+  commandVariables?: CommandVariables;
 };
 
 export interface IAgentRequestHandler {
@@ -62,6 +84,7 @@ agentSlashCommandsOwner.addInvokeableSlashCommands(
     getNextStepCommand(),
     getAgentHelpCommand(agentSlashCommandsOwner),
     getTestCommand(),
+    // getCodeToCloudCommand(),
   ])
 );
 
@@ -163,9 +186,7 @@ async function defaultHandler(
   }
 }
 
-function registerVSCodeCommands(
-  participant: vscode.ChatParticipant
-) {
+function registerVSCodeCommands(participant: vscode.ChatParticipant) {
   ext.context.subscriptions.push(
     participant,
     vscode.commands.registerCommand(CREATE_SAMPLE_COMMAND_ID, createCommand),

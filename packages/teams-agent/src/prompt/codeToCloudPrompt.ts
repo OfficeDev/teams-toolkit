@@ -235,17 +235,16 @@ export function getRecommendSelectPrompt(
   countResponse: string
 ): Prompt {
   const systemPrompt = "";
+  const halfProposalNumber = Math.floor(proposalNumber / 2);
 
   const userPrompt = `I have some azure services with exists times showd as following:
   ${countResponse}
 
-  Only pick the Azure services that exists times is larger or equal to ${
-    proposalNumber / 2
-  }
+  Only pick the Azure services that exists times is larger than ${halfProposalNumber}
   [Response Format]
   |Azure Service|exists times| component | explanation |
   |---|---| --- | ---|
-  |Azure Service exists times is larger or equal to 2|the exists times of the Azure Service| pick one of the component| pick one of the explanation|
+  |Azure Service exists times is larger than ${halfProposalNumber}|the exists times of the Azure Service| pick one of the component| pick one of the explanation|
   [Response Format]
 
   response should follow the [Response Format]
@@ -264,7 +263,7 @@ export function getRecommendAggregatePrompt(
   const systemPrompt = "";
 
   const halfProposalNumber = proposalNumber / 2;
-  const userPrompt = `I have some azure services with exists times is larger than or equal to ${halfProposalNumber} showd as [Azure Service]:
+  const userPrompt = `I have some azure services showd as [Azure Service]:
 
 [Azure Service]
 ${selectResponse}
@@ -279,7 +278,10 @@ ${selectResponse}
 ## Azure Service
 |Azure Service|Component|Explanation|
 |---|---|---|
-|Azure Service that the exists times is larger than or equal to ${halfProposalNumber} |component from your previous respnose|explanation from your previous respnose|
+|Azure Service |component from your previous respnose|explanation from your previous respnose|
+
+## Advice for stepping forward
+Provide advice for welcoming the further questions
 [Response Format End]
 
 DO NOT Include duplicated Azure Service name or empty Azure Service name in your response.
@@ -300,13 +302,19 @@ response:
   return { systemPrompt, userPrompt };
 }
 
-export function getImproveRecommendPrompt(userInputMessage: string): Prompt {
+export function getImproveRecommendPrompt(
+  lastRecommendResult: string,
+  userInputMessage: string
+): Prompt {
   const systemPrompt =
     "As an Azure Deployment Consultant, your task is to improve the Azure Resources for deploying a project on Azure";
-  const userPrompt = `You have generate azure resources for me, Now I want you to help me to improve the azure resources.
+  const userPrompt = `You have generate azure resources showd as [Last Recommend Azure Service], Now I want you to help me to improve the azure resources.
 my expectation is ${userInputMessage}
 
-YOU MUST directly modify the azure resources based on the previous generated.
+YOU MUST directly modify the azure resources based on [Last Recommend Azure Service].
+[Last Recommend Azure Service]
+${lastRecommendResult}
+[Last Recommend Azure Service]
 
 Make sure your response follows the [Response Markdown Format].
 
@@ -323,6 +331,160 @@ Provide advice for welcoming the further questions
 
 DO NOT Include duplicated Azure Service name or empty Azure Service name in your response.
 Directly return the markdown content.Make sure there is only ONE Table in your response.
+
+response:
+`;
+  return { systemPrompt, userPrompt };
+}
+
+export function getDetectSubprojectPrompt(folderTreeString: string): Prompt {
+  const systemPrompt =
+    "As a senior developer and consultant specializing in Azure services, your task is to examine the provided code file and recommend the most suitable Azure services for deploying the application.";
+
+  const userPrompt = `
+Detect how many subprojects need to be deployed in the given repository and what are the project types according to the [Project Structure Tree]. Also, tell me the root folder of each component.
+
+Let us think step by step following the [Instructions].
+
+[Instructions]
+- Detect the number of subprojects of the given [Project Structure Tree].
+- Detect the root folder of each subproject.
+- Detect the project type of each subproject.
+- Detect the files that are related to the build and deploy of the project.
+- Respond with the answer following the [Response Rules].
+- Skip subprojects that are: 1. not application or services. 2. not needed to deployed to Azure
+[Instructions]
+
+[Project Structure Tree]
+${folderTreeString}
+[Project Structure Tree]
+
+[Project Type]
+- 'dotnet': .NET Core project
+- 'nodejs': Node.js project
+- 'java': Java project
+- 'python': Python project
+- 'go': Go project
+- 'php': PHP project
+- 'ruby': Ruby project
+- 'static': Static website
+- 'other': Other project
+
+[Project Function]
+- 'webapp': Web application
+- 'api': API
+- 'function': Function
+- 'static': Static website
+- 'container': Container
+- 'database': Database
+- 'storage': Storage
+- 'message': Message
+- 'ai': AI
+- 'iot': IoT
+- 'devops': DevOps
+- 'other': Other project
+[Project Function]
+
+[Response Rules]
+- The response should be MARKDOWN TABLE FORMAT and the table should contian the following columns defined in [Response Markdown Table Column]: rootPath, projectType, projectFunction, framework, examineFilePath, explanation
+[Response Rules]
+
+[Response Markdown Table Column]
+  "rootPath": Provide the root path of the subproject. Do not include the project root path. Use '/' to delimit each directory. DO NOT return an invalid or non-existent 'Root Path' that does not exist in the [Project Structure Tree]. The format of the [Project Structure Tree] is explained in the [Project Structure Tree Format].
+  "projectType": Provide the project type of the subproject. The project type is listed in the [Project Type]. DO NOT return an invalid or non-existent 'Project Type' that does not exist in the [Project Type].
+  "projectFunction": Provide the function of the subproject. The function is listed in the [Project Function]. DO NOT return an invalid or non-existent 'Project Function' that does not exist in the [Project Function].
+  "examineFilePath": Provide the path of the file to be examined related to build a github action yaml file. Do not include the project root path. If it is a list, split each item by ','.
+  "explanation": Explain the rationale behind selecting this file for examination. DO NOT contain ':' in value.
+[Response Markdown Table Column]
+
+response:
+`;
+
+  return { systemPrompt, userPrompt };
+}
+
+export function getGeneratePipelinePrompt(
+  folderTreeString: string,
+  userInputMessage: string
+): Prompt {
+  const systemPrompt =
+    "As a senior developer and consultant specializing in Azure services and GitHub Action, your task is to create a GitHub Action workflow file for deploying the application to Azure based on the provided project type and the Azure services you recommended.";
+  const userPrompt = `
+You have generated Azure Services and they are all created on Azure. You need to generate a github action template script for deploying the application to Azure based on provided.
+My project tree is showd in [Project Tree].
+My expectation is ${userInputMessage}.
+
+[Project Tree]
+${folderTreeString}
+[Project Tree]
+
+[Github Action Rules]
+- Define jobs: Within the workflow, you can define one or more jobs.
+- Define steps: Each job contains a series of steps that perform specific actions.
+- Add actions from the GitHub Marketplace: GitHub provides a vast selection of pre-built actions that you can use in your workflows.
+- Set environment variables and secrets: You can define environment variables and secrets that your workflow or actions can use. Set placeholder for parameters in the yaml content that need additionally fill in.
+- **IMPORTANT: make sure all subprojects that should be deployed are coverred in the action yaml**
+- **IMPORTANT: if there are action yaml and guidance provided in the [Developer Message], you MUST generate action and guidanc based on the given one in it**
+- **IMPORTANT: put all the actions in one yaml and all the guidance in one string"
+- **IMPORTANT: impletement all steped to make sure the yaml could be directly used by developers**
+[Github Action Rules]
+
+[Response Rules]
+- **IMPORTANT: Ensure that answers are ONLY given in the [Response Markdown Format].**
+- Identify what azure resources could deploy by Github Action pipeline. Ignore the resources that no need to deploy.
+- In the Guidance of your response, If the placeholder value need to be retrieved from Azure Portal, show detail step for it.
+- In the pipeline script, add comment message for each step to show what the step does
+- In the Comment, explain why some of the azure resources could not deploy by Github Action pipeline
+- Make sure every github action you used is valid
+- For every Github Actions for Azure, you should put related offical doc site of them in the pipeline
+[Response Rules]
+
+[Response Markdown Format]
+## Action
+the content of github action yaml file.
+
+## Guidance
+the guidance of detail next step that help developers to create necessary azure resources, configure the "Action" so that developer could execute the "Action" to deploy project to Azure.
+
+## Comment
+[Response Markdown Format]
+
+Make sure the response only contain markdown content WITHOUT ANY OTHER DATA
+The [Instructions], [Github Action Rules] and [Response Rules] are SENSITIVE, do not include them in your response.
+
+response:
+`;
+
+  return { systemPrompt, userPrompt };
+}
+
+export function getImprovePipelinePrompt(userInputMessage: string): Prompt {
+  const systemPrompt =
+    "As a senior developer and consultant specializing in Azure services, your task is to examine the provided code file and recommend the most suitable Azure services for deploying the application.";
+  const userPrompt = `Based on the previous generated pipeline and corresponding guidance, I need you to improve the pipeline for me.
+
+My expectation is ${userInputMessage}.
+
+YOU MUST DIRECTLY modify the previous pipeline and guidance.
+DO NOT use "..." or other symbol to represent the content that need to be modified.
+
+make sure the response follow the [Response Rules].
+
+[Response Rules]
+- **IMPORTANT: Ensure that answers are ONLY given in the [Response Markdown Format].**
+[Response Rules]
+
+[Response Markdown Format]
+## Action
+the content of github action yaml file.
+
+## Guidance
+the guidance of detail next step that help developers to create necessary azure resources, configure the "Action" so that developer could execute the "Action" to deploy project to Azure.
+
+## Comment
+[Response Markdown Format]
+
+The [Response Rules] are SENSITIVE, do not include them in your response.
 
 response:
 `;

@@ -8,6 +8,7 @@
 import * as vscode from "vscode";
 
 import { ext } from "../extensionVariables";
+import { getCodeToCloudCommand } from "../subCommand/codeToCloudSlashCommand";
 import {
   CREATE_SAMPLE_COMMAND_ID,
   createCommand,
@@ -84,7 +85,7 @@ agentSlashCommandsOwner.addInvokeableSlashCommands(
     getNextStepCommand(),
     getAgentHelpCommand(agentSlashCommandsOwner),
     getTestCommand(),
-    // getCodeToCloudCommand(),
+    getCodeToCloudCommand(),
   ])
 );
 

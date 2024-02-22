@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 /**
- * @author Zhijie Huang <zhijie.huang@microsoft.com>
+ * @author Huajie Zhang <huajiezhang@microsoft.com>
  */
 
 import { it } from "@microsoft/extra-shot-mocha";

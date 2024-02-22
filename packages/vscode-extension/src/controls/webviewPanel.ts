@@ -24,6 +24,7 @@ import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
 import { PanelType } from "./PanelType";
+import { isTriggerFromWalkThrough } from "../utils/commonUtils";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -33,7 +34,7 @@ export class WebviewPanel {
   private panelType: PanelType = PanelType.SampleGallery;
   private disposables: vscode.Disposable[] = [];
 
-  public static createOrShow(panelType: PanelType, isToSide?: boolean) {
+  public static createOrShow(panelType: PanelType, args?: any[]) {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -45,6 +46,7 @@ export class WebviewPanel {
         .find((panel) => panel.panelType === panelType)!
         .panel.reveal(column);
     } else {
+      const isToSide = isTriggerFromWalkThrough(args);
       isToSide
         ? WebviewPanel.currentPanels.push(
             new WebviewPanel(panelType, column || vscode.ViewColumn.Two)
@@ -52,6 +54,22 @@ export class WebviewPanel {
         : WebviewPanel.currentPanels.push(
             new WebviewPanel(panelType, column || vscode.ViewColumn.One)
           );
+    }
+    // if args empty or undefined, return
+    if (!args?.length) {
+      return;
+    }
+    if (panelType == PanelType.SampleGallery && args.length > 1) {
+      try {
+        const sampleId = args[1] as string;
+        const panel = WebviewPanel.currentPanels.find((panel) => panel.panelType === panelType);
+        if (panel) {
+          void panel.panel.webview.postMessage({
+            message: Commands.OpenDesignatedSample,
+            sampleId: sampleId,
+          });
+        }
+      } catch (e) {}
     }
   }
 

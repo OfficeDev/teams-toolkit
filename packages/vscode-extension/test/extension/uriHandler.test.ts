@@ -3,6 +3,7 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 
 import { UriHandler } from "../../src/uriHandler";
+import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
 
 describe("uri handler", () => {
   const sandbox = sinon.createSandbox();
@@ -122,7 +123,7 @@ describe("uri handler", () => {
     sandbox.assert.calledOnceWithExactly(
       executeCommand,
       "fx-extension.openSamples",
-      false,
+      TelemetryTriggerFrom.ExternalUrl,
       "hello-world-teams-tab-and-outlook-add-in"
     );
   });

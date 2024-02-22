@@ -6,6 +6,7 @@ import * as vscode from "vscode";
 
 import { codeSpacesAuthComplete } from "./commonlib/common/constant";
 import { localize } from "./utils/localizeUtils";
+import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 
 enum Referrer {
   DeveloperPortal = "developerportal",
@@ -72,7 +73,11 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
         );
         return;
       }
-      void vscode.commands.executeCommand("fx-extension.openSamples", false, queryParamas.sampleId);
+      void vscode.commands.executeCommand(
+        "fx-extension.openSamples",
+        TelemetryTriggerFrom.ExternalUrl,
+        queryParamas.sampleId
+      );
     }
   }
 }

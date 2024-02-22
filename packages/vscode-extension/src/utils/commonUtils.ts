@@ -371,6 +371,8 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThrough };
     case TelemetryTriggerFrom.Auto:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto };
+    case TelemetryTriggerFrom.ExternalUrl:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.ExternalUrl };
     case TelemetryTriggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Other };
     default:

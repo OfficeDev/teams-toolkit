@@ -58,7 +58,7 @@ export class OfficeAddinGenerator {
     // If lang is undefined, it means the project is created from a folder.
     const lang = inputs[QuestionNames.ProgrammingLanguage];
     const langKey =
-      lang != "No Options" ? (lang.toLowerCase() === "typescript" ? "ts" : "js") : undefined;
+      lang != "No Options" ? (lang?.toLowerCase() === "typescript" ? "ts" : "js") : undefined;
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,

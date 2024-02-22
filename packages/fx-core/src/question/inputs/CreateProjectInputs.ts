@@ -35,7 +35,8 @@ export interface CreateProjectInputs extends Inputs {
     | "copilot-plugin-existing-api"
     | "message-extension"
     | "BotAndMessageExtension"
-    | "TabNonSsoAndBot";
+    | "TabNonSsoAndBot"
+    | "taskpane";
   /** @description Choose triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
@@ -53,6 +54,8 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
+  /** @description Add-in Host */
+  "addin-host"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
   /** @description OpenAPI Description Document */

@@ -46,6 +46,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "message-extension",
       "BotAndMessageExtension",
       "TabNonSsoAndBot",
+      "taskpane",
     ],
     choiceListCommand: "teamsapp list templates",
   },
@@ -96,6 +97,12 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "spfx-folder",
     type: "string",
     description: "Directory or Path that contains the existing SharePoint Framework solution.",
+  },
+  {
+    name: "addin-host",
+    type: "string",
+    description: "Add-in Host",
+    default: "No Options",
   },
   {
     name: "me-architecture",

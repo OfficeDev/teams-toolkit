@@ -449,6 +449,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
+      ...CapabilityOptions.officeAddinItems(),
     ];
 
     return capabilityOptions;
@@ -462,6 +463,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs, true),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
+      ...CapabilityOptions.officeAddinItems(),
     ];
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());

@@ -116,7 +116,7 @@ export default class projectsJsonData {
   }
 
   getProjectDownloadLink(projectTypeKey: string, scriptType: string): string {
-    scriptType = scriptType === "TypeScript" ? "typescript" : "javascript";
+    scriptType = scriptType.toLowerCase();
     return this.projectJsonData.projectTypes[projectTypeKey].templates[scriptType]
       .archive as string;
   }

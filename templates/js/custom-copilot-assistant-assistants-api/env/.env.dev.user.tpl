@@ -1,0 +1,11 @@
+# This file includes environment variables that will not be committed to git by default. You can set these environment variables in your CI/CD system for your project.
+
+# Secrets. Keys prefixed with `SECRET_` will be masked in Teams Toolkit logs.
+SECRET_BOT_PASSWORD=
+{{#openAIKey}}
+SECRET_OPENAI_API_KEY='{{openAIKey}}'
+{{/openAIKey}}
+{{^openAIKey}}
+SECRET_OPENAI_API_KEY=' '
+{{/openAIKey}}
+SECRET_OPENAI_ASSISTANT_ID=' ' # See README.md for how to fill in this value.

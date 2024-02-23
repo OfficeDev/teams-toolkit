@@ -91,9 +91,14 @@ export class AadAppClient {
   }
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async generateClientSecret(objectId: string): Promise<string> {
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime());
+    endDate.setDate(endDate.getDate() + 180); // Recommended lifetime from Azure Portal
     const requestBody = {
       passwordCredential: {
         displayName: constants.aadAppPasswordDisplayName,
+        endDateTime: endDate.toISOString(),
+        startDateTime: startDate.toISOString(),
       },
     };
 

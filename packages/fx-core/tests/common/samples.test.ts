@@ -6,7 +6,7 @@ import { err } from "@microsoft/teamsfx-api";
 
 import {
   SampleConfigBranchForPrerelease,
-  SampleConfigTag,
+  TeamsSampleConfigTag,
   sampleProvider,
 } from "../../src/common/samples";
 import sampleConfigV3 from "./samples-config-v3.json";
@@ -105,7 +105,7 @@ describe("Samples", () => {
       sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
           url ===
-          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
+          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${TeamsSampleConfigTag}/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
         } else {
@@ -117,7 +117,7 @@ describe("Samples", () => {
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
-        ref: SampleConfigTag,
+        ref: TeamsSampleConfigTag,
         dir: "hello-world-tab-with-backend",
       });
       chai.expect(samples[0].gifUrl).equal(undefined);
@@ -128,7 +128,7 @@ describe("Samples", () => {
       sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
           url ===
-          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
+          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${TeamsSampleConfigTag}/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
         } else {
@@ -140,7 +140,7 @@ describe("Samples", () => {
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
-        ref: SampleConfigTag,
+        ref: TeamsSampleConfigTag,
         dir: "hello-world-tab-with-backend",
       });
       chai.expect(samples[0].gifUrl).equal(undefined);
@@ -176,7 +176,7 @@ describe("Samples", () => {
       sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
           url ===
-          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
+          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${TeamsSampleConfigTag}/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
         } else {
@@ -189,7 +189,7 @@ describe("Samples", () => {
         chai.expect(samples[0].downloadUrlInfo).deep.equal({
           owner: "OfficeDev",
           repository: "TeamsFx-Samples",
-          ref: SampleConfigTag,
+          ref: TeamsSampleConfigTag,
           dir: "hello-world-tab-with-backend",
         });
         chai.expect(samples[0].gifUrl).equal(undefined);

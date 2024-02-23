@@ -13,9 +13,11 @@ import { FeatureFlagName } from "./constants";
 const packageJson = require("../../package.json");
 
 const SampleConfigOwner = "OfficeDev";
-const SampleConfigRepo = "TeamsFx-Samples";
-const SampleConfigFile = ".config/samples-config-v3.json";
-export const SampleConfigTag = "v2.4.0";
+const TeamsSampleConfigRepo = "TeamsFx-Samples";
+const TeamsSampleConfigFile = ".config/samples-config-v3.json";
+const OfficeSampleConfigRepo = "Office-Samples";
+const OfficeSampleConfigFile = ".config/samples-config-v1.json";
+export const TeamsSampleConfigTag = "v2.4.0";
 // prerelease tag is always using a branch.
 export const SampleConfigBranchForPrerelease = "main";
 
@@ -67,60 +69,127 @@ class SampleProvider {
   }
 
   public async refreshSampleConfig(): Promise<SampleCollection> {
-    const { samplesConfig, ref } = await this.fetchOnlineSampleConfig();
-    this.sampleCollection = this.parseOnlineSampleConfig(samplesConfig, ref);
+    const teamsRet = await this.fetchOnlineSampleConfig(
+      TeamsSampleConfigRepo,
+      TeamsSampleConfigFile
+    );
+    const teamsSampleCollection = await this.parseOnlineSampleConfig(
+      SampleConfigOwner,
+      TeamsSampleConfigRepo,
+      teamsRet.samplesConfig,
+      teamsRet.ref
+    );
+    const officeRet = await this.fetchOnlineSampleConfig(
+      OfficeSampleConfigRepo,
+      OfficeSampleConfigFile
+    );
+    const officeSampleCollection = await this.parseOnlineSampleConfig(
+      SampleConfigOwner,
+      OfficeSampleConfigRepo,
+      officeRet.samplesConfig,
+      officeRet.ref
+    );
+    // merge samples from TeamsFx-Samples and Office-Samples
+    // use Set to remove duplicates
+    this.sampleCollection = {
+      samples: [...teamsSampleCollection.samples, ...officeSampleCollection.samples],
+      filterOptions: {
+        capabilities: Array.from(
+          new Set([
+            ...teamsSampleCollection.filterOptions.capabilities,
+            ...officeSampleCollection.filterOptions.capabilities,
+          ])
+        ),
+        languages: Array.from(
+          new Set([
+            ...teamsSampleCollection.filterOptions.languages,
+            ...officeSampleCollection.filterOptions.languages,
+          ])
+        ),
+        technologies: Array.from(
+          new Set([
+            ...teamsSampleCollection.filterOptions.technologies,
+            ...officeSampleCollection.filterOptions.technologies,
+          ])
+        ),
+      },
+    };
     return this.sampleCollection;
   }
 
-  private async fetchOnlineSampleConfig() {
+  private async fetchOnlineSampleConfig(configRepo: string, configFile: string) {
+    const getRef = (configRepo: string, version: string) => {
+      if (configRepo === TeamsSampleConfigRepo) {
+        // Set default value for branchOrTag
+        if (version.includes("alpha")) {
+          // daily build version always use 'dev' branch
+          return "dev";
+        } else if (version.includes("beta")) {
+          // prerelease build version always use branch head for prerelease.
+          return SampleConfigBranchForPrerelease;
+        } else if (version.includes("rc")) {
+          // if there is a breaking change, the tag is not used by any stable version.
+          return TeamsSampleConfigTag;
+        } else {
+          // stable version uses the head of branch defined by feature flag when available
+          return TeamsSampleConfigTag;
+        }
+      } else {
+        // Office Samples
+        // if (version.includes("beta") || version.includes("rc")) {
+        //   return SampleConfigBranchForPrerelease;
+        // }
+        // // TODO: add rc branch
+        return "dev";
+      }
+    };
     const version: string = packageJson.version;
     const configBranchInEnv = process.env[FeatureFlagName.SampleConfigBranch];
     let samplesConfig: SampleConfigType | undefined;
-    let ref = SampleConfigTag;
-
-    // Set default value for branchOrTag
-    if (version.includes("alpha")) {
-      // daily build version always use 'dev' branch
-      ref = "dev";
-    } else if (version.includes("beta")) {
-      // prerelease build version always use branch head for prerelease.
-      ref = SampleConfigBranchForPrerelease;
-    } else if (version.includes("rc")) {
-      // if there is a breaking change, the tag is not used by any stable version.
-      ref = SampleConfigTag;
-    } else {
-      // stable version uses the head of branch defined by feature flag when available
-      ref = SampleConfigTag;
-    }
-
+    let ref = getRef(configRepo, version);
     // Set branchOrTag value if branch in env is valid
     if (configBranchInEnv) {
       try {
-        const data = await this.fetchRawFileContent(configBranchInEnv);
+        const data = await this.fetchRawFileContent(
+          SampleConfigOwner,
+          configRepo,
+          configBranchInEnv,
+          configFile
+        );
         ref = configBranchInEnv;
         samplesConfig = data as SampleConfigType;
       } catch (e: unknown) {}
     }
 
     if (samplesConfig === undefined) {
-      samplesConfig = (await this.fetchRawFileContent(ref)) as SampleConfigType;
+      samplesConfig = (await this.fetchRawFileContent(
+        SampleConfigOwner,
+        configRepo,
+        ref,
+        configFile
+      )) as SampleConfigType;
     }
 
     return { samplesConfig, ref };
   }
 
   @hooks([ErrorContextMW({ component: "SampleProvider" })])
-  private parseOnlineSampleConfig(samplesConfig: SampleConfigType, ref: string): SampleCollection {
+  private parseOnlineSampleConfig(
+    samplesOnwer: string,
+    samplesRepo: string,
+    samplesConfig: SampleConfigType,
+    ref: string
+  ): Promise<SampleCollection> {
     const samples =
       samplesConfig?.samples.map((sample) => {
         const isExternal = sample["downloadUrlInfo"] ? true : false;
         let gifUrl =
           sample["gifPath"] !== undefined
-            ? `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${ref}/${
+            ? `https://raw.githubusercontent.com/${samplesOnwer}/${samplesRepo}/${ref}/${
                 sample["id"] as string
               }/${sample["gifPath"] as string}`
             : undefined;
-        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${ref}/${
+        let thumbnailUrl = `https://raw.githubusercontent.com/${samplesOnwer}/${samplesRepo}/${ref}/${
           sample["id"] as string
         }/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
@@ -142,7 +211,7 @@ class SampleProvider {
             ? sample["downloadUrlInfo"]
             : {
                 owner: SampleConfigOwner,
-                repository: SampleConfigRepo,
+                repository: samplesRepo,
                 ref: ref,
                 dir: sample["id"] as string,
               },
@@ -151,14 +220,14 @@ class SampleProvider {
         } as SampleConfig;
       }) || [];
 
-    return {
+    return Promise.resolve({
       samples,
       filterOptions: {
         capabilities: samplesConfig?.filterOptions["capabilities"] || [],
         languages: samplesConfig?.filterOptions["languages"] || [],
         technologies: samplesConfig?.filterOptions["technologies"] || [],
       },
-    };
+    });
   }
 
   public async getSampleReadmeHtml(sample: SampleConfig): Promise<string> {
@@ -188,8 +257,13 @@ class SampleProvider {
     }
   }
 
-  private async fetchRawFileContent(branchOrTag: string): Promise<unknown> {
-    const url = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${branchOrTag}/${SampleConfigFile}`;
+  private async fetchRawFileContent(
+    configOwner: string,
+    configRepo: string,
+    branchOrTag: string,
+    configFile: string
+  ): Promise<unknown> {
+    const url = `https://raw.githubusercontent.com/${configOwner}/${configRepo}/${branchOrTag}/${configFile}`;
     try {
       const fileResponse = await sendRequestWithTimeout(
         async () => {

@@ -63,10 +63,23 @@ function getPipelineHandler(): SlashCommand {
   return [
     pipelineHandlerName,
     {
-      shortDescription: `Create and Improve GitHub Action pipeline for your app. After you recommend azure resource for your app, you can create and improve GitHub Action pipeline for your app.`,
-      longDescription: `Create and Improve GitHub Action pipeline for your app. After you recommend azure resource for your app, you can create and improve GitHub Action pipeline for your app.`,
+      shortDescription: `Create GitHub Action pipeline for your app. After you recommend azure resource for your app, you can create GitHub Action pipeline for your app.`,
+      longDescription: `Create GitHub Action pipeline for your app. After you recommend azure resource for your app, you can create GitHub Action pipeline for your app.`,
       intentDescription: "",
       handler: (request: AgentRequest) => pipelineHandler(request),
+    },
+  ];
+}
+
+const improvePipelineHandlerName = "improvePipeline";
+function getImprovePipelineHandler(): SlashCommand {
+  return [
+    improvePipelineHandlerName,
+    {
+      shortDescription: `Improve GitHub Action pipeline for your app. After you generate pipeline for your app, you can improve it.`,
+      longDescription: `Improve GitHub Action pipeline for your app. After you generate pipeline for your app, you can improve it.`,
+      intentDescription: "",
+      handler: (request: AgentRequest) => improvePipelineHandler(request),
     },
   ];
 }
@@ -76,8 +89,9 @@ const LANGUAGE_MODEL_GPT35_TURBO_ID = "copilot-gpt-3.5-turbo";
 
 const handlerMap = new Map([
   getRecommendHandler(),
-  // getPipelineHandler(),
+  getPipelineHandler(),
   getImproveRecommendHandler(),
+  getImprovePipelineHandler(),
 ]);
 const invokeableCodeToCloudSubHandlers: SlashCommands = new Map();
 for (const [name, config] of handlerMap.entries()) {
@@ -174,6 +188,7 @@ const excludeReg = [
 class WorkspaceContext {
   workspaceFolder: string;
   workspaceFolderTree: dree.Dree;
+  workspaceFolderTreeString: string;
 
   constructor(workspaceFolder: string) {
     this.workspaceFolder = workspaceFolder;
@@ -213,16 +228,20 @@ class WorkspaceContext {
   }
 
   public async getWorkspaceFolderTreeString(): Promise<string> {
-    let folderTree = await this.getWorkspaceFolderTree();
-    let folderTreeString = await dree.parseTreeAsync(folderTree);
-    folderTreeString = folderTreeString
-      .replace(/├── /g, "")
-      .replace(/├─> /g, "")
-      .replace(/│  /g, "")
-      .replace(/└── /g, "")
-      .replace(/└─> /g, "");
+    if (!this.workspaceFolderTreeString) {
+      let folderTree = await this.getWorkspaceFolderTree();
+      let folderTreeString = await dree.parseTreeAsync(folderTree);
+      folderTreeString = folderTreeString
+        .replace(/├── /g, "")
+        .replace(/├─> /g, "")
+        .replace(/│  /g, "")
+        .replace(/└── /g, "")
+        .replace(/└─> /g, "");
 
-    return folderTreeString;
+      this.workspaceFolderTreeString = folderTreeString;
+    }
+
+    return this.workspaceFolderTreeString;
   }
 
   public async asyncScanWorkspace(
@@ -234,16 +253,38 @@ class WorkspaceContext {
 }
 
 class ChatMessageHistory {
+  MaxHistoryNumber = 10;
   recommendChatMessageHistory: vscode.LanguageModelMessage[] = [];
+  pipelineChatMessageHistory: vscode.LanguageModelMessage[] = [];
 
   public addRecommendChatMessageHistory(
     ...history: vscode.LanguageModelMessage[]
   ) {
     this.recommendChatMessageHistory.push(...history);
+    if (this.recommendChatMessageHistory.length > this.MaxHistoryNumber) {
+      this.recommendChatMessageHistory = this.recommendChatMessageHistory.slice(
+        -this.MaxHistoryNumber
+      );
+    }
   }
 
-  public getRecommendChatMessageHistory() {
-    return this.recommendChatMessageHistory;
+  public getRecommendChatMessageHistory(count: number = 1) {
+    return this.recommendChatMessageHistory.slice(-count);
+  }
+
+  public addPipelineChatMessageHistory(
+    ...history: vscode.LanguageModelMessage[]
+  ) {
+    this.pipelineChatMessageHistory.push(...history);
+    if (this.pipelineChatMessageHistory.length > this.MaxHistoryNumber) {
+      this.pipelineChatMessageHistory = this.pipelineChatMessageHistory.slice(
+        -this.MaxHistoryNumber
+      );
+    }
+  }
+
+  public getPipelineChatMessageHistory() {
+    return this.pipelineChatMessageHistory;
   }
 }
 
@@ -253,6 +294,7 @@ class Context {
   workspaceFolder: string;
   workspaceContext: WorkspaceContext;
   chatMessageHistory: ChatMessageHistory;
+  lastRecommendResult: string;
 
   constructor(workspaceFolder: string) {
     // TODO: the workspace folder should exist
@@ -483,19 +525,16 @@ async function recommendProposal(
     request.userPrompt
   );
 
-  await runWithLimitedConcurrency(
-    [...Array(ProposalNumber).keys()],
-    async (index) => {
-      const response = await getResponseInteraction(
-        systemPrompt,
-        userPrompt,
-        request,
-        LANGUAGE_MODEL_GPT4_ID
-      );
-      proposals.push(response);
-    },
-    5
-  );
+  // execute 3 times
+  for (let i = 0; i < ProposalNumber; i++) {
+    const response = await getResponseInteraction(
+      systemPrompt,
+      userPrompt,
+      request,
+      LANGUAGE_MODEL_GPT4_ID
+    );
+    proposals.push(response);
+  }
 
   return proposals;
 }
@@ -541,23 +580,36 @@ async function aggregateProposal(
     ProposalNumber,
     selectResponse
   ).userPrompt;
-  await verbatimInteraction(
+  const response: {
+    copilotResponded: boolean;
+    copilotResponse: undefined | string;
+  } = await verbatimInteraction(
     systemPrompt,
     userAggregatePrompt,
     request,
     LANGUAGE_MODEL_GPT4_ID,
     chatMessageHistory
   );
+
+  if (response.copilotResponded) {
+    const context = Context.getInstance();
+    context.chatMessageHistory.addRecommendChatMessageHistory(
+      new vscode.LanguageModelAssistantMessage(
+        response.copilotResponse as string
+      )
+    );
+    context.lastRecommendResult = response.copilotResponse as string;
+  }
 }
 
 async function improveRecommendHandler(
   request: AgentRequest
 ): Promise<SlashCommandHandlerResult> {
   request.response.progress("Improve Azure Resources...");
-
+  Context.getInstance().chatMessageHistory;
   const chatMessageHistory = collectChatMessageHistory(request, 4);
-
   const { systemPrompt, userPrompt } = prompt.getImproveRecommendPrompt(
+    Context.getInstance().lastRecommendResult,
     request.userPrompt
   );
 
@@ -573,11 +625,13 @@ async function improveRecommendHandler(
   );
 
   if (response.copilotResponded) {
-    Context.getInstance().chatMessageHistory.addRecommendChatMessageHistory(
+    const context = Context.getInstance();
+    context.chatMessageHistory.addRecommendChatMessageHistory(
       new vscode.LanguageModelAssistantMessage(
         response.copilotResponse as string
       )
     );
+    context.lastRecommendResult = response.copilotResponse as string;
   }
 
   return undefined;
@@ -587,9 +641,95 @@ async function improveRecommendHandler(
 async function pipelineHandler(
   request: AgentRequest
 ): Promise<SlashCommandHandlerResult> {
+  // const subproject = await detectSubproject(request);
+
+  await generatePipeline(request);
+
   return undefined;
 }
 
+async function detectSubproject(request: AgentRequest): Promise<string> {
+  request.response.progress("Identify the project...");
+
+  const workspaceContext: WorkspaceContext =
+    Context.getInstance().workspaceContext;
+  const folderTreeString =
+    await workspaceContext.getWorkspaceFolderTreeString();
+  const { systemPrompt, userPrompt } =
+    prompt.getDetectSubprojectPrompt(folderTreeString);
+
+  const response = await getResponseInteraction(
+    systemPrompt,
+    userPrompt,
+    request,
+    LANGUAGE_MODEL_GPT4_ID
+  );
+
+  return response;
+}
+
+async function generatePipeline(request: AgentRequest): Promise<void> {
+  request.response.progress("Generate GitHub Action Pipeline...");
+  const folderTreeString =
+    await Context.getInstance().workspaceContext.getWorkspaceFolderTreeString();
+  const { systemPrompt, userPrompt } = prompt.getGeneratePipelinePrompt(
+    folderTreeString,
+    request.userPrompt
+  );
+
+  const recommendChatMessageHistory: vscode.LanguageModelMessage[] =
+    Context.getInstance().chatMessageHistory.getRecommendChatMessageHistory();
+  const response: {
+    copilotResponded: boolean;
+    copilotResponse: undefined | string;
+  } = await verbatimInteraction(
+    systemPrompt,
+    userPrompt,
+    request,
+    LANGUAGE_MODEL_GPT4_ID,
+    recommendChatMessageHistory
+  );
+
+  if (response.copilotResponded) {
+    Context.getInstance().chatMessageHistory.addPipelineChatMessageHistory(
+      new vscode.LanguageModelAssistantMessage(
+        response.copilotResponse as string
+      )
+    );
+  }
+}
+
+async function improvePipelineHandler(
+  request: AgentRequest
+): Promise<SlashCommandHandlerResult> {
+  request.response.progress("Improve GitHub Action Pipeline...");
+  const historyChatMessages = collectChatMessageHistory(request, 2);
+  const { systemPrompt, userPrompt } = prompt.getImprovePipelinePrompt(
+    request.userPrompt
+  );
+  const response: {
+    copilotResponded: boolean;
+    copilotResponse: undefined | string;
+  } = await verbatimInteraction(
+    systemPrompt,
+    userPrompt,
+    request,
+    LANGUAGE_MODEL_GPT4_ID,
+    historyChatMessages
+  );
+
+  if (response.copilotResponded) {
+    Context.getInstance().chatMessageHistory.addPipelineChatMessageHistory(
+      new vscode.LanguageModelAssistantMessage(
+        response.copilotResponse as string
+      )
+    );
+  }
+
+  return undefined;
+}
+
+/** utils */
 function collectChatMessageHistory(
   request: AgentRequest,
   historyNumber: number = 6
@@ -664,12 +804,26 @@ async function detectIntentWithHistory(
   request: AgentRequest
 ): Promise<IntentDetectionTarget | undefined> {
   const originalUserPrompt = request.userPrompt;
-  let userPrompt = request.userPrompt;
+  let promptPrefix = "";
   const recommendChatMessageHistory: vscode.LanguageModelMessage[] =
     Context.getInstance().chatMessageHistory.getRecommendChatMessageHistory();
   if (recommendChatMessageHistory.length > 0) {
-    userPrompt = `You have recommend some azure resources for me. And now my expectation is ${userPrompt}`;
+    promptPrefix = [
+      promptPrefix,
+      "You have recommend Azure resources for me.",
+    ].join(",");
   }
+
+  const pipelineChatMessageHistory: vscode.LanguageModelMessage[] =
+    Context.getInstance().chatMessageHistory.getPipelineChatMessageHistory();
+  if (pipelineChatMessageHistory.length > 0) {
+    promptPrefix = [
+      promptPrefix,
+      "You have generate GitHub Action pipeline for me.",
+    ].join(",");
+  }
+
+  const userPrompt = promptPrefix + originalUserPrompt;
   request.userPrompt = userPrompt;
   const chatMessageHistory: vscode.LanguageModelMessage[] =
     collectChatMessageHistory(request, 2);

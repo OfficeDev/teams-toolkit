@@ -61,7 +61,7 @@ export class GetPublishingCredentialsError extends UserError {
         "error.deploy.GetPublishingCredentialsError",
         appName,
         resourceGroup,
-        JSON.stringify(error, Object.getOwnPropertyNames(error)),
+        stringifyError(error),
         "https://learn.microsoft.com/en-us/rest/api/appservice/web-apps/list-publishing-credentials#code-try-0"
       ),
       displayMessage: getLocalizedString(
@@ -79,11 +79,12 @@ export class GetPublishingCredentialsError extends UserError {
 export class DeployZipPackageError extends UserError {
   constructor(endpoint: string, error: Error, helpLink?: string) {
     super({
+      name: `DeployZipPackageError${error.name ?? ""}`,
       source: "azureDeploy",
       message: getDefaultString(
         "error.deploy.DeployZipPackageError",
         endpoint,
-        JSON.stringify(error, Object.getOwnPropertyNames(error)),
+        stringifyError(error),
         "https://learn.microsoft.com/azure/app-service/deploy-zip?tabs=cli"
       ),
       displayMessage: getLocalizedString(
@@ -104,7 +105,7 @@ export class CheckDeploymentStatusError extends UserError {
       message: getDefaultString(
         "error.deploy.CheckDeploymentStatusError",
         location,
-        JSON.stringify(error, Object.getOwnPropertyNames(error))
+        stringifyError(error)
       ),
       displayMessage: getLocalizedString(
         "error.deploy.CheckDeploymentStatusError",
@@ -173,7 +174,7 @@ export class AzureStorageGetContainerError extends UserError {
         "error.deploy.AzureStorageGetContainerError",
         containerName,
         storageName,
-        JSON.stringify(error, Object.getOwnPropertyNames(error))
+        stringifyError(error)
       ),
       displayMessage: getLocalizedString(
         "error.deploy.AzureStorageGetContainerError.Notification",
@@ -196,7 +197,7 @@ export class AzureStorageGetContainerPropertiesError extends UserError {
         "error.deploy.AzureStorageGetContainerPropertiesError",
         containerName,
         storageName,
-        JSON.stringify(error, Object.getOwnPropertyNames(error))
+        stringifyError(error)
       ),
       displayMessage: getLocalizedString(
         "error.deploy.AzureStorageGetContainerPropertiesError.Notification",
@@ -219,7 +220,7 @@ export class AzureStorageSetContainerPropertiesError extends UserError {
         "error.deploy.AzureStorageSetContainerPropertiesError",
         containerName,
         storageName,
-        JSON.stringify(error, Object.getOwnPropertyNames(error))
+        stringifyError(error)
       ),
       displayMessage: getLocalizedString(
         "error.deploy.AzureStorageSetContainerPropertiesError.Notification",
@@ -231,5 +232,13 @@ export class AzureStorageSetContainerPropertiesError extends UserError {
       error: error,
       categories: [ErrorCategory.External],
     });
+  }
+}
+
+function stringifyError(error: Error): string {
+  try {
+    return JSON.stringify(error, Object.getOwnPropertyNames(error));
+  } catch (e) {
+    return `${error.toString()} stack: ${error.stack ?? ""}`;
   }
 }

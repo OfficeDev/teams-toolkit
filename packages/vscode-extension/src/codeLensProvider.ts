@@ -577,7 +577,9 @@ export class ApiPluginCodeLensProvider implements vscode.CodeLensProvider {
       const command = {
         title: "➕" + localize("teamstoolkit.codeLens.copilotPluginAddAPI"),
         command: "fx-extension.copilotPluginAddAPI",
-        arguments: [{ fsPath: document.fileName, isFromApiPlugin: true }],
+        arguments: [
+          { fsPath: document.fileName, isFromApiPlugin: true, manifestPath: manifestFilePath },
+        ],
       };
       const codeLens = new vscode.CodeLens(range, command);
       return [codeLens];

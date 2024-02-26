@@ -65,6 +65,7 @@ export enum QuestionNames {
   UserEmail = "email",
 
   collaborationAppType = "collaborationType",
+  DestinationApiSpecFilePath = "destination-api-spec-location",
 }
 
 export enum CliQuestionName {

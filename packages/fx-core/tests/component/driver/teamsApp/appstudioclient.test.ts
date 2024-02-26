@@ -1055,6 +1055,23 @@ describe("App Studio API Test", () => {
       const res = await AppStudioClient.getAppValidationRequestList("fakeId", appStudioToken);
       chai.assert.equal(res.appValidations.length, 0);
     });
+
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "post").throws(error);
+
+      try {
+        await AppStudioClient.submitAppValidationRequest("fakeId", appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
   });
 
   describe("Get async app validation result details", () => {
@@ -1081,6 +1098,40 @@ describe("App Studio API Test", () => {
       sinon.stub(fakeAxiosInstance, "get").resolves(response);
       const res = await AppStudioClient.getAppValidationById("fakeId", appStudioToken);
       chai.assert.equal(res.appValidationId, "fakeId");
+    });
+
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      try {
+        await AppStudioClient.getAppValidationRequestList("fakeId", appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "get").throws(error);
+
+      try {
+        await AppStudioClient.getAppValidationById("fakeId", appStudioToken);
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
     });
   });
 });

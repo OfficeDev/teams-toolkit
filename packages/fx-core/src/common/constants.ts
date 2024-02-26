@@ -57,7 +57,8 @@ export class FeatureFlagName {
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
   static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
-  static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
+  static readonly TeamsSampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
+  static readonly OfficeSampleConfigBranch = "TEAMSFX_OFFICE_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
   static readonly ApiKey = "API_COPILOT_API_KEY";
   static readonly MultipleParameters = "API_COPILOT_MULTIPLE_PARAMETERS";

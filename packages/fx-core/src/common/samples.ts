@@ -18,6 +18,7 @@ const TeamsSampleConfigFile = ".config/samples-config-v3.json";
 const OfficeSampleConfigRepo = "Office-Samples";
 const OfficeSampleConfigFile = ".config/samples-config-v1.json";
 export const TeamsSampleConfigTag = "v2.4.0";
+export const OfficeSampleConfigTag = "v0.0.1";
 // prerelease tag is always using a branch.
 export const SampleConfigBranchForPrerelease = "main";
 
@@ -136,15 +137,25 @@ class SampleProvider {
         }
       } else {
         // Office Samples
-        // if (version.includes("beta") || version.includes("rc")) {
-        //   return SampleConfigBranchForPrerelease;
-        // }
-        // // TODO: add rc branch
-        return "dev";
+        if (version.includes("alpha")) {
+          return "dev";
+        } else if (version.includes("beta")) {
+          return SampleConfigBranchForPrerelease;
+        } else if (version.includes("rc")) {
+          return OfficeSampleConfigTag;
+        } else {
+          return OfficeSampleConfigTag;
+        }
+        // return "dev";
       }
     };
     const version: string = packageJson.version;
-    const configBranchInEnv = process.env[FeatureFlagName.SampleConfigBranch];
+    const configBranchInEnv =
+      process.env[
+        configRepo === TeamsSampleConfigRepo
+          ? FeatureFlagName.TeamsSampleConfigBranch
+          : FeatureFlagName.OfficeSampleConfigBranch
+      ];
     let samplesConfig: SampleConfigType | undefined;
     let ref = getRef(configRepo, version);
     // Set branchOrTag value if branch in env is valid

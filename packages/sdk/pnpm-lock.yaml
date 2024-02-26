@@ -2045,7 +2045,7 @@ packages:
     dependencies:
       '@azure/core-http': 3.0.4
       '@azure/msal-node': 1.14.6
-      axios: 1.6.2
+      axios: 1.6.7
       botbuilder-core: 4.22.1(supports-color@9.4.0)
       botbuilder-stdlib: 4.22.1-internal
       botframework-connector: 4.22.1(supports-color@9.4.0)

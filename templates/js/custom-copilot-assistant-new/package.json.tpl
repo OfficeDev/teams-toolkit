@@ -4,7 +4,7 @@
     "msteams": {
         "teamsAppId": null
     },
-    "description": "Microsoft Teams Toolkit AI Assistant Bot Sample",
+    "description": "Microsoft Teams Toolkit AI Assistant Bot Sample with Teams AI Library",
     "engines": {
         "node": "16 || 18"
     },
@@ -26,7 +26,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/teams-ai": "^1.0.0",
+        "@microsoft/teams-ai": "^1.1.0",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },

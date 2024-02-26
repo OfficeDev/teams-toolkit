@@ -6,7 +6,7 @@
     "teamstoolkit.accountTree.copilotPassTooltip": "You have Copilot access already.",
     "teamstoolkit.accountTree.copilotStatusUnknown": "Copilot Access Check Failed",
     "teamstoolkit.accountTree.copilotStatusUnknownTooltip": "The Copilot access of this account is unknown due to network or service issue. Please refresh again later to check it.",
-    "teamstoolkit.accountTree.copilotWarning": "Copilot Access Disabled",
+    "teamstoolkit.accountTree.copilotWarning": "Copilot Access Disabled   ",
     "teamstoolkit.accountTree.copilotWarningTooltip": "Microsoft 365 account administrator hasn't enabled Copilot access for this account. Contact your Teams administrator to resolve this issue by enrolling in Microsoft 365 Copilot Early Access program. Visit: https://aka.ms/PluginsEarlyAccess",
     "teamstoolkit.accountTree.m365AccountTooltip": "Microsoft 365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.",
     "teamstoolkit.accountTree.sideloadingLearnMore": "Learn More",

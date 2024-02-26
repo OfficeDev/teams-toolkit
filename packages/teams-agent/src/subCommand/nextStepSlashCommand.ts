@@ -155,9 +155,9 @@ export const AllSteps: {
       docLink:
         "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/create-new-project?pivots=visual-studio-code-v5",
       followUp: {
-        prompt: "list some samples",
+        prompt: "a tab app that works with Azure Function",
         command: "create",
-        label: "Create a sample",
+        label: "Create a tab sample",
       },
       priorty: 1,
       condition: (status: ProjectStatus) => !status.hasTeamsApp,

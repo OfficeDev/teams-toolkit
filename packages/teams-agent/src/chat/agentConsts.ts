@@ -4,6 +4,5 @@
  *--------------------------------------------------------------------------------------------*/
 
 export const agentName = "teams";
-export const agentFullName = "Teams Agent";
-export const agentDescription = "Agent for working with all things Teams Toolkit Development";
+export const agentDescription = "Ask how to develop Teams applications";
 export const maxFollowUps = 3;

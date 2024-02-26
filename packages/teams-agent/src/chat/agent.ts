@@ -27,9 +27,8 @@ import {
 import { getTestCommand } from "../subCommand/testCommand";
 import {
   agentDescription,
-  agentFullName,
   agentName,
-  maxFollowUps,
+  maxFollowUps
 } from "./agentConsts";
 import {
   LanguageModelID,
@@ -93,7 +92,6 @@ export function registerChatAgent() {
   try {
     const participant = vscode.chat.createChatParticipant(agentName, handler);
     participant.description = agentDescription;
-    participant.fullName = agentFullName;
     participant.iconPath = vscode.Uri.joinPath(
       ext.context.extensionUri,
       "resources",
@@ -160,6 +158,7 @@ function followUpProvider(
 }
 
 function getCommands(
+  _context: vscode.ChatContext,
   _token: vscode.CancellationToken
 ): vscode.ProviderResult<vscode.ChatCommand[]> {
   return agentSlashCommandsOwner.getSlashCommands().map(([name, config]) => ({

@@ -34,7 +34,7 @@ export interface SampleConfig {
   time: string;
   configuration: string;
   suggested: boolean;
-  thumbnailUrl: string;
+  thumbnailPath: string;
   gifUrl?: string;
   // maximum TTK & CLI version to run sample
   maximumToolkitVersion?: string;
@@ -200,9 +200,6 @@ class SampleProvider {
                 sample["id"] as string
               }/${sample["gifPath"] as string}`
             : undefined;
-        let thumbnailUrl = `https://raw.githubusercontent.com/${samplesOnwer}/${samplesRepo}/${ref}/${
-          sample["id"] as string
-        }/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
           const info = sample["downloadUrlInfo"] as SampleUrlInfo;
           gifUrl =
@@ -211,9 +208,6 @@ class SampleProvider {
                   info.dir
                 }/${sample["gifPath"] as string}`
               : undefined;
-          thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
-            info.ref
-          }/${info.dir}/${sample["thumbnailPath"] as string}`;
         }
         return {
           ...sample,
@@ -227,7 +221,6 @@ class SampleProvider {
                 dir: sample["id"] as string,
               },
           gifUrl: gifUrl,
-          thumbnailUrl: thumbnailUrl,
         } as SampleConfig;
       }) || [];
 

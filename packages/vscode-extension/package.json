@@ -96,6 +96,20 @@
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E004"
         }
+      },
+      "teamsfx-copilot-plugin": {
+        "description": "Copilot Plugin icon in scaffold questions",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E005"
+        }
+      },
+      "teamsfx-custom-copilot": {
+        "description": "Custom Copilot icon in scaffold questions",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E006"
+        }
       }
     },
     "viewsContainers": {

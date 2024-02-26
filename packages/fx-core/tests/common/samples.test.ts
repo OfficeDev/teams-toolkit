@@ -34,7 +34,7 @@ describe("Samples", () => {
         tags: ["Tab", "TS", "Azure function"],
         time: "5min to run",
         configuration: "Ready for debug",
-        thumbnailUrl: "",
+        thumbnailPath: "",
         suggested: true,
       },
     ],
@@ -275,7 +275,7 @@ describe("Samples", () => {
         tags: ["External"],
         time: "5min to run",
         configuration: "Ready for debug",
-        thumbnailUrl: "",
+        thumbnailPath: "",
         onboardDate: new Date(),
         suggested: false,
         downloadUrlInfo: {
@@ -310,7 +310,7 @@ describe("Samples", () => {
         tags: ["External"],
         time: "5min to run",
         configuration: "Ready for debug",
-        thumbnailUrl: "",
+        thumbnailPath: "",
         onboardDate: new Date(),
         suggested: false,
         downloadUrlInfo: {
@@ -343,7 +343,7 @@ describe("Samples", () => {
         tags: ["External"],
         time: "5min to run",
         configuration: "Ready for debug",
-        thumbnailUrl: "",
+        thumbnailPath: "",
         onboardDate: new Date(),
         suggested: false,
         downloadUrlInfo: {

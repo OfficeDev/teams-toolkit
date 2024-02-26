@@ -12,13 +12,19 @@
       "value": "${{SECRET_BOT_PASSWORD}}"
     },
     "azureOpenaiKey": {
-      "value": "${{SECRET_AZURE_OPENAI_KEY}}"
+      "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
     },
     "azureOpenaiModelDeploymentName" : {
       "value": "${{SECRET_AZURE_OPENAI_MODEL_DEPLOYMENT_NAME}}"
     },
     "azureOpenaiEndpoint" : {
       "value": "${{SECRET_AZURE_OPENAI_ENDPOINT}}"
+    },
+    "openaiKey": {
+      "value": "${{SECRET_OPENAI_API_KEY}}"
+    },
+    "openaiModelDeploymentName": {
+      "value": "${{SECRET_OPENAI_MODEL_DEPLOYMENT_NAME}}"
     },
     "webAppSKU": {
       "value": "B1"

@@ -16,6 +16,11 @@ param azureOpenaiKey string
 param azureOpenaiModelDeploymentName string
 param azureOpenaiEndpoint string
 
+@secure()
+@description('Required in your bot project to access OpenAI service. You can get it from OpenAI > API > API Key')
+param openaiKey string
+param openaiModelDeploymentName string
+
 param webAppSKU string
 param linuxFxVersion string
 
@@ -65,7 +70,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           value: botAadAppClientSecret
         }
         {
-          name: 'AZURE_OPENAI_KEY'
+          name: 'AZURE_OPENAI_API_KEY'
           value: azureOpenaiKey
         }
         {
@@ -75,6 +80,14 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'AZURE_OPENAI_ENDPOINT'
           value: azureOpenaiEndpoint
+        }
+        {
+          name: 'OPENAI_API_KEY'
+          value: openaiKey
+        }
+        {
+          name: 'OPENAI_MODEL_DEPLOYMENT_NAME'
+          value: openaiModelDeploymentName
         }
       ]
       ftpsState: 'FtpsOnly'

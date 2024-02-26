@@ -21,7 +21,7 @@ default_prompt = "chat"
 # Use Azure OpenAI
 planner = AzureOpenAIPlanner(
     AzureOpenAIPlannerOptions(
-        config.AZURE_OPENAI_KEY,
+        config.AZURE_OPENAI_API_KEY,
         config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
         config.AZURE_OPENAI_ENDPOINT,
         prompt_folder=default_prompt_folder,
@@ -30,7 +30,7 @@ planner = AzureOpenAIPlanner(
 # Uncomment the following lines to use OpenAI
 # planner = OpenAIPlanner(
 #     OpenAIPlannerOptions(
-#         config.OPENAI_KEY,
+#         config.OPENAI_API_KEY,
 #         config.OPENAI_MODEL_DEPLOYMENT_NAME,
 #         prompt_folder=default_prompt_folder,
 #     )

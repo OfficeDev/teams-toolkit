@@ -49,6 +49,7 @@ import {
   openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
   ApiMessageExtensionAuthOptions,
+  ProgrammingLanguage,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
@@ -56,6 +57,7 @@ import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
 import * as utils from "../../src/component/utils";
+import { convertToLangKey } from "../../src/component/generator/utils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -2099,6 +2101,18 @@ describe("scaffold question", () => {
         [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
       });
       assert.isTrue(options.length === 2);
+    });
+    it('should return "python" for ProgrammingLanguage.PY', () => {
+      const output = convertToLangKey(ProgrammingLanguage.PY);
+      assert.isTrue(output == 'python');
+    });
+    it('should return expected 3 language options for aiBot python', () => {
+      const options = getLanguageOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.bot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.aiBot().id,
+      });
+      assert.isTrue(options.length === 3); // js, ts, python
     });
   });
   describe("getTemplate", () => {

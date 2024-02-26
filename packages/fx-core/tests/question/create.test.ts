@@ -2568,9 +2568,9 @@ describe("scaffold question", () => {
     });
     it('should return "python" for ProgrammingLanguage.PY', () => {
       const output = convertToLangKey(ProgrammingLanguage.PY);
-      assert.isTrue(output == 'python');
+      assert.isTrue(output == "python");
     });
-    it('should return expected 3 language options for aiBot python', () => {
+    it("should return expected 3 language options for aiBot python", () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,
         [QuestionNames.ProjectType]: ProjectTypeOptions.bot().id,

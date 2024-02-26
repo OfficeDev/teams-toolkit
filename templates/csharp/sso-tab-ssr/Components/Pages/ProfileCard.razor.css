@@ -25,7 +25,4 @@
 
         .profile .info > p {
             margin: 0;
-            width: 280px;
-            overflow-x: auto;
-            white-space: nowrap;
         }

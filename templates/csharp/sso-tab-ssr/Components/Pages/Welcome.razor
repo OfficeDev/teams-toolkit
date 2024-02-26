@@ -20,11 +20,11 @@ else
             <img src="hello.png" />
             <h1 class="center">Congratulations@(!String.IsNullOrEmpty(userName) ? ", " + userName : "")!</h1>
             <p class="center">Your app is running in your @(GetEnvironmentName())</p>
-            <FluentTabs style="width: 80%; justify-content: space-between; margin: 4rem auto;">
+            <FluentTabs style="width: 80%; justify-content: space-between; margin: 4rem auto; min-width:max-content;">
                 <FluentTab style="font-size: 14px; min-height: 32px;">
                     <Header>1. Build your app locally</Header>
                     <Content>
-                        <div style="display:block; width:500px">
+                        <div style="display:block; width:100%;">
                             <EditCode />
                                 <CurrentUser UserName="@userName" />
                             <Graph ErrorMessage="@errorMessage" />

@@ -6,6 +6,7 @@
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <OutputType>Exe</OutputType>
+    <RootNamespace>{{SafeProjectName}}</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -15,8 +15,8 @@ export const CREATE_SAMPLE_COMMAND_ID = 'teamsAgent.createSample';
 export function getCreateCommand(): SlashCommand {
   return [createCommandName,
     {
-      shortDescription: `Describe what kind of app you want to create in Teams`,
-      longDescription: `Describe what kind of app you want to create in Teams`,
+      shortDescription: `Describe the app you want to build for Microsoft Teams`,
+      longDescription: `Describe the app you want to build for Microsoft Teams`,
       intentDescription: '',
       handler: (request: AgentRequest) => createHandler(request)
     }];

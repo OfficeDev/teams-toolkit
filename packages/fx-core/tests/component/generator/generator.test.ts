@@ -64,7 +64,7 @@ const mockedSampleInfo: SampleConfig = {
   time: "",
   configuration: "test-configuration",
   suggested: false,
-  thumbnailUrl: "",
+  thumbnailPath: "",
   gifUrl: "",
   downloadUrlInfo: {
     owner: "OfficeDev",
@@ -669,6 +669,24 @@ describe("render template", () => {
     });
   });
 
+  it("escape nested undefined variables", () => {
+    // arrange
+    const filename = "test.tpl";
+    const fileData = Buffer.from("{{#parent}}test{{child}}{{/parent}}");
+    const variables1 = { parent: "true", child: null };
+    const variables2 = { parent: "true", child: "hello" };
+    const expectedResult1 = "test{{child}}";
+    const expectedResult2 = "testhello";
+
+    // execute
+    const result1 = renderTemplateFileData(filename, fileData, variables1 as any);
+    const result2 = renderTemplateFileData(filename, fileData, variables2 as any);
+
+    // assert
+    assert.equal(result1, expectedResult1);
+    assert.equal(result2, expectedResult2);
+  });
+
   it("do not escape empty string variable", () => {
     // arrange
     const filename = "test.tpl";
@@ -790,6 +808,31 @@ describe("Generator happy path", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
     const vars = Generator.getDefaultVariables("test");
     assert.equal(vars.enableTestToolByDefault, "");
+  });
+
+  it("template variables with custom copilot - OpenAI", async () => {
+    const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
+      llmService: "llm-service-openAI",
+      openAIKey: "test-key",
+    });
+    assert.equal(vars.useOpenAI, "true");
+    assert.equal(vars.useAzureOpenAI, "");
+    assert.equal(vars.openAIKey, "test-key");
+    assert.equal(vars.azureOpenAIKey, "");
+    assert.equal(vars.azureOpenAIEndpoint, "");
+  });
+
+  it("template variables with custom copilot - Azure OpenAI", async () => {
+    const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
+      llmService: "llm-service-azureOpenAI",
+      azureOpenAIKey: "test-key",
+      azureOpenAIEndpoint: "test-endpoint",
+    });
+    assert.equal(vars.useOpenAI, "");
+    assert.equal(vars.useAzureOpenAI, "true");
+    assert.equal(vars.openAIKey, "");
+    assert.equal(vars.azureOpenAIKey, "test-key");
+    assert.equal(vars.azureOpenAIEndpoint, "test-endpoint");
   });
 
   it("template variables when contains auth", async () => {

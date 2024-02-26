@@ -46,7 +46,13 @@ export class Generator {
     appName: string,
     safeProjectNameFromVS?: string,
     targetFramework?: string,
-    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string }
+    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string },
+    llmServiceData?: {
+      llmService?: string;
+      openAIKey?: string;
+      azureOpenAIKey?: string;
+      azureOpenAIEndpoint?: string;
+    }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
@@ -64,6 +70,11 @@ export class Generator {
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
+      useOpenAI: llmServiceData?.llmService === "llm-service-openAI" ? "true" : "",
+      useAzureOpenAI: llmServiceData?.llmService === "llm-service-azureOpenAI" ? "true" : "",
+      openAIKey: llmServiceData?.openAIKey ?? "",
+      azureOpenAIKey: llmServiceData?.azureOpenAIKey ?? "",
+      azureOpenAIEndpoint: llmServiceData?.azureOpenAIEndpoint ?? "",
     };
   }
   @hooks([

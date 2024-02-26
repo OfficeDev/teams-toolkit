@@ -157,6 +157,7 @@ export enum Capability {
   Tab = "tab",
   // v3 only
   AiBot = "ai-bot",
+  TaskPane = "taskpane",
 }
 
 export enum Trigger {

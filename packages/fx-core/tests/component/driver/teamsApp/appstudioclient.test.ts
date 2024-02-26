@@ -22,6 +22,7 @@ import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
 } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
+import { AsyncAppValidationStatus } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResponse";
 
 describe("App Studio API Test", () => {
   const appStudioToken = "appStudioToken";
@@ -1021,6 +1022,65 @@ describe("App Studio API Test", () => {
       } catch (e) {
         chai.assert.equal(e.message, "Cannot delete the app: " + "testid");
       }
+    });
+  });
+
+  describe("Submit async app validation request", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      const response = {
+        data: {
+          appValidationId: uuid(),
+          status: AsyncAppValidationStatus.Created,
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "post").resolves(response);
+      const res = await AppStudioClient.submitAppValidationRequest("fakeId", appStudioToken);
+      chai.assert.equal(res.appValidationId, response.data.appValidationId);
+    });
+  });
+
+  describe("Get async app validation request list", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      const response = {
+        data: {
+          continuationToken: "",
+          appValidations: [],
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      const res = await AppStudioClient.getAppValidationRequestList("fakeId", appStudioToken);
+      chai.assert.equal(res.appValidations.length, 0);
+    });
+  });
+
+  describe("Get async app validation result details", () => {
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+      const response = {
+        data: {
+          appValidationId: "fakeId",
+          appId: "fakeAppId",
+          status: AsyncAppValidationStatus.Completed,
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          createdAt: Date(),
+          updatedAt: Date(),
+          validationResults: {
+            successes: [],
+            warnings: [],
+            failures: [],
+            skipped: [],
+          },
+        },
+      };
+      sinon.stub(fakeAxiosInstance, "get").resolves(response);
+      const res = await AppStudioClient.getAppValidationById("fakeId", appStudioToken);
+      chai.assert.equal(res.appValidationId, "fakeId");
     });
   });
 });

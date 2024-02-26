@@ -656,13 +656,13 @@ export namespace AppStudioClient {
   export async function getAppValidationRequestList(
     teamsAppId: string,
     appStudioToken: string
-  ): Promise<AsyncAppValidationDetailsResponse[]> {
+  ): Promise<AsyncAppValidationDetailsResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
     try {
       const response = await RetryHandler.Retry(() =>
         requester.get(`/api/v1.0/appvalidations/appdefinitions/${teamsAppId}`)
       );
-      return <AsyncAppValidationDetailsResponse[]>response?.data;
+      return <AsyncAppValidationDetailsResponse>response?.data;
     } catch (e) {
       const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS);
       throw error;

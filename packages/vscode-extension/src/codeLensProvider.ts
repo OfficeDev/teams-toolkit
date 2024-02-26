@@ -552,6 +552,11 @@ export class ApiPluginCodeLensProvider implements vscode.CodeLensProvider {
     const inputs = getSystemInputs();
 
     if (inputs.projectPath) {
+      const text = document.getText();
+      if (!text.includes("openapi")) {
+        return [];
+      }
+
       const manifestFilePath = path.join(
         inputs.projectPath,
         AppPackageFolderName,
@@ -567,10 +572,6 @@ export class ApiPluginCodeLensProvider implements vscode.CodeLensProvider {
         return [];
       }
 
-      const text = document.getText();
-      if (!text.includes("openapi")) {
-        return [];
-      }
       const startPosition = new vscode.Position(0, 0); // Position at the top of the document
       const endPosition = document.positionAt(document.getText().indexOf("\n"));
       const range = new vscode.Range(startPosition, endPosition);

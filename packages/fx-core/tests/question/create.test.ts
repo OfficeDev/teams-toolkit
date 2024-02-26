@@ -2566,7 +2566,7 @@ describe("scaffold question", () => {
       });
       assert.isTrue(options.length === 2);
     });
-    it('should return "python" for ProgrammingLanguage.PY', () => {
+    it("should return python for ProgrammingLanguage.PY", () => {
       const output = convertToLangKey(ProgrammingLanguage.PY);
       assert.isTrue(output == "python");
     });

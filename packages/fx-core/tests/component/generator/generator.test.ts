@@ -59,7 +59,7 @@ const mockedSampleInfo: SampleConfig = {
   time: "",
   configuration: "test-configuration",
   suggested: false,
-  thumbnailUrl: "",
+  thumbnailPath: "",
   gifUrl: "",
   downloadUrlInfo: {
     owner: "OfficeDev",

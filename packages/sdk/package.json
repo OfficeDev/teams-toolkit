@@ -51,7 +51,7 @@
     "@azure/msal-node": "^1.14.6",
     "@microsoft/adaptivecards-tools": "workspace:*",
     "@microsoft/microsoft-graph-client": "^3.0.7",
-    "axios": "^1.6.2",
+    "axios": "^1.6.7",
     "botbuilder": "^4.21.2",
     "botbuilder-dialogs": "^4.21.2",
     "botframework-connector": "^4.21.2",

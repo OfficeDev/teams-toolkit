@@ -792,6 +792,31 @@ describe("Generator happy path", async () => {
     assert.equal(vars.enableTestToolByDefault, "");
   });
 
+  it("template variables with custom copilot - OpenAI", async () => {
+    const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
+      llmService: "llm-service-openAI",
+      openAIKey: "test-key",
+    });
+    assert.equal(vars.useOpenAI, "true");
+    assert.equal(vars.useAzureOpenAI, "");
+    assert.equal(vars.openAIKey, "test-key");
+    assert.equal(vars.azureOpenAIKey, "");
+    assert.equal(vars.azureOpenAIEndpoint, "");
+  });
+
+  it("template variables with custom copilot - Azure OpenAI", async () => {
+    const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
+      llmService: "llm-service-azureOpenAI",
+      azureOpenAIKey: "test-key",
+      azureOpenAIEndpoint: "test-endpoint",
+    });
+    assert.equal(vars.useOpenAI, "");
+    assert.equal(vars.useAzureOpenAI, "true");
+    assert.equal(vars.openAIKey, "");
+    assert.equal(vars.azureOpenAIKey, "test-key");
+    assert.equal(vars.azureOpenAIEndpoint, "test-endpoint");
+  });
+
   it("template variables when contains auth", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
     const vars = Generator.getDefaultVariables("Test", "Test", "net6", {

@@ -295,6 +295,7 @@ class Context {
   workspaceContext: WorkspaceContext;
   chatMessageHistory: ChatMessageHistory;
   lastRecommendResult: string;
+  lastPipelineResult: string;
 
   constructor(workspaceFolder: string) {
     // TODO: the workspace folder should exist
@@ -672,13 +673,12 @@ async function generatePipeline(request: AgentRequest): Promise<void> {
   request.response.progress("Generate GitHub Action Pipeline...");
   const folderTreeString =
     await Context.getInstance().workspaceContext.getWorkspaceFolderTreeString();
+  const azureResourceRecommendation = Context.getInstance().lastRecommendResult;
   const { systemPrompt, userPrompt } = prompt.getGeneratePipelinePrompt(
     folderTreeString,
-    request.userPrompt
+    request.userPrompt,
+    azureResourceRecommendation
   );
-
-  const recommendChatMessageHistory: vscode.LanguageModelMessage[] =
-    Context.getInstance().chatMessageHistory.getRecommendChatMessageHistory();
   const response: {
     copilotResponded: boolean;
     copilotResponse: undefined | string;
@@ -686,8 +686,7 @@ async function generatePipeline(request: AgentRequest): Promise<void> {
     systemPrompt,
     userPrompt,
     request,
-    LANGUAGE_MODEL_GPT4_ID,
-    recommendChatMessageHistory
+    LANGUAGE_MODEL_GPT4_ID
   );
 
   if (response.copilotResponded) {
@@ -696,6 +695,8 @@ async function generatePipeline(request: AgentRequest): Promise<void> {
         response.copilotResponse as string
       )
     );
+    Context.getInstance().lastPipelineResult =
+      response.copilotResponse as string;
   }
 }
 
@@ -703,9 +704,12 @@ async function improvePipelineHandler(
   request: AgentRequest
 ): Promise<SlashCommandHandlerResult> {
   request.response.progress("Improve GitHub Action Pipeline...");
-  const historyChatMessages = collectChatMessageHistory(request, 2);
+  const azureResourceRecommendation = Context.getInstance().lastRecommendResult;
+  const lastPipelineResult = Context.getInstance().lastPipelineResult;
   const { systemPrompt, userPrompt } = prompt.getImprovePipelinePrompt(
-    request.userPrompt
+    request.userPrompt,
+    azureResourceRecommendation,
+    lastPipelineResult
   );
   const response: {
     copilotResponded: boolean;
@@ -714,8 +718,7 @@ async function improvePipelineHandler(
     systemPrompt,
     userPrompt,
     request,
-    LANGUAGE_MODEL_GPT4_ID,
-    historyChatMessages
+    LANGUAGE_MODEL_GPT4_ID
   );
 
   if (response.copilotResponded) {
@@ -724,6 +727,8 @@ async function improvePipelineHandler(
         response.copilotResponse as string
       )
     );
+    Context.getInstance().lastPipelineResult =
+      response.copilotResponse as string;
   }
 
   return undefined;

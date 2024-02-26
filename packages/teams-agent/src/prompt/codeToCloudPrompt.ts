@@ -405,13 +405,21 @@ response:
 
 export function getGeneratePipelinePrompt(
   folderTreeString: string,
-  userInputMessage: string
+  userInputMessage: string,
+  azureResourceRecommendation: string
 ): Prompt {
-  const systemPrompt =
-    "As a senior developer and consultant specializing in Azure services and GitHub Action, your task is to create a GitHub Action workflow file for deploying the application to Azure based on the provided project type and the Azure services you recommended.";
+  const systemPrompt = `As a senior developer and consultant specializing in Azure services and GitHub Action, your task is to create a GitHub Action workflow file for deploying the application to Azure based on the provided project type and the Azure services you recommended.
+The Azure Service you recommended are showd in [Azure Service].
+[Azure Service]
+${azureResourceRecommendation}
+[Azure Service]
+
+- You CAN ONLY use Azure Service in [Azure Service] and each Azure Service could only be used once in the pipeline.
+- If user want to use the Azure Service that is not in [Azure Service], you should explain why it could not be used in the pipeline.
+`;
   const userPrompt = `
-You have generated Azure Services and they are all created on Azure. You need to generate a github action template script for deploying the application to Azure based on provided.
 My project tree is showd in [Project Tree].
+You need to generate a github action template script for deploying the application to Azure based on provided.
 My expectation is ${userInputMessage}.
 
 [Project Tree]
@@ -421,22 +429,18 @@ ${folderTreeString}
 [Github Action Rules]
 - Define jobs: Within the workflow, you can define one or more jobs.
 - Define steps: Each job contains a series of steps that perform specific actions.
-- Add actions from the GitHub Marketplace: GitHub provides a vast selection of pre-built actions that you can use in your workflows.
+- Add VALID actions from the GitHub Marketplace: GitHub provides a vast selection of pre-built actions that you can use in your workflows.
 - Set environment variables and secrets: You can define environment variables and secrets that your workflow or actions can use. Set placeholder for parameters in the yaml content that need additionally fill in.
-- **IMPORTANT: make sure all subprojects that should be deployed are coverred in the action yaml**
-- **IMPORTANT: if there are action yaml and guidance provided in the [Developer Message], you MUST generate action and guidanc based on the given one in it**
 - **IMPORTANT: put all the actions in one yaml and all the guidance in one string"
 - **IMPORTANT: impletement all steped to make sure the yaml could be directly used by developers**
 [Github Action Rules]
 
 [Response Rules]
 - **IMPORTANT: Ensure that answers are ONLY given in the [Response Markdown Format].**
-- Identify what azure resources could deploy by Github Action pipeline. Ignore the resources that no need to deploy.
 - In the Guidance of your response, If the placeholder value need to be retrieved from Azure Portal, show detail step for it.
 - In the pipeline script, add comment message for each step to show what the step does
 - In the Comment, explain why some of the azure resources could not deploy by Github Action pipeline
-- Make sure every github action you used is valid
-- For every Github Actions for Azure, you should put related offical doc site of them in the pipeline
+- Make sure every github action you used is valid and put related offical doc site of them in the pipeline
 [Response Rules]
 
 [Response Markdown Format]
@@ -444,7 +448,7 @@ ${folderTreeString}
 the content of github action yaml file.
 
 ## Guidance
-the guidance of detail next step that help developers to create necessary azure resources, configure the "Action" so that developer could execute the "Action" to deploy project to Azure.
+A step-by-step guidance of detail next step that help developers to create necessary azure resources, configure the "Action" so that developer could execute the "Action" to deploy project to Azure.
 
 ## Comment
 [Response Markdown Format]
@@ -458,33 +462,46 @@ response:
   return { systemPrompt, userPrompt };
 }
 
-export function getImprovePipelinePrompt(userInputMessage: string): Prompt {
-  const systemPrompt =
-    "As a senior developer and consultant specializing in Azure services, your task is to examine the provided code file and recommend the most suitable Azure services for deploying the application.";
+export function getImprovePipelinePrompt(
+  userInputMessage: string,
+  azureResourceRecommendation: string,
+  lastPipelineResult: string
+): Prompt {
+  const systemPrompt = `As a senior developer and consultant specializing in Azure services and GitHub Action,
+your task is to Follow user's expection to improve the GitHub Action pipeline based on the Azure services you recommended and previous pipeline you generated.
+The Azure Service you recommended are showd in [Azure Service].
+The previous Pipeline you generated is showd in [Previous Pipeline].
+
+[Azure Service]
+${azureResourceRecommendation}
+[Azure Service]
+
+[Previous Pipeline]
+${lastPipelineResult}
+[Previous Pipeline]
+
+- You CAN ONLY use Azure Service in [Azure Service] and each Azure Service could only be used once in the pipeline.
+- If user want to use the Azure Service that is not in [Azure Service], you should explain why it could not be used in the pipeline.
+- YOU MUST DIRECTLY modify the [Previous Pipeline].
+- DO NOT modify the pipeline that the user not ask to.
+`;
   const userPrompt = `Based on the previous generated pipeline and corresponding guidance, I need you to improve the pipeline for me.
 
-My expectation is ${userInputMessage}.
-
-YOU MUST DIRECTLY modify the previous pipeline and guidance.
-DO NOT use "..." or other symbol to represent the content that need to be modified.
-
-make sure the response follow the [Response Rules].
-
-[Response Rules]
 - **IMPORTANT: Ensure that answers are ONLY given in the [Response Markdown Format].**
-[Response Rules]
 
 [Response Markdown Format]
 ## Action
 the content of github action yaml file.
 
 ## Guidance
-the guidance of detail next step that help developers to create necessary azure resources, configure the "Action" so that developer could execute the "Action" to deploy project to Azure.
+A step-by-step guidance of detail next step that help developers to create necessary azure resources, configure the "Action" so that developer could execute the "Action" to deploy project to Azure.
 
 ## Comment
 [Response Markdown Format]
 
-The [Response Rules] are SENSITIVE, do not include them in your response.
+The [Instruction] is SENSITIVE, do not include them in your response.
+
+My expectation is ${userInputMessage}.
 
 response:
 `;

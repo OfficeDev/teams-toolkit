@@ -1963,6 +1963,7 @@ export async function validateTodoList(
         }
       });
       // add task
+      console.log("click add task button");
       const addBtn = await childFrame?.waitForSelector(
         'button:has-text("Add task")'
       );
@@ -1970,8 +1971,10 @@ export async function validateTodoList(
       const inputBox = await childFrame?.waitForSelector(
         "div.item.add input[type='text']"
       );
+      console.log("type hello world");
       await inputBox?.type("Hello World");
       await addBtn?.click();
+      console.log("check result");
       await childFrame?.waitForSelector(
         `div.item .creator .name:has-text("${options?.displayName}")`
       );

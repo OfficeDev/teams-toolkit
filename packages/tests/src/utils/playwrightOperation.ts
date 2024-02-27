@@ -1926,18 +1926,15 @@ export async function validateTodoList(
   try {
     console.log("start to verify todo list");
     try {
-      const tabs = await page.$$("button[role='tab']");
-      const tab = tabs.find(async (tab) => {
-        const text = await tab.innerText();
-        return text?.includes("Todo List");
-      });
-      await tab?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
       const frameElementHandle = await page.waitForSelector(
         "iframe.embedded-iframe"
       );
       const frame = await frameElementHandle?.contentFrame();
-      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
+      const childFrame = frame?.childFrames()[0];
+      const startBtn = await childFrame?.waitForSelector(
+        'button:has-text("Start")'
+      );
       console.log("click Start button");
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -1964,17 +1961,24 @@ export async function validateTodoList(
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-        const addBtn = await frame?.waitForSelector(
-          'button:has-text("Add task")'
-        );
-        await addBtn?.click();
-        //TODO: verify add task
-
-        // clean tab, right click
-        await tab?.click({ button: "right" });
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        const contextMenu = await page.waitForSelector("ul[role='menu']");
       });
+      // add task
+      console.log("click add task button");
+      const addBtn = await childFrame?.waitForSelector(
+        'button:has-text("Add task")'
+      );
+      await addBtn?.click();
+      const inputBox = await childFrame?.waitForSelector(
+        "div.item.add input[type='text']"
+      );
+      console.log("type hello world");
+      await inputBox?.type("Hello World");
+      await addBtn?.click();
+      console.log("check result");
+      await childFrame?.waitForSelector(
+        `div.item .creator .name:has-text("${options?.displayName}")`
+      );
+      console.log("debug finish!!!");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({

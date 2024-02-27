@@ -78,7 +78,12 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+{{#enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
                 "order": 1
             },
             "stopAll": true
@@ -94,7 +99,12 @@
             ],
             "preLaunchTask": "Start Teams App Locally",
             "presentation": {
-                "group": "all",
+{{#enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "1-local",
+{{/enableTestToolByDefault}}
                 "order": 2
             },
             "stopAll": true
@@ -110,7 +120,12 @@
             ],
             "preLaunchTask": "Install Test Tool",
             "presentation": {
+{{#enableTestToolByDefault}}
                 "group": "1-local",
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+                "group": "2-local",
+{{/enableTestToolByDefault}}
                 "order": 1
             },
             "stopAll": true

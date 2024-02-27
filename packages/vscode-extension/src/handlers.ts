@@ -74,6 +74,7 @@ import {
   manifestUtils,
   JSONSyntaxError,
   MetadataV3,
+  CapabilityOptions,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -2223,7 +2224,15 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   const inputs = getSystemInputs();
   if (args && args.length > 0) {
     const filePath = args[0].fsPath as string;
-    inputs[CoreQuestionNames.ManifestPath] = filePath;
+    const isFromApiPlugin: boolean = args[0].isFromApiPlugin ?? false;
+    if (!isFromApiPlugin) {
+      // Codelens for API ME. Trigger from manifest.json
+      inputs[CoreQuestionNames.ManifestPath] = filePath;
+    } else {
+      inputs[CoreQuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
+      inputs[CoreQuestionNames.DestinationApiSpecFilePath] = filePath;
+      inputs[CoreQuestionNames.ManifestPath] = args[0].manifestPath;
+    }
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
   return result;

@@ -3,6 +3,7 @@
 
 import {
   AppPackageFolderName,
+  ManifestTemplateFileName,
   ManifestUtil,
   TeamsAppManifest,
   TemplateFolderName,
@@ -24,6 +25,7 @@ import { getSystemInputs } from "./handlers";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { localize } from "./utils/localizeUtils";
 import * as _ from "lodash";
+import * as path from "path";
 
 async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
   // Get environment variables
@@ -539,6 +541,51 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
       };
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
       return codeLenses;
+    }
+  }
+}
+
+export class ApiPluginCodeLensProvider implements vscode.CodeLensProvider {
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const inputs = getSystemInputs();
+
+    if (inputs.projectPath) {
+      const text = document.getText();
+      if (!text.includes("openapi")) {
+        return [];
+      }
+
+      const manifestFilePath = path.join(
+        inputs.projectPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
+      if (!fs.existsSync(manifestFilePath)) {
+        return [];
+      }
+      const manifestContent = fs.readFileSync(manifestFilePath, "utf-8");
+      const manifest = JSON.parse(manifestContent);
+      const manifestProperties = ManifestUtil.parseCommonProperties(manifest);
+      if (!manifestProperties.isApiPlugin) {
+        return [];
+      }
+
+      const startPosition = new vscode.Position(0, 0); // Position at the top of the document
+      const endPosition = document.positionAt(document.getText().indexOf("\n"));
+      const range = new vscode.Range(startPosition, endPosition);
+      const command = {
+        title: "➕" + localize("teamstoolkit.codeLens.copilotPluginAddAPI"),
+        command: "fx-extension.copilotPluginAddAPI",
+        arguments: [
+          { fsPath: document.fileName, isFromApiPlugin: true, manifestPath: manifestFilePath },
+        ],
+      };
+      const codeLens = new vscode.CodeLens(range, command);
+      return [codeLens];
+    } else {
+      return [];
     }
   }
 }

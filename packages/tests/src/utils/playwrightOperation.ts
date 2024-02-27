@@ -1964,16 +1964,19 @@ export async function validateTodoList(
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
+        // add task
         const addBtn = await frame?.waitForSelector(
           'button:has-text("Add task")'
         );
         await addBtn?.click();
-        //TODO: verify add task
-
-        // clean tab, right click
-        await tab?.click({ button: "right" });
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        const contextMenu = await page.waitForSelector("ul[role='menu']");
+        const inputBox = await frame?.waitForSelector(
+          "div.item.add input[type='text']"
+        );
+        await inputBox?.type("Hello World");
+        await addBtn?.click();
+        await frame?.waitForSelector(
+          `div.item .creator .name:has-text("${options?.displayName}")`
+        );
       });
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);

@@ -78,6 +78,9 @@ The following files can be customized and demonstrate an example implementation 
 |`src/index.js`| Sets up the bot app server.|
 |`src/adapter.js`| Sets up the bot adapter.|
 |`src/config.js`| Defines the environment variables.|
+|`src/prompts/planner/skprompt.txt`| Defines the prompt.|
+|`src/prompts/planner/config.json`| Configures the prompt.|
+|`src/prompts/planner/actions.json`| Defines the actions.|
 |`src/app/app.js`| Handles business logics for the AI Assistant Bot.|
 |`src/app/messages.js`| Defines the message activity handlers.|
 |`src/app/actions.js`| Defines the AI actions.|

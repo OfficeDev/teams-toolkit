@@ -30,6 +30,7 @@ import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
 import { getTemplate } from "../../../question/create";
 import { getLocalizedString } from "../../../common/localizeUtils";
+import { assembleError } from "../../../error";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -56,12 +57,13 @@ export class OfficeAddinGenerator {
 
     // If lang is undefined, it means the project is created from a folder.
     const lang = inputs[QuestionNames.ProgrammingLanguage];
-
+    const langKey =
+      lang != "No Options" ? (lang?.toLowerCase() === "typescript" ? "ts" : "js") : undefined;
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,
       templateName,
-      lang != "No Options" ? (lang === "TypeScript" ? "ts" : "js") : undefined
+      langKey
     );
     if (templateRes.isErr()) return err(templateRes.error);
 
@@ -94,15 +96,11 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const jsonData = new projectsJsonData();
-        const projectRepoBranchInfo = jsonData.getProjectRepoAndBranch(template, language, true);
+        const projectLink = jsonData.getProjectDownloadLink(template, language);
 
         // Copy project template files from project repository
-        if (projectRepoBranchInfo.repo) {
-          await HelperMethods.downloadProjectTemplateZipFile(
-            addinRoot,
-            projectRepoBranchInfo.repo,
-            projectRepoBranchInfo.branch
-          );
+        if (projectLink) {
+          await HelperMethods.downloadProjectTemplateZipFile(addinRoot, projectLink);
 
           // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
@@ -146,7 +144,7 @@ export class OfficeAddinGenerator {
     } catch (e) {
       process.chdir(workingDir);
       await importProgress.end(false, true);
-      return err(CopyFileError(e as Error));
+      return err(assembleError(e as Error));
     }
   }
 }

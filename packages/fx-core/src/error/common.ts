@@ -344,11 +344,7 @@ export class AccessGithubError extends UserError {
         url,
         error.message || JSON.stringify(error, Object.getOwnPropertyNames(error))
       ),
-      displayMessage: getDefaultString(
-        messageKey,
-        url,
-        JSON.stringify(error, Object.getOwnPropertyNames(error))
-      ),
+      displayMessage: getLocalizedString(messageKey, url, error.message),
       error: error,
       categories: [ErrorCategory.External],
     });

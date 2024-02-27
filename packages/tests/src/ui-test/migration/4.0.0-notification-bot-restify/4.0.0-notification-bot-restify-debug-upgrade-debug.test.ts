@@ -25,6 +25,7 @@ import {
 } from "../../../utils/vscodeOperation";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
+import { updateDeverloperInManifestFile } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.migrationTestCase);
@@ -70,6 +71,9 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
       // local debug with TTK
       await startDebugging("Debug (Chrome)");
       await waitForTerminal(LocalDebugTaskLabel.StartLocalTunnel);

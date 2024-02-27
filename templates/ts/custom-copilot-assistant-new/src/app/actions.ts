@@ -1,5 +1,5 @@
 import { TurnContext } from "botbuilder";
-import { TurnState } from "@microsoft/teams-ai";
+import { ApplicationTurnState, Task } from "./turnState";
 
 interface CreateTaskParameters {
   title: string;
@@ -12,13 +12,13 @@ interface DeleteTaskParameters {
 
 export async function createTask(
   context: TurnContext,
-  state: TurnState,
+  state: ApplicationTurnState,
   parameters: CreateTaskParameters
 ): Promise<string> {
   if (state.conversation.tasks === undefined) {
     state.conversation.tasks = {};
   }
-  const task = {
+  const task: Task = {
     title: parameters.title,
     description: parameters.description,
   };
@@ -28,7 +28,7 @@ export async function createTask(
 
 export async function deleteTask(
   context: TurnContext,
-  state: TurnState,
+  state: ApplicationTurnState,
   parameters: DeleteTaskParameters
 ): Promise<string> {
   if (state.conversation.tasks === undefined) {

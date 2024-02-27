@@ -81,6 +81,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/prompts/planner/skprompt.txt`| Defines the prompt.|
 |`src/prompts/planner/config.json`| Configures the prompt.|
 |`src/prompts/planner/actions.json`| Defines the actions.|
+|`src/app/turnState.ts`| Defines the app turn state.|
 |`src/app/app.ts`| Handles business logics for the AI Assistant Bot.|
 |`src/app/messages.ts`| Defines the message activity handlers.|
 |`src/app/actions.ts`| Defines the AI actions.|

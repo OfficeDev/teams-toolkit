@@ -1,7 +1,10 @@
 import { TurnContext } from "botbuilder";
-import { TurnState } from "@microsoft/teams-ai";
+import { ApplicationTurnState } from "./turnState";
 
-export async function resetMessage(context: TurnContext, state: TurnState): Promise<void> {
+export async function resetMessage(
+  context: TurnContext,
+  state: ApplicationTurnState
+): Promise<void> {
   state.deleteConversationState();
   await context.sendActivity("Ok lets start this over.");
 }

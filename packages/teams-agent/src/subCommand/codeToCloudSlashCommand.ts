@@ -500,6 +500,21 @@ ${verifiedFilePaths.map((item) => `- ${item.relativePath}`).join("\n")}
   return verifiedFilePaths;
 }
 
+async function readAndCompressFileContent(filePath: string): Promise<string> {
+  // read file content and remove all empty line
+  const fileContent = await vscode.workspace.fs.readFile(
+    vscode.Uri.file(filePath)
+  );
+  const decodedContent = new TextDecoder().decode(fileContent);
+  // remove empty line and the leading and trailing white space
+  const compressedContent = decodedContent
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .map((line) => line.trim())
+    .join("\n");
+  return compressedContent;
+}
+
 async function analyzeFile(
   filePaths: { absolutePath: string; relativePath: string }[],
   request: AgentRequest
@@ -508,13 +523,10 @@ async function analyzeFile(
 
   const filePathContents = await Promise.all(
     filePaths.map(async (filePath) => {
-      const fileContent = await vscode.workspace.fs.readFile(
-        vscode.Uri.file(filePath.absolutePath)
-      );
       return {
         absolutePath: filePath.absolutePath,
         relativePath: filePath.relativePath,
-        fileContent: Buffer.from(fileContent).toString("utf-8"),
+        fileContent: await readAndCompressFileContent(filePath.absolutePath),
       };
     })
   );

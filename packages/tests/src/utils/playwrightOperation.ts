@@ -1978,6 +1978,7 @@ export async function validateTodoList(
       await childFrame?.waitForSelector(
         `div.item .creator .name:has-text("${options?.displayName}")`
       );
+      console.log("debug finish!!!");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({

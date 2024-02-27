@@ -87,8 +87,8 @@ dependencies:
     specifier: ^13.7.0
     version: 13.7.0
   vscode-tas-client:
-    specifier: ^0.1.84
-    version: 0.1.84
+    specifier: ^0.1.75
+    version: 0.1.75
 
 devDependencies:
   '@azure/arm-subscriptions':
@@ -9791,8 +9791,12 @@ packages:
       yallist: 4.0.0
     dev: true
 
-  /tas-client@0.2.33:
-    resolution: {integrity: sha512-V+uqV66BOQnWxvI6HjDnE4VkInmYZUQ4dgB7gzaDyFyFSK1i1nF/j7DpS9UbQAgV9NaF1XpcyuavnM1qOeiEIg==}
+  /tas-client@0.1.73:
+    resolution: {integrity: sha512-UDdUF9kV2hYdlv+7AgqP2kXarVSUhjK7tg1BUflIRGEgND0/QoNpN64rcEuhEcM8AIbW65yrCopJWqRhLZ3m8w==}
+    dependencies:
+      axios: 1.6.6(debug@4.3.4)
+    transitivePeerDependencies:
+      - debug
     dev: false
 
   /temp@0.8.4:
@@ -10481,11 +10485,13 @@ packages:
     engines: {node: '>=8.0.0 || >=10.0.0'}
     dev: false
 
-  /vscode-tas-client@0.1.84:
-    resolution: {integrity: sha512-rUTrUopV+70hvx1hW5ebdw1nd6djxubkLvVxjGdyD/r5v/wcVF41LIfiAtbm5qLZDtQdsMH1IaCuDoluoIa88w==}
-    engines: {vscode: ^1.85.0}
+  /vscode-tas-client@0.1.75:
+    resolution: {integrity: sha512-/+ALFWPI4U3obeRvLFSt39guT7P9bZQrkmcLoiS+2HtzJ/7iPKNt5Sj+XTiitGlPYVFGFc0plxX8AAp6Uxs0xQ==}
+    engines: {vscode: ^1.19.1}
     dependencies:
-      tas-client: 0.2.33
+      tas-client: 0.1.73
+    transitivePeerDependencies:
+      - debug
     dev: false
 
   /watchpack@2.4.0:

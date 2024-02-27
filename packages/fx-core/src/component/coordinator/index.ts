@@ -368,10 +368,21 @@ class Coordinator {
           const langKey = convertToLangKey(language);
           const safeProjectNameFromVS =
             language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+          const llmService: string | undefined = inputs[QuestionNames.LLMService];
+          const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
+          const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
+          const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
           context.templateVariables = Generator.getDefaultVariables(
             appName,
             safeProjectNameFromVS,
-            inputs.targetFramework
+            inputs.targetFramework,
+            undefined,
+            {
+              llmService,
+              openAIKey,
+              azureOpenAIKey,
+              azureOpenAIEndpoint,
+            }
           );
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);

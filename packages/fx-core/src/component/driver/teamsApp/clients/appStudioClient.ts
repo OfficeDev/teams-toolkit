@@ -39,6 +39,9 @@ import {
 } from "../../../../error/teamsApp";
 import { ApiSecretRegistration } from "../interfaces/ApiSecretRegistration";
 import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
+import { AsyncAppValidationResponse } from "../interfaces/AsyncAppValidationResponse";
+import { AsyncAppValidationResultsResponse } from "../interfaces/AsyncAppValidationResultsResponse";
+import { AsyncAppValidationDetailsResponse } from "../interfaces/AsyncAppValidationDetailsResponse";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -595,6 +598,12 @@ export namespace AppStudioClient {
     }
   }
 
+  /**
+   * Send the app package for partner center validation
+   * @param file
+   * @param appStudioToken
+   * @returns
+   */
   export async function partnerCenterAppPackageValidation(
     file: Buffer,
     appStudioToken: string
@@ -609,6 +618,75 @@ export namespace AppStudioClient {
       return response?.data;
     } catch (e) {
       const error = wrapException(e, APP_STUDIO_API_NAMES.VALIDATE_APP_PACKAGE);
+      throw error;
+    }
+  }
+
+  /**
+   * Submit App Validation Request (In-App) for which App Definitions are stored at TDP.
+   * @param teamsAppId
+   * @param appStudioToken
+   * @returns
+   */
+  export async function submitAppValidationRequest(
+    teamsAppId: string,
+    appStudioToken: string
+  ): Promise<AsyncAppValidationResponse> {
+    const requester = createRequesterWithToken(appStudioToken, region);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post(`/api/v1.0/appvalidations/appdefinition/validate`, {
+          AppEnvironmentId: null,
+          appDefinitionId: teamsAppId,
+        })
+      );
+      return <AsyncAppValidationResponse>response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.SUMIT_APP_VALIDATION);
+      throw error;
+    }
+  }
+
+  /**
+   * Get App validation requests sumitted by the user
+   * @param teamsAppId
+   * @param appStudioToken
+   * @returns
+   */
+  export async function getAppValidationRequestList(
+    teamsAppId: string,
+    appStudioToken: string
+  ): Promise<AsyncAppValidationDetailsResponse> {
+    const requester = createRequesterWithToken(appStudioToken, region);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/appvalidations/appdefinitions/${teamsAppId}`)
+      );
+      return <AsyncAppValidationDetailsResponse>response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_REQUESTS);
+      throw error;
+    }
+  }
+
+  /**
+   * Get App validation results by provided app validation id
+   * @param appValidationId
+   * @param appStudioToken
+   * @returns
+   */
+  export async function getAppValidationById(
+    appValidationId: string,
+    appStudioToken: string
+  ): Promise<AsyncAppValidationResultsResponse> {
+    const requester = createRequesterWithToken(appStudioToken, region);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/appvalidations/${appValidationId}`)
+      );
+      return <AsyncAppValidationResultsResponse>response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_APP_VALIDATION_RESULT);
       throw error;
     }
   }

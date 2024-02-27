@@ -157,6 +157,7 @@ const excludePaths = [
   "teamsapp.local.yml",
   "teamsapp.yml",
   "azure.yaml",
+  "locales",
 ];
 
 const excludeExtensions = [
@@ -339,13 +340,18 @@ const TopFileNumber = 10;
 async function recommendHandler(
   request: AgentRequest
 ): Promise<SlashCommandHandlerResult> {
-  // first recommendation
   const scanProjectResults: ScanProjectResult[] = await scanProject(request);
   const filepaths: VerifyFilePathResult[] = await verifyFilePath(
-    scanProjectResults.map((item) => item.filePath)
+    scanProjectResults.map((item) => item.filePath),
+    request
   );
   const analyzeFileResults: AnalyzeFileResult[] = await analyzeFile(
-    filepaths.map((item) => item.absolutePath),
+    filepaths.map((item) => {
+      return {
+        absolutePath: item.absolutePath,
+        relativePath: item.relativePath,
+      };
+    }),
     request
   );
   // TODO: check token size
@@ -362,6 +368,22 @@ async function recommendHandler(
 
   return undefined;
 }
+
+// match package.json or app.ts
+const rulebasedFileName = [
+  "package.json",
+  "app.ts",
+  "app.js",
+  "index.ts",
+  "index.js",
+  "README.md",
+  /.*\.csproj$/,
+  "Program.cs",
+  "Startup.cs",
+  "appsettings.json",
+  "Dockerfile",
+];
+const fileReg = new RegExp(rulebasedFileName.join("|"));
 
 async function scanProject(
   request: AgentRequest
@@ -388,11 +410,10 @@ async function scanProject(
   try {
     scanProjectResult = JSON.parse(response).result;
     scanProjectResult.sort((a, b) => b.relevance - a.relevance);
-    scanProjectResult = scanProjectResult.slice(0, TopFileNumber);
   } catch (error) {
     // rule-based file path filtering
     const cache = new Set<string>();
-    workspaceContext.asyncScanWorkspace((node) => {
+    await workspaceContext.asyncScanWorkspace((node) => {
       if (scanProjectResult.length > TopFileNumber) {
         return;
       }
@@ -404,7 +425,7 @@ async function scanProject(
 
       if (cache.has(fileRelativePathWithoutExt)) {
         return;
-      } else {
+      } else if (fileReg.test(node.name)) {
         cache.add(fileRelativePathWithoutExt);
         scanProjectResult.push({
           filePath: node.relativePath,
@@ -413,34 +434,28 @@ async function scanProject(
       }
     });
   }
-
-  request.response.markdown(
-    `## Identify the following files for analysis: \n\n
-\`\`\`
-${scanProjectResult.map((item) => `- ${item.filePath}`).join("\n")}
-\`\`\``
-  );
-
   return scanProjectResult;
 }
 
 async function verifyFilePath(
-  scanedFilePaths: string[]
+  filePaths: string[],
+  request
 ): Promise<VerifyFilePathResult[]> {
-  const filePaths: VerifyFilePathResult[] = [];
+  let verifiedFilePaths: VerifyFilePathResult[] = [];
   const workspaceContext: WorkspaceContext =
     Context.getInstance().workspaceContext;
 
-  const scanFilePaths = scanedFilePaths.map((item) => {
+  const scanFilePaths = filePaths.map((item) => {
     return {
       relativePath: item,
       absolutePath: path.join(workspaceContext.workspaceFolder, item),
     };
   });
 
+  const unexistFiles: string[] = [];
   scanFilePaths.forEach((item) => {
     if (existsSync(item.absolutePath)) {
-      filePaths.push({
+      verifiedFilePaths.push({
         relativePath: item.relativePath,
         absolutePath: item.absolutePath,
       });
@@ -448,15 +463,45 @@ async function verifyFilePath(
       console.log(
         `File not exists: ${item.relativePath} - ${item.absolutePath}`
       );
+      unexistFiles.push(item.relativePath);
     }
-    // TODO: else
   });
 
-  return filePaths;
+  if (unexistFiles.length > 0) {
+    await Context.getInstance().workspaceContext.asyncScanWorkspace((node) => {
+      if (unexistFiles.length === 0) {
+        return;
+      }
+      // check if the node.relativePath has the end string of one of unexistFiles
+      for (const file of unexistFiles) {
+        if (node.relativePath.endsWith(file)) {
+          verifiedFilePaths.push({
+            relativePath: node.relativePath,
+            absolutePath: path.join(
+              Context.getInstance().workspaceFolder,
+              node.relativePath
+            ),
+          });
+          unexistFiles.splice(unexistFiles.indexOf(file), 1);
+          break;
+        }
+      }
+    });
+  }
+
+  verifiedFilePaths = verifiedFilePaths.slice(0, TopFileNumber);
+  request.response.markdown(
+    `## Identify the following files for analysis: \n\n
+\`\`\`
+${verifiedFilePaths.map((item) => `- ${item.relativePath}`).join("\n")}
+\`\`\``
+  );
+
+  return verifiedFilePaths;
 }
 
 async function analyzeFile(
-  filePaths: string[],
+  filePaths: { absolutePath: string; relativePath: string }[],
   request: AgentRequest
 ): Promise<AnalyzeFileResult[]> {
   const result: AnalyzeFileResult[] = [];
@@ -464,10 +509,11 @@ async function analyzeFile(
   const filePathContents = await Promise.all(
     filePaths.map(async (filePath) => {
       const fileContent = await vscode.workspace.fs.readFile(
-        vscode.Uri.file(filePath)
+        vscode.Uri.file(filePath.absolutePath)
       );
       return {
-        filePath,
+        absolutePath: filePath.absolutePath,
+        relativePath: filePath.relativePath,
         fileContent: Buffer.from(fileContent).toString("utf-8"),
       };
     })
@@ -476,9 +522,9 @@ async function analyzeFile(
   await runWithLimitedConcurrency(
     filePathContents,
     async (item) => {
-      request.response.progress(`Analyze ${item.filePath}...`);
+      request.response.progress(`Analyze ${item.relativePath}...`);
       const { systemPrompt, userPrompt } = prompt.getAnalyzeFilePrompt(
-        item.filePath,
+        item.absolutePath,
         item.fileContent
       );
       const response = await getResponseInteraction(
@@ -488,7 +534,7 @@ async function analyzeFile(
       );
 
       result.push({
-        filePath: filePaths[result.length],
+        filePath: filePaths[result.length].relativePath,
         analyzeResult: response,
       });
     },
@@ -780,6 +826,7 @@ async function getResponseInteraction(
     systemPrompt,
     request
   );
+
   request.userPrompt = originalUserPrompt;
   request.commandVariables = undefined;
   return response || "";
@@ -796,6 +843,7 @@ async function verbatimInteraction(
   request.userPrompt = userPrompt;
   request.commandVariables = { languageModelID, chatMessageHistory };
   const response = await verbatimCopilotInteraction(systemPrompt, request);
+
   request.userPrompt = originalUserPrompt;
   request.commandVariables = undefined;
   return response;

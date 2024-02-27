@@ -1406,7 +1406,7 @@
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",
     "validator": "^13.7.0",
-    "vscode-tas-client": "^0.1.47"
+    "vscode-tas-client": "^0.1.84"
   },
   "extensionDependencies": [
     "ms-vscode.azure-account",

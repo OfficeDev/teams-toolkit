@@ -1926,18 +1926,15 @@ export async function validateTodoList(
   try {
     console.log("start to verify todo list");
     try {
-      const tabs = await page.$$("button[role='tab']");
-      const tab = tabs.find(async (tab) => {
-        const text = await tab.innerText();
-        return text?.includes("Todo List");
-      });
-      await tab?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
       const frameElementHandle = await page.waitForSelector(
         "iframe.embedded-iframe"
       );
       const frame = await frameElementHandle?.contentFrame();
-      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
+      const spfxFrame = frame?.childFrames()[0];
+      const startBtn = await spfxFrame?.waitForSelector(
+        'button:has-text("Start")'
+      );
       console.log("click Start button");
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -1965,16 +1962,16 @@ export async function validateTodoList(
           await popup.click("input.button[type='submit'][value='Accept']");
         }
         // add task
-        const addBtn = await frame?.waitForSelector(
+        const addBtn = await spfxFrame?.waitForSelector(
           'button:has-text("Add task")'
         );
         await addBtn?.click();
-        const inputBox = await frame?.waitForSelector(
+        const inputBox = await spfxFrame?.waitForSelector(
           "div.item.add input[type='text']"
         );
         await inputBox?.type("Hello World");
         await addBtn?.click();
-        await frame?.waitForSelector(
+        await spfxFrame?.waitForSelector(
           `div.item .creator .name:has-text("${options?.displayName}")`
         );
       });

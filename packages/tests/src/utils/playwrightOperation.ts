@@ -2626,8 +2626,9 @@ export async function validateLargeNotificationBot(
     });
     throw error;
   }
-  
-  export async function validateTodoListSpfx(page: Page) {
+}
+
+export async function validateTodoListSpfx(page: Page) {
   try {
     console.log("start to verify todo list spfx");
     try {

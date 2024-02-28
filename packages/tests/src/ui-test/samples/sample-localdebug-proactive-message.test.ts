@@ -42,5 +42,6 @@ new ProactiveMessagingTestCase(
   {
     testRootFolder: "./resource/samples",
     debug: "cli",
+    botFlag: true,
   }
 ).test();

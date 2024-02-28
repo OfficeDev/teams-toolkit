@@ -121,6 +121,7 @@ export abstract class CaseFactory {
     skipValidation?: boolean;
     skipDebug?: boolean;
     debug?: "cli" | "ttk";
+    botFlag?: boolean;
   };
 
   public constructor(
@@ -140,6 +141,7 @@ export abstract class CaseFactory {
       skipValidation?: boolean;
       skipDebug?: boolean;
       debug?: "cli" | "ttk";
+      botFlag?: boolean;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -384,7 +386,7 @@ export abstract class CaseFactory {
               console.log("======= debug with cli ========");
               console.log("botFlag: ", botFlag);
               // start local tunnel
-              if (botFlag) {
+              if (options.botFlag || botFlag) {
                 const tunnel = Executor.debugBotFunctionPreparation(
                   sampledebugContext.projectPath
                 );

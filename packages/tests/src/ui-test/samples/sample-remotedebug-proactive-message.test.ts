@@ -51,5 +51,5 @@ new ProactiveMessagingTestCase(
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { testRootFolder: "./resource/samples", debug: "cli" }
+  { testRootFolder: "./resource/samples", debug: "cli", botFlag: true }
 ).test();

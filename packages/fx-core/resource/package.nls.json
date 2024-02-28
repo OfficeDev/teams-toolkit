@@ -36,7 +36,7 @@
   "core.migrationV3.notAllowedMigration": "The Teams Toolkit Pre-Release version has new project settings and doesn't work with older versions. Create a new project to try it, or run \"teamsapp upgrade\" to update your existing project.",
   "core.projectVersionChecker.cliUseNewVersion": "Your TeamFx CLI version is outdated and doesn't support current project. Upgrade to the latest version using command below:\nnpm install -g @microsoft/teamsapp-cli@latest",
   "core.projectVersionChecker.incompatibleProject": "The project isn't compatible with the current Teams Toolkit version.",
-  "core.projectVersionChecker.vs.incompatibleProject": "The project contains a preview feature - "Teams App Configuration Improvements." Turn on the preview feature to continue.",
+  "core.projectVersionChecker.vs.incompatibleProject": "The project contains a preview feature - \"Teams App Configuration Improvements.\" Turn on the preview feature to continue.",
   "core.deployArmTemplates.ActionSuccess": "ARM templates deployed successfully. Resource group name: %s. Deployment name: %s",
   "core.collaboration.ListCollaboratorsSuccess": "'List Microsoft 365 App owners' succeeded, you can view it in [Output panel](%s).",
   "core.collaboration.GrantingPermission": "Granting permission",

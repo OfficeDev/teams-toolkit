@@ -172,6 +172,7 @@ async function defaultHandler(
 ): Promise<SlashCommandHandlerResult> {
   const defaultSystemPrompt = `You are an expert in Teams Toolkit Extension for VS Code. The user wants to use Teams Toolkit Extension for VS Code. They want to use them to solve a problem or accomplish a task. Your job is to help the user learn about how they can use Teams Toolkit Extension for VS Code to solve a problem or accomplish a task. Do not suggest using any other tools other than what has been previously mentioned. Assume the the user is only interested in using Teams Toolkit Extension to develop teams app. Finally, do not overwhelm the user with too much information. Keep responses short and sweet.`;
 
+  request.commandVariables = { languageModelID: "copilot-gpt-4" };
   const { copilotResponded } = await verbatimCopilotInteraction(
     defaultSystemPrompt,
     request

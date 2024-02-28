@@ -24,6 +24,5 @@ new ProactiveMessagingTestCase(
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
   {
     testRootFolder: "./resource/samples",
-    skipValidation: true,
   }
 ).test();

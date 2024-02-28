@@ -1998,7 +1998,10 @@ export async function validateTodoList(
   }
 }
 
-export async function validateProactiveMessaging(page: Page): Promise<void> {
+export async function validateProactiveMessaging(
+  page: Page,
+  options?: { env: "local" | "dev"; context?: SampledebugContext }
+): Promise<void> {
   console.log(`validating proactive messaging`);
   await page.waitForTimeout(Timeout.shortTimeLoading);
   const frameElementHandle = await page.waitForSelector(
@@ -2020,6 +2023,27 @@ export async function validateProactiveMessaging(page: Page): Promise<void> {
     console.log("sending message ", "welcome");
     await executeBotSuggestionCommand(page, frame, "welcome");
     await frame?.click('button[name="send"]');
+    // verify command
+    const expectedContent = "You sent 'welcome '.";
+    await frame?.waitForSelector(`p:has-text("${expectedContent}")`);
+    console.log(`verify bot successfully with content ${expectedContent}!!!`);
+    // send post request to bot
+    console.log("Post request sent to bot");
+    const endpointFilePath = path.join(
+      options?.context?.projectPath ?? "",
+      "env",
+      `.env.${options?.env}`
+    );
+    // read env file
+    const endpoint = fs.readFileSync(endpointFilePath, "utf8");
+    const devEnv = dotenvUtil.deserialize(endpoint);
+    const url =
+      devEnv.obj["PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT"] + "/api/notify";
+    console.log(url);
+    await axios.get(url);
+    await frame?.waitForSelector('p:has-text("proactive hello")');
+    console.log("Successfully sent notification");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (e: any) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

@@ -37,5 +37,5 @@ new ProactiveMessagingTestCase(
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { testRootFolder: "./resource/samples", skipValidation: true }
+  { testRootFolder: "./resource/samples" }
 ).test();

@@ -49,10 +49,11 @@ async function nextStepHandler(
     remoteEnv,
   };
   const systemPrompt = getNextStepSystemPrompt(status);
+  request.userPrompt = "Can you give me some recommendations for next?";
   const { copilotResponded, copilotResponse } =
     await verbatimCopilotInteraction(
       systemPrompt,
-      request ?? "Can you give me some recommendations for next?"
+      request
     );
   if (!copilotResponded) {
     request.response.report({
@@ -67,7 +68,11 @@ async function nextStepHandler(
           .toLocaleLowerCase()
           .includes(nextStep.title.toLocaleLowerCase())
       ) {
-        recommandedNextStepFollowUps.push(nextStep.followUp);
+        if ("prompt" in nextStep.followUp) {
+          recommandedNextStepFollowUps.push(nextStep.followUp);
+        } else {
+          request.response.button(nextStep.followUp);
+        }
       }
     }
     return {
@@ -122,7 +127,7 @@ export const AllSteps: {
   title: string;
   description: string;
   docLink: string;
-  followUp: vscode.ChatFollowup;
+  followUp: vscode.ChatFollowup | vscode.Command;
   priorty: number;
   condition: (status: ProjectStatus) => boolean;
 }[] = [
@@ -162,78 +167,78 @@ export const AllSteps: {
       priorty: 1,
       condition: (status: ProjectStatus) => !status.hasTeamsApp,
     },
-    // {
-    //   id: "local-preview",
-    //   title: "Preview the App",
-    //   description: `Teams Toolkit helps you to debug and preview your Microsoft Teams app. Debug is the process of checking, detecting, and correcting issues or bugs to ensure the program runs successfully in Teams.`,
-    //   docLink:
-    //     "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-overview?pivots=visual-studio-code-v5",
-    //   followUp: {
-    //     commandId: "workbench.action.debug.start",
-    //     args: [],
-    //     title: "Local preview",
-    //   },
-    //   priorty: 1,
-    //   condition: (status: ProjectStatus) =>
-    //     status.hasTeamsApp && !!status.localEnv && !status.localEnv.TEAMS_APP_ID,
-    // },
-    // {
-    //   id: "provision",
-    //   title: "Provision Azure resources",
-    //   description:
-    //     "Teams Toolkit integrates with Azure and the Microsoft 365 cloud, which allows to place your app in Azure with a single command. Teams Toolkit integrates with Azure Resource Manager (ARM), which enables to provision Azure resources that your application needs for code approach.",
-    //   docLink:
-    //     "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/provision?pivots=visual-studio-code-v5",
-    //   followUp: {
-    //     commandId: "fx-extension.provision",
-    //     args: [],
-    //     title: "Provision Azure resources",
-    //   },
-    //   priorty: 2,
-    //   condition: (status: ProjectStatus) =>
-    //     status.hasTeamsApp &&
-    //     !!status.remoteEnv &&
-    //     !status.remoteEnv.AZURE_SUBSCRIPTION_ID,
-    // },
-    //     {
-    //       id: "deploy",
-    //       title: "Deploy the App to the cloud",
-    //       description: `
-    // Teams Toolkit helps to deploy or upload the front-end and back-end code in your app to your provisioned cloud resources in Azure.
-    // You can deploy to the following types of cloud resources:
-    // * Azure App Services
-    // * Azure Functions
-    // * Azure Storage (as static website)
-    // * SharePoint`,
-    //       docLink:
-    //         "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy?pivots=visual-studio-code-v5",
-    //       followUp: {
-    //         commandId: "fx-extension.deploy",
-    //         args: [],
-    //         title: "Deploy the App to the cloud",
-    //       },
-    //       priorty: 2,
-    //       condition: (status: ProjectStatus) =>
-    //         status.hasTeamsApp &&
-    //         !!status.remoteEnv &&
-    //         !!status.remoteEnv.AZURE_SUBSCRIPTION_ID,
-    //     },
-    // {
-    //   id: "publish",
-    //   title: "Publish the App",
-    //   description:
-    //     "After creating the app, you can distribute your app to different scopes, such as an individual, a team, or an organization. The distribution depends on multiple factors such as needs, business and technical requirements, and your goal for the app. Distribution to different scope may need different review process. In general, the bigger the scope, the more review the app needs to go through for security and compliance concerns.",
-    //   docLink:
-    //     "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/publish",
-    //   followUp: {
-    //     commandId: "fx-extension.publish",
-    //     args: [],
-    //     title: "Publish the App",
-    //   },
-    //   priorty: 2,
-    //   condition: (status: ProjectStatus) =>
-    //     status.hasTeamsApp &&
-    //     !!status.remoteEnv &&
-    //     !!status.remoteEnv.AZURE_SUBSCRIPTION_ID,
-    // },
+    {
+      id: "local-preview",
+      title: "Preview the App",
+      description: `Teams Toolkit helps you to debug and preview your Microsoft Teams app. Debug is the process of checking, detecting, and correcting issues or bugs to ensure the program runs successfully in Teams.`,
+      docLink:
+        "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-overview?pivots=visual-studio-code-v5",
+      followUp: {
+        command: "workbench.action.debug.start",
+        arguments: [],
+        title: "Local preview",
+      },
+      priorty: 1,
+      condition: (status: ProjectStatus) =>
+        status.hasTeamsApp && !!status.localEnv && !status.localEnv.TEAMS_APP_ID,
+    },
+    {
+      id: "provision",
+      title: "Provision Azure resources",
+      description:
+        "Teams Toolkit integrates with Azure and the Microsoft 365 cloud, which allows to place your app in Azure with a single command. Teams Toolkit integrates with Azure Resource Manager (ARM), which enables to provision Azure resources that your application needs for code approach.",
+      docLink:
+        "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/provision?pivots=visual-studio-code-v5",
+      followUp: {
+        command: "fx-extension.provision",
+        arguments: [],
+        title: "Provision Azure resources",
+      },
+      priorty: 2,
+      condition: (status: ProjectStatus) =>
+        status.hasTeamsApp &&
+        !!status.remoteEnv &&
+        !status.remoteEnv.AZURE_SUBSCRIPTION_ID,
+    },
+    {
+      id: "deploy",
+      title: "Deploy the App to the cloud",
+      description: `
+    Teams Toolkit helps to deploy or upload the front-end and back-end code in your app to your provisioned cloud resources in Azure.
+    You can deploy to the following types of cloud resources:
+    * Azure App Services
+    * Azure Functions
+    * Azure Storage (as static website)
+    * SharePoint`,
+      docLink:
+        "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy?pivots=visual-studio-code-v5",
+      followUp: {
+        command: "fx-extension.deploy",
+        arguments: [],
+        title: "Deploy the App to the cloud",
+      },
+      priorty: 2,
+      condition: (status: ProjectStatus) =>
+        status.hasTeamsApp &&
+        !!status.remoteEnv &&
+        !!status.remoteEnv.AZURE_SUBSCRIPTION_ID,
+    },
+    {
+      id: "publish",
+      title: "Publish the App",
+      description:
+        "After creating the app, you can distribute your app to different scopes, such as an individual, a team, or an organization. The distribution depends on multiple factors such as needs, business and technical requirements, and your goal for the app. Distribution to different scope may need different review process. In general, the bigger the scope, the more review the app needs to go through for security and compliance concerns.",
+      docLink:
+        "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/publish",
+      followUp: {
+        command: "fx-extension.publish",
+        arguments: [],
+        title: "Publish the App",
+      },
+      priorty: 2,
+      condition: (status: ProjectStatus) =>
+        status.hasTeamsApp &&
+        !!status.remoteEnv &&
+        !!status.remoteEnv.AZURE_SUBSCRIPTION_ID,
+    },
   ];

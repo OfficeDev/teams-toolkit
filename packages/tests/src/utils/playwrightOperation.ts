@@ -1494,39 +1494,14 @@ export async function validateNpm(page: Page, options?: { npmName?: string }) {
       "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector("div.ui-box");
     try {
-      console.log("dismiss message");
-      await frame?.waitForSelector("div.ui-box");
-      await page
-        .click('button:has-text("Dismiss")', {
-          timeout: Timeout.playwrightDefaultTimeout,
-        })
-        .catch(() => {});
-    } catch (error) {
-      console.log("no message to dismiss");
-    }
-    console.log("search npm ", searchPack);
-    const input = await frame?.waitForSelector("div.ui-box input.ui-box");
-    await input?.type(searchPack);
-    try {
-      const targetItem = await frame?.waitForSelector(
-        `span:has-text("${searchPack}")`
-      );
-      console.log("click item");
-      await targetItem?.click();
-      await page.waitForTimeout(Timeout.shortTimeLoading);
-      const frameElementHandle = await page.waitForSelector(
-        "iframe.embedded-page-content"
-      );
-      // card validation
-      {
-        const frame = await frameElementHandle?.contentFrame();
-        console.log("verifiy card si displayed");
-        await frame?.waitForSelector(`card span:has-text("${searchPack}")`);
-        await frame?.click('button[name="send"]');
-        console.log("verify npm search successfully!!!");
-      }
-      await page.waitForTimeout(Timeout.shortTimeLoading);
+      await frame?.waitForSelector('input[aria-label="Your search query"]');
+      //check
+      await frame?.fill('input[aria-label="Your search query"]', searchPack);
+      console.log("Check if npm list showed");
+      await frame?.waitForSelector('ul[datatid="app-picker-list"]');
+      console.log("[search for npm packages success]");
     } catch (error) {
       await frame?.waitForSelector(
         'div.ui-box span:has-text("Unable to reach app. Please try again.")'

@@ -44,6 +44,10 @@ export function isApiCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
 }
 
+export function isCustomCopilotEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.CustomCopilot, false);
+}
+
 export function enableTestToolByDefault(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
 }

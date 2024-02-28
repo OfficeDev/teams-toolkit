@@ -34,12 +34,17 @@ import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/Mani
 import { Generator } from "../../../src/component/generator/generator";
 import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
-import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
+import {
+  HelperMethods,
+  unzipErrorHandler,
+} from "../../../src/component/generator/officeAddin/helperMethods";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { QuestionNames } from "../../../src/question";
 import { MockTools } from "../../core/utils";
 import * as fetch from "node-fetch";
+import { AccessGithubError, ReadFileError, UserCancelError } from "../../../src/error";
+import { Readable } from "stream";
 
 describe("OfficeAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
@@ -142,6 +147,24 @@ describe("OfficeAddinGenerator", function () {
     const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
 
     chai.expect(result.isOk()).to.eq(true);
+  });
+
+  it("should scaffold taskpane failed, throw error", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      "app-name": "office-addin-test",
+    };
+    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.OfficeAddinFolder] = undefined;
+    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+
+    sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
+    sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(new UserCancelError());
+    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
+    const result = await OfficeAddinGenerator.doScaffolding(context, inputs, testFolder);
+
+    chai.expect(result.isErr()).to.eq(true);
   });
 
   it("should copy addin files and updateManifest if addin folder is specified with json manifest", async () => {
@@ -387,14 +410,26 @@ describe("helperMethods", async () => {
     afterEach(() => {
       sandbox.restore();
     });
-
+    it("should fetch fail", async () => {
+      const resp = new ResponseData();
+      sandbox.stub(fetch, "default").rejects(new Error());
+      const mockedStream = new MockedWriteStream();
+      const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
+      sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
+      try {
+        await HelperMethods.downloadProjectTemplateZipFile("", "");
+        chai.assert.fail("should not reach here");
+      } catch (e) {
+        chai.assert.isTrue(e instanceof AccessGithubError);
+      }
+    });
     it("should download project template zip file", async () => {
       const resp = new ResponseData();
       sandbox.stub(fetch, "default").resolves({ body: resp } as any);
       const mockedStream = new MockedWriteStream();
       const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
       // manully wait for the close event to be registered
       await new Promise((resolve) => setTimeout(resolve, 100));
       resp.emit("close");
@@ -408,7 +443,7 @@ describe("helperMethods", async () => {
       const mockedStream = new MockedWriteStream();
       sandbox.stub(HelperMethods, "unzipProjectTemplate").rejects(new Error());
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
       // manully wait for the close event to be registered
       await new Promise((resolve) => setTimeout(resolve, 100));
       resp.emit("close");
@@ -424,7 +459,7 @@ describe("helperMethods", async () => {
       const mockedStream = new MockedWriteStream();
       const unzipStub = sandbox.stub(HelperMethods, "unzipProjectTemplate").resolves();
       sandbox.stub<any, any>(fs, "createWriteStream").returns(mockedStream);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
       // manully wait for the close event to be registered
       await new Promise((resolve) => setTimeout(resolve, 100));
       resp.emit("error", new Error());
@@ -437,12 +472,12 @@ describe("helperMethods", async () => {
 
     it("Response body is null.", async () => {
       sandbox.stub(fetch, "default").resolves({ body: null } as any);
-      const promise = HelperMethods.downloadProjectTemplateZipFile("", "", "");
+      const promise = HelperMethods.downloadProjectTemplateZipFile("", "");
       try {
         await promise;
         chai.assert.fail("should throw error");
       } catch (e) {
-        chai.assert.equal(e, `Response body is null.`);
+        chai.assert.isTrue(e instanceof AccessGithubError);
       }
     });
   });
@@ -460,21 +495,37 @@ describe("helperMethods", async () => {
       }
     }
 
-    beforeEach(() => {
-      sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
-      sandbox.stub<any, any>(unzip, "Extract").returns({});
-    });
-
     afterEach(() => {
       sandbox.restore();
     });
 
     it("work as expected", async () => {
+      sandbox.stub<any, any>(fs, "createReadStream").returns(new MockedReadStream());
+      sandbox.stub<any, any>(unzip, "Extract").returns({});
       try {
         HelperMethods.unzipProjectTemplate("");
       } catch (err) {
         chai.assert.fail(err);
+      } finally {
+        sandbox.restore();
       }
+    });
+
+    it("unzipErrorHandler", async () => {
+      let i = 0;
+      const reject = () => {
+        i++;
+      };
+      unzipErrorHandler("", reject, new Error());
+      chai.assert.equal(i, 1);
+    });
+    it("unzipErrorHandler 2", async () => {
+      let i = 0;
+      const reject = () => {
+        i++;
+      };
+      unzipErrorHandler("", reject, new Error("test"));
+      chai.assert.equal(i, 1);
     });
   });
 
@@ -636,10 +687,10 @@ describe("projectsJsonData", () => {
       "json-preview-yo-office"
     );
 
-    chai.assert.deepEqual(data.getProjectRepoAndBranch("taskpane", "TypeScript", false), {
-      repo: "https://github.com/OfficeDev/Office-Addin-TaskPane",
-      branch: "json-preview-yo-office",
-    });
+    chai.assert.deepEqual(
+      data.getProjectDownloadLink("taskpane", "TypeScript"),
+      "https://aka.ms/teams-toolkit/office-addin-taskpane"
+    );
 
     chai.assert.isDefined(data.getParsedProjectJsonData());
     chai.assert.isFalse(data.projectBothScriptTypes("taskpane"));

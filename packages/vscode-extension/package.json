@@ -96,6 +96,20 @@
           "fontPath": "./media/font/teamstoolkit.woff",
           "fontCharacter": "\\E004"
         }
+      },
+      "teamsfx-copilot-plugin": {
+        "description": "Copilot Plugin icon in scaffold questions",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E005"
+        }
+      },
+      "teamsfx-custom-copilot": {
+        "description": "Custom Copilot icon in scaffold questions",
+        "default": {
+          "fontPath": "./media/font/teamstoolkit.woff",
+          "fontCharacter": "\\E006"
+        }
       }
     },
     "viewsContainers": {
@@ -1392,7 +1406,7 @@
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",
     "validator": "^13.7.0",
-    "vscode-tas-client": "^0.1.47"
+    "vscode-tas-client": "^0.1.75"
   },
   "extensionDependencies": [
     "ms-vscode.azure-account",

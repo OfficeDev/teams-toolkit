@@ -90,12 +90,15 @@
         "cases": [
             "sample-localdebug-todo-list-with-m365",
             "sample-localdebug-todo-list-sql",
-            "sample-localdebug-hello-world-tab-with-backend",
             "sample-localdebug-npm-search",
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
-            "basic-tab-upgrade-debug"
+            "sample-localdebug-large-scale-notification",
+            "basic-tab-upgrade-debug",
+            "sample-localdebug-hello-world-tab-with-backend",
+            "sample-localdebug-contact-exporter",
+            "sample-localdebug-hello-world-meeting"
         ]
     },
     {
@@ -156,8 +159,6 @@
             "sample-localdebug-dashboard",
             "sample-localdebug-hello-world-tab-outlook",
             "sample-localdebug-one-productivity-hub",
-            "sample-localdebug-contact-exporter",
-            "sample-localdebug-hello-world-meeting",
             "sample-localdebug-assistant-dashboard"
         ]
     }

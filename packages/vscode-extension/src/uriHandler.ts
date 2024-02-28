@@ -6,14 +6,17 @@ import * as vscode from "vscode";
 
 import { codeSpacesAuthComplete } from "./commonlib/common/constant";
 import { localize } from "./utils/localizeUtils";
+import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 
 enum Referrer {
   DeveloperPortal = "developerportal",
+  OfficeDoc = "officedoc",
 }
 interface QueryParams {
   appId?: string;
   referrer?: string;
   login_hint?: string;
+  sampleId?: string;
 }
 
 let isRunning = false;
@@ -21,12 +24,6 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
   handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
     if (uri.path === "/" + codeSpacesAuthComplete) {
       this.fire(uri);
-      return;
-    }
-    if (isRunning) {
-      void vscode.window.showWarningMessage(
-        localize("teamstoolkit.devPortalIntegration.blockingMessage")
-      );
       return;
     }
 
@@ -45,6 +42,12 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
     }
 
     if (queryParamas.referrer === Referrer.DeveloperPortal) {
+      if (isRunning) {
+        void vscode.window.showWarningMessage(
+          localize("teamstoolkit.devPortalIntegration.blockingMessage")
+        );
+        return;
+      }
       if (!queryParamas.appId) {
         void vscode.window.showErrorMessage(
           localize("teamstoolkit.devPortalIntegration.invalidLink")
@@ -63,6 +66,18 @@ export class UriHandler extends vscode.EventEmitter<vscode.Uri> implements vscod
             isRunning = false;
           }
         );
+    } else if (queryParamas.referrer === Referrer.OfficeDoc) {
+      if (!queryParamas.sampleId) {
+        void vscode.window.showErrorMessage(
+          localize("teamstoolkit.devPortalIntegration.invalidLink")
+        );
+        return;
+      }
+      void vscode.commands.executeCommand(
+        "fx-extension.openSamples",
+        TelemetryTriggerFrom.ExternalUrl,
+        queryParamas.sampleId
+      );
     }
   }
 }

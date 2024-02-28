@@ -74,6 +74,7 @@ import {
   manifestUtils,
   JSONSyntaxError,
   MetadataV3,
+  CapabilityOptions,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -1451,7 +1452,7 @@ async function ShowScaffoldingWarningSummary(
 
 export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(PanelType.SampleGallery, isTriggerFromWalkThrough(args));
+  WebviewPanel.createOrShow(PanelType.SampleGallery, args);
   return Promise.resolve(ok(null));
 }
 
@@ -1856,6 +1857,8 @@ export async function showError(e: UserError | SystemError) {
     if (button) button.run();
   } else {
     if (!(e instanceof ConcurrentError)) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      VsCodeLogInstance.debug(`Call stack: ${e.stack || e.innerError?.stack || ""}`);
       const buttons = recommendTestTool ? [runTestTool] : [];
       const button = await window.showErrorMessage(
         `[${errorCode}]: ${notificationMessage}`,
@@ -2221,7 +2224,15 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   const inputs = getSystemInputs();
   if (args && args.length > 0) {
     const filePath = args[0].fsPath as string;
-    inputs[CoreQuestionNames.ManifestPath] = filePath;
+    const isFromApiPlugin: boolean = args[0].isFromApiPlugin ?? false;
+    if (!isFromApiPlugin) {
+      // Codelens for API ME. Trigger from manifest.json
+      inputs[CoreQuestionNames.ManifestPath] = filePath;
+    } else {
+      inputs[CoreQuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
+      inputs[CoreQuestionNames.DestinationApiSpecFilePath] = filePath;
+      inputs[CoreQuestionNames.ManifestPath] = args[0].manifestPath;
+    }
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
   return result;

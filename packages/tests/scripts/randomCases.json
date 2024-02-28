@@ -26,6 +26,25 @@
     {
         "os": {
             "windows-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "ubuntu-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "macos-latest": {
+                "node-16": [],
+                "node-18": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-large-scale-notification"
+        ]
+    },
+    {
+        "os": {
+            "windows-latest": {
                 "node-16": []
             },
             "ubuntu-latest": {

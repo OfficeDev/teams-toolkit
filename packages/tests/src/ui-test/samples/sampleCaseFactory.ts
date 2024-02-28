@@ -391,9 +391,16 @@ export abstract class CaseFactory {
                 devtunnelProcess = tunnel.devtunnelProcess;
               }
               await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
-              await Executor.provision(sampledebugContext.projectPath, "local");
-              await Executor.deploy(sampledebugContext.projectPath, "local");
-
+              const { success: provisionSuccess } = await Executor.provision(
+                sampledebugContext.projectPath,
+                "local"
+              );
+              expect(provisionSuccess).to.be.true;
+              const { success: deploySuccess } = await Executor.deploy(
+                sampledebugContext.projectPath,
+                "local"
+              );
+              expect(deploySuccess).to.be.true;
               const teamsAppId = await sampledebugContext.getTeamsAppId(env);
               expect(teamsAppId).to.not.be.empty;
 

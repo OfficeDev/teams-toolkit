@@ -32,5 +32,5 @@ new NpmSearchTestCase(
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { npmName: "axios" }
+  { npmName: "axios", debug: "cli" }
 ).test();

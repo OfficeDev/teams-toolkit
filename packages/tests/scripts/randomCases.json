@@ -18,6 +18,7 @@
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
             "sample-localdebug-proactive-message",
+            "sample-localdebug-npm-search",
             "basic-tab-debug-upgrade-debug",
             "bot-debug-upgrade-debug",
             "bot-upgrade-debug"
@@ -72,7 +73,6 @@
             "sample-localdebug-todo-list-with-m365",
             "sample-localdebug-todo-list-sql",
             "sample-localdebug-hello-world-tab-with-backend",
-            "sample-localdebug-npm-search",
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",

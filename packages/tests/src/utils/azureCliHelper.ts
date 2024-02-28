@@ -230,8 +230,9 @@ export class AzServiceBusHelper {
     const { success: connectStringSuccess, stdout: connectString } =
       await this.getConnectionString();
     expect(connectStringSuccess).to.be.true;
-    console.log("Connect String:", connectString);
-    this.connectString = connectString;
+    const result = connectString.match(/[^"]+/) ?? [];
+    console.log("Connect String:", result[0]);
+    this.connectString = result[0] ?? "";
 
     // create queue in namespace
     console.log(`Create queue in namespace...`);

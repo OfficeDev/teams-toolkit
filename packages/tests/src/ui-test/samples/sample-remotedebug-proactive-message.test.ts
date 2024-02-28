@@ -9,17 +9,17 @@ import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
 import { validateProactiveMessaging } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
-import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { SampledebugContext } from "./sampledebugContext";
 import { setBotSkuNameToB1Bicep } from "../remotedebug/remotedebugContext";
 
 class ProactiveMessagingTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    options?: { env: "dev" | "local" }
+    options?: { env: "dev" | "local"; context: SampledebugContext }
   ): Promise<void> {
     return await validateProactiveMessaging(page, {
       env: options?.env || "dev",
+      context: options?.context,
     });
   }
 

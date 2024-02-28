@@ -9,14 +9,16 @@ import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { validateProactiveMessaging } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
+import { SampledebugContext } from "./sampledebugContext";
 
 class ProactiveMessagingTestCase extends CaseFactory {
   override async onValidate(
     page: Page,
-    options?: { env: "dev" | "local" }
+    options?: { env: "dev" | "local"; context: SampledebugContext }
   ): Promise<void> {
     return await validateProactiveMessaging(page, {
-      env: options?.env || "local",
+      env: options?.env || "dev",
+      context: options?.context,
     });
   }
 }

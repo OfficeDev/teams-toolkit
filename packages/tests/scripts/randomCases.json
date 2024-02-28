@@ -95,6 +95,8 @@
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
+            "sample-localdebug-contact-exporter",
+            "sample-localdebug-hello-world-meeting",
             "basic-tab-upgrade-debug"
         ]
     },

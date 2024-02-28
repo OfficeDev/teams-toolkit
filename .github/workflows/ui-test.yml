@@ -257,11 +257,14 @@ jobs:
         with:
           dotnet-version: 6.0.x
 
-      - name: Install function core tool
+      - name: Install function core tool (ubuntu)
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          npm i -g azure-functions-core-tools@4 --unsafe-perm true
-          npm install -g @microsoft/teams-app-test-tool
-          teamsapptester --version
+          curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
+          sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
+          sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/dotnetdev.list'
+          sudo apt-get update
+          sudo apt-get install azure-functions-core-tools-4
 
       - name: Install devtunnel (ubuntu)
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
@@ -278,6 +281,16 @@ jobs:
           $executablePath = Join-Path $currentDirectory "devtunnel.exe"
           [System.Environment]::SetEnvironmentVariable("Path", "$currentPath;$executablePath", [System.EnvironmentVariableTarget]::Machine)
           ./devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+      
+      - name: Downgrade PowerShell (win)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: |
+          set "extractPath=C:\Program Files\PowerShell\7"
+          curl -sLO https://github.com/PowerShell/PowerShell/releases/download/v7.2.17/PowerShell-7.2.17-win-x64.zip
+          RMDIR "%extractPath%" /S /Q
+          7z x PowerShell-7.2.17-win-x64.zip -o"%extractPath%"
+          pwsh --version
 
       - name: Set cert (win)
         if: matrix.os == 'windows-latest'

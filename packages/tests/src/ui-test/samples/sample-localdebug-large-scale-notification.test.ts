@@ -7,32 +7,57 @@
 
 import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
-import { validateBot } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
-import { Env } from "../../utils/env";
-import { AzSqlHelper } from "../../utils/azureCliHelper";
+import { AzServiceBusHelper } from "../../utils/azureCliHelper";
 import { SampledebugContext } from "./sampledebugContext";
+import { validateLargeNotificationBot } from "../../utils/playwrightOperation";
 import * as path from "path";
 import * as fs from "fs";
 
-class BotSSOTestCase extends CaseFactory {
+class LargeNotiTestCase extends CaseFactory {
   public override async onAfterCreate(
     sampledebugContext: SampledebugContext,
     env: "local" | "dev"
   ): Promise<void> {
+    // create service bus
+    const rgName = `${sampledebugContext.appName}-dev-rg`;
+    const azServiceBusHelper = new AzServiceBusHelper(rgName);
+    await azServiceBusHelper.createServiceBus();
+
+    // add service bus name into env file
     const envFile = path.resolve(
       sampledebugContext.projectPath,
       "env",
       `.env.${env}`
     );
-    let ENDPOINT = fs.readFileSync(envFile, "utf-8");
-    ENDPOINT += "\nSERVICE_BUS_QUEUE_NAME=test-service-bus";
-    fs.writeFileSync(envFile, ENDPOINT);
-    console.log(`add endpoint ${ENDPOINT} to .env.${env} file`);
+    let envFileString = fs.readFileSync(envFile, "utf-8");
+    envFileString += `\nSERVICE_BUS_QUEUE_NAME=${azServiceBusHelper.queueName}`;
+    fs.writeFileSync(envFile, envFileString);
+    console.log(`add endpoint ${envFileString} to .env.${env} file`);
+
+    // add connect string into local.setting.json
+    const configFilePath = path.resolve(
+      sampledebugContext.projectPath,
+      "local.settings.json"
+    );
+    const configFile = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+    configFile["Values"]["SERVICE_BUS_CONNECTION_STRING"] =
+      azServiceBusHelper.connectString;
+    console.log(JSON.stringify(configFile));
+    fs.writeFileSync(configFilePath, JSON.stringify(configFile));
+    console.log(`update connect string to ${configFilePath} file`);
+  }
+
+  override async onValidate(page: Page): Promise<void> {
+    return await validateLargeNotificationBot(page);
+  }
+
+  public override async onCliValidate(page: Page): Promise<void> {
+    return await validateLargeNotificationBot(page);
   }
 }
 
-new BotSSOTestCase(
+new LargeNotiTestCase(
   TemplateProject.LargeScaleBot,
   25929282,
   "v-ivanchen@microsoft.com",
@@ -44,7 +69,6 @@ new BotSSOTestCase(
     LocalDebugTaskLabel.StartApplication,
   ],
   {
-    skipInit: true,
-    debug: "cli",
+    debug: "ttk",
   }
 ).test();

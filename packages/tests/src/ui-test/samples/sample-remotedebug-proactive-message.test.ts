@@ -14,14 +14,18 @@ import { SampledebugContext } from "./sampledebugContext";
 import { setBotSkuNameToB1Bicep } from "../remotedebug/remotedebugContext";
 
 class ProactiveMessagingTestCase extends CaseFactory {
-  override async onValidate(page: Page): Promise<void> {
-    return await validateProactiveMessaging(page);
+  override async onValidate(
+    page: Page,
+    options?: { env: "dev" | "local" }
+  ): Promise<void> {
+    return await validateProactiveMessaging(page, {
+      env: options?.env || "dev",
+    });
   }
 
   override async onAfterCreate(
     sampledebugContext: SampledebugContext,
-    env: "local" | "dev",
-    azSqlHelper?: AzSqlHelper | undefined
+    env: "local" | "dev"
   ): Promise<void> {
     // fix quota issue
     await setBotSkuNameToB1Bicep(

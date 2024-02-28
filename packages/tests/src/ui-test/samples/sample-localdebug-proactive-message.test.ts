@@ -11,8 +11,13 @@ import { validateProactiveMessaging } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
 
 class ProactiveMessagingTestCase extends CaseFactory {
-  override async onValidate(page: Page): Promise<void> {
-    return await validateProactiveMessaging(page);
+  override async onValidate(
+    page: Page,
+    options?: { env: "dev" | "local" }
+  ): Promise<void> {
+    return await validateProactiveMessaging(page, {
+      env: options?.env || "local",
+    });
   }
 }
 

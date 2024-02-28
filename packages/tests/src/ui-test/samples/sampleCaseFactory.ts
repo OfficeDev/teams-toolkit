@@ -384,7 +384,6 @@ export abstract class CaseFactory {
             // cli preview
             if (options?.debug === "cli") {
               console.log("======= debug with cli ========");
-              console.log("botFlag: ", botFlag);
               // start local tunnel
               if (options.botFlag || botFlag) {
                 const tunnel = Executor.debugBotFunctionPreparation(
@@ -424,6 +423,7 @@ export abstract class CaseFactory {
                   ) {
                     console.log("[skip error] ", error);
                   } else {
+                    successFlag = false;
                     expect.fail(errorMsg);
                   }
                 }

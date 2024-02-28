@@ -23,16 +23,6 @@ class ProactiveMessagingTestCase extends CaseFactory {
     });
   }
 
-  override async onCliValidate(
-    page: Page,
-    options?: { env: "dev" | "local"; context: SampledebugContext }
-  ): Promise<void> {
-    return await validateProactiveMessaging(page, {
-      env: options?.env || "dev",
-      context: options?.context,
-    });
-  }
-
   override async onAfterCreate(
     sampledebugContext: SampledebugContext,
     env: "local" | "dev"
@@ -51,5 +41,5 @@ new ProactiveMessagingTestCase(
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { testRootFolder: "./resource/samples", debug: "cli", botFlag: true }
+  { testRootFolder: "./resource/samples" }
 ).test();

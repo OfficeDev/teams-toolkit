@@ -12,6 +12,7 @@ import fetch from "node-fetch";
 
 export * from "./manifest";
 export * as devPreview from "./devPreviewManifest";
+export * from "./pluginManifest";
 
 export type TeamsAppManifestJSONSchema = JSONSchemaType<TeamsAppManifest>;
 export type DevPreviewManifestJSONSchema = JSONSchemaType<DevPreviewSchema>;

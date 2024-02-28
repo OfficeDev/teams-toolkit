@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Colors, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Colors, FxError, Result, err, ok, PluginManifestSchema } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";
@@ -12,6 +12,7 @@ import { ErrorContextMW } from "../../../core/globalVars";
 import {
   FileNotFoundError,
   InvalidActionInputError,
+  JSONSyntaxError,
   MissingEnvironmentVariablesError,
 } from "../../../error/common";
 import { DriverContext } from "../interface/commonArgs";
@@ -233,15 +234,10 @@ export class CreateAppPackageDriver implements StepDriver {
       const dir = path.dirname(manifest.apiPlugins[0].pluginFile);
       this.addFileInZip(zip, dir, pluginFile);
 
-      // TODO: Add API spec and templates
-      // const addResponseTemplateRes = await this.addPluginRelatedFiles(
-      //   zip,
-      //   pluginFile,
-      //   appDirectory
-      // );
-      // if (addResponseTemplateRes.isErr()) {
-      //   return err(addResponseTemplateRes.error);
-      // }
+      const addFilesRes = await this.addPluginRelatedFiles(zip, pluginFile, appDirectory);
+      if (addFilesRes.isErr()) {
+        return err(addFilesRes.error);
+      }
     }
 
     zip.writeZip(zipFileName);
@@ -322,6 +318,37 @@ export class CreateAppPackageDriver implements StepDriver {
     const relativePath = path.relative(directory, file);
     if (relativePath.startsWith("..")) {
       return err(new InvalidFileOutsideOfTheDirectotryError(file));
+    }
+
+    return ok(undefined);
+  }
+
+  private async addPluginRelatedFiles(
+    zip: AdmZip,
+    pluginFile: string,
+    appDirectory: string
+  ): Promise<Result<undefined, FxError>> {
+    let pluginContent;
+    try {
+      pluginContent = (await fs.readJSON(pluginFile)) as PluginManifestSchema;
+    } catch (e) {
+      return err(new JSONSyntaxError(pluginFile, e, actionName));
+    }
+    const runtimes = pluginContent.runtimes;
+    if (runtimes && runtimes.length > 0) {
+      for (const runtime of runtimes) {
+        if (runtime.type === "OpenApi" && runtime.spec?.url) {
+          const specFile = path.resolve(path.dirname(pluginFile), runtime.spec.url);
+          // add openapi spec
+          const checkExistenceRes = await this.validateReferencedFile(specFile, appDirectory);
+          if (checkExistenceRes.isErr()) {
+            return err(checkExistenceRes.error);
+          }
+
+          const dir = path.relative(appDirectory, path.dirname(specFile));
+          this.addFileInZip(zip, dir, specFile);
+        }
+      }
     }
 
     return ok(undefined);

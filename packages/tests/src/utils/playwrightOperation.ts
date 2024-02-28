@@ -1512,24 +1512,34 @@ export async function validateNpm(page: Page, options?: { npmName?: string }) {
       const targetItem = await frame?.waitForSelector(
         `span:has-text("${searchPack}")`
       );
+      console.log("click item");
       await targetItem?.click();
-      await frame?.waitForSelector(`card span:has-text("${searchPack}")`);
-      await frame?.click('button[name="send"]');
-      console.log("verify npm search successfully!!!");
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+      const frameElementHandle = await page.waitForSelector(
+        "iframe.embedded-page-content"
+      );
+      // card validation
+      {
+        const frame = await frameElementHandle?.contentFrame();
+        console.log("verifiy card si displayed");
+        await frame?.waitForSelector(`card span:has-text("${searchPack}")`);
+        await frame?.click('button[name="send"]');
+        console.log("verify npm search successfully!!!");
+      }
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
       await frame?.waitForSelector(
         'div.ui-box span:has-text("Unable to reach app. Please try again.")'
       );
       await page.screenshot({
-        path: getPlaywrightScreenshotPath("verify_error"),
+        path: getPlaywrightScreenshotPath("app_error"),
         fullPage: true,
       });
       assert.fail("Unable to reach app. Please try again.");
     }
   } catch (error) {
     await page.screenshot({
-      path: getPlaywrightScreenshotPath("error"),
+      path: getPlaywrightScreenshotPath("validation_error"),
       fullPage: true,
     });
     throw error;

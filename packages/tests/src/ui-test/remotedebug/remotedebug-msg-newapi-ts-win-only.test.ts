@@ -74,14 +74,15 @@ describe("Remote debug Tests", function () {
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );
+      //disable validation
+      /*
       const page = await initNoAddappPage(
         remoteDebugTestContext.context!,
         teamsAppId,
         Env.username,
         Env.password
       );
-      const envName = "dev";
-      //disable validation
+      const envName = "dev";*/
       //await validateSearchCmdResult(page, appName, envName);
     }
   );

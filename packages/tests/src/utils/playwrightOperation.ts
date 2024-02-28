@@ -2584,6 +2584,50 @@ export async function validateSearchCmdResult(
   }
 }
 
+export async function validateLargeNotificationBot(
+  page: Page,
+  notificationEndpoint = "http://127.0.0.1:3978/api/notification"
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector("div.ui-box");
+    await page
+      .click('button:has-text("Dismiss")', {
+        timeout: Timeout.playwrightDefaultTimeout,
+      })
+      .catch(() => {});
+    await RetryHandler.retry(async () => {
+      try {
+        const result = await axios.post(notificationEndpoint);
+        console.log("status code: ", result.status);
+        if (result.status !== 202) {
+          throw new Error(
+            `POST /api/notification failed: status code: '${result.status}', body: '${result.data}'`
+          );
+        }
+        console.log("Successfully sent notification");
+      } catch (e: any) {
+        console.log(e);
+      }
+      try {
+        await frame?.waitForSelector('p:has-text("Hello World")');
+      } catch (e) {
+        throw e;
+      }
+    }, 2);
+    console.log("User received notification");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
 export async function validateTodoListSpfx(page: Page) {
   try {
     console.log("start to verify todo list spfx");
@@ -2618,7 +2662,6 @@ export async function validateTodoListSpfx(page: Page) {
       });
       throw e;
     }
-
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({

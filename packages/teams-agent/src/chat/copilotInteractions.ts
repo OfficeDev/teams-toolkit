@@ -11,26 +11,6 @@ export type CopilotInteractionResult =
   | { copilotResponded: false; copilotResponse: undefined };
 export type LanguageModelID = "copilot-gpt-3.5-turbo" | "copilot-gpt-4";
 
-const maxCachedAccessAge = 1000 * 30;
-let cachedAccess:
-  | { access: vscode.LanguageModelAccess; requestedAt: number }
-  | undefined;
-async function getChatAccess(
-  languageModelID: LanguageModelID = "copilot-gpt-3.5-turbo"
-): Promise<vscode.LanguageModelAccess> {
-  if (
-    cachedAccess === undefined ||
-    cachedAccess.access.isRevoked ||
-    cachedAccess.requestedAt < Date.now() - maxCachedAccessAge
-  ) {
-    const newAccess = await vscode.lm.requestLanguageModelAccess(
-      languageModelID
-    );
-    cachedAccess = { access: newAccess, requestedAt: Date.now() };
-  }
-  return cachedAccess.access;
-}
-
 const showDebugCopilotInteractionAsProgress = false;
 function debugCopilotInteraction(
   progress: vscode.Progress<vscode.ChatExtendedProgress>,
@@ -161,17 +141,16 @@ async function doCopilotInteraction(
   try {
     const languageModelID: LanguageModelID =
       agentRequest.commandVariables?.languageModelID || "copilot-gpt-3.5-turbo";
-    const access = await getChatAccess(languageModelID);
 
-    const messages: vscode.LanguageModelMessage[] = [
-      new vscode.LanguageModelSystemMessage(systemPrompt),
+    const messages: vscode.LanguageModelChatMessage[] = [
+      new vscode.LanguageModelChatSystemMessage(systemPrompt),
     ];
     const chatMessageHistory =
       agentRequest.commandVariables?.chatMessageHistory;
     if (chatMessageHistory !== undefined && chatMessageHistory.length > 0) {
       messages.push(...chatMessageHistory);
     }
-    messages.push(new vscode.LanguageModelUserMessage(agentRequest.userPrompt));
+    messages.push(new vscode.LanguageModelChatUserMessage(agentRequest.userPrompt));
 
     debugCopilotInteraction(
       agentRequest.response,
@@ -182,8 +161,8 @@ async function doCopilotInteraction(
       `User Content:\n\n${agentRequest.userPrompt}\n`
     );
 
-    const request = access.makeChatRequest(messages, {}, agentRequest.token);
-    for await (const fragment of request.stream) {
+    const chatResponse = await vscode.lm.sendChatRequest(languageModelID, messages, {}, agentRequest.token);
+    for await (const fragment of chatResponse.stream) {
       onResponseFragment(fragment);
     }
   } catch (e) {

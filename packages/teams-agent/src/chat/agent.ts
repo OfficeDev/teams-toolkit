@@ -43,7 +43,7 @@ export interface ITeamsChatAgentResult extends vscode.ChatResult {
 
 export type CommandVariables = {
   languageModelID?: LanguageModelID;
-  chatMessageHistory?: vscode.LanguageModelMessage[];
+  chatMessageHistory?: vscode.LanguageModelChatMessage[];
 };
 
 export type AgentRequest = {
@@ -108,7 +108,7 @@ export function registerChatAgent() {
 async function handler(
   request: vscode.ChatRequest,
   context: vscode.ChatContext,
-  response: vscode.ChatExtendedResponseStream,
+  stream: vscode.ChatResponseStream,
   token: vscode.CancellationToken
 ): Promise<vscode.ChatResult | undefined> {
   const agentRequest: AgentRequest = {
@@ -116,7 +116,7 @@ async function handler(
     userPrompt: request.prompt,
     variables: request.variables,
     context: context,
-    response: response,
+    response: stream,
     token: token,
   };
   let handleResult: SlashCommandHandlerResult | undefined;

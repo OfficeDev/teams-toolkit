@@ -17,7 +17,11 @@ import {
   SubscriptionInfo,
   UserError,
 } from "@microsoft/teamsfx-api";
-import { AzureScopes, isValidProjectV3 } from "@microsoft/teamsfx-core";
+import {
+  AzureScopes,
+  isValidProjectV3,
+  InvalidAzureSubscriptionError,
+} from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import CLIUIInstance from "../userInteraction";
@@ -41,6 +45,7 @@ import {
 import { LoginStatus, login } from "./common/login";
 import CLILogProvider from "./log";
 import { MemoryCache } from "./memoryCache";
+import ui from "../userInteraction";
 
 const accountName = "azure";
 const scopes = ["https://management.core.windows.net/user_impersonation"];
@@ -538,26 +543,23 @@ async function listAll<T>(
   return all;
 }
 
-import { InvalidAzureSubscriptionError } from "@microsoft/teamsfx-core";
 import AzureLoginCI from "./azureLoginCI";
 import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
 
-const ciEnabled = process.env.CI_ENABLED;
 // todo delete ciEnabled
-const azureLogin =
-  ciEnabled && ciEnabled === "true"
-    ? AzureSpCrypto.checkAzureSPFile()
-      ? AzureLoginCI
-      : AzureAccountProviderUserPassword
-    : AzureSpCrypto.checkAzureSPFile()
+const azureLogin = !ui.interactive
+  ? AzureSpCrypto.checkAzureSPFile()
     ? AzureLoginCI
-    : AzureAccountManager.getInstance();
+    : AzureAccountProviderUserPassword
+  : AzureSpCrypto.checkAzureSPFile()
+  ? AzureLoginCI
+  : AzureAccountManager.getInstance();
 
 export default azureLogin;
 
 // todo merge with default export, this function fix bug when user already logins with service principal, and he logins interactively, default azureLogin will return azureLoginCIProvider
 export function getAzureProvider() {
-  return ciEnabled && ciEnabled === "true"
+  return !ui.interactive
     ? AzureSpCrypto.checkAzureSPFile()
       ? AzureLoginCI
       : AzureAccountProviderUserPassword

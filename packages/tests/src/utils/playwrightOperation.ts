@@ -1926,18 +1926,15 @@ export async function validateTodoList(
   try {
     console.log("start to verify todo list");
     try {
-      const tabs = await page.$$("button[role='tab']");
-      const tab = tabs.find(async (tab) => {
-        const text = await tab.innerText();
-        return text?.includes("Todo List");
-      });
-      await tab?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
       const frameElementHandle = await page.waitForSelector(
         "iframe.embedded-iframe"
       );
       const frame = await frameElementHandle?.contentFrame();
-      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
+      const childFrame = frame?.childFrames()[0];
+      const startBtn = await childFrame?.waitForSelector(
+        'button:has-text("Start")'
+      );
       console.log("click Start button");
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -1964,17 +1961,24 @@ export async function validateTodoList(
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-        const addBtn = await frame?.waitForSelector(
-          'button:has-text("Add task")'
-        );
-        await addBtn?.click();
-        //TODO: verify add task
-
-        // clean tab, right click
-        await tab?.click({ button: "right" });
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        const contextMenu = await page.waitForSelector("ul[role='menu']");
       });
+      // add task
+      console.log("click add task button");
+      const addBtn = await childFrame?.waitForSelector(
+        'button:has-text("Add task")'
+      );
+      await addBtn?.click();
+      const inputBox = await childFrame?.waitForSelector(
+        "div.item.add input[type='text']"
+      );
+      console.log("type hello world");
+      await inputBox?.type("Hello World");
+      await addBtn?.click();
+      console.log("check result");
+      await childFrame?.waitForSelector(
+        `div.item .creator .name:has-text("${options?.displayName}")`
+      );
+      console.log("debug finish!!!");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({
@@ -2580,6 +2584,50 @@ export async function validateSearchCmdResult(
   }
 }
 
+export async function validateLargeNotificationBot(
+  page: Page,
+  notificationEndpoint = "http://127.0.0.1:3978/api/notification"
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector("div.ui-box");
+    await page
+      .click('button:has-text("Dismiss")', {
+        timeout: Timeout.playwrightDefaultTimeout,
+      })
+      .catch(() => {});
+    await RetryHandler.retry(async () => {
+      try {
+        const result = await axios.post(notificationEndpoint);
+        console.log("status code: ", result.status);
+        if (result.status !== 202) {
+          throw new Error(
+            `POST /api/notification failed: status code: '${result.status}', body: '${result.data}'`
+          );
+        }
+        console.log("Successfully sent notification");
+      } catch (e: any) {
+        console.log(e);
+      }
+      try {
+        await frame?.waitForSelector('p:has-text("Hello World")');
+      } catch (e) {
+        throw e;
+      }
+    }, 2);
+    console.log("User received notification");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
 export async function validateTodoListSpfx(page: Page) {
   try {
     console.log("start to verify todo list spfx");
@@ -2614,7 +2662,6 @@ export async function validateTodoListSpfx(page: Page) {
       });
       throw e;
     }
-
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({

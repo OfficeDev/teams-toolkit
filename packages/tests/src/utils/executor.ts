@@ -512,6 +512,22 @@ export class Executor {
     return { devtunnelProcess, tunnelName };
   }
 
+  static initEnvFile(projectPath: string, env: "dev" | "local") {
+    console.log("Init env file");
+    try {
+      const envFile = path.resolve(projectPath, "env", `.env.${env}`);
+      fs.writeFileSync(envFile, "");
+    } catch (error) {
+      console.log("read file error", error);
+    }
+    try {
+      const envFile = path.resolve(projectPath, "env", `.env.${env}.user`);
+      fs.writeFileSync(envFile, "");
+    } catch (error) {
+      console.log("read file error", error);
+    }
+  }
+
   static async cliPreview(projectPath: string, includeBot: boolean) {
     console.log("======= debug with cli ========");
     console.log("botFlag: ", includeBot);

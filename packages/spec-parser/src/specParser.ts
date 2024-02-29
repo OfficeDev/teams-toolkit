@@ -170,23 +170,13 @@ export class SpecParser {
   }
 
   /**
-   * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
-   * @param manifestPath A file path of the Teams app manifest file to update.
+   * Generate specs according to the filters.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
-   * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
-   * @param adaptiveCardFolder Folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
    */
-  async generate(
-    manifestPath: string,
+  async getFilteredSpecs(
     filter: string[],
-    outputSpecPath: string,
-    adaptiveCardFolder: string,
     signal?: AbortSignal
-  ): Promise<GenerateResult> {
-    const result: GenerateResult = {
-      allSuccess: true,
-      warnings: [],
-    };
+  ): Promise<[OpenAPIV3.Document, OpenAPIV3.Document]> {
     try {
       if (signal?.aborted) {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
@@ -212,6 +202,39 @@ export class SpecParser {
       }
 
       const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+      return [newUnResolvedSpec, newSpec];
+    } catch (err) {
+      if (err instanceof SpecParserError) {
+        throw err;
+      }
+      throw new SpecParserError((err as Error).toString(), ErrorType.GetSpecFailed);
+    }
+  }
+
+  /**
+   * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
+   * @param manifestPath A file path of the Teams app manifest file to update.
+   * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
+   * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param adaptiveCardFolder Folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
+   * @param isMe Boolean that indicates whether the project is an Messaging Extension. For Messaging Extension, composeExtensions will be added in Teams app manifest.
+   */
+  async generate(
+    manifestPath: string,
+    filter: string[],
+    outputSpecPath: string,
+    adaptiveCardFolder: string,
+    signal?: AbortSignal,
+    isMe?: boolean
+  ): Promise<GenerateResult> {
+    const result: GenerateResult = {
+      allSuccess: true,
+      warnings: [],
+    };
+    try {
+      const newSpecs = await this.getFilteredSpecs(filter, signal);
+      const newUnResolvedSpec = newSpecs[0];
+      const newSpec = newSpecs[1];
 
       const AuthSet: Set<OpenAPIV3.SecuritySchemeObject> = new Set();
       let hasMultipleAPIKeyAuth = false;
@@ -285,7 +308,8 @@ export class SpecParser {
         adaptiveCardFolder,
         newSpec,
         this.options.allowMultipleParameters,
-        auth
+        auth,
+        isMe
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });

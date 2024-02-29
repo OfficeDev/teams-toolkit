@@ -1489,29 +1489,27 @@ export async function validateNpm(page: Page, options?: { npmName?: string }) {
   try {
     const searchPack = options?.npmName || "axios";
     console.log("start to verify npm search");
-    await page.waitForTimeout(Timeout.shortTimeLoading);
+    await page.waitForTimeout(Timeout.longTimeWait);
     const frameElementHandle = await page.waitForSelector(
       "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
     await frame?.waitForSelector("div.ui-box");
-    try {
-      await frame?.waitForSelector('input[aria-label="Your search query"]');
-      //check
+    await frame?.waitForSelector('input[aria-label="Your search query"]');
+
+    // check
+    await RetryHandler.retry(async () => {
+      console.log("validate list is displayed");
+      console.log("clean input box");
+      await frame?.fill('input[aria-label="Your search query"]', "");
+      await page.waitForTimeout(Timeout.shortTimeWait);
+      console.log("input value: ", searchPack);
       await frame?.fill('input[aria-label="Your search query"]', searchPack);
+      await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("Check if npm list showed");
       await frame?.waitForSelector('ul[datatid="app-picker-list"]');
-      console.log("[search for npm packages success]");
-    } catch (error) {
-      await frame?.waitForSelector(
-        'div.ui-box span:has-text("Unable to reach app. Please try again.")'
-      );
-      await page.screenshot({
-        path: getPlaywrightScreenshotPath("app_error"),
-        fullPage: true,
-      });
-      assert.fail("Unable to reach app. Please try again.");
-    }
+    }, 2);
+    console.log("[search for npm packages success]");
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("validation_error"),

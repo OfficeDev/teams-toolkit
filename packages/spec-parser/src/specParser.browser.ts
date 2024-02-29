@@ -177,7 +177,8 @@ export class SpecParser {
     filter: string[],
     outputSpecPath: string,
     adaptiveCardFolder: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    isMe?: boolean
   ): Promise<GenerateResult> {
     throw new Error("Method not implemented.");
   }

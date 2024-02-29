@@ -176,4 +176,12 @@ export class AppStudioError {
       getLocalizedString("error.appstudio.teamsAppPublishConflict", teamsAppId),
     ],
   };
+
+  public static readonly TeamsAppRequiredPropertyMissingError = {
+    name: "TeamsAppMissingRequiredCapability",
+    message: (property: string, path: string): [string, string] => [
+      getDefaultString("error.appstudio.teamsAppRequiredPropertyMissing", property, path),
+      getLocalizedString("error.appstudio.teamsAppRequiredPropertyMissing", property, path),
+    ],
+  };
 }

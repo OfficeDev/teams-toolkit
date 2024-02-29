@@ -14,7 +14,6 @@ import { FileNotFoundError, JSONSyntaxError } from "../../../../error/common";
 import stripBom from "strip-bom";
 import path from "path";
 import { manifestUtils } from "./ManifestUtils";
-import { ObjectIsUndefinedError } from "../../../../core/error";
 
 export class PluginManifestUtils {
   public async readPluginManifestFile(
@@ -39,46 +38,42 @@ export class PluginManifestUtils {
   public async getApiSpecFilePathFromTeamsManifest(
     manifest: TeamsAppManifest,
     manifestPath: string
-  ): Promise<Result<string, FxError>> {
-    const pluginFilePath = await manifestUtils.getPluginFile(manifest, manifestPath);
-    if (!pluginFilePath) {
-      return err(new FileNotFoundError("PluginManifestUtils", manifestPath));
+  ): Promise<Result<string[], FxError>> {
+    const pluginFilePathRes = await manifestUtils.getPluginFilePath(manifest, manifestPath);
+    if (pluginFilePathRes.isErr()) {
+      return err(pluginFilePathRes.error);
     }
+    const pluginFilePath = pluginFilePathRes.value;
     const pluginContentRes = await this.readPluginManifestFile(pluginFilePath);
     if (pluginContentRes.isErr()) {
       return err(pluginContentRes.error);
     }
-    const apiSpecFilePathRes = await this.getApiSpecFilePathFromPlugin(
+    const apiSpecFiles = await this.getApiSpecFilePathFromPlugin(
       pluginContentRes.value,
-      manifestPath
+      pluginFilePath
     );
-    if (apiSpecFilePathRes.isErr()) {
-      return err(apiSpecFilePathRes.error);
-    }
-
-    return ok(apiSpecFilePathRes.value);
-    _;
+    return ok(apiSpecFiles);
   }
 
   async getApiSpecFilePathFromPlugin(
     plugin: PluginManifestSchema,
     pluginPath: string
-  ): Promise<Result<string, FxError>> {
+  ): Promise<string[]> {
     const runtimes = plugin.runtimes;
+    const files: string[] = [];
     if (!runtimes) {
-      return err(new ObjectIsUndefinedError("runtimes"));
+      return files;
     }
     for (const runtime of runtimes) {
       if (runtime.type === "OpenApi" && runtime.spec?.url) {
         const specFile = path.resolve(path.dirname(pluginPath), runtime.spec.url);
-        console.log(specFile);
         if (await fs.pathExists(specFile)) {
-          return ok(specFile);
+          files.push(specFile);
         }
       }
     }
 
-    return err(new ObjectIsUndefinedError("apiSpec")); // TODO: more specific error type
+    return files;
   }
 }
 

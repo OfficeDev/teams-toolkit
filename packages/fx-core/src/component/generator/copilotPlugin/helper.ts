@@ -39,14 +39,15 @@ import {
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { InputValidationError, MissingRequiredInputError } from "../../../error";
+import { MissingRequiredInputError } from "../../../error";
 import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
-import { CapabilityOptions, QuestionNames } from "../../../question";
+import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
+import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -72,6 +73,7 @@ export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success"
 export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
 
 export const invalidApiSpecErrorName = "invalid-api-spec";
+const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
 
 export interface ErrorResult {
   /**
@@ -156,13 +158,11 @@ export async function listOperations(
     apiSpecUrl = manifest.api.url;
   }
 
-  const teamsManifestPath = inputs[QuestionNames.ManifestPath];
-  const isPlugin =
-    inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
+  const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
 
   try {
-    const allowAPIKeyAuth = isApiKeyEnabled();
-    const allowMultipleParameters = isMultipleParametersEnabled();
+    const allowAPIKeyAuth = isPlugin || isApiKeyEnabled();
+    const allowMultipleParameters = isPlugin || isMultipleParametersEnabled();
     const specParser = new SpecParser(apiSpecUrl as string, {
       allowAPIKeyAuth,
       allowMultipleParameters,
@@ -187,23 +187,26 @@ export async function listOperations(
 
     // Filter out exsiting APIs
     if (!includeExistingAPIs) {
+      const teamsManifestPath = inputs[QuestionNames.ManifestPath];
       if (!teamsManifestPath) {
         throw new MissingRequiredInputError("teamsManifestPath", "inputs");
       }
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
-      let existingOperationIds: string[] = [];
+      let existingOperations: string[] = [];
       if (manifest.isOk()) {
         if (isPlugin) {
-          existingOperationIds = await listPluginExistingOperations(
+          existingOperations = await listPluginExistingOperations(
             manifest.value,
-            teamsManifestPath
+            teamsManifestPath,
+            inputs[QuestionNames.DestinationApiSpecFilePath]
           );
         } else {
-          existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+          const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+          existingOperations = operations
+            .filter((operation) => existingOperationIds.includes(operation.operationId))
+            .map((operation) => operation.api);
         }
-        const existingOperations = existingOperationIds.map(
-          (key) => operations.find((item) => item.operationId === key)?.api
-        );
+
         operations = operations.filter(
           (operation: ListAPIResult) => !existingOperations.includes(operation.api)
         );
@@ -264,7 +267,7 @@ function formatTelemetryValidationProperty(result: ErrorResult | WarningResult):
   return result.type.toString() + ": " + result.content;
 }
 
-async function listPluginExistingOperations(
+export async function listPluginExistingOperations(
   manifest: TeamsAppManifest,
   teamsManifestPath: string,
   destinationApiSpecFilePath: string
@@ -276,9 +279,22 @@ async function listPluginExistingOperations(
   if (getApiSPecFileRes.isErr()) {
     throw getApiSPecFileRes.error;
   }
-  const apiSpecFilePath = getApiSPecFileRes.value;
-  if (path.resolve(apiSpecFilePath) !== path.resolve(destinationApiSpecFilePath)) {
-    throw new InputValidationError(QuestionNames.DestinationApiSpecFilePath, "file not match"); // TODO: more specific error type
+
+  let apiSpecFilePath;
+  const apiSpecFiles = getApiSPecFileRes.value;
+  for (const file of apiSpecFiles) {
+    if (path.resolve(file) === path.resolve(destinationApiSpecFilePath)) {
+      apiSpecFilePath = file;
+      break;
+    }
+  }
+  if (!apiSpecFilePath) {
+    throw new UserError(
+      "listPluginExistingOperations",
+      apiSpecNotUsedInPlugin,
+      getLocalizedString("error.copilotPlugin.apiSpecNotUsedInPlugin", destinationApiSpecFilePath),
+      getLocalizedString("error.copilotPlugin.apiSpecNotUsedInPlugin", destinationApiSpecFilePath)
+    );
   }
 
   const specParser = new SpecParser(apiSpecFilePath);

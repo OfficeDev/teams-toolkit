@@ -282,18 +282,26 @@ export class ManifestUtils {
     return ids;
   }
 
-  public async getPluginFile(
+  public async getPluginFilePath(
     manifest: TeamsAppManifest,
     manifestPath: string
-  ): Promise<string | undefined> {
+  ): Promise<Result<string, FxError>> {
     const pluginFile = manifest.apiPlugins?.[0]?.pluginFile;
     if (pluginFile) {
-      const doesFileExist = await fs.pathExists(
-        path.resolve(path.dirname(manifestPath), pluginFile)
-      );
-      return doesFileExist ? pluginFile : undefined;
+      const plugin = path.resolve(path.dirname(manifestPath), pluginFile);
+      const doesFileExist = await fs.pathExists(plugin);
+      if (doesFileExist) {
+        return ok(plugin);
+      } else {
+        return err(new FileNotFoundError("ManifestUtils", pluginFile));
+      }
     } else {
-      return undefined;
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message("plugins", manifestPath)
+        )
+      );
     }
   }
 

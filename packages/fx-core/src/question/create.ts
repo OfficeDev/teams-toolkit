@@ -1584,8 +1584,6 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         context,
         undefined,
         input.trim(),
-        // inputs[QuestionNames.ManifestPath],
-        // inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginNewApi().id,
         inputs,
         includeExistingAPIs,
         false,

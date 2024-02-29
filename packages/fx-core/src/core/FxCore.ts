@@ -81,6 +81,7 @@ import {
   convertSpecParserErrorToFxError,
   generateScaffoldingSummary,
   listOperations,
+  listPluginExistingOperations,
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
@@ -97,16 +98,18 @@ import {
   FileNotFoundError,
   InjectAPIKeyActionFailedError,
   InvalidProjectError,
+  MissingRequiredInputError,
   MultipleAuthError,
   MultipleServerError,
   assembleError,
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { CapabilityOptions, ValidateTeamsAppInputs } from "../question";
+import { ValidateTeamsAppInputs } from "../question";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
 import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
+import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -1220,29 +1223,41 @@ export class FxCore {
     const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
+    const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
 
     // Get API spec file path from manifest
     const manifestRes = await manifestUtils._readAppManifest(manifestPath);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
-    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
 
     // Merge existing operations in manifest.json
     const specParser = new SpecParser(url, {
       allowAPIKeyAuth: isApiKeyEnabled(),
       allowMultipleParameters: isMultipleParametersEnabled(),
     });
-    const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+
     const apiResultList = await specParser.list();
 
-    const existingOperations: string[] = [];
-    for (const id of existingOperationIds) {
-      const operation = apiResultList.find((item) => item.operationId === id);
-      if (operation) {
-        existingOperations.push(operation.api);
+    let existingOperations: string[];
+    let outputAPISpecPath: string;
+    if (isPlugin) {
+      existingOperations = await listPluginExistingOperations(
+        manifestRes.value,
+        manifestPath,
+        inputs[QuestionNames.DestinationApiSpecFilePath]
+      );
+      if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
+        return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
       }
+      outputAPISpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
+    } else {
+      const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+      existingOperations = apiResultList
+        .filter((operation) => existingOperationIds.includes(operation.operationId))
+        .map((operation) => operation.api);
+      const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
+      outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
     }
 
     const operations = [...existingOperations, ...newOperations];

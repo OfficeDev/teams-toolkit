@@ -217,6 +217,7 @@ export class SpecParser {
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
    * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
    * @param adaptiveCardFolder Folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
+   * @param isMe Boolean that indicates whether the project is an Messaging Extension. For Messaging Extension, composeExtensions will be added in Teams app manifest.
    */
   async generate(
     manifestPath: string,

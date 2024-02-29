@@ -152,6 +152,18 @@ export class SpecParser {
   }
 
   /**
+   * Generate specs according to the filters.
+   * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
+   */
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getFilteredSpecs(
+    filter: string[],
+    signal?: AbortSignal
+  ): Promise<[OpenAPIV3.Document, OpenAPIV3.Document]> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
    * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
    * @param manifestPath A file path of the Teams app manifest file to update.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.

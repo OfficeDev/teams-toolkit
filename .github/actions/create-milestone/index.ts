@@ -28,6 +28,12 @@ class CreateMilestone extends Action {
 		for (const sprint of sprints) {
 			await checkAndCreateMilestone(sprint, existingMilestones);
 		}
+
+		const existingOpenMilestones = await getExistingMilestones('CY', 'open');
+		safeLog(`found ${existingMilestones.length} existing open milestones`);
+		for (const openMilestone of existingOpenMilestones) {
+			await checkAndCloseMilestone(openMilestone);
+		}
 	}
 
 	private async createClient() {
@@ -93,7 +99,7 @@ async function checkAndCreateMilestone(sprint: any, existingMilestones: any[]): 
 		title: `${prefix}-${name}`,
 		due_on: new Date(sprint.attributes.finishDate),
 		path: sprint.path,
-	}
+	};
 	safeLog(`create milestone ${milestoneInfo.title}`);
 	await createMilestone(milestoneInfo);
 }
@@ -118,12 +124,12 @@ async function checkAndCreateMilestone(sprint: any, existingMilestones: any[]): 
 	  due_on: string | null;
 	};
  */
-async function getExistingMilestones(prefix: string): Promise<any[]> {
+async function getExistingMilestones(prefix: string, state: "open" | "closed" | "all" = "all"): Promise<any[]> {
 	let resp = await kit.request('GET /repos/{owner}/{repo}/milestones', {
 		owner: owner,
 		repo: repo,
 		direction: 'desc',
-		state: 'all',
+		state: state,
 		per_page: 20,
 	});
 	const milestones = resp.data.filter(
@@ -132,5 +138,25 @@ async function getExistingMilestones(prefix: string): Promise<any[]> {
 	);
 	return milestones;
 	// latestInfo.due_on = new Date(milestones[latestIndex].due_on!);
+}
+
+async function checkAndCloseMilestone(milestone: any): Promise<void> {
+	safeLog(`check ${milestone.title} for close`);
+	if (milestone.open_issues === 0 && milestone.due_on) {
+		const dueTime = new Date(milestone.due_on);
+		if (dueTime < new Date()) {
+			await kit.request('PATCH /repos/{owner}/{repo}/milestones/{milestone_number}', {
+				owner: owner,
+				repo: repo,
+				milestone_number: milestone.number,
+				state: 'closed',
+				headers: {
+					'X-GitHub-Api-Version': '2022-11-28'
+				}
+			});
+			safeLog(`close dued milestones: ${milestone.title}`);
+		}
+	}
+
 }
 

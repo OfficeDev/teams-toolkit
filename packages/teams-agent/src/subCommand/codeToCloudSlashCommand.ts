@@ -1,5 +1,7 @@
 import * as dree from "dree";
+import * as fs from "fs";
 import { existsSync } from "fs";
+import { encoding_for_model } from "tiktoken";
 import * as vscode from "vscode";
 import { AgentRequest } from "../chat/agent";
 import {
@@ -15,7 +17,6 @@ import {
 } from "../chat/slashCommands";
 import { AzureServices } from "../data/azureService";
 import * as prompt from "../prompt/codeToCloudPrompt";
-import { runWithLimitedConcurrency } from "../util";
 import path = require("path");
 
 const codeToCloudCommandName = "codetocloud";
@@ -454,7 +455,10 @@ async function verifyFilePath(
 
   const unexistFiles: string[] = [];
   scanFilePaths.forEach((item) => {
-    if (existsSync(item.absolutePath)) {
+    if (
+      existsSync(item.absolutePath) &&
+      fs.lstatSync(item.absolutePath).isFile()
+    ) {
       verifiedFilePaths.push({
         relativePath: item.relativePath,
         absolutePath: item.absolutePath,
@@ -500,18 +504,39 @@ ${verifiedFilePaths.map((item) => `- ${item.relativePath}`).join("\n")}
   return verifiedFilePaths;
 }
 
-async function readAndCompressFileContent(filePath: string): Promise<string> {
+/** TODO:
+ * 1. how many tokens could be used for extension
+ * 2. token limit calculation includes the whole userMessage and history
+ */
+const FileContentTokenLimit: number = 800; // a temporary value
+async function readAndCompressFileContent(
+  filePath: string,
+  tokenLimit: number = FileContentTokenLimit
+): Promise<string> {
   // read file content and remove all empty line
   const fileContent = await vscode.workspace.fs.readFile(
     vscode.Uri.file(filePath)
   );
-  const decodedContent = new TextDecoder().decode(fileContent);
+
+  const textDecoder = new TextDecoder();
+  const decodedContent = textDecoder.decode(fileContent);
   // remove empty line and the leading and trailing white space
   const compressedContent = decodedContent
     .split("\n")
     .filter((line) => line.trim() !== "")
     .map((line) => line.trim())
     .join("\n");
+
+  // compress the content to fit the token limit
+  // TODO: set model ID dynamicly.
+  const enc = encoding_for_model("gpt-3.5-turbo");
+  const encodedContent = enc.encode(compressedContent);
+  if (encodedContent.length > tokenLimit) {
+    const compressedContent = textDecoder.decode(
+      enc.decode(encodedContent.slice(0, tokenLimit))
+    );
+    return compressedContent;
+  }
   return compressedContent;
 }
 
@@ -531,27 +556,23 @@ async function analyzeFile(
     })
   );
 
-  await runWithLimitedConcurrency(
-    filePathContents,
-    async (item) => {
-      request.response.progress(`Analyze ${item.relativePath}...`);
-      const { systemPrompt, userPrompt } = prompt.getAnalyzeFilePrompt(
-        item.absolutePath,
-        item.fileContent
-      );
-      const response = await getResponseInteraction(
-        systemPrompt,
-        userPrompt,
-        request
-      );
+  for (let filePathContent of filePathContents) {
+    request.response.progress(`Analyze ${filePathContent.relativePath}...`);
+    const { systemPrompt, userPrompt } = prompt.getAnalyzeFilePrompt(
+      filePathContent.absolutePath,
+      filePathContent.fileContent
+    );
+    const response = await getResponseInteraction(
+      systemPrompt,
+      userPrompt,
+      request
+    );
 
-      result.push({
-        filePath: filePaths[result.length].relativePath,
-        analyzeResult: response,
-      });
-    },
-    5
-  );
+    result.push({
+      filePath: filePathContent.relativePath,
+      analyzeResult: response,
+    });
+  }
 
   return result;
 }
@@ -603,7 +624,6 @@ async function aggregateProposal(
   request: AgentRequest
 ): Promise<void> {
   request.response.progress(`Aggregate Azure Resource...`);
-
   const chatMessageHistory: vscode.LanguageModelMessage[] = [];
   const systemPrompt = prompt.RecommendSystemPrompt;
   const userCountPrompt = prompt.getRecommendCountPrompt(proposals).userPrompt;
@@ -611,8 +631,7 @@ async function aggregateProposal(
     systemPrompt,
     userCountPrompt,
     request,
-    LANGUAGE_MODEL_GPT4_ID,
-    chatMessageHistory
+    LANGUAGE_MODEL_GPT4_ID
   );
   chatMessageHistory.push(
     new vscode.LanguageModelUserMessage(userCountPrompt),
@@ -627,8 +646,7 @@ async function aggregateProposal(
     systemPrompt,
     userSelectPrompt,
     request,
-    LANGUAGE_MODEL_GPT4_ID,
-    chatMessageHistory
+    LANGUAGE_MODEL_GPT4_ID
   );
   chatMessageHistory.push(
     new vscode.LanguageModelUserMessage(userSelectPrompt),

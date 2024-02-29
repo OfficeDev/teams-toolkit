@@ -103,7 +103,7 @@ import {
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { ValidateTeamsAppInputs } from "../question";
+import { CapabilityOptions, ValidateTeamsAppInputs } from "../question";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
 import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
@@ -1360,7 +1360,7 @@ export class FxCore {
       createContextV3(),
       inputs.manifest,
       inputs.apiSpecUrl,
-      inputs[QuestionNames.ManifestPath],
+      inputs,
       inputs.includeExistingAPIs,
       inputs.shouldLogWarning
     );

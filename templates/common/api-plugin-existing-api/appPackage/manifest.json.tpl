@@ -23,7 +23,11 @@
         "full": "Full description for {{appName}}"
     },
     "accentColor": "#FFFFFF",
-    "apiPlugins": [],
+    "apiPlugins": [
+        {
+            pluginFile: 'plugin.json'
+        }
+    ],
     "permissions": [
         "identity",
         "messageTeamMembers"

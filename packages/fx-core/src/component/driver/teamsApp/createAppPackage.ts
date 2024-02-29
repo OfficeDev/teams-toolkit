@@ -331,6 +331,29 @@ export class CreateAppPackageDriver implements StepDriver {
     let pluginContent;
     try {
       pluginContent = (await fs.readJSON(pluginFile)) as PluginManifestSchema;
+      const tt: PluginManifestSchema = {
+        schema_version: "1.0",
+        name_for_human: "string",
+        description_for_human: "string",
+        functions: [
+          {
+            name: "ss",
+            description: "string",
+            parameters: {
+              type: "object",
+              properties: {
+                param1: {
+                  type: "string",
+                },
+                param2: {
+                  type: "number",
+                },
+              },
+              required: ["param1"],
+            },
+          },
+        ],
+      };
     } catch (e) {
       return err(new JSONSyntaxError(pluginFile, e, actionName));
     }

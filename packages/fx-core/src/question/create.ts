@@ -1584,7 +1584,9 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         context,
         undefined,
         input.trim(),
-        inputs[QuestionNames.ManifestPath],
+        // inputs[QuestionNames.ManifestPath],
+        // inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginNewApi().id,
+        inputs,
         includeExistingAPIs,
         false,
         inputs.platform === Platform.VSCode ? correlationId : undefined
@@ -1657,7 +1659,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
 
 export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
-  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
+  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will lose correlation id when user accepts the value.
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginManifest,
@@ -1698,7 +1700,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             context,
             manifest,
             inputs[QuestionNames.ApiSpecLocation],
-            undefined,
+            inputs,
             true,
             true,
             inputs.platform === Platform.VSCode ? correlationId : undefined

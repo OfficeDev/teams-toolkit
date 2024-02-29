@@ -22,7 +22,7 @@ import {
   ManifestUtil,
   IMessagingExtensionCommand,
   SystemError,
-  Platform,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -39,12 +39,14 @@ import {
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { MissingRequiredInputError } from "../../../error";
+import { InputValidationError, MissingRequiredInputError } from "../../../error";
 import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
+import { CapabilityOptions, QuestionNames } from "../../../question";
+import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -68,6 +70,8 @@ enum OpenAIPluginManifestErrorType {
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
 export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
+
+export const invalidApiSpecErrorName = "invalid-api-spec";
 
 export interface ErrorResult {
   /**
@@ -130,7 +134,7 @@ export async function listOperations(
   context: Context,
   manifest: OpenAIPluginManifest | undefined,
   apiSpecUrl: string | undefined,
-  teamsManifestPath: string | undefined,
+  inputs: Inputs,
   includeExistingAPIs = true,
   shouldLogWarning = true,
   existingCorrelationId?: string
@@ -151,6 +155,10 @@ export async function listOperations(
     }
     apiSpecUrl = manifest.api.url;
   }
+
+  const teamsManifestPath = inputs[QuestionNames.ManifestPath];
+  const isPlugin =
+    inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
 
   try {
     const allowAPIKeyAuth = isApiKeyEnabled();
@@ -183,13 +191,19 @@ export async function listOperations(
         throw new MissingRequiredInputError("teamsManifestPath", "inputs");
       }
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+      let existingOperationIds: string[] = [];
       if (manifest.isOk()) {
-        const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-
+        if (isPlugin) {
+          existingOperationIds = await listPluginExistingOperations(
+            manifest.value,
+            teamsManifestPath
+          );
+        } else {
+          existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+        }
         const existingOperations = existingOperationIds.map(
           (key) => operations.find((item) => item.operationId === key)?.api
         );
-
         operations = operations.filter(
           (operation: ListAPIResult) => !existingOperations.includes(operation.api)
         );
@@ -248,6 +262,43 @@ function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
 
 function formatTelemetryValidationProperty(result: ErrorResult | WarningResult): string {
   return result.type.toString() + ": " + result.content;
+}
+
+async function listPluginExistingOperations(
+  manifest: TeamsAppManifest,
+  teamsManifestPath: string,
+  destinationApiSpecFilePath: string
+): Promise<string[]> {
+  const getApiSPecFileRes = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+    manifest,
+    teamsManifestPath
+  );
+  if (getApiSPecFileRes.isErr()) {
+    throw getApiSPecFileRes.error;
+  }
+  const apiSpecFilePath = getApiSPecFileRes.value;
+  if (path.resolve(apiSpecFilePath) !== path.resolve(destinationApiSpecFilePath)) {
+    throw new InputValidationError(QuestionNames.DestinationApiSpecFilePath, "file not match"); // TODO: more specific error type
+  }
+
+  const specParser = new SpecParser(apiSpecFilePath);
+  const validationRes = await specParser.validate();
+  validationRes.errors = formatValidationErrors(validationRes.errors);
+
+  if (validationRes.status === ValidationStatus.Error) {
+    const errorMessage = getLocalizedString(
+      "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+    );
+    throw new UserError(
+      "listPluginExistingOperations",
+      invalidApiSpecErrorName,
+      errorMessage,
+      errorMessage
+    );
+  }
+
+  const operations = await specParser.list();
+  return operations.map((o) => o.api);
 }
 
 export function logValidationResults(

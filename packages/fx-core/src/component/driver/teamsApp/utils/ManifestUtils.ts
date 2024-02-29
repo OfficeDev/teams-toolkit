@@ -282,6 +282,21 @@ export class ManifestUtils {
     return ids;
   }
 
+  public async getPluginFile(
+    manifest: TeamsAppManifest,
+    manifestPath: string
+  ): Promise<string | undefined> {
+    const pluginFile = manifest.apiPlugins?.[0]?.pluginFile;
+    if (pluginFile) {
+      const doesFileExist = await fs.pathExists(
+        path.resolve(path.dirname(manifestPath), pluginFile)
+      );
+      return doesFileExist ? pluginFile : undefined;
+    } else {
+      return undefined;
+    }
+  }
+
   async getManifestV3(
     manifestTemplatePath: string,
     context?: WrapDriverContext,

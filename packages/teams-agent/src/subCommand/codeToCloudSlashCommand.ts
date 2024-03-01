@@ -254,11 +254,11 @@ class WorkspaceContext {
 
 class ChatMessageHistory {
   MaxHistoryNumber = 10;
-  recommendChatMessageHistory: vscode.LanguageModelMessage[] = [];
-  pipelineChatMessageHistory: vscode.LanguageModelMessage[] = [];
+  recommendChatMessageHistory: vscode.LanguageModelChatMessage[] = [];
+  pipelineChatMessageHistory: vscode.LanguageModelChatMessage[] = [];
 
   public addRecommendChatMessageHistory(
-    ...history: vscode.LanguageModelMessage[]
+    ...history: vscode.LanguageModelChatMessage[]
   ) {
     this.recommendChatMessageHistory.push(...history);
     if (this.recommendChatMessageHistory.length > this.MaxHistoryNumber) {
@@ -273,7 +273,7 @@ class ChatMessageHistory {
   }
 
   public addPipelineChatMessageHistory(
-    ...history: vscode.LanguageModelMessage[]
+    ...history: vscode.LanguageModelChatMessage[]
   ) {
     this.pipelineChatMessageHistory.push(...history);
     if (this.pipelineChatMessageHistory.length > this.MaxHistoryNumber) {
@@ -546,7 +546,7 @@ async function aggregateProposal(
 ): Promise<void> {
   request.response.progress(`Aggregate Azure Resource...`);
 
-  const chatMessageHistory: vscode.LanguageModelMessage[] = [];
+  const chatMessageHistory: vscode.LanguageModelChatMessage[] = [];
   const systemPrompt = prompt.RecommendSystemPrompt;
   const userCountPrompt = prompt.getRecommendCountPrompt(proposals).userPrompt;
   const countResponse = await getResponseInteraction(
@@ -557,8 +557,8 @@ async function aggregateProposal(
     chatMessageHistory
   );
   chatMessageHistory.push(
-    new vscode.LanguageModelUserMessage(userCountPrompt),
-    new vscode.LanguageModelAssistantMessage(countResponse)
+    new vscode.LanguageModelChatUserMessage(userCountPrompt),
+    new vscode.LanguageModelChatAssistantMessage(countResponse)
   );
 
   const userSelectPrompt = prompt.getRecommendSelectPrompt(
@@ -573,8 +573,8 @@ async function aggregateProposal(
     chatMessageHistory
   );
   chatMessageHistory.push(
-    new vscode.LanguageModelUserMessage(userSelectPrompt),
-    new vscode.LanguageModelAssistantMessage(selectResponse)
+    new vscode.LanguageModelChatUserMessage(userSelectPrompt),
+    new vscode.LanguageModelChatAssistantMessage(selectResponse)
   );
 
   const userAggregatePrompt = prompt.getRecommendAggregatePrompt(
@@ -595,7 +595,7 @@ async function aggregateProposal(
   if (response.copilotResponded) {
     const context = Context.getInstance();
     context.chatMessageHistory.addRecommendChatMessageHistory(
-      new vscode.LanguageModelAssistantMessage(
+      new vscode.LanguageModelChatAssistantMessage(
         response.copilotResponse as string
       )
     );
@@ -628,7 +628,7 @@ async function improveRecommendHandler(
   if (response.copilotResponded) {
     const context = Context.getInstance();
     context.chatMessageHistory.addRecommendChatMessageHistory(
-      new vscode.LanguageModelAssistantMessage(
+      new vscode.LanguageModelChatAssistantMessage(
         response.copilotResponse as string
       )
     );
@@ -691,7 +691,7 @@ async function generatePipeline(request: AgentRequest): Promise<void> {
 
   if (response.copilotResponded) {
     Context.getInstance().chatMessageHistory.addPipelineChatMessageHistory(
-      new vscode.LanguageModelAssistantMessage(
+      new vscode.LanguageModelChatAssistantMessage(
         response.copilotResponse as string
       )
     );
@@ -723,7 +723,7 @@ async function improvePipelineHandler(
 
   if (response.copilotResponded) {
     Context.getInstance().chatMessageHistory.addPipelineChatMessageHistory(
-      new vscode.LanguageModelAssistantMessage(
+      new vscode.LanguageModelChatAssistantMessage(
         response.copilotResponse as string
       )
     );
@@ -738,13 +738,13 @@ async function improvePipelineHandler(
 function collectChatMessageHistory(
   request: AgentRequest,
   historyNumber: number = 6
-): vscode.LanguageModelMessage[] {
-  const chatMessageHistory: vscode.LanguageModelMessage[] = [];
+): vscode.LanguageModelChatMessage[] {
+  const chatMessageHistory: vscode.LanguageModelChatMessage[] = [];
 
   for (let history of request.context.history.slice(-historyNumber)) {
     if (history instanceof vscode.ChatRequestTurn) {
       const userPrompt = (history as vscode.ChatRequestTurn).prompt;
-      chatMessageHistory.push(new vscode.LanguageModelUserMessage(userPrompt));
+      chatMessageHistory.push(new vscode.LanguageModelChatUserMessage(userPrompt));
     } else {
       for (let response of history.response) {
         let assistantPrompt = "";
@@ -756,7 +756,7 @@ function collectChatMessageHistory(
         }
         if (assistantPrompt !== "") {
           chatMessageHistory.push(
-            new vscode.LanguageModelAssistantMessage(assistantPrompt)
+            new vscode.LanguageModelChatAssistantMessage(assistantPrompt)
           );
         }
       }
@@ -771,7 +771,7 @@ async function getResponseInteraction(
   userPrompt: string,
   request: AgentRequest,
   languageModelID: LanguageModelID = LANGUAGE_MODEL_GPT35_TURBO_ID,
-  chatMessageHistory: vscode.LanguageModelMessage[] = []
+  chatMessageHistory: vscode.LanguageModelChatMessage[] = []
 ): Promise<string> {
   const originalUserPrompt = request.userPrompt;
   request.userPrompt = userPrompt;
@@ -790,7 +790,7 @@ async function verbatimInteraction(
   userPrompt: string,
   request: AgentRequest,
   languageModelID: LanguageModelID = LANGUAGE_MODEL_GPT35_TURBO_ID,
-  chatMessageHistory: vscode.LanguageModelMessage[] = []
+  chatMessageHistory: vscode.LanguageModelChatMessage[] = []
 ): Promise<{ copilotResponded: boolean; copilotResponse: undefined | string }> {
   const originalUserPrompt = request.userPrompt;
   request.userPrompt = userPrompt;
@@ -810,7 +810,7 @@ async function detectIntentWithHistory(
 ): Promise<IntentDetectionTarget | undefined> {
   const originalUserPrompt = request.userPrompt;
   let promptPrefix = "";
-  const recommendChatMessageHistory: vscode.LanguageModelMessage[] =
+  const recommendChatMessageHistory: vscode.LanguageModelChatMessage[] =
     Context.getInstance().chatMessageHistory.getRecommendChatMessageHistory();
   if (recommendChatMessageHistory.length > 0) {
     promptPrefix = [
@@ -819,7 +819,7 @@ async function detectIntentWithHistory(
     ].join(",");
   }
 
-  const pipelineChatMessageHistory: vscode.LanguageModelMessage[] =
+  const pipelineChatMessageHistory: vscode.LanguageModelChatMessage[] =
     Context.getInstance().chatMessageHistory.getPipelineChatMessageHistory();
   if (pipelineChatMessageHistory.length > 0) {
     promptPrefix = [
@@ -830,7 +830,7 @@ async function detectIntentWithHistory(
 
   const userPrompt = promptPrefix + originalUserPrompt;
   request.userPrompt = userPrompt;
-  const chatMessageHistory: vscode.LanguageModelMessage[] =
+  const chatMessageHistory: vscode.LanguageModelChatMessage[] =
     collectChatMessageHistory(request, 2);
   request.commandVariables = {
     languageModelID: "copilot-gpt-4",

@@ -1,12 +1,5 @@
 # Overview of API Plugin from New API Template
 
-## Known issues
-
-Currently, this project is unable to run successfully.
-
-- The Teams manifest schema hasn't been finalized yet. As a result, some actions in the teamsapp.local.yaml and teamsapp.yaml files may fail to execute, such as `validateManifest`, `validateAppPackage` and `extendToM365`.
-- This POC is built based on the latest known [Type B schema](https://spec-hub.azurewebsites.net/specifications/PluginManifest-2.0.html#plugin-manifest-object). If there are changes to the definition of the Type B schema in the future, corresponding updates may be required.
-
 ## Build an API Plugin from a new API with Azure Functions
 
 This app template allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:

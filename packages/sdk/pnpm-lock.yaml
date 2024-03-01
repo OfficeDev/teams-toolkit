@@ -27,16 +27,16 @@ dependencies:
     specifier: ^1.6.7
     version: 1.6.7
   botbuilder:
-    specifier: ^4.21.2
+    specifier: ^4.22.1
     version: 4.22.1(supports-color@9.4.0)
   botbuilder-dialogs:
-    specifier: ^4.21.2
+    specifier: ^4.22.1
     version: 4.22.1(supports-color@9.4.0)
   botframework-connector:
-    specifier: ^4.21.2
-    version: 4.21.2(supports-color@9.4.0)
+    specifier: ^4.22.1
+    version: 4.22.1(supports-color@9.4.0)
   botframework-schema:
-    specifier: ^4.21.2
+    specifier: ^4.22.1
     version: 4.22.1
   jwt-decode:
     specifier: ^3.1.2
@@ -122,7 +122,7 @@ devDependencies:
     specifier: ^1.20.0
     version: 1.20.0(axios@1.6.7)
   botbuilder-core:
-    specifier: ^4.21.2
+    specifier: ^4.22.1
     version: 4.22.1(supports-color@9.4.0)
   chai:
     specifier: ^4.3.4
@@ -161,8 +161,8 @@ devDependencies:
     specifier: ^2.0.0
     version: 2.0.0
   got:
-    specifier: ^11.8.2
-    version: 11.8.2
+    specifier: ^11.8.5
+    version: 11.8.5
   isomorphic-fetch:
     specifier: ^3.0.0
     version: 3.0.0
@@ -489,21 +489,6 @@ packages:
     engines: {node: '>=14.0.0'}
     dependencies:
       tslib: 2.3.1
-
-  /@azure/ms-rest-js@2.7.0:
-    resolution: {integrity: sha512-ngbzWbqF+NmztDOpLBVDxYM+XLcUj7nKhxGbSU9WtIsXfRB//cf2ZbAG5HkOrhU9/wd/ORRB6lM/d69RKVjiyA==}
-    dependencies:
-      '@azure/core-auth': 1.4.0
-      abort-controller: 3.0.0
-      form-data: 2.5.1
-      node-fetch: 2.7.0
-      tslib: 1.14.1
-      tunnel: 0.0.6
-      uuid: 8.3.2
-      xml2js: 0.5.0
-    transitivePeerDependencies:
-      - encoding
-    dev: false
 
   /@azure/msal-browser@2.38.3:
     resolution: {integrity: sha512-2WuLFnWWPR1IdvhhysT18cBbkXx1z0YIchVss5AwVA95g7CU5CpT3d+5BcgVGNXDXbUU7/5p0xYHV99V5z8C/A==}
@@ -1657,13 +1642,6 @@ packages:
     resolution: {integrity: sha512-LEyx4aLEC3x6T0UguF6YILf+ntvmOaWsVfENmIW0E9H09vKlLDGelMjjSm0jkDHALj8A8quZ/HapKNigzwge+Q==}
     dev: true
 
-  /abort-controller@3.0.0:
-    resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
-    engines: {node: '>=6.5'}
-    dependencies:
-      event-target-shim: 5.0.1
-    dev: false
-
   /accepts@1.3.8:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
@@ -1917,14 +1895,6 @@ packages:
       is-buffer: 2.0.5
     dev: true
 
-  /axios@0.25.0:
-    resolution: {integrity: sha512-cD8FOb0tRH3uuEe6+evtAbgJtfxr7ly3fQjYcMcuPlgkwVS9xboaVIpcDV+cYQe+yGykgwZCs1pzjntcGa6l5g==}
-    dependencies:
-      follow-redirects: 1.15.5
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
   /axios@1.6.7:
     resolution: {integrity: sha512-/hDJGff6/c7u0hDkvkGxR/oy6CbCs8ziCsC7SqmhjfozqiJGc8Z11wrv9z9lYfY4K8l+H9TpjcMDX0xOZmx+RA==}
     dependencies:
@@ -2033,10 +2003,6 @@ packages:
       - supports-color
     dev: false
 
-  /botbuilder-stdlib@4.21.2-internal:
-    resolution: {integrity: sha512-M7n0RcmjlCipKS92E7ddxpBcRF0A85btQRNOd3+gpzGptk6YU0FMvE70+besVANxFHQQTMPwuwAdxVWBD2e4MA==}
-    dev: false
-
   /botbuilder-stdlib@4.22.1-internal:
     resolution: {integrity: sha512-iPTO//HYfqwwvmbVtWZFkffRVSkxz/fesE60nMPVxGe93XkHSXgNVaZKjKnxjbX192LQFubae0777pCYBD6hsQ==}
 
@@ -2065,26 +2031,6 @@ packages:
       - utf-8-validate
     dev: false
 
-  /botframework-connector@4.21.2(supports-color@9.4.0):
-    resolution: {integrity: sha512-UfjBEO3iVo1iiiBSM0rkrblWVPvWA6ry5Dlj2ONJhz+eAGz5o3w0almtI45tZIJIS7/4UYyahl9wv9XvT5xJZw==}
-    dependencies:
-      '@azure/identity': 2.1.0(supports-color@9.4.0)
-      '@azure/ms-rest-js': 2.7.0
-      '@azure/msal-node': 1.14.6
-      axios: 0.25.0
-      base64url: 3.0.1
-      botbuilder-stdlib: 4.21.2-internal
-      botframework-schema: 4.21.2
-      cross-fetch: 3.1.8
-      jsonwebtoken: 9.0.2
-      rsa-pem-from-mod-exp: 0.8.6
-      zod: 3.22.4
-    transitivePeerDependencies:
-      - debug
-      - encoding
-      - supports-color
-    dev: false
-
   /botframework-connector@4.22.1(supports-color@9.4.0):
     resolution: {integrity: sha512-uo3KrIyj6D8P9kWk7AKd00XDkCuTk/LqH1Jx0jGQCkfjHCVFfGclgNZcqUdgZkQkWcisk5QOtTSPGAl4a92TpA==}
     dependencies:
@@ -2104,14 +2050,6 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
-
-  /botframework-schema@4.21.2:
-    resolution: {integrity: sha512-iLXDuS/ptJuGVNGy5B6s6xXyasB8W2DbbwC67rsJE+wP5x7Yx4VyXo13c0uSHRbRPu81CHkVkxOJI0f7kH+jsA==}
-    dependencies:
-      adaptivecards: 1.2.3
-      uuid: 8.3.2
-      zod: 3.22.4
-    dev: false
 
   /botframework-schema@4.22.1:
     resolution: {integrity: sha512-4hE7iMYMgLz+L+MrgkZ7Y1pir3ze5Puhjko0a/VKkLUXkoSTHcZ5P0mIqhl/lxu7TlrREtGanGsX0rWkQ8+FJA==}
@@ -3239,11 +3177,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /event-target-shim@5.0.1:
-    resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
-    engines: {node: '>=6'}
-    dev: false
-
   /eventemitter3@4.0.7:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
     dev: true
@@ -3440,15 +3373,6 @@ packages:
       cross-spawn: 7.0.3
       signal-exit: 3.0.7
     dev: true
-
-  /form-data@2.5.1:
-    resolution: {integrity: sha512-m21N3WOmEEURgk6B9GLOE4RuWOFf28Lhh9qGYeNlGq4VDXUlJy2th2slBNU8Gp8EzloYZOibZJ7t5ecIrFSjVA==}
-    engines: {node: '>= 0.12'}
-    dependencies:
-      asynckit: 0.4.0
-      combined-stream: 1.0.8
-      mime-types: 2.1.35
-    dev: false
 
   /form-data@4.0.0:
     resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
@@ -3684,8 +3608,8 @@ packages:
       get-intrinsic: 1.2.2
     dev: true
 
-  /got@11.8.2:
-    resolution: {integrity: sha512-D0QywKgIe30ODs+fm8wMZiAcZjypcCodPNuMz5H9Mny7RJ+IjJ10BdmGW7OM7fHXP+O7r6ZwapQ/YQmMSvB0UQ==}
+  /got@11.8.5:
+    resolution: {integrity: sha512-o0Je4NvQObAuZPHLFoRSkdG2lTgtcynqymzg2Vupdx6PorhaT5MCbIyXG6d4D94kk8ZG57QeosgdiqfJWhEhlQ==}
     engines: {node: '>=10.19.0'}
     dependencies:
       '@sindresorhus/is': 4.6.0
@@ -6539,6 +6463,7 @@ packages:
 
   /tslib@1.14.1:
     resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
+    dev: true
 
   /tslib@2.2.0:
     resolution: {integrity: sha512-gS9GVHRU+RGn5KQM2rllAlR3dU6m7AcpJKdtH8gFvQiC4Otgk98XnmMU+nZenHt/+VhnBPWwgrJsyrdcw6i23w==}

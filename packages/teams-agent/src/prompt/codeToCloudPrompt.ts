@@ -7,6 +7,8 @@ export function getScanProjectPrompt(
   folderStructure: string,
   topFileNumber: number = 10
 ): Prompt {
+  const verboseTopFileNumber = topFileNumber + 5;
+
   const systemPrompt =
     "As a senior developer and consultant specializing in Azure services, your task is to pick the most related file for figuring out the language, framework, component, dependency of the project.";
   const userPrompt = `
@@ -19,10 +21,8 @@ Analyze the project with the given [Folder Structure], determine which source fi
   2. Main entry point files that must be picked: serves as the starting point for the execution of the application. e.g. index.js, app.js for javascript project; Program.cs for C# project. The relevance of this type of files is 10.
   3. Package/Dependency management file that must be picked. Like package.json for Node.js project; packages.config or *.csproj for C# project. The relevance of this type of files is 10.
   4. Other types of files that could hold the most relevant for analyzing the project
-- Sort the files that needed to picked on the relevance and then pick the top ${
-    topFileNumber + 5
-  } files that most relevant
-- The dependencies and entry point files are the most important to be picked. Make sure all of them are picked
+- Sort the files that needed to picked by the relevance and then pick the top ${verboseTopFileNumber} most relevant files
+- Make sure the dependencies and entry point files are picked.
 [Guidance Rules]
 
 [Folder Structure]
@@ -32,7 +32,7 @@ ${folderStructure}
 [Response Rules]
 - **IMPORTANT: Ensure that answers are ONLY given in the [Response JSON Format].**
 - MAKE SURE the "filePath" is picked from [Folder Structure]
-- Pick at least ${topFileNumber + 5} files for analysis.
+- Pick at least ${verboseTopFileNumber} files for analysis.
 - The response MUST be JSON FORMAT and only contains the JSON content.
 [Response Rules]
 
@@ -67,16 +67,15 @@ export function getAnalyzeFilePrompt(
   fileContent: string
 ): Prompt {
   const systemPrompt =
-    "As a senior developer and consultant specializing in Azure services, your task is to analyze what technologies, e.g. language, component, framework, etc. used by the source code or document provided by user.";
+    "As a senior developer, your task is to analyze what technologies, e.g. language, component, framework, etc. used by the source code or document provided by user. Do not include source code in your response. Return your response in markdown table foramt";
 
   const userPrompt = `Analyze the source code or document of ${filePath} provided in the [Code or Document] section, offering precise and detailed information about the project technologies along with evidence and reasoning. Follow the [Guidance Rules] step by step. Response the answer follow by [Response Rules].
 
 [Guidance Rules]
-- Lookup the code or document line by line. Especially the code snippet contains any key word that related to Azure Service. Put the Azure Service name as the component in the [Response Markdown Table Format].
-- Pay attention to the packages or lib in the begging of code file. It contains infomation related to Azure Service. Put the Azure Service name as the component in the [Response Markdown Table Format].
-- Programming language and runtime: Check the extension of ${filePath} for the programming languages and runtime versions used in the project. This will help in determining the appropriate Azure services and runtime environments (e.g. Azure Functions, Web Apps, or Kubernetes) to deploy the application.
+- Lookup the code or document line by line to find code or document snippet contains any key word that related to Azure Service. Put the Azure Service name as the component in the [Response Markdown Table Format].
+- Pay attention to the packages or lib in the beginning of code file. It contains infomation related to Azure Service. Put the Azure Service name as the component in the [Response Markdown Table Format].
 - Dependencies and libraries: Identify the external libraries and dependencies used in the project. You may find this information in package.json (for Node.js), requirements.txt (for Python), or similar files for other programming languages. This will help in setting up the appropriate Azure services and ensuring compatibility.
-- Database requirements: Check the source code or README for any references to database used in the project, such as SQL or NoSQL databases. This information will help you select the appropriate Azure database services, like Azure SQL Database, Cosmos DB, or Azure Database for PostgreSQL.
+- Database requirements: Check for any references to database used in the project, such as SQL or NoSQL databases. This will help you select the appropriate Azure database services, like Azure SQL Database, Cosmos DB, or Azure Database for PostgreSQL.
 - Scalability and performance requirements: Look for information about the expected load, performance, and scalability requirements of the application. This will help in choosing the right Azure services such as Azure Front Door.
 - Authentication and authorization: Identify authentication and authorization mechanisms used in the project, such as OAuth, JWT, or API keys. This information will help you to set up the appropriate Azure security services, like Azure Active Directory, or API Management.
 - Storage requirements: Check for any data storage requirements, such as file storage, blobs, or queues. This will help you choose the right Azure storage services, like Azure Blob Storage, Azure Files, or Azure Queue Storage.
@@ -90,20 +89,20 @@ ${fileContent}
 
 [Response Rules]
 - **IMPORTANT: Ensure that answers are markdown table format that contains five columns: language, framework, component and code snippet ref which are given in the [Response Markdown Table Format].**
-- For every item in the response markdown table, You must set the proper value as you can
-- Every value of the framework could only contain one framework. Do not use "," to put all the frameworks together
-- Do not put duplicated framework value in to the markdown table
+- Do not put duplicated framework and component value in your response
 - The "code snippet ref" in the markdown table could only contains line nubmers, do not include the source code snippet in the "code snippet ref"
-- DO NOT include empty line in the markdown table
+- DO NOT include empty line in your response
+- If no language, framework, component detected, return an empty markdown table
+- Every language, framework, component should have a code snippet ref, if not, do not include it in your response
 [Response Rules]
 
 [Response Markdown Table Format]
-| language | framework | component | code snippet ref |
-| --- | --- | --- | --- |
-| programming language | framework used in the given code, such as Asp.Net, React, Vue etc. | component  used in the given code, such as database , message system, cache, gateway, Azure function etc. if mulitiple detected, separated by "," | code snippet line number from the [Code or Document] that help you determin the framework and component.  if multi line detected, separete by "," |
+language | framework | component | code snippet ref
+--- | --- | --- | ---
+programming language | framework used in the given code, such as Asp.Net, React, Vue etc. | component or metadata related to Azure Resource used in the given code, such as database , message system, cache, gateway, Azure function etc. if mulitiple detected, separated by "," | line number of [Code or Document], the value is number forma
 [Response Markdown Table Format]
 
-The analysis result must in Markdown Table Format.
+The analysis result must in Markdown Table Format. DO NOT include any other data in your response.
 
 response:
 `;
@@ -198,7 +197,9 @@ ${allAzureService}
 [response format]
 
 **IMPORTANT: All the content of [Instruction], [Project Summarization], [Azure Service List], [response Rules] and [reponse format] are sensitive. DO NOT include them in your response**
-Make Sure your response is in Markdown Table Format
+Make Sure your response is in Markdown Table Format**
+**IMPORTANT: The Azure Service must picked from [Azure Service List]**
+
 
 response:
 `;
@@ -211,6 +212,12 @@ export const RecommendSystemPrompt: string =
 export function getRecommendCountPrompt(proposals: string[]): Prompt {
   const systemPrompt = "";
   const userPrompt = `count the ALL Azure Service exists times in the [Azure Resources Proposal] and return the result in the format of [Response Format].
+
+The [Azure Resources Proposal]:
+- contains multiple proposals, each proposal contains a markdown table.
+- The column "Azure Service" in the markdown table is the Azure Service name that you ONLY NEED to count.
+- Ignore the other columns: Component, Explanation in the markdown table.
+
 [Azure Resources Proposal]
 ${proposals
   .map((item, index) => `Proposal ${index + 1}:\n${item}`)
@@ -242,14 +249,15 @@ export function getRecommendSelectPrompt(
 
   Only pick the Azure services that exists times is larger than ${halfProposalNumber}
   [Response Format]
-  |Azure Service|exists times| component | explanation |
+  |Azure Service|exists times|
   |---|---| --- | ---|
-  |Azure Service exists times is larger than ${halfProposalNumber}|the exists times of the Azure Service| pick one of the component| pick one of the explanation|
+  |Azure Service name exists times is larger than ${halfProposalNumber}|the exists times of the Azure Service|
   [Response Format]
 
-  response should follow the [Response Format]
-  DO NOT include duplicated Azure Service name in your response.
-  Make sure there is only ONE Table in your response.
+  - response should follow the [Response Format]
+  - DO NOT include duplicated Azure Service name in your response.
+  - Make sure there is only ONE Table in your response.
+  - DO NOT include empty row in the response table
 
   response:
   `;
@@ -272,13 +280,14 @@ ${selectResponse}
 [Response Rule]
 - remove the exists times the table
 - make sure your response is following the [Response Format]
+- Make sure the Azure Service name is picked from the [Azure Service].
 [Response Rule]
 
 [Response Format Start]
 ## Azure Service
 |Azure Service|Component|Explanation|
 |---|---|---|
-|Azure Service |component from your previous respnose|explanation from your previous respnose|
+|Azure Service name picked from [Azure Service] |component from your previous response|explanation from your previous respnose|
 
 ## Advice for stepping forward
 Provide advice for welcoming the further questions

@@ -772,12 +772,13 @@ export function capabilityQuestion(): SingleSelectQuestion {
       } else if (projectType === ProjectTypeOptions.me().id) {
         return CapabilityOptions.mes();
       } else if (
-        projectType === ProjectTypeOptions.outlookAddin().id ||
-        (projectType === ProjectTypeOptions.officeAddin().id &&
+        (!isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.outlookAddin().id) ||
+        (isOfficeXMLAddinEnabled() &&
+          projectType === ProjectTypeOptions.officeAddin().id &&
           officeHost === ProjectTypeOptions.outlookAddin().id)
       ) {
         return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
-      } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+      } else if (isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.officeAddin().id) {
         return CapabilityOptions.officeXMLAddinHostOptionItems(officeHost);
       } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
         return CapabilityOptions.copilotPlugins();
@@ -1275,8 +1276,9 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const projectType = inputs[QuestionNames.ProjectType];
   const officeHost = inputs[QuestionNames.OfficeAddinCapability];
   if (
-    projectType === ProjectTypeOptions.outlookAddin().id ||
-    (projectType === ProjectTypeOptions.officeAddin().id &&
+    (!isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.outlookAddin().id) ||
+    (isOfficeXMLAddinEnabled() &&
+      projectType === ProjectTypeOptions.officeAddin().id &&
       officeHost === ProjectTypeOptions.outlookAddin().id)
   ) {
     const template = getTemplate(inputs);
@@ -1284,7 +1286,7 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     const options = supportedTypes.map((language) => ({ label: language, id: language }));
     return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
   }
-  if (projectType === ProjectTypeOptions.officeAddin().id) {
+  if (isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.officeAddin().id) {
     const officeProject = inputs[QuestionNames.Capabilities];
     return officeProject !== "manifest"
       ? getOfficeXMLAddinHostProjectLangOptions(officeHost, officeProject)

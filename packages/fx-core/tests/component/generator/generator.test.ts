@@ -358,6 +358,31 @@ describe("Generator utils", () => {
     assert.equal(data, mockFileData);
   });
 
+  it("download directory with LFS files", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const lfsData =
+      "version https://git-lfs.github.com/spec/v1\noid sha256:548c1fe07b6b278da680ccd84483be06262521f2e3\nsize 100";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: lfsData });
+    axiosStub.onThirdCall().resolves({ status: 200, data: mockFileData });
+    await fs.ensureDir(tmpDir);
+    await downloadDirectory(
+      {
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: "dev",
+        dir: "test",
+      },
+      tmpDir
+    );
+    const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
+    assert.equal(data, mockFileData);
+  });
+
   it("limit concurrency", async () => {
     const data = [1, 10, 2, 3];
     let res: number[] = [];

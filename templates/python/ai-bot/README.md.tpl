@@ -28,7 +28,7 @@ The app template is built using the Teams AI library, which provides the capabil
 > - [Node.js](https://nodejs.org/) (supported versions: 16, 18) for local debug in Test Tool.
 {{/enableTestToolByDefault}}
 
-1. First, Press **CTRL+Shift+P** to open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `requirements.txt` as dependencies to install when creating the virtual environment.
+1. First, Press **CTRL+Shift+P** to open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `src/requirements.txt` as dependencies to install when creating the virtual environment.
 1. select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
 1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<azure-openai-api-key>`, deployment name `SECRET_AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=<azure-openai-model-deployment-name>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<azure-openai-endpoint>`.

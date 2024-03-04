@@ -1,20 +1,20 @@
-# Overview of the AI Chat Bot template
+# Overview of the Basic AI Chatbot template
 
 This template showcases a bot app that responds to user questions like ChatGPT. This enables your users to talk with the AI bot in Teams.
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
-- [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
-  - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
+- [Overview of the Basic AI Chatbot template](#overview-of-the-basic-ai-chatbot-template)
+  - [Get started with the Basic AI Chatbot template](#get-started-with-the-basic-ai-chatbot-template)
   - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
+  - [Extend the Basic AI Chatbot template with more AI capabilities](#extend-the-basic-ai-chatbot-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)
 
-## Get started with the AI Chat Bot template
+## Get started with the Basic AI Chatbot template
 
 > **Prerequisites**
 >
-> To run the AI Chat Bot template in your local dev machine, you will need:
+> To run the Basic AI Chatbot template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 {{^enableTestToolByDefault}}
@@ -42,7 +42,7 @@ The app template is built using the Teams AI library, which provides the capabil
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
 
-![ai chat bot](https://github.com/OfficeDev/TeamsFx/assets/9698542/9bd22201-8fda-4252-a0b3-79531c963e5e)
+![Basic AI Chatbot](https://github.com/OfficeDev/TeamsFx/assets/9698542/9bd22201-8fda-4252-a0b3-79531c963e5e)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -58,7 +58,7 @@ The app template is built using the Teams AI library, which provides the capabil
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![ai chat bot](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
+![Basic AI Chatbot](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template
@@ -80,7 +80,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/config.ts`| Defines the environment variables.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
-|`src/app/app.ts`| Handles business logics for the AI Chat Bot.|
+|`src/app/app.ts`| Handles business logics for the Basic AI Chatbot.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -90,9 +90,9 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Chat Bot template with more AI capabilities
+## Extend the Basic AI Chatbot template with more AI capabilities
 
-You can follow [AI chat bot in Teams](https://aka.ms/teamsfx-ai-chat-bot) to extend the AI Chat Bot template with more AI capabilities.
+You can follow [Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the Basic AI Chatbot template with more AI capabilities.
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

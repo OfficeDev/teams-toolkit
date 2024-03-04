@@ -23,12 +23,13 @@ export class ManifestUpdater {
   static async updateManifestWithAiPlugin(
     manifestPath: string,
     outputSpecPath: string,
+    apiPluginFileName: string,
     spec: OpenAPIV3.Document
   ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     manifest.apiPlugins = [
       {
-        pluginFile: ConstantString.ApiPluginDefaultName,
+        pluginFile: apiPluginFileName,
       },
     ];
 
@@ -160,12 +161,12 @@ export class ManifestUpdater {
                 parameters: parameters,
                 states: {
                   reasoning: {
-                    description: ConstantString.ReasoningDescription,
-                    instructions: [ConstantString.ReasoningInstruction],
+                    description: "",
+                    instructions: [],
                   },
                   responding: {
-                    description: ConstantString.RespondingDescription,
-                    instructions: [ConstantString.RespondingInstruction],
+                    description: "",
+                    instructions: [],
                   },
                 },
               };

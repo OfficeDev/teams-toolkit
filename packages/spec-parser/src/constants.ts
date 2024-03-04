@@ -35,13 +35,6 @@ export class ConstantString {
 
   static readonly UnsupportedSchema = "Unsupported schema in %s %s: %s";
 
-  // TODO: better reasoning/responding description/instruction
-  static readonly ReasoningDescription = "Call API using parameters";
-  static readonly ReasoningInstruction = "Extract parameters from user message to call API";
-  static readonly RespondingDescription = "Returns result in JSON format";
-  static readonly RespondingInstruction =
-    "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.";
-
   static readonly WrappedCardVersion = "devPreview";
   static readonly WrappedCardSchema =
     "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.ResponseRenderingTemplate.schema.json";
@@ -55,7 +48,6 @@ export class ConstantString {
   static readonly TextBlockType = "TextBlock";
   static readonly ContainerType = "Container";
   static readonly RegistrationIdPostfix = "REGISTRATION_ID";
-  static readonly ApiPluginDefaultName = "ai-plugin.json";
   static readonly ResponseCodeFor20X = [
     "200",
     "201",

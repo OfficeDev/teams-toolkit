@@ -224,6 +224,7 @@ export class SpecParser {
     manifestPath: string,
     filter: string[],
     outputSpecPath: string,
+    apiPluginFileName: string,
     signal?: AbortSignal
   ): Promise<GenerateResult> {
     const result: GenerateResult = {
@@ -251,13 +252,11 @@ export class SpecParser {
       const [updatedManifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
+        apiPluginFileName,
         newSpec
       );
 
-      const apiPluginFilePath = path.join(
-        path.dirname(manifestPath),
-        ConstantString.ApiPluginDefaultName
-      );
+      const apiPluginFilePath = path.join(path.dirname(manifestPath), apiPluginFileName);
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
       await fs.outputJSON(apiPluginFilePath, apiPlugin, { spaces: 2 });
     } catch (err) {

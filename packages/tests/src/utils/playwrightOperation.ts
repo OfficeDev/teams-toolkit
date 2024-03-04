@@ -1998,7 +1998,10 @@ export async function validateTodoList(
   }
 }
 
-export async function validateProactiveMessaging(page: Page): Promise<void> {
+export async function validateProactiveMessaging(
+  page: Page,
+  options?: { env: "local" | "dev"; context?: SampledebugContext }
+): Promise<void> {
   console.log(`validating proactive messaging`);
   await page.waitForTimeout(Timeout.shortTimeLoading);
   const frameElementHandle = await page.waitForSelector(
@@ -2020,6 +2023,27 @@ export async function validateProactiveMessaging(page: Page): Promise<void> {
     console.log("sending message ", "welcome");
     await executeBotSuggestionCommand(page, frame, "welcome");
     await frame?.click('button[name="send"]');
+    // verify command
+    const expectedContent = "You sent 'welcome '.";
+    await frame?.waitForSelector(`p:has-text("${expectedContent}")`);
+    console.log(`verify bot successfully with content ${expectedContent}!!!`);
+    // send post request to bot
+    console.log("Post request sent to bot");
+    const endpointFilePath = path.join(
+      options?.context?.projectPath ?? "",
+      "env",
+      `.env.${options?.env}`
+    );
+    // read env file
+    const endpoint = fs.readFileSync(endpointFilePath, "utf8");
+    const devEnv = dotenvUtil.deserialize(endpoint);
+    const url =
+      devEnv.obj["PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT"] + "/api/notify";
+    console.log(url);
+    await axios.get(url);
+    await frame?.waitForSelector('p:has-text("proactive hello")');
+    console.log("Successfully sent notification");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (e: any) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -2584,6 +2608,50 @@ export async function validateSearchCmdResult(
   }
 }
 
+export async function validateLargeNotificationBot(
+  page: Page,
+  notificationEndpoint = "http://127.0.0.1:3978/api/notification"
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector("div.ui-box");
+    await page
+      .click('button:has-text("Dismiss")', {
+        timeout: Timeout.playwrightDefaultTimeout,
+      })
+      .catch(() => {});
+    await RetryHandler.retry(async () => {
+      try {
+        const result = await axios.post(notificationEndpoint);
+        console.log("status code: ", result.status);
+        if (result.status !== 202) {
+          throw new Error(
+            `POST /api/notification failed: status code: '${result.status}', body: '${result.data}'`
+          );
+        }
+        console.log("Successfully sent notification");
+      } catch (e: any) {
+        console.log(e);
+      }
+      try {
+        await frame?.waitForSelector('p:has-text("Hello World")');
+      } catch (e) {
+        throw e;
+      }
+    }, 2);
+    console.log("User received notification");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
 export async function validateTodoListSpfx(page: Page) {
   try {
     console.log("start to verify todo list spfx");
@@ -2618,7 +2686,6 @@ export async function validateTodoListSpfx(page: Page) {
       });
       throw e;
     }
-
     await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({

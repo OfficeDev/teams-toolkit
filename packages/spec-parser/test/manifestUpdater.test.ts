@@ -984,6 +984,37 @@ describe("manifestUpdater", () => {
     expect(warnings).to.deep.equal([]);
     readJSONStub.restore();
   });
+
+  it("should not update manifest if is not me", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [result, warnings] = await ManifestUpdater.updateManifest(
+      manifestPath,
+      outputSpecPath,
+      adaptiveCardFolder,
+      spec,
+      false,
+      undefined,
+      false
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
 });
 
 describe("getRelativePath", () => {

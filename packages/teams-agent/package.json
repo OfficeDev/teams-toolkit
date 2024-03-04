@@ -24,6 +24,36 @@
     "chatVariableResolver",
     "languageModels"
   ],
+  "contributes": {
+    "chatParticipants": [
+      {
+        "name": "teams",
+        "description": "Ask how to develop Teams applications",
+        "commands": [
+          {
+            "name": "help",
+            "description": "Get help with using the @teams agent."
+          },
+          {
+            "name": "create",
+            "description": "Describe the app you want to build for Microsoft Teams"
+          },
+          {
+            "name": "nextstep",
+            "description": "Describe what next step you might do in Teams"
+          },
+          {
+            "name": "codetocloud",
+            "description": "Describe the request of mignrating code to cloud"
+          },
+          {
+            "name": "test",
+            "description": "sample/template matching test"
+          }
+        ]
+      }
+    ]
+  },
   "main": "./out/extension.js",
   "scripts": {
     "vscode:prepublish": "npm run compile",

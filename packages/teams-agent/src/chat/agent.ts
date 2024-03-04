@@ -64,6 +64,7 @@ export interface IAgentRequestHandler {
   ): Promise<SlashCommandHandlerResult>;
   getFollowUpForLastHandledSlashCommand(
     result: vscode.ChatResult,
+    context: vscode.ChatContext,
     token: vscode.CancellationToken
   ): vscode.ChatFollowup[] | undefined;
 }
@@ -97,7 +98,6 @@ export function registerChatAgent() {
       "resources",
       "teams.png"
     );
-    participant.commandProvider = { provideCommands: getCommands };
     participant.followupProvider = { provideFollowups: followUpProvider };
     registerVSCodeCommands(participant);
   } catch (e) {
@@ -139,13 +139,14 @@ async function handler(
 
 function followUpProvider(
   result: ITeamsChatAgentResult,
+  context: vscode.ChatContext,
   token: vscode.CancellationToken
 ): vscode.ProviderResult<vscode.ChatFollowup[]> {
   const providers = [agentSlashCommandsOwner];
 
   let followUp: vscode.ChatFollowup[] | undefined;
   for (const provider of providers) {
-    followUp = provider.getFollowUpForLastHandledSlashCommand(result, token);
+    followUp = provider.getFollowUpForLastHandledSlashCommand(result, context, token);
     if (followUp !== undefined) {
       break;
     }

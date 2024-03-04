@@ -14,7 +14,10 @@ import * as vscode from "vscode";
 
 import { TunnelRelayTunnelHost } from "@microsoft/dev-tunnels-connections";
 import { Tunnel } from "@microsoft/dev-tunnels-contracts";
-import { TunnelManagementHttpClient } from "@microsoft/dev-tunnels-management";
+import {
+  TunnelManagementHttpClient,
+  ManagementApiVersions,
+} from "@microsoft/dev-tunnels-management";
 import { FxError, ok, Result, UserError } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
 import { pathUtils } from "@microsoft/teamsfx-core";
@@ -56,7 +59,7 @@ class TestDevTunnelTaskTerminal extends DevTunnelTaskTerminal {
   static create(taskDefinition: vscode.TaskDefinition): TestDevTunnelTaskTerminal {
     const tunnelManagementClientImpl = new TunnelManagementHttpClient(
       "teamsfx-ut",
-      "2023-09-27-preview",
+      ManagementApiVersions.Version20230927preview,
       async () => {
         return "mock-token";
       }

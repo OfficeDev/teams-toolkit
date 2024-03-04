@@ -6,20 +6,25 @@ Description: initialize the api and route incoming messages
 to our app
 """
 
-from botbuilder.schema import Activity
-from flask import Flask, request, jsonify
+from http import HTTPStatus
+
+from aiohttp import web
+from botbuilder.core.integration import aiohttp_error_middleware
 
 from bot import app
 
-api = Flask(__name__)
+routes = web.RouteTableDef()
 
-@api.route('/api/messages', methods=['POST'])
-async def on_messages():
-    activity = Activity().deserialize(request.json)
 
-    auth_header = request.headers['Authorization'] if 'Authorization' in request.headers else ''
-    response = await app.process_activity(activity, auth_header)
-    
-    if response:
-        return jsonify(response.body), response.status
-    return '', 200
+@routes.post("/api/messages")
+async def on_messages(req: web.Request) -> web.Response:
+    res = await app.process(req)
+
+    if res is not None:
+        return res
+
+    return web.Response(status=HTTPStatus.OK)
+
+
+api = web.Application(middlewares=[aiohttp_error_middleware])
+api.add_routes(routes)

@@ -1,59 +1,59 @@
-"""
-Copyright (c) Microsoft Corporation. All rights reserved.
-Licensed under the MIT License.
-
-Description: initialize the app and listen for `message` activitys
-"""
-
+import os
 import sys
 import traceback
 
-from botbuilder.core import BotFrameworkAdapterSettings, TurnContext, MemoryStorage
-from teams import AIHistoryOptions, AIOptions, Application, ApplicationOptions, AzureOpenAIPlanner, AzureOpenAIPlannerOptions, OpenAIPlanner, OpenAIPlannerOptions, TurnState
-from state import *
+from botbuilder.core import MemoryStorage, TurnContext
+from teams import Application, ApplicationOptions, TeamsAdapter
+from teams.ai import AIOptions
+from teams.ai.models import AzureOpenAIModelOptions, OpenAIModel, OpenAIModelOptions
+from teams.ai.planners import ActionPlanner, ActionPlannerOptions
+from teams.ai.prompts import PromptManager, PromptManagerOptions
+from teams.state import TurnState
 
 from config import Config
+
 config = Config()
-
-default_prompt_folder = "prompts"
-default_prompt = "chat"
-
-# Use Azure OpenAI
-planner = AzureOpenAIPlanner(
-    AzureOpenAIPlannerOptions(
-        config.AZURE_OPENAI_API_KEY,
-        config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
-        config.AZURE_OPENAI_ENDPOINT,
-        prompt_folder=default_prompt_folder,
+if config.OPENAI_API_KEY=="<your-key>" and config.AZURE_OPENAI_API_KEY=="<your-key>":
+    raise RuntimeError(
+        "Missing environment variables - please check that OPENAI_API_KEY or AZURE_OPENAI_API_KEY is set."
     )
+
+# Create AI components
+model: OpenAIModel
+
+if config.AZURE_OPENAI_API_KEY != "<your-key>":
+    model = OpenAIModel(
+        AzureOpenAIModelOptions(
+            api_key=config.AZURE_OPENAI_API_KEY,
+            default_model=config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
+            endpoint=config.AZURE_OPENAI_ENDPOINT,
+            api_version="2023-03-15-preview"
+        )
+    )
+elif config.OPENAI_API_KEY != "<your-key>":
+    model = OpenAIModel(
+        OpenAIModelOptions(
+            api_key=config.OPENAI_API_KEY,
+            default_model=config.OPENAI_MODEL_DEPLOYMENT_NAME
+        )
+    )
+    
+prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/prompts"))
+
+planner = ActionPlanner(
+    ActionPlannerOptions(model=model, prompts=prompts, default_prompt="chat")
 )
-# Uncomment the following lines to use OpenAI
-# planner = OpenAIPlanner(
-#     OpenAIPlannerOptions(
-#         config.OPENAI_API_KEY,
-#         config.OPENAI_MODEL_DEPLOYMENT_NAME,
-#         prompt_folder=default_prompt_folder,
-#     )
-# )
+
+# Define storage and application
 storage = MemoryStorage()
 app = Application[TurnState](
     ApplicationOptions(
-        auth=BotFrameworkAdapterSettings(
-            app_id=config.app_id,
-            app_password=config.app_password,
-        ),
-        ai=AIOptions(
-            planner=planner,
-            prompt=default_prompt,
-            history=AIHistoryOptions(assistant_history_type="text"),
-        ),
+        bot_app_id=config.APP_ID,
         storage=storage,
+        adapter=TeamsAdapter(config),
+        ai=AIOptions(planner=planner),
     )
 )
-
-@app.turn_state_factory
-async def on_state_factory(activity: Activity):
-    return await AppTurnState.from_activity(activity, storage)
 
 @app.error
 async def on_error(context: TurnContext, error: Exception):

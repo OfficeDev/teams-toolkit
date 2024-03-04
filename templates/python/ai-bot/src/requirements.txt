@@ -1,3 +1,2 @@
-flask[async]
-src/teams_ai-0.0.0-py3-none-any.whl
-semantic_kernel==0.3.7.dev0
+aiohttp
+teams_ai

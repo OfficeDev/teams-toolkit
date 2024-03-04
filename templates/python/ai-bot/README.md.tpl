@@ -65,26 +65,6 @@ Above steps use Azure OpenAI as AI service, optionally, you can also use OpenAI 
 {{^enableTestToolByDefault}}
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_OPENAI_API_KEY=<your-key>` and deployment name `SECRET_OPENAI_MODEL_DEPLOYMENT_NAME=<your-deployment-name>`.
 {{/enableTestToolByDefault}}
-1. In [src/bot.py](src/bot.py), comment out *"Use Azure OpenAI"* part and uncomment *"use OpenAI"* part, e.g.
-    ```python
-    # Use Azure OpenAI
-    # planner = AzureOpenAIPlanner(
-    #     AzureOpenAIPlannerOptions(
-    #         config.AZURE_OPENAI_API_KEY,
-    #         config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
-    #         config.AZURE_OPENAI_ENDPOINT,
-    #         prompt_folder=default_prompt_folder,
-    #     )
-    # )
-    # Uncomment the following lines to use OpenAI
-    planner = OpenAIPlanner(
-        OpenAIPlannerOptions(
-            config.OPENAI_API_KEY,
-            config.OPENAI_MODEL_DEPLOYMENT_NAME,
-            prompt_folder=default_prompt_folder,
-        )
-    )
-    ```
 
 ## What's included in the template
 
@@ -104,7 +84,6 @@ The following files can be customized and demonstrate an example implementation 
 |`src/bot.py`| Handles business logics for the AI Chat Bot.|
 |`src/config.py`| Defines the environment variables.|
 |`src/app.py`| Main module of the AI Chat Bot.|
-|`src/state.py`| Handles conversation state of the bot.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
 

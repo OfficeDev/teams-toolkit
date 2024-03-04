@@ -68,6 +68,7 @@ import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { configMgr } from "./config";
+import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -181,7 +182,7 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
 
 function activateOfficeDevRegistration(context: vscode.ExtensionContext) {
   registerOfficeDevMenuCommands(context);
-  TreeViewManagerInstance.registerOfficeDevTreeViews(context);
+  officeDevTreeViewManager.registerOfficeDevTreeViews(context);
 }
 
 /**

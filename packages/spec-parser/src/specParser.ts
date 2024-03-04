@@ -417,27 +417,3 @@ export class SpecParser {
     return result;
   }
 }
-
-async function test() {
-  const testFolder = path.resolve("../", path.dirname(__dirname), "test-material");
-  const manifest = testFolder + "/manifest.json";
-  const spec = testFolder + "/petstore.yaml";
-  const parser = new SpecParser(spec, {
-    allowMultipleParameters: true,
-    allowMissingId: true,
-    allowOauth2: false,
-    allowAPIKeyAuth: false,
-    isCopilot: true,
-  });
-
-  const list = await parser.list();
-  console.log(list);
-  const validate = await parser.validate();
-  console.log(validate);
-
-  const apis = list.map((item) => item.api);
-  const result = await parser.generateForCopilot(manifest, apis, testFolder + "/" + "result.yaml");
-
-  console.log(await parser.list());
-}
-void test();

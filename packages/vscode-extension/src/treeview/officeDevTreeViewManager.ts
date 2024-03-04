@@ -24,6 +24,12 @@ class OfficeDevTreeViewManager {
     return OfficeDevTreeViewManager.instance;
   }
 
+  public dispose() {
+    this.treeviewMap.forEach((value) => {
+      (value as vscode.Disposable).dispose();
+    });
+  }
+
   public registerOfficeDevTreeViews(context: vscode.ExtensionContext): void {
     const disposables: vscode.Disposable[] = [];
 

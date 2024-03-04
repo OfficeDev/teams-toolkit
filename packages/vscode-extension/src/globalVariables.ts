@@ -60,11 +60,6 @@ export function checkIsSPFx(directory: string): boolean {
   return false;
 }
 
-export function checkOfficeAddInInstalled(directory: string): boolean {
-  const nodeModulesExists = fs.existsSync(path.join(directory, "node_modules"));
-  return nodeModulesExists;
-}
-
 export function setUriEventHandler(uriHandler: UriHandler) {
   uriEventHandler = uriHandler;
 }

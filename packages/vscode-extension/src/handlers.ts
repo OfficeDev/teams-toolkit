@@ -139,7 +139,7 @@ import {
   openTestToolMessage,
   RecommendedOperations,
 } from "./debug/constants";
-import { popupOfficeAddInDependenciesMessage } from "./officeDevHandlers";
+import { openOfficeDevFolder } from "./officeDevHandlers";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -375,7 +375,11 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
   // show local debug button by default
-  await openFolder(projectPathUri, true, res.warnings, args);
+  if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
+    await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
+  } else {
+    await openFolder(projectPathUri, true, res.warnings, args);
+  }
   return result;
 }
 
@@ -416,10 +420,6 @@ export async function updateAutoOpenGlobalKey(
 
   if (globalVariables.checkIsSPFx(projectUri.fsPath)) {
     globalStateUpdate(GlobalKey.AutoInstallDependency, true);
-  }
-
-  if (isValidOfficeAddInProject(projectUri.fsPath)) {
-    await globalStateUpdate(GlobalKey.AutoInstallDependency, true);
   }
 }
 
@@ -1255,9 +1255,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
     }
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
-    if (!globalVariables.isOfficeAddInProject) {
-      await showLocalDebugMessage();
-    }
+    await showLocalDebugMessage();
     await openReadMeHandler([TelemetryTriggerFrom.Auto]);
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
@@ -1270,16 +1268,8 @@ export async function autoOpenProjectHandler(): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
   if (autoInstallDependency) {
-    if (!globalVariables.isOfficeAddInProject) {
-      await autoInstallDependencyHandler();
-    }
+    await autoInstallDependencyHandler();
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
-  }
-  if (
-    globalVariables.isOfficeAddInProject &&
-    !globalVariables.checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "")
-  ) {
-    popupOfficeAddInDependenciesMessage();
   }
 }
 
@@ -1420,7 +1410,7 @@ export async function showLocalDebugMessage() {
   });
 }
 
-async function ShowScaffoldingWarningSummary(
+export async function ShowScaffoldingWarningSummary(
   workspacePath: string,
   warning: string
 ): Promise<void> {

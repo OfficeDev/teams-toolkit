@@ -1032,8 +1032,12 @@ async function runBackgroundAsyncTasks(
     await openWelcomePageAfterExtensionInstallation();
   }
 
-  if (isTeamsFxProject || isOfficeAddInProject) {
+  if (isTeamsFxProject) {
     await runTeamsFxBackgroundTasks();
+  }
+
+  if (isOfficeAddInProject) {
+    await runOfficeDevBackgroundTasks();
   }
 
   const survey = ExtensionSurvey.getInstance();
@@ -1046,10 +1050,14 @@ async function runBackgroundAsyncTasks(
 
 async function runTeamsFxBackgroundTasks() {
   const upgradeable = await checkProjectUpgradable();
-  if (isTeamsFxProject || isOfficeAddInProject) {
+  if (isTeamsFxProject) {
     await handlers.autoOpenProjectHandler();
     await TreeViewManagerInstance.updateTreeViewsByContent(upgradeable);
   }
+}
+
+async function runOfficeDevBackgroundTasks() {
+  await officeDevHandlers.autoOpenOfficeDevProjectHandler();
 }
 
 function registerInCommandController(

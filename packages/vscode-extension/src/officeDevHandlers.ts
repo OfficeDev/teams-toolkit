@@ -7,6 +7,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import * as fs from "fs-extra";
 import {
   OfficeDevTerminal,
   triggerGenerateGUID,
@@ -14,13 +15,28 @@ import {
   triggerStopDebug,
   triggerValidate,
 } from "./debug/taskTerminal/officeDevTerminal";
-import { FileNotFoundError, fetchManifestList } from "@microsoft/teamsfx-core";
+import {
+  FileNotFoundError,
+  fetchManifestList,
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, Warning, err, ok } from "@microsoft/teamsfx-api";
 import * as globalVariables from "./globalVariables";
 import * as path from "path";
 import { localize } from "./utils/localizeUtils";
-import { autoInstallDependencyHandler } from "./handlers";
+import {
+  ShowScaffoldingWarningSummary,
+  autoInstallDependencyHandler,
+  openReadMeHandler,
+  openSampleReadmeHandler,
+  showLocalDebugMessage,
+} from "./handlers";
+import { Uri } from "vscode";
+import { isTriggerFromWalkThrough } from "./utils/commonUtils";
+import { GlobalKey } from "./constants";
+import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]
@@ -142,4 +158,61 @@ export function editOfficeAddInManifest(args?: any[]): Promise<Result<null, FxEr
 
   void vscode.window.showTextDocument(manifestFileUri, { viewColumn: vscode.ViewColumn.One });
   return Promise.resolve(ok(null));
+}
+
+// refer to handlers.openFolder
+export async function openOfficeDevFolder(
+  folderPath: Uri,
+  showLocalDebugMessage: boolean,
+  warnings?: Warning[] | undefined,
+  args?: any[]
+) {
+  // current the welcome walkthrough is not supported for wxp add in
+  await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+  await globalStateUpdate(GlobalKey.AutoInstallDependency, true);
+  if (isTriggerFromWalkThrough(args)) {
+    await globalStateUpdate(GlobalKey.OpenReadMe, "");
+  } else {
+    await globalStateUpdate(GlobalKey.OpenReadMe, folderPath.fsPath);
+  }
+  if (showLocalDebugMessage) {
+    await globalStateUpdate(GlobalKey.ShowLocalDebugMessage, true);
+  }
+  if (warnings?.length) {
+    await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
+  }
+  await vscode.commands.executeCommand("vscode.openFolder", folderPath, true);
+}
+
+export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
+  const isOpenWalkThrough = (await globalStateGet(GlobalKey.OpenWalkThrough, false)) as boolean;
+  const isOpenReadMe = (await globalStateGet(GlobalKey.OpenReadMe, "")) as string;
+  const isOpenSampleReadMe = (await globalStateGet(GlobalKey.OpenSampleReadMe, false)) as boolean;
+  const createWarnings = (await globalStateGet(GlobalKey.CreateWarnings, "")) as string;
+  const autoInstallDependency = (await globalStateGet(GlobalKey.AutoInstallDependency)) as boolean;
+  if (isOpenWalkThrough) {
+    // current the welcome walkthrough is not supported for wxp add in
+    await globalStateUpdate(GlobalKey.OpenWalkThrough, false);
+  }
+  if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
+    await openReadMeHandler([TelemetryTriggerFrom.Auto]);
+    await globalStateUpdate(GlobalKey.OpenReadMe, "");
+
+    await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
+    await globalStateUpdate(GlobalKey.CreateWarnings, "");
+  }
+  if (isOpenSampleReadMe) {
+    await showLocalDebugMessage();
+    await openSampleReadmeHandler([TelemetryTriggerFrom.Auto]);
+    await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
+  }
+  if (autoInstallDependency) {
+    void popupOfficeAddInDependenciesMessage();
+    await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
+  }
+}
+
+export function checkOfficeAddInInstalled(directory: string): boolean {
+  const nodeModulesExists = fs.existsSync(path.join(directory, "node_modules"));
+  return nodeModulesExists;
 }

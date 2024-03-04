@@ -549,6 +549,166 @@ describe("SpecParser", () => {
     });
   });
 
+  describe("generateForCopilot", () => {
+    it("should throw an error if the signal is aborted", async () => {
+      const manifestPath = "path/to/manifest";
+      const filter = ["GET /pet/{petId}"];
+      const specPath = "path/to/spec";
+      const signal = { aborted: true } as AbortSignal;
+      const parser = new SpecParser("/path/to/spec.yaml");
+
+      try {
+        await parser.generateForCopilot(manifestPath, filter, specPath, signal);
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
+    it("should throw an error if the signal is aborted after loadSpec", async () => {
+      const manifestPath = "path/to/manifest";
+      const filter = ["GET /pet/{petId}"];
+      const specPath = "path/to/spec";
+      const adaptiveCardFolder = "path/to/adaptiveCardFolder";
+      try {
+        const signal = { aborted: false } as any;
+
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+
+        const parseStub = sinon.stub(specParser as any, "loadSpec").callsFake(async () => {
+          signal.aborted = true;
+          return Promise.resolve();
+        });
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        await specParser.generateForCopilot(manifestPath, filter, specPath, signal);
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
+    it("should throw an error if the signal is aborted after specFilter", async () => {
+      try {
+        const signal = { aborted: false } as any;
+
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+        const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        const specFilterStub = sinon
+          .stub(SpecFilter, "specFilter")
+          .callsFake((filter: string[], unResolveSpec: any) => {
+            signal.aborted = true;
+            return {} as any;
+          });
+        const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+        const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+        const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+        const filter = ["get /hello"];
+
+        const outputSpecPath = "path/to/output.yaml";
+
+        await specParser.generateForCopilot(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          signal
+        );
+
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
+    it("should generate a new spec and write it to a yaml file if spec contains api", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = {
+        openapi: "3.0.0",
+        paths: {
+          "/hello": {
+            get: {
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+      const updateManifestWithAiPluginStub = sinon
+        .stub(ManifestUpdater, "updateManifestWithAiPlugin")
+        .resolves([{}, {}] as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const result = await specParser.generateForCopilot(
+        "path/to/manifest.json",
+        filter,
+        outputSpecPath
+      );
+
+      expect(result.allSuccess).to.be.true;
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(updateManifestWithAiPluginStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      expect(outputJSONStub.calledTwice).to.be.true;
+    });
+
+    it("should throw a SpecParserError if outputFile throws an error", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = { openapi: "3.0.0", paths: {} };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
+      const outputFileStub = sinon.stub(fs, "outputFile").throws(new Error("outputFile error"));
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JSONStringifySpy = sinon.spy(JSON, "stringify");
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+      const manifestUpdaterStub = sinon.stub(ManifestUpdater, "updateManifest").resolves([] as any);
+
+      const filter = ["get /hello"];
+
+      const outputSpecPath = "path/to/output.json";
+
+      try {
+        await specParser.generateForCopilot("path/to/manifest.json", filter, outputSpecPath);
+        expect.fail("Expected generate to throw a SpecParserError");
+      } catch (err: any) {
+        expect(err).to.be.instanceOf(SpecParserError);
+        expect(err.errorType).to.equal(ErrorType.GenerateFailed);
+        expect(err.message).to.equal("Error: outputFile error");
+      }
+    });
+  });
+
   describe("generate", () => {
     it("should throw an error if the signal is aborted", async () => {
       const manifestPath = "path/to/manifest";

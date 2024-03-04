@@ -16,7 +16,8 @@ export class SpecFilter {
     allowMissingId: boolean,
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
-    allowOauth2: boolean
+    allowOauth2: boolean,
+    isCopilot: boolean
   ): OpenAPIV3.Document {
     try {
       const newSpec = { ...unResolveSpec };
@@ -33,7 +34,8 @@ export class SpecFilter {
             allowMissingId,
             allowAPIKeyAuth,
             allowMultipleParameters,
-            allowOauth2
+            allowOauth2,
+            isCopilot
           )
         ) {
           continue;

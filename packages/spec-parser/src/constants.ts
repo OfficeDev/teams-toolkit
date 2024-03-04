@@ -46,6 +46,7 @@ export class ConstantString {
   static readonly TextBlockType = "TextBlock";
   static readonly ContainerType = "Container";
   static readonly RegistrationIdPostfix = "REGISTRATION_ID";
+  static readonly ApiPluginDefaultName = "ai-plugin.json";
   static readonly ResponseCodeFor20X = [
     "200",
     "201",

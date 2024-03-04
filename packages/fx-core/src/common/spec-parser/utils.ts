@@ -157,6 +157,11 @@ export function isSupportedApi(
       const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
       const requestJsonBody = requestBody?.content["application/json"];
 
+      const mediaTypesCount = Object.keys(requestBody?.content || {}).length;
+      if (mediaTypesCount > 1) {
+        return false;
+      }
+
       const responseJson = getResponseJson(operationObject);
       if (Object.keys(responseJson).length === 0) {
         return false;
@@ -296,6 +301,12 @@ export function getResponseJson(
 
   for (const code of ConstantString.ResponseCodeFor20X) {
     const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
+
+    const mediaTypesCount = Object.keys(responseObject?.content || {}).length;
+    if (mediaTypesCount > 1) {
+      return {};
+    }
+
     if (responseObject?.content?.["application/json"]) {
       json = responseObject.content["application/json"];
       break;

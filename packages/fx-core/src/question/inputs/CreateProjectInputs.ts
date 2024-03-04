@@ -78,7 +78,7 @@ export interface CreateProjectInputs extends Inputs {
     | "custom-copilot-assistant-new"
     | "custom-copilot-assistant-assistantsApi";
   /** @description Programming Language */
-  "programming-language"?: "javascript" | "typescript" | "csharp";
+  "programming-language"?: "javascript" | "typescript" | "csharp" | "python";
   /** @description Service for Large Language Model (LLM) */
   "llm-service"?: "llm-service-azureOpenAI" | "llm-service-openAI";
   /** @description Azure OpenAI Key */

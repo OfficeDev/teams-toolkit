@@ -1183,20 +1183,31 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   }
   const capabilities = inputs[QuestionNames.Capabilities] as string;
   // SPFx only supports typescript
-  if (capabilities === CapabilityOptions.SPFxTab().id) {
-    return [{ id: "typescript", label: "TypeScript" }];
+  switch (capabilities) {
+    // SPFx only supports typescript
+    case CapabilityOptions.SPFxTab().id:
+      return [{ id: "typescript", label: "TypeScript" }];
+    // ai bot supports javascript, typescript, python
+    case CapabilityOptions.aiBot().id:
+      return [
+        { id: "javascript", label: "JavaScript" },
+        { id: "typescript", label: "TypeScript" },
+        { id: "python", label: "Python" },
+      ];
+    default:
+      // other cases
+      return [
+        { id: "javascript", label: "JavaScript" },
+        { id: "typescript", label: "TypeScript" },
+      ];
   }
-  // other case
-  return [
-    { id: "javascript", label: "JavaScript" },
-    { id: "typescript", label: "TypeScript" },
-  ];
 }
 
 export enum ProgrammingLanguage {
   JS = "javascript",
   TS = "typescript",
   CSharp = "csharp",
+  PY = "python",
 }
 
 export function programmingLanguageQuestion(): SingleSelectQuestion {
@@ -1209,6 +1220,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
       { id: ProgrammingLanguage.TS, label: "TypeScript" },
       { id: ProgrammingLanguage.CSharp, label: "C#" },
+      { id: ProgrammingLanguage.PY, label: "Python" },
     ],
     dynamicOptions: getLanguageOptions,
     default: (inputs: Inputs) => {

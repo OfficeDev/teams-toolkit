@@ -13,15 +13,24 @@ from teams.state import TurnState
 from config import Config
 
 config = Config()
-if config.OPENAI_API_KEY=="<your-key>" and config.AZURE_OPENAI_API_KEY=="<your-key>":
+{{#useOpenAI}}
+if config.OPENAI_API_KEY=="<openai-api-key>":
     raise RuntimeError(
-        "Missing environment variables - please check that OPENAI_API_KEY or AZURE_OPENAI_API_KEY is set."
+        "Missing environment variables - please check that OPENAI_API_KEY is set."
     )
+{{/useOpenAI}}
+{{#useAzureOpenAI}}
+if config.AZURE_OPENAI_API_KEY=="<azure-openai-api-key>":
+    raise RuntimeError(
+        "Missing environment variables - please check that AZURE_OPENAI_API_KEY is set."
+    )
+{{/useAzureOpenAI}}
 
 # Create AI components
 model: OpenAIModel
 
-if config.AZURE_OPENAI_API_KEY != "<your-key>":
+{{#useAzureOpenAI}}
+if config.AZURE_OPENAI_API_KEY != "<azure-openai-api-key>":
     model = OpenAIModel(
         AzureOpenAIModelOptions(
             api_key=config.AZURE_OPENAI_API_KEY,
@@ -30,13 +39,16 @@ if config.AZURE_OPENAI_API_KEY != "<your-key>":
             api_version="2023-03-15-preview"
         )
     )
-elif config.OPENAI_API_KEY != "<your-key>":
+{{/useAzureOpenAI}}    
+{{#useOpenAI}}
+if config.OPENAI_API_KEY != "<openai-api-key>":
     model = OpenAIModel(
         OpenAIModelOptions(
             api_key=config.OPENAI_API_KEY,
             default_model=config.OPENAI_MODEL_DEPLOYMENT_NAME
         )
     )
+{{/useOpenAI}}
     
 prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/prompts"))
 

@@ -10,16 +10,19 @@ param botAadAppClientId string
 @description('Required by Bot Framework package in your bot project')
 param botAadAppClientSecret string
 
+{{#useAzureOpenAI}}
 @secure()
 @description('Required in your bot project to access Azure OpenAI service. You can get it from Azure Portal > OpenAI > Keys > Key1 > Resource Management > Endpoint')  
 param azureOpenaiKey string
 param azureOpenaiModelDeploymentName string
 param azureOpenaiEndpoint string
-
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
 @secure()
 @description('Required in your bot project to access OpenAI service. You can get it from OpenAI > API > API Key')
 param openaiKey string
 param openaiModelDeploymentName string
+{{/useOpenAI}}
 
 param webAppSKU string
 param linuxFxVersion string
@@ -69,6 +72,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'BOT_PASSWORD'
           value: botAadAppClientSecret
         }
+        {{#useAzureOpenAI}}
         {
           name: 'AZURE_OPENAI_API_KEY'
           value: azureOpenaiKey
@@ -81,6 +85,8 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'AZURE_OPENAI_ENDPOINT'
           value: azureOpenaiEndpoint
         }
+        {{/useAzureOpenAI}}
+        {{#useOpenAI}}
         {
           name: 'OPENAI_API_KEY'
           value: openaiKey
@@ -89,6 +95,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'OPENAI_MODEL_DEPLOYMENT_NAME'
           value: openaiModelDeploymentName
         }
+        {{/useOpenAI}}
       ]
       ftpsState: 'FtpsOnly'
     }

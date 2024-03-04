@@ -54,6 +54,7 @@ import { EmptyOptionError, assembleError } from "../error";
 import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
+  capabilitiesHavePythonOption,
   copilotPluginApiSpecOptionId,
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
@@ -1182,24 +1183,22 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
   }
   const capabilities = inputs[QuestionNames.Capabilities] as string;
-  // SPFx only supports typescript
-  switch (capabilities) {
+  if (capabilities === CapabilityOptions.SPFxTab().id) {
     // SPFx only supports typescript
-    case CapabilityOptions.SPFxTab().id:
-      return [{ id: "typescript", label: "TypeScript" }];
-    // ai bot supports javascript, typescript, python
-    case CapabilityOptions.aiBot().id:
-      return [
-        { id: "javascript", label: "JavaScript" },
-        { id: "typescript", label: "TypeScript" },
-        { id: "python", label: "Python" },
-      ];
-    default:
-      // other cases
-      return [
-        { id: "javascript", label: "JavaScript" },
-        { id: "typescript", label: "TypeScript" },
-      ];
+    return [{ id: "typescript", label: "TypeScript" }];
+  } else if (capabilitiesHavePythonOption.includes(capabilities)) {
+    // support python language
+    return [
+      { id: "javascript", label: "JavaScript" },
+      { id: "typescript", label: "TypeScript" },
+      { id: "python", label: "Python" },
+    ];
+  } else {
+    // other cases
+    return [
+      { id: "javascript", label: "JavaScript" },
+      { id: "typescript", label: "TypeScript" },
+    ];
   }
 }
 

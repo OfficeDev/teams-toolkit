@@ -11,6 +11,7 @@
     "botAadAppClientSecret": {
       "value": "${{SECRET_BOT_PASSWORD}}"
     },
+    {{#useAzureOpenAI}}
     "azureOpenaiKey": {
       "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
     },
@@ -20,12 +21,15 @@
     "azureOpenaiEndpoint" : {
       "value": "${{SECRET_AZURE_OPENAI_ENDPOINT}}"
     },
+    {{/useAzureOpenAI}}
+    {{#useOpenAI}}
     "openaiKey": {
       "value": "${{SECRET_OPENAI_API_KEY}}"
     },
     "openaiModelDeploymentName": {
       "value": "${{SECRET_OPENAI_MODEL_DEPLOYMENT_NAME}}"
     },
+    {{/useOpenAI}}
     "webAppSKU": {
       "value": "B1"
     },

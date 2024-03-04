@@ -13,3 +13,4 @@ export const copilotPluginOptionIds = [
   copilotPluginApiSpecOptionId,
   copilotPluginOpenAIPluginOptionId,
 ];
+export const capabilitiesHavePythonOption = ["ai-bot", "custom-copilot-basic"];

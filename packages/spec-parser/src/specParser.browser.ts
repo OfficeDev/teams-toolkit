@@ -176,6 +176,7 @@ export class SpecParser {
     manifestPath: string,
     filter: string[],
     outputSpecPath: string,
+    apiPluginFileName: string,
     signal?: AbortSignal
   ): Promise<GenerateResult> {
     throw new Error("Method not implemented.");

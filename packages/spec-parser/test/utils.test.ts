@@ -1243,6 +1243,75 @@ describe("utils", () => {
       assert.strictEqual(result, true);
     });
 
+    it("should return false if method is POST, but parameters contain nested object", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "object",
+                        properties: {
+                          id: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        true
+      );
+      assert.strictEqual(result, false);
+    });
+
     it("should return false if method is POST, but requestBody contain nested object", () => {
       const method = "POST";
       const path = "/users";
@@ -1650,6 +1719,10 @@ describe("utils", () => {
                   required: true,
                   schema: { type: "string" },
                 },
+                {
+                  in: "query",
+                  schema: { type: "string" },
+                },
               ],
               responses: {
                 200: {
@@ -1901,6 +1974,55 @@ describe("utils", () => {
         false,
         false,
         false
+      );
+      assert.strictEqual(result, false);
+    });
+
+    it("should return false if method is POST, and request body schema is not object", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        true
       );
       assert.strictEqual(result, false);
     });

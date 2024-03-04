@@ -47,7 +47,11 @@ export class ManifestUpdater {
     return [manifest, apiPlugin];
   }
 
-  static mapOpenAPISchemaToFuncParam(schema: OpenAPIV3.SchemaObject): FunctionParameter {
+  static mapOpenAPISchemaToFuncParam(
+    schema: OpenAPIV3.SchemaObject,
+    method: string,
+    pathUrl: string
+  ): FunctionParameter {
     let parameter: FunctionParameter;
     if (
       schema.type === "string" ||
@@ -59,7 +63,7 @@ export class ManifestUpdater {
       parameter = schema as any;
     } else {
       throw new SpecParserError(
-        "Unsupported schema for pluginFile: " + JSON.stringify(schema),
+        Utils.format(ConstantString.UnsupportedSchema, method, pathUrl, JSON.stringify(schema)),
         ErrorType.UpdateManifestFailed
       );
     }
@@ -76,85 +80,96 @@ export class ManifestUpdater {
 
     const paths = spec.paths;
 
-    if (paths) {
-      for (const pathUrl in paths) {
-        const pathItem = paths[pathUrl];
-        if (pathItem) {
-          const operations = pathItem;
-          for (const method in operations) {
-            if (ConstantString.AllOperationMethods.includes(method)) {
-              const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
-              if (operationItem) {
-                const operationId = operationItem.operationId!;
-                const description = operationItem.description ?? "";
-                const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
-                const requestBody = operationItem.requestBody as OpenAPIV3.ParameterObject;
+    for (const pathUrl in paths) {
+      const pathItem = paths[pathUrl];
+      if (pathItem) {
+        const operations = pathItem;
+        for (const method in operations) {
+          if (ConstantString.AllOperationMethods.includes(method)) {
+            const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
+            if (operationItem) {
+              const operationId = operationItem.operationId!;
+              const description = operationItem.description ?? "";
+              const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
+              const requestBody = operationItem.requestBody as OpenAPIV3.ParameterObject;
 
-                const parameters: FunctionParameters = {
-                  type: "object",
-                  properties: {},
-                  required: [],
-                };
+              const parameters: FunctionParameters = {
+                type: "object",
+                properties: {},
+                required: [],
+              };
 
-                if (paramObject) {
-                  for (let i = 0; i < paramObject.length; i++) {
-                    const param = paramObject[i];
+              if (paramObject) {
+                for (let i = 0; i < paramObject.length; i++) {
+                  const param = paramObject[i];
 
-                    const schema = param.schema as OpenAPIV3.SchemaObject;
+                  const schema = param.schema as OpenAPIV3.SchemaObject;
 
-                    parameters.properties![param.name] =
-                      ManifestUpdater.mapOpenAPISchemaToFuncParam(schema);
+                  parameters.properties![param.name] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
+                    schema,
+                    method,
+                    pathUrl
+                  );
 
-                    if (param.required) {
-                      parameters.required!.push(param.name);
-                    }
+                  if (param.required) {
+                    parameters.required!.push(param.name);
+                  }
 
-                    if (!parameters.properties![param.name].description) {
-                      parameters.properties![param.name].description = param.description;
-                    }
+                  if (!parameters.properties![param.name].description) {
+                    parameters.properties![param.name].description = param.description ?? "";
                   }
                 }
-
-                if (requestBody) {
-                  const requestJsonBody = requestBody.content!["application/json"];
-                  const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-
-                  // requestBodySchema can only be object, because we only support application/json
-                  if (requestBodySchema.type === "object") {
-                    if (requestBodySchema.required) {
-                      parameters.required!.push(...requestBodySchema.required);
-                    }
-
-                    for (const property in requestBodySchema.properties) {
-                      const schema = requestBodySchema.properties[
-                        property
-                      ] as OpenAPIV3.SchemaObject;
-                      parameters.properties![property] =
-                        ManifestUpdater.mapOpenAPISchemaToFuncParam(schema);
-                    }
-                  }
-                }
-
-                const funcObj: FunctionObject = {
-                  name: operationId,
-                  description: description,
-                  parameters: parameters,
-                  states: {
-                    reasoning: {
-                      description: "Use the parameters to call API",
-                      instructions: [],
-                    },
-                    responding: {
-                      description: "Returns result in JSON format.",
-                      instructions:
-                        "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
-                    },
-                  },
-                };
-
-                functions.push(funcObj);
-                functionNames.push(operationId);
               }
+
+              if (requestBody) {
+                const requestJsonBody = requestBody.content!["application/json"];
+                const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
+
+                if (requestBodySchema.type === "object") {
+                  if (requestBodySchema.required) {
+                    parameters.required!.push(...requestBodySchema.required);
+                  }
+
+                  for (const property in requestBodySchema.properties) {
+                    const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
+                    parameters.properties![property] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
+                      schema,
+                      method,
+                      pathUrl
+                    );
+                  }
+                } else {
+                  throw new SpecParserError(
+                    Utils.format(
+                      ConstantString.UnsupportedSchema,
+                      method,
+                      pathUrl,
+                      JSON.stringify(requestBodySchema)
+                    ),
+                    ErrorType.UpdateManifestFailed
+                  );
+                }
+              }
+
+              const funcObj: FunctionObject = {
+                name: operationId,
+                description: description,
+                parameters: parameters,
+                states: {
+                  reasoning: {
+                    description: "Use the parameters to call API",
+                    instructions: [],
+                  },
+                  responding: {
+                    description: "Returns result in JSON format.",
+                    instructions:
+                      "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
+                  },
+                },
+              };
+
+              functions.push(funcObj);
+              functionNames.push(operationId);
             }
           }
         }
@@ -163,7 +178,7 @@ export class ManifestUpdater {
 
     const apiPlugin: PluginManifestSchema = {
       schema_version: "v2",
-      name_for_human: spec.info.title ?? "<Please add title of the plugin>",
+      name_for_human: spec.info.title,
       description_for_human: spec.info.description ?? "<Please add description of the plugin>",
       functions: functions,
       runtimes: [

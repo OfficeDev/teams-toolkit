@@ -33,6 +33,8 @@ export class ConstantString {
   static readonly MultipleAPIKeyNotSupported =
     "Multiple API keys are not supported. Please make sure that all selected APIs use the same API key.";
 
+  static readonly UnsupportedSchema = "Unsupported schema in %s %s: %s";
+
   static readonly WrappedCardVersion = "devPreview";
   static readonly WrappedCardSchema =
     "https://developer.microsoft.com/json-schemas/teams/vDevPreview/MicrosoftTeams.ResponseRenderingTemplate.schema.json";

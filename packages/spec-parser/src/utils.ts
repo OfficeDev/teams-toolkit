@@ -217,6 +217,11 @@ export class Utils {
 
         if (requestJsonBody) {
           const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
+
+          if (isCopilot && requestBodySchema.type !== "object") {
+            return false;
+          }
+
           requestBodyParamResult = Utils.checkPostBody(
             requestBodySchema,
             requestBody.required,

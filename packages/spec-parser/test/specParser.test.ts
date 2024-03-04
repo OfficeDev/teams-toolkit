@@ -626,6 +626,41 @@ describe("SpecParser", () => {
       }
     });
 
+    it("should throw an error if the signal is aborted after specFilter", async () => {
+      try {
+        const signal = { aborted: false } as any;
+
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const spec = { openapi: "3.0.0", paths: {} };
+        const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+        const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+        const specFilterStub = sinon.stub(SpecFilter, "specFilter").resolves();
+        const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+        const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+
+        const JsyamlSpy = sinon.stub(jsyaml, "dump").callsFake((obj) => {
+          signal.aborted = true;
+          return {} as any;
+        });
+
+        const filter = ["get /hello"];
+
+        const outputSpecPath = "path/to/output.yaml";
+
+        await specParser.generateForCopilot(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          signal
+        );
+
+        expect.fail("Expected an error to be thrown");
+      } catch (err) {
+        expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.Cancelled);
+      }
+    });
+
     it("should generate a new spec and write it to a yaml file if spec contains api", async () => {
       const specParser = new SpecParser("path/to/spec.yaml");
       const spec = {

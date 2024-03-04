@@ -1900,6 +1900,9 @@ importers:
       '@microsoft/dev-tunnels-management':
         specifier: 1.1.9
         version: 1.1.9
+      '@microsoft/dev-tunnels-ssh':
+        specifier: 3.11.36
+        version: 3.11.36
       '@microsoft/teamsfx-api':
         specifier: workspace:*
         version: link:../api
@@ -1979,9 +1982,6 @@ importers:
       '@istanbuljs/nyc-config-typescript':
         specifier: ^1.0.2
         version: 1.0.2(nyc@15.1.0)
-      '@microsoft/dev-tunnels-ssh':
-        specifier: 3.11.36
-        version: 3.11.36
       '@svgr/webpack':
         specifier: ^8.1.0
         version: 8.1.0

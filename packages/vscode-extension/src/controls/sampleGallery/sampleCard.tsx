@@ -28,7 +28,6 @@ export default class SampleCard extends React.Component<SampleProps, { imageUrl:
         className="thumbnail"
         src={this.state.imageUrl}
         onError={() => {
-          console.log(`!!!error ${this.state.imageUrl}`);
           const downloadUrlInfo = sample.downloadUrlInfo;
           this.setState({
             imageUrl: `https://media.githubusercontent.com/media/${downloadUrlInfo.owner}/${downloadUrlInfo.repository}/${downloadUrlInfo.ref}/${downloadUrlInfo.dir}/${sample.thumbnailPath}`,

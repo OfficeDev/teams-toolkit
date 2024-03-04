@@ -108,13 +108,12 @@ describe("updateManifestWithAiPlugin", () => {
           },
           states: {
             reasoning: {
-              description: "Use the parameters to call API",
-              instructions: [],
+              description: ConstantString.ReasoningDescription,
+              instructions: [ConstantString.ReasoningInstruction],
             },
             responding: {
-              description: "Returns result in JSON format.",
-              instructions:
-                "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
+              description: ConstantString.RespondingDescription,
+              instructions: [ConstantString.RespondingInstruction],
             },
           },
         },
@@ -133,13 +132,12 @@ describe("updateManifestWithAiPlugin", () => {
           },
           states: {
             reasoning: {
-              description: "Use the parameters to call API",
-              instructions: [],
+              description: ConstantString.ReasoningDescription,
+              instructions: [ConstantString.ReasoningInstruction],
             },
             responding: {
-              description: "Returns result in JSON format.",
-              instructions:
-                "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
+              description: ConstantString.RespondingDescription,
+              instructions: [ConstantString.RespondingInstruction],
             },
           },
         },
@@ -169,7 +167,7 @@ describe("updateManifestWithAiPlugin", () => {
     expect(apiPlugin).to.deep.equal(expectedApiPlugins);
   });
 
-  it("should update the manifest with the correct manifest and apiPlugin files", async () => {
+  it("should update the manifest with the correct manifest and apiPlugin files with optional parameters", async () => {
     const spec: any = {
       openapi: "3.0.2",
       info: {
@@ -269,13 +267,12 @@ describe("updateManifestWithAiPlugin", () => {
           },
           states: {
             reasoning: {
-              description: "Use the parameters to call API",
-              instructions: [],
+              description: ConstantString.ReasoningDescription,
+              instructions: [ConstantString.ReasoningInstruction],
             },
             responding: {
-              description: "Returns result in JSON format.",
-              instructions:
-                "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
+              description: ConstantString.RespondingDescription,
+              instructions: [ConstantString.RespondingInstruction],
             },
           },
         },
@@ -294,13 +291,12 @@ describe("updateManifestWithAiPlugin", () => {
           },
           states: {
             reasoning: {
-              description: "Use the parameters to call API",
-              instructions: [],
+              description: ConstantString.ReasoningDescription,
+              instructions: [ConstantString.ReasoningInstruction],
             },
             responding: {
-              description: "Returns result in JSON format.",
-              instructions:
-                "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
+              description: ConstantString.RespondingDescription,
+              instructions: [ConstantString.RespondingInstruction],
             },
           },
         },
@@ -486,13 +482,12 @@ describe("updateManifestWithAiPlugin", () => {
           },
           states: {
             reasoning: {
-              description: "Use the parameters to call API",
-              instructions: [],
+              description: ConstantString.ReasoningDescription,
+              instructions: [ConstantString.ReasoningInstruction],
             },
             responding: {
-              description: "Returns result in JSON format.",
-              instructions:
-                "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
+              description: ConstantString.RespondingDescription,
+              instructions: [ConstantString.RespondingInstruction],
             },
           },
         },
@@ -511,13 +506,12 @@ describe("updateManifestWithAiPlugin", () => {
           },
           states: {
             reasoning: {
-              description: "Use the parameters to call API",
-              instructions: [],
+              description: ConstantString.ReasoningDescription,
+              instructions: [ConstantString.ReasoningInstruction],
             },
             responding: {
-              description: "Returns result in JSON format.",
-              instructions:
-                "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
+              description: ConstantString.RespondingDescription,
+              instructions: [ConstantString.RespondingInstruction],
             },
           },
         },

@@ -32,6 +32,15 @@ export class ManifestUpdater {
       },
     ];
 
+    ManifestUpdater.updateManifestDescription(manifest, spec);
+
+    const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
+    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(spec, specRelativePath);
+
+    return [manifest, apiPlugin];
+  }
+
+  static updateManifestDescription(manifest: TeamsAppManifest, spec: OpenAPIV3.Document): void {
     manifest.description = {
       short: spec.info.title.slice(0, ConstantString.ShortDescriptionMaxLens),
       full: (spec.info.description ?? manifest.description.full)?.slice(
@@ -39,12 +48,6 @@ export class ManifestUpdater {
         ConstantString.FullDescriptionMaxLens
       ),
     };
-
-    const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
-
-    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(spec, specRelativePath);
-
-    return [manifest, apiPlugin];
   }
 
   static mapOpenAPISchemaToFuncParam(
@@ -157,13 +160,12 @@ export class ManifestUpdater {
                 parameters: parameters,
                 states: {
                   reasoning: {
-                    description: "Use the parameters to call API",
-                    instructions: [],
+                    description: ConstantString.ReasoningDescription,
+                    instructions: [ConstantString.ReasoningInstruction],
                   },
                   responding: {
-                    description: "Returns result in JSON format.",
-                    instructions:
-                      "Extract and include as much relevant information as possible from the JSON result to meet the user's needs.",
+                    description: ConstantString.RespondingDescription,
+                    instructions: [ConstantString.RespondingInstruction],
                   },
                 },
               };
@@ -249,14 +251,8 @@ export class ManifestUpdater {
         }
       }
 
-      updatedPart.description = {
-        short: spec.info.title.slice(0, ConstantString.ShortDescriptionMaxLens),
-        full: (spec.info.description ?? originalManifest.description.full)?.slice(
-          0,
-          ConstantString.FullDescriptionMaxLens
-        ),
-      };
-
+      updatedPart.description = originalManifest.description;
+      ManifestUpdater.updateManifestDescription(updatedPart, spec);
       updatedPart.composeExtensions = isMe === undefined || isMe === true ? [composeExtension] : [];
 
       const updatedManifest = { ...originalManifest, ...updatedPart };

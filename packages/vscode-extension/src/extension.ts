@@ -23,6 +23,7 @@ import {
 
 import {
   AadAppTemplateCodeLensProvider,
+  ApiPluginCodeLensProvider,
   CopilotPluginCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
@@ -744,7 +745,11 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   const smeOpenapiSpecSelector = {
     language: "yaml",
     scheme: "file",
-    pattern: `**/${AppPackageFolderName}/apiSpecFiles/*.{yml,yaml}`,
+    pattern: `**/${AppPackageFolderName}/apiSpecificationFiles/*.{yml,yaml}`,
+  };
+  const apiPluginOpenapiSpecJsonSelector: vscode.DocumentSelector = {
+    scheme: "file",
+    pattern: `**/${AppPackageFolderName}/apiSpecificationFiles/*.{yml,yaml,json}`,
   };
 
   const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
@@ -782,6 +787,14 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       manifestTemplateSelector,
       copilotPluginCodeLensProvider
+    )
+  );
+
+  const apiPluginCodeLensProvider = new ApiPluginCodeLensProvider();
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      apiPluginOpenapiSpecJsonSelector,
+      apiPluginCodeLensProvider
     )
   );
 

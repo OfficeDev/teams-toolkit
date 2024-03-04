@@ -1882,6 +1882,7 @@ export class CustomCopilotRagOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotRagCustomApiOption.detail"
       ),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
 
@@ -1929,6 +1930,7 @@ export class CustomCopilotAssistantOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.detail"
       ),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
 
@@ -1947,6 +1949,7 @@ function customCopilotRagQuestion(): SingleSelectQuestion {
     ),
     staticOptions: CustomCopilotRagOptions.all(),
     dynamicOptions: () => CustomCopilotRagOptions.all(),
+    default: CustomCopilotRagOptions.customize().id,
   };
 }
 
@@ -1960,6 +1963,7 @@ function customCopilotAssistantQuestion(): SingleSelectQuestion {
     ),
     staticOptions: CustomCopilotAssistantOptions.all(),
     dynamicOptions: () => CustomCopilotAssistantOptions.all(),
+    default: CustomCopilotAssistantOptions.new().id,
   };
 }
 
@@ -2002,6 +2006,7 @@ function llmServiceQuestion(): SingleSelectQuestion {
       return options;
     },
     skipSingleOption: true,
+    default: "llm-service-azureOpenAI",
   };
 }
 

@@ -1290,6 +1290,9 @@
     "@azure/ms-rest-azure-env": "^2.0.0",
     "@fluentui/react": "^8.106.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.2",
+    "@microsoft/dev-tunnels-contracts": "1.1.9",
+    "@microsoft/dev-tunnels-management": "1.1.9",
+    "@microsoft/dev-tunnels-ssh": "3.11.36",
     "@svgr/webpack": "^8.1.0",
     "@types/chai": "^4.2.14",
     "@types/chai-as-promised": "^7.1.3",
@@ -1368,10 +1371,7 @@
     "@azure/identity": "^3.1.3",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.14.6",
-    "@microsoft/dev-tunnels-connections": "1.0.7445",
-    "@microsoft/dev-tunnels-contracts": "1.0.7445",
-    "@microsoft/dev-tunnels-management": "1.0.7445",
-    "@microsoft/dev-tunnels-ssh": "3.11.31",
+    "@microsoft/dev-tunnels-connections": "1.1.9",
     "@microsoft/teamsfx-api": "workspace:*",
     "@microsoft/teamsfx-core": "workspace:*",
     "@microsoft/vscode-ui": "workspace:*",
@@ -1392,7 +1392,7 @@
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",
     "validator": "^13.7.0",
-    "vscode-tas-client": "^0.1.47"
+    "vscode-tas-client": "^0.1.75"
   },
   "extensionDependencies": [
     "ms-vscode.azure-account",

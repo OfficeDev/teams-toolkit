@@ -125,8 +125,9 @@ describe("ConversationBot Tests - Node", () => {
     assert.isTrue(called);
   });
 
-  it("onTurnError correctly handles error", async () => {
+  it("onTurnError correctly handles error when it's message activity", async () => {
     const context = sandbox.createStubInstance(TurnContext);
+    sandbox.stub(TurnContext.prototype, "activity").value({ type: "message" });
     const conversationBot = new ConversationBot({});
     const error = new Error("test error");
     await conversationBot.adapter.onTurnError(context, error);
@@ -139,5 +140,31 @@ describe("ConversationBot Tests - Node", () => {
         "To continue to run this bot, please fix the bot source code."
       )
     );
+  });
+
+  it("onTurnError correctly handles error with error string", async () => {
+    const context = sandbox.createStubInstance(TurnContext);
+    sandbox.stub(TurnContext.prototype, "activity").value({ type: "message" });
+    const conversationBot = new ConversationBot({});
+    const error = "test error";
+    await conversationBot.adapter.onTurnError(context, error as any);
+    assert.isTrue(context.sendActivity.calledTwice);
+    assert.isTrue(
+      context.sendActivity.calledWith(`The bot encountered unhandled error: undefined`)
+    );
+    assert.isTrue(
+      context.sendActivity.calledWith(
+        "To continue to run this bot, please fix the bot source code."
+      )
+    );
+  });
+
+  it("onTurnError skip to handle error when it's not message activity", async () => {
+    const context = sandbox.createStubInstance(TurnContext);
+    sandbox.stub(TurnContext.prototype, "activity").value({ type: "invoke" });
+    const conversationBot = new ConversationBot({});
+    const error = new Error("test error");
+    await conversationBot.adapter.onTurnError(context, error);
+    assert.isFalse(context.sendActivity.called);
   });
 });

@@ -95,7 +95,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Extend the AI Assistant Bot template with more AI capabilities
 
-You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Assistant Bot template with more AI capabilities.
+You can follow [AI assistant bot in Teams](https://aka.ms/teamsfx-ai-assistant-bot) to extend the AI Assistant Bot template with more AI capabilities.
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

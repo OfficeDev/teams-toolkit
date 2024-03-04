@@ -137,7 +137,7 @@
 /templates/**/notification-webapi @kimizhu @dooriya @swatDong
 /templates/**/workflow @kimizhu @dooriya @swatDong
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/**/ai-bot @kimizhu @swatDong @kuojianlu
+/templates/**/ai-bot @kimizhu @swatDong @kuojianlu @frankqianms
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
 
 /packages/fx-core/.eslintignore @LongOddCode @wenytang-ms

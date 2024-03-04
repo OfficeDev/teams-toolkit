@@ -2578,7 +2578,16 @@ describe("scaffold question", () => {
       });
       assert.isTrue(options.length === 3); // js, ts, python
     });
+    it("should return expected 3 language options for custom copilot basic python", () => {
+      const options = getLanguageOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotBasic().id,
+      });
+      assert.isTrue(options.length === 3); // js, ts, python
+    });
   });
+
   describe("getTemplate", () => {
     it("should find taskpane template", () => {
       const inputs: Inputs = {

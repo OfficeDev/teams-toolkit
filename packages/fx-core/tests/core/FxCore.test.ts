@@ -1452,6 +1452,7 @@ describe("isEnvFile", async () => {
         const names: string[] = [];
         collectNodeNames(node!, names);
         assert.deepEqual(names, [
+          "addin-office-capability",
           "capabilities",
           "bot-host-type-trigger",
           "spfx-solution",
@@ -1491,6 +1492,7 @@ describe("isEnvFile", async () => {
         collectNodeNames(node!, names);
         assert.deepEqual(names, [
           "runtime",
+          "addin-office-capability",
           "capabilities",
           "bot-host-type-trigger",
           "spfx-solution",
@@ -1530,6 +1532,7 @@ describe("isEnvFile", async () => {
         const names: string[] = [];
         collectNodeNames(node!, names);
         assert.deepEqual(names, [
+          "addin-office-capability",
           "capabilities",
           "bot-host-type-trigger",
           "spfx-solution",
@@ -1570,6 +1573,7 @@ describe("isEnvFile", async () => {
         const names: string[] = [];
         collectNodeNames(node!, names);
         assert.deepEqual(names, [
+          "addin-office-capability",
           "capabilities",
           "bot-host-type-trigger",
           "spfx-solution",

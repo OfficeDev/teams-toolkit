@@ -39,7 +39,7 @@ The app template is built using the Teams AI library, which provides the capabil
 1. In `src/app/app.js`, update `azureDefaultDeployment` to your own model deployment name.
 {{/useAzureOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
-1. You will receive a welcome message from the bot, or send any message to get a response.
+1. You can send any message to get a response from the bot.
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
 
@@ -55,7 +55,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{/useAzureOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-1. You will receive a welcome message from the bot, or send any message to get a response.
+1. You can send any message to get a response from the bot.
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
@@ -93,7 +93,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Extend the AI Chat Bot template with more AI capabilities
 
-You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Chat Bot template with more AI capabilities.
+You can follow [AI chat bot in Teams](https://aka.ms/teamsfx-ai-chat-bot) to extend the AI Chat Bot template with more AI capabilities.
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

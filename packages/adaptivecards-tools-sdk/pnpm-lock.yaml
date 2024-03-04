@@ -16,7 +16,7 @@ dependencies:
     version: 2.1.0(adaptive-expressions@4.20.0)
   markdown-it:
     specifier: ^12.2.0
-    version: 12.2.0
+    version: 12.3.2
   react:
     specifier: ^17.0.2
     version: 17.0.2
@@ -1912,8 +1912,8 @@ packages:
       semver: 6.3.1
     dev: true
 
-  /markdown-it@12.2.0:
-    resolution: {integrity: sha512-Wjws+uCrVQRqOoJvze4HCqkKl1AsSh95iFAeQDwnyfxM09divCBSXlDR1uTvyUP3Grzpn4Ru8GeCxYPM8vkCQg==}
+  /markdown-it@12.3.2:
+    resolution: {integrity: sha512-TchMembfxfNVpHkbtriWltGWc+m3xszaRD0CZup7GFFhzIgQqxIfn3eGj1yZpfuflzPvfkt611B2Q/Bsk1YnGg==}
     hasBin: true
     dependencies:
       argparse: 2.0.1

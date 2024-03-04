@@ -1,13 +1,12 @@
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
-import {
+const {
   CloudAdapter,
-  ConfigurationBotFrameworkAuthentication,
   ConfigurationServiceClientCredentialFactory,
-} from "botbuilder";
+  ConfigurationBotFrameworkAuthentication,
+} = require("botbuilder");
 
-// This bot's main dialog.
-import config from "./config";
+const config = require("./config");
 
 const botFrameworkAuthentication = new ConfigurationBotFrameworkAuthentication(
   {},
@@ -45,4 +44,4 @@ const onTurnErrorHandler = async (context, error) => {
 // Set the onTurnError for the singleton CloudAdapter.
 adapter.onTurnError = onTurnErrorHandler;
 
-export default adapter;
+module.exports = adapter;

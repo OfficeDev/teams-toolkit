@@ -210,7 +210,7 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      if (isValidOfficeAddInProject(res.value)) {
+      if (isValidOfficeAddInProject((res.value as vscode.Uri).fsPath)) {
         await openOfficeDevFolder(res.value, true);
       } else {
         await openFolder(res.value, true);

@@ -210,6 +210,12 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
     void popupOfficeAddInDependenciesMessage();
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
   }
+  if (
+    globalVariables.isOfficeAddInProject &&
+    !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "")
+  ) {
+    void popupOfficeAddInDependenciesMessage();
+  }
 }
 
 export function checkOfficeAddInInstalled(directory: string): boolean {

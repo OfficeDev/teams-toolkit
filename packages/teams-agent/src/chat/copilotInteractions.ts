@@ -57,7 +57,7 @@ export async function verbatimCopilotInteraction(
 export async function getResponseAsStringCopilotInteraction(
   systemPrompt: string,
   request: AgentRequest
-): Promise<string | undefined> {
+): Promise<string> {
   let joinedFragements = "";
   await queueCopilotInteraction(
     (fragment) => {

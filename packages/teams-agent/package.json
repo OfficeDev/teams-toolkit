@@ -40,7 +40,7 @@
           },
           {
             "name": "nextstep",
-            "description": "Describe what next step you might do in Teams"
+            "description": "Use this command to move to the next step anytime."
           },
           {
             "name": "codetocloud",
@@ -64,6 +64,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
+    "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.0",
     "@types/tmp": "^0.2.6",
     "@types/vscode": "^1.86.0",
@@ -77,6 +78,8 @@
     "dotenv": "^16.4.1",
     "dree": "^4.6.2",
     "fs-extra": "^11.2.0",
+    "glob": "^10.3.10",
+    "lodash": "^4.17.21",
     "tiktoken": "^1.0.13",
     "tmp": "^0.2.1"
   }

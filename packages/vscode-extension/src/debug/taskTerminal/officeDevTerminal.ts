@@ -16,7 +16,6 @@ export const triggerGenerateGUID = "generate manifest GUID";
 
 export class OfficeDevTerminal extends BaseTaskTerminal {
   private static instance: vscode.Terminal | undefined;
-  private line = "";
 
   constructor() {
     super();
@@ -54,8 +53,7 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
           OfficeDevTerminal.instance?.dispose();
           OfficeDevTerminal.instance = undefined;
         });
-    } else if (data === `${triggerInstall}\r`) {
-      this.line = "";
+    } else if (data.startsWith(triggerInstall)) {
       this.writeEmitter.fire(
         `\r\n${this.color(
           localize("teamstoolkit.officeAddIn.terminal.installDependency"),
@@ -63,8 +61,7 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
         )}\r\n`
       );
       this.installDependencies();
-    } else if (data === `${triggerValidate}\r`) {
-      this.line = "";
+    } else if (data.startsWith(triggerValidate)) {
       this.writeEmitter.fire(
         `\r\n${this.color(
           localize("teamstoolkit.officeAddIn.terminal.validateManifest"),
@@ -72,8 +69,7 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
         )}\r\n`
       );
       this.runValidate();
-    } else if (data === `${triggerStopDebug}\r`) {
-      this.line = "";
+    } else if (data.startsWith(triggerStopDebug)) {
       this.writeEmitter.fire(
         `\r\n${this.color(
           localize("teamstoolkit.officeAddIn.terminal.stopDebugging"),
@@ -81,8 +77,7 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
         )}\r\n`
       );
       this.stopDebug();
-    } else if (data === `${triggerGenerateGUID}\r`) {
-      this.line = "";
+    } else if (data.startsWith(triggerGenerateGUID)) {
       this.writeEmitter.fire(
         `\r\n${this.color(
           localize("teamstoolkit.officeAddIn.terminal.generateManifestGUID"),

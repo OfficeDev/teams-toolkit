@@ -527,6 +527,18 @@
         {
           "command": "fx-extension.openSurvey",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.openOfficeDevLifecycleLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openOfficeDevDevelopmentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openOfficeDevHelpFeedbackLink",
+          "when": "false"
         }
       ]
     },

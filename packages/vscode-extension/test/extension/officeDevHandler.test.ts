@@ -1,12 +1,10 @@
-import * as sinon from "sinon";
+import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
+import * as sinon from "sinon";
 import * as vscode from "vscode";
+import * as extension from "../../src/extension";
 import * as officeDevHandlers from "../../src/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
-import * as extension from "../../src/extension";
-import { FxError, Result, ok } from "@microsoft/teamsfx-api";
-import * as localizeUtils from "../../src/utils/localizeUtils";
-import * as handlers from "../../src/handlers";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();

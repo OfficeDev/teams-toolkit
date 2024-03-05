@@ -6,8 +6,18 @@
  */
 "use strict";
 
-import * as vscode from "vscode";
+import { FxError, Result, Warning, err, ok } from "@microsoft/teamsfx-api";
+import {
+  FileNotFoundError,
+  fetchManifestList,
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
+import * as path from "path";
+import * as vscode from "vscode";
+import { Uri } from "vscode";
+import { GlobalKey } from "./constants";
 import {
   OfficeDevTerminal,
   triggerGenerateGUID,
@@ -15,17 +25,8 @@ import {
   triggerStopDebug,
   triggerValidate,
 } from "./debug/taskTerminal/officeDevTerminal";
-import {
-  FileNotFoundError,
-  fetchManifestList,
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
-import { FxError, Result, Warning, err, ok } from "@microsoft/teamsfx-api";
 import * as globalVariables from "./globalVariables";
-import * as path from "path";
-import { localize } from "./utils/localizeUtils";
 import {
   ShowScaffoldingWarningSummary,
   autoInstallDependencyHandler,
@@ -33,10 +34,9 @@ import {
   openSampleReadmeHandler,
   showLocalDebugMessage,
 } from "./handlers";
-import { Uri } from "vscode";
-import { isTriggerFromWalkThrough } from "./utils/commonUtils";
-import { GlobalKey } from "./constants";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
+import { isTriggerFromWalkThrough } from "./utils/commonUtils";
+import { localize } from "./utils/localizeUtils";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]
@@ -142,13 +142,21 @@ export function generateManifestGUID(args?: any[]): Promise<Result<null, FxError
 export function editOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {
   const workspacePath = globalVariables.workspaceUri?.fsPath;
   if (!workspacePath) {
-    void VS_CODE_UI.showMessage("error", `Not valid workspace path`, false);
+    void VS_CODE_UI.showMessage(
+      "error",
+      localize("teamstoolkit.officeAddIn.workspace.invalid"),
+      false
+    );
     return Promise.resolve(err(new FileNotFoundError("editManifest", "workspace")));
   }
 
   const manifestList = fetchManifestList(workspacePath);
   if (!manifestList || manifestList.length == 0) {
-    void VS_CODE_UI.showMessage("error", `Manifest not exist under ${workspacePath}`, false);
+    void VS_CODE_UI.showMessage(
+      "error",
+      localize("teamstoolkit.officeAddIn.terminal.manifest.notfound"),
+      false
+    );
     return Promise.resolve(err(new FileNotFoundError("editManifest", "workspace")));
   }
 

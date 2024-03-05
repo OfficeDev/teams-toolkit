@@ -70,7 +70,6 @@
     "teamstoolkit.commands.deploy.title": "Deploy",
     "teamstoolkit.commands.updateAadAppManifest.title": "Update Microsoft Entra App",
     "teamstoolkit.commands.lifecycleLink.title": "Learn More About Lifecycle",
-    "teamstoolkit.commands.debugLink.title": "Learn More About Debug",
     "teamstoolkit.commands.developmentLink.title": "Learn More About Development",
     "teamstoolkit.commands.devPortal.title": "Developer Portal for Teams",
     "teamstoolkit.commands.document.title": "Documentation",
@@ -446,6 +445,6 @@
     "teamstoolkit.officeAddIn.terminal.terminate": "* Ctrl +C to close the terminal.",
     "teamstoolkit.officeAddIn.terminal.fail.tips": "failed and check the error message!",
     "teamstoolkit.officeAddIn.terminal.success.tips": "completed successfully!",
-    "teamstoolkit.officeAddIn.terminal.manifest.notfound":"Manifest xml file not found"
-
+    "teamstoolkit.officeAddIn.terminal.manifest.notfound":"Manifest xml file not found",
+    "teamstoolkit.officeAddIn.workspace.invalid": "Invalid workspace path"
 }

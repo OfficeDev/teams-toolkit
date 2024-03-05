@@ -124,7 +124,15 @@ export function happyPathTest(runtime: Runtime): void {
 
     this.afterEach(async () => {
       console.log(`[Successfully] start to clean up for ${projectPath}`);
-      await cleanUp(appName, projectPath, false, true, false, teamsAppId);
+      await cleanUp(
+        appName,
+        projectPath,
+        false,
+        true,
+        false,
+        envName,
+        teamsAppId
+      );
     });
   });
 }

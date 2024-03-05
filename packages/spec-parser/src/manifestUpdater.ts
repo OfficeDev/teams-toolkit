@@ -23,13 +23,14 @@ export class ManifestUpdater {
   static async updateManifestWithAiPlugin(
     manifestPath: string,
     outputSpecPath: string,
-    apiPluginFileName: string,
+    apiPluginFilePath: string,
     spec: OpenAPIV3.Document
   ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
+    const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
     manifest.apiPlugins = [
       {
-        pluginFile: apiPluginFileName,
+        pluginFile: apiPluginRelativePath,
       },
     ];
 
@@ -159,16 +160,6 @@ export class ManifestUpdater {
                 name: operationId,
                 description: description,
                 parameters: parameters,
-                states: {
-                  reasoning: {
-                    description: "",
-                    instructions: [],
-                  },
-                  responding: {
-                    description: "",
-                    instructions: [],
-                  },
-                },
               };
 
               functions.push(funcObj);

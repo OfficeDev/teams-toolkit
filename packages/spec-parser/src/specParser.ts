@@ -219,12 +219,13 @@ export class SpecParser {
    * @param manifestPath A file path of the Teams app manifest file to update.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
    * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param pluginFilePath File path of the api plugin file to generate.
    */
   async generateForCopilot(
     manifestPath: string,
     filter: string[],
     outputSpecPath: string,
-    apiPluginFileName: string,
+    pluginFilePath: string,
     signal?: AbortSignal
   ): Promise<GenerateResult> {
     const result: GenerateResult = {
@@ -252,13 +253,12 @@ export class SpecParser {
       const [updatedManifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
-        apiPluginFileName,
+        pluginFilePath,
         newSpec
       );
 
-      const apiPluginFilePath = path.join(path.dirname(manifestPath), apiPluginFileName);
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
-      await fs.outputJSON(apiPluginFilePath, apiPlugin, { spaces: 2 });
+      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 2 });
     } catch (err) {
       if (err instanceof SpecParserError) {
         throw err;

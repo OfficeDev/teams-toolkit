@@ -73,7 +73,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
-    const pluginFileName = "ai-plugin.json";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
 
     sinon.stub(fs, "pathExists").resolves(true);
     const originalManifest = {
@@ -85,7 +85,7 @@ describe("updateManifestWithAiPlugin", () => {
       description: { short: "My API", full: "My API description" },
       apiPlugins: [
         {
-          pluginFile: pluginFileName,
+          pluginFile: "ai-plugin.json",
         },
       ],
     };
@@ -108,16 +108,6 @@ describe("updateManifestWithAiPlugin", () => {
             },
             required: ["limit"],
           },
-          states: {
-            reasoning: {
-              description: "",
-              instructions: [],
-            },
-            responding: {
-              description: "",
-              instructions: [],
-            },
-          },
         },
         {
           name: "createPet",
@@ -130,16 +120,6 @@ describe("updateManifestWithAiPlugin", () => {
                 type: "string",
                 description: "Name of the pet",
               },
-            },
-          },
-          states: {
-            reasoning: {
-              description: "",
-              instructions: [],
-            },
-            responding: {
-              description: "",
-              instructions: [],
             },
           },
         },
@@ -162,7 +142,7 @@ describe("updateManifestWithAiPlugin", () => {
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
-      pluginFileName,
+      pluginFilePath,
       spec
     );
 
@@ -231,7 +211,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
-    const pluginFileName = "ai-plugin.json";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
 
     sinon.stub(fs, "pathExists").resolves(true);
     const originalManifest = {
@@ -243,7 +223,7 @@ describe("updateManifestWithAiPlugin", () => {
       description: { short: "My API", full: "My API description" },
       apiPlugins: [
         {
-          pluginFile: pluginFileName,
+          pluginFile: "ai-plugin.json",
         },
       ],
     };
@@ -270,16 +250,6 @@ describe("updateManifestWithAiPlugin", () => {
             },
             required: ["limit"],
           },
-          states: {
-            reasoning: {
-              description: "",
-              instructions: [],
-            },
-            responding: {
-              description: "",
-              instructions: [],
-            },
-          },
         },
         {
           name: "createPet",
@@ -292,16 +262,6 @@ describe("updateManifestWithAiPlugin", () => {
                 type: "string",
                 description: "Name of the pet",
               },
-            },
-          },
-          states: {
-            reasoning: {
-              description: "",
-              instructions: [],
-            },
-            responding: {
-              description: "",
-              instructions: [],
             },
           },
         },
@@ -324,7 +284,7 @@ describe("updateManifestWithAiPlugin", () => {
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
-      pluginFileName,
+      pluginFilePath,
       spec
     );
 
@@ -348,7 +308,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
-    const pluginFileName = "ai-plugin.json";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
 
     sinon.stub(fs, "pathExists").resolves(true);
     const originalManifest = {
@@ -360,7 +320,7 @@ describe("updateManifestWithAiPlugin", () => {
       description: { short: "My API", full: "My API description" },
       apiPlugins: [
         {
-          pluginFile: pluginFileName,
+          pluginFile: "ai-plugin.json",
         },
       ],
     };
@@ -388,7 +348,7 @@ describe("updateManifestWithAiPlugin", () => {
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
-      pluginFileName,
+      pluginFilePath,
       spec
     );
 
@@ -452,7 +412,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
-    const pluginFileName = "ai-plugin.json";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
 
     sinon.stub(fs, "pathExists").resolves(true);
     const originalManifest = {
@@ -467,7 +427,7 @@ describe("updateManifestWithAiPlugin", () => {
       },
       apiPlugins: [
         {
-          pluginFile: pluginFileName,
+          pluginFile: "ai-plugin.json",
         },
       ],
     };
@@ -491,16 +451,6 @@ describe("updateManifestWithAiPlugin", () => {
             },
             required: ["limit"],
           },
-          states: {
-            reasoning: {
-              description: "",
-              instructions: [],
-            },
-            responding: {
-              description: "",
-              instructions: [],
-            },
-          },
         },
         {
           name: "createPet",
@@ -513,16 +463,6 @@ describe("updateManifestWithAiPlugin", () => {
                 type: "string",
                 description: "Name of the pet",
               },
-            },
-          },
-          states: {
-            reasoning: {
-              description: "",
-              instructions: [],
-            },
-            responding: {
-              description: "",
-              instructions: [],
             },
           },
         },
@@ -545,7 +485,7 @@ describe("updateManifestWithAiPlugin", () => {
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
-      pluginFileName,
+      pluginFilePath,
       spec
     );
 
@@ -603,13 +543,13 @@ describe("updateManifestWithAiPlugin", () => {
 
     sinon.stub(fs, "readJSON").resolves(originalManifest);
 
-    const pluginFileName = "ai-plugin.json";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
 
     try {
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
-        pluginFileName,
+        pluginFilePath,
         spec
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
@@ -673,13 +613,13 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const pluginFileName = "ai-plugin.json";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
 
     try {
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
-        pluginFileName,
+        pluginFilePath,
         spec
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");

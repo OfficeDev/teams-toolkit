@@ -556,10 +556,10 @@ describe("SpecParser", () => {
       const specPath = "path/to/spec";
       const signal = { aborted: true } as AbortSignal;
       const specParser = new SpecParser("/path/to/spec.yaml");
-      const pluginFileName = "ai-plugin.json";
+      const pluginFilePath = "ai-plugin.json";
 
       try {
-        await specParser.generateForCopilot(manifestPath, filter, specPath, pluginFileName, signal);
+        await specParser.generateForCopilot(manifestPath, filter, specPath, pluginFilePath, signal);
         expect.fail("Expected an error to be thrown");
       } catch (err) {
         expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
@@ -572,7 +572,7 @@ describe("SpecParser", () => {
       const filter = ["GET /pet/{petId}"];
       const specPath = "path/to/spec";
       const adaptiveCardFolder = "path/to/adaptiveCardFolder";
-      const pluginFileName = "ai-plugin.json";
+      const pluginFilePath = "ai-plugin.json";
 
       try {
         const signal = { aborted: false } as any;
@@ -585,7 +585,7 @@ describe("SpecParser", () => {
           return Promise.resolve();
         });
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-        await specParser.generateForCopilot(manifestPath, filter, specPath, pluginFileName, signal);
+        await specParser.generateForCopilot(manifestPath, filter, specPath, pluginFilePath, signal);
         expect.fail("Expected an error to be thrown");
       } catch (err) {
         expect((err as SpecParserError).message).contain(ConstantString.CancelledMessage);
@@ -610,7 +610,7 @@ describe("SpecParser", () => {
         const outputFileStub = sinon.stub(fs, "outputFile").resolves();
         const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
         const JsyamlSpy = sinon.spy(jsyaml, "dump");
-        const pluginFileName = "ai-plugin.json";
+        const pluginFilePath = "ai-plugin.json";
 
         const filter = ["get /hello"];
 
@@ -620,7 +620,7 @@ describe("SpecParser", () => {
           "path/to/manifest.json",
           filter,
           outputSpecPath,
-          pluginFileName,
+          pluginFilePath,
           signal
         );
 
@@ -651,13 +651,13 @@ describe("SpecParser", () => {
         const filter = ["get /hello"];
 
         const outputSpecPath = "path/to/output.yaml";
-        const pluginFileName = "ai-plugin.json";
+        const pluginFilePath = "ai-plugin.json";
 
         await specParser.generateForCopilot(
           "path/to/manifest.json",
           filter,
           outputSpecPath,
-          pluginFileName,
+          pluginFilePath,
           signal
         );
 
@@ -709,12 +709,12 @@ describe("SpecParser", () => {
       const filter = ["get /hello"];
 
       const outputSpecPath = "path/to/output.yaml";
-      const pluginFileName = "ai-plugin.json";
+      const pluginFilePath = "ai-plugin.json";
       const result = await specParser.generateForCopilot(
         "path/to/manifest.json",
         filter,
         outputSpecPath,
-        pluginFileName
+        pluginFilePath
       );
 
       expect(result.allSuccess).to.be.true;
@@ -741,14 +741,14 @@ describe("SpecParser", () => {
       const filter = ["get /hello"];
 
       const outputSpecPath = "path/to/output.json";
-      const pluginFileName = "ai-plugin.json";
+      const pluginFilePath = "ai-plugin.json";
 
       try {
         await specParser.generateForCopilot(
           "path/to/manifest.json",
           filter,
           outputSpecPath,
-          pluginFileName
+          pluginFilePath
         );
         expect.fail("Expected generate to throw a SpecParserError");
       } catch (err: any) {

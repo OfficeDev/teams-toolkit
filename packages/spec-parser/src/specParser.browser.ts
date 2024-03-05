@@ -170,13 +170,14 @@ export class SpecParser {
    * @param manifestPath A file path of the Teams app manifest file to update.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
    * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param pluginFilePath File path of the api plugin file to generate.
    */
   // eslint-disable-next-line @typescript-eslint/require-await
   async generateForCopilot(
     manifestPath: string,
     filter: string[],
     outputSpecPath: string,
-    apiPluginFileName: string,
+    pluginFilePath: string,
     signal?: AbortSignal
   ): Promise<GenerateResult> {
     throw new Error("Method not implemented.");

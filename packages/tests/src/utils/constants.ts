@@ -409,7 +409,7 @@ export class CreateProjectQuestion {
   static readonly SpfxSharepointFrameworkGlobalEnvInTtk =
     "Use globally installed SPFx";
   static readonly NewAddinApp = "Start with an Outlook add-in";
-  static readonly CreateNewSpfxSolution = "Create a New SPFx Solution";
+  static readonly CreateNewSpfxSolution = "Create New SPFx Solution";
 }
 
 export class ValidationContent {

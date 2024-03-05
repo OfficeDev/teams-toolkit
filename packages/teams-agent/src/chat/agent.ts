@@ -21,15 +21,13 @@ import {
 import {
   DefaultNextStep,
   EXECUTE_COMMAND_ID,
+  OPENURL_COMMAND_ID,
   executeCommand,
   getNextStepCommand,
-} from "../subCommand/nextStepSlashCommand";
+  openUrlCommand,
+} from "../subCommand/nextStep/command";
 import { getTestCommand } from "../subCommand/testCommand";
-import {
-  agentDescription,
-  agentName,
-  maxFollowUps
-} from "./agentConsts";
+import { agentDescription, agentName, maxFollowUps } from "./agentConsts";
 import {
   LanguageModelID,
   verbatimCopilotInteraction,
@@ -40,7 +38,7 @@ export interface ITeamsChatAgentResult extends vscode.ChatResult {
   metadata: {
     slashCommand?: string;
     sampleIds?: string[];
-  }
+  };
 }
 
 export type CommandVariables = {
@@ -148,13 +146,17 @@ function followUpProvider(
 
   let followUp: vscode.ChatFollowup[] | undefined;
   for (const provider of providers) {
-    followUp = provider.getFollowUpForLastHandledSlashCommand(result, context, token);
+    followUp = provider.getFollowUpForLastHandledSlashCommand(
+      result,
+      context,
+      token
+    );
     if (followUp !== undefined) {
       break;
     }
   }
   followUp = followUp ?? [];
-  if (!followUp.find((f) => "message" in f)) {
+  if (followUp.length === 0) {
     followUp.push(DefaultNextStep);
   }
   return followUp;
@@ -184,9 +186,15 @@ async function defaultHandler(
     request.response.report({
       content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
     });
-    return { chatAgentResult: { metadata: {slashCommand: ""} }, followUp: [] };
+    return {
+      chatAgentResult: { metadata: { slashCommand: "" } },
+      followUp: [],
+    };
   } else {
-    return { chatAgentResult: { metadata: {slashCommand: ""} }, followUp: [] };
+    return {
+      chatAgentResult: { metadata: { slashCommand: "" } },
+      followUp: [],
+    };
   }
 }
 
@@ -194,6 +202,7 @@ function registerVSCodeCommands(participant: vscode.ChatParticipant) {
   ext.context.subscriptions.push(
     participant,
     vscode.commands.registerCommand(CREATE_SAMPLE_COMMAND_ID, createCommand),
-    vscode.commands.registerCommand(EXECUTE_COMMAND_ID, executeCommand)
+    vscode.commands.registerCommand(EXECUTE_COMMAND_ID, executeCommand),
+    vscode.commands.registerCommand(OPENURL_COMMAND_ID, openUrlCommand)
   );
 }

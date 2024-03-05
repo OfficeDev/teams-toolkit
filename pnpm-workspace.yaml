@@ -8,8 +8,6 @@ packages:
   -  "packages/manifest"
   -  "packages/eslint-plugin-teamsfx"
   -  "packages/tests"
-  -  "packages/sdk"
-  -  "packages/sdk-react"
   -  "packages/server"
   -  "packages/vscode-ui"
   -  "templates"

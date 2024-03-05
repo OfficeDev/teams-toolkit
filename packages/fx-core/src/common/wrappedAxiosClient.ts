@@ -8,14 +8,13 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 import { TOOLS } from "../core/globalVars";
-import { APP_STUDIO_API_NAMES } from "../component/driver/teamsApp/constants";
+import { APP_STUDIO_API_NAMES, Constants } from "../component/driver/teamsApp/constants";
 import {
   TelemetryPropertyKey,
   TelemetryPropertyValue,
 } from "../component/driver/teamsApp/utils/telemetry";
 import { TelemetryEvent, TelemetryProperty } from "./telemetry";
 import { DeveloperPortalAPIFailedError } from "../error/teamsApp";
-import { Constants } from "../component/driver/teamsApp/constants";
 import { HttpMethod } from "../component/constant/commonConstant";
 
 /**
@@ -25,9 +24,10 @@ export class WrappedAxiosClient {
   public static create(config?: CreateAxiosDefaults): AxiosInstance {
     const instance = axios.create(config);
 
-    instance.interceptors.request.use(this.onRequest);
+    instance.interceptors.request.use((request) => this.onRequest(request));
 
-    instance.interceptors.response.use(this.onResponse, this.onRejected);
+    // eslint-disable-next-line prettier/prettier
+    instance.interceptors.response.use((response) => this.onResponse(response), (error) => this.onRejected(error));
 
     return instance;
   }
@@ -39,17 +39,17 @@ export class WrappedAxiosClient {
   public static onRequest(request: InternalAxiosRequestConfig) {
     const method = request.method!;
     const fullPath = `${request.baseURL ?? ""}${request.url ?? ""}`;
-    const apiName = WrappedAxiosClient.convertUrlToApiName(fullPath, method);
+    const apiName = this.convertUrlToApiName(fullPath, method);
 
     const properties: { [key: string]: string } = {
       url: `<${apiName}-url>`,
       method: method,
-      params: WrappedAxiosClient.generateParameters(request.params),
-      ...WrappedAxiosClient.generateExtraProperties(fullPath, request.data),
+      params: this.generateParameters(request.params),
+      ...this.generateExtraProperties(fullPath, request.data),
     };
 
     let eventName: string;
-    if (WrappedAxiosClient.isTDPApi(fullPath)) {
+    if (this.isTDPApi(fullPath)) {
       eventName = TelemetryEvent.AppStudioApi;
     } else {
       eventName = TelemetryEvent.DependencyApi;
@@ -69,19 +69,19 @@ export class WrappedAxiosClient {
     const fullPath = `${(response.request.host as string) ?? ""}${
       (response.request.path as string) ?? ""
     }`;
-    const apiName = WrappedAxiosClient.convertUrlToApiName(fullPath, method);
+    const apiName = this.convertUrlToApiName(fullPath, method);
 
     const properties: { [key: string]: string } = {
       url: `<${apiName}-url>`,
       method: method,
-      params: WrappedAxiosClient.generateParameters(response.config.params),
+      params: this.generateParameters(response.config.params),
       [TelemetryPropertyKey.success]: TelemetryPropertyValue.success,
       "status-code": response.status.toString(),
-      ...WrappedAxiosClient.generateExtraProperties(fullPath, response.data),
+      ...this.generateExtraProperties(fullPath, response.data),
     };
 
     let eventName: string;
-    if (WrappedAxiosClient.isTDPApi(fullPath)) {
+    if (this.isTDPApi(fullPath)) {
       eventName = TelemetryEvent.AppStudioApi;
     } else {
       eventName = TelemetryEvent.DependencyApi;
@@ -100,24 +100,28 @@ export class WrappedAxiosClient {
     const fullPath = `${(error.request.host as string) ?? ""}${
       (error.request.path as string) ?? ""
     }`;
-    const apiName = WrappedAxiosClient.convertUrlToApiName(fullPath, method);
+    const apiName = this.convertUrlToApiName(fullPath, method);
 
     let requestData: any;
-    if (error.config?.data) {
-      requestData = JSON.parse(error.config.data);
+    if (error.config?.data && typeof error.config.data === "string") {
+      try {
+        requestData = JSON.parse(error.config.data);
+      } catch (error) {
+        requestData = undefined;
+      }
     }
     const properties: { [key: string]: string } = {
       url: `<${apiName}-url>`,
       method: method,
-      params: WrappedAxiosClient.generateParameters(error.config!.params),
+      params: this.generateParameters(error.config!.params),
       [TelemetryPropertyKey.success]: TelemetryPropertyValue.failure,
       [TelemetryPropertyKey.errorMessage]: JSON.stringify(error.response!.data),
       "status-code": error.response!.status.toString() ?? "undefined",
-      ...WrappedAxiosClient.generateExtraProperties(fullPath, requestData),
+      ...this.generateExtraProperties(fullPath, requestData),
     };
 
     let eventName: string;
-    if (WrappedAxiosClient.isTDPApi(fullPath)) {
+    if (this.isTDPApi(fullPath)) {
       const correlationId = error.response!.headers[Constants.CORRELATION_ID];
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       const extraData = error.response?.data ? `data: ${JSON.stringify(error.response.data)}` : "";

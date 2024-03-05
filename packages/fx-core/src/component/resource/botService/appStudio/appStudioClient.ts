@@ -107,7 +107,7 @@ export class AppStudioClient {
         throw new Error("Failed to get data");
       }
     } catch (e) {
-      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.GET_BOT);
+      handleBotFrameworkError(e, APP_STUDIO_API_NAMES.LIST_BOT);
     }
   }
   @hooks([ErrorContextMW({ source: "Teams", component: "AppStudioClient" })])

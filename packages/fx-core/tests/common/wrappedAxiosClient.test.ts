@@ -5,6 +5,7 @@ import "mocha";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import { v4 as uuid } from "uuid";
+import axios, { AxiosInstance } from "axios";
 import { WrappedAxiosClient } from "../../src/common/wrappedAxiosClient";
 import {
   APP_STUDIO_API_NAMES,
@@ -21,6 +22,21 @@ describe("Wrapped Axios Client Test", () => {
 
   afterEach(() => {
     sinon.restore();
+  });
+
+  it("create", async () => {
+    const testAxiosInstance = {
+      interceptors: {
+        request: {
+          use: sinon.stub(),
+        },
+        response: {
+          use: sinon.stub(),
+        },
+      },
+    } as any as AxiosInstance;
+    sinon.stub(axios, "create").returns(testAxiosInstance);
+    WrappedAxiosClient.create();
   });
 
   it("No telemetry reporter", async () => {
@@ -58,7 +74,9 @@ describe("Wrapped Axios Client Test", () => {
         host: getAppStudioEndpoint(),
         path: "/api/appdefinitions/fakeId",
       },
-      config: {},
+      config: {
+        data: "Invalid JSON",
+      },
       response: {
         status: 404,
         headers: {

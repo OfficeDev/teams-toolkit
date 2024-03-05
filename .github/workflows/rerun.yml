@@ -21,6 +21,8 @@ permissions:
 
 jobs:
   rerun:
+    permissions:
+      actions: write
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     env:

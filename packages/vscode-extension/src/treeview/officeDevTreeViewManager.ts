@@ -30,6 +30,10 @@ class OfficeDevTreeViewManager {
     });
   }
 
+  public getTreeView(viewName: string): unknown {
+    return this.treeviewMap.get(viewName);
+  }
+
   public registerOfficeDevTreeViews(context: vscode.ExtensionContext): void {
     const disposables: vscode.Disposable[] = [];
 

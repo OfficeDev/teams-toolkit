@@ -15,7 +15,7 @@ const packageJson = require("../../package.json");
 const SampleConfigOwner = "OfficeDev";
 const SampleConfigRepo = "TeamsFx-Samples";
 const SampleConfigFile = ".config/samples-config-v3.json";
-export const SampleConfigTag = "v2.4.0";
+export const SampleConfigTag = "v2.5.0";
 // prerelease tag is always using a branch.
 export const SampleConfigBranchForPrerelease = "main";
 
@@ -31,7 +31,7 @@ export interface SampleConfig {
   time: string;
   configuration: string;
   suggested: boolean;
-  thumbnailUrl: string;
+  thumbnailPath: string;
   gifUrl?: string;
   // maximum TTK & CLI version to run sample
   maximumToolkitVersion?: string;
@@ -120,9 +120,6 @@ class SampleProvider {
                 sample["id"] as string
               }/${sample["gifPath"] as string}`
             : undefined;
-        let thumbnailUrl = `https://raw.githubusercontent.com/${SampleConfigOwner}/${SampleConfigRepo}/${ref}/${
-          sample["id"] as string
-        }/${sample["thumbnailPath"] as string}`;
         if (isExternal) {
           const info = sample["downloadUrlInfo"] as SampleUrlInfo;
           gifUrl =
@@ -131,9 +128,6 @@ class SampleProvider {
                   info.dir
                 }/${sample["gifPath"] as string}`
               : undefined;
-          thumbnailUrl = `https://raw.githubusercontent.com/${info.owner}/${info.repository}/${
-            info.ref
-          }/${info.dir}/${sample["thumbnailPath"] as string}`;
         }
         return {
           ...sample,
@@ -147,7 +141,6 @@ class SampleProvider {
                 dir: sample["id"] as string,
               },
           gifUrl: gifUrl,
-          thumbnailUrl: thumbnailUrl,
         } as SampleConfig;
       }) || [];
 

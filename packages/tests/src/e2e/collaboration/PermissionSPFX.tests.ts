@@ -88,7 +88,7 @@ describe("Collaboration", function () {
       // Grant Permission
 
       expect(grantCollaboratorResult.stdout).to.contains(
-        "Administrator permission has been granted to Teams App"
+        "Administrator Permission granted to Teams App"
       );
       console.log("[Successfully] grant permission");
 

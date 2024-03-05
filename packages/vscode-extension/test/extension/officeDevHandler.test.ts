@@ -1,13 +1,16 @@
 import { FxError, Result, ok } from "@microsoft/teamsfx-api";
+import * as projectSettingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as extension from "../../src/extension";
+import * as globalVariables from "../../src/globalVariables";
 import * as officeDevHandlers from "../../src/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
+
   afterEach(() => {
     sandbox.restore();
   });
@@ -78,5 +81,15 @@ describe("officeDevHandler", () => {
       officeDevHandlers.openDocumentHandler,
       "https://learn.microsoft.com/office/dev/add-ins/develop/develop-overview"
     );
+  });
+
+  it("editOfficeAddInManifest", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+    sandbox.stub(projectSettingHelper, "fetchManifestList").returns(["/test/manifest.xml"]);
+    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
+
+    await officeDevHandlers.editOfficeAddInManifest();
+
+    sandbox.assert.calledOnce(showTextDocumentStub);
   });
 });

@@ -17,7 +17,6 @@
                 ],
                 "portOccupancy": [
                     3978, // app service port
-                    9239, // app inspector port for Python debugger
                     56150, // test tool port
                 ]
             }

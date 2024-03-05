@@ -138,9 +138,10 @@
 /templates/**/notification-webapi @kimizhu @dooriya @swatDong
 /templates/**/workflow @kimizhu @dooriya @swatDong
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
-/templates/**/ai-bot @kimizhu @swatDong @kuojianlu @frankqianms
+/templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
-/templates/**/custom-copilot-basic @kimizhu @swatDong @kuojianlu @XiaofuHuang @frankqianms
+/templates/**/custom-copilot-basic @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/templates/python/custom-copilot-basic @frankqianms
 
 /packages/fx-core/.eslintignore @LongOddCode @wenytang-ms
 /packages/fx-core/.eslintrc.js @LongOddCode @wenytang-ms

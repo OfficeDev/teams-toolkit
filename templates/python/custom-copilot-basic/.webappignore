@@ -2,6 +2,7 @@
 .vscode/
 .env
 env/
+__pycache__/
 README.md
 teamsapp.yml
 teamsapp.local.yml

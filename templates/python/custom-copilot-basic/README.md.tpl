@@ -1,4 +1,4 @@
-# Overview of the AI Chat Bot template
+# Overview of the Basic AI Chatbot template
 
 This template showcases a bot app that responds to user questions like an AI assistant. This enables your users to talk with the AI assistant in Teams to find information.
 
@@ -16,7 +16,7 @@ The app template is built using the Teams AI library, which provides the capabil
 >
 > To run the AI Chat Bot template in your local dev machine, you will need:
 >
-> - [Python](https://www.python.org/), version 3.11 or higher
+> - [Python](https://www.python.org/), version 3.8 or higher
 > - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
 {{#useAzureOpenAI}}
@@ -32,7 +32,7 @@ The app template is built using the Teams AI library, which provides the capabil
 > - [Node.js](https://nodejs.org/) (supported versions: 16, 18) for local debug in Test Tool.
 {{/enableTestToolByDefault}}
 
-1. First, Press **CTRL+Shift+P** to open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `src/requirements.txt` as dependencies to install when creating the virtual environment.
+1. First, Open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `src/requirements.txt` as dependencies to install when creating the virtual environment.
 1. select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
 {{#useAzureOpenAI}}
@@ -79,7 +79,7 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`src/api.py`| Host a Flask api server for the app.|
+|`src/api.py`| Host a aiohttp api server for the app.|
 |`src/bot.py`| Handles business logics for the AI Chat Bot.|
 |`src/config.py`| Defines the environment variables.|
 |`src/app.py`| Main module of the AI Chat Bot.|

@@ -27,7 +27,7 @@ async function createHandler(request: AgentRequest): Promise<SlashCommandHandler
 
   if (matchedResult.length === 0) {
     request.response.markdown(vscode.l10n.t("Sorry, I can't help with that right now.\n"));
-    return { chatAgentResult: { slashCommand: '' }, followUp: [] };
+    return { chatAgentResult: { metadata: { slashCommand: '' } }, followUp: [] };
   }
   if (matchedResult.length === 1) {
     const firstMatch = matchedResult[0];
@@ -47,7 +47,7 @@ async function createHandler(request: AgentRequest): Promise<SlashCommandHandler
       });
     }
 
-    return { chatAgentResult: { slashCommand: 'create' }, followUp: [] };
+    return { chatAgentResult: { metadata: { slashCommand: 'create' } }, followUp: [] };
   } else {
     request.response.markdown(`I found ${matchedResult.slice(0, 3).length} projects that match your description.\n`);
     for (const project of matchedResult.slice(0, 3)) {
@@ -70,7 +70,7 @@ async function createHandler(request: AgentRequest): Promise<SlashCommandHandler
         });
       }
     }
-    return { chatAgentResult: { slashCommand: 'create' }, followUp: [] };
+    return { chatAgentResult: { metadata: { slashCommand: 'create' } }, followUp: [] };
   }
 }
 

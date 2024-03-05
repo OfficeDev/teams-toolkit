@@ -59,7 +59,7 @@ async function nextStepHandler(
     request.response.report({
       content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
     });
-    return { chatAgentResult: { slashCommand: "" }, followUp: [] };
+    return { chatAgentResult: { metadata: { slashCommand: "" } }, followUp: [] };
   } else {
     const recommandedNextStepFollowUps: vscode.ChatFollowup[] = [];
     for (const nextStep of AllSteps.filter((s) => s.condition(status))) {
@@ -76,7 +76,7 @@ async function nextStepHandler(
       }
     }
     return {
-      chatAgentResult: { slashCommand: "" },
+      chatAgentResult: { metadata: { slashCommand: "" } },
       followUp: recommandedNextStepFollowUps,
     };
   }

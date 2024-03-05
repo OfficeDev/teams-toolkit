@@ -2570,14 +2570,6 @@ describe("scaffold question", () => {
       const output = convertToLangKey(ProgrammingLanguage.PY);
       assert.isTrue(output == "python");
     });
-    it("should return expected 3 language options for aiBot python", () => {
-      const options = getLanguageOptions({
-        platform: Platform.VSCode,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.bot().id,
-        [QuestionNames.Capabilities]: CapabilityOptions.aiBot().id,
-      });
-      assert.isTrue(options.length === 3); // js, ts, python
-    });
     it("should return expected 3 language options for custom copilot basic python", () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,

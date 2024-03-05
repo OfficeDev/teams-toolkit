@@ -1,4 +1,4 @@
-import { FxError, Result, ok } from "@microsoft/teamsfx-api";
+import { FxError, ManifestUtil, Result, UserError, err, ok } from "@microsoft/teamsfx-api";
 import * as projectSettingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
 import * as sinon from "sinon";
@@ -7,6 +7,12 @@ import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as officeDevHandlers from "../../src/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import { manifestUtils } from "@microsoft/teamsfx-core";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import { GlobalKey } from "../../src/constants";
+import VsCodeLogInstance from "../../src/commonlib/log";
+import * as fs from "fs-extra";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -105,5 +111,73 @@ describe("officeDevHandler", () => {
     await officeDevHandlers.editOfficeAddInManifest();
 
     sandbox.assert.calledOnce(showTextDocumentStub);
+  });
+});
+
+describe("autoOpenOfficeDevProjectHandler", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(() => {
+    sandbox.restore();
+  });
+  it("opens walk through", async () => {
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openWalkThrough") {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    const stateUpdate = sandbox.stub(globalState, "globalStateUpdate");
+
+    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
+
+    chai.assert.isTrue(stateUpdate.calledOnce);
+  });
+
+  it("opens README", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    sandbox.stub(globalVariables, "isOfficeAddInProject").resolves(false);
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+    sandbox.stub(ManifestUtil, "parseCommonProperties").resolves({ isCopilotPlugin: false });
+    sandbox.stub(globalState, "globalStateUpdate");
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.calledOnce);
+  });
+
+  it("opens sample README", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    sandbox.stub(globalVariables, "isOfficeAddInProject").resolves(false);
+    const showMessageStub = sandbox.stub(vscode.window, "showInformationMessage");
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(vscode.workspace, "openTextDocument");
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openSampleReadMe") {
+        return true;
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
+
+    chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 });

@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as vscode from "vscode";
-import { TreeViewCommand } from "./treeViewCommand";
-import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
-import { TreeCategory } from "@microsoft/teamsfx-api";
 import { localize } from "../utils/localizeUtils";
+import { CommandsTreeViewProvider } from "./commandsTreeViewProvider";
+import { TreeViewCommand } from "./treeViewCommand";
 
 class OfficeDevTreeViewManager {
   private static instance: OfficeDevTreeViewManager;
@@ -87,8 +86,7 @@ class OfficeDevTreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.samplesDescription"),
         "fx-extension.openSamples",
         undefined,
-        { name: "library", custom: false },
-        TreeCategory.GettingStarted
+        { name: "library", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.checkAndInstallDependenciesTitle"),
@@ -166,8 +164,7 @@ class OfficeDevTreeViewManager {
         ),
         "fx-extension.officePartnerCenter",
         undefined,
-        { name: "unfold", custom: false },
-        TreeCategory.GettingStarted
+        { name: "unfold", custom: false }
       ),
     ];
 
@@ -181,24 +178,21 @@ class OfficeDevTreeViewManager {
         localize("teamstoolkit.commandsTreeViewProvider.officeAddIn.documentationDescription"),
         "fx-extension.openOfficeDevDocument",
         undefined,
-        { name: "book", custom: false },
-        TreeCategory.GettingStarted
+        { name: "book", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.officeAddIn.getStartedTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.officeAddIn.getStartedDescription"),
         "fx-extension.openGetStarted",
         undefined,
-        { name: "symbol-event", custom: false },
-        TreeCategory.GettingStarted
+        { name: "symbol-event", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.reportIssuesDescription"),
         "fx-extension.openOfficeDevReportIssues",
         undefined,
-        { name: "github", custom: false },
-        TreeCategory.Feedback
+        { name: "github", custom: false }
       ),
     ];
 

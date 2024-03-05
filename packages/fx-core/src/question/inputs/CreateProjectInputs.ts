@@ -40,7 +40,7 @@ export interface CreateProjectInputs extends Inputs {
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
     | "taskpane";
-  /** @description Choose triggers */
+  /** @description Select triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
     | "http-webapi"

@@ -48,23 +48,16 @@ describe("officeDevHandler", () => {
     );
   });
 
-  it("openOfficeDevDeployHandler", async () => {
-    testOpenUrlHandler(
-      officeDevHandlers.openOfficeDevDeployHandler,
-      "https://aka.ms/WXPAddinDeploy"
-    );
-  });
-
   it("publishToAppSourceHandler", async () => {
     testOpenUrlHandler(
-      officeDevHandlers.openOfficeDevDeployHandler,
+      officeDevHandlers.publishToAppSourceHandler,
       "https://learn.microsoft.com/partner-center/marketplace/submit-to-appsource-via-partner-center"
     );
   });
 
   it("openDebugLinkHandler", async () => {
     testOpenUrlHandler(
-      officeDevHandlers.openOfficeDevDeployHandler,
+      officeDevHandlers.openDebugLinkHandler,
       "https://learn.microsoft.com/office/dev/add-ins/testing/debug-add-ins-overview"
     );
   });
@@ -78,8 +71,29 @@ describe("officeDevHandler", () => {
 
   it("openDevelopmentLinkHandler", async () => {
     testOpenUrlHandler(
-      officeDevHandlers.openDocumentHandler,
+      officeDevHandlers.openDevelopmentLinkHandler,
       "https://learn.microsoft.com/office/dev/add-ins/develop/develop-overview"
+    );
+  });
+
+  it("openLifecycleLinkHandler", async () => {
+    testOpenUrlHandler(
+      officeDevHandlers.openLifecycleLinkHandler,
+      "https://learn.microsoft.com/office/dev/add-ins/overview/core-concepts-office-add-ins"
+    );
+  });
+
+  it("openHelpFeedbackLinkHandler", async () => {
+    testOpenUrlHandler(
+      officeDevHandlers.openHelpFeedbackLinkHandler,
+      "https://learn.microsoft.com/answers/tags/9/m365"
+    );
+  });
+
+  it("openReportIssues", async () => {
+    testOpenUrlHandler(
+      officeDevHandlers.openReportIssues,
+      "https://github.com/OfficeDev/office-js/issues"
     );
   });
 

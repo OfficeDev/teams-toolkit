@@ -71,19 +71,19 @@ export async function openDocumentHandler(args?: any[]): Promise<Result<boolean,
   return VS_CODE_UI.openUrl("https://learn.microsoft.com/office/dev/add-ins/");
 }
 
-export async function openDevelopmentLinkHandler(args: any[]): Promise<Result<boolean, FxError>> {
+export async function openDevelopmentLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
   return VS_CODE_UI.openUrl(
     "https://learn.microsoft.com/office/dev/add-ins/develop/develop-overview"
   );
 }
 
-export async function openLifecycleLinkHandler(args: any[]): Promise<Result<boolean, FxError>> {
+export async function openLifecycleLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
   return VS_CODE_UI.openUrl(
     "https://learn.microsoft.com/office/dev/add-ins/overview/core-concepts-office-add-ins"
   );
 }
 
-export async function openHelpFeedbackLinkHandler(args: any[]): Promise<Result<boolean, FxError>> {
+export async function openHelpFeedbackLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
   return VS_CODE_UI.openUrl("https://learn.microsoft.com/answers/tags/9/m365");
 }
 

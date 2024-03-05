@@ -72,7 +72,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 ![ai assistant bot in Teams App Test Tool](https://github.com/OfficeDev/TeamsFx/assets/37978464/e3b458f3-5e74-460d-9df2-bf77ed8d9c54)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
-1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't yet.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 1. You can send any message to get a response from the bot.

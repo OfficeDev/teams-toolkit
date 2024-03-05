@@ -11,30 +11,15 @@ import Turtle from "../../../img/webview/sample/turtle.svg";
 import { TelemetryTriggerFrom } from "../../telemetry/extTelemetryEvents";
 import { SampleProps } from "./ISamples";
 
-export default class SampleCard extends React.Component<SampleProps, { imageUrl: string }> {
+export default class SampleCard extends React.Component<SampleProps, unknown> {
   constructor(props: SampleProps) {
     super(props);
-    const downloadUrlInfo = props.sample.downloadUrlInfo;
-    this.state = {
-      imageUrl: `https://raw.githubusercontent.com/${downloadUrlInfo.owner}/${downloadUrlInfo.repository}/${downloadUrlInfo.ref}/${downloadUrlInfo.dir}/${props.sample.thumbnailPath}`,
-    };
   }
 
   render() {
     const sample = this.props.sample;
     const unavailable = sample.versionComparisonResult != 0;
-    const previewImage = (
-      <Image
-        className="thumbnail"
-        src={this.state.imageUrl}
-        onError={() => {
-          const downloadUrlInfo = sample.downloadUrlInfo;
-          this.setState({
-            imageUrl: `https://media.githubusercontent.com/media/${downloadUrlInfo.owner}/${downloadUrlInfo.repository}/${downloadUrlInfo.ref}/${downloadUrlInfo.dir}/${sample.thumbnailPath}`,
-          });
-        }}
-      />
-    );
+    const previewImage = <Image className="thumbnail" src={sample.thumbnailUrl} />;
     const legacySampleImage = (
       <div className="unavailableSampleImage">
         <Turtle className="turtle" />

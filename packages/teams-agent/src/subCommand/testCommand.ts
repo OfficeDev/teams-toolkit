@@ -54,5 +54,5 @@ async function testHandler(request: AgentRequest): Promise<SlashCommandHandlerRe
     content: `${statistics.passed} passed. ${statistics.acceptable} acceptable. ${statistics.failed} failed.\n\n`
   });
 
-  return { chatAgentResult: { slashCommand: '' }, followUp: [] };
+  return { chatAgentResult: { metadata: { slashCommand: '' } }, followUp: [] };
 }

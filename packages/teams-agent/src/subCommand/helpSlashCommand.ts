@@ -22,5 +22,5 @@ export function getAgentHelpCommand(agentSlashCommandsOwner: SlashCommandsOwner)
 async function agentHelpHandler(agentSlashCommandsOwner: SlashCommandsOwner, request: AgentRequest): Promise<SlashCommandHandlerResult> {
   const slashCommandsMarkdown = agentSlashCommandsOwner.getSlashCommands().map(([name, config]) => `- \`/${name}\` - ${config.longDescription || config.shortDescription}`).join("\n");
   request.response.report({ content: `Hi! I can help you develope Teams App. Feel free to ask or tell me anything and I'll do my best to help. Or, if you know what you'd like to do, you can use the following commands:\n\n${slashCommandsMarkdown}` });
-  return { chatAgentResult: { slashCommand: '' }, followUp: [] };
+  return { chatAgentResult: { metadata: { slashCommand: '' } }, followUp: [] };
 }

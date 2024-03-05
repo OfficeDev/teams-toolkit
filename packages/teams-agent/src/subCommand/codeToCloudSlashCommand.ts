@@ -134,7 +134,7 @@ async function codeToCloudHandler(
   }
 
   return {
-    chatAgentResult: { slashCommand: codeToCloudCommandName },
+    chatAgentResult: { metadata: { slashCommand: codeToCloudCommandName } },
     followUp: [],
   };
 }
@@ -821,7 +821,9 @@ function collectChatMessageHistory(
   for (let history of request.context.history.slice(-historyNumber)) {
     if (history instanceof vscode.ChatRequestTurn) {
       const userPrompt = (history as vscode.ChatRequestTurn).prompt;
-      chatMessageHistory.push(new vscode.LanguageModelChatUserMessage(userPrompt));
+      chatMessageHistory.push(
+        new vscode.LanguageModelChatUserMessage(userPrompt)
+      );
     } else {
       for (let response of history.response) {
         let assistantPrompt = "";

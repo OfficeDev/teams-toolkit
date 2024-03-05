@@ -13,8 +13,10 @@ import { detectIntent } from "./intentDetection";
 export type SlashCommandName = string;
 
 interface ITeamsChatAgentResult extends vscode.ChatResult {
-  slashCommand: string;
-  sampleIds?: string[];
+  metadata: {
+    slashCommand: string;
+    sampleIds?: string[];
+  }
 }
 
 /**

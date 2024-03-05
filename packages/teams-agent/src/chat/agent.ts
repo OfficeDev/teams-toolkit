@@ -37,8 +37,10 @@ import {
 import { SlashCommandHandlerResult, SlashCommandsOwner } from "./slashCommands";
 
 export interface ITeamsChatAgentResult extends vscode.ChatResult {
-  slashCommand?: string;
-  sampleIds?: string[];
+  metadata: {
+    slashCommand?: string;
+    sampleIds?: string[];
+  }
 }
 
 export type CommandVariables = {
@@ -182,9 +184,9 @@ async function defaultHandler(
     request.response.report({
       content: vscode.l10n.t("Sorry, I can't help with that right now.\n"),
     });
-    return { chatAgentResult: { slashCommand: "" }, followUp: [] };
+    return { chatAgentResult: { metadata: {slashCommand: ""} }, followUp: [] };
   } else {
-    return { chatAgentResult: { slashCommand: "" }, followUp: [] };
+    return { chatAgentResult: { metadata: {slashCommand: ""} }, followUp: [] };
   }
 }
 

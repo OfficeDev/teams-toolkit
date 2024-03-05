@@ -6,7 +6,6 @@ The app template is built using the Teams AI library, which provides the capabil
 
 - [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
   - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
-    - [Use OpenAI](#use-openai)
   - [What's included in the template](#whats-included-in-the-template)
   - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)

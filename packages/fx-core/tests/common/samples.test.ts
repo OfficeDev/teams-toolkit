@@ -5,8 +5,9 @@ import * as sinon from "sinon";
 import { err } from "@microsoft/teamsfx-api";
 
 import {
+  OfficeSampleConfigTag,
   SampleConfigBranchForPrerelease,
-  SampleConfigTag,
+  TeamsSampleConfigTag,
   sampleProvider,
 } from "../../src/common/samples";
 import sampleConfigV3 from "./samples-config-v3.json";
@@ -33,10 +34,19 @@ describe("Samples", () => {
         tags: ["Tab", "TS", "Azure function"],
         time: "5min to run",
         configuration: "Ready for debug",
-        thumbnailUrl: "",
+        thumbnailPath: "",
         suggested: true,
       },
     ],
+  };
+  // Set office sample config empty to bypass ut
+  const fakedOfficeSampleConfig = {
+    filterOptions: {
+      capabilities: [],
+      languages: [],
+      technologies: [],
+    },
+    samples: [],
   };
 
   afterEach(() => {
@@ -60,6 +70,11 @@ describe("Samples", () => {
           "https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/dev/.config/samples-config-v3.json"
         ) {
           return { data: fakedSampleConfig, status: 200 };
+        } else if (
+          url ===
+          "https://raw.githubusercontent.com/OfficeDev/Office-Samples/dev/.config/samples-config-v1.json"
+        ) {
+          return { data: fakedOfficeSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -85,6 +100,11 @@ describe("Samples", () => {
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigBranchForPrerelease}/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
+        } else if (
+          url ===
+          `https://raw.githubusercontent.com/OfficeDev/Office-Samples/${SampleConfigBranchForPrerelease}/.config/samples-config-v1.json`
+        ) {
+          return { data: fakedOfficeSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -105,9 +125,14 @@ describe("Samples", () => {
       sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
           url ===
-          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
+          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${TeamsSampleConfigTag}/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
+        } else if (
+          url ===
+          `https://raw.githubusercontent.com/OfficeDev/Office-Samples/${OfficeSampleConfigTag}/.config/samples-config-v1.json`
+        ) {
+          return { data: fakedOfficeSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -117,7 +142,7 @@ describe("Samples", () => {
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
-        ref: SampleConfigTag,
+        ref: TeamsSampleConfigTag,
         dir: "hello-world-tab-with-backend",
       });
       chai.expect(samples[0].gifUrl).equal(undefined);
@@ -128,9 +153,14 @@ describe("Samples", () => {
       sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
           url ===
-          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
+          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${TeamsSampleConfigTag}/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
+        } else if (
+          url ===
+          `https://raw.githubusercontent.com/OfficeDev/Office-Samples/${OfficeSampleConfigTag}/.config/samples-config-v1.json`
+        ) {
+          return { data: fakedOfficeSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -140,7 +170,7 @@ describe("Samples", () => {
       chai.expect(samples[0].downloadUrlInfo).deep.equal({
         owner: "OfficeDev",
         repository: "TeamsFx-Samples",
-        ref: SampleConfigTag,
+        ref: TeamsSampleConfigTag,
         dir: "hello-world-tab-with-backend",
       });
       chai.expect(samples[0].gifUrl).equal(undefined);
@@ -149,12 +179,18 @@ describe("Samples", () => {
     it("download sample config using feature flag if available in stable version", async () => {
       packageJson.version = "2.0.3";
       process.env["TEAMSFX_SAMPLE_CONFIG_BRANCH"] = "v2.0.0";
+      process.env["TEAMSFX_OFFICE_SAMPLE_CONFIG_BRANCH"] = "v0.0.1";
       sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
           url ===
           `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/v2.0.0/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
+        } else if (
+          url ===
+          `https://raw.githubusercontent.com/OfficeDev/Office-Samples/v0.0.1/.config/samples-config-v1.json`
+        ) {
+          return { data: fakedOfficeSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -176,9 +212,14 @@ describe("Samples", () => {
       sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
         if (
           url ===
-          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${SampleConfigTag}/.config/samples-config-v3.json`
+          `https://raw.githubusercontent.com/OfficeDev/TeamsFx-Samples/${TeamsSampleConfigTag}/.config/samples-config-v3.json`
         ) {
           return { data: fakedSampleConfig, status: 200 };
+        } else if (
+          url ===
+          `https://raw.githubusercontent.com/OfficeDev/Office-Samples/${OfficeSampleConfigTag}/.config/samples-config-v1.json`
+        ) {
+          return { data: fakedOfficeSampleConfig, status: 200 };
         } else {
           throw err(undefined);
         }
@@ -189,7 +230,7 @@ describe("Samples", () => {
         chai.expect(samples[0].downloadUrlInfo).deep.equal({
           owner: "OfficeDev",
           repository: "TeamsFx-Samples",
-          ref: SampleConfigTag,
+          ref: TeamsSampleConfigTag,
           dir: "hello-world-tab-with-backend",
         });
         chai.expect(samples[0].gifUrl).equal(undefined);
@@ -234,7 +275,7 @@ describe("Samples", () => {
         tags: ["External"],
         time: "5min to run",
         configuration: "Ready for debug",
-        thumbnailUrl: "",
+        thumbnailPath: "",
         onboardDate: new Date(),
         suggested: false,
         downloadUrlInfo: {
@@ -269,7 +310,7 @@ describe("Samples", () => {
         tags: ["External"],
         time: "5min to run",
         configuration: "Ready for debug",
-        thumbnailUrl: "",
+        thumbnailPath: "",
         onboardDate: new Date(),
         suggested: false,
         downloadUrlInfo: {
@@ -302,7 +343,7 @@ describe("Samples", () => {
         tags: ["External"],
         time: "5min to run",
         configuration: "Ready for debug",
-        thumbnailUrl: "",
+        thumbnailPath: "",
         onboardDate: new Date(),
         suggested: false,
         downloadUrlInfo: {

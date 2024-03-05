@@ -50,12 +50,9 @@ import { getColorizedString } from "./utils";
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
 class CLIUserInteraction implements UserInteraction {
-  get ciEnabled(): boolean {
-    return process.env.CI_ENABLED === "true";
-  }
   private _interactive = true;
   get interactive(): boolean {
-    if (this.ciEnabled) {
+    if (process.env.CI_ENABLED === "true") {
       return false;
     } else {
       return this._interactive;
@@ -534,7 +531,7 @@ class CLIUserInteraction implements UserInteraction {
   }
 
   public async openUrl(link: string): Promise<Result<boolean, FxError>> {
-    if (!this.ciEnabled) await open(link);
+    if (!this.interactive) await open(link);
     return ok(true);
   }
 

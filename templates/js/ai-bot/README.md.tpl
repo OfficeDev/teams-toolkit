@@ -21,7 +21,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{^enableTestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 {{/enableTestToolByDefault}}
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 > - An account with [OpenAI](https://platform.openai.com/).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
@@ -54,7 +54,12 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
 >
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 
+{{#enableTestToolByDefault}}
+1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
+{{/enableTestToolByDefault}}
 1. In `src/app.js`, comment out *"Use OpenAI"* part and uncomment *"use Azure OpenAI"* part, e.g.
     ```javascript
     const model = new OpenAIModel({
@@ -108,5 +113,5 @@ You can follow [Get started with Teams AI library](https://learn.microsoft.com/e
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
-- [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
+- [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

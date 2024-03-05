@@ -23,6 +23,7 @@ import {
 
 import {
   AadAppTemplateCodeLensProvider,
+  ApiPluginCodeLensProvider,
   CopilotPluginCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
@@ -262,6 +263,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     () => Correlator.run(handlers.migrateTeamsTabAppHandler)
   );
   context.subscriptions.push(migrateTeamsTabAppCmd);
+
+  // Register local debug run icon
+  const runIconCmd = vscode.commands.registerCommand("fx-extension.selectAndDebug", (...args) =>
+    Correlator.run(handlers.selectAndDebugHandler, args)
+  );
+  context.subscriptions.push(runIconCmd);
 }
 
 /**
@@ -651,12 +658,6 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.refreshCopilotCallback, args)
   );
   context.subscriptions.push(refreshCopilot);
-
-  // Register local debug run icon
-  const runIconCmd = vscode.commands.registerCommand("fx-extension.selectAndDebug", (...args) =>
-    Correlator.run(handlers.selectAndDebugHandler, args)
-  );
-  context.subscriptions.push(runIconCmd);
 }
 
 async function initializeContextKey(context: vscode.ExtensionContext, isTeamsFxProject: boolean) {
@@ -744,7 +745,11 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   const smeOpenapiSpecSelector = {
     language: "yaml",
     scheme: "file",
-    pattern: `**/${AppPackageFolderName}/apiSpecFiles/*.{yml,yaml}`,
+    pattern: `**/${AppPackageFolderName}/apiSpecificationFiles/*.{yml,yaml}`,
+  };
+  const apiPluginOpenapiSpecJsonSelector: vscode.DocumentSelector = {
+    scheme: "file",
+    pattern: `**/${AppPackageFolderName}/apiSpecificationFiles/*.{yml,yaml,json}`,
   };
 
   const aadAppTemplateCodeLensProvider = new AadAppTemplateCodeLensProvider();
@@ -782,6 +787,14 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       manifestTemplateSelector,
       copilotPluginCodeLensProvider
+    )
+  );
+
+  const apiPluginCodeLensProvider = new ApiPluginCodeLensProvider();
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      apiPluginOpenapiSpecJsonSelector,
+      apiPluginCodeLensProvider
     )
   );
 

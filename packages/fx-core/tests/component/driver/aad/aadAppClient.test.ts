@@ -183,6 +183,26 @@ describe("AadAppClient", async () => {
     });
   });
 
+  describe("deleteAadApp", async () => {
+    let aadAppClient: AadAppClient;
+    let axiosInstance: AxiosInstance;
+    beforeEach(() => {
+      axiosInstance = mockAxiosCreate();
+      doNotWaitBetweenEachRetry();
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onDelete(`https://graph.microsoft.com/v1.0/applications/test-id`).reply(200);
+      await aadAppClient.deleteAadApp("test-id");
+    });
+  });
+
   describe("generateClientSecret", async () => {
     let aadAppClient: AadAppClient;
     let axiosInstance: AxiosInstance;
@@ -208,6 +228,30 @@ describe("AadAppClient", async () => {
       const result = await aadAppClient.generateClientSecret(expectedObjectId);
 
       expect(result).to.equal(expectedSecretText);
+    });
+
+    it("should set secret lifetime to 180 days", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
+        .reply((config) => {
+          const data = JSON.parse(config.data);
+          expect(data.passwordCredential.endDateTime).to.not.be.undefined;
+          expect(data.passwordCredential.startDateTime).to.not.be.undefined;
+
+          const endDateTime = new Date(data.passwordCredential.endDateTime);
+          const startDateTime = new Date(data.passwordCredential.startDateTime);
+          const now = new Date();
+
+          expect(startDateTime.getTime()).to.be.closeTo(now.getTime(), 1000); // Allow a 1 second difference
+
+          expect(endDateTime.getTime() - startDateTime.getTime()).to.equal(
+            180 * 24 * 60 * 60 * 1000
+          );
+          return [200, { secretText: expectedSecretText }];
+        });
+
+      await aadAppClient.generateClientSecret(expectedObjectId);
     });
 
     it("should throw error when request fail", async () => {

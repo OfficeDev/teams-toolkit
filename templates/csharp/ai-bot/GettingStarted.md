@@ -60,7 +60,7 @@ You can follow [Get started with Teams AI library](https://learn.microsoft.com/e
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
-- [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
+- [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 
 ## Learn more

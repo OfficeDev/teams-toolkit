@@ -19,7 +19,7 @@ It showcases how to build an intelligent chat bot in Teams capable of helping us
 {{^enableTestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 {{/enableTestToolByDefault}}
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 > - An account with [OpenAI](https://platform.openai.com/).
 >
 > **Note**
@@ -116,6 +116,6 @@ You can follow [Get started with Teams AI library](https://learn.microsoft.com/e
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
-- [Teams Toolkit CLI](https://docs.microsoft.com/microsoftteams/platform/toolkit/teamsfx-cli)
+- [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 - [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview)

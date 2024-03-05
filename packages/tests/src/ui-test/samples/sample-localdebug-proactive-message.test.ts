@@ -9,10 +9,17 @@ import { Page } from "playwright";
 import { TemplateProject, LocalDebugTaskLabel } from "../../utils/constants";
 import { validateProactiveMessaging } from "../../utils/playwrightOperation";
 import { CaseFactory } from "./sampleCaseFactory";
+import { SampledebugContext } from "./sampledebugContext";
 
 class ProactiveMessagingTestCase extends CaseFactory {
-  override async onValidate(page: Page): Promise<void> {
-    return await validateProactiveMessaging(page);
+  override async onValidate(
+    page: Page,
+    options?: { env: "dev" | "local"; context: SampledebugContext }
+  ): Promise<void> {
+    return await validateProactiveMessaging(page, {
+      env: options?.env || "dev",
+      context: options?.context,
+    });
   }
 }
 
@@ -24,6 +31,5 @@ new ProactiveMessagingTestCase(
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
   {
     testRootFolder: "./resource/samples",
-    skipValidation: true,
   }
 ).test();

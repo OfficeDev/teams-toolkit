@@ -139,7 +139,8 @@ describe("ProjectTypeChecker", () => {
     it("found", async () => {
       sandbox.stub(fs, "readFile").resolves(
         JSON.stringify({
-          $schema: "https://developer.microsoft.com/en-us/json-schemas/teams",
+          $schema:
+            "https://developer.microsoft.com/en-us/json-schemas/teams/MicrosoftTeams.schema.json",
         }) as any
       );
       const result: ProjectTypeResult = {

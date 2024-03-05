@@ -13,7 +13,7 @@ import {
   LocalDebugTaskResult,
   LocalDebugError,
 } from "../../utils/constants";
-import { waitForTerminal } from "../../utils/vscodeOperation";
+import { waitForTerminal, stopDebugging } from "../../utils/vscodeOperation";
 import {
   debugInitMap,
   initPage,
@@ -36,8 +36,7 @@ import fs from "fs-extra";
 import path from "path";
 import { Executor } from "../../utils/executor";
 import { ChildProcessWithoutNullStreams } from "child_process";
-import os from "os";
-import { assert } from "console";
+import { initDebugPort } from "../../utils/commonUtils";
 
 const debugMap: Record<LocalDebugTaskLabel, () => Promise<void>> = {
   [LocalDebugTaskLabel.StartFrontend]: async () => {
@@ -120,7 +119,9 @@ export abstract class CaseFactory {
     npmName?: string;
     skipInit?: boolean;
     skipValidation?: boolean;
+    skipDebug?: boolean;
     debug?: "cli" | "ttk";
+    botFlag?: boolean;
   };
 
   public constructor(
@@ -138,7 +139,9 @@ export abstract class CaseFactory {
       npmName?: string;
       skipInit?: boolean;
       skipValidation?: boolean;
+      skipDebug?: boolean;
       debug?: "cli" | "ttk";
+      botFlag?: boolean;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -241,6 +244,19 @@ export abstract class CaseFactory {
     Promise.resolve();
   }
 
+  public async onCliValidate(
+    page: Page,
+    options?: {
+      context: SampledebugContext;
+      displayName: string;
+      includeFunction: boolean;
+      npmName: string;
+      env: "local" | "dev";
+    }
+  ): Promise<void> {
+    Promise.resolve();
+  }
+
   public test(): void {
     const {
       sampleName,
@@ -256,6 +272,7 @@ export abstract class CaseFactory {
       onInitPage,
       onValidate,
       onReopenPage,
+      onCliValidate,
     } = this;
     describe("Sample Tests", function () {
       this.timeout(Timeout.testAzureCase);
@@ -263,7 +280,6 @@ export abstract class CaseFactory {
       let azSqlHelper: AzSqlHelper | undefined;
       let devtunnelProcess: ChildProcessWithoutNullStreams;
       let debugProcess: ChildProcessWithoutNullStreams;
-      let tunnelName = "";
       let successFlag = true;
       let envContent = "";
       let botFlag = false;
@@ -283,31 +299,13 @@ export abstract class CaseFactory {
         azSqlHelper = await onBefore(sampledebugContext, env, azSqlHelper);
       });
 
-      afterEach(async function () {
-        this.timeout(Timeout.finishAzureTestCase);
-        if (debugProcess) {
-          setTimeout(() => {
-            debugProcess.kill("SIGTERM");
-          }, 2000);
-        }
-
-        if (tunnelName) {
-          setTimeout(() => {
-            devtunnelProcess.kill("SIGTERM");
-          }, 2000);
-          Executor.deleteTunnel(
-            tunnelName,
-            (data) => {
-              if (data) {
-                console.log(data);
-              }
-            },
-            (error) => {
-              console.log(error);
-            }
-          );
-        }
+      after(async function () {
+        this.timeout(Timeout.finishTestCase);
         await onAfter(sampledebugContext, env);
+        setTimeout(() => {
+          if (successFlag) process.exit(0);
+          else process.exit(1);
+        }, 30000);
       });
 
       it(
@@ -377,56 +375,36 @@ export abstract class CaseFactory {
               },
             };
 
-            // if no skip init step
-            if (!options?.skipInit) {
-              await debugEnvMap[env]();
-
-              const teamsAppId = await sampledebugContext.getTeamsAppId(env);
-              expect(teamsAppId).to.not.be.empty;
-
-              // use 2nd middleware to process typical sample
-              await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
-
-              // init
-              const page = await onInitPage(sampledebugContext, teamsAppId, {
-                includeFunction: options?.includeFunction ?? false,
-                npmName: options?.npmName ?? "",
-                dashboardFlag: options?.dashboardFlag ?? false,
-                type: options?.type ?? "",
-                teamsAppName: options?.teamsAppName ?? "",
-              });
-
-              // if no skip vaildation
-              if (!options?.skipValidation) {
-                await onValidate(page, {
-                  context: sampledebugContext,
-                  displayName: Env.displayName,
-                  includeFunction: options?.includeFunction ?? false,
-                  npmName: options?.npmName ?? "",
-                  env: env,
-                });
-              } else {
-                console.log("skip ui skipValidation...");
-                console.log("debug finish!");
-              }
-            } else {
-              console.log("skip ui skipInit...");
+            if (options?.skipDebug) {
+              console.log("skip ui skipDebug...");
               console.log("debug finish!");
+              return;
             }
 
             // cli preview
             if (options?.debug === "cli") {
               console.log("======= debug with cli ========");
-              console.log("botFlag: ", botFlag);
               // start local tunnel
-              if (botFlag) {
+              if (options.botFlag || botFlag) {
                 const tunnel = Executor.debugBotFunctionPreparation(
                   sampledebugContext.projectPath
                 );
-                tunnelName = tunnel.tunnelName;
                 devtunnelProcess = tunnel.devtunnelProcess;
               }
               await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
+              const { success: provisionSuccess } = await Executor.provision(
+                sampledebugContext.projectPath,
+                "local"
+              );
+              expect(provisionSuccess).to.be.true;
+              const { success: deploySuccess } = await Executor.deploy(
+                sampledebugContext.projectPath,
+                "local"
+              );
+              expect(deploySuccess).to.be.true;
+              const teamsAppId = await sampledebugContext.getTeamsAppId(env);
+              expect(teamsAppId).to.not.be.empty;
+
               debugProcess = Executor.debugProject(
                 sampledebugContext.projectPath,
                 "local",
@@ -438,35 +416,36 @@ export abstract class CaseFactory {
                   }
                 },
                 (error) => {
-                  console.log(error);
-                  chai.assert.fail(error);
+                  const errorMsg = error.toString();
+                  if (
+                    // skip warning messages
+                    errorMsg.includes(LocalDebugError.WarningError)
+                  ) {
+                    console.log("[skip error] ", error);
+                  } else {
+                    successFlag = false;
+                    expect.fail(errorMsg);
+                  }
                 }
               );
               await new Promise((resolve) =>
-                setTimeout(resolve, 2 * 30 * 1000)
+                setTimeout(resolve, 2 * 60 * 1000)
               );
 
               // if no skip init step
               if (!options?.skipInit) {
-                const teamsAppId = await sampledebugContext.getTeamsAppId(env);
-                expect(teamsAppId).to.not.be.empty;
-
                 // init
-                const page = await onReopenPage(
-                  sampledebugContext,
-                  teamsAppId,
-                  {
-                    includeFunction: options?.includeFunction ?? false,
-                    npmName: options?.npmName ?? "",
-                    dashboardFlag: options?.dashboardFlag ?? false,
-                    type: options?.type ?? "",
-                    teamsAppName: options?.teamsAppName ?? "",
-                  }
-                );
+                const page = await onInitPage(sampledebugContext, teamsAppId, {
+                  includeFunction: options?.includeFunction ?? false,
+                  npmName: options?.npmName ?? "",
+                  dashboardFlag: options?.dashboardFlag ?? false,
+                  type: options?.type ?? "",
+                  teamsAppName: options?.teamsAppName ?? "",
+                });
 
                 // if no skip vaildation
                 if (!options?.skipValidation) {
-                  await onValidate(page, {
+                  await onCliValidate(page, {
                     context: sampledebugContext,
                     displayName: Env.displayName,
                     includeFunction: options?.includeFunction ?? false,
@@ -481,6 +460,58 @@ export abstract class CaseFactory {
                 console.log("skip ui skipInit...");
                 console.log("debug finish!");
               }
+              // kill process
+              await Executor.closeProcess(debugProcess);
+              if (botFlag) await Executor.closeProcess(devtunnelProcess);
+              await initDebugPort();
+            }
+
+            // ttk debug
+            await debugEnvMap[env]();
+            const teamsAppId = await sampledebugContext.getTeamsAppId(env);
+            expect(teamsAppId).to.not.be.empty;
+
+            // if no skip init step
+            if (!options?.skipInit) {
+              // use 2nd middleware to process typical sample
+              await onBeforeBrowerStart(sampledebugContext, env, azSqlHelper);
+              // init
+              let page: Page;
+              if (options?.debug === "cli") {
+                page = await onReopenPage(sampledebugContext, teamsAppId, {
+                  includeFunction: options?.includeFunction ?? false,
+                  npmName: options?.npmName ?? "",
+                  dashboardFlag: options?.dashboardFlag ?? false,
+                  type: options?.type ?? "",
+                  teamsAppName: options?.teamsAppName ?? "",
+                });
+              } else {
+                page = await onInitPage(sampledebugContext, teamsAppId, {
+                  includeFunction: options?.includeFunction ?? false,
+                  npmName: options?.npmName ?? "",
+                  dashboardFlag: options?.dashboardFlag ?? false,
+                  type: options?.type ?? "",
+                  teamsAppName: options?.teamsAppName ?? "",
+                });
+              }
+
+              // if no skip vaildation
+              if (!options?.skipValidation) {
+                await onValidate(page, {
+                  context: sampledebugContext,
+                  displayName: Env.displayName,
+                  includeFunction: options?.includeFunction ?? false,
+                  npmName: options?.npmName ?? "",
+                  env: env,
+                });
+              } else {
+                console.log("skip ui skipValidation...");
+                console.log("debug finish!");
+              }
+              await stopDebugging();
+            } else {
+              console.log("skip ui skipInit...");
+              console.log("debug finish!");
             }
           } catch (error) {
             successFlag = false;
@@ -490,6 +521,7 @@ export abstract class CaseFactory {
               Timeout.playwrightDefaultTimeout
             );
           }
+
           expect(successFlag, errorMessage).to.true;
           console.log("debug finish!");
         }

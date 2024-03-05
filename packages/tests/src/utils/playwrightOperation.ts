@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { BrowserContext, Page, Frame } from "playwright";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Timeout, ValidationContent, TemplateProject } from "./constants";
 import { RetryHandler } from "./retryHandler";
 import { getPlaywrightScreenshotPath } from "./nameUtil";
@@ -260,7 +260,9 @@ export async function reopenPage(
   options?: {
     teamsAppName?: string;
     dashboardFlag?: boolean;
-  }
+  },
+  addApp = true,
+  inputPassword = false
 ): Promise<Page> {
   let page = await context.newPage();
   page.setDefaultTimeout(Timeout.playwrightDefaultTimeout);
@@ -273,6 +275,26 @@ export async function reopenPage(
     ),
     page.waitForNavigation(),
   ]);
+
+  if (inputPassword) {
+    // input password
+    console.log(`fill in password`);
+    await page.fill("input.input[type='password'][name='passwd']", password);
+
+    // sign in
+    await Promise.all([
+      page.click("input.button[type='submit']"),
+      page.waitForNavigation(),
+    ]);
+
+    // stay signed in confirm page
+    console.log(`stay signed confirm`);
+    await Promise.all([
+      page.click("input.button[type='submit'][value='Yes']"),
+      page.waitForNavigation(),
+    ]);
+    await page.waitForTimeout(Timeout.shortTimeLoading);
+  }
 
   // add app
   await RetryHandler.retry(async (retries: number) => {
@@ -289,54 +311,63 @@ export async function reopenPage(
       page.waitForNavigation(),
     ]);
     await page.waitForTimeout(Timeout.longTimeWait);
-    console.log("click add button");
 
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("reopen_page"),
+      fullPage: true,
+    });
     const frameElementHandle = await page.waitForSelector(
       "iframe.embedded-page-content"
     );
     const frame = await frameElementHandle?.contentFrame();
-    const addBtn = await frame?.waitForSelector("button>span:has-text('Add')");
-
-    // dashboard template will have a popup
-    if (options?.dashboardFlag) {
-      console.log("Before popup");
-      const [popup] = await Promise.all([
-        page
-          .waitForEvent("popup")
-          .then((popup) =>
-            popup
-              .waitForEvent("close", {
-                timeout: Timeout.playwrightConsentPopupPage,
-              })
-              .catch(() => popup)
-          )
-          .catch(() => {}),
-        addBtn?.click(),
-      ]);
-      console.log("after popup");
-
-      if (popup && !popup?.isClosed()) {
-        // input password
-        console.log(`fill in password`);
-        await popup.fill(
-          "input.input[type='password'][name='passwd']",
-          password
-        );
-        // sign in
-        await Promise.all([
-          popup.click("input.button[type='submit'][value='Sign in']"),
-          popup.waitForNavigation(),
-        ]);
-        await popup.click("input.button[type='submit'][value='Accept']");
-      }
-    } else {
-      await addBtn?.click();
-    }
     await page.waitForTimeout(Timeout.shortTimeLoading);
-    // verify add page is closed
-    await frame?.waitForSelector("button>span:has-text('Add')", {
-      state: "detached",
-    });
+    if (addApp) {
+      console.log("click add button");
+      const addBtn = await frame?.waitForSelector(
+        "button>span:has-text('Add')"
+      );
+
+      // dashboard template will have a popup
+      if (options?.dashboardFlag) {
+        console.log("Before popup");
+        const [popup] = await Promise.all([
+          page
+            .waitForEvent("popup")
+            .then((popup) =>
+              popup
+                .waitForEvent("close", {
+                  timeout: Timeout.playwrightConsentPopupPage,
+                })
+                .catch(() => popup)
+            )
+            .catch(() => {}),
+          addBtn?.click(),
+        ]);
+        console.log("after popup");
+
+        if (popup && !popup?.isClosed()) {
+          // input password
+          console.log(`fill in password`);
+          await popup.fill(
+            "input.input[type='password'][name='passwd']",
+            password
+          );
+          // sign in
+          await Promise.all([
+            popup.click("input.button[type='submit'][value='Sign in']"),
+            popup.waitForNavigation(),
+          ]);
+          await popup.click("input.button[type='submit'][value='Accept']");
+        }
+      } else {
+        await addBtn?.click();
+      }
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+      // verify add page is closed
+      await frame?.waitForSelector("button>span:has-text('Add')", {
+        state: "detached",
+      });
+    }
     try {
       try {
         await page?.waitForSelector(".team-information span:has-text('About')");
@@ -360,7 +391,7 @@ export async function reopenPage(
       console.log("[success] app loaded");
     } catch (error) {
       await page.screenshot({
-        path: getPlaywrightScreenshotPath("error"),
+        path: getPlaywrightScreenshotPath("add_error"),
         fullPage: true,
       });
       assert.fail("[Error] add app failed");
@@ -451,11 +482,179 @@ export async function initTeamsPage(
       } catch (error) {
         console.log("no message to dismiss");
       }
+
       // default
       const addBtn = await frame?.waitForSelector(
         "button>span:has-text('Add')"
       );
       await addBtn?.click();
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+
+      if (options?.type === "meeting") {
+        // verify add page is closed
+        const frameElementHandle = await page.waitForSelector(
+          "iframe.embedded-page-content"
+        );
+        const frame = await frameElementHandle?.contentFrame();
+        try {
+          await frame?.waitForSelector(
+            `h1:has-text('Add ${options?.teamsAppName} to a team')`
+          );
+        } catch (error) {
+          await frame?.waitForSelector(
+            `h1:has-text('Add ${options?.teamsAppName} to a meeting')`
+          );
+        }
+        // TODO: need to add more logic
+        console.log("successful to add teams app!!!");
+        return;
+      }
+
+      try {
+        // verify add page is closed
+        await frame?.waitForSelector(`h1:has-text('to a team')`);
+        try {
+          const frameElementHandle = await page.waitForSelector(
+            "iframe.embedded-page-content"
+          );
+          const frame = await frameElementHandle?.contentFrame();
+
+          try {
+            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            await items?.click();
+            console.log("selected a team.");
+          } catch (error) {
+            const searchBtn = await frame?.waitForSelector(
+              "div.ui-dropdown__toggle-indicator"
+            );
+            await searchBtn?.click();
+            await page.waitForTimeout(Timeout.shortTimeLoading);
+
+            const items = await frame?.waitForSelector("li.ui-dropdown__item");
+            await items?.click();
+            console.log("[catch] selected a team.");
+          }
+
+          const setUpBtn = await frame?.waitForSelector(
+            'button span:has-text("Set up a tab")'
+          );
+          await setUpBtn?.click();
+          console.log("click 'set up a tab' button");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+          await frame?.waitForSelector('button span:has-text("Set up a tab")', {
+            state: "detached",
+          });
+        } catch (error) {
+          console.log(error);
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("error"),
+            fullPage: true,
+          });
+          throw error;
+        }
+      } catch (error) {
+        console.log("no need to add to a team step");
+      }
+
+      {
+        console.log('[start] click "save" button');
+        const frameElementHandle = await page.waitForSelector(
+          "iframe.embedded-iframe"
+        );
+        const frame = await frameElementHandle?.contentFrame();
+        if (options?.type === "spfx") {
+          try {
+            console.log("Load debug scripts");
+            await frame?.click('button:has-text("Load debug scripts")');
+            console.log("Debug scripts loaded");
+          } catch (error) {
+            console.log("No debug scripts to load");
+          }
+        }
+        try {
+          const saveBtn = await page.waitForSelector(`button:has-text("Save")`);
+          await saveBtn?.click();
+          await page.waitForSelector(`button:has-text("Save")`, {
+            state: "detached",
+          });
+          console.log('[success] click "save" button');
+        } catch (error) {
+          console.log("No save button to click");
+        }
+      }
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+      console.log("successful to add teams app!!!");
+    });
+
+    return page;
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function reopenTeamsPage(
+  context: BrowserContext,
+  teamsAppId: string,
+  username: string,
+  password: string,
+  options?: {
+    teamsAppName?: string;
+    dashboardFlag?: boolean;
+    type?: string;
+  },
+  addApp = true
+): Promise<Page> {
+  let page = await context.newPage();
+  try {
+    page.setDefaultTimeout(Timeout.playwrightDefaultTimeout);
+
+    // open teams app page
+    // https://github.com/puppeteer/puppeteer/issues/3338
+    await Promise.all([
+      page.goto(
+        `https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true`
+      ),
+      page.waitForNavigation(),
+    ]);
+
+    // add app
+    await RetryHandler.retry(async (retries: number) => {
+      if (retries > 0) {
+        console.log(`Retried to run adding app for ${retries} times.`);
+      }
+      await page.close();
+      console.log(`open teams page`);
+      page = await context.newPage();
+      await Promise.all([
+        page.goto(
+          `https://teams.microsoft.com/_#/l/app/${teamsAppId}?installAppPackage=true`
+        ),
+        page.waitForNavigation(),
+      ]);
+      const frameElementHandle = await page.waitForSelector(
+        "iframe.embedded-page-content"
+      );
+      const frame = await frameElementHandle?.contentFrame();
+
+      try {
+        console.log("dismiss message");
+        await page.click('button:has-text("Dismiss")');
+      } catch (error) {
+        console.log("no message to dismiss");
+      }
+      if (addApp) {
+        await page.waitForTimeout(Timeout.longTimeWait);
+        console.log("click add button");
+        // default
+        const addBtn = await frame?.waitForSelector(
+          "button>span:has-text('Add')"
+        );
+        await addBtn?.click();
+      }
       await page.waitForTimeout(Timeout.shortTimeLoading);
 
       if (options?.type === "meeting") {
@@ -1315,12 +1514,17 @@ export async function validateNpm(page: Page, options?: { npmName?: string }) {
       );
       await targetItem?.click();
       await frame?.waitForSelector(`card span:has-text("${searchPack}")`);
+      await frame?.click('button[name="send"]');
       console.log("verify npm search successfully!!!");
       await page.waitForTimeout(Timeout.shortTimeLoading);
     } catch (error) {
       await frame?.waitForSelector(
         'div.ui-box span:has-text("Unable to reach app. Please try again.")'
       );
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("verify_error"),
+        fullPage: true,
+      });
       assert.fail("Unable to reach app. Please try again.");
     }
   } catch (error) {
@@ -1722,18 +1926,15 @@ export async function validateTodoList(
   try {
     console.log("start to verify todo list");
     try {
-      const tabs = await page.$$("button[role='tab']");
-      const tab = tabs.find(async (tab) => {
-        const text = await tab.innerText();
-        return text?.includes("Todo List");
-      });
-      await tab?.click();
       await page.waitForTimeout(Timeout.shortTimeLoading);
       const frameElementHandle = await page.waitForSelector(
         "iframe.embedded-iframe"
       );
       const frame = await frameElementHandle?.contentFrame();
-      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
+      const childFrame = frame?.childFrames()[0];
+      const startBtn = await childFrame?.waitForSelector(
+        'button:has-text("Start")'
+      );
       console.log("click Start button");
       await RetryHandler.retry(async () => {
         console.log("Before popup");
@@ -1760,17 +1961,24 @@ export async function validateTodoList(
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-        const addBtn = await frame?.waitForSelector(
-          'button:has-text("Add task")'
-        );
-        await addBtn?.click();
-        //TODO: verify add task
-
-        // clean tab, right click
-        await tab?.click({ button: "right" });
-        await page.waitForTimeout(Timeout.shortTimeLoading);
-        const contextMenu = await page.waitForSelector("ul[role='menu']");
       });
+      // add task
+      console.log("click add task button");
+      const addBtn = await childFrame?.waitForSelector(
+        'button:has-text("Add task")'
+      );
+      await addBtn?.click();
+      const inputBox = await childFrame?.waitForSelector(
+        "div.item.add input[type='text']"
+      );
+      console.log("type hello world");
+      await inputBox?.type("Hello World");
+      await addBtn?.click();
+      console.log("check result");
+      await childFrame?.waitForSelector(
+        `div.item .creator .name:has-text("${options?.displayName}")`
+      );
+      console.log("debug finish!!!");
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
       await page.screenshot({
@@ -1790,7 +1998,10 @@ export async function validateTodoList(
   }
 }
 
-export async function validateProactiveMessaging(page: Page): Promise<void> {
+export async function validateProactiveMessaging(
+  page: Page,
+  options?: { env: "local" | "dev"; context?: SampledebugContext }
+): Promise<void> {
   console.log(`validating proactive messaging`);
   await page.waitForTimeout(Timeout.shortTimeLoading);
   const frameElementHandle = await page.waitForSelector(
@@ -1812,6 +2023,27 @@ export async function validateProactiveMessaging(page: Page): Promise<void> {
     console.log("sending message ", "welcome");
     await executeBotSuggestionCommand(page, frame, "welcome");
     await frame?.click('button[name="send"]');
+    // verify command
+    const expectedContent = "You sent 'welcome '.";
+    await frame?.waitForSelector(`p:has-text("${expectedContent}")`);
+    console.log(`verify bot successfully with content ${expectedContent}!!!`);
+    // send post request to bot
+    console.log("Post request sent to bot");
+    const endpointFilePath = path.join(
+      options?.context?.projectPath ?? "",
+      "env",
+      `.env.${options?.env}`
+    );
+    // read env file
+    const endpoint = fs.readFileSync(endpointFilePath, "utf8");
+    const devEnv = dotenvUtil.deserialize(endpoint);
+    const url =
+      devEnv.obj["PROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT"] + "/api/notify";
+    console.log(url);
+    await axios.get(url);
+    await frame?.waitForSelector('p:has-text("proactive hello")');
+    console.log("Successfully sent notification");
+    await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (e: any) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),
@@ -1898,7 +2130,8 @@ export async function switchToTab(page: Page, tabName = "Personal Tab") {
 
 export async function validateContact(
   page: Page,
-  options?: { displayName?: string }
+  options?: { displayName?: string },
+  rerun = false
 ) {
   try {
     console.log("start to verify contact");
@@ -1918,35 +2151,41 @@ export async function validateContact(
       console.log("no message to dismiss");
     }
     try {
-      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
-      await RetryHandler.retry(async () => {
-        console.log("Before popup");
-        const [popup] = await Promise.all([
-          page
-            .waitForEvent("popup")
-            .then((popup) =>
-              popup
-                .waitForEvent("close", {
-                  timeout: Timeout.playwrightConsentPopupPage,
-                })
-                .catch(() => popup)
-            )
-            .catch(() => {}),
-          startBtn?.click(),
-        ]);
-        console.log("after popup");
+      if (!rerun) {
+        const startBtn = await frame?.waitForSelector(
+          'button:has-text("Start")'
+        );
+        await RetryHandler.retry(async () => {
+          console.log("Before popup");
+          const [popup] = await Promise.all([
+            page
+              .waitForEvent("popup")
+              .then((popup) =>
+                popup
+                  .waitForEvent("close", {
+                    timeout: Timeout.playwrightConsentPopupPage,
+                  })
+                  .catch(() => popup)
+              )
+              .catch(() => {}),
+            startBtn?.click(),
+          ]);
+          console.log("after popup");
 
-        if (popup && !popup?.isClosed()) {
-          await popup
-            .click('button:has-text("Reload")', {
-              timeout: Timeout.playwrightConsentPageReload,
-            })
-            .catch(() => {});
-          await popup.click("input.button[type='submit'][value='Accept']");
-        }
+          if (popup && !popup?.isClosed()) {
+            await popup
+              .click('button:has-text("Reload")', {
+                timeout: Timeout.playwrightConsentPageReload,
+              })
+              .catch(() => {});
+            await popup.click("input.button[type='submit'][value='Accept']");
+          }
 
-        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
-      });
+          await frame?.waitForSelector(
+            `div:has-text("${options?.displayName}")`
+          );
+        });
+      }
       await page.waitForTimeout(10000);
 
       // verify add person
@@ -2360,6 +2599,94 @@ export async function validateSearchCmdResult(
       );
       assert.fail("Unable to reach app. Please try again.");
     }
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateLargeNotificationBot(
+  page: Page,
+  notificationEndpoint = "http://127.0.0.1:3978/api/notification"
+) {
+  try {
+    const frameElementHandle = await page.waitForSelector(
+      "iframe.embedded-page-content"
+    );
+    const frame = await frameElementHandle?.contentFrame();
+    await frame?.waitForSelector("div.ui-box");
+    await page
+      .click('button:has-text("Dismiss")', {
+        timeout: Timeout.playwrightDefaultTimeout,
+      })
+      .catch(() => {});
+    await RetryHandler.retry(async () => {
+      try {
+        const result = await axios.post(notificationEndpoint);
+        console.log("status code: ", result.status);
+        if (result.status !== 202) {
+          throw new Error(
+            `POST /api/notification failed: status code: '${result.status}', body: '${result.data}'`
+          );
+        }
+        console.log("Successfully sent notification");
+      } catch (e: any) {
+        console.log(e);
+      }
+      try {
+        await frame?.waitForSelector('p:has-text("Hello World")');
+      } catch (e) {
+        throw e;
+      }
+    }, 2);
+    console.log("User received notification");
+  } catch (error) {
+    await page.screenshot({
+      path: getPlaywrightScreenshotPath("error"),
+      fullPage: true,
+    });
+    throw error;
+  }
+}
+
+export async function validateTodoListSpfx(page: Page) {
+  try {
+    console.log("start to verify todo list spfx");
+    try {
+      console.log("check result...");
+      const frameElementHandle = await page.waitForSelector(
+        "iframe.embedded-page-content"
+      );
+      const frame = await frameElementHandle?.contentFrame();
+      const spfxFrame = frame?.childFrames()[0];
+      // title
+      console.log("check title");
+      const title = await spfxFrame?.waitForSelector(
+        "h2:has-text('To Do List')"
+      );
+      const titleContext = await title?.innerText();
+      expect(titleContext).to.equal("To Do List");
+      // task check
+      console.log("check task");
+      const task = await spfxFrame?.waitForSelector(
+        "div.item input[value='Hello World']"
+      );
+      console.log(await task?.inputValue());
+      expect(task).to.not.be.undefined;
+
+      console.log("verify finish!!!");
+    } catch (e: any) {
+      console.log(`[Command not executed successfully] ${e.message}`);
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("error"),
+        fullPage: true,
+      });
+      throw e;
+    }
+    await page.waitForTimeout(Timeout.shortTimeLoading);
   } catch (error) {
     await page.screenshot({
       path: getPlaywrightScreenshotPath("error"),

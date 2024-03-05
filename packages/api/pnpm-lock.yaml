@@ -12,8 +12,8 @@ dependencies:
     specifier: workspace:*
     version: link:../manifest
   axios:
-    specifier: ^1.6.2
-    version: 1.6.2
+    specifier: ^1.6.7
+    version: 1.6.7
   chai:
     specifier: ^4.3.4
     version: 4.3.4
@@ -999,8 +999,8 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
-  /axios@1.6.2:
-    resolution: {integrity: sha512-7i24Ri4pmDRfJTR7LDBhsOTtcm+9kjX5WiY1X3wIisx6G9So3pfMkEiU7emUBe46oceVImccTEM3k6C5dbVW8A==}
+  /axios@1.6.7:
+    resolution: {integrity: sha512-/hDJGff6/c7u0hDkvkGxR/oy6CbCs8ziCsC7SqmhjfozqiJGc8Z11wrv9z9lYfY4K8l+H9TpjcMDX0xOZmx+RA==}
     dependencies:
       follow-redirects: 1.15.5
       form-data: 4.0.0

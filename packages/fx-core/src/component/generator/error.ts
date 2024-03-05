@@ -32,13 +32,13 @@ export class TemplateNotFoundError extends BaseComponentInnerError {
   }
 }
 
-export class TemplateZipFallbackError extends BaseComponentInnerError {
+export class ScaffoldLocalTemplateError extends BaseComponentInnerError {
   constructor() {
     super(
       errorSource,
       "SystemError",
-      "TemplateZipFallbackError",
-      "error.generator.TemplateZipFallbackError"
+      "ScaffoldLocalTemplateError",
+      "error.generator.ScaffoldLocalTemplateError"
     );
   }
 }

@@ -33,11 +33,14 @@ export interface CreateProjectInputs extends Inputs {
     | "link-unfurling"
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
-    | "copilot-plugin-openai-plugin"
+    | "custom-copilot-basic"
+    | "custom-copilot-rag"
+    | "custom-copilot-assistant"
     | "message-extension"
     | "BotAndMessageExtension"
-    | "TabNonSsoAndBot";
-  /** @description Choose triggers */
+    | "TabNonSsoAndBot"
+    | "taskpane";
+  /** @description Select triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
     | "http-webapi"
@@ -54,18 +57,36 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
+  /** @description Add-in Host */
+  "addin-host"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
   /** @description OpenAPI Description Document */
   "openapi-spec-location"?: string;
-  /** @description OpenAI Plugin Manifest */
-  "openai-plugin-manifest"?: string;
   /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
   /** @description Authentication Type */
   "api-me-auth"?: "none" | "api-key";
+  /** @description Chat With Your Data */
+  "custom-copilot-rag"?:
+    | "custom-copilot-rag-customize"
+    | "custom-copilot-rag-azureAISearch"
+    | "custom-copilot-rag-customApi"
+    | "custom-copilot-rag-microsoft365";
+  /** @description AI Assistant */
+  "custom-copilot-assistant"?:
+    | "custom-copilot-assistant-new"
+    | "custom-copilot-assistant-assistantsApi";
   /** @description Programming Language */
   "programming-language"?: "javascript" | "typescript" | "csharp";
-  /** @description Application name */
+  /** @description Service for Large Language Model (LLM) */
+  "llm-service"?: "llm-service-azureOpenAI" | "llm-service-openAI";
+  /** @description Azure OpenAI Key */
+  "azureOpenAI-key"?: string;
+  /** @description Azure OpenAI Endpoint */
+  "azureOpenAI-endpoint"?: string;
+  /** @description OpenAI Key */
+  "openAI-key"?: string;
+  /** @description Application Name */
   "app-name"?: string;
 }

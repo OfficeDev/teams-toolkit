@@ -45,6 +45,8 @@ import {
   ProjectTypeOptions,
   ScratchOptions,
   ApiMessageExtensionAuthOptions,
+  CustomCopilotRagOptions,
+  CustomCopilotAssistantOptions,
 } from "../../question/create";
 import { QuestionNames } from "../../question/questionNames";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
@@ -102,6 +104,13 @@ export enum TemplateNames {
   CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
+  CustomCopilotBasic = "custom-copilot-basic",
+  CustomCopilotRagCustomize = "custom-copilot-rag-customize",
+  CustomCopilotRagAzureAISearch = "custom-copilot-rag-azure-ai-search",
+  CustomCopilotRagCustomApi = "custom-copilot-rag-custom-api",
+  CustomCopilotRagMicrosoft365 = "custom-copilot-rag-microsoft365",
+  CustomCopilotAssistantNew = "custom-copilot-assistant-new",
+  CustomCopilotAssistantAssistantsApi = "custom-copilot-assistant-assistants-api",
 }
 
 const Feature2TemplateName: any = {
@@ -160,6 +169,25 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
   [`${CapabilityOptions.nonSsoTab().id}:ssr`]: TemplateNames.TabSSR,
+  [`${CapabilityOptions.customCopilotBasic().id}:undefined`]: TemplateNames.CustomCopilotBasic,
+  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
+    CustomCopilotRagOptions.customize().id
+  }`]: TemplateNames.CustomCopilotRagCustomize,
+  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
+    CustomCopilotRagOptions.azureAISearch().id
+  }`]: TemplateNames.CustomCopilotRagAzureAISearch,
+  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
+    CustomCopilotRagOptions.customApi().id
+  }`]: TemplateNames.CustomCopilotRagCustomApi,
+  [`${CapabilityOptions.customCopilotRag().id}:undefined:${
+    CustomCopilotRagOptions.microsoft365().id
+  }`]: TemplateNames.CustomCopilotRagMicrosoft365,
+  [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
+    CustomCopilotAssistantOptions.new().id
+  }`]: TemplateNames.CustomCopilotAssistantNew,
+  [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
+    CustomCopilotAssistantOptions.assistantsApi().id
+  }`]: TemplateNames.CustomCopilotAssistantAssistantsApi,
 };
 
 const M365Actions = [
@@ -254,14 +282,19 @@ class Coordinator {
       if (capability === CapabilityOptions.SPFxTab().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
-      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id) {
+      } else if (
+        inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id ||
+        CapabilityOptions.officeAddinItems()
+          .map((i) => i.id)
+          .includes(capability)
+      ) {
         const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
         }
       } else if (
-        capability === CapabilityOptions.copilotPluginApiSpec().id ||
-        meArchitecture === MeArchitectureOptions.apiSpec().id
+        meArchitecture === MeArchitectureOptions.apiSpec().id ||
+        capability === CapabilityOptions.copilotPluginApiSpec().id
       ) {
         const res = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, projectPath);
         if (res.isErr()) {
@@ -322,16 +355,34 @@ class Coordinator {
             feature = `${feature}:none`;
           }
         }
+
+        if (capability === CapabilityOptions.customCopilotRag().id) {
+          feature = `${feature}:${inputs[QuestionNames.CustomCopilotRag] as string}`;
+        } else if (capability === CapabilityOptions.customCopilotAssistant().id) {
+          feature = `${feature}:${inputs[QuestionNames.CustomCopilotAssistant] as string}`;
+        }
+
         const templateName = Feature2TemplateName[feature];
 
         if (templateName) {
           const langKey = convertToLangKey(language);
           const safeProjectNameFromVS =
             language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
+          const llmService: string | undefined = inputs[QuestionNames.LLMService];
+          const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
+          const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
+          const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
           context.templateVariables = Generator.getDefaultVariables(
             appName,
             safeProjectNameFromVS,
-            inputs.targetFramework
+            inputs.targetFramework,
+            undefined,
+            {
+              llmService,
+              openAIKey,
+              azureOpenAIKey,
+              azureOpenAIEndpoint,
+            }
           );
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);

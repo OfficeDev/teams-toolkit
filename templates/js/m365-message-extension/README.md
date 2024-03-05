@@ -24,7 +24,7 @@ This app template is a search-based [message extension](https://docs.microsoft.c
 
 **Congratulations**! You are running an application that can now search npm registries in Teams and Outlook.
 
-![Search app demo](https://user-images.githubusercontent.com/11220663/167868361-40ffaaa3-0300-4313-ae22-0f0bab49c329.png)
+![Search app demo](https://github.com/OfficeDev/TeamsFx/assets/25220706/27fefae9-c51f-49af-a175-c8c9d5a71af0)
 
 ## What's included in the template
 

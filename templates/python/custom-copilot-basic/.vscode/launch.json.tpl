@@ -52,7 +52,6 @@
             "program": "${workspaceFolder}/src/app.py",
             "cwd": "${workspaceFolder}/src",
             "console": "integratedTerminal",
-            "justMyCode": false,
         },
         {
             "name": "Start Test Tool",

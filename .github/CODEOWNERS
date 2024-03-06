@@ -141,6 +141,8 @@
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
 /templates/**/custom-copilot-basic @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/templates/**/custom-copilot-assistant-new @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/templates/**/custom-copilot-assistant-assistants-api @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
 /packages/fx-core/.eslintignore @LongOddCode @wenytang-ms
 /packages/fx-core/.eslintrc.js @LongOddCode @wenytang-ms

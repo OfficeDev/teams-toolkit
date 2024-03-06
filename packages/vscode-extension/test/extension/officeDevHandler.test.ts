@@ -7,6 +7,7 @@ import * as fs from "fs-extra";
 import * as mockfs from "mock-fs";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
+import { Terminal } from "vscode";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
@@ -16,9 +17,11 @@ import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import {
   OfficeDevTerminal,
+  triggerGenerateGUID,
   triggerInstall,
   triggerValidate,
 } from "../../src/debug/taskTerminal/officeDevTerminal";
+import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/officeDevHandlers";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -356,5 +359,80 @@ describe("OfficeDevTerminal", () => {
     chai.expect(result.isOk()).to.be.true;
     sinon.assert.calledOnce(showStub);
     sinon.assert.calledWith(sendTextStub, triggerInstall); // replace triggerInstall with actual value
+  });
+});
+
+class TerminalStub implements Terminal {
+  name!: string;
+  processId!: Thenable<number | undefined>;
+  creationOptions!: Readonly<vscode.TerminalOptions | vscode.ExtensionTerminalOptions>;
+  exitStatus: vscode.TerminalExitStatus | undefined;
+  state!: vscode.TerminalState;
+  hide(): void {
+    throw new Error("Method not implemented.");
+  }
+  dispose(): void {
+    throw new Error("Method not implemented.");
+  }
+  // Implement all methods from the Terminal interface
+  // ...
+
+  sendText(text: string, addNewLine?: boolean): void {
+    // This is a stubbed method
+  }
+
+  show(preserveFocus?: boolean): void {
+    // This is a stubbed method
+  }
+}
+
+describe("stopOfficeAddInDebug", () => {
+  let getInstanceStub: sinon.SinonStub;
+  let showStub: sinon.SinonStub;
+  let sendTextStub: sinon.SinonStub;
+
+  beforeEach(() => {
+    const terminalStub = new TerminalStub();
+    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
+    showStub = sinon.stub(terminalStub, "show");
+    sendTextStub = sinon.stub(terminalStub, "sendText");
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should call getInstance, show and sendText", async () => {
+    await stopOfficeAddInDebug();
+
+    sinon.assert.calledOnce(getInstanceStub);
+    sinon.assert.calledOnce(showStub);
+    sinon.assert.calledOnce(sendTextStub);
+  });
+});
+
+describe("generateManifestGUID", () => {
+  let getInstanceStub: sinon.SinonStub;
+  let showStub: sinon.SinonStub;
+  let sendTextStub: sinon.SinonStub;
+
+  beforeEach(() => {
+    const terminalStub = new TerminalStub();
+    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
+    showStub = sinon.stub(terminalStub, "show");
+    sendTextStub = sinon.stub(terminalStub, "sendText");
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should call getInstance, show and sendText with correct arguments", async () => {
+    await generateManifestGUID();
+
+    sinon.assert.calledOnce(getInstanceStub);
+    sinon.assert.calledOnce(showStub);
+    sinon.assert.calledOnce(sendTextStub);
+    sinon.assert.calledWithExactly(sendTextStub, triggerGenerateGUID);
   });
 });

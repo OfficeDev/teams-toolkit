@@ -36,7 +36,7 @@ The app template is built using the Teams AI library, which provides the capabil
 1. select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableTestToolByDefault}}
 {{#useAzureOpenAI}}
-1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT`.
+1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME` and endpoint `AZURE_OPENAI_ENDPOINT`.
 {{/useAzureOpenAI}}
 {{#useOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
@@ -52,7 +52,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 {{#useAzureOpenAI}}
-1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT`.
+1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME` and endpoint `AZURE_OPENAI_ENDPOINT`.
 {{/useAzureOpenAI}}
 {{#useOpenAI}}
 1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 

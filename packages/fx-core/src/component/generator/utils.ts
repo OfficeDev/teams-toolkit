@@ -253,6 +253,7 @@ export async function downloadDirectory(
 ): Promise<string[]> {
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(sampleInfo, retryLimits);
   await downloadSampleFiles(
+    sampleInfo,
     fileUrlPrefix,
     samplePaths,
     dstPath,
@@ -294,6 +295,7 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
 }
 
 async function downloadSampleFiles(
+  sampleInfo: SampleUrlInfo,
   fileUrlPrefix: string,
   samplePaths: string[],
   dstPath: string,
@@ -302,8 +304,19 @@ async function downloadSampleFiles(
   concurrencyLimits: number
 ): Promise<void> {
   const downloadCallback = async (samplePath: string) => {
+    const lfsRegex = /^.*oid sha256:[0-9a-f]+\nsize \d+/gm;
     const file = (await sendRequestWithRetry(async () => {
-      return await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
+      const content = await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
+      if (lfsRegex.test(content.data.toString())) {
+        return await axios.get(
+          `https://media.githubusercontent.com/media/${sampleInfo.owner}/${sampleInfo.repository}/${sampleInfo.ref}/${samplePath}`,
+          {
+            responseType: "arraybuffer",
+          }
+        );
+      } else {
+        return content;
+      }
     }, retryLimits)) as unknown as any;
     const filePath = path.join(dstPath, path.relative(`${relativePath}/`, samplePath));
     await fs.ensureFile(filePath);

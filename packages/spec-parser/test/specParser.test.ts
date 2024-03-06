@@ -1827,4 +1827,21 @@ describe("SpecParser", () => {
       ]);
     });
   });
+
+  describe("getFilteredSpecs", () => {
+    it("should throw an error if failed to parse the spec", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml");
+      const spec = { openapi: "3.0.0", paths: {} };
+      const parseStub = sinon.stub(specParser.parser, "parse").throws(new Error("parse error"));
+      const filter = ["get /hello"];
+      try {
+        await specParser.getFilteredSpecs(filter);
+        expect.fail("Expected generate to throw a SpecParserError");
+      } catch (err: any) {
+        expect(err).to.be.instanceOf(SpecParserError);
+        expect(err.errorType).to.equal(ErrorType.GetSpecFailed);
+        expect(err.message).to.equal("Error: parse error");
+      }
+    });
+  });
 });

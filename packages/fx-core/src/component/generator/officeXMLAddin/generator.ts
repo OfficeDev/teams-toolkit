@@ -18,13 +18,14 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { assembleError } from "../../../error";
 import { ProgrammingLanguage } from "../../../question/create";
 import { QuestionNames } from "../../../question/questionNames";
-import { getOfficeXMLAddinHostProjectRepoInfo } from "./projectConfig";
+import {
+  getOfficeXMLAddinHostProjectRepoInfo,
+  getOfficeXMLAddinHostProjectTemplateName,
+} from "./projectConfig";
 import { getLocalizedString } from "../../../common/localizeUtils";
 
 const COMPONENT_NAME = "office-xml-addin";
 const TELEMETRY_EVENT = "generate";
-
-const TEMPLATE_LANG = "ts";
 const TEMPLATE_BASE = "office-xml-addin";
 
 export class OfficeXMLAddinGenerator {
@@ -45,6 +46,7 @@ export class OfficeXMLAddinGenerator {
     const project = inputs[QuestionNames.Capabilities];
     const lang = inputs[QuestionNames.ProgrammingLanguage] === ProgrammingLanguage.TS ? "ts" : "js";
     const appName = inputs[QuestionNames.AppName] as string;
+    const templateName = getOfficeXMLAddinHostProjectTemplateName(host, project);
     const repoInfo = getOfficeXMLAddinHostProjectRepoInfo(host, project, lang);
     const workingDir = process.cwd();
     const progressBar = context.userInteraction.createProgressBar(
@@ -59,57 +61,45 @@ export class OfficeXMLAddinGenerator {
         getLocalizedString("core.createProjectQuestion.officeXMLAddin.bar.detail")
       );
 
-      if (!!repoInfo.repo) {
-        // Condition: Project Have Remote Repo
+      if (!!repoInfo) {
+        // [Condition]: Project have remote repo (not manifest-only proj)
 
-        // -> Download the Project from GitHub
-        await HelperMethods.downloadProjectTemplateZipFile(
-          destinationPath,
-          `${repoInfo.repo}/archive/${repoInfo.branch}.zip`
-        );
+        // -> Step: Download the project from GitHub
+        await HelperMethods.downloadProjectTemplateZipFile(destinationPath, repoInfo);
 
-        // -> Convert to single Host
+        // -> Step: Convert to single Host
         await OfficeXMLAddinGenerator.childProcessExec(
           `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`
         );
       } else {
-        // Condition: Manifest Only
+        // [Condition]: Manifest Only
 
-        // -> Copy Host Specific Manifest
-        const getManifestTemplateRes = await Generator.generateTemplate(
-          context,
-          destinationPath,
-          `${TEMPLATE_BASE}-${host}`,
-          TEMPLATE_LANG
-        );
-        if (getManifestTemplateRes.isErr()) return err(getManifestTemplateRes.error);
-
-        // -> Copy Other Files for Manifest Only Project
+        // -> Step: Copy proj files for manifest-only project
         const getManifestOnlyProjectTemplateRes = await Generator.generateTemplate(
           context,
           destinationPath,
           `${TEMPLATE_BASE}-manifest-only`,
-          TEMPLATE_LANG
+          lang
         );
         if (getManifestOnlyProjectTemplateRes.isErr())
           return err(getManifestOnlyProjectTemplateRes.error);
       }
 
-      // Modify the Manifest
+      // -> Common Step: Copy the README (or with manifest for manifest-only proj)
+      const getReadmeTemplateRes = await Generator.generateTemplate(
+        context,
+        destinationPath,
+        `${TEMPLATE_BASE}-${templateName}`,
+        lang
+      );
+      if (getReadmeTemplateRes.isErr()) return err(getReadmeTemplateRes.error);
+
+      // -> Common Step: Modify the Manifest
       await OfficeAddinManifest.modifyManifestFile(
         `${join(destinationPath, "manifest.xml")}`,
         "random",
         `${appName}`
       );
-
-      // Copy the Readme
-      const getReadmeTemplateRes = await Generator.generateTemplate(
-        context,
-        destinationPath,
-        `${TEMPLATE_BASE}-readme`,
-        TEMPLATE_LANG
-      );
-      if (getReadmeTemplateRes.isErr()) return err(getReadmeTemplateRes.error);
 
       process.chdir(workingDir);
       await progressBar.end(true, true);

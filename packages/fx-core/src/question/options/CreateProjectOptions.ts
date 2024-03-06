@@ -22,7 +22,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "addin-office-capability",
     type: "string",
-    description: "Select to create a Word, Excel or PowerPoint Add-in",
+    description: "Select to create an Outlook, Word, Excel, or PowerPoint Add-in",
     choices: ["outlook-addin-type", "word", "excel", "powerpoint"],
   },
   {

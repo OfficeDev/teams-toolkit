@@ -142,16 +142,13 @@ describe("OfficeXMLAddinGenerator", function () {
 
 describe("projectConfig", () => {
   it("should return empty repo info if manifest-only project", () => {
-    chai.assert.deepEqual(getOfficeXMLAddinHostProjectRepoInfo("excel", "manifest", "ts"), {
-      repo: "",
-      branch: "",
-    });
+    chai.assert.equal(getOfficeXMLAddinHostProjectRepoInfo("excel", "manifest", "ts"), "");
   });
 
   it("should success return repo info if not manifest-only project", () => {
-    chai.assert.deepEqual(getOfficeXMLAddinHostProjectRepoInfo("excel", "react", "ts"), {
-      repo: "https://github.com/OfficeDev/Office-Addin-TaskPane-React",
-      branch: "yo-office",
-    });
+    chai.assert.equal(
+      getOfficeXMLAddinHostProjectRepoInfo("excel", "react", "ts"),
+      "https://aka.ms/ccdevx-fx-react-ts"
+    );
   });
 });

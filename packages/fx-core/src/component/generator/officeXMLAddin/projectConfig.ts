@@ -5,18 +5,14 @@
  * @author zyun@microsoft.com
  */
 
-interface IOfficeXMLAddinRepoConfig {
-  repo: string;
-  branch: string;
-}
-
 interface IOfficeXMLAddinHostConfig {
   [property: string]: {
     title: string;
     detail: string;
+    localTemplate: string;
     lang: {
-      ts?: IOfficeXMLAddinRepoConfig;
-      js?: IOfficeXMLAddinRepoConfig;
+      ts?: string;
+      js?: string;
     };
   };
 }
@@ -30,26 +26,20 @@ const CommonProjectConfig = {
     title: "core.createProjectQuestion.officeXMLAddin.taskpane.title",
     detail: "core.createProjectQuestion.officeXMLAddin.taskpane.detail",
     lang: {
-      ts: { repo: "https://github.com/OfficeDev/Office-Addin-TaskPane", branch: "yo-office" },
-      js: { repo: "https://github.com/OfficeDev/Office-Addin-TaskPane-JS", branch: "yo-office" },
+      ts: "https://aka.ms/ccdevx-fx-taskpane-ts",
+      js: "https://aka.ms/ccdevx-fx-taskpane-js",
     },
   },
   sso: {
     lang: {
-      ts: { repo: "https://github.com/OfficeDev/Office-Addin-TaskPane-SSO", branch: "yo-office" },
-      js: {
-        repo: "https://github.com/OfficeDev/Office-Addin-TaskPane-SSO-JS",
-        branch: "yo-office",
-      },
+      ts: "https://aka.ms/ccdevx-fx-sso-ts",
+      js: "https://aka.ms/ccdevx-fx-sso-js",
     },
   },
   react: {
     lang: {
-      ts: { repo: "https://github.com/OfficeDev/Office-Addin-TaskPane-React", branch: "yo-office" },
-      js: {
-        repo: "https://github.com/OfficeDev/Office-Addin-TaskPane-React-JS",
-        branch: "yo-office",
-      },
+      ts: "https://aka.ms/ccdevx-fx-react-ts",
+      js: "https://aka.ms/ccdevx-fx-react-js",
     },
   },
   manifest: {
@@ -59,70 +49,90 @@ const CommonProjectConfig = {
   },
 };
 
-export const OfficeXMLAddinProjectConfig: IOfficeXMLAddinProjectConfig = {
+const OfficeXMLAddinProjectConfig: IOfficeXMLAddinProjectConfig = {
   word: {
-    taskpane: { ...CommonProjectConfig.taskpane },
+    taskpane: {
+      localTemplate: "word-taskpane",
+      ...CommonProjectConfig.taskpane,
+    },
     sso: {
       title: "core.createProjectQuestion.officeXMLAddin.word.sso.title",
       detail: "core.createProjectQuestion.officeXMLAddin.word.sso.detail",
+      localTemplate: "word-sso",
       ...CommonProjectConfig.sso,
     },
     react: {
       title: "core.createProjectQuestion.officeXMLAddin.word.react.title",
       detail: "core.createProjectQuestion.officeXMLAddin.word.react.detail",
+      localTemplate: "word-react",
       ...CommonProjectConfig.react,
     },
-    manifest: { ...CommonProjectConfig.manifest },
+    manifest: {
+      localTemplate: "word-manifest-only",
+      ...CommonProjectConfig.manifest,
+    },
   },
   excel: {
-    taskpane: { ...CommonProjectConfig.taskpane },
+    taskpane: {
+      localTemplate: "excel-taskpane",
+      ...CommonProjectConfig.taskpane,
+    },
     sso: {
       title: "core.createProjectQuestion.officeXMLAddin.excel.sso.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.sso.detail",
+      localTemplate: "excel-sso",
       ...CommonProjectConfig.sso,
     },
     react: {
       title: "core.createProjectQuestion.officeXMLAddin.excel.react.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.react.detail",
+      localTemplate: "excel-react",
       ...CommonProjectConfig.react,
     },
     cfShared: {
       title: "core.createProjectQuestion.officeXMLAddin.excel.cf.shared.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.cf.shared.detail",
+      localTemplate: "excel-cf",
       lang: {
-        ts: {
-          repo: "https://github.com/OfficeDev/Excel-Custom-Functions",
-          branch: "shared-runtime-yo-office",
-        },
-        js: {
-          repo: "https://github.com/OfficeDev/Excel-Custom-Functions-JS",
-          branch: "shared-runtime-yo-office",
-        },
+        ts: "https://aka.ms/ccdevx-fx-cf-shared-ts",
+        js: "https://aka.ms/ccdevx-fx-cf-shared-js",
       },
     },
     cfJS: {
       title: "core.createProjectQuestion.officeXMLAddin.excel.cf.js.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.cf.js.detail",
+      localTemplate: "excel-cf",
       lang: {
-        ts: { repo: "https://github.com/OfficeDev/Excel-Custom-Functions", branch: "yo-office" },
-        js: { repo: "https://github.com/OfficeDev/Excel-Custom-Functions-JS", branch: "yo-office" },
+        ts: "https://aka.ms/ccdevx-fx-cf-js-ts",
+        js: "https://aka.ms/ccdevx-fx-cf-js-js",
       },
     },
-    manifest: { ...CommonProjectConfig.manifest },
+    manifest: {
+      localTemplate: "excel-manifest-only",
+      ...CommonProjectConfig.manifest,
+    },
   },
   powerpoint: {
-    taskpane: { ...CommonProjectConfig.taskpane },
+    taskpane: {
+      localTemplate: "powerpoint-taskpane",
+      ...CommonProjectConfig.taskpane,
+    },
     sso: {
+      localTemplate: "powerpoint-sso",
       title: "core.createProjectQuestion.officeXMLAddin.powerpoint.sso.title",
       detail: "core.createProjectQuestion.officeXMLAddin.powerpoint.sso.detail",
       ...CommonProjectConfig.sso,
     },
     react: {
+      localTemplate: "powerpoint-react",
       title: "core.createProjectQuestion.officeXMLAddin.powerpoint.react.title",
       detail: "core.createProjectQuestion.officeXMLAddin.powerpoint.react.detail",
       ...CommonProjectConfig.react,
     },
-    manifest: { ...CommonProjectConfig.manifest },
+    manifest: {
+      localTemplate: "powerpoint-manifest-only",
+      ...CommonProjectConfig.manifest,
+    },
   },
 };
 
@@ -172,6 +182,16 @@ export function getOfficeXMLAddinHostProjectLangOptions(
 }
 
 /**
+ * Get all available Lang Options of one host and proj
+ * @param host Office host
+ * @param proj proj name
+ * @returns the detail lang options[] of the proj
+ */
+export function getOfficeXMLAddinHostProjectTemplateName(host: string, proj: string): string {
+  return OfficeXMLAddinProjectConfig[host][proj].localTemplate;
+}
+
+/**
  * Get the Repo Info of the proj
  * @param host wxp
  * @param proj proj name
@@ -182,7 +202,7 @@ export function getOfficeXMLAddinHostProjectRepoInfo(
   host: string,
   proj: string,
   lang: "ts" | "js"
-): IOfficeXMLAddinRepoConfig {
+): string {
   const result = OfficeXMLAddinProjectConfig[host][proj].lang?.[lang];
-  return !!result ? result : { repo: "", branch: "" };
+  return !!result ? result : "";
 }

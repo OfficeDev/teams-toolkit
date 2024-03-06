@@ -541,7 +541,7 @@ export class TeamsAppManifest implements AppManifest {
     };
   };
   /**
-   * Pointer to PluginB manifest.
+   * Pointer to Plugin manifest.
    */
   apiPlugins?: IApiPlugin[];
 }

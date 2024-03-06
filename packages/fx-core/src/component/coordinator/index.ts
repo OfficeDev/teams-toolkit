@@ -71,8 +71,9 @@ import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { convertToAlphanumericOnly } from "../../common/utils";
-import { isApiKeyEnabled } from "../../common/featureFlags";
+import { isApiKeyEnabled, isOfficeXMLAddinEnabled } from "../../common/featureFlags";
 import { environmentNameManager } from "../../core/environmentName";
+import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -283,12 +284,24 @@ class Coordinator {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
       } else if (
-        inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id ||
-        CapabilityOptions.officeAddinItems()
-          .map((i) => i.id)
-          .includes(capability)
+        !isOfficeXMLAddinEnabled() &&
+        (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id ||
+          CapabilityOptions.officeAddinItems()
+            .map((i) => i.id)
+            .includes(capability))
       ) {
         const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+        if (res.isErr()) {
+          return err(res.error);
+        }
+      } else if (
+        isOfficeXMLAddinEnabled() &&
+        inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id
+      ) {
+        const res =
+          inputs[QuestionNames.OfficeAddinCapability] === ProjectTypeOptions.outlookAddin().id
+            ? await OfficeAddinGenerator.generate(context, inputs, projectPath)
+            : await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
         }

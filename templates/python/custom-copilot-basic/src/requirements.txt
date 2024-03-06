@@ -1,2 +1,2 @@
 aiohttp
-teams_ai
+teams-ai>=1.0.0rc3

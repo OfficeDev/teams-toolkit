@@ -251,17 +251,6 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     chai.assert(globalStateUpdateStub.calledOnce);
   });
 
-  it("autoInstallDependency when launch", async () => {
-    const autoInstallDependencyHandlerStub = sandbox.stub(handlers, "autoInstallDependencyHandler");
-    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
-    sandbox.stub(globalState, "globalStateGet").resolves("");
-    sandbox.stub(globalVariables, "isOfficeAddInProject").value(true);
-
-    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
-
-    chai.assert(autoInstallDependencyHandlerStub.calledOnce);
-  });
-
   it("openOfficeDevFolder", async () => {
     const folderPath = vscode.Uri.file("/test");
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");

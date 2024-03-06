@@ -73,7 +73,6 @@ import {
   CHAT_CREATE_SAMPLE_COMMAND_ID,
   CHAT_EXECUTE_COMMAND_ID,
   CHAT_OPENURL_COMMAND_ID,
-  chatParticipantDescription,
   chatParticipantName,
 } from "./chat/consts";
 import followupProvider from "./chat/followupProvider";
@@ -391,7 +390,6 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
  */
 function registerChatParticipant(context: vscode.ExtensionContext) {
   const participant = vscode.chat.createChatParticipant(chatParticipantName, chatRequestHandler);
-  participant.description = chatParticipantDescription;
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
   participant.followupProvider = followupProvider;
 

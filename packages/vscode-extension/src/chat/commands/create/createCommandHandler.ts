@@ -13,14 +13,14 @@ import {
   ChatResponseStream,
   ChatResult,
   LanguageModelChatUserMessage,
-  Uri
+  Uri,
 } from "vscode";
 
 import { sampleProvider } from "@microsoft/teamsfx-core";
 import {
   getSampleFileInfo,
   runWithLimitedConcurrency,
-  sendRequestWithRetry
+  sendRequestWithRetry,
 } from "@microsoft/teamsfx-core/build/component/generator/utils";
 
 import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
@@ -28,12 +28,12 @@ import { CHAT_CREATE_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
 import {
   brieflyDescribeProjectSystemPrompt,
   describeProjectSystemPrompt,
-  getProjectMatchSystemPrompt
+  getProjectMatchSystemPrompt,
 } from "../../prompts";
 import {
   getCopilotResponseAsString,
   getSampleDownloadUrlInfo,
-  verbatimCopilotInteraction
+  verbatimCopilotInteraction,
 } from "../../utils";
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
@@ -47,7 +47,9 @@ export default async function createCommandHandler(
   const matchedResult = await matchProject(request, token);
 
   if (matchedResult.length === 0) {
-    response.markdown("Sorry, I can't help with that right now.\n");
+    response.markdown(
+      "Sorry, I can't help with that right now. Please try to describe your app scenario.\n"
+    );
     return {};
   }
   if (matchedResult.length === 1) {
@@ -126,10 +128,12 @@ async function matchProject(
   const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   const matchedProjectId: string[] = [];
   if (response) {
-    const responseJson = JSON.parse(response);
-    if (responseJson && responseJson.app) {
-      matchedProjectId.push(...(responseJson.app as string[]));
-    }
+    try {
+      const responseJson = JSON.parse(response);
+      if (responseJson && responseJson.app) {
+        matchedProjectId.push(...(responseJson.app as string[]));
+      }
+    } catch (e) {}
   }
   const result: ProjectMetadata[] = [];
   for (const id of matchedProjectId) {

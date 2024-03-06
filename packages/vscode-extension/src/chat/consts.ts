@@ -4,7 +4,6 @@
 import { ChatFollowup } from "vscode";
 
 export const chatParticipantName = "teams";
-export const chatParticipantDescription = "Ask how to develop Teams applications";
 
 export const CHAT_CREATE_SAMPLE_COMMAND_ID = "fx-extension.chat.createSample";
 export const CHAT_EXECUTE_COMMAND_ID = "fx-extension.chat.executeCommand";

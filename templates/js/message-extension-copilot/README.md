@@ -30,7 +30,7 @@ This app template is a search-based [message extension](https://docs.microsoft.c
 
 **Congratulations**! You are running an application that can now search npm registries in Teams and Copilot.
 
-![Search ME Copilot](https://github.com/OfficeDev/TeamsFx/assets/107838226/a718b206-33ed-4d3e-99af-376c1f159c2b)
+![Search ME Copilot](https://github.com/OfficeDev/TeamsFx/assets/107838226/0beaa86e-d446-4ab3-a701-eec205d1b367)
 
 ## What's included in the template
 

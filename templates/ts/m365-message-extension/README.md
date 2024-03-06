@@ -19,7 +19,7 @@ This app template is a search-based [message extension](https://docs.microsoft.c
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 5. To trigger the Message Extension, you can:
-   1. In Teams: `@mention` Your message extension from the `search box area`, `@mention` your message extension from the `compose message area` or click the `...` under compose message area to find your message extension.
+   1. In Teams: Click the `...` under compose message area to find your message extension.
    2. In Outlook: click the `More apps` icon under compose email area to find your message extension.
 
 **Congratulations**! You are running an application that can now search npm registries in Teams and Outlook.

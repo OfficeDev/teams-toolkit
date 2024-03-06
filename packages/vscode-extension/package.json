@@ -255,7 +255,7 @@
           "group": "inline@1"
         },
         {
-          "command": "fx-extension.signOut",
+          "command": "fx-extension.azureAccountSignOutHelp",
           "when": "view == teamsfx-accounts && viewItem == signedinAzure",
           "group": "inline@1"
         },
@@ -711,6 +711,11 @@
       {
         "command": "fx-extension.openDocumentLink",
         "title": "%teamstoolkit.commands.openDocumentLink.title%",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.azureAccountSignOutHelp",
+        "title": "%teamstoolkit.commands.azureAccount.signOutHelp%",
         "icon": "$(info)"
       },
       {

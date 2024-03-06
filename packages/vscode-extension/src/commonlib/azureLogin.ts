@@ -112,6 +112,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
           localize("teamstoolkit.codeFlowLogin.loginTimeoutDescription")
         );
       }
+      void vscode.window.showInformationMessage(
+        localize("teamstoolkit.commands.azureAccount.signOutHelp")
+      );
     } catch (e) {
       AzureAccountManager.currentStatus = loggedOut;
       void this.notifyStatus();

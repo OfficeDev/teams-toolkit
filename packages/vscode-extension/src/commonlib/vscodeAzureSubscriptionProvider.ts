@@ -8,6 +8,7 @@ import * as azureEnv from "@azure/ms-rest-azure-env";
 import { AzureScopes } from "@microsoft/teamsfx-core";
 import { LoginFailureError } from "./codeFlowLogin";
 import { Environment } from "@azure/ms-rest-azure-env";
+import VsCodeLogInstance from "./log";
 
 export const Microsoft = "microsoft";
 
@@ -75,17 +76,17 @@ export class VSCodeAzureSubscriptionProvider {
   public async getSubscriptions(): Promise<AzureSubscription[]> {
     const results: AzureSubscription[] = [];
 
-    try {
-      // Get the list of tenants
-      for (const tenant of await this.getTenants()) {
+    for (const tenant of await this.getTenants()) {
+      try {
+        // Get the list of tenants
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const tenantId = tenant.tenantId!;
 
         // For each tenant, get the list of subscriptions
         results.push(...(await this.getSubscriptionsForTenant(tenantId)));
+      } catch (e) {
+        VsCodeLogInstance.error("[Azure list sub] " + (e.message as string));
       }
-    } catch (e) {
-      console.error(e);
     }
     const sortSubscriptions = (subscriptions: AzureSubscription[]): AzureSubscription[] =>
       subscriptions.sort((a, b) => a.name.localeCompare(b.name));

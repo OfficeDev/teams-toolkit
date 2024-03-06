@@ -5,7 +5,7 @@
   "core.provision.azureSubscription": "Azure subscription: %s",
   "core.provision.m365Account": "Microsoft 365 account: %s",
   "core.provision.confirmEnvAndCostNotice": "Costs may apply based on usage. Do you want to provision resources in %s environment using listed accounts?",
-  "core.deploy.confirmEnvNoticeV3": "Do you want to provision resources in %s environment?",
+  "core.deploy.confirmEnvNoticeV3": "Do you want to deploy resources in %s environment?",
   "core.provision.viewResources": "View provisioned resources",
   "core.deploy.aadManifestSuccessNotice": "Your Microsoft Entra app has been deployed successfully. To view that, click \"Learn more\"",
   "core.deploy.aadManifestOnCLISuccessNotice": "Your Microsoft Entra app has been updated successfully.",

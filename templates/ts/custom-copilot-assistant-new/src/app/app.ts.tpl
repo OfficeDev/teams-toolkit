@@ -4,7 +4,7 @@ import config from "../config";
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
 import { Application, ActionPlanner, OpenAIModel, PromptManager } from "@microsoft/teams-ai";
-import { ApplicationTurnState } from "./state";
+import { ApplicationTurnState } from "./turnState";
 import { resetMessage } from "./messages";
 import { createTask, deleteTask } from "./actions";
 

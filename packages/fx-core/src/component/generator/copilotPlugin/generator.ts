@@ -36,6 +36,7 @@ import {
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
   isYamlSpecFile,
+  invalidApiSpecErrorName,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -54,6 +55,7 @@ import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/fe
 import { merge } from "lodash";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
+const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
 const fromApiSpecTemplateName = "copilot-plugin-existing-api";
 const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
@@ -62,7 +64,6 @@ const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 
-const invalidApiSpecErrorName = "invalid-api-spec";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
@@ -95,7 +96,7 @@ export class CopilotPluginGenerator {
       errorSource: fromApiSpecComponentName,
     }),
   ])
-  public static async generateFromApiSpec(
+  public static async generateMeFromApiSpec(
     context: Context,
     inputs: Inputs,
     destinationPath: string,
@@ -105,13 +106,8 @@ export class CopilotPluginGenerator {
     const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
       (api) => !!api.data.authName && apiOperations.includes(api.id)
     );
-    const isApiPlugin =
-      inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
-    const templateName = isApiPlugin
-      ? apiPluginFromApiSpecTemplateName
-      : authApi
-      ? fromApiSpecWithApiKeyTemplateName
-      : fromApiSpecTemplateName;
+
+    const templateName = authApi ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
     merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
@@ -122,7 +118,42 @@ export class CopilotPluginGenerator {
       destinationPath,
       templateName,
       componentName,
-      isApiPlugin,
+      false,
+      authApi?.data
+    );
+  }
+
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: pluginFromApiSpecComponentName,
+      telemetryEventName: TelemetryEvents.Generate,
+      errorSource: pluginFromApiSpecComponentName,
+    }),
+  ])
+  public static async generatePluginFromApiSpec(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    const apiOperations = inputs[QuestionNames.ApiOperation] as string[];
+    const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
+      (api) => !!api.data.authName && apiOperations.includes(api.id)
+    );
+
+    const templateName = apiPluginFromApiSpecTemplateName;
+    const componentName = fromApiSpecComponentName;
+
+    merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
+
+    return await this.generate(
+      context,
+      inputs,
+      destinationPath,
+      templateName,
+      componentName,
+      true,
       authApi?.data
     );
   }

@@ -348,6 +348,7 @@ describe("fetchManifestList", () => {
     readdirSyncStub.returns(["manifest.xml"]);
     isOfficeAddInManifestStub.callsFake((fileName: string) => fileName === "manifest.xml");
     chai.expect(projectSettingsHelper.fetchManifestList("/test")).to.deep.equal(["manifest.xml"]);
+    mockfs.restore();
   });
 });
 

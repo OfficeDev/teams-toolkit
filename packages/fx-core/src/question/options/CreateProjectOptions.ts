@@ -138,6 +138,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "custom-copilot-rag",
     type: "string",
     description: "Chat With Your Data",
+    default: "custom-copilot-rag-customize",
     choices: [
       "custom-copilot-rag-customize",
       "custom-copilot-rag-azureAISearch",
@@ -149,6 +150,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "custom-copilot-assistant",
     type: "string",
     description: "AI Assistant",
+    default: "custom-copilot-assistant-new",
     choices: ["custom-copilot-assistant-new", "custom-copilot-assistant-assistantsApi"],
   },
   {
@@ -163,6 +165,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "llm-service",
     type: "string",
     description: "Service for Large Language Model (LLM)",
+    default: "llm-service-azureOpenAI",
     choices: ["llm-service-azureOpenAI", "llm-service-openAI"],
   },
   {

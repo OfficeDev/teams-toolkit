@@ -58,6 +58,7 @@ import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
 import * as utils from "../../src/component/utils";
+import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -2186,6 +2187,54 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("file", inputs);
           assert.isNotNull(res);
+        });
+
+        it("list operations without existing APIs if Copilot plugin", async () => {
+          const question = apiSpecLocationQuestion(false);
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            "manifest-path": "fakePath",
+            [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+            [QuestionNames.DestinationApiSpecFilePath]: "openapi.yaml",
+          };
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox
+            .stub(SpecParser.prototype, "list")
+            .onFirstCall()
+            .resolves([
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                operationId: "getUserById",
+              },
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ])
+            .onSecondCall()
+            .resolves([
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ]);
+          sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+          sandbox
+            .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
+            .resolves(ok(["openapi.yaml"]));
+          sandbox.stub(fs, "pathExists").resolves(true);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+          assert.deepEqual(inputs.supportedApisFromApiSpec, [
+            {
+              data: {
+                serverUrl: "https://server",
+              },
+              groupName: "GET",
+              id: "GET /user/{userId}",
+              label: "GET /user/{userId}",
+            },
+          ]);
+          assert.isUndefined(res);
         });
       });
 

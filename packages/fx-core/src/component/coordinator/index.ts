@@ -292,11 +292,23 @@ class Coordinator {
         if (res.isErr()) {
           return err(res.error);
         }
-      } else if (
-        meArchitecture === MeArchitectureOptions.apiSpec().id ||
-        capability === CapabilityOptions.copilotPluginApiSpec().id
-      ) {
-        const res = await CopilotPluginGenerator.generateFromApiSpec(context, inputs, projectPath);
+      } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+        const res = await CopilotPluginGenerator.generatePluginFromApiSpec(
+          context,
+          inputs,
+          projectPath
+        );
+        if (res.isErr()) {
+          return err(res.error);
+        } else {
+          warnings = res.value.warnings;
+        }
+      } else if (meArchitecture === MeArchitectureOptions.apiSpec().id) {
+        const res = await CopilotPluginGenerator.generateMeFromApiSpec(
+          context,
+          inputs,
+          projectPath
+        );
         if (res.isErr()) {
           return err(res.error);
         } else {

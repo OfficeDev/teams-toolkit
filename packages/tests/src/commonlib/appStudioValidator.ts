@@ -85,6 +85,7 @@ export class AppStudioValidator {
     teamsAppId?: string
   ): Promise<void> {
     if (!teamsAppId) {
+      console.warn("teamsAppId is undefined, no need to cancel staged app.");
       return;
     }
     const appStudioTokenRes = await this.provider.getAccessToken({

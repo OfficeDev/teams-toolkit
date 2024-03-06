@@ -1584,7 +1584,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
         context,
         undefined,
         input.trim(),
-        inputs[QuestionNames.ManifestPath],
+        inputs,
         includeExistingAPIs,
         false,
         inputs.platform === Platform.VSCode ? correlationId : undefined
@@ -1657,7 +1657,7 @@ export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileO
 
 export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
   // export for unit test
-  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
+  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will lose correlation id when user accepts the value.
   return {
     type: "text",
     name: QuestionNames.OpenAIPluginManifest,
@@ -1698,7 +1698,7 @@ export function openAIPluginManifestLocationQuestion(): TextInputQuestion {
             context,
             manifest,
             inputs[QuestionNames.ApiSpecLocation],
-            undefined,
+            inputs,
             true,
             true,
             inputs.platform === Platform.VSCode ? correlationId : undefined
@@ -1871,6 +1871,7 @@ export class CustomCopilotRagOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotRagCustomApiOption.detail"
       ),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
 
@@ -1918,6 +1919,7 @@ export class CustomCopilotAssistantOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.detail"
       ),
+      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
 
@@ -1936,6 +1938,7 @@ function customCopilotRagQuestion(): SingleSelectQuestion {
     ),
     staticOptions: CustomCopilotRagOptions.all(),
     dynamicOptions: () => CustomCopilotRagOptions.all(),
+    default: CustomCopilotRagOptions.customize().id,
   };
 }
 
@@ -1949,6 +1952,7 @@ function customCopilotAssistantQuestion(): SingleSelectQuestion {
     ),
     staticOptions: CustomCopilotAssistantOptions.all(),
     dynamicOptions: () => CustomCopilotAssistantOptions.all(),
+    default: CustomCopilotAssistantOptions.new().id,
   };
 }
 
@@ -1991,6 +1995,7 @@ function llmServiceQuestion(): SingleSelectQuestion {
       return options;
     },
     skipSingleOption: true,
+    default: "llm-service-azureOpenAI",
   };
 }
 

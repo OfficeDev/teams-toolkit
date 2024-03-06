@@ -240,7 +240,7 @@ describe("Core basic APIs", () => {
 
   it("deploy aad manifest happy path", async () => {
     const promtionOnVSC =
-      'Your Microsoft Entra application has been successfully deployed. Click "Learn more" to check how to view your Microsoft Entra application.';
+      'Your Microsoft Entra app has been deployed successfully. To view that, click "Learn more"';
 
     const core = new FxCore(tools);
     const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
@@ -356,7 +356,7 @@ describe("Core basic APIs", () => {
     assert.equal(showMessage.getCall(0).args[0], "info");
     assert.equal(
       showMessage.getCall(0).args[1],
-      "Your Microsoft Entra application has been successfully updated."
+      "Your Microsoft Entra app has been updated successfully."
     );
     assert.isFalse(showMessage.getCall(0).args[2]);
     assert.isTrue(res.isOk());
@@ -1650,6 +1650,81 @@ describe("copilotPlugin", async () => {
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
+  });
+
+  it("add API - Copilot plugin", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
+      [QuestionNames.ManifestPath]: "manifest.json",
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      [QuestionNames.DestinationApiSpecFilePath]: "destination.json",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.apiPlugins = [
+      {
+        pluginFile: "ai-plugin.json",
+      },
+    ];
+    const listResult = [
+      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+    ];
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [],
+      allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
+    const result = await core.copilotPluginAddAPI(inputs);
+    if (result.isErr()) {
+      console.log(result.error);
+    }
+    assert.isTrue(result.isOk());
+  });
+
+  it("add API missing required input - Copilot plugin", async () => {
+    const appName = await mockV3Project();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
+      [QuestionNames.ManifestPath]: "manifest.json",
+      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const manifest = new TeamsAppManifest();
+    manifest.apiPlugins = [
+      {
+        pluginFile: "ai-plugin.json",
+      },
+    ];
+    const listResult = [
+      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+    ];
+    const core = new FxCore(tools);
+    sinon.stub(SpecParser.prototype, "generate").resolves({
+      warnings: [],
+      allSuccess: true,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves(listResult);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.isTrue(result.error instanceof MissingRequiredInputError);
+    }
   });
 
   it("add API - return multiple auth error", async () => {

@@ -659,7 +659,7 @@ describe("coordinator create", () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .stub(CopilotPluginGenerator, "generateMeFromApiSpec")
       .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
     const inputs: Inputs = {
@@ -861,7 +861,7 @@ describe("Copilot plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
       .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
     const inputs: Inputs = {
@@ -881,7 +881,7 @@ describe("Copilot plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
       .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
 
     const inputs: Inputs = {

@@ -40,6 +40,7 @@
     "@types/sinon": "^9.0.10",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
+    "chai": "4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
     "copyfiles": "^2.4.1",
@@ -64,7 +65,6 @@
     "@azure/core-auth": "^1.4.0",
     "@microsoft/teams-manifest": "workspace:*",
     "axios": "^1.6.7",
-    "chai": "^4.3.4",
     "jsonschema": "^1.4.0",
     "neverthrow": "^3.2.0",
     "tslib": "^2.3.1"

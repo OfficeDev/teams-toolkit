@@ -478,6 +478,14 @@ describe("handlers", () => {
     });
   });
 
+  it("azureAccountSignOutHelpHandler()", async () => {
+    try {
+      handlers.azureAccountSignOutHelpHandler();
+    } catch (e) {
+      chai.assert.isTrue(e instanceof Error);
+    }
+  });
+
   it("openAccountHelpHandler()", async () => {
     const createOrShow = sandbox.stub(WebviewPanel, "createOrShow");
     handlers.openAccountHelpHandler();

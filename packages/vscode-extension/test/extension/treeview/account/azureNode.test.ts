@@ -31,6 +31,19 @@ describe("AzureNode", () => {
     chai.assert.equal(treeItem.command, undefined);
   });
 
+  it("setSignedIn not same account", async () => {
+    const azureNode = new AzureAccountNode(eventEmitter);
+    await azureNode.setSignedIn("test upn");
+    await azureNode.setSignedIn("test upn2");
+    const treeItem = await azureNode.getTreeItem();
+
+    chai.assert.equal(treeItem.iconPath, azureIcon);
+    chai.assert.equal(treeItem.collapsibleState, vscode.TreeItemCollapsibleState.None);
+    chai.assert.equal(treeItem.label, "test upn2");
+    chai.assert.equal(treeItem.contextValue, "signedinAzure");
+    chai.assert.equal(treeItem.command, undefined);
+  });
+
   it("setSigningIn", async () => {
     const azureNode = new AzureAccountNode(eventEmitter);
     azureNode.setSigningIn();

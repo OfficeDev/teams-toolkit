@@ -8,7 +8,6 @@ import * as azureEnv from "@azure/ms-rest-azure-env";
 import { AzureScopes } from "@microsoft/teamsfx-core";
 import { LoginFailureError } from "./codeFlowLogin";
 import { Environment } from "@azure/ms-rest-azure-env";
-import VsCodeLogInstance from "./log";
 
 export const Microsoft = "microsoft";
 

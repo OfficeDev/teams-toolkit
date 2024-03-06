@@ -69,6 +69,20 @@ import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { configMgr } from "./config";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
+import {
+  CHAT_CREATE_SAMPLE_COMMAND_ID,
+  CHAT_EXECUTE_COMMAND_ID,
+  CHAT_OPENURL_COMMAND_ID,
+  chatParticipantDescription,
+  chatParticipantName,
+} from "./chat/consts";
+import followupProvider from "./chat/followupProvider";
+import {
+  chatCreateCommandHandler,
+  chatRequestHandler,
+  openUrlCommandHandler,
+} from "./chat/handlers";
+import { chatExecuteCommandHandler } from "./chat/commands/nextstep/nextstepCommandHandler";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -90,6 +104,8 @@ export async function activate(context: vscode.ExtensionContext) {
   registerActivateCommands(context);
 
   registerInternalCommands(context);
+
+  registerChatParticipant(context);
 
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
@@ -368,6 +384,23 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.signinAzureCallback, args)
   );
   context.subscriptions.push(signinAzure);
+}
+
+/**
+ * Copilot Chat Participant
+ */
+function registerChatParticipant(context: vscode.ExtensionContext) {
+  const participant = vscode.chat.createChatParticipant(chatParticipantName, chatRequestHandler);
+  participant.description = chatParticipantDescription;
+  participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
+  participant.followupProvider = followupProvider;
+
+  context.subscriptions.push(
+    participant,
+    vscode.commands.registerCommand(CHAT_CREATE_SAMPLE_COMMAND_ID, chatCreateCommandHandler),
+    vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler),
+    vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
+  );
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {

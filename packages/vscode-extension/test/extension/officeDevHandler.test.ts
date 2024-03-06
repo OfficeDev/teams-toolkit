@@ -19,6 +19,7 @@ describe("officeDevHandler", () => {
 
   afterEach(() => {
     sandbox.restore();
+    mockfs.restore();
   });
 
   async function testOpenUrlHandler(
@@ -124,6 +125,14 @@ describe("officeDevHandler", () => {
     await officeDevHandlers.popupOfficeAddInDependenciesMessage();
     chai.assert(autoInstallDependencyHandlerStub.calledOnce);
   });
+
+  it("checkOfficeAddInInstalled", async () => {
+    mockfs({
+      "/test/node_modules/test": "",
+    });
+    const node_modulesExists = officeDevHandlers.checkOfficeAddInInstalled("/test");
+    chai.assert.isTrue(node_modulesExists);
+  });
 });
 
 describe("autoOpenOfficeDevProjectHandler", () => {
@@ -193,6 +202,43 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();
 
     chai.assert.isTrue(executeCommandStub.calledOnce);
+  });
+
+  it("autoInstallDependency", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "teamsToolkit:autoInstallDependency") {
+        return true;
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(localizeUtils, "localize").returns("installPopUp");
+    const popupOfficeAddInDependenciesMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake((_message: string, option: any, ...items: vscode.MessageItem[]) => {
+        return Promise.resolve("No" as any);
+      });
+    const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
+
+    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
+
+    chai.assert(popupOfficeAddInDependenciesMessageStub.callCount == 2);
+    chai.assert(globalStateUpdateStub.calledOnce);
+  });
+
+  it("openOfficeDevFolder", async () => {
+    const folderPath = vscode.Uri.file("/test");
+    const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
+    const globalStateUpdateStub = sandbox.stub(globalState, "globalStateUpdate");
+
+    await officeDevHandlers.openOfficeDevFolder(folderPath, true, [
+      { type: "warnning", content: "test" },
+    ]);
+
+    console.log(globalStateUpdateStub.callCount);
+    chai.assert(globalStateUpdateStub.callCount == 5);
+    chai.assert(executeCommandStub.calledWithExactly("vscode.openFolder", folderPath, true));
   });
 });
 

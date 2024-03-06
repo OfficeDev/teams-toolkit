@@ -57,7 +57,7 @@
             "name": "Start Test Tool",
             "type": "node",
             "request": "launch",
-            "program": "${workspaceFolder}/node_modules/@microsoft/teams-app-test-tool/cli.js",
+            "program": "${workspaceFolder}/devTools/teamsapptester/node_modules/@microsoft/teams-app-test-tool/cli.js",
             "args": [
                 "start",
             ],
@@ -118,7 +118,7 @@
             "cascadeTerminateToConfigurations": [
                 "Start Test Tool"
             ],
-            "preLaunchTask": "Install Test Tool",
+            "preLaunchTask": "Deploy (Test Tool)",
             "presentation": {
 {{#enableTestToolByDefault}}
                 "group": "1-local",

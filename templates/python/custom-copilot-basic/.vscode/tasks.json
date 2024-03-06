@@ -25,23 +25,13 @@
             // Build project.
             // See https://aka.ms/teamsfx-tasks/deploy to know the details and how to customize the args.
             "label": "Deploy (Test Tool)",
+            "dependsOn": [
+                "Validate prerequisites (Test Tool)"
+            ],
             "type": "teamsfx",
             "command": "deploy",
             "args": {
                 "env": "testtool",
-            }
-        },
-        {
-            "label": "Install Test Tool",
-            "dependsOn": [
-                "Validate prerequisites (Test Tool)",
-                "Deploy (Test Tool)"
-            ],
-            "type": "shell",
-            "command": "npm install -i @microsoft/teams-app-test-tool",
-            "presentation": {
-                "panel": "dedicated",
-                "reveal": "silent"
             }
         },
         {

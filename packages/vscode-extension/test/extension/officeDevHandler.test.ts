@@ -1,5 +1,5 @@
 import { FxError, ManifestUtil, Result, ok } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "@microsoft/teamsfx-core";
+import { FileNotFoundError, manifestUtils } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
@@ -120,6 +120,23 @@ describe("officeDevHandler", () => {
     sandbox.assert.calledOnce(showTextDocumentStub);
   });
 
+  it("editOfficeAddInManifest workspace undefined", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: undefined });
+
+    const result = await officeDevHandlers.editOfficeAddInManifest();
+
+    chai.assert(result.isErr() && result.error instanceof FileNotFoundError);
+  });
+
+  it("editOfficeAddInManifest manifest xml not exist", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+    sandbox.stub(projectSettingsHelper, "fetchManifestList").returns(undefined);
+
+    const result = await officeDevHandlers.editOfficeAddInManifest();
+
+    chai.assert(result.isErr() && result.error instanceof FileNotFoundError);
+  });
+
   it("popupOfficeAddInDependenciesMessage", async () => {
     const autoInstallDependencyHandlerStub = sandbox.stub(handlers, "autoInstallDependencyHandler");
     sandbox.stub(localizeUtils, "localize").returns("installPopUp");
@@ -146,6 +163,7 @@ describe("autoOpenOfficeDevProjectHandler", () => {
 
   afterEach(() => {
     sandbox.restore();
+    mockfs.restore();
   });
 
   it("opens walk through", async () => {
@@ -220,7 +238,7 @@ describe("autoOpenOfficeDevProjectHandler", () => {
       }
     });
     sandbox.stub(localizeUtils, "localize").returns("installPopUp");
-    const popupOfficeAddInDependenciesMessageStub = sandbox
+    const showInformationMessageStub = sandbox
       .stub(vscode.window, "showInformationMessage")
       .callsFake((_message: string, option: any, ...items: vscode.MessageItem[]) => {
         return Promise.resolve("No" as any);
@@ -229,8 +247,19 @@ describe("autoOpenOfficeDevProjectHandler", () => {
 
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();
 
-    chai.assert(popupOfficeAddInDependenciesMessageStub.callCount == 2);
+    chai.assert(showInformationMessageStub.callCount == 2);
     chai.assert(globalStateUpdateStub.calledOnce);
+  });
+
+  it("autoInstallDependency when launch", async () => {
+    const autoInstallDependencyHandlerStub = sandbox.stub(handlers, "autoInstallDependencyHandler");
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("/test"));
+    sandbox.stub(globalState, "globalStateGet").resolves("");
+    sandbox.stub(globalVariables, "isOfficeAddInProject").value(true);
+
+    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
+
+    chai.assert(autoInstallDependencyHandlerStub.calledOnce);
   });
 
   it("openOfficeDevFolder", async () => {
@@ -248,7 +277,7 @@ describe("autoOpenOfficeDevProjectHandler", () => {
   });
 });
 
-describe("validate Office add-in project", () => {
+describe("validateIsOfficeAddInProject", () => {
   const sandbox = sinon.createSandbox();
   let fetchManifestListStub: any;
 

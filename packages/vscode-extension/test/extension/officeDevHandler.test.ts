@@ -1,18 +1,18 @@
-import { FxError, ManifestUtil, Result, UserError, err, ok } from "@microsoft/teamsfx-api";
-import * as projectSettingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
+import { FxError, ManifestUtil, Result, ok } from "@microsoft/teamsfx-api";
+import { manifestUtils } from "@microsoft/teamsfx-core";
+import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
+import * as mockfs from "mock-fs";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
+import * as handlers from "../../src/handlers";
 import * as officeDevHandlers from "../../src/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
-import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import { manifestUtils } from "@microsoft/teamsfx-core";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import { GlobalKey } from "../../src/constants";
-import VsCodeLogInstance from "../../src/commonlib/log";
-import * as fs from "fs-extra";
+import * as localizeUtils from "../../src/utils/localizeUtils";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -105,20 +105,34 @@ describe("officeDevHandler", () => {
 
   it("editOfficeAddInManifest", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
-    sandbox.stub(projectSettingHelper, "fetchManifestList").returns(["/test/manifest.xml"]);
+    sandbox.stub(projectSettingsHelper, "fetchManifestList").returns(["/test/manifest.xml"]);
     const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
 
     await officeDevHandlers.editOfficeAddInManifest();
 
     sandbox.assert.calledOnce(showTextDocumentStub);
   });
+
+  it("popupOfficeAddInDependenciesMessage", async () => {
+    const autoInstallDependencyHandlerStub = sandbox.stub(handlers, "autoInstallDependencyHandler");
+    sandbox.stub(localizeUtils, "localize").returns("installPopUp");
+    sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake((_message: string, option: any, ...items: vscode.MessageItem[]) => {
+        return Promise.resolve(option);
+      });
+    await officeDevHandlers.popupOfficeAddInDependenciesMessage();
+    chai.assert(autoInstallDependencyHandlerStub.calledOnce);
+  });
 });
 
 describe("autoOpenOfficeDevProjectHandler", () => {
   const sandbox = sinon.createSandbox();
+
   afterEach(() => {
     sandbox.restore();
   });
+
   it("opens walk through", async () => {
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
       if (key === "fx-extension.openWalkThrough") {
@@ -179,5 +193,31 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     await officeDevHandlers.autoOpenOfficeDevProjectHandler();
 
     chai.assert.isTrue(executeCommandStub.calledOnce);
+  });
+});
+
+describe("validate Office add-in project", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    mockfs.restore();
+    sandbox.restore();
+  });
+
+  beforeEach(() => {
+    mockfs({
+      "/test/manifest.xml": "",
+    });
+  });
+
+  it("isValidOfficeAddInProject", () => {
+    const result = projectSettingsHelper.isValidOfficeAddInProject("/test");
+    chai.assert.isTrue(result);
+  });
+
+  it("fetchManifestList", () => {
+    const list = projectSettingsHelper.fetchManifestList("/test");
+    chai.assert.equal(list?.length, 1);
+    chai.assert.equal(list?.[0], "manifest.xml");
   });
 });

@@ -18,7 +18,7 @@ async function getCurrentWeather(context, state, parameters) {
   };
 
   if (weatherData[parameters.location] === undefined) {
-    return `No weather data for ${location} found`;
+    return `No weather data for ${parameters.location} found`;
   }
 
   return weatherData[parameters.location][parameters.unit ?? "f"];
@@ -30,7 +30,7 @@ async function getNickname(context, state, parameters) {
     "Los Angeles": "LA",
   };
 
-  return nicknames[parameters.location] ?? `No nickname for ${location} found`;
+  return nicknames[parameters.location] ?? `No nickname for ${parameters.location} found`;
 }
 
 module.exports = {

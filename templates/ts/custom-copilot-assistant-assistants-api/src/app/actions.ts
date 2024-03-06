@@ -32,7 +32,7 @@ export async function getCurrentWeather(
   };
 
   if (weatherData[parameters.location] === undefined) {
-    return `No weather data for ${location} found`;
+    return `No weather data for ${parameters.location} found`;
   }
 
   return weatherData[parameters.location][parameters.unit ?? "f"];
@@ -52,5 +52,5 @@ export async function getNickname(
     "Los Angeles": "LA",
   };
 
-  return nicknames[parameters.location] ?? `No nickname for ${location} found`;
+  return nicknames[parameters.location] ?? `No nickname for ${parameters.location} found`;
 }

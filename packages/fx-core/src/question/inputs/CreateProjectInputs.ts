@@ -15,6 +15,8 @@ export interface CreateProjectInputs extends Inputs {
   runtime?: "node" | "dotnet";
   /** @description New Project */
   "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type";
+  /** @description Select to create an Outlook, Word, Excel, or PowerPoint Add-in */
+  "addin-office-capability"?: "outlook-addin-type" | "word" | "excel" | "powerpoint";
   /** @description Capabilities */
   capabilities?:
     | "bot"

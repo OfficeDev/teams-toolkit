@@ -35,7 +35,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
-1. In `src/app/app.js`, update `azureDefaultDeployment` to your own model deployment name.
+1. In `src/app/app.ts`, update `azureDefaultDeployment` to your own model deployment name.
 {{/useAzureOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 1. You can send any message to get a response from the bot.

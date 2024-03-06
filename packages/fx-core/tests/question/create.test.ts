@@ -51,6 +51,7 @@ import {
   ApiMessageExtensionAuthOptions,
   CustomCopilotRagOptions,
   CustomCopilotAssistantOptions,
+  OfficeAddinCapabilityOptions,
   ProgrammingLanguage,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
@@ -522,6 +523,77 @@ describe("scaffold question", () => {
         QuestionNames.Folder,
         QuestionNames.AppName,
       ]);
+    });
+    it("traverse in vscode Office XML addin", async () => {
+      const mockedEnvRestoreLocal = mockedEnv({
+        [FeatureFlagName.OfficeXMLAddin]: "true",
+      });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs
+      ) => {
+        questions.push(question.name);
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 4);
+          return ok({ type: "success", result: ProjectTypeOptions.officeAddin().id });
+        } else if (question.name === QuestionNames.OfficeAddinCapability) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.staticOptions;
+          assert.deepEqual(options, [
+            ProjectTypeOptions.outlookAddin(),
+            OfficeAddinCapabilityOptions.word(),
+            OfficeAddinCapabilityOptions.excel(),
+            OfficeAddinCapabilityOptions.powerpoint(),
+          ]);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.officeXMLAddin.create.title")
+          );
+          return ok({ type: "success", result: OfficeAddinCapabilityOptions.excel().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.deepEqual(options, CapabilityOptions.officeXMLAddinHostOptionItems("excel"));
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.officeXMLAddin.excel.create.title")
+          );
+          return ok({ type: "success", result: "react" });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 2);
+          return ok({ type: "success", result: "typescript" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.OfficeAddinCapability,
+        QuestionNames.Capabilities,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
+      mockedEnvRestoreLocal();
     });
     it("traverse in vscode SPFx new", async () => {
       const inputs: Inputs = {
@@ -2957,6 +3029,45 @@ describe("scaffold question", () => {
       assert.isDefined(question.default);
       const lang = await (question.default as LocalFunc<string | undefined>)(inputs);
       assert.equal(lang, "TypeScript");
+    });
+
+    it("office xml addin: normal project have ts and js", async () => {
+      const mockedEnvRestoreLocal = mockedEnv({
+        [FeatureFlagName.OfficeXMLAddin]: "true",
+      });
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
+        [QuestionNames.Capabilities]: "react",
+      };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [
+          { label: "TypeScript", id: "typescript" },
+          { label: "JavaScript", id: "javascript" },
+        ]);
+      }
+      mockedEnvRestoreLocal();
+    });
+
+    it("office xml addin: manifest-only project only have js option as default", async () => {
+      const mockedEnvRestoreLocal = mockedEnv({
+        [FeatureFlagName.OfficeXMLAddin]: "true",
+      });
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
+        [QuestionNames.Capabilities]: "manifest",
+      };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [{ label: "JavaScript", id: "javascript" }]);
+      }
+      mockedEnvRestoreLocal();
     });
 
     it("SPFxTab", async () => {

@@ -72,7 +72,6 @@ deploy:
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
         {{#useOpenAI}}
         OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}
-        OPENAI_MODEL_DEPLOYMENT_NAME: ${{SECRET_OPENAI_MODEL_DEPLOYMENT_NAME}}
         {{/useOpenAI}}
         {{#useAzureOpenAI}}
         AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}

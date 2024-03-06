@@ -13,41 +13,27 @@ from teams.state import TurnState
 from config import Config
 
 config = Config()
-{{#useOpenAI}}
-if config.OPENAI_API_KEY=="<openai-api-key>":
-    raise RuntimeError(
-        "Missing environment variables - please check that OPENAI_API_KEY is set."
-    )
-{{/useOpenAI}}
-{{#useAzureOpenAI}}
-if config.AZURE_OPENAI_API_KEY=="<azure-openai-api-key>":
-    raise RuntimeError(
-        "Missing environment variables - please check that AZURE_OPENAI_API_KEY is set."
-    )
-{{/useAzureOpenAI}}
 
 # Create AI components
 model: OpenAIModel
 
 {{#useAzureOpenAI}}
-if config.AZURE_OPENAI_API_KEY != "<azure-openai-api-key>":
-    model = OpenAIModel(
-        AzureOpenAIModelOptions(
-            api_key=config.AZURE_OPENAI_API_KEY,
-            default_model=config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
-            endpoint=config.AZURE_OPENAI_ENDPOINT,
-            api_version="2023-03-15-preview"
-        )
+model = OpenAIModel(
+    AzureOpenAIModelOptions(
+        api_key=config.AZURE_OPENAI_API_KEY,
+        default_model=config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
+        endpoint=config.AZURE_OPENAI_ENDPOINT,
+        api_version="2023-03-15-preview"
     )
+)
 {{/useAzureOpenAI}}    
 {{#useOpenAI}}
-if config.OPENAI_API_KEY != "<openai-api-key>":
-    model = OpenAIModel(
-        OpenAIModelOptions(
-            api_key=config.OPENAI_API_KEY,
-            default_model=config.OPENAI_MODEL_DEPLOYMENT_NAME
-        )
+model = OpenAIModel(
+    OpenAIModelOptions(
+        api_key=config.OPENAI_API_KEY,
+        default_model="gpt-3.5-turbo"
     )
+)
 {{/useOpenAI}}
     
 prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/prompts"))

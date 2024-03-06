@@ -21,7 +21,6 @@ param azureOpenaiEndpoint string
 @secure()
 @description('Required in your bot project to access OpenAI service. You can get it from OpenAI > API > API Key')
 param openaiKey string
-param openaiModelDeploymentName string
 {{/useOpenAI}}
 
 param webAppSKU string
@@ -90,10 +89,6 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'OPENAI_API_KEY'
           value: openaiKey
-        }
-        {
-          name: 'OPENAI_MODEL_DEPLOYMENT_NAME'
-          value: openaiModelDeploymentName
         }
         {{/useOpenAI}}
       ]

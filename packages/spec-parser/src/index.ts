@@ -14,7 +14,9 @@ export {
   APIInfo,
   ValidateResult,
   ParseOptions,
+  AdaptiveCard,
 } from "./interfaces";
 
 export { ConstantString } from "./constants";
 export { Utils } from "./utils";
+export { AdaptiveCardGenerator } from "./adaptiveCardGenerator";

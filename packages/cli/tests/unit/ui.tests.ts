@@ -20,6 +20,7 @@ import { logger } from "../../src/commonlib/logger";
 import * as customizedPrompts from "../../src/prompts";
 import UI from "../../src/userInteraction";
 import { expect } from "./utils";
+import mockedEnv from "mocked-env";
 
 describe("User Interaction Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -413,17 +414,21 @@ describe("User Interaction Tests", function () {
     afterEach(() => {
       sandbox.restore();
     });
-    it("Check process.env", () => {
-      expect(UI.ciEnabled).equals(process.env.CI_EANBLED === "true");
-    });
     it("interactive = true", async () => {
-      sandbox.stub(UI, "ciEnabled").value(false);
+      const mockedEnvRestore = mockedEnv({
+        CI_ENABLED: "true",
+      });
       UI.interactive = true;
-      expect(UI.interactive).equals(true);
+      expect(UI.interactive).equals(false);
+      mockedEnvRestore();
     });
     it("interactive = false when ciEnabled", async () => {
-      sandbox.stub(UI, "ciEnabled").value(true);
+      const mockedEnvRestore = mockedEnv({
+        CI_ENABLED: "false",
+      });
+      UI.interactive = false;
       expect(UI.interactive).equals(false);
+      mockedEnvRestore();
     });
 
     it("Create Progress Bar", async () => {

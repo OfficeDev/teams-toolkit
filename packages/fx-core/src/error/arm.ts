@@ -38,7 +38,6 @@ export class DeployArmError extends UserError {
       categories: [ErrorCategory.External],
     };
     super(errorOptions);
-    if (error.stack) super.stack = error.stack;
   }
 }
 

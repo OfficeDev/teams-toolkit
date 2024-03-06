@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
+    <RootNamespace>{{SafeProjectName}}</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

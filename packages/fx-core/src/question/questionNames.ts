@@ -40,6 +40,14 @@ export enum QuestionNames {
   ApiSpecApiKeyConfirm = "api-key-confirm",
   ApiMEAuth = "api-me-auth",
 
+  CustomCopilotRag = "custom-copilot-rag",
+  CustomCopilotAssistant = "custom-copilot-assistant",
+  LLMService = "llm-service",
+  OpenAIKey = "openAI-key",
+  AzureOpenAIKey = "azureOpenAI-key",
+  AzureOpenAIEndpoint = "azureOpenAI-endpoint",
+  OpenAIAssistantId = "openAI-assistantId",
+
   Features = "features",
   Env = "env",
   SourceEnvName = "sourceEnvName",
@@ -65,6 +73,7 @@ export enum QuestionNames {
   UserEmail = "email",
 
   collaborationAppType = "collaborationType",
+  DestinationApiSpecFilePath = "destination-api-spec-location",
 }
 
 export enum CliQuestionName {

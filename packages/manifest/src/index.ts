@@ -12,6 +12,8 @@ import fetch from "node-fetch";
 
 export * from "./manifest";
 export * as devPreview from "./devPreviewManifest";
+export * from "./pluginManifest";
+
 export type TeamsAppManifestJSONSchema = JSONSchemaType<TeamsAppManifest>;
 export type DevPreviewManifestJSONSchema = JSONSchemaType<DevPreviewSchema>;
 
@@ -132,6 +134,7 @@ export class ManifestUtil {
       manifestVersion: manifest.manifestVersion,
       isApiME: false,
       isSPFx: false,
+      isApiPlugin: false,
     };
 
     // If it's copilot plugin app
@@ -150,6 +153,12 @@ export class ManifestUtil {
       manifest.webApplicationInfo.id == SharePointAppId
     ) {
       properties.isSPFx = true;
+    }
+
+    if ((manifest as TeamsAppManifest).apiPlugins) {
+      const apiPlugins = (manifest as TeamsAppManifest).apiPlugins;
+      if (apiPlugins && apiPlugins.length > 0 && apiPlugins[0].pluginFile)
+        properties.isApiPlugin = true;
     }
 
     return properties;

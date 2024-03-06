@@ -240,7 +240,7 @@ describe("Core basic APIs", () => {
 
   it("deploy aad manifest happy path", async () => {
     const promtionOnVSC =
-      'Your Microsoft Entra application has been successfully deployed. Click "Learn more" to check how to view your Microsoft Entra application.';
+      'Your Microsoft Entra app has been deployed successfully. To view that, click "Learn more"';
 
     const core = new FxCore(tools);
     const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
@@ -356,7 +356,7 @@ describe("Core basic APIs", () => {
     assert.equal(showMessage.getCall(0).args[0], "info");
     assert.equal(
       showMessage.getCall(0).args[1],
-      "Your Microsoft Entra application has been successfully updated."
+      "Your Microsoft Entra app has been updated successfully."
     );
     assert.isFalse(showMessage.getCall(0).args[2]);
     assert.isTrue(res.isOk());
@@ -1442,6 +1442,7 @@ describe("isEnvFile", async () => {
       mockedEnvRestore = mockedEnv({
         TEAMSFX_CLI_DOTNET: "false",
         [FeatureFlagName.CopilotPlugin]: "false",
+        [FeatureFlagName.CustomCopilot]: "false",
       });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -1462,7 +1463,15 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
+          "custom-copilot-rag",
+          "openapi-spec-location",
+          "api-operation",
+          "custom-copilot-assistant",
           "programming-language",
+          "llm-service",
+          "azureOpenAI-key",
+          "azureOpenAI-endpoint",
+          "openAI-key",
           "folder",
           "app-name",
         ]);
@@ -1493,7 +1502,15 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
+          "custom-copilot-rag",
+          "openapi-spec-location",
+          "api-operation",
+          "custom-copilot-assistant",
           "programming-language",
+          "llm-service",
+          "azureOpenAI-key",
+          "azureOpenAI-endpoint",
+          "openAI-key",
           "folder",
           "app-name",
         ]);
@@ -1524,7 +1541,15 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
+          "custom-copilot-rag",
+          "openapi-spec-location",
+          "api-operation",
+          "custom-copilot-assistant",
           "programming-language",
+          "llm-service",
+          "azureOpenAI-key",
+          "azureOpenAI-endpoint",
+          "openAI-key",
           "folder",
           "app-name",
         ]);
@@ -1556,7 +1581,15 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
+          "custom-copilot-rag",
+          "openapi-spec-location",
+          "api-operation",
+          "custom-copilot-assistant",
           "programming-language",
+          "llm-service",
+          "azureOpenAI-key",
+          "azureOpenAI-endpoint",
+          "openAI-key",
           "folder",
           "app-name",
         ]);

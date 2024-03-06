@@ -22,7 +22,8 @@ export class ManifestUpdater {
     adaptiveCardFolder: string,
     spec: OpenAPIV3.Document,
     allowMultipleParameters: boolean,
-    auth?: OpenAPIV3.SecuritySchemeObject
+    auth?: OpenAPIV3.SecuritySchemeObject,
+    isMe?: boolean
   ): Promise<[TeamsAppManifest, WarningResult[]]> {
     try {
       const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
@@ -74,7 +75,7 @@ export class ManifestUpdater {
         ),
       };
 
-      updatedPart.composeExtensions = [composeExtension];
+      updatedPart.composeExtensions = isMe === undefined || isMe === true ? [composeExtension] : [];
 
       const updatedManifest = { ...originalManifest, ...updatedPart };
 

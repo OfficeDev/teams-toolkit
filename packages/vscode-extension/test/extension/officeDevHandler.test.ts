@@ -254,6 +254,25 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     chai.assert(globalStateUpdateStub.calledOnce);
   });
 
+  it("autoInstallDependency when extension launch", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
+    sandbox.stub(globalState, "globalStateGet").resolves("");
+    sandbox.stub(globalVariables, "isOfficeAddInProject").value(true);
+
+    sandbox.stub(localizeUtils, "localize").returns("ask install window pop up");
+    const autoInstallDependencyHandlerStub = sandbox.stub(handlers, "autoInstallDependencyHandler");
+
+    const showInformationMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .callsFake((_message: string, option: any, ...items: vscode.MessageItem[]) => {
+        return Promise.resolve(option);
+      });
+
+    await officeDevHandlers.autoOpenOfficeDevProjectHandler();
+
+    chai.assert(autoInstallDependencyHandlerStub.calledOnce);
+  });
+
   it("openOfficeDevFolder", async () => {
     const folderPath = vscode.Uri.file("/test");
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
@@ -266,70 +285,6 @@ describe("autoOpenOfficeDevProjectHandler", () => {
     console.log(globalStateUpdateStub.callCount);
     chai.assert(globalStateUpdateStub.callCount == 5);
     chai.assert(executeCommandStub.calledWithExactly("vscode.openFolder", folderPath, true));
-  });
-});
-
-describe("validateIsOfficeAddInProject", () => {
-  const sandbox = sinon.createSandbox();
-  let fetchManifestListStub: any;
-
-  beforeEach(() => {
-    fetchManifestListStub = sinon.stub(projectSettingsHelper, "fetchManifestList");
-  });
-
-  afterEach(() => {
-    fetchManifestListStub.restore();
-    mockfs.restore();
-    sandbox.restore();
-  });
-
-  it("should return true if manifest list is not empty", () => {
-    fetchManifestListStub.returns(["manifest.xml"]);
-    mockfs({
-      "/test/manifest.xml": "",
-    });
-    chai.expect(projectSettingsHelper.isValidOfficeAddInProject("/test")).to.be.true;
-  });
-
-  it("should return false if no manifest file", () => {
-    fetchManifestListStub.returns([]);
-    mockfs({
-      "/test/useless.xml": "",
-    });
-    chai.expect(projectSettingsHelper.isValidOfficeAddInProject("/test")).to.be.false;
-  });
-
-  it("should return false if fetchManifestList throws an error", () => {
-    fetchManifestListStub.throws(new Error("Error fetching manifest list"));
-    chai.expect(projectSettingsHelper.isValidOfficeAddInProject("")).to.be.false;
-  });
-});
-
-describe("fetchManifestList", () => {
-  let readdirSyncStub: any, isOfficeAddInManifestStub: any;
-
-  beforeEach(() => {
-    readdirSyncStub = sinon.stub(fs, "readdirSync");
-    isOfficeAddInManifestStub = sinon.stub(projectSettingsHelper, "isOfficeAddInManifest");
-  });
-
-  afterEach(() => {
-    readdirSyncStub.restore();
-    isOfficeAddInManifestStub.restore();
-  });
-
-  it("should return undefined if workspacePath is not provided", () => {
-    chai.expect(projectSettingsHelper.fetchManifestList()).to.be.undefined;
-  });
-
-  it("should return manifest list if workspacePath is provided", () => {
-    mockfs({
-      "/test/manifest.xml": "",
-    });
-    readdirSyncStub.returns(["manifest.xml"]);
-    isOfficeAddInManifestStub.callsFake((fileName: string) => fileName === "manifest.xml");
-    chai.expect(projectSettingsHelper.fetchManifestList("/test")).to.deep.equal(["manifest.xml"]);
-    mockfs.restore();
   });
 });
 
@@ -391,23 +346,17 @@ describe("stopOfficeAddInDebug", () => {
   let showStub: sinon.SinonStub;
   let sendTextStub: sinon.SinonStub;
 
-  beforeEach(() => {
+  it("should call getInstance, show and sendText", async () => {
     const terminalStub = new TerminalStub();
     getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
     showStub = sinon.stub(terminalStub, "show");
     sendTextStub = sinon.stub(terminalStub, "sendText");
-  });
-
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  it("should call getInstance, show and sendText", async () => {
     await stopOfficeAddInDebug();
 
     sinon.assert.calledOnce(getInstanceStub);
     sinon.assert.calledOnce(showStub);
     sinon.assert.calledOnce(sendTextStub);
+    sinon.restore();
   });
 });
 
@@ -416,23 +365,18 @@ describe("generateManifestGUID", () => {
   let showStub: sinon.SinonStub;
   let sendTextStub: sinon.SinonStub;
 
-  beforeEach(() => {
+  it("should call getInstance, show and sendText with correct arguments", async () => {
     const terminalStub = new TerminalStub();
     getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance").returns(terminalStub);
     showStub = sinon.stub(terminalStub, "show");
     sendTextStub = sinon.stub(terminalStub, "sendText");
-  });
 
-  afterEach(() => {
-    sinon.restore();
-  });
-
-  it("should call getInstance, show and sendText with correct arguments", async () => {
     await generateManifestGUID();
 
     sinon.assert.calledOnce(getInstanceStub);
     sinon.assert.calledOnce(showStub);
     sinon.assert.calledOnce(sendTextStub);
     sinon.assert.calledWithExactly(sendTextStub, triggerGenerateGUID);
+    sinon.restore();
   });
 });

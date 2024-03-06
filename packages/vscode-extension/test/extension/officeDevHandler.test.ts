@@ -3,6 +3,7 @@ import { manifestUtils } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
 import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
+import * as fs from "fs-extra";
 import * as mockfs from "mock-fs";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
@@ -13,6 +14,11 @@ import * as officeDevHandlers from "../../src/officeDevHandlers";
 import { VsCodeUI } from "../../src/qm/vsc_ui";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
 import * as localizeUtils from "../../src/utils/localizeUtils";
+import {
+  OfficeDevTerminal,
+  triggerInstall,
+  triggerValidate,
+} from "../../src/debug/taskTerminal/officeDevTerminal";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -244,26 +250,103 @@ describe("autoOpenOfficeDevProjectHandler", () => {
 
 describe("validate Office add-in project", () => {
   const sandbox = sinon.createSandbox();
+  let fetchManifestListStub: any;
+
+  beforeEach(() => {
+    fetchManifestListStub = sinon.stub(projectSettingsHelper, "fetchManifestList");
+  });
 
   afterEach(() => {
+    fetchManifestListStub.restore();
     mockfs.restore();
     sandbox.restore();
   });
 
-  beforeEach(() => {
+  // it("isValidOfficeAddInProject", () => {
+  //   const result = projectSettingsHelper.isValidOfficeAddInProject("/test");
+  //   chai.assert.isTrue(result);
+  // });
+
+  // it("fetchManifestList", () => {
+  //   const list = projectSettingsHelper.fetchManifestList("/test");
+  //   chai.assert.equal(list?.length, 1);
+  //   chai.assert.equal(list?.[0], "manifest.xml");
+  // });
+
+  it("should return true if manifest list is not empty", () => {
+    fetchManifestListStub.returns(["manifest.xml"]);
     mockfs({
       "/test/manifest.xml": "",
     });
+    chai.expect(projectSettingsHelper.isValidOfficeAddInProject("/test")).to.be.true;
   });
 
-  it("isValidOfficeAddInProject", () => {
-    const result = projectSettingsHelper.isValidOfficeAddInProject("/test");
-    chai.assert.isTrue(result);
+  it("should return false if no manifest file", () => {
+    fetchManifestListStub.returns([]);
+    mockfs({
+      "/test/useless.xml": "",
+    });
+    chai.expect(projectSettingsHelper.isValidOfficeAddInProject("/test")).to.be.false;
   });
 
-  it("fetchManifestList", () => {
-    const list = projectSettingsHelper.fetchManifestList("/test");
-    chai.assert.equal(list?.length, 1);
-    chai.assert.equal(list?.[0], "manifest.xml");
+  it("should return false if fetchManifestList throws an error", () => {
+    fetchManifestListStub.throws(new Error("Error fetching manifest list"));
+    chai.expect(projectSettingsHelper.isValidOfficeAddInProject("")).to.be.false;
+  });
+});
+
+describe("fetchManifestList", () => {
+  let readdirSyncStub: any, isOfficeAddInManifestStub: any;
+
+  beforeEach(() => {
+    readdirSyncStub = sinon.stub(fs, "readdirSync");
+    isOfficeAddInManifestStub = sinon.stub(projectSettingsHelper, "isOfficeAddInManifest");
+  });
+
+  afterEach(() => {
+    readdirSyncStub.restore();
+    isOfficeAddInManifestStub.restore();
+  });
+
+  it("should return undefined if workspacePath is not provided", () => {
+    chai.expect(projectSettingsHelper.fetchManifestList()).to.be.undefined;
+  });
+
+  it("should return manifest list if workspacePath is provided", () => {
+    mockfs({
+      "/test/manifest.xml": "",
+    });
+    readdirSyncStub.returns(["manifest.xml"]);
+    isOfficeAddInManifestStub.callsFake((fileName: string) => fileName === "manifest.xml");
+    chai.expect(projectSettingsHelper.fetchManifestList("/test")).to.deep.equal(["manifest.xml"]);
+  });
+});
+
+describe("OfficeDevTerminal", () => {
+  let getInstanceStub: any, showStub: any, sendTextStub: any;
+
+  beforeEach(() => {
+    getInstanceStub = sinon.stub(OfficeDevTerminal, "getInstance");
+    showStub = sinon.stub();
+    sendTextStub = sinon.stub();
+    getInstanceStub.returns({ show: showStub, sendText: sendTextStub });
+  });
+
+  afterEach(() => {
+    getInstanceStub.restore();
+  });
+
+  it("should validate Office AddIn Manifest", async () => {
+    const result = await officeDevHandlers.validateOfficeAddInManifest();
+    chai.expect(result.isOk()).to.be.true;
+    sinon.assert.calledOnce(showStub);
+    sinon.assert.calledWith(sendTextStub, triggerValidate); // replace triggerValidate with actual value
+  });
+
+  it("should install Office AddIn Dependencies", async () => {
+    const result = await officeDevHandlers.installOfficeAddInDependencies();
+    chai.expect(result.isOk()).to.be.true;
+    sinon.assert.calledOnce(showStub);
+    sinon.assert.calledWith(sendTextStub, triggerInstall); // replace triggerInstall with actual value
   });
 });

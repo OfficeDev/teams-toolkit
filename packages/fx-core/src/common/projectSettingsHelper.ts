@@ -73,11 +73,11 @@ export function isValidOfficeAddInProject(workspacePath?: string): boolean {
 export function fetchManifestList(workspacePath?: string): string[] | undefined {
   if (!workspacePath) return undefined;
   const list = fs.readdirSync(workspacePath);
-  const manifestList = list.filter((fileName) => isOffficeAddInManifest(fileName));
+  const manifestList = list.filter((fileName) => isOfficeAddInManifest(fileName));
   return manifestList;
 }
 
-export function isOffficeAddInManifest(inputFileName: string): boolean {
+export function isOfficeAddInManifest(inputFileName: string): boolean {
   return (
     inputFileName.toLocaleLowerCase().indexOf("manifest") != -1 &&
     inputFileName.toLocaleLowerCase().endsWith(".xml")

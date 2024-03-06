@@ -118,7 +118,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     } catch (e) {
       AzureAccountManager.currentStatus = loggedOut;
       void this.notifyStatus();
-      if (e == "User did not consent to account access") {
+      if (e?.message.includes("User did not consent ")) {
         // throw user cancel error
         throw new UserError(
           "Login",

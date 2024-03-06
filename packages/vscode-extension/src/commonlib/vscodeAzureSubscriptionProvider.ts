@@ -84,9 +84,7 @@ export class VSCodeAzureSubscriptionProvider {
 
         // For each tenant, get the list of subscriptions
         results.push(...(await this.getSubscriptionsForTenant(tenantId)));
-      } catch (e) {
-        VsCodeLogInstance.error("[Azure list sub] " + (e.message as string));
-      }
+      } catch (e) {}
     }
     const sortSubscriptions = (subscriptions: AzureSubscription[]): AzureSubscription[] =>
       subscriptions.sort((a, b) => a.name.localeCompare(b.name));

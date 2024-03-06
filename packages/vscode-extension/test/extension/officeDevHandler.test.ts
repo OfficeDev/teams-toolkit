@@ -280,17 +280,6 @@ describe("validateIsOfficeAddInProject", () => {
     sandbox.restore();
   });
 
-  // it("isValidOfficeAddInProject", () => {
-  //   const result = projectSettingsHelper.isValidOfficeAddInProject("/test");
-  //   chai.assert.isTrue(result);
-  // });
-
-  // it("fetchManifestList", () => {
-  //   const list = projectSettingsHelper.fetchManifestList("/test");
-  //   chai.assert.equal(list?.length, 1);
-  //   chai.assert.equal(list?.[0], "manifest.xml");
-  // });
-
   it("should return true if manifest list is not empty", () => {
     fetchManifestListStub.returns(["manifest.xml"]);
     mockfs({

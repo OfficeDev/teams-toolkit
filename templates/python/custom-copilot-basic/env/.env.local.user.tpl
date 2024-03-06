@@ -8,7 +8,7 @@ SECRET_BOT_PASSWORD=
 SECRET_OPENAI_API_KEY='{{{openAIKey}}}'
 {{/openAIKey}}
 {{^openAIKey}}
-SECRET_OPENAI_API_KEY=''
+SECRET_OPENAI_API_KEY=
 {{/openAIKey}}
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
@@ -16,13 +16,13 @@ SECRET_OPENAI_API_KEY=''
 SECRET_AZURE_OPENAI_API_KEY='{{{azureOpenAIKey}}}'
 {{/azureOpenAIKey}}
 {{^azureOpenAIKey}}
-SECRET_AZURE_OPENAI_API_KEY=''
+SECRET_AZURE_OPENAI_API_KEY=
 {{/azureOpenAIKey}}
-SECRET_AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=''
+SECRET_AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=
 {{#azureOpenAIEndpoint}}
 SECRET_AZURE_OPENAI_ENDPOINT='{{{azureOpenAIEndpoint}}}'
 {{/azureOpenAIEndpoint}}
 {{^azureOpenAIEndpoint}}
-SECRET_AZURE_OPENAI_ENDPOINT=''
+SECRET_AZURE_OPENAI_ENDPOINT=
 {{/azureOpenAIEndpoint}}
 {{/useAzureOpenAI}}

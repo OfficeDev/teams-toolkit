@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceBaseName": {
-      "value": "aichatbot${{RESOURCE_SUFFIX}}"
+      "value": "bot${{RESOURCE_SUFFIX}}"
     },
     "botAadAppClientId": {
       "value": "${{BOT_ID}}"
@@ -31,7 +31,7 @@
       "value": "B1"
     },
     "botDisplayName": {
-      "value": "aichatbot"
+      "value": "{{appName}}"
     },
     "linuxFxVersion": {
       "value": "PYTHON|3.11"

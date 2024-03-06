@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { Executor } from "./executor";
 import sql from "mssql";
 import * as uuid from "uuid";
@@ -187,6 +190,91 @@ export class AzSqlHelper {
     const resourceGroups = JSON.parse(stdout);
     console.log(resourceGroups);
     return { success: true, stdout: resourceGroups };
+  }
+}
+
+export class AzServiceBusHelper {
+  public resourceGroupName: string;
+  public namespaceName: string;
+  public connectString: string;
+  public queueName: string;
+  public location: string;
+  constructor(resourceGroupName: string, location?: string) {
+    this.resourceGroupName = resourceGroupName;
+    this.namespaceName = "MyNameSpace" + uuid.v4().substring(0, 4);
+    this.location = location || "westus";
+    this.connectString = "";
+    this.queueName = "notification-messages";
+  }
+
+  public async createServiceBus() {
+    // login
+    console.log(`Logging in...`);
+    const { success: loginSuccess } = await AzServiceBusHelper.login();
+    if (!loginSuccess) return;
+
+    // create resource group
+    console.log("Creating resource group: ", this.resourceGroupName, "...");
+    const { success: resourceGroupSuccess } = await this.createResourceGroup();
+    expect(resourceGroupSuccess).to.be.true;
+
+    // create namespace
+    console.log(
+      `Creating namespace: ${this.namespaceName} in resource group: ${this.resourceGroupName}...`
+    );
+    const { success: namespaceSuccess } = await this.createNamespace();
+    expect(namespaceSuccess).to.be.true;
+
+    // get connection string
+    console.log(`Get connection string...`);
+    const { success: connectStringSuccess, stdout: connectString } =
+      await this.getConnectionString();
+    expect(connectStringSuccess).to.be.true;
+    const result = connectString.match(/[^"]+/) ?? [];
+    console.log("Connect String:", result[0]);
+    this.connectString = result[0] ?? "";
+
+    // create queue in namespace
+    console.log(`Create queue in namespace...`);
+    const { success: queueSuccess } = await this.createQueue();
+    expect(queueSuccess).to.be.true;
+
+    console.log(`Service Bus created successfully`);
+    return true;
+  }
+
+  static async login() {
+    const command = `az login --service-principal -u ${Env["AZURE_CLIENT_ID"]} -p ${Env["AZURE_CLIENT_SECRET"]} -t ${Env["azureTenantId"]}`;
+    const { success } = await Executor.execute(command, process.cwd());
+    if (!success) {
+      console.error(`Failed to login`);
+      return { success: false };
+    }
+    // set subscription
+    const subscription = Env["azureSubscriptionId"];
+    const setSubscriptionCommand = `az account set --subscription ${subscription}`;
+    return await Executor.execute(setSubscriptionCommand, process.cwd());
+  }
+
+  public async createResourceGroup() {
+    const command = `az group create -n ${this.resourceGroupName} -l ${this.location}`;
+    return await Executor.execute(command, process.cwd());
+  }
+
+  public async createQueue() {
+    const command = `az servicebus queue create --resource-group ${this.resourceGroupName} --namespace-name ${this.namespaceName} --name ${this.queueName}
+    `;
+    return await Executor.execute(command, process.cwd());
+  }
+
+  private async getConnectionString() {
+    const command = `az servicebus namespace authorization-rule keys list --resource-group ${this.resourceGroupName} --namespace-name ${this.namespaceName} --name RootManageSharedAccessKey --query primaryConnectionString`;
+    return await Executor.execute(command, process.cwd());
+  }
+
+  private async createNamespace() {
+    const command = `az servicebus namespace create --resource-group ${this.resourceGroupName} --name ${this.namespaceName} --location westus`;
+    return await Executor.execute(command, process.cwd());
   }
 }
 

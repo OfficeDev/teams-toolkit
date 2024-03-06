@@ -17,10 +17,30 @@
             "sample-localdebug-query-org",
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
-            "sample-localdebug-proactive-message",
             "basic-tab-debug-upgrade-debug",
             "bot-debug-upgrade-debug",
             "bot-upgrade-debug"
+        ]
+    },
+    {
+        "os": {
+            "windows-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "ubuntu-latest": {
+                "node-16": [],
+                "node-18": []
+            },
+            "macos-latest": {
+                "node-16": [],
+                "node-18": []
+            }
+        },
+        "cases": [
+            "sample-localdebug-npm-search",
+            "sample-localdebug-large-scale-notification",
+            "sample-localdebug-proactive-message"
         ]
     },
     {
@@ -72,11 +92,11 @@
             "sample-localdebug-todo-list-with-m365",
             "sample-localdebug-todo-list-sql",
             "sample-localdebug-hello-world-tab-with-backend",
-            "sample-localdebug-npm-search",
             "sample-localdebug-graph-connector-bot",
             "sample-localdebug-bot-sso",
             "sample-localdebug-dice-roller",
-            "sample-localdebug-large-scale-notification",
+            "sample-localdebug-contact-exporter",
+            "sample-localdebug-hello-world-meeting",
             "basic-tab-upgrade-debug"
         ]
     },
@@ -138,8 +158,6 @@
             "sample-localdebug-dashboard",
             "sample-localdebug-hello-world-tab-outlook",
             "sample-localdebug-one-productivity-hub",
-            "sample-localdebug-contact-exporter",
-            "sample-localdebug-hello-world-meeting",
             "sample-localdebug-assistant-dashboard"
         ]
     }

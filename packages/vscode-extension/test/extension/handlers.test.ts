@@ -376,12 +376,28 @@ describe("handlers", () => {
       sinon.assert.calledOnce(validateApplication);
     });
 
-    it("copilotPluginAddAPIHandler()", async () => {
+    it("API ME: copilotPluginAddAPIHandler()", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const addAPIHanlder = sinon.spy(handlers.core, "copilotPluginAddAPI");
       const args = [
         {
           fsPath: "manifest.json",
+        },
+      ];
+
+      await handlers.copilotPluginAddAPIHandler(args);
+
+      sinon.assert.calledOnce(addAPIHanlder);
+    });
+
+    it("API Plugin: copilotPluginAddAPIHandler()", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const addAPIHanlder = sinon.spy(handlers.core, "copilotPluginAddAPI");
+      const args = [
+        {
+          fsPath: "openapi.yaml",
+          isFromApiPlugin: true,
+          manifestPath: "manifest.json",
         },
       ];
 
@@ -2459,6 +2475,7 @@ describe("autoOpenProjectHandler", () => {
       isApiME: true,
       isSPFx: false,
       isApiBasedMe: true,
+      isApiPlugin: false,
     };
     const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
     VsCodeLogInstance.outputChannel = {

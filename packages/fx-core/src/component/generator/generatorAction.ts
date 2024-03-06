@@ -7,7 +7,6 @@ import path from "path";
 
 import { LogProvider } from "@microsoft/teamsfx-api";
 
-import { FeatureFlagName } from "../../common/constants";
 import { getTemplatesFolder } from "../../folder";
 import { MissKeyError, SampleNotFoundError, TemplateNotFoundError } from "./error";
 import {
@@ -16,12 +15,10 @@ import {
   getSampleInfoFromName,
   SampleUrlInfo,
   unzip,
-  zipFolder,
   getTemplateLatestTag,
-  getTemplateZipUrlByTag,
-  getTemplateLocalVersion,
 } from "./utils";
 import semver from "semver";
+import templateConfig from "../../common/templates-config.json";
 
 export interface GeneratorContext {
   name: string;
@@ -30,11 +27,8 @@ export interface GeneratorContext {
   logProvider: LogProvider;
   tryLimits?: number;
   timeoutInMs?: number;
-  url?: string;
   sampleInfo?: SampleUrlInfo;
-  zip?: AdmZip;
   fallback?: boolean;
-  cancelDownloading?: boolean;
   outputs?: string[];
 
   filterFn?: (name: string) => boolean;
@@ -56,45 +50,74 @@ export interface GeneratorAction {
 }
 
 export enum GeneratorActionName {
-  FetchTemplateZipFromSourceCode = "FetchTemplateZipFromSourceCodeAction",
-  FetchUrlForHotfixOnly = "FetchUrlForHotfixOnly",
-  FetchZipFromUrl = "FetchZipFromUrl",
-  FetchTemplateZipFromLocal = "FetchTemplateZipFromLocal",
+  ScaffoldRemoteTemplate = "ScaffoldRemoteTemplate",
+  ScaffoldLocalTemplate = "ScaffoldLocalTemplate",
   FetchSampleInfo = "FetchSampleInfo",
   DownloadDirectory = "DownloadDirectory",
-  Unzip = "Unzip",
 }
 
-// * This action is only for debug purpose
-export const fetchTemplateZipFromSourceCodeAction: GeneratorAction = {
-  name: GeneratorActionName.FetchTemplateZipFromSourceCode,
-  run: (context: GeneratorContext) => {
-    const isDebugMode = () => {
-      const DebugTemplateFlag = process.env[FeatureFlagName.DebugTemplate];
-      return DebugTemplateFlag?.toLowerCase() === "true" && process.env.NODE_ENV === "development";
-    };
-
-    if (!isDebugMode()) {
-      return Promise.resolve();
+export const ScaffoldRemoteTemplateAction: GeneratorAction = {
+  name: GeneratorActionName.ScaffoldRemoteTemplate,
+  run: async (context: GeneratorContext) => {
+    const templateUrl = await determineTemplateSource(context);
+    if (templateUrl === "local") {
+      return;
     }
 
-    if (context.zip) {
-      return Promise.resolve();
-    }
-
-    context.logProvider.debug(`Fetching template zip from source code: ${JSON.stringify(context)}`);
-    //! This path only works in debug mode
-    const templateSourceCodePath = path.resolve(
-      __dirname,
-      "../../../../../",
-      "templates",
-      context.language!
+    const zip = await fetchZipFromUrl(templateUrl, context.tryLimits, context.timeoutInMs);
+    context.outputs = await unzip(
+      zip,
+      context.destination,
+      context.fileNameReplaceFn,
+      context.fileDataReplaceFn,
+      context.filterFn
     );
-
-    context.zip = zipFolder(templateSourceCodePath);
-    return Promise.resolve();
   },
 };
+
+export const ScaffoldLocalTemplateAction: GeneratorAction = {
+  name: GeneratorActionName.ScaffoldLocalTemplate,
+  run: async (context: GeneratorContext) => {
+    if (context.outputs?.length) {
+      return;
+    }
+    context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);
+    const fallbackPath = path.join(getTemplatesFolder(), "fallback");
+    const fileName = `${context.language!}.zip`;
+    const zipPath: string = path.join(fallbackPath, fileName);
+
+    const data: Buffer = await fs.readFile(zipPath);
+    const zip = new AdmZip(data);
+    context.outputs = await unzip(
+      zip,
+      context.destination,
+      context.fileNameReplaceFn,
+      context.fileDataReplaceFn,
+      context.filterFn
+    );
+
+    if (!context.outputs?.length) {
+      throw new TemplateNotFoundError(context.name);
+    }
+  },
+};
+
+async function determineTemplateSource(context: GeneratorContext) {
+  let url = "local";
+  if (!Boolean(templateConfig.useLocalTemplate)) {
+    let latestTag = await getTemplateLatestTag(
+      context.language!,
+      context.tryLimits,
+      context.timeoutInMs
+    );
+    latestTag = latestTag.replace(templateConfig.tagPrefix, "").trim();
+    if (semver.gt(latestTag, templateConfig.localVersion)) {
+      // git tag version is higher than the local version, download template from github
+      url = `${templateConfig.templateDownloadBaseURL}/${latestTag}/${context.language!}.zip`;
+    }
+  }
+  return url;
+}
 
 export const fetchSampleInfoAction: GeneratorAction = {
   name: GeneratorActionName.FetchSampleInfo,
@@ -119,97 +142,9 @@ export const downloadDirectoryAction: GeneratorAction = {
   },
 };
 
-export const fetchUrlForHotfixOnlyAction: GeneratorAction = {
-  name: GeneratorActionName.FetchUrlForHotfixOnly,
-  run: async (context: GeneratorContext) => {
-    if (context.zip || context.cancelDownloading) {
-      return;
-    }
-
-    context.logProvider.debug(`Fetching template url with tag: ${JSON.stringify(context)}`);
-    const latestTag = await getTemplateLatestTag(
-      context.language!,
-      context.tryLimits,
-      context.timeoutInMs
-    );
-    const localVer = getTemplateLocalVersion();
-    const latestVer = latestTag.split("@")[1];
-    // git tag version is higher than the local version, download template from github
-    if (semver.gt(latestVer, localVer)) {
-      context.url = getTemplateZipUrlByTag(context.language!, latestTag);
-    } else {
-      // generate template from fallback
-      context.cancelDownloading = true;
-    }
-  },
-};
-
-export const fetchZipFromUrlAction: GeneratorAction = {
-  name: GeneratorActionName.FetchZipFromUrl,
-  run: async (context: GeneratorContext) => {
-    if (context.zip || context.cancelDownloading) {
-      return;
-    }
-
-    context.logProvider.debug(`Fetching zip from url: ${JSON.stringify(context)}`);
-    if (!context.url) {
-      throw new MissKeyError("url");
-    }
-
-    context.zip = await fetchZipFromUrl(context.url, context.tryLimits, context.timeoutInMs);
-  },
-};
-
-export const unzipAction: GeneratorAction = {
-  name: GeneratorActionName.Unzip,
-  run: async (context: GeneratorContext) => {
-    if (!context.zip) {
-      return;
-    }
-    context.logProvider.debug(`Unzipping: ${JSON.stringify(context)}`);
-    context.outputs = await unzip(
-      context.zip,
-      context.destination,
-      context.fileNameReplaceFn,
-      context.fileDataReplaceFn,
-      context.filterFn
-    );
-  },
-};
-
-export const fetchTemplateFromLocalAction: GeneratorAction = {
-  name: GeneratorActionName.FetchTemplateZipFromLocal,
-  run: async (context: GeneratorContext) => {
-    if (context.outputs?.length) {
-      return;
-    }
-    context.logProvider.debug(`Fetching zip from local: ${JSON.stringify(context)}`);
-    context.fallback = true;
-    const fallbackPath = path.join(getTemplatesFolder(), "fallback");
-    const fileName = `${context.language!}.zip`;
-    const zipPath: string = path.join(fallbackPath, fileName);
-
-    const data: Buffer = await fs.readFile(zipPath);
-    context.zip = new AdmZip(data);
-    context.outputs = await unzip(
-      context.zip,
-      context.destination,
-      context.fileNameReplaceFn,
-      context.fileDataReplaceFn,
-      context.filterFn
-    );
-    if (!context.outputs?.length) {
-      throw new TemplateNotFoundError(context.name);
-    }
-  },
-};
-
 export const TemplateActionSeq: GeneratorAction[] = [
-  fetchTemplateZipFromSourceCodeAction,
-  fetchUrlForHotfixOnlyAction,
-  fetchZipFromUrlAction,
-  unzipAction,
-  fetchTemplateFromLocalAction,
+  ScaffoldRemoteTemplateAction,
+  ScaffoldLocalTemplateAction,
 ];
 
 export const SampleActionSeq: GeneratorAction[] = [fetchSampleInfoAction, downloadDirectoryAction];

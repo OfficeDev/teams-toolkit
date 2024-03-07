@@ -24,7 +24,7 @@
     "teamstoolkit.appStudioLogin.loginCancel": "Sign-in canceled. Teams Toolkit needs a Microsoft 365 account with custom app upload permission. If you're a Visual Studio subscriber, create a developer sandbox with the Microsoft 365 Developer Program (https://developer.microsoft.com/en-us/microsoft-365/dev-program).",
     "teamstoolkit.appStudioLogin.message": "Teams Toolkit needs a Microsoft 365 account with custom app upload permission. If you're a Visual Studio subscriber, create a developer sandbox with the Microsoft 365 Developer Program.",
     "teamstoolkit.azureLogin.failToFindSubscription": "We couldn't find a subscription.",
-    "teamstoolkit.azureLogin.message": "The Teams Toolkit will use Microsoft authentication to sign in Azure account and subscription to deploy the Azure resources for your project. You will not be charged without further confirmation.",
+    "teamstoolkit.azureLogin.message": "The Teams Toolkit will use Microsoft authentication to sign in Azure account and subscription to deploy the Azure resources for your project. You won't be charged until you confirm.",
     "teamstoolkit.azureLogin.subscription": "subscription",
     "teamstoolkit.azureLogin.selectSubscription": "Select Subscription",
     "teamstoolkit.azureLogin.unknownSubscription": "We're unable to set this subscription. Select a subscription you have access to.",

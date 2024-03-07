@@ -155,6 +155,7 @@ describe("specFilter", () => {
       true,
       false,
       false,
+      false,
       false
     );
     expect(actualSpec).to.deep.equal(expectedSpec);
@@ -202,6 +203,7 @@ describe("specFilter", () => {
       unResolveSpec,
       unResolveSpec,
       true,
+      false,
       false,
       false,
       false
@@ -253,6 +255,7 @@ describe("specFilter", () => {
       filter,
       unResolvedSpec as any,
       unResolvedSpec as any,
+      false,
       false,
       false,
       false,
@@ -339,6 +342,7 @@ describe("specFilter", () => {
       true,
       false,
       false,
+      false,
       false
     );
 
@@ -348,7 +352,7 @@ describe("specFilter", () => {
   it("should not filter anything if filter item not exist", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
+    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false, false);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -381,6 +385,7 @@ describe("specFilter", () => {
       true,
       false,
       false,
+      false,
       false
     );
 
@@ -390,7 +395,7 @@ describe("specFilter", () => {
   it("should not modify the original OpenAPI spec", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
+    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false, false);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -402,7 +407,7 @@ describe("specFilter", () => {
       .throws(new Error("isSupportedApi error"));
 
     try {
-      SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
+      SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false, false);
       expect.fail("Expected specFilter to throw a SpecParserError");
     } catch (err: any) {
       expect(err).to.be.instanceOf(SpecParserError);

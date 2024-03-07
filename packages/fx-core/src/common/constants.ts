@@ -55,6 +55,7 @@ export class FeatureFlagName {
   static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly OfficeXMLAddin = "TEAMSFX_OFFICE_XML_ADDIN";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
   static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
   static readonly CustomCopilot = "TEAMSFX_CUSTOM_COPILOT";

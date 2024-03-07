@@ -66,7 +66,7 @@ export interface CreateProjectInputs extends Inputs {
   "api-operation"?: string[];
   /** @description Authentication Type */
   "api-me-auth"?: "none" | "api-key";
-  /** @description AI Assistant */
+  /** @description AI Agent */
   "custom-copilot-assistant"?:
     | "custom-copilot-assistant-new"
     | "custom-copilot-assistant-assistantsApi";

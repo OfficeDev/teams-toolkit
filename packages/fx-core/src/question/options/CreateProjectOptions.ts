@@ -140,7 +140,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "custom-copilot-assistant",
     type: "string",
-    description: "AI Assistant",
+    description: "AI Agent",
     default: "custom-copilot-assistant-new",
     choices: ["custom-copilot-assistant-new", "custom-copilot-assistant-assistantsApi"],
   },

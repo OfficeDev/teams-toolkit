@@ -22,6 +22,7 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.ApiConnect] = "true";
   process.env[FeatureFlagName.DeployManifest] = "true";
   process.env[FeatureFlagName.OfficeXMLAddin] = "true";
+  process.env[FeatureFlagName.OfficeAddin] = "true";
 }
 
 export function isCLIDotNetEnabled(): boolean {
@@ -71,4 +72,8 @@ export function isTdpTemplateCliTestEnabled(): boolean {
 
 export function isNewProjectTypeEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
+}
+
+export function isOfficeJSONAddinEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
 }

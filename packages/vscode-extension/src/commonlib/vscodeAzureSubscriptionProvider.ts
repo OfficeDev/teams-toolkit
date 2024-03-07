@@ -171,51 +171,12 @@ export interface AzureAuthentication {
   getSession(scopes?: string[]): vscode.ProviderResult<vscode.AuthenticationSession>;
 }
 
-// These strings come from https://github.com/microsoft/vscode/blob/eac16e9b63a11885b538db3e0b533a02a2fb8143/extensions/microsoft-authentication/package.json#L40-L99
-const CustomCloudConfigurationSection = "microsoft-sovereign-cloud";
-const CloudEnvironmentSettingName = "environment";
-const CustomEnvironmentSettingName = "customEnvironment";
-
-enum CloudEnvironmentSettingValue {
-  ChinaCloud = "ChinaCloud",
-  USGovernment = "USGovernment",
-  Custom = "custom",
-}
-
 /**
  * Gets the configured Azure environment.
  *
  * @returns The configured Azure environment from the settings in the built-in authentication provider extension
  */
 export function getConfiguredAzureEnv(): azureEnv.Environment & { isCustomCloud: boolean } {
-  const authProviderConfig = vscode.workspace.getConfiguration(CustomCloudConfigurationSection);
-  const environmentSettingValue = authProviderConfig.get<string | undefined>(
-    CloudEnvironmentSettingName
-  );
-
-  if (environmentSettingValue === CloudEnvironmentSettingValue.ChinaCloud) {
-    return {
-      ...azureEnv.Environment.ChinaCloud,
-      isCustomCloud: false,
-    };
-  } else if (environmentSettingValue === CloudEnvironmentSettingValue.USGovernment) {
-    return {
-      ...azureEnv.Environment.USGovernment,
-      isCustomCloud: false,
-    };
-  } else if (environmentSettingValue === CloudEnvironmentSettingValue.Custom) {
-    const customCloud = authProviderConfig.get<azureEnv.EnvironmentParameters | undefined>(
-      CustomEnvironmentSettingName
-    );
-
-    if (customCloud) {
-      return {
-        ...new azureEnv.Environment(customCloud),
-        isCustomCloud: true,
-      };
-    }
-  }
-
   return {
     ...azureEnv.Environment.get(azureEnv.Environment.AzureCloud.name),
     isCustomCloud: false,

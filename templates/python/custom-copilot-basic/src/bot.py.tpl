@@ -30,7 +30,7 @@ model = OpenAIModel(
 model = OpenAIModel(
     OpenAIModelOptions(
         api_key=config.OPENAI_API_KEY,
-        default_model=config.OPENAI_MODEL_DEPLOYMENT_NAME,
+        default_model=config.OPENAI_MODEL_NAME,
     )
 )
 {{/useOpenAI}}

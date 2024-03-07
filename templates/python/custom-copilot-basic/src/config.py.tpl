@@ -17,7 +17,7 @@ class Config:
     APP_PASSWORD = os.environ.get("BOT_PASSWORD", "")
     {{#useOpenAI}}
     OPENAI_API_KEY = os.environ["OPENAI_API_KEY"] # OpenAI API key
-    OPENAI_MODEL_DEPLOYMENT_NAME='gpt-3.5-turbo' # OpenAI model deployment name. You can use any other model deployment name from OpenAI.
+    OPENAI_MODEL_NAME='gpt-3.5-turbo' # OpenAI model name. You can use any other model name from OpenAI.
     {{/useOpenAI}}
     {{#useAzureOpenAI}}
     AZURE_OPENAI_API_KEY = os.environ["AZURE_OPENAI_API_KEY"] # Azure OpenAI API key

@@ -83,14 +83,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      apiPlugins: [
+      plugins: [
         {
           pluginFile: "ai-plugin.json",
         },
       ],
     };
 
-    const expectedApiPlugins: PluginManifestSchema = {
+    const expectedplugins: PluginManifestSchema = {
       schema_version: "v2",
       name_for_human: "My API",
       description_for_human: "My API description",
@@ -147,7 +147,7 @@ describe("updateManifestWithAiPlugin", () => {
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
-    expect(apiPlugin).to.deep.equal(expectedApiPlugins);
+    expect(apiPlugin).to.deep.equal(expectedplugins);
   });
 
   it("should update the manifest with the correct manifest and apiPlugin files with optional parameters", async () => {
@@ -221,14 +221,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      apiPlugins: [
+      plugins: [
         {
           pluginFile: "ai-plugin.json",
         },
       ],
     };
 
-    const expectedApiPlugins: PluginManifestSchema = {
+    const expectedplugins: PluginManifestSchema = {
       schema_version: "v2",
       name_for_human: "My API",
       description_for_human: "My API description",
@@ -289,7 +289,7 @@ describe("updateManifestWithAiPlugin", () => {
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
-    expect(apiPlugin).to.deep.equal(expectedApiPlugins);
+    expect(apiPlugin).to.deep.equal(expectedplugins);
   });
 
   it("should generate default ai plugin file if no api", async () => {
@@ -318,14 +318,14 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
-      apiPlugins: [
+      plugins: [
         {
           pluginFile: "ai-plugin.json",
         },
       ],
     };
 
-    const expectedApiPlugins: PluginManifestSchema = {
+    const expectedplugins: PluginManifestSchema = {
       schema_version: "v2",
       name_for_human: "My API",
       description_for_human: "My API description",
@@ -353,7 +353,7 @@ describe("updateManifestWithAiPlugin", () => {
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
-    expect(apiPlugin).to.deep.equal(expectedApiPlugins);
+    expect(apiPlugin).to.deep.equal(expectedplugins);
   });
 
   it("should truncate if title is long", async () => {
@@ -425,14 +425,14 @@ describe("updateManifestWithAiPlugin", () => {
         short: "long title long title long title long title long title long title long title lon",
         full: "This is the description",
       },
-      apiPlugins: [
+      plugins: [
         {
           pluginFile: "ai-plugin.json",
         },
       ],
     };
 
-    const expectedApiPlugins: PluginManifestSchema = {
+    const expectedplugins: PluginManifestSchema = {
       schema_version: "v2",
       name_for_human:
         "long title long title long title long title long title long title long title long title long title long title long title long title",
@@ -490,7 +490,7 @@ describe("updateManifestWithAiPlugin", () => {
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
-    expect(apiPlugin).to.deep.equal(expectedApiPlugins);
+    expect(apiPlugin).to.deep.equal(expectedplugins);
   });
 
   it("should throw error if has nested object property", async () => {

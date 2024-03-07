@@ -134,7 +134,7 @@ export class ManifestUtil {
       manifestVersion: manifest.manifestVersion,
       isApiME: false,
       isSPFx: false,
-      isApiPlugin: false,
+      isPlugin: false,
     };
 
     // If it's copilot plugin app
@@ -155,10 +155,10 @@ export class ManifestUtil {
       properties.isSPFx = true;
     }
 
-    if ((manifest as TeamsAppManifest).apiPlugins) {
-      const apiPlugins = (manifest as TeamsAppManifest).apiPlugins;
+    if ((manifest as TeamsAppManifest).plugins) {
+      const apiPlugins = (manifest as TeamsAppManifest).plugins;
       if (apiPlugins && apiPlugins.length > 0 && apiPlugins[0].pluginFile)
-        properties.isApiPlugin = true;
+        properties.isPlugin = true;
     }
 
     return properties;

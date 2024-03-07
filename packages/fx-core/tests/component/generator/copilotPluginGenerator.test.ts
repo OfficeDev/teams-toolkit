@@ -896,7 +896,7 @@ describe("formatValidationErrors", () => {
 describe("listPluginExistingOperations", () => {
   const teamsManifestWithPlugin: TeamsAppManifest = {
     ...teamsManifest,
-    apiPlugins: [
+    plugins: [
       {
         pluginFile: "resources/plugin.json",
       },

@@ -2475,7 +2475,7 @@ describe("autoOpenProjectHandler", () => {
       isApiME: true,
       isSPFx: false,
       isApiBasedMe: true,
-      isApiPlugin: false,
+      isPlugin: false,
     };
     const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
     VsCodeLogInstance.outputChannel = {

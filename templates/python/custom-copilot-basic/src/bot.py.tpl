@@ -23,7 +23,6 @@ model = OpenAIModel(
         api_key=config.AZURE_OPENAI_API_KEY,
         default_model=config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
         endpoint=config.AZURE_OPENAI_ENDPOINT,
-        api_version="2023-03-15-preview"
     )
 )
 {{/useAzureOpenAI}}    
@@ -31,7 +30,7 @@ model = OpenAIModel(
 model = OpenAIModel(
     OpenAIModelOptions(
         api_key=config.OPENAI_API_KEY,
-        default_model="gpt-3.5-turbo"
+        default_model=config.OPENAI_MODEL_DEPLOYMENT_NAME,
     )
 )
 {{/useOpenAI}}

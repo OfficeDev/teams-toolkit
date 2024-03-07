@@ -40,7 +40,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{/useAzureOpenAI}}
 {{#useOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
-1. In this template, default deployment name is `gpt-3.5-turbo`. If you want to use a different deployment, fill in your deployment name in [bot.py](./src/bot.py).
+1. In this template, default deployment name is `gpt-3.5-turbo`. If you want to use a different deployment name from OpenAI, fill in your deployment name in [src/config.py](./src/config.py).
 {{/useOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 1. You will receive a welcome message from the bot, or send any message to get a response.
@@ -56,7 +56,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{/useAzureOpenAI}}
 {{#useOpenAI}}
 1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
-1. In this template, default deployment name is `gpt-3.5-turbo`. If you want to use a different deployment, fill in your deployment name in [bot.py](./src/bot.py).
+1. In this template, default deployment name is `gpt-3.5-turbo`. If you want to use a different deployment name from OpenAI, fill in your deployment name in [src/config.py](./src/config.py).
 {{/useOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.

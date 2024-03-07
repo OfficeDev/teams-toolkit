@@ -28,7 +28,6 @@ import {
   isApiCopilotPluginEnabled,
   isApiKeyEnabled,
   isTdpTemplateCliTestEnabled,
-  isCustomCopilotEnabled,
   isOfficeXMLAddinEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -181,9 +180,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
       if (isApiCopilotPluginEnabled()) {
         staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
       }
-      if (isCustomCopilotEnabled()) {
-        staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
-      }
+      staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
       staticOptions.push(
         ProjectTypeOptions.bot(inputs.platform),
         ProjectTypeOptions.tab(inputs.platform),
@@ -415,11 +412,9 @@ export class CapabilityOptions {
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
     };
   }
-  static bots(inputs?: Inputs, includeAssistant?: boolean): OptionItem[] {
+  static bots(inputs?: Inputs): OptionItem[] {
     return [
       CapabilityOptions.basicBot(),
-      CapabilityOptions.aiBot(),
-      ...(includeAssistant === true ? [CapabilityOptions.aiAssistantBot()] : []),
       CapabilityOptions.notificationBot(),
       CapabilityOptions.commandBot(),
       CapabilityOptions.workflowBot(inputs),
@@ -438,7 +433,7 @@ export class CapabilityOptions {
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     const capabilities = [
       ...CapabilityOptions.copilotPlugins(),
-      ...CapabilityOptions.bots(inputs, true),
+      ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),
@@ -488,7 +483,7 @@ export class CapabilityOptions {
   static customCopilots(): OptionItem[] {
     return [
       CapabilityOptions.customCopilotBasic(),
-      CapabilityOptions.customCopilotRag(),
+      // CapabilityOptions.customCopilotRag(),
       CapabilityOptions.customCopilotAssistant(),
     ];
   }
@@ -507,7 +502,7 @@ export class CapabilityOptions {
    */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
-      ...CapabilityOptions.bots(inputs, true),
+      ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.copilotPlugins(),
@@ -540,7 +535,7 @@ export class CapabilityOptions {
    */
   static all(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
-      ...CapabilityOptions.bots(inputs, true),
+      ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.officeAddinItems(),
@@ -548,9 +543,7 @@ export class CapabilityOptions {
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
-    if (isCustomCopilotEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.customCopilots());
-    }
+    capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (isTdpTemplateCliTestEnabled()) {
       // test templates that are used by TDP integration only
       capabilityOptions.push(...CapabilityOptions.tdpIntegrationCapabilities());
@@ -766,7 +759,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
       const projectType = inputs[QuestionNames.ProjectType];
       const officeHost = inputs[QuestionNames.OfficeAddinCapability];
       if (projectType === ProjectTypeOptions.bot().id) {
-        return CapabilityOptions.bots(inputs, true);
+        return CapabilityOptions.bots(inputs);
       } else if (projectType === ProjectTypeOptions.tab().id) {
         return CapabilityOptions.tabs();
       } else if (projectType === ProjectTypeOptions.me().id) {
@@ -2250,6 +2243,7 @@ export function capabilitySubTree(): IQTreeNode {
         },
         data: apiMessageExtensionAuthQuestion(),
       },
+      /*
       {
         condition: (inputs: Inputs) => {
           return inputs[QuestionNames.Capabilities] == CapabilityOptions.customCopilotRag().id;
@@ -2274,6 +2268,7 @@ export function capabilitySubTree(): IQTreeNode {
           },
         ],
       },
+      */
       {
         condition: (inputs: Inputs) => {
           return (

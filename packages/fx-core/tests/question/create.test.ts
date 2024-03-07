@@ -541,7 +541,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.officeAddin().id });
         } else if (question.name === QuestionNames.OfficeAddinCapability) {
           const select = question as SingleSelectQuestion;

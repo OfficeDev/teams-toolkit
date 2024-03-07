@@ -59,7 +59,7 @@
     "teamstoolkit.commands.accountsLink.title": "Learn More About Accounts",
     "teamstoolkit.commands.addAppOwner.title": "Add Microsoft 365 Teams App (with Microsoft Entra App) Owners",
     "teamstoolkit.commands.azureAccountSettings.title": "Azure Portal",
-    "teamstoolkit.commands.azureAccount.signOutHelp": "Azure account Sign Out has been moved to the Accounts section on the bottom left panel. To sign out Azure, hover on your Azure account email address and click Sign Out.",
+    "teamstoolkit.commands.azureAccount.signOutHelp": "Azure account Sign Out is moved to the Accounts section on the bottom left panel. To sign out of Azure, hover on your Azure account email and click Sign Out.",
     "teamstoolkit.commands.createAccount.azure": "Create an Azure account",
     "teamstoolkit.commands.createAccount.free": "Free",
     "teamstoolkit.commands.createAccount.m365": "Create a Microsoft 365 developer sandbox",

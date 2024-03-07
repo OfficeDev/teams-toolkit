@@ -20,6 +20,12 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: ["node", "dotnet"],
   },
   {
+    name: "addin-office-capability",
+    type: "string",
+    description: "Select to create an Outlook, Word, Excel, or PowerPoint Add-in",
+    choices: ["outlook-addin-type", "word", "excel", "powerpoint"],
+  },
+  {
     name: "capability",
     questionName: "capabilities",
     type: "string",
@@ -28,8 +34,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     required: true,
     choices: [
       "bot",
-      "ai-bot",
-      "ai-assistant-bot",
       "notification",
       "command-bot",
       "workflow-bot",
@@ -44,7 +48,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "copilot-plugin-new-api",
       "copilot-plugin-existing-api",
       "custom-copilot-basic",
-      "custom-copilot-rag",
       "custom-copilot-assistant",
       "message-extension",
       "BotAndMessageExtension",
@@ -135,21 +138,9 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: ["none", "api-key"],
   },
   {
-    name: "custom-copilot-rag",
-    type: "string",
-    description: "Chat With Your Data",
-    default: "custom-copilot-rag-customize",
-    choices: [
-      "custom-copilot-rag-customize",
-      "custom-copilot-rag-azureAISearch",
-      "custom-copilot-rag-customApi",
-      "custom-copilot-rag-microsoft365",
-    ],
-  },
-  {
     name: "custom-copilot-assistant",
     type: "string",
-    description: "AI Assistant",
+    description: "AI Agent",
     default: "custom-copilot-assistant-new",
     choices: ["custom-copilot-assistant-new", "custom-copilot-assistant-assistantsApi"],
   },

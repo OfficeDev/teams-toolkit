@@ -187,6 +187,7 @@ export interface ParseOptions {
   allowAPIKeyAuth?: boolean;
   allowMultipleParameters?: boolean;
   allowOauth2?: boolean;
+  isCopilot?: boolean;
 }
 
 export interface APIInfo {

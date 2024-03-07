@@ -28,9 +28,10 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
-import { getTemplate } from "../../../question/create";
+import { ProjectTypeOptions, getTemplate } from "../../../question/create";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
+import { isOfficeXMLAddinEnabled } from "../../../common/featureFlags";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -84,7 +85,11 @@ export class OfficeAddinGenerator {
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
     const language = inputs[QuestionNames.ProgrammingLanguage];
-    const host = inputs[QuestionNames.OfficeAddinHost];
+    const host = isOfficeXMLAddinEnabled()
+      ? inputs[QuestionNames.OfficeAddinCapability] === ProjectTypeOptions.outlookAddin().id
+        ? "Outlook"
+        : inputs[QuestionNames.OfficeAddinCapability]
+      : inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
     const importProgress = context.userInteraction.createProgressBar(
       getLocalizedString("core.generator.officeAddin.importProject.title"),

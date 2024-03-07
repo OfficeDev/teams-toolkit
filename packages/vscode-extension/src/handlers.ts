@@ -69,6 +69,7 @@ import {
   globalStateUpdate,
   isUserCancelError,
   isValidProject,
+  isValidOfficeAddInProject,
   pathUtils,
   setRegion,
   manifestUtils,
@@ -138,6 +139,7 @@ import {
   openTestToolMessage,
   RecommendedOperations,
 } from "./debug/constants";
+import { openOfficeDevFolder } from "./officeDevHandlers";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -373,7 +375,11 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
   // show local debug button by default
-  await openFolder(projectPathUri, true, res.warnings, args);
+  if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
+    await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
+  } else {
+    await openFolder(projectPathUri, true, res.warnings, args);
+  }
   return result;
 }
 
@@ -1269,7 +1275,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
 
 export async function openReadMeHandler(args: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickOpenReadMe, getTriggerFromProperty(args));
-  if (!globalVariables.isTeamsFxProject) {
+  if (!globalVariables.isTeamsFxProject && !globalVariables.isOfficeAddInProject) {
     const createProject = {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {
@@ -1404,7 +1410,7 @@ export async function showLocalDebugMessage() {
   });
 }
 
-async function ShowScaffoldingWarningSummary(
+export async function ShowScaffoldingWarningSummary(
   workspacePath: string,
   warning: string
 ): Promise<void> {

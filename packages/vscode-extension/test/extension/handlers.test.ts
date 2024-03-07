@@ -270,6 +270,7 @@ describe("handlers", () => {
   it("updateAutoOpenGlobalKey", async () => {
     sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
     sandbox.stub(globalVariables, "checkIsSPFx").returns(true);
+    sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(false);
     const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
     await handlers.updateAutoOpenGlobalKey(false, vscode.Uri.file("test"), [

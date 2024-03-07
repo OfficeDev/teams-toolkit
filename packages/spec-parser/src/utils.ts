@@ -19,7 +19,22 @@ import {
 import { IMessagingExtensionCommand } from "@microsoft/teams-manifest";
 
 export class Utils {
-  static checkParameters(paramObject: OpenAPIV3.ParameterObject[]): CheckParamResult {
+  static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
+    if (schema.type === "object") {
+      for (const property in schema.properties) {
+        const nestedSchema = schema.properties[property] as OpenAPIV3.SchemaObject;
+        if (nestedSchema.type === "object") {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  static checkParameters(
+    paramObject: OpenAPIV3.ParameterObject[],
+    isCopilot: boolean
+  ): CheckParamResult {
     const paramResult = {
       requiredNum: 0,
       optionalNum: 0,
@@ -33,7 +48,22 @@ export class Utils {
     for (let i = 0; i < paramObject.length; i++) {
       const param = paramObject[i];
       const schema = param.schema as OpenAPIV3.SchemaObject;
+
+      if (isCopilot && this.hasNestedObjectInSchema(schema)) {
+        paramResult.isValid = false;
+        continue;
+      }
+
       const isRequiredWithoutDefault = param.required && schema.default === undefined;
+
+      if (isCopilot) {
+        if (isRequiredWithoutDefault) {
+          paramResult.requiredNum = paramResult.requiredNum + 1;
+        } else {
+          paramResult.optionalNum = paramResult.optionalNum + 1;
+        }
+        continue;
+      }
 
       if (param.in === "header" || param.in === "cookie") {
         if (isRequiredWithoutDefault) {
@@ -66,7 +96,11 @@ export class Utils {
     return paramResult;
   }
 
-  static checkPostBody(schema: OpenAPIV3.SchemaObject, isRequired = false): CheckParamResult {
+  static checkPostBody(
+    schema: OpenAPIV3.SchemaObject,
+    isRequired = false,
+    isCopilot = false
+  ): CheckParamResult {
     const paramResult = {
       requiredNum: 0,
       optionalNum: 0,
@@ -78,6 +112,11 @@ export class Utils {
     }
 
     const isRequiredWithoutDefault = isRequired && schema.default === undefined;
+
+    if (isCopilot && this.hasNestedObjectInSchema(schema)) {
+      paramResult.isValid = false;
+      return paramResult;
+    }
 
     if (
       schema.type === "string" ||
@@ -99,14 +138,15 @@ export class Utils {
         }
         const result = Utils.checkPostBody(
           properties[property] as OpenAPIV3.SchemaObject,
-          isRequired
+          isRequired,
+          isCopilot
         );
         paramResult.requiredNum += result.requiredNum;
         paramResult.optionalNum += result.optionalNum;
         paramResult.isValid = paramResult.isValid && result.isValid;
       }
     } else {
-      if (isRequiredWithoutDefault) {
+      if (isRequiredWithoutDefault && !isCopilot) {
         paramResult.isValid = false;
       }
     }
@@ -134,7 +174,8 @@ export class Utils {
     allowMissingId: boolean,
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
-    allowOauth2: boolean
+    allowOauth2: boolean,
+    isCopilot: boolean
   ): boolean {
     const pathObj = spec.paths[path];
     method = method.toLocaleLowerCase();
@@ -176,17 +217,31 @@ export class Utils {
 
         if (requestJsonBody) {
           const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-          requestBodyParamResult = Utils.checkPostBody(requestBodySchema, requestBody.required);
+
+          if (isCopilot && requestBodySchema.type !== "object") {
+            return false;
+          }
+
+          requestBodyParamResult = Utils.checkPostBody(
+            requestBodySchema,
+            requestBody.required,
+            isCopilot
+          );
         }
 
         if (!requestBodyParamResult.isValid) {
           return false;
         }
 
-        const paramResult = Utils.checkParameters(paramObject);
+        const paramResult = Utils.checkParameters(paramObject, isCopilot);
 
         if (!paramResult.isValid) {
           return false;
+        }
+
+        // Copilot support arbitrary parameters
+        if (isCopilot) {
+          return true;
         }
 
         if (requestBodyParamResult.requiredNum + paramResult.requiredNum > 1) {
@@ -399,7 +454,8 @@ export class Utils {
     allowMissingId: boolean,
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
-    allowOauth2: boolean
+    allowOauth2: boolean,
+    isCopilot: boolean
   ): ErrorResult[] {
     const errors: ErrorResult[] = [];
 
@@ -435,7 +491,8 @@ export class Utils {
             allowMissingId,
             allowAPIKeyAuth,
             allowMultipleParameters,
-            allowOauth2
+            allowOauth2,
+            isCopilot
           )
         ) {
           if (operationObject?.servers && operationObject.servers.length >= 1) {
@@ -631,7 +688,8 @@ export class Utils {
     allowMissingId: boolean,
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
-    allowOauth2: boolean
+    allowOauth2: boolean,
+    isCopilot: boolean
   ): {
     [key: string]: OpenAPIV3.OperationObject;
   } {
@@ -649,7 +707,8 @@ export class Utils {
             allowMissingId,
             allowAPIKeyAuth,
             allowMultipleParameters,
-            allowOauth2
+            allowOauth2,
+            isCopilot
           )
         ) {
           const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
@@ -667,7 +726,8 @@ export class Utils {
     allowMissingId: boolean,
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
-    allowOauth2: boolean
+    allowOauth2: boolean,
+    isCopilot: boolean
   ): ValidateResult {
     const errors: ErrorResult[] = [];
     const warnings: WarningResult[] = [];
@@ -685,7 +745,8 @@ export class Utils {
       allowMissingId,
       allowAPIKeyAuth,
       allowMultipleParameters,
-      allowOauth2
+      allowOauth2,
+      isCopilot
     );
     errors.push(...serverErrors);
 
@@ -707,7 +768,8 @@ export class Utils {
       allowMissingId,
       allowAPIKeyAuth,
       allowMultipleParameters,
-      allowOauth2
+      allowOauth2,
+      isCopilot
     );
     if (Object.keys(apiMap).length === 0) {
       errors.push({

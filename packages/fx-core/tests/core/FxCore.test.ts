@@ -1442,7 +1442,6 @@ describe("isEnvFile", async () => {
       mockedEnvRestore = mockedEnv({
         TEAMSFX_CLI_DOTNET: "false",
         [FeatureFlagName.CopilotPlugin]: "false",
-        [FeatureFlagName.CustomCopilot]: "false",
       });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -1452,6 +1451,7 @@ describe("isEnvFile", async () => {
         const names: string[] = [];
         collectNodeNames(node!, names);
         assert.deepEqual(names, [
+          "addin-office-capability",
           "capabilities",
           "bot-host-type-trigger",
           "spfx-solution",
@@ -1463,9 +1463,9 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
-          "custom-copilot-rag",
-          "openapi-spec-location",
-          "api-operation",
+          // "custom-copilot-rag",
+          // "openapi-spec-location",
+          // "api-operation",
           "custom-copilot-assistant",
           "programming-language",
           "llm-service",
@@ -1491,6 +1491,7 @@ describe("isEnvFile", async () => {
         collectNodeNames(node!, names);
         assert.deepEqual(names, [
           "runtime",
+          "addin-office-capability",
           "capabilities",
           "bot-host-type-trigger",
           "spfx-solution",
@@ -1502,9 +1503,9 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
-          "custom-copilot-rag",
-          "openapi-spec-location",
-          "api-operation",
+          // "custom-copilot-rag",
+          // "openapi-spec-location",
+          // "api-operation",
           "custom-copilot-assistant",
           "programming-language",
           "llm-service",
@@ -1530,6 +1531,7 @@ describe("isEnvFile", async () => {
         const names: string[] = [];
         collectNodeNames(node!, names);
         assert.deepEqual(names, [
+          "addin-office-capability",
           "capabilities",
           "bot-host-type-trigger",
           "spfx-solution",
@@ -1541,9 +1543,9 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
-          "custom-copilot-rag",
-          "openapi-spec-location",
-          "api-operation",
+          // "custom-copilot-rag",
+          // "openapi-spec-location",
+          // "api-operation",
           "custom-copilot-assistant",
           "programming-language",
           "llm-service",
@@ -1570,6 +1572,7 @@ describe("isEnvFile", async () => {
         const names: string[] = [];
         collectNodeNames(node!, names);
         assert.deepEqual(names, [
+          "addin-office-capability",
           "capabilities",
           "bot-host-type-trigger",
           "spfx-solution",
@@ -1581,9 +1584,9 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
-          "custom-copilot-rag",
-          "openapi-spec-location",
-          "api-operation",
+          // "custom-copilot-rag",
+          // "openapi-spec-location",
+          // "api-operation",
           "custom-copilot-assistant",
           "programming-language",
           "llm-service",

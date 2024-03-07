@@ -17,7 +17,7 @@ import { getDefaultString, localize } from "../../utils/localizeUtils";
 import * as commonUtils from "../commonUtils";
 import { sendDebugAllEvent } from "../localTelemetryReporter";
 
-const ControlCodes = {
+export const ControlCodes = {
   CtrlC: "\u0003",
 };
 
@@ -29,7 +29,7 @@ export abstract class BaseTaskTerminal implements vscode.Pseudoterminal {
   protected readonly taskTerminalId: string;
   protected startTime: number | undefined;
 
-  constructor(private taskDefinition: vscode.TaskDefinition) {
+  constructor(private taskDefinition?: vscode.TaskDefinition) {
     this.taskTerminalId = uuidv4();
   }
 

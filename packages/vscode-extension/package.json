@@ -58,7 +58,8 @@
     "workspaceContains:teamsapp.yml",
     "onView:teamsfx-empty-project",
     "onUri",
-    "workspaceContains:/**/manifest.json"
+    "workspaceContains:/**/manifest.json",
+    "workspaceContains:/manifest*.xml"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -196,12 +197,33 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn"
+        },
+        {
+          "id": "teamsfx-officedev-development",
+          "name": "Development",
+          "when": "fx-extension.isOfficeAddIn"
+        },
+        {
+          "id": "teamsfx-officedev-lifecycle",
+          "name": "Lifecycle",
+          "when": "fx-extension.isOfficeAddIn"
+        },
+        {
+          "id": "teamsfx-officedev-utility",
+          "name": "Utility",
+          "when": "fx-extension.isOfficeAddIn"
+        },
+        {
+          "id": "teamsfx-officedev-help-and-feedback",
+          "name": "Help and feedback",
+          "when": "fx-extension.isOfficeAddIn",
+          "visibility": "visible"
         }
       ]
     },
@@ -245,6 +267,21 @@
         {
           "command": "fx-extension.openHelpFeedbackLink",
           "when": "view == teamsfx-help-and-feedback",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openOfficeDevDevelopmentLink",
+          "when": "view == teamsfx-officedev-development",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openOfficeDevLifecycleLink",
+          "when": "view == teamsfx-officedev-lifecycle",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openOfficeDevHelpFeedbackLink",
+          "when": "view == teamsfx-officedev-help-and-feedback",
           "group": "navigation@1"
         }
       ],
@@ -489,6 +526,18 @@
         },
         {
           "command": "fx-extension.openSurvey",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openOfficeDevLifecycleLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openOfficeDevDevelopmentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openOfficeDevHelpFeedbackLink",
           "when": "false"
         }
       ]
@@ -791,6 +840,21 @@
         "title": "%teamstoolkit.commmands.addWebpart.title%",
         "enablement": "fx-extension.isTeamsFx && isWorkspaceTrusted && !fx-extension.commandLocked",
         "category": "Teams"
+      },
+      {
+        "command": "fx-extension.openOfficeDevLifecycleLink",
+        "title": "%teamstoolkit.commands.lifecycleLink.title%",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openOfficeDevDevelopmentLink",
+        "title": "%teamstoolkit.commands.developmentLink.title%",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openOfficeDevHelpFeedbackLink",
+        "title": "%teamstoolkit.commands.feedbackLink.title%",
+        "icon": "$(info)"
       }
     ],
     "taskDefinitions": [

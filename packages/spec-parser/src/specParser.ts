@@ -14,6 +14,7 @@ import {
   GenerateResult,
   ListAPIResult,
   ParseOptions,
+  ProjectType,
   ValidateResult,
   ValidationStatus,
   WarningType,
@@ -45,7 +46,7 @@ export class SpecParser {
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
-    isCopilot: false,
+    projectType: ProjectType.SME,
   };
 
   /**
@@ -98,7 +99,7 @@ export class SpecParser {
         this.options.allowAPIKeyAuth,
         this.options.allowMultipleParameters,
         this.options.allowOauth2,
-        this.options.isCopilot
+        this.options.projectType
       );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -197,7 +198,7 @@ export class SpecParser {
         this.options.allowAPIKeyAuth,
         this.options.allowMultipleParameters,
         this.options.allowOauth2,
-        this.options.isCopilot
+        this.options.projectType
       );
 
       if (signal?.aborted) {
@@ -275,15 +276,13 @@ export class SpecParser {
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
    * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
    * @param adaptiveCardFolder Folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
-   * @param isMe Boolean that indicates whether the project is an Messaging Extension. For Messaging Extension, composeExtensions will be added in Teams app manifest.
    */
   async generate(
     manifestPath: string,
     filter: string[],
     outputSpecPath: string,
-    adaptiveCardFolder: string,
-    signal?: AbortSignal,
-    isMe?: boolean
+    adaptiveCardFolder?: string,
+    signal?: AbortSignal
   ): Promise<GenerateResult> {
     const result: GenerateResult = {
       allSuccess: true,
@@ -328,7 +327,7 @@ export class SpecParser {
       }
       await fs.outputFile(outputSpecPath, resultStr);
 
-      if (isMe === undefined || isMe === true) {
+      if (adaptiveCardFolder) {
         // Only generate adaptive card for Messaging Extension
         for (const url in newSpec.paths) {
           for (const method in newSpec.paths[url]) {
@@ -366,11 +365,11 @@ export class SpecParser {
       const [updatedManifest, warnings] = await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
-        adaptiveCardFolder,
         newSpec,
         this.options.allowMultipleParameters,
-        auth,
-        isMe
+        this.options.projectType,
+        adaptiveCardFolder,
+        auth
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
@@ -413,7 +412,7 @@ export class SpecParser {
       this.options.allowAPIKeyAuth,
       this.options.allowMultipleParameters,
       this.options.allowOauth2,
-      this.options.isCopilot
+      this.options.projectType
     );
     this.apiMap = result;
     return result;

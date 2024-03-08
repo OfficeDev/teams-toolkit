@@ -13,6 +13,7 @@ import {
   ValidationStatus,
   Parameter,
   ListAPIResult,
+  ProjectType,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { Utils } from "./utils";
@@ -37,7 +38,7 @@ export class SpecParser {
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
-    isCopilot: false,
+    projectType: ProjectType.SME,
   };
 
   /**
@@ -94,7 +95,7 @@ export class SpecParser {
         this.options.allowAPIKeyAuth,
         this.options.allowMultipleParameters,
         this.options.allowOauth2,
-        this.options.isCopilot
+        this.options.projectType
       );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -195,9 +196,8 @@ export class SpecParser {
     manifestPath: string,
     filter: string[],
     outputSpecPath: string,
-    adaptiveCardFolder: string,
-    signal?: AbortSignal,
-    isMe?: boolean
+    adaptiveCardFolder?: string,
+    signal?: AbortSignal
   ): Promise<GenerateResult> {
     throw new Error("Method not implemented.");
   }
@@ -226,7 +226,7 @@ export class SpecParser {
       this.options.allowAPIKeyAuth,
       this.options.allowMultipleParameters,
       this.options.allowOauth2,
-      this.options.isCopilot
+      this.options.projectType
     );
     this.apiMap = result;
     return result;

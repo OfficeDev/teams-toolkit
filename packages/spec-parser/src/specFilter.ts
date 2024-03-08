@@ -5,7 +5,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { Utils } from "./utils";
 import { SpecParserError } from "./specParserError";
-import { ErrorType } from "./interfaces";
+import { ErrorType, ProjectType } from "./interfaces";
 import { ConstantString } from "./constants";
 
 export class SpecFilter {
@@ -17,7 +17,7 @@ export class SpecFilter {
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
     allowOauth2: boolean,
-    isCopilot: boolean
+    projectType: ProjectType
   ): OpenAPIV3.Document {
     try {
       const newSpec = { ...unResolveSpec };
@@ -35,7 +35,7 @@ export class SpecFilter {
             allowAPIKeyAuth,
             allowMultipleParameters,
             allowOauth2,
-            isCopilot
+            projectType
           )
         ) {
           continue;

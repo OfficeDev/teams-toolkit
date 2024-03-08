@@ -11,6 +11,7 @@ import {
   ErrorResult,
   ErrorType,
   Parameter,
+  ProjectType,
   ValidateResult,
   ValidationStatus,
   WarningResult,
@@ -175,7 +176,7 @@ export class Utils {
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
     allowOauth2: boolean,
-    isCopilot: boolean
+    projectType: ProjectType
   ): boolean {
     const pathObj = spec.paths[path];
     method = method.toLocaleLowerCase();
@@ -214,6 +215,8 @@ export class Utils {
           optionalNum: 0,
           isValid: true,
         };
+
+        const isCopilot = projectType === ProjectType.Copilot;
 
         if (requestJsonBody) {
           const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
@@ -455,7 +458,7 @@ export class Utils {
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
     allowOauth2: boolean,
-    isCopilot: boolean
+    projectType: ProjectType
   ): ErrorResult[] {
     const errors: ErrorResult[] = [];
 
@@ -492,7 +495,7 @@ export class Utils {
             allowAPIKeyAuth,
             allowMultipleParameters,
             allowOauth2,
-            isCopilot
+            projectType
           )
         ) {
           if (operationObject?.servers && operationObject.servers.length >= 1) {
@@ -689,7 +692,7 @@ export class Utils {
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
     allowOauth2: boolean,
-    isCopilot: boolean
+    projectType: ProjectType
   ): {
     [key: string]: OpenAPIV3.OperationObject;
   } {
@@ -708,7 +711,7 @@ export class Utils {
             allowAPIKeyAuth,
             allowMultipleParameters,
             allowOauth2,
-            isCopilot
+            projectType
           )
         ) {
           const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
@@ -727,7 +730,7 @@ export class Utils {
     allowAPIKeyAuth: boolean,
     allowMultipleParameters: boolean,
     allowOauth2: boolean,
-    isCopilot: boolean
+    projectType: ProjectType
   ): ValidateResult {
     const errors: ErrorResult[] = [];
     const warnings: WarningResult[] = [];
@@ -746,7 +749,7 @@ export class Utils {
       allowAPIKeyAuth,
       allowMultipleParameters,
       allowOauth2,
-      isCopilot
+      projectType
     );
     errors.push(...serverErrors);
 
@@ -769,7 +772,7 @@ export class Utils {
       allowAPIKeyAuth,
       allowMultipleParameters,
       allowOauth2,
-      isCopilot
+      projectType
     );
     if (Object.keys(apiMap).length === 0) {
       errors.push({

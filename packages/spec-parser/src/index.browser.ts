@@ -12,6 +12,7 @@ export type {
   WarningResult,
   ParseOptions,
   AdaptiveCard,
+  ProjectType,
 } from "./interfaces";
 export { ConstantString } from "./constants";
 export { Utils } from "./utils";

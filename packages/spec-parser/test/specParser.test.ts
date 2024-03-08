@@ -7,7 +7,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import converter from "swagger2openapi";
 import { SpecParser } from "../src/specParser";
-import { ErrorType, ValidationStatus, WarningType } from "../src/interfaces";
+import { ErrorType, ProjectType, ValidationStatus, WarningType } from "../src/interfaces";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";
@@ -1083,8 +1083,8 @@ describe("SpecParser", () => {
       expect(outputJSONStub.calledThrice).to.be.true;
     });
 
-    it("should works fine if paths object contains description for bot project", async () => {
-      const specParser = new SpecParser("path/to/spec.yaml");
+    it("should works fine if paths object contains description for teams ai project", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml", { projectType: ProjectType.TeamsAi });
       const spec = {
         openapi: "3.0.0",
         paths: {
@@ -1142,14 +1142,7 @@ describe("SpecParser", () => {
       const filter = ["get /hello"];
 
       const outputSpecPath = "path/to/output.yaml";
-      const result = await specParser.generate(
-        "path/to/manifest.json",
-        filter,
-        outputSpecPath,
-        "path/to/adaptiveCardFolder",
-        undefined,
-        false
-      );
+      const result = await specParser.generate("path/to/manifest.json", filter, outputSpecPath);
 
       expect(result.allSuccess).to.be.true;
       expect(JsyamlSpy.calledOnce).to.be.true;

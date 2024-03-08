@@ -6,7 +6,7 @@ import "mocha";
 import { Utils } from "../src/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../src/constants";
-import { ErrorType } from "../src/interfaces";
+import { ErrorType, ProjectType } from "../src/interfaces";
 
 describe("utils", () => {
   describe("updateFirstLetter", () => {
@@ -108,7 +108,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -155,7 +155,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -216,7 +216,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -297,7 +297,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -378,7 +378,7 @@ describe("utils", () => {
         true,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -460,7 +460,7 @@ describe("utils", () => {
         true,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -543,7 +543,7 @@ describe("utils", () => {
         false,
         false,
         true,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -631,7 +631,7 @@ describe("utils", () => {
         true,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -719,7 +719,7 @@ describe("utils", () => {
         true,
         false,
         true,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -781,7 +781,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -843,7 +843,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -905,7 +905,7 @@ describe("utils", () => {
         false,
         true,
         false,
-        true
+        ProjectType.Copilot
       );
       assert.strictEqual(result, true);
     });
@@ -967,7 +967,7 @@ describe("utils", () => {
         false,
         true,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -1037,7 +1037,7 @@ describe("utils", () => {
         false,
         true,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1107,7 +1107,7 @@ describe("utils", () => {
         false,
         true,
         false,
-        true
+        ProjectType.Copilot
       );
       assert.strictEqual(result, true);
     });
@@ -1172,7 +1172,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1238,7 +1238,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -1307,7 +1307,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        true
+        ProjectType.Copilot
       );
       assert.strictEqual(result, false);
     });
@@ -1374,7 +1374,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        true
+        ProjectType.Copilot
       );
       assert.strictEqual(result, false);
     });
@@ -1421,7 +1421,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, true);
     });
@@ -1468,7 +1468,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1514,7 +1514,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1560,7 +1560,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1607,7 +1607,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1654,7 +1654,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1701,7 +1701,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1752,7 +1752,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        true
+        ProjectType.Copilot
       );
       assert.strictEqual(result, true);
     });
@@ -1788,7 +1788,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1824,7 +1824,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        true
+        ProjectType.Copilot
       );
       assert.strictEqual(result, true);
     });
@@ -1859,7 +1859,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1900,7 +1900,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -1973,7 +1973,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -2022,7 +2022,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        true
+        ProjectType.Copilot
       );
       assert.strictEqual(result, false);
     });
@@ -2079,7 +2079,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.strictEqual(result, false);
     });
@@ -2384,7 +2384,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.deepStrictEqual(errors, [
         {
@@ -2404,7 +2404,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, ProjectType.SME);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -2424,7 +2424,7 @@ describe("utils", () => {
         false,
         false,
         false,
-        false
+        ProjectType.SME
       );
       assert.deepStrictEqual(errors, []);
     });
@@ -2437,7 +2437,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, ProjectType.SME);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -2469,7 +2469,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, ProjectType.SME);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -2503,7 +2503,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, ProjectType.SME);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -2537,7 +2537,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, ProjectType.SME);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.RelativeServerUrlNotSupported,

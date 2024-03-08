@@ -8,7 +8,7 @@ import os from "os";
 import "mocha";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { SpecParserError } from "../src/specParserError";
-import { ErrorType, WarningType } from "../src/interfaces";
+import { ErrorType, ProjectType, WarningType } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 import { Utils } from "../src/utils";
 import { PluginManifestSchema } from "@microsoft/teams-manifest";
@@ -734,9 +734,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      false
+      false,
+      ProjectType.SME,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -887,9 +888,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      true
+      true,
+      ProjectType.SME,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -987,9 +989,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      true
+      true,
+      ProjectType.SME,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1072,9 +1075,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      true
+      true,
+      ProjectType.SME,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1138,9 +1142,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
       false,
+      ProjectType.SME,
+      adaptiveCardFolder,
       apiKeyAuth
     );
 
@@ -1216,9 +1221,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
       false,
+      ProjectType.SME,
+      adaptiveCardFolder,
       oauth2
     );
 
@@ -1276,9 +1282,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
       false,
+      ProjectType.SME,
+      adaptiveCardFolder,
       basicAuth
     );
 
@@ -1343,9 +1350,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
       false,
+      ProjectType.SME,
+      adaptiveCardFolder,
       apiKeyAuth
     );
 
@@ -1434,9 +1442,10 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      false
+      false,
+      ProjectType.SME,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1459,9 +1468,10 @@ describe("manifestUpdater", () => {
       await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
-        adaptiveCardFolder,
         spec,
-        false
+        false,
+        ProjectType.SME,
+        adaptiveCardFolder
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
@@ -1529,12 +1539,13 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       {
         ...spec,
         info: { title: "My API" },
       },
-      false
+      false,
+      ProjectType.SME,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1596,12 +1607,13 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       {
         ...spec,
         info: { title: "My API" },
       },
-      false
+      false,
+      ProjectType.SME,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1609,7 +1621,7 @@ describe("manifestUpdater", () => {
     readJSONStub.restore();
   });
 
-  it("should not update manifest if is not me", async () => {
+  it("should not update manifest if project type is Teams AI", async () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
     const adaptiveCardFolder = "/path/to/your/adaptiveCards";
@@ -1629,11 +1641,9 @@ describe("manifestUpdater", () => {
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
       false,
-      undefined,
-      false
+      ProjectType.TeamsAi
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1775,9 +1785,9 @@ describe("generateCommands", () => {
 
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      false,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);
@@ -1830,9 +1840,9 @@ describe("generateCommands", () => {
 
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      false,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);
@@ -1878,9 +1888,9 @@ describe("generateCommands", () => {
 
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      false,
+      adaptiveCardFolder
     );
     expect(result).to.deep.equal([
       {
@@ -1960,9 +1970,9 @@ describe("generateCommands", () => {
 
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      false,
+      adaptiveCardFolder
     );
     expect(result).to.deep.equal([
       {
@@ -2019,9 +2029,9 @@ describe("generateCommands", () => {
 
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      false,
+      adaptiveCardFolder
     );
     expect(result).to.deep.equal([
       {
@@ -2089,9 +2099,9 @@ describe("generateCommands", () => {
 
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      false,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);
@@ -2145,9 +2155,9 @@ describe("generateCommands", () => {
 
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      false,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);
@@ -2204,9 +2214,9 @@ describe("generateCommands", () => {
 
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      false,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);

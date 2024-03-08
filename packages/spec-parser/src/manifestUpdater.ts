@@ -5,7 +5,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import fs from "fs-extra";
 import path from "path";
-import { ErrorType, WarningResult } from "./interfaces";
+import { ErrorType, ProjectType, WarningResult } from "./interfaces";
 import { Utils } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
@@ -195,57 +195,66 @@ export class ManifestUpdater {
   static async updateManifest(
     manifestPath: string,
     outputSpecPath: string,
-    adaptiveCardFolder: string,
     spec: OpenAPIV3.Document,
     allowMultipleParameters: boolean,
-    auth?: OpenAPIV3.SecuritySchemeObject,
-    isMe?: boolean
+    projectType: ProjectType,
+    adaptiveCardFolder?: string,
+    auth?: OpenAPIV3.SecuritySchemeObject
   ): Promise<[TeamsAppManifest, WarningResult[]]> {
     try {
       const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
       const updatedPart: any = {};
-      const [commands, warnings] = await ManifestUpdater.generateCommands(
-        spec,
-        adaptiveCardFolder,
-        manifestPath,
-        allowMultipleParameters
-      );
-      const composeExtension: IComposeExtension = {
-        composeExtensionType: "apiBased",
-        apiSpecificationFile: ManifestUpdater.getRelativePath(manifestPath, outputSpecPath),
-        commands: commands,
-      };
+      updatedPart.composeExtensions = [];
+      let warnings: WarningResult[] = [];
 
-      if (auth) {
-        if (Utils.isAPIKeyAuth(auth)) {
-          auth = auth as OpenAPIV3.ApiKeySecurityScheme;
-          const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
-            `${auth.name}_${ConstantString.RegistrationIdPostfix}`
-          );
-          (composeExtension as any).authorization = {
-            authType: "apiSecretServiceAuth",
-            apiSecretServiceAuthConfiguration: {
-              apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
-            },
-          };
-        } else if (Utils.isBearerTokenAuth(auth)) {
-          (composeExtension as any).authorization = {
-            authType: "microsoftEntra",
-            microsoftEntraConfiguration: {
-              supportsSingleSignOn: true,
-            },
-          };
+      if (projectType === ProjectType.SME) {
+        const updateResult = await ManifestUpdater.generateCommands(
+          spec,
+          manifestPath,
+          allowMultipleParameters,
+          adaptiveCardFolder
+        );
+        const commands = updateResult[0];
+        warnings = updateResult[1];
 
-          updatedPart.webApplicationInfo = {
-            id: "${{AAD_APP_CLIENT_ID}}",
-            resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
-          };
+        const composeExtension: IComposeExtension = {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: ManifestUpdater.getRelativePath(manifestPath, outputSpecPath),
+          commands: commands,
+        };
+
+        if (auth) {
+          if (Utils.isAPIKeyAuth(auth)) {
+            auth = auth as OpenAPIV3.ApiKeySecurityScheme;
+            const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
+              `${auth.name}_${ConstantString.RegistrationIdPostfix}`
+            );
+            (composeExtension as any).authorization = {
+              authType: "apiSecretServiceAuth",
+              apiSecretServiceAuthConfiguration: {
+                apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
+              },
+            };
+          } else if (Utils.isBearerTokenAuth(auth)) {
+            (composeExtension as any).authorization = {
+              authType: "microsoftEntra",
+              microsoftEntraConfiguration: {
+                supportsSingleSignOn: true,
+              },
+            };
+
+            updatedPart.webApplicationInfo = {
+              id: "${{AAD_APP_CLIENT_ID}}",
+              resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
+            };
+          }
         }
+
+        updatedPart.composeExtensions = [composeExtension];
       }
 
       updatedPart.description = originalManifest.description;
       ManifestUpdater.updateManifestDescription(updatedPart, spec);
-      updatedPart.composeExtensions = isMe === undefined || isMe === true ? [composeExtension] : [];
 
       const updatedManifest = { ...originalManifest, ...updatedPart };
 
@@ -257,9 +266,9 @@ export class ManifestUpdater {
 
   static async generateCommands(
     spec: OpenAPIV3.Document,
-    adaptiveCardFolder: string,
     manifestPath: string,
-    allowMultipleParameters: boolean
+    allowMultipleParameters: boolean,
+    adaptiveCardFolder?: string
   ): Promise<[IMessagingExtensionCommand[], WarningResult[]]> {
     const paths = spec.paths;
     const commands: IMessagingExtensionCommand[] = [];
@@ -280,10 +289,12 @@ export class ManifestUpdater {
                   allowMultipleParameters
                 );
 
-                const adaptiveCardPath = path.join(adaptiveCardFolder, command.id + ".json");
-                command.apiResponseRenderingTemplateFile = (await fs.pathExists(adaptiveCardPath))
-                  ? ManifestUpdater.getRelativePath(manifestPath, adaptiveCardPath)
-                  : "";
+                if (adaptiveCardFolder) {
+                  const adaptiveCardPath = path.join(adaptiveCardFolder, command.id + ".json");
+                  command.apiResponseRenderingTemplateFile = (await fs.pathExists(adaptiveCardPath))
+                    ? ManifestUpdater.getRelativePath(manifestPath, adaptiveCardPath)
+                    : "";
+                }
 
                 if (warning) {
                   warnings.push(warning);

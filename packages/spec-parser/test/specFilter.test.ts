@@ -7,7 +7,7 @@ import { SpecFilter } from "../src/specFilter";
 import { OpenAPIV3 } from "openapi-types";
 import sinon from "sinon";
 import { SpecParserError } from "../src/specParserError";
-import { ErrorType } from "../src/interfaces";
+import { ErrorType, ProjectType } from "../src/interfaces";
 import { Utils } from "../src/utils";
 
 describe("specFilter", () => {
@@ -156,7 +156,7 @@ describe("specFilter", () => {
       false,
       false,
       false,
-      false
+      ProjectType.SME
     );
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
@@ -206,7 +206,7 @@ describe("specFilter", () => {
       false,
       false,
       false,
-      false
+      ProjectType.SME
     );
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
@@ -259,7 +259,7 @@ describe("specFilter", () => {
       false,
       false,
       false,
-      false
+      ProjectType.SME
     );
 
     expect(result).to.deep.equal(expectedSpec);
@@ -343,7 +343,7 @@ describe("specFilter", () => {
       false,
       false,
       false,
-      false
+      ProjectType.SME
     );
 
     expect(result).to.deep.equal(expectedSpec);
@@ -352,7 +352,16 @@ describe("specFilter", () => {
   it("should not filter anything if filter item not exist", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false, false);
+    SpecFilter.specFilter(
+      filter,
+      unResolveSpec,
+      unResolveSpec,
+      true,
+      false,
+      false,
+      false,
+      ProjectType.SME
+    );
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -386,7 +395,7 @@ describe("specFilter", () => {
       false,
       false,
       false,
-      false
+      ProjectType.SME
     );
 
     expect(result).to.deep.equal(expectedSpec);
@@ -395,7 +404,16 @@ describe("specFilter", () => {
   it("should not modify the original OpenAPI spec", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false, false);
+    SpecFilter.specFilter(
+      filter,
+      unResolveSpec,
+      unResolveSpec,
+      true,
+      false,
+      false,
+      false,
+      ProjectType.SME
+    );
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -407,7 +425,16 @@ describe("specFilter", () => {
       .throws(new Error("isSupportedApi error"));
 
     try {
-      SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false, false);
+      SpecFilter.specFilter(
+        filter,
+        unResolveSpec,
+        unResolveSpec,
+        true,
+        false,
+        false,
+        false,
+        ProjectType.SME
+      );
       expect.fail("Expected specFilter to throw a SpecParserError");
     } catch (err: any) {
       expect(err).to.be.instanceOf(SpecParserError);

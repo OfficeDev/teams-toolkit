@@ -187,7 +187,13 @@ export interface ParseOptions {
   allowAPIKeyAuth?: boolean;
   allowMultipleParameters?: boolean;
   allowOauth2?: boolean;
-  isCopilot?: boolean;
+  projectType?: ProjectType;
+}
+
+export enum ProjectType {
+  Copilot,
+  SME,
+  TeamsAi,
 }
 
 export interface APIInfo {

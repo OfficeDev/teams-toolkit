@@ -8,7 +8,7 @@ import os from "os";
 import "mocha";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { SpecParserError } from "../src/specParserError";
-import { ErrorType, ProjectType, WarningType } from "../src/interfaces";
+import { ErrorType, ParseOptions, ProjectType, WarningType } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 import { Utils } from "../src/utils";
 import { PluginManifestSchema } from "@microsoft/teams-manifest";
@@ -138,12 +138,15 @@ describe("updateManifestWithAiPlugin", () => {
       ],
     };
     sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
       pluginFilePath,
-      spec
+      spec,
+      options
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -281,11 +284,15 @@ describe("updateManifestWithAiPlugin", () => {
     };
     sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
       pluginFilePath,
-      spec
+      spec,
+      options
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -344,12 +351,15 @@ describe("updateManifestWithAiPlugin", () => {
       ],
     };
     sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
       pluginFilePath,
-      spec
+      spec,
+      options
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -481,12 +491,15 @@ describe("updateManifestWithAiPlugin", () => {
       ],
     };
     sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
       pluginFilePath,
-      spec
+      spec,
+      options
     );
 
     expect(manifest).to.deep.equal(expectedManifest);
@@ -546,11 +559,15 @@ describe("updateManifestWithAiPlugin", () => {
     const pluginFilePath = "/path/to/your/ai-plugin.json";
 
     try {
+      const options: ParseOptions = {
+        allowMethods: ["get", "post"],
+      };
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
         pluginFilePath,
-        spec
+        spec,
+        options
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
@@ -616,11 +633,15 @@ describe("updateManifestWithAiPlugin", () => {
     const pluginFilePath = "/path/to/your/ai-plugin.json";
 
     try {
+      const options: ParseOptions = {
+        allowMethods: ["get", "post"],
+      };
       await ManifestUpdater.updateManifestWithAiPlugin(
         manifestPath,
         outputSpecPath,
         pluginFilePath,
-        spec
+        spec,
+        options
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
@@ -731,12 +752,17 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      false,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder
     );
 
@@ -885,12 +911,16 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: true,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      true,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder
     );
 
@@ -986,12 +1016,16 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: true,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      true,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder
     );
 
@@ -1072,12 +1106,16 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: true,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      true,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder
     );
 
@@ -1139,12 +1177,17 @@ describe("manifestUpdater", () => {
       name: "api_key_name",
       in: "header",
     };
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      false,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder,
       apiKeyAuth
     );
@@ -1218,12 +1261,16 @@ describe("manifestUpdater", () => {
         },
       },
     };
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      false,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder,
       oauth2
     );
@@ -1279,12 +1326,16 @@ describe("manifestUpdater", () => {
       type: "http" as const,
       scheme: "basic",
     };
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      false,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder,
       basicAuth
     );
@@ -1347,12 +1398,18 @@ describe("manifestUpdater", () => {
       name: "*api-key_name",
       in: "header",
     };
+
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      false,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder,
       apiKeyAuth
     );
@@ -1438,13 +1495,16 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      false,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder
     );
 
@@ -1465,12 +1525,16 @@ describe("manifestUpdater", () => {
     const spec = {} as any;
     const readJSONStub = sinon.stub(fs, "readJSON").rejects(new Error("readJSON error"));
     try {
+      const options: ParseOptions = {
+        allowMultipleParameters: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
       await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
         spec,
-        false,
-        ProjectType.SME,
+        options,
         adaptiveCardFolder
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
@@ -1536,6 +1600,12 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
@@ -1543,8 +1613,7 @@ describe("manifestUpdater", () => {
         ...spec,
         info: { title: "My API" },
       },
-      false,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder
     );
 
@@ -1603,7 +1672,11 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
@@ -1611,8 +1684,7 @@ describe("manifestUpdater", () => {
         ...spec,
         info: { title: "My API" },
       },
-      false,
-      ProjectType.SME,
+      options,
       adaptiveCardFolder
     );
 
@@ -1637,13 +1709,16 @@ describe("manifestUpdater", () => {
       composeExtensions: [],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.TeamsAi,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
       spec,
-      false,
-      ProjectType.TeamsAi
+      options
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1782,11 +1857,14 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getOwnerPets.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       manifestPath,
-      false,
+      options,
       adaptiveCardFolder
     );
 
@@ -1837,11 +1915,14 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       manifestPath,
-      false,
+      options,
       adaptiveCardFolder
     );
 
@@ -1885,11 +1966,14 @@ describe("generateCommands", () => {
       },
     };
     sinon.stub(fs, "pathExists").resolves(true);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       manifestPath,
-      false,
+      options,
       adaptiveCardFolder
     );
     expect(result).to.deep.equal([
@@ -1967,11 +2051,14 @@ describe("generateCommands", () => {
       },
     };
     sinon.stub(fs, "pathExists").resolves(true);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       manifestPath,
-      false,
+      options,
       adaptiveCardFolder
     );
     expect(result).to.deep.equal([
@@ -2026,11 +2113,14 @@ describe("generateCommands", () => {
       },
     };
     sinon.stub(fs, "pathExists").resolves(true);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       manifestPath,
-      false,
+      options,
       adaptiveCardFolder
     );
     expect(result).to.deep.equal([
@@ -2096,11 +2186,14 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       manifestPath,
-      false,
+      options,
       adaptiveCardFolder
     );
 
@@ -2152,11 +2245,14 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       manifestPath,
-      false,
+      options,
       adaptiveCardFolder
     );
 
@@ -2211,11 +2307,14 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
       manifestPath,
-      false,
+      options,
       adaptiveCardFolder
     );
 

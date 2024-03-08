@@ -5,7 +5,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import { Utils } from "./utils";
 import { SpecParserError } from "./specParserError";
-import { ErrorType, ProjectType } from "./interfaces";
+import { ErrorType, ParseOptions } from "./interfaces";
 import { ConstantString } from "./constants";
 
 export class SpecFilter {
@@ -13,11 +13,7 @@ export class SpecFilter {
     filter: string[],
     unResolveSpec: OpenAPIV3.Document,
     resolvedSpec: OpenAPIV3.Document,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean,
-    projectType: ProjectType
+    options: ParseOptions
   ): OpenAPIV3.Document {
     try {
       const newSpec = { ...unResolveSpec };
@@ -26,18 +22,7 @@ export class SpecFilter {
         const [method, path] = filterItem.split(" ");
         const methodName = method.toLowerCase();
 
-        if (
-          !Utils.isSupportedApi(
-            methodName,
-            path,
-            resolvedSpec,
-            allowMissingId,
-            allowAPIKeyAuth,
-            allowMultipleParameters,
-            allowOauth2,
-            projectType
-          )
-        ) {
+        if (!Utils.isSupportedApi(methodName, path, resolvedSpec, options)) {
           continue;
         }
 

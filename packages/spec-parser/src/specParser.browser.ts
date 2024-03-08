@@ -38,6 +38,7 @@ export class SpecParser {
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
+    allowMethods: ["get", "post"],
     projectType: ProjectType.SME,
   };
 
@@ -87,16 +88,7 @@ export class SpecParser {
         };
       }
 
-      return Utils.validateSpec(
-        this.spec!,
-        this.parser,
-        !!this.isSwaggerFile,
-        this.options.allowMissingId,
-        this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters,
-        this.options.allowOauth2,
-        this.options.projectType
-      );
+      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -117,10 +109,7 @@ export class SpecParser {
           continue;
         }
 
-        const [command, warning] = Utils.parseApiInfo(
-          pathObjectItem,
-          this.options.allowMultipleParameters
-        );
+        const [command, warning] = Utils.parseApiInfo(pathObjectItem, this.options);
 
         const apiInfo: APIInfo = {
           method: method,
@@ -220,14 +209,7 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = Utils.listSupportedAPIs(
-      spec,
-      this.options.allowMissingId,
-      this.options.allowAPIKeyAuth,
-      this.options.allowMultipleParameters,
-      this.options.allowOauth2,
-      this.options.projectType
-    );
+    const result = Utils.listSupportedAPIs(spec, this.options);
     this.apiMap = result;
     return result;
   }

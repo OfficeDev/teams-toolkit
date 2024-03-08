@@ -11,6 +11,7 @@ import {
   ErrorResult,
   ErrorType,
   Parameter,
+  ParseOptions,
   ProjectType,
   ValidateResult,
   ValidationStatus,
@@ -172,27 +173,20 @@ export class Utils {
     method: string,
     path: string,
     spec: OpenAPIV3.Document,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean,
-    projectType: ProjectType
+    options: ParseOptions
   ): boolean {
-    const pathObj = spec.paths[path];
+    const pathObj = spec.paths[path] as any;
     method = method.toLocaleLowerCase();
     if (pathObj) {
-      if (
-        (method === ConstantString.PostMethod || method === ConstantString.GetMethod) &&
-        pathObj[method]
-      ) {
-        const securities = pathObj[method]!.security;
+      if (options.allowMethods?.includes(method) && pathObj[method]) {
+        const securities = pathObj[method].security;
         const authArray = Utils.getAuthArray(securities, spec);
-        if (!Utils.isSupportedAuth(authArray, allowAPIKeyAuth, allowOauth2)) {
+        if (!Utils.isSupportedAuth(authArray, options)) {
           return false;
         }
 
         const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
-        if (!allowMissingId && !operationObject.operationId) {
+        if (!options.allowMissingId && !operationObject.operationId) {
           return false;
         }
         const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
@@ -216,7 +210,7 @@ export class Utils {
           isValid: true,
         };
 
-        const isCopilot = projectType === ProjectType.Copilot;
+        const isCopilot = options.projectType === ProjectType.Copilot;
 
         if (requestJsonBody) {
           const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
@@ -249,8 +243,9 @@ export class Utils {
 
         if (requestBodyParamResult.requiredNum + paramResult.requiredNum > 1) {
           if (
-            allowMultipleParameters &&
-            requestBodyParamResult.requiredNum + paramResult.requiredNum <= 5
+            options.allowMultipleParameters &&
+            requestBodyParamResult.requiredNum + paramResult.requiredNum <=
+              ConstantString.SMERequiredParamsMaxNum
           ) {
             return true;
           }
@@ -272,16 +267,12 @@ export class Utils {
     return false;
   }
 
-  static isSupportedAuth(
-    authSchemaArray: AuthSchema[][],
-    allowAPIKeyAuth: boolean,
-    allowOauth2: boolean
-  ): boolean {
+  static isSupportedAuth(authSchemaArray: AuthSchema[][], options: ParseOptions): boolean {
     if (authSchemaArray.length === 0) {
       return true;
     }
 
-    if (allowAPIKeyAuth || allowOauth2) {
+    if (options.allowAPIKeyAuth || options.allowOauth2) {
       // Currently we don't support multiple auth in one operation
       if (authSchemaArray.length > 0 && authSchemaArray.every((auths) => auths.length > 1)) {
         return false;
@@ -289,17 +280,21 @@ export class Utils {
 
       for (const auths of authSchemaArray) {
         if (auths.length === 1) {
-          if (!allowOauth2 && allowAPIKeyAuth && Utils.isAPIKeyAuth(auths[0].authSchema)) {
+          if (
+            !options.allowOauth2 &&
+            options.allowAPIKeyAuth &&
+            Utils.isAPIKeyAuth(auths[0].authSchema)
+          ) {
             return true;
           } else if (
-            !allowAPIKeyAuth &&
-            allowOauth2 &&
+            !options.allowAPIKeyAuth &&
+            options.allowOauth2 &&
             Utils.isBearerTokenAuth(auths[0].authSchema)
           ) {
             return true;
           } else if (
-            allowAPIKeyAuth &&
-            allowOauth2 &&
+            options.allowAPIKeyAuth &&
+            options.allowOauth2 &&
             (Utils.isAPIKeyAuth(auths[0].authSchema) ||
               Utils.isBearerTokenAuth(auths[0].authSchema))
           ) {
@@ -452,14 +447,7 @@ export class Utils {
     return errors;
   }
 
-  static validateServer(
-    spec: OpenAPIV3.Document,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean,
-    projectType: ProjectType
-  ): ErrorResult[] {
+  static validateServer(spec: OpenAPIV3.Document, options: ParseOptions): ErrorResult[] {
     const errors: ErrorResult[] = [];
 
     let hasTopLevelServers = false;
@@ -486,18 +474,7 @@ export class Utils {
 
       for (const method in methods) {
         const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-        if (
-          Utils.isSupportedApi(
-            method,
-            path,
-            spec,
-            allowMissingId,
-            allowAPIKeyAuth,
-            allowMultipleParameters,
-            allowOauth2,
-            projectType
-          )
-        ) {
+        if (Utils.isSupportedApi(method, path, spec, options)) {
           if (operationObject?.servers && operationObject.servers.length >= 1) {
             hasOperationLevelServers = true;
             const serverErrors = Utils.checkServerUrl(operationObject.servers);
@@ -605,7 +582,7 @@ export class Utils {
 
   static parseApiInfo(
     operationItem: OpenAPIV3.OperationObject,
-    allowMultipleParameters: boolean
+    options: ParseOptions
   ): [IMessagingExtensionCommand, WarningResult | undefined] {
     const requiredParams: Parameter[] = [];
     const optionalParams: Parameter[] = [];
@@ -623,7 +600,7 @@ export class Utils {
         };
 
         const schema = param.schema as OpenAPIV3.SchemaObject;
-        if (allowMultipleParameters && schema) {
+        if (options.allowMultipleParameters && schema) {
           Utils.updateParameterWithInputType(schema, parameter);
         }
 
@@ -645,7 +622,7 @@ export class Utils {
         const [requiredP, optionalP] = Utils.generateParametersFromSchema(
           schema,
           "requestBody",
-          allowMultipleParameters,
+          !!options.allowMultipleParameters,
           requestBody.required
         );
         requiredParams.push(...requiredP);
@@ -688,11 +665,7 @@ export class Utils {
 
   static listSupportedAPIs(
     spec: OpenAPIV3.Document,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean,
-    projectType: ProjectType
+    options: ParseOptions
   ): {
     [key: string]: OpenAPIV3.OperationObject;
   } {
@@ -702,18 +675,7 @@ export class Utils {
       const methods = paths[path];
       for (const method in methods) {
         // For developer preview, only support GET operation with only 1 parameter without auth
-        if (
-          Utils.isSupportedApi(
-            method,
-            path,
-            spec,
-            allowMissingId,
-            allowAPIKeyAuth,
-            allowMultipleParameters,
-            allowOauth2,
-            projectType
-          )
-        ) {
+        if (Utils.isSupportedApi(method, path, spec, options)) {
           const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
           result[`${method.toUpperCase()} ${path}`] = operationObject;
         }
@@ -726,11 +688,7 @@ export class Utils {
     spec: OpenAPIV3.Document,
     parser: SwaggerParser,
     isSwaggerFile: boolean,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean,
-    projectType: ProjectType
+    options: ParseOptions
   ): ValidateResult {
     const errors: ErrorResult[] = [];
     const warnings: WarningResult[] = [];
@@ -743,14 +701,7 @@ export class Utils {
     }
 
     // Server validation
-    const serverErrors = Utils.validateServer(
-      spec,
-      allowMissingId,
-      allowAPIKeyAuth,
-      allowMultipleParameters,
-      allowOauth2,
-      projectType
-    );
+    const serverErrors = Utils.validateServer(spec, options);
     errors.push(...serverErrors);
 
     // Remote reference not supported
@@ -766,14 +717,7 @@ export class Utils {
     }
 
     // No supported API
-    const apiMap = Utils.listSupportedAPIs(
-      spec,
-      allowMissingId,
-      allowAPIKeyAuth,
-      allowMultipleParameters,
-      allowOauth2,
-      projectType
-    );
+    const apiMap = Utils.listSupportedAPIs(spec, options);
     if (Object.keys(apiMap).length === 0) {
       errors.push({
         type: ErrorType.NoSupportedApi,

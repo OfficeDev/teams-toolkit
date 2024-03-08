@@ -46,6 +46,7 @@ export class SpecParser {
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
+    allowMethods: ["get", "post"],
     projectType: ProjectType.SME,
   };
 
@@ -91,16 +92,7 @@ export class SpecParser {
         };
       }
 
-      return Utils.validateSpec(
-        this.spec!,
-        this.parser,
-        !!this.isSwaggerFile,
-        this.options.allowMissingId,
-        this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters,
-        this.options.allowOauth2,
-        this.options.projectType
-      );
+      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -194,11 +186,7 @@ export class SpecParser {
         filter,
         this.unResolveSpec!,
         this.spec!,
-        this.options.allowMissingId,
-        this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters,
-        this.options.allowOauth2,
-        this.options.projectType
+        this.options
       );
 
       if (signal?.aborted) {
@@ -255,7 +243,8 @@ export class SpecParser {
         manifestPath,
         outputSpecPath,
         pluginFilePath,
-        newSpec
+        newSpec,
+        this.options
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
@@ -328,11 +317,10 @@ export class SpecParser {
       await fs.outputFile(outputSpecPath, resultStr);
 
       if (adaptiveCardFolder) {
-        // Only generate adaptive card for Messaging Extension
         for (const url in newSpec.paths) {
           for (const method in newSpec.paths[url]) {
-            // paths object may contain description/summary, so we need to check if it is a operation object
-            if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
+            // paths object may contain description/summary which is not a http method, so we need to check if it is a operation object
+            if (this.options.allowMethods.includes(method)) {
               const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
               try {
                 const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
@@ -366,8 +354,7 @@ export class SpecParser {
         manifestPath,
         outputSpecPath,
         newSpec,
-        this.options.allowMultipleParameters,
-        this.options.projectType,
+        this.options,
         adaptiveCardFolder,
         auth
       );
@@ -406,14 +393,7 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = Utils.listSupportedAPIs(
-      spec,
-      this.options.allowMissingId,
-      this.options.allowAPIKeyAuth,
-      this.options.allowMultipleParameters,
-      this.options.allowOauth2,
-      this.options.projectType
-    );
+    const result = Utils.listSupportedAPIs(spec, this.options);
     this.apiMap = result;
     return result;
   }

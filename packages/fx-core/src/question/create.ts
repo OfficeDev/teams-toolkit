@@ -557,9 +557,9 @@ export class CapabilityOptions {
       id: "import",
       label: getLocalizedString("core.importAddin.label"),
       detail: getLocalizedString("core.importAddin.detail"),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.previewOnWindow"
-      ),
+      // description: getLocalizedString(
+      //   "core.createProjectQuestion.option.description.previewOnWindow"
+      // ),
     };
   }
 
@@ -576,9 +576,9 @@ export class CapabilityOptions {
       id: template,
       label: getLocalizedString(officeAddinJsonData.getProjectDisplayName(template)),
       detail: getLocalizedString(officeAddinJsonData.getProjectDetails(template)),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.previewOnWindow"
-      ),
+      // description: getLocalizedString(
+      //   "core.createProjectQuestion.option.description.previewOnWindow"
+      // ),
     }));
   }
 

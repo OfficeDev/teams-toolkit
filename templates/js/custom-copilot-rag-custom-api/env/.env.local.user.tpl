@@ -24,5 +24,5 @@ SECRET_AZURE_OPENAI_ENDPOINT='{{{azureOpenAIEndpoint}}}'
 {{^azureOpenAIEndpoint}}
 SECRET_AZURE_OPENAI_ENDPOINT=' '
 {{/azureOpenAIEndpoint}}
-AZURE_OPENAI_DEPLOYMENT=' '
+SECRET_AZURE_OPENAI_DEPLOYMENT=' '
 {{/useAzureOpenAI}}

@@ -6,7 +6,7 @@ import fs from "fs-extra";
 import { glob } from "glob";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as sinon from "sinon";
-import { CreateSampleProjectInputs } from "../../../src";
+import { CreateSampleProjectInputs, validationUtils } from "../../../src";
 import { FeatureFlagName } from "../../../src/common/constants";
 import { MetadataV3 } from "../../../src/common/versionMetadata";
 import { coordinator, TemplateNames } from "../../../src/component/coordinator";
@@ -24,6 +24,7 @@ import { InputValidationError, MissingRequiredInputError } from "../../../src/er
 import {
   ApiMessageExtensionAuthOptions,
   CapabilityOptions,
+  CustomCopilotRagOptions,
   MeArchitectureOptions,
   ProjectTypeOptions,
   ScratchOptions,
@@ -793,6 +794,59 @@ describe("coordinator create", () => {
 
     assert.isTrue(res.isOk());
     assert.equal(generator.args[0][2], TemplateNames.SsoTabSSR);
+  });
+
+  it("create custom copilot rag custom api success", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "typescript",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
+      [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
+      [QuestionNames.ApiSpecLocation]: "spec",
+      [QuestionNames.ApiOperation]: "test",
+      [QuestionNames.LLMService]: "llm-service-openAI",
+      [QuestionNames.OpenAIKey]: "mockedopenaikey",
+    };
+    sandbox.stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi").resolves(ok({}));
+    sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isOk());
+    assert.equal(generator.args[0][2], TemplateNames.CustomCopilotRagCustomApi);
+  });
+
+  it("create custom copilot rag custom api failed", async () => {
+    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProgrammingLanguage]: "typescript",
+      [QuestionNames.SafeProjectName]: "safeprojectname",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+      [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
+      [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
+      [QuestionNames.ApiSpecLocation]: "spec",
+      [QuestionNames.ApiOperation]: "test",
+      [QuestionNames.LLMService]: "llm-service-openAI",
+      [QuestionNames.OpenAIKey]: "mockedopenaikey",
+    };
+    sandbox
+      .stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi")
+      .throws(new SystemError("test", "test", "test"));
+    sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
+
+    const fxCore = new FxCore(tools);
+    const res = await fxCore.createProject(inputs);
+
+    assert.isTrue(res.isErr() && res.error.name === "test");
   });
 });
 

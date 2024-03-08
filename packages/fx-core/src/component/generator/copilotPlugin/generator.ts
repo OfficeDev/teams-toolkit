@@ -21,6 +21,7 @@ import {
   Warning,
   ApiOperation,
   ApiKeyAuthInfo,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -37,6 +38,7 @@ import {
   specParserGenerateResultWarningsTelemetryProperty,
   isYamlSpecFile,
   invalidApiSpecErrorName,
+  updateForCustomApi,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -60,6 +62,7 @@ const fromApiSpecTemplateName = "copilot-plugin-existing-api";
 const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
+const forCustomCopilotRagCustomApi = "custom-copilot-rag-custom-api";
 const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
@@ -67,6 +70,8 @@ const apiSpecJsonFileName = "openapi.json";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
+
+const failedToUpdateCustomApiTemplateErrorName = "failed-to-update-custom-api-template";
 
 const enum telemetryProperties {
   templateName = "template-name",
@@ -181,6 +186,29 @@ export class CopilotPluginGenerator {
     );
   }
 
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: fromOpenAIPlugincomponentName,
+      telemetryEventName: TelemetryEvents.Generate,
+      errorSource: fromOpenAIPlugincomponentName,
+    }),
+  ])
+  public static async generateForCustomCopilotRagCustomApi(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    return await this.generate(
+      context,
+      inputs,
+      destinationPath,
+      forCustomCopilotRagCustomApi,
+      forCustomCopilotRagCustomApi,
+      false
+    );
+  }
+
   private static async generate(
     context: Context,
     inputs: Inputs,
@@ -242,14 +270,16 @@ export class CopilotPluginGenerator {
       }
       const filters = inputs[QuestionNames.ApiOperation] as string[];
 
-      // download template
-      const templateRes = await Generator.generateTemplate(
-        context,
-        destinationPath,
-        templateName,
-        language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
-      );
-      if (templateRes.isErr()) return err(templateRes.error);
+      if (templateName != forCustomCopilotRagCustomApi) {
+        // download template
+        const templateRes = await Generator.generateTemplate(
+          context,
+          destinationPath,
+          templateName,
+          language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
+        );
+        if (templateRes.isErr()) return err(templateRes.error);
+      }
 
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
@@ -312,7 +342,9 @@ export class CopilotPluginGenerator {
         manifestPath,
         filters,
         openapiSpecPath,
-        adaptiveCardFolder
+        adaptiveCardFolder,
+        undefined,
+        componentName != forCustomCopilotRagCustomApi
       );
 
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
@@ -347,6 +379,21 @@ export class CopilotPluginGenerator {
           manifestPath
         );
         if (updateManifestRes.isErr()) return err(updateManifestRes.error);
+      }
+
+      if (componentName === forCustomCopilotRagCustomApi) {
+        const specs = await specParser.getFilteredSpecs(filters);
+        const spec = specs[1];
+        try {
+          await updateForCustomApi(spec, language, destinationPath, openapiSpecFileName);
+        } catch (error: any) {
+          throw new SystemError(
+            componentName,
+            failedToUpdateCustomApiTemplateErrorName,
+            error.message,
+            error.message
+          );
+        }
       }
 
       // log warnings

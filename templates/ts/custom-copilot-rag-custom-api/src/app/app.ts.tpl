@@ -55,4 +55,6 @@ const specContent = yaml.load(fs.readFileSync(specPath, "utf8")) as Document;
 const api = new OpenAPIClientAxios({ definition: specContent });
 api.init();
 
+// Replace with action code
+
 export default app;

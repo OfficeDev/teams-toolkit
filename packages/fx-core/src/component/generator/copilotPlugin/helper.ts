@@ -36,6 +36,7 @@ import {
   ErrorType,
   ErrorResult as ApiSpecErrorResult,
   ListAPIResult,
+  AdaptiveCardGenerator,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -48,6 +49,8 @@ import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/fe
 import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 import { copilotPluginApiSpecOptionId } from "../../../question/constants";
+import { OpenAPIV3 } from "openapi-types";
+import { ProgrammingLanguage } from "../../../question";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -690,4 +693,202 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
   } catch (e) {
     return error.content;
   }
+}
+
+interface SpecObject {
+  pathUrl: string;
+  method: string;
+  item: OpenAPIV3.OperationObject;
+}
+
+function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
+  const res: SpecObject[] = [];
+
+  const paths = spec.paths;
+  if (paths) {
+    for (const pathUrl in paths) {
+      const pathItem = paths[pathUrl];
+      if (pathItem) {
+        const operations = pathItem;
+        for (const method in operations) {
+          if (method === "get" || method === "post") {
+            const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
+            if (operationItem) {
+              res.push({
+                item: operationItem,
+                method: method,
+                pathUrl: pathUrl,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return res;
+}
+
+async function updatePromptForCustomApi(
+  spec: OpenAPIV3.Document,
+  language: string,
+  chatFolder: string
+): Promise<void> {
+  if (language == ProgrammingLanguage.JS || ProgrammingLanguage.TS) {
+    const promptFilePath = path.join(chatFolder, "skprompt.txt");
+    const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
+      spec.info.description ? ". " + spec.info.description : "."
+    }\n\ncontext:\nAvailable actions: {{getAction}}.`;
+    await fs.writeFile(promptFilePath, prompt, { encoding: "utf-8", flag: "w" });
+  }
+}
+
+async function updateAdaptiveCardForCustomApi(
+  specItems: SpecObject[],
+  language: string,
+  destinationPath: string
+): Promise<void> {
+  if (language == ProgrammingLanguage.JS || ProgrammingLanguage.TS) {
+    const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    await fs.ensureDir(adaptiveCardsFolderPath);
+
+    for (const item of specItems) {
+      const name = item.item.operationId;
+      const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item);
+      const cardFilePath = path.join(adaptiveCardsFolderPath, `${name!}.json`);
+      await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
+    }
+  }
+}
+
+async function updateActionForCustomApi(
+  specItems: SpecObject[],
+  language: string,
+  chatFolder: string
+): Promise<void> {
+  if (language == ProgrammingLanguage.JS || ProgrammingLanguage.TS) {
+    const actionsFilePath = path.join(chatFolder, "actions.json");
+    const actions = [];
+
+    for (const item of specItems) {
+      const parameters: any = {
+        type: "object",
+        properties: {} as OpenAPIV3.SchemaObject,
+        required: [],
+      };
+
+      const paramObject = item.item.parameters as OpenAPIV3.ParameterObject[];
+      if (paramObject) {
+        for (let i = 0; i < paramObject.length; i++) {
+          const param = paramObject[i];
+          const schema = param.schema as OpenAPIV3.SchemaObject;
+          parameters.properties[param.name] = schema;
+          parameters.properties[param.name].description = param.description ?? "";
+          if (param.required) {
+            parameters.required?.push(param.name);
+          }
+        }
+      }
+
+      actions.push({
+        name: item.item.operationId,
+        description: item.item.description,
+        parameters: parameters,
+      });
+    }
+
+    await fs.writeFile(actionsFilePath, JSON.stringify(actions, null, 2));
+  }
+}
+
+const ActionCode = {
+  javascript: `
+app.ai.action("{{operationId}}", async (context, state, parameter) => {
+  const client = await api.getClient();
+  const path = client.paths["{{pathUrl}}"];
+  if (path && path.{{method}}) {
+    const result = await path.{{method}}(parameter.path, parameter.body, {
+      params: parameter.query,
+    });
+    const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
+    await context.sendActivity({ attachments: [card] });
+  } else {
+    await context.sendActivity("no result");
+  }
+  return "result";
+});
+  `,
+  typescript: `
+app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
+  const client = await api.getClient();
+  const path = client.paths["{{pathUrl}}"];
+  if (path && path.{{method}}) {
+    const result = await path.{{method}}(parameter.path, parameter.body, {
+      params: parameter.query,
+    });
+    const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
+    await context.sendActivity({ attachments: [card] });
+  } else {
+    await context.sendActivity("no result");
+  }
+  return "result";
+});
+  `,
+};
+
+async function updateCodeForCustomApi(
+  specItems: SpecObject[],
+  language: string,
+  destinationPath: string,
+  openapiSpecFileName: string
+): Promise<void> {
+  if (language == ProgrammingLanguage.JS || ProgrammingLanguage.TS) {
+    const codeTemplate =
+      ActionCode[language === ProgrammingLanguage.JS ? "javascript" : "typescript"];
+    const appFolderPath = path.join(destinationPath, "src", "app");
+
+    const actionsCode = [];
+    for (const item of specItems) {
+      const code = codeTemplate
+        .replace(/{{operationId}}/g, item.item.operationId!)
+        .replace("{{pathUrl}}", item.pathUrl)
+        .replace(/{{method}}/g, item.method);
+      actionsCode.push(code);
+    }
+
+    // Update code in app file
+    const indexFilePath = path.join(
+      appFolderPath,
+      language === ProgrammingLanguage.JS ? "app.js" : "app.ts"
+    );
+    const indexFileContent = (await fs.readFile(indexFilePath)).toString();
+    const updateIndexFileContent = indexFileContent
+      .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
+      .replace("// Replace with action code", actionsCode.join("\n"));
+    await fs.writeFile(indexFilePath, updateIndexFileContent);
+  }
+}
+
+export async function updateForCustomApi(
+  spec: OpenAPIV3.Document,
+  language: string,
+  destinationPath: string,
+  openapiSpecFileName: string
+): Promise<void> {
+  const chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  await fs.ensureDir(chatFolder);
+
+  // 1. update prompt folder
+  await updatePromptForCustomApi(spec, language, chatFolder);
+
+  const specItems = parseSpec(spec);
+
+  // 2. update adaptive card folder
+  await updateAdaptiveCardForCustomApi(specItems, language, destinationPath);
+
+  // 3. update actions file
+  await updateActionForCustomApi(specItems, language, chatFolder);
+
+  // 4. update code
+  await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName);
 }

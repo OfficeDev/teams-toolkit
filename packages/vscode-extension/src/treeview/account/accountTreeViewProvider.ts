@@ -103,8 +103,7 @@ async function azureAccountStatusChangeHandler(
       await envTreeProviderInstance.refreshRemoteEnvWarning();
     }
   } else if (status === "SigningIn") {
-    // "Azure Account" extension only sends SigningIn signal without SignededOut in 0.10.x, so remove this status change until it's fixed.
-    // instance.azureAccountNode.setSigningIn();
+    instance.azureAccountNode.setSigningIn();
   } else if (status === "SignedOut") {
     instance.azureAccountNode.setSignedOut();
     await envTreeProviderInstance.refreshRemoteEnvWarning();

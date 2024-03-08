@@ -1853,7 +1853,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
   // export for unit test
   let placeholder = "";
 
-  const isApiPlugin = (inputs?: Inputs): boolean => {
+  const isPlugin = (inputs?: Inputs): boolean => {
     return (
       !!inputs && inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id
     );
@@ -1863,20 +1863,20 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: (inputs: Inputs) => {
-      return isApiPlugin(inputs)
+      return isPlugin(inputs)
         ? getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
         : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title");
     },
     cliDescription: "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
     placeholder: (inputs: Inputs) => {
-      const isApiPlugin =
+      const isPlugin =
         inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
       if (!includeExistingAPIs) {
         placeholder = getLocalizedString(
           "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"
         );
-      } else if (isApiPlugin) {
+      } else if (isPlugin) {
         placeholder = ""; // TODO: add placeholder for api plugin
       } else if (isApiKeyEnabled()) {
         placeholder = getLocalizedString(

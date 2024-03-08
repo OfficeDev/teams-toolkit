@@ -1668,7 +1668,7 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.apiPlugins = [
+    manifest.plugins = [
       {
         pluginFile: "ai-plugin.json",
       },
@@ -1705,7 +1705,7 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.apiPlugins = [
+    manifest.plugins = [
       {
         pluginFile: "ai-plugin.json",
       },

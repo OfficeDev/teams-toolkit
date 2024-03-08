@@ -54,6 +54,7 @@ import { EmptyOptionError, assembleError } from "../error";
 import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
+  capabilitiesHavePythonOption,
   copilotPluginApiSpecOptionId,
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
@@ -1287,21 +1288,30 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   }
 
   const capabilities = inputs[QuestionNames.Capabilities] as string;
-  // SPFx only supports typescript
   if (capabilities === CapabilityOptions.SPFxTab().id) {
+    // SPFx only supports typescript
     return [{ id: "typescript", label: "TypeScript" }];
+  } else if (capabilitiesHavePythonOption.includes(capabilities)) {
+    // support python language
+    return [
+      { id: "javascript", label: "JavaScript" },
+      { id: "typescript", label: "TypeScript" },
+      { id: "python", label: "Python" },
+    ];
+  } else {
+    // other cases
+    return [
+      { id: "javascript", label: "JavaScript" },
+      { id: "typescript", label: "TypeScript" },
+    ];
   }
-  // other case
-  return [
-    { id: "javascript", label: "JavaScript" },
-    { id: "typescript", label: "TypeScript" },
-  ];
 }
 
 export enum ProgrammingLanguage {
   JS = "javascript",
   TS = "typescript",
   CSharp = "csharp",
+  PY = "python",
 }
 
 export function programmingLanguageQuestion(): SingleSelectQuestion {
@@ -1314,6 +1324,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
       { id: ProgrammingLanguage.TS, label: "TypeScript" },
       { id: ProgrammingLanguage.CSharp, label: "C#" },
+      { id: ProgrammingLanguage.PY, label: "Python" },
     ],
     dynamicOptions: getLanguageOptions,
     default: (inputs: Inputs) => {

@@ -141,6 +141,7 @@
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
 /templates/**/custom-copilot-basic @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/templates/python/custom-copilot-basic @frankqianms @adashen
 /templates/**/custom-copilot-assistant-new @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /templates/**/custom-copilot-assistant-assistants-api @kimizhu @swatDong @kuojianlu @XiaofuHuang
 

@@ -52,6 +52,7 @@ import {
   CustomCopilotRagOptions,
   CustomCopilotAssistantOptions,
   OfficeAddinCapabilityOptions,
+  ProgrammingLanguage,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
@@ -60,6 +61,7 @@ import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
 import * as utils from "../../src/component/utils";
 import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
+import { convertToLangKey } from "../../src/component/generator/utils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -1003,7 +1005,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 3);
             return ok({ type: "success", result: "typescript" });
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;
@@ -2680,7 +2682,20 @@ describe("scaffold question", () => {
       });
       assert.isTrue(options.length === 2);
     });
+    it("should return python for ProgrammingLanguage.PY", () => {
+      const output = convertToLangKey(ProgrammingLanguage.PY);
+      assert.isTrue(output == "python");
+    });
+    it("should return expected 3 language options for custom copilot basic python", () => {
+      const options = getLanguageOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotBasic().id,
+      });
+      assert.isTrue(options.length === 3); // js, ts, python
+    });
   });
+
   describe("getTemplate", () => {
     it("should find taskpane template", () => {
       const inputs: Inputs = {

@@ -41,7 +41,7 @@ import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
+import { ProjectType, SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
 import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -79,6 +79,7 @@ import {
   ErrorResult,
   OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
+  copilotPluginParserOptions,
   generateScaffoldingSummary,
   listOperations,
   listPluginExistingOperations,
@@ -1232,10 +1233,15 @@ export class FxCore {
     }
 
     // Merge existing operations in manifest.json
-    const specParser = new SpecParser(url, {
-      allowAPIKeyAuth: isApiKeyEnabled(),
-      allowMultipleParameters: isMultipleParametersEnabled(),
-    });
+    const specParser = new SpecParser(
+      url,
+      isPlugin
+        ? copilotPluginParserOptions
+        : {
+            allowAPIKeyAuth: isApiKeyEnabled(),
+            allowMultipleParameters: isMultipleParametersEnabled(),
+          }
+    );
 
     const apiResultList = await specParser.list();
 

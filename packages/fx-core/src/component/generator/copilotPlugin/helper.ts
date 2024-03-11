@@ -734,7 +734,7 @@ async function updatePromptForCustomApi(
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (language == ProgrammingLanguage.JS || ProgrammingLanguage.TS) {
+  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
     const promptFilePath = path.join(chatFolder, "skprompt.txt");
     const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
       spec.info.description ? ". " + spec.info.description : "."
@@ -748,7 +748,7 @@ async function updateAdaptiveCardForCustomApi(
   language: string,
   destinationPath: string
 ): Promise<void> {
-  if (language == ProgrammingLanguage.JS || ProgrammingLanguage.TS) {
+  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
     const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
     await fs.ensureDir(adaptiveCardsFolderPath);
 
@@ -766,7 +766,7 @@ async function updateActionForCustomApi(
   language: string,
   chatFolder: string
 ): Promise<void> {
-  if (language == ProgrammingLanguage.JS || ProgrammingLanguage.TS) {
+  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
     const actionsFilePath = path.join(chatFolder, "actions.json");
     const actions = [];
 
@@ -842,7 +842,7 @@ async function updateCodeForCustomApi(
   destinationPath: string,
   openapiSpecFileName: string
 ): Promise<void> {
-  if (language == ProgrammingLanguage.JS || ProgrammingLanguage.TS) {
+  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
     const codeTemplate =
       ActionCode[language === ProgrammingLanguage.JS ? "javascript" : "typescript"];
     const appFolderPath = path.join(destinationPath, "src", "app");

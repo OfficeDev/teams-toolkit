@@ -840,7 +840,7 @@ describe("coordinator create", () => {
     };
     sandbox
       .stub(CopilotPluginGenerator, "generateForCustomCopilotRagCustomApi")
-      .throws(new SystemError("test", "test", "test"));
+      .resolves(err(new SystemError("test", "test", "test")));
     sandbox.stub(validationUtils, "validateInputs").resolves(undefined);
 
     const fxCore = new FxCore(tools);

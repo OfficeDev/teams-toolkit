@@ -401,6 +401,7 @@ class Coordinator {
             appName,
             safeProjectNameFromVS,
             inputs.targetFramework,
+            inputs.placeProjectFileInSolutionDir === "true",
             undefined,
             {
               llmService,

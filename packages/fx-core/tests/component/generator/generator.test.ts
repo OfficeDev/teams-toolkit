@@ -799,8 +799,25 @@ describe("Generator happy path", async () => {
     assert.equal(vars.enableTestToolByDefault, "");
   });
 
+  it("template variables when new project enabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "true" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.isNewProjectTypeEnabled, "true");
+  });
+
+  it("template variables when test tool disabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "false" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.isNewProjectTypeEnabled, "");
+  });
+
+  it("template variables when set placeProjectFileInSolutionDir to true", async () => {
+    const vars = Generator.getDefaultVariables("test", undefined, undefined, true);
+    assert.equal(vars.PlaceProjectFileInSolutionDir, "true");
+  });
+
   it("template variables with custom copilot - OpenAI", async () => {
-    const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
+    const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
       llmService: "llm-service-openAI",
       openAIKey: "test-key",
     });
@@ -812,7 +829,7 @@ describe("Generator happy path", async () => {
   });
 
   it("template variables with custom copilot - Azure OpenAI", async () => {
-    const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
+    const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
       llmService: "llm-service-azureOpenAI",
       azureOpenAIKey: "test-key",
       azureOpenAIEndpoint: "test-endpoint",
@@ -826,7 +843,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "AUTHNAME_REGISTRATION_ID",
@@ -842,7 +859,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth with special characters", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "AUTH-NAME_REGISTRATION*ID",
@@ -858,7 +875,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth with name not start with [A-Z]", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", undefined, {
+    const vars = Generator.getDefaultVariables("Test", "Test", undefined, false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "*AUTH-NAME_REGISTRATION*ID",

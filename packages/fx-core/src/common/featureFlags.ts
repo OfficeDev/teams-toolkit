@@ -22,7 +22,7 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.ApiConnect] = "true";
   process.env[FeatureFlagName.DeployManifest] = "true";
   process.env[FeatureFlagName.OfficeXMLAddin] = "true";
-  process.env[FeatureFlagName.OfficeAddin] = "true";
+  process.env[FeatureFlagName.OfficeAddin] = "false";
 }
 
 export function isCLIDotNetEnabled(): boolean {

@@ -103,13 +103,12 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const jsonData = new projectsJsonData();
-        let projectLink;
-        if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
-          const framework = inputs[QuestionNames.OfficeAddinFramework];
-          projectLink = jsonData.getProjectDownloadLinkNew(template, language, framework);
-        } else {
-          projectLink = jsonData.getProjectDownloadLink(template, language);
-        }
+        const isOfficeAddin =
+          inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id;
+        const framework = isOfficeAddin ? inputs[QuestionNames.OfficeAddinFramework] : undefined;
+        const projectLink = isOfficeAddin
+          ? jsonData.getProjectDownloadLinkNew(template, language, framework)
+          : jsonData.getProjectDownloadLink(template, language);
 
         // Copy project template files from project repository
         if (projectLink) {

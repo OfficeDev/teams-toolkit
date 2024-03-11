@@ -17,14 +17,14 @@ export const projectProperties = {
           frameworks: {
             default: {
               repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane",
-              branch: "yueli/wxp-json-toolkit",
-              prerelease: "yueli/wxp-json-toolkit",
+              branch: "json-wxpo-preview",
+              prerelease: "json-wxpo-preview",
               archive: "https://aka.ms/teams-toolkit/office-addin-taskpane/ts-default",
             },
             react: {
-              repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane-React",
-              branch: "yueli/json-preview-toolkit",
-              prerelease: "yueli/json-preview-toolkit",
+              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane-React",
+              branch: "json-wxpo-preview",
+              prerelease: "json-wxpo-preview",
               archive: "https://aka.ms/teams-toolkit/office-addin-taskpane/ts-react",
             },
           },
@@ -33,15 +33,15 @@ export const projectProperties = {
         javascript: {
           frameworks: {
             default: {
-              repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane-JS",
-              branch: "yueli/json-preview-toolkit",
-              prerelease: "yueli/json-preview-toolkit",
+              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane-JS",
+              branch: "json-wxpo-preview",
+              prerelease: "json-wxpo-preview",
               archive: "https://aka.ms/teams-toolkit/office-addin-taskpane/js-default",
             },
             react: {
-              repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane-React-JS",
-              branch: "yueli/json-preview-toolkit",
-              prerelease: "yueli/json-preview-toolkit",
+              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane-React-JS",
+              branch: "json-wxpo-preview",
+              prerelease: "json-wxpo-preview",
               archive: "https://aka.ms/teams-toolkit/office-addin-taskpane/js-react",
             },
           },

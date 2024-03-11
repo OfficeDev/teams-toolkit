@@ -286,7 +286,7 @@
   "core.createProjectQuestion.projectType.outlookAddin.detail": "Customize the ribbon and Task Pane with your web content",
   "core.createProjectQuestion.projectType.outlookAddin.label": "Outlook Add-in",
   "core.createProjectQuestion.projectType.outlookAddin.title": "App Features Using an Outlook Add-in",
-  "core.createProjectQuestion.projectType.officeAddin.detail": "Extend Office applications and interact with content in Office documents and Outlook mails",
+  "core.createProjectQuestion.projectType.officeAddin.detail": "Extend Office apps to interact with content in Office documents and Outlook mails",
   "core.createProjectQuestion.projectType.officeAddin.label": "Office Add-in",
   "core.createProjectQuestion.projectType.officeAddin.title": "App Features Using an Office Add-in",
   "core.createProjectQuestion.projectType.officeAddin.framework.title": "Framework",

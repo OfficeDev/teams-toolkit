@@ -182,12 +182,47 @@ export interface CheckParamResult {
 }
 
 export interface ParseOptions {
+  /**
+   * If true, the parser will not throw an error if an ID is missing the spec file.
+   */
   allowMissingId?: boolean;
+
+  /**
+   * If true, the parser will allow parsing of Swagger specifications.
+   */
   allowSwagger?: boolean;
+
+  /**
+   * If true, the parser will allow API Key authentication in the spec file.
+   */
   allowAPIKeyAuth?: boolean;
+
+  /**
+   * If true, the parser will allow multiple parameters in the spec file.
+   */
   allowMultipleParameters?: boolean;
+
+  /**
+   * If true, the parser will allow OAuth2 authentication in the spec file.
+   */
   allowOauth2?: boolean;
-  isCopilot?: boolean;
+
+  /**
+   * An array of HTTP methods that the parser will allow in the spec file.
+   */
+  allowMethods?: string[];
+
+  /**
+   * The type of project that the parser is being used for.
+   * Project can be SME/Copilot/TeamsAi
+   */
+  projectType?: ProjectType;
+}
+
+export enum ProjectType {
+  Copilot,
+  SME,
+  TeamsAi,
 }
 
 export interface APIInfo {

@@ -276,7 +276,7 @@ describe("copilotPluginGenerator", function () {
       assert.equal(result.value.warnings![2].type, WarningType.GenerateCardFailed);
       assert.equal(result.value.warnings![3].type, WarningType.OperationOnlyContainsOptionalParam);
       assert.equal(result.value.warnings![3].content, "");
-      assert.isTrue(generateParser.args[0][3].includes(ResponseTemplatesFolderName));
+      assert.isTrue(generateParser.args[0][3]?.includes(ResponseTemplatesFolderName));
     }
   });
 

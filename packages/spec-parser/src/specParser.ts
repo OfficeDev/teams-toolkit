@@ -45,6 +45,7 @@ export class SpecParser {
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
+    isCopilot: false,
   };
 
   /**
@@ -96,7 +97,8 @@ export class SpecParser {
         this.options.allowMissingId,
         this.options.allowAPIKeyAuth,
         this.options.allowMultipleParameters,
-        this.options.allowOauth2
+        this.options.allowOauth2,
+        this.options.isCopilot
       );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -194,7 +196,8 @@ export class SpecParser {
         this.options.allowMissingId,
         this.options.allowAPIKeyAuth,
         this.options.allowMultipleParameters,
-        this.options.allowOauth2
+        this.options.allowOauth2,
+        this.options.isCopilot
       );
 
       if (signal?.aborted) {
@@ -209,6 +212,61 @@ export class SpecParser {
       }
       throw new SpecParserError((err as Error).toString(), ErrorType.GetSpecFailed);
     }
+  }
+
+  /**
+   * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
+   * @param manifestPath A file path of the Teams app manifest file to update.
+   * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
+   * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param pluginFilePath File path of the api plugin file to generate.
+   */
+  async generateForCopilot(
+    manifestPath: string,
+    filter: string[],
+    outputSpecPath: string,
+    pluginFilePath: string,
+    signal?: AbortSignal
+  ): Promise<GenerateResult> {
+    const result: GenerateResult = {
+      allSuccess: true,
+      warnings: [],
+    };
+
+    try {
+      const newSpecs = await this.getFilteredSpecs(filter, signal);
+      const newUnResolvedSpec = newSpecs[0];
+      const newSpec = newSpecs[1];
+
+      let resultStr;
+      if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
+        resultStr = jsyaml.dump(newUnResolvedSpec);
+      } else {
+        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
+      }
+      await fs.outputFile(outputSpecPath, resultStr);
+
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
+
+      const [updatedManifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        newSpec
+      );
+
+      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
+      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 2 });
+    } catch (err) {
+      if (err instanceof SpecParserError) {
+        throw err;
+      }
+      throw new SpecParserError((err as Error).toString(), ErrorType.GenerateFailed);
+    }
+
+    return result;
   }
 
   /**
@@ -270,28 +328,31 @@ export class SpecParser {
       }
       await fs.outputFile(outputSpecPath, resultStr);
 
-      for (const url in newSpec.paths) {
-        for (const method in newSpec.paths[url]) {
-          // paths object may contain description/summary, so we need to check if it is a operation object
-          if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
-            const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
-            try {
-              const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
-              const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
-              const wrappedCard = wrapAdaptiveCard(card, jsonPath);
-              await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
-              const dataFileName = path.join(
-                adaptiveCardFolder,
-                `${operation.operationId!}.data.json`
-              );
-              await fs.outputJSON(dataFileName, {}, { spaces: 2 });
-            } catch (err) {
-              result.allSuccess = false;
-              result.warnings.push({
-                type: WarningType.GenerateCardFailed,
-                content: (err as Error).toString(),
-                data: operation.operationId!,
-              });
+      if (isMe === undefined || isMe === true) {
+        // Only generate adaptive card for Messaging Extension
+        for (const url in newSpec.paths) {
+          for (const method in newSpec.paths[url]) {
+            // paths object may contain description/summary, so we need to check if it is a operation object
+            if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
+              const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
+              try {
+                const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
+                const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
+                const wrappedCard = wrapAdaptiveCard(card, jsonPath);
+                await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
+                const dataFileName = path.join(
+                  adaptiveCardFolder,
+                  `${operation.operationId!}.data.json`
+                );
+                await fs.outputJSON(dataFileName, {}, { spaces: 2 });
+              } catch (err) {
+                result.allSuccess = false;
+                result.warnings.push({
+                  type: WarningType.GenerateCardFailed,
+                  content: (err as Error).toString(),
+                  data: operation.operationId!,
+                });
+              }
             }
           }
         }
@@ -351,7 +412,8 @@ export class SpecParser {
       this.options.allowMissingId,
       this.options.allowAPIKeyAuth,
       this.options.allowMultipleParameters,
-      this.options.allowOauth2
+      this.options.allowOauth2,
+      this.options.isCopilot
     );
     this.apiMap = result;
     return result;

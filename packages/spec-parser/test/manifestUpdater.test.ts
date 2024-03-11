@@ -11,6 +11,630 @@ import { SpecParserError } from "../src/specParserError";
 import { ErrorType, WarningType } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 import { Utils } from "../src/utils";
+import { PluginManifestSchema } from "@microsoft/teams-manifest";
+
+describe("updateManifestWithAiPlugin", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should update the manifest with the correct manifest and apiPlugin files", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human: "My API",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "getPets",
+          description: "Returns all pets from the system that the user has access to",
+          parameters: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "integer",
+                description: "Maximum number of pets to return",
+              },
+            },
+            required: ["limit"],
+          },
+        },
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+          parameters: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the pet",
+              },
+            },
+          },
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["getPets", "createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should update the manifest with the correct manifest and apiPlugin files with optional parameters", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+              {
+                name: "id",
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human: "My API",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "getPets",
+          description: "Returns all pets from the system that the user has access to",
+          parameters: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "integer",
+                description: "Maximum number of pets to return",
+              },
+              id: {
+                type: "string",
+                description: "",
+              },
+            },
+            required: ["limit"],
+          },
+        },
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+          parameters: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the pet",
+              },
+            },
+          },
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["getPets", "createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should generate default ai plugin file if no api", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {},
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human: "My API",
+      description_for_human: "My API description",
+      functions: [],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: [],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should truncate if title is long", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title:
+          "long title long title long title long title long title long title long title long title long title long title long title long title",
+        description: "This is the description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: {
+        short: "long title long title long title long title long title long title long title lon",
+        full: "This is the description",
+      },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human:
+        "long title long title long title long title long title long title long title long title long title long title long title long title",
+      description_for_human: "This is the description",
+      functions: [
+        {
+          name: "getPets",
+          description: "Returns all pets from the system that the user has access to",
+          parameters: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "integer",
+                description: "Maximum number of pets to return",
+              },
+            },
+            required: ["limit"],
+          },
+        },
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+          parameters: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the pet",
+              },
+            },
+          },
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["getPets", "createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should throw error if has nested object property", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "petObj",
+                description: "Pet object",
+                required: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "integer",
+                    },
+                    name: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+    };
+
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    try {
+      await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        spec
+      );
+      expect.fail("Expected updateManifest to throw a SpecParserError");
+    } catch (err: any) {
+      expect(err).to.be.instanceOf(SpecParserError);
+      expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
+      expect(err.message).to.equal(
+        "Unsupported schema in get /pets: " +
+          JSON.stringify({
+            type: "object",
+            properties: {
+              id: {
+                type: "integer",
+              },
+              name: {
+                type: "string",
+              },
+            },
+          })
+      );
+    }
+  });
+
+  it("should throw error if request body is not object", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+            operationId: "postPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+    };
+
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    try {
+      await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        spec
+      );
+      expect.fail("Expected updateManifest to throw a SpecParserError");
+    } catch (err: any) {
+      expect(err).to.be.instanceOf(SpecParserError);
+      expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
+      expect(err.message).to.equal(
+        "Unsupported schema in post /pets: " +
+          JSON.stringify({
+            type: "string",
+          })
+      );
+    }
+  });
+});
 
 describe("manifestUpdater", () => {
   const spec: any = {

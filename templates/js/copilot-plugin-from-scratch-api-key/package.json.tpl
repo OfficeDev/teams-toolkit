@@ -9,7 +9,7 @@
         "keygen": "node ./src/keyGen.js"
     },
     "dependencies": {
-        "@azure/functions": "^4.1.0"
+        "@azure/functions": "^4.3.0"
     },
     "devDependencies": {
         "env-cmd": "^10.1.0"

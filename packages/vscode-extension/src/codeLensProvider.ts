@@ -568,7 +568,7 @@ export class ApiPluginCodeLensProvider implements vscode.CodeLensProvider {
       const manifestContent = fs.readFileSync(manifestFilePath, "utf-8");
       const manifest = JSON.parse(manifestContent);
       const manifestProperties = ManifestUtil.parseCommonProperties(manifest);
-      if (!manifestProperties.isApiPlugin) {
+      if (!manifestProperties.isPlugin) {
         return [];
       }
 

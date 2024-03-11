@@ -7,6 +7,7 @@
 import "./teamsApp/create";
 import "./teamsApp/validate";
 import "./teamsApp/validateAppPackage";
+import "./teamsApp/validateTestCases";
 import "./teamsApp/configure";
 import "./teamsApp/copyAppPackageToSPFx";
 import "./teamsApp/publishAppPackage";

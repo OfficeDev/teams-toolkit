@@ -138,6 +138,10 @@ export function validateTeamsAppQuestionNode(): IQTreeNode {
         condition: { equals: TeamsAppValidationOptions.package().id },
         data: selectTeamsAppPackageQuestion(),
       },
+      {
+        condition: { equals: TeamsAppValidationOptions.testCases().id },
+        data: selectTeamsAppPackageQuestion(),
+      },
     ],
   };
 }
@@ -363,7 +367,11 @@ function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.ValidateMethod,
     title: getLocalizedString("core.selectValidateMethodQuestion.validate.selectTitle"),
-    staticOptions: [TeamsAppValidationOptions.schema(), TeamsAppValidationOptions.package()],
+    staticOptions: [
+      TeamsAppValidationOptions.schema(),
+      TeamsAppValidationOptions.package(),
+      TeamsAppValidationOptions.testCases(),
+    ],
     type: "singleSelect",
   };
 }
@@ -395,6 +403,15 @@ export class TeamsAppValidationOptions {
       label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
       description: getLocalizedString(
         "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
+      ),
+    };
+  }
+  static testCases(): OptionItem {
+    return {
+      id: "validateWithTestCases",
+      label: getLocalizedString("core.selectValidateMethodQuestion.validate.testCasesOption"),
+      description: getLocalizedString(
+        "core.selectValidateMethodQuestion.validate.testCasesOptionDescription"
       ),
     };
   }

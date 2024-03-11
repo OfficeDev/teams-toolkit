@@ -11,7 +11,7 @@ export function EditCode(props: {
   const { showFunction, tabCodeEntry, functionCodePath } = {
     showFunction: true,
     tabCodeEntry: "src/index.tsx",
-    functionCodePath: `api/src/functions/index.ts`,
+    functionCodePath: `api/src/functions/${functionName}.ts`,
     ...props,
   };
   return (

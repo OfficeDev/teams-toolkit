@@ -720,25 +720,25 @@ describe("projectsJsonData for Office Addin", () => {
     ]);
     chai.assert.equal(
       data.getProjectTemplateRepositoryNew("taskpane", "typescript", "default"),
-      "https://github.com/YueLi-MSFT/Office-Addin-TaskPane" // TODO-yue: should be change when template is ready
+      "https://github.com/OfficeDev/Office-Addin-TaskPane"
     );
     chai.assert.isUndefined(data.getProjectTemplateRepositoryNew("xxx", "typescript", "default"));
     chai.assert.equal(
       data.getProjectTemplateBranchNameNew("taskpane", "typescript", "default", false),
-      "yueli/wxp-json-toolkit" // TODO-yue: should be change when template is ready
+      "json-wxpo-preview"
     );
     chai.assert.isUndefined(
       data.getProjectTemplateBranchNameNew("xxx", "typescript", "default", false)
     );
     chai.assert.equal(
       data.getProjectTemplateBranchNameNew("taskpane", "typescript", "default", true),
-      "yueli/wxp-json-toolkit" // TODO-yue: should be change when template is ready
+      "json-wxpo-preview"
     );
     chai.assert.deepEqual(
       data.getProjectRepoAndBranchNew("taskpane", "typescript", "default", false),
       {
-        repo: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane",
-        branch: "yueli/wxp-json-toolkit", // TODO-yue: should be change when template is ready
+        repo: "https://github.com/OfficeDev/Office-Addin-TaskPane",
+        branch: "json-wxpo-preview",
       }
     );
     chai.assert.deepEqual(data.getProjectRepoAndBranchNew("xxx", "typescript", "default", false), {

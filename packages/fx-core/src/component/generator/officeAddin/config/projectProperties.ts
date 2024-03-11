@@ -16,7 +16,7 @@ export const projectProperties = {
 
           frameworks: {
             default: {
-              repository: "https://github.com/YueLi-MSFT/Office-Addin-TaskPane",
+              repository: "https://github.com/OfficeDev/Office-Addin-TaskPane",
               branch: "json-wxpo-preview",
               prerelease: "json-wxpo-preview",
               archive: "https://aka.ms/teams-toolkit/office-addin-taskpane/ts-default",

@@ -83,3 +83,10 @@ export const ShowDescriptionOption: CLICommandOption = {
   default: false,
   required: true,
 };
+
+export const ConfigFilePathOption: CLICommandOption = {
+  type: "string",
+  name: "config-file-path",
+  shortName: "c",
+  description: "Specifies the path of the configuration yaml file.",
+};

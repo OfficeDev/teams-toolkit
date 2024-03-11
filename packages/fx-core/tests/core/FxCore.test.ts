@@ -1442,7 +1442,6 @@ describe("isEnvFile", async () => {
       mockedEnvRestore = mockedEnv({
         TEAMSFX_CLI_DOTNET: "false",
         [FeatureFlagName.CopilotPlugin]: "false",
-        [FeatureFlagName.CustomCopilot]: "false",
       });
       const core = new FxCore(tools);
       const res = await core.getQuestions(Stage.create, { platform: Platform.CLI_HELP });
@@ -1464,9 +1463,9 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
-          "custom-copilot-rag",
-          "openapi-spec-location",
-          "api-operation",
+          // "custom-copilot-rag",
+          // "openapi-spec-location",
+          // "api-operation",
           "custom-copilot-assistant",
           "programming-language",
           "llm-service",
@@ -1504,9 +1503,9 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
-          "custom-copilot-rag",
-          "openapi-spec-location",
-          "api-operation",
+          // "custom-copilot-rag",
+          // "openapi-spec-location",
+          // "api-operation",
           "custom-copilot-assistant",
           "programming-language",
           "llm-service",
@@ -1544,9 +1543,9 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
-          "custom-copilot-rag",
-          "openapi-spec-location",
-          "api-operation",
+          // "custom-copilot-rag",
+          // "openapi-spec-location",
+          // "api-operation",
           "custom-copilot-assistant",
           "programming-language",
           "llm-service",
@@ -1585,9 +1584,9 @@ describe("isEnvFile", async () => {
           "openapi-spec-location",
           "api-operation",
           "api-me-auth",
-          "custom-copilot-rag",
-          "openapi-spec-location",
-          "api-operation",
+          // "custom-copilot-rag",
+          // "openapi-spec-location",
+          // "api-operation",
           "custom-copilot-assistant",
           "programming-language",
           "llm-service",
@@ -1669,7 +1668,7 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.apiPlugins = [
+    manifest.plugins = [
       {
         pluginFile: "ai-plugin.json",
       },
@@ -1706,7 +1705,7 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const manifest = new TeamsAppManifest();
-    manifest.apiPlugins = [
+    manifest.plugins = [
       {
         pluginFile: "ai-plugin.json",
       },

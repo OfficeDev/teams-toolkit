@@ -71,7 +71,7 @@ describe("pluginManifestUtils", () => {
     staticTabs: [],
     permissions: [],
     validDomains: [],
-    apiPlugins: [
+    plugins: [
       {
         pluginFile: "resources/plugin.json",
       },
@@ -190,7 +190,7 @@ describe("pluginManifestUtils", () => {
     sandbox.stub(fs, "pathExists").resolves(true);
 
     const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
-      { ...teamsManifest, apiPlugins: [] },
+      { ...teamsManifest, plugins: [] },
       "/test/path"
     );
     chai.assert.isTrue(res.isErr());

@@ -28,7 +28,6 @@ import {
   isApiCopilotPluginEnabled,
   isApiKeyEnabled,
   isTdpTemplateCliTestEnabled,
-  isCustomCopilotEnabled,
   isOfficeXMLAddinEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
@@ -55,6 +54,7 @@ import { EmptyOptionError, assembleError } from "../error";
 import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
+  capabilitiesHavePythonOption,
   copilotPluginApiSpecOptionId,
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
@@ -181,9 +181,7 @@ function projectTypeQuestion(): SingleSelectQuestion {
       if (isApiCopilotPluginEnabled()) {
         staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
       }
-      if (isCustomCopilotEnabled()) {
-        staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
-      }
+      staticOptions.push(ProjectTypeOptions.customCopilot(inputs.platform));
       staticOptions.push(
         ProjectTypeOptions.bot(inputs.platform),
         ProjectTypeOptions.tab(inputs.platform),
@@ -415,11 +413,9 @@ export class CapabilityOptions {
       detail: getLocalizedString("core.MessageExtensionOption.detail"),
     };
   }
-  static bots(inputs?: Inputs, includeAssistant?: boolean): OptionItem[] {
+  static bots(inputs?: Inputs): OptionItem[] {
     return [
       CapabilityOptions.basicBot(),
-      CapabilityOptions.aiBot(),
-      ...(includeAssistant === true ? [CapabilityOptions.aiAssistantBot()] : []),
       CapabilityOptions.notificationBot(),
       CapabilityOptions.commandBot(),
       CapabilityOptions.workflowBot(inputs),
@@ -438,7 +434,7 @@ export class CapabilityOptions {
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
     const capabilities = [
       ...CapabilityOptions.copilotPlugins(),
-      ...CapabilityOptions.bots(inputs, true),
+      ...CapabilityOptions.bots(inputs),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),
@@ -488,7 +484,7 @@ export class CapabilityOptions {
   static customCopilots(): OptionItem[] {
     return [
       CapabilityOptions.customCopilotBasic(),
-      CapabilityOptions.customCopilotRag(),
+      // CapabilityOptions.customCopilotRag(),
       CapabilityOptions.customCopilotAssistant(),
     ];
   }
@@ -507,7 +503,7 @@ export class CapabilityOptions {
    */
   static staticAll(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
-      ...CapabilityOptions.bots(inputs, true),
+      ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.copilotPlugins(),
@@ -540,7 +536,7 @@ export class CapabilityOptions {
    */
   static all(inputs?: Inputs): OptionItem[] {
     const capabilityOptions = [
-      ...CapabilityOptions.bots(inputs, true),
+      ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.officeAddinItems(),
@@ -548,9 +544,7 @@ export class CapabilityOptions {
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
-    if (isCustomCopilotEnabled()) {
-      capabilityOptions.push(...CapabilityOptions.customCopilots());
-    }
+    capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (isTdpTemplateCliTestEnabled()) {
       // test templates that are used by TDP integration only
       capabilityOptions.push(...CapabilityOptions.tdpIntegrationCapabilities());
@@ -563,9 +557,6 @@ export class CapabilityOptions {
       id: "import",
       label: getLocalizedString("core.importAddin.label"),
       detail: getLocalizedString("core.importAddin.detail"),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.previewOnWindow"
-      ),
     };
   }
 
@@ -582,9 +573,6 @@ export class CapabilityOptions {
       id: template,
       label: getLocalizedString(officeAddinJsonData.getProjectDisplayName(template)),
       detail: getLocalizedString(officeAddinJsonData.getProjectDetails(template)),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.previewOnWindow"
-      ),
     }));
   }
 
@@ -766,7 +754,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
       const projectType = inputs[QuestionNames.ProjectType];
       const officeHost = inputs[QuestionNames.OfficeAddinCapability];
       if (projectType === ProjectTypeOptions.bot().id) {
-        return CapabilityOptions.bots(inputs, true);
+        return CapabilityOptions.bots(inputs);
       } else if (projectType === ProjectTypeOptions.tab().id) {
         return CapabilityOptions.tabs();
       } else if (projectType === ProjectTypeOptions.me().id) {
@@ -1294,21 +1282,30 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   }
 
   const capabilities = inputs[QuestionNames.Capabilities] as string;
-  // SPFx only supports typescript
   if (capabilities === CapabilityOptions.SPFxTab().id) {
+    // SPFx only supports typescript
     return [{ id: "typescript", label: "TypeScript" }];
+  } else if (capabilitiesHavePythonOption.includes(capabilities)) {
+    // support python language
+    return [
+      { id: "javascript", label: "JavaScript" },
+      { id: "typescript", label: "TypeScript" },
+      { id: "python", label: "Python" },
+    ];
+  } else {
+    // other cases
+    return [
+      { id: "javascript", label: "JavaScript" },
+      { id: "typescript", label: "TypeScript" },
+    ];
   }
-  // other case
-  return [
-    { id: "javascript", label: "JavaScript" },
-    { id: "typescript", label: "TypeScript" },
-  ];
 }
 
 export enum ProgrammingLanguage {
   JS = "javascript",
   TS = "typescript",
   CSharp = "csharp",
+  PY = "python",
 }
 
 export function programmingLanguageQuestion(): SingleSelectQuestion {
@@ -1321,6 +1318,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
       { id: ProgrammingLanguage.TS, label: "TypeScript" },
       { id: ProgrammingLanguage.CSharp, label: "C#" },
+      { id: ProgrammingLanguage.PY, label: "Python" },
     ],
     dynamicOptions: getLanguageOptions,
     default: (inputs: Inputs) => {
@@ -1860,7 +1858,7 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
   // export for unit test
   let placeholder = "";
 
-  const isApiPlugin = (inputs?: Inputs): boolean => {
+  const isPlugin = (inputs?: Inputs): boolean => {
     return (
       !!inputs && inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id
     );
@@ -1870,20 +1868,20 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
     title: (inputs: Inputs) => {
-      return isApiPlugin(inputs)
+      return isPlugin(inputs)
         ? getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
         : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title");
     },
     cliDescription: "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
     placeholder: (inputs: Inputs) => {
-      const isApiPlugin =
+      const isPlugin =
         inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
       if (!includeExistingAPIs) {
         placeholder = getLocalizedString(
           "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"
         );
-      } else if (isApiPlugin) {
+      } else if (isPlugin) {
         placeholder = ""; // TODO: add placeholder for api plugin
       } else if (isApiKeyEnabled()) {
         placeholder = getLocalizedString(
@@ -2250,6 +2248,7 @@ export function capabilitySubTree(): IQTreeNode {
         },
         data: apiMessageExtensionAuthQuestion(),
       },
+      /*
       {
         condition: (inputs: Inputs) => {
           return inputs[QuestionNames.Capabilities] == CapabilityOptions.customCopilotRag().id;
@@ -2274,6 +2273,7 @@ export function capabilitySubTree(): IQTreeNode {
           },
         ],
       },
+      */
       {
         condition: (inputs: Inputs) => {
           return (

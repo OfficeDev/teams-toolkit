@@ -13,7 +13,7 @@
         "keygen": "node -r ts-node/register ./src/keyGen.ts"
     },
     "dependencies": {
-        "@azure/functions": "^1.2.2"
+        "@azure/functions": "^4.3.0"
     },
     "devDependencies": {
         "env-cmd": "^10.1.0",

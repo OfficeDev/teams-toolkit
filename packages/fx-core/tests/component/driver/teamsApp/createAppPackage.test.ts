@@ -211,7 +211,7 @@ describe("teamsApp/createAppPackage", async () => {
       });
 
       const manifest = new TeamsAppManifest();
-      manifest.apiPlugins = [
+      manifest.plugins = [
         {
           pluginFile: "plugin.json",
         },
@@ -247,7 +247,7 @@ describe("teamsApp/createAppPackage", async () => {
       });
 
       const manifest = new TeamsAppManifest();
-      manifest.apiPlugins = [
+      manifest.plugins = [
         {
           pluginFile: "resources/ai-plugin.json",
         },
@@ -278,7 +278,7 @@ describe("teamsApp/createAppPackage", async () => {
       sinon.stub(fs, "readJSON").throws(new Error("fake error"));
 
       const manifest = new TeamsAppManifest();
-      manifest.apiPlugins = [
+      manifest.plugins = [
         {
           pluginFile: "resources/ai-plugin.json",
         },
@@ -590,7 +590,7 @@ describe("teamsApp/createAppPackage", async () => {
     };
 
     const manifest = new TeamsAppManifest();
-    manifest.apiPlugins = [
+    manifest.plugins = [
       {
         pluginFile: "resources/ai-plugin.json",
       },

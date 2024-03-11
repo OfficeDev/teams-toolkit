@@ -363,6 +363,9 @@ export function convertToLangKey(programmingLanguage: string): string {
     case ProgrammingLanguage.CSharp: {
       return "csharp";
     }
+    case ProgrammingLanguage.PY: {
+      return "python";
+    }
   }
   return programmingLanguage;
 }

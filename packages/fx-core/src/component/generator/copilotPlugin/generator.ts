@@ -187,7 +187,7 @@ export class CopilotPluginGenerator {
     destinationPath: string,
     templateName: string,
     componentName: string,
-    isApiPlugin: boolean,
+    isPlugin: boolean,
     apiKeyAuthData?: ApiKeyAuthInfo
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
@@ -195,7 +195,7 @@ export class CopilotPluginGenerator {
       const language = inputs[QuestionNames.ProgrammingLanguage];
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-      const type = isApiPlugin ? GenerateType.ApiPlugin : GenerateType.ME;
+      const type = isPlugin ? GenerateType.ApiPlugin : GenerateType.ME;
 
       const manifestPath = path.join(
         destinationPath,

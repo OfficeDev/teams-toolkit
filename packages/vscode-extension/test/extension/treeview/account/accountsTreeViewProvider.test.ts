@@ -97,6 +97,13 @@ describe("AccountTreeViewProvider", () => {
     const azureSignedInStub = sandbox.stub(AccountTreeViewProvider.azureAccountNode, "setSignedIn");
     await azureStatusChange("SignedIn", "token", { upn: "upn" });
     chai.assert.isTrue(azureSignedInStub.calledOnce);
+
+    const azureSigningInStub = sandbox.stub(
+      AccountTreeViewProvider.azureAccountNode,
+      "setSigningIn"
+    );
+    await azureStatusChange("SigningIn", undefined, {});
+    chai.assert.isTrue(azureSigningInStub.calledOnce);
   });
 
   it("getChildren", async () => {

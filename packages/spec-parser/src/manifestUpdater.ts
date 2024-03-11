@@ -28,7 +28,7 @@ export class ManifestUpdater {
   ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
-    manifest.apiPlugins = [
+    manifest.plugins = [
       {
         pluginFile: apiPluginRelativePath,
       },

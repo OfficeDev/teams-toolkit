@@ -611,6 +611,12 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openDocumentLinkCmd);
 
+  const azureAccountSignOutHelpCmd = vscode.commands.registerCommand(
+    "fx-extension.azureAccountSignOutHelp",
+    (...args) => Correlator.run(handlers.azureAccountSignOutHelpHandler, args)
+  );
+  context.subscriptions.push(azureAccountSignOutHelpCmd);
+
   const aadManifestTemplateCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.openPreviewAadFile",
     (...args) => Correlator.run(handlers.openPreviewAadFile, args)

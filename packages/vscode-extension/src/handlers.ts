@@ -2860,6 +2860,12 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   return Promise.resolve(ok(false));
 }
 
+export async function azureAccountSignOutHelpHandler(
+  args?: any[]
+): Promise<Result<boolean, FxError>> {
+  return Promise.resolve(ok(false));
+}
+
 export function openAccountHelpHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.AccountHelp);
 }

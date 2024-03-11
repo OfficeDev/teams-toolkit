@@ -20,8 +20,6 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Capabilities */
   capabilities?:
     | "bot"
-    | "ai-bot"
-    | "ai-assistant-bot"
     | "notification"
     | "command-bot"
     | "workflow-bot"
@@ -36,7 +34,6 @@ export interface CreateProjectInputs extends Inputs {
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
     | "custom-copilot-basic"
-    | "custom-copilot-rag"
     | "custom-copilot-assistant"
     | "message-extension"
     | "BotAndMessageExtension"
@@ -69,18 +66,12 @@ export interface CreateProjectInputs extends Inputs {
   "api-operation"?: string[];
   /** @description Authentication Type */
   "api-me-auth"?: "none" | "api-key";
-  /** @description Chat With Your Data */
-  "custom-copilot-rag"?:
-    | "custom-copilot-rag-customize"
-    | "custom-copilot-rag-azureAISearch"
-    | "custom-copilot-rag-customApi"
-    | "custom-copilot-rag-microsoft365";
-  /** @description AI Assistant */
+  /** @description AI Agent */
   "custom-copilot-assistant"?:
     | "custom-copilot-assistant-new"
     | "custom-copilot-assistant-assistantsApi";
   /** @description Programming Language */
-  "programming-language"?: "javascript" | "typescript" | "csharp";
+  "programming-language"?: "javascript" | "typescript" | "csharp" | "python";
   /** @description Service for Large Language Model (LLM) */
   "llm-service"?: "llm-service-azureOpenAI" | "llm-service-openAI";
   /** @description Azure OpenAI Key */

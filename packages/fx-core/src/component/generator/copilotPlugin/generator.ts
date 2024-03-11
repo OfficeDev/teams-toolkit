@@ -223,6 +223,7 @@ export class CopilotPluginGenerator {
           appName,
           safeProjectNameFromVS,
           inputs.targetFramework,
+          inputs.placeProjectFileInSolutionDir === "true",
           {
             authName: apiKeyAuthData.authName,
             openapiSpecPath: normalizePath(
@@ -235,7 +236,8 @@ export class CopilotPluginGenerator {
         context.templateVariables = Generator.getDefaultVariables(
           appName,
           safeProjectNameFromVS,
-          inputs.targetFramework
+          inputs.targetFramework,
+          inputs.placeProjectFileInSolutionDir === "true"
         );
       }
       const filters = inputs[QuestionNames.ApiOperation] as string[];

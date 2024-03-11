@@ -799,6 +799,23 @@ describe("Generator happy path", async () => {
     assert.equal(vars.enableTestToolByDefault, "");
   });
 
+  it("template variables when new project enabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "true" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.isNewProjectTypeEnabled, "true");
+  });
+
+  it("template variables when test tool disabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "false" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.isNewProjectTypeEnabled, "");
+  });
+
+  it("template variables when set placeProjectFileInSolutionDir to true", async () => {
+    const vars = Generator.getDefaultVariables("test", undefined, undefined, true);
+    assert.equal(vars.PlaceProjectFileInSolutionDir, "true");
+  });
+
   it("template variables with custom copilot - OpenAI", async () => {
     const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
       llmService: "llm-service-openAI",

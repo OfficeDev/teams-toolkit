@@ -360,7 +360,7 @@ export interface ITogetherModeScene {
   seatsReservedForOrganizersOrPresenters: number;
 }
 
-export interface IApiPlugin {
+export interface IPlugin {
   pluginFile: string;
 }
 
@@ -541,7 +541,7 @@ export class TeamsAppManifest implements AppManifest {
     };
   };
   /**
-   * Pointer to PluginB manifest.
+   * Pointer to plugin manifest.
    */
-  apiPlugins?: IApiPlugin[];
+  plugins?: IPlugin[];
 }

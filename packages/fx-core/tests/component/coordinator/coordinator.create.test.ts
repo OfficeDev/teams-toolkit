@@ -31,6 +31,7 @@ import {
 import { QuestionNames } from "../../../src/question/questionNames";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
+import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
 
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator create", () => {
@@ -212,6 +213,45 @@ describe("coordinator create", () => {
     if (res.isErr()) {
       assert.isTrue(res.error instanceof InputValidationError);
     }
+  });
+  it("create project for new office XML Addin MissingRequiredInputError missing App name", async () => {
+    const mockedEnvRestoreLocal = mockedEnv({
+      [FeatureFlagName.OfficeXMLAddin]: "true",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof MissingRequiredInputError);
+    }
+    mockedEnvRestoreLocal();
+  });
+  it("create project for new office XML Addin InputValidationError invalid App name", async () => {
+    const mockedEnvRestoreLocal = mockedEnv({
+      [FeatureFlagName.OfficeXMLAddin]: "true",
+    });
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      ignoreLockByUT: true,
+      folder: ".",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.AppName]: "__#$%___",
+    };
+    const context = createContextV3();
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr());
+    if (res.isErr()) {
+      assert.isTrue(res.error instanceof InputValidationError);
+    }
+    mockedEnvRestoreLocal();
   });
   it("create project from sample MissingRequiredInputError missing sample id", async () => {
     const inputs: Inputs = {
@@ -659,7 +699,7 @@ describe("coordinator create", () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .stub(CopilotPluginGenerator, "generateMeFromApiSpec")
       .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
     const inputs: Inputs = {
@@ -842,6 +882,87 @@ describe("Office Addin", async () => {
   });
 });
 
+describe("Office XML Addin", async () => {
+  const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  let mockedEnvRestore: RestoreFn = () => {};
+  tools.ui = new MockedUserInteraction();
+  setTools(tools);
+
+  beforeEach(() => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.OfficeXMLAddin]: "true",
+    });
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("should scaffold project successfully", async () => {
+    const context = createContextV3();
+    context.userInteraction = new MockedUserInteraction();
+
+    sandbox.stub(OfficeXMLAddinGenerator, "generate").resolves(ok(undefined));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isOk());
+  });
+
+  it("should return error if app name is invalid", async () => {
+    const context = createContextV3();
+    context.userInteraction = new MockedUserInteraction();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.AppName]: "__invalid__",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+    };
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr() && res.error instanceof InputValidationError);
+  });
+
+  it("should return error if app name is undefined", async () => {
+    const context = createContextV3();
+    context.userInteraction = new MockedUserInteraction();
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.AppName]: undefined,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+    };
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr() && res.error instanceof MissingRequiredInputError);
+  });
+
+  it("should return error if OfficeXMLAddinGenerator returns error", async () => {
+    const context = createContextV3();
+    context.userInteraction = new MockedUserInteraction();
+
+    const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
+    sandbox.stub(OfficeXMLAddinGenerator, "generate").resolves(err(mockedError));
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+    };
+    const res = await coordinator.create(context, inputs);
+    assert.isTrue(res.isErr() && res.error.name === "mockedError");
+  });
+});
+
 describe("Copilot plugin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -861,7 +982,7 @@ describe("Copilot plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
       .resolves(ok({ warnings: [{ type: "", content: "", data: {} } as any] }));
 
     const inputs: Inputs = {
@@ -881,7 +1002,7 @@ describe("Copilot plugin", async () => {
     v3ctx.userInteraction = new MockedUserInteraction();
 
     sandbox
-      .stub(CopilotPluginGenerator, "generateFromApiSpec")
+      .stub(CopilotPluginGenerator, "generatePluginFromApiSpec")
       .resolves(err(new SystemError("mockedSource", "mockedError", "mockedMessage", "")));
 
     const inputs: Inputs = {

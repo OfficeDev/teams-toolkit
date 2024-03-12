@@ -37,6 +37,7 @@ export class SpecParser {
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
+    isCopilot: false,
   };
 
   /**
@@ -92,7 +93,8 @@ export class SpecParser {
         this.options.allowMissingId,
         this.options.allowAPIKeyAuth,
         this.options.allowMultipleParameters,
-        this.options.allowOauth2
+        this.options.allowOauth2,
+        this.options.isCopilot
       );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
@@ -152,11 +154,41 @@ export class SpecParser {
   }
 
   /**
+   * Generate specs according to the filters.
+   * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
+   */
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getFilteredSpecs(
+    filter: string[],
+    signal?: AbortSignal
+  ): Promise<[OpenAPIV3.Document, OpenAPIV3.Document]> {
+    throw new Error("Method not implemented.");
+  }
+
+  /**
+   * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
+   * @param manifestPath A file path of the Teams app manifest file to update.
+   * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
+   * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param pluginFilePath File path of the api plugin file to generate.
+   */
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async generateForCopilot(
+    manifestPath: string,
+    filter: string[],
+    outputSpecPath: string,
+    pluginFilePath: string,
+    signal?: AbortSignal
+  ): Promise<GenerateResult> {
+    throw new Error("Method not implemented.");
+  }
+  /**
    * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
    * @param manifestPath A file path of the Teams app manifest file to update.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
    * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
    * @param adaptiveCardFolder Folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
+   * @param isMe Boolean that indicates whether the project is an Messaging Extension. For Messaging Extension, composeExtensions will be added in Teams app manifest.
    */
   // eslint-disable-next-line @typescript-eslint/require-await
   async generate(
@@ -164,7 +196,8 @@ export class SpecParser {
     filter: string[],
     outputSpecPath: string,
     adaptiveCardFolder: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    isMe?: boolean
   ): Promise<GenerateResult> {
     throw new Error("Method not implemented.");
   }
@@ -192,7 +225,8 @@ export class SpecParser {
       this.options.allowMissingId,
       this.options.allowAPIKeyAuth,
       this.options.allowMultipleParameters,
-      this.options.allowOauth2
+      this.options.allowOauth2,
+      this.options.isCopilot
     );
     this.apiMap = result;
     return result;

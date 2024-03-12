@@ -100,7 +100,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, true);
     });
 
@@ -138,7 +147,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, false, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        false,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -190,7 +208,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, true);
     });
 
@@ -262,7 +289,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -334,7 +370,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        true,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, true);
     });
 
@@ -407,7 +452,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        true,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -481,7 +535,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, true);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        true,
+        false
+      );
       assert.strictEqual(result, true);
     });
 
@@ -560,7 +623,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        true,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -639,7 +711,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, true);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        true,
+        false,
+        true,
+        false
+      );
       assert.strictEqual(result, true);
     });
 
@@ -692,7 +773,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, true);
     });
 
@@ -745,8 +835,79 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if method is POST, path is valid, parameter is supported and both postBody and parameters contains multiple required param for copilot", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        true,
+        false,
+        true
+      );
+      assert.strictEqual(result, true);
     });
 
     it("should support multiple required parameters", () => {
@@ -798,7 +959,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, true, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        true,
+        false,
+        false
+      );
       assert.strictEqual(result, true);
     });
 
@@ -859,8 +1029,87 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, true, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        true,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
+    });
+
+    it("should not support multiple required parameters count larger than 5 for copilot", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["id1", "id2", "id3", "id4", "id5", "id6"],
+                      properties: {
+                        id1: {
+                          type: "string",
+                        },
+                        id2: {
+                          type: "string",
+                        },
+                        id3: {
+                          type: "string",
+                        },
+                        id4: {
+                          type: "string",
+                        },
+                        id5: {
+                          type: "string",
+                        },
+                        id6: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        true,
+        false,
+        true
+      );
+      assert.strictEqual(result, true);
     });
 
     it("should return false if method is POST, but requestBody contains unsupported parameter and required", () => {
@@ -915,7 +1164,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -972,8 +1230,153 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, true);
+    });
+
+    it("should return false if method is POST, but parameters contain nested object", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "object",
+                        properties: {
+                          id: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        true
+      );
+      assert.strictEqual(result, false);
+    });
+
+    it("should return false if method is POST, but requestBody contain nested object", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "object",
+                          properties: {
+                            id: {
+                              type: "string",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        true
+      );
+      assert.strictEqual(result, false);
     });
 
     it("should return true if method is POST, path is valid, parameter is supported and only one required param in postBody", () => {
@@ -1010,7 +1413,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, true);
     });
 
@@ -1048,7 +1460,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -1085,7 +1506,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -1122,7 +1552,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -1160,7 +1599,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -1198,11 +1646,20 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
-    it("should return false if parameter is in header and required supported", () => {
+    it("should return false if parameter is in header and required", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
@@ -1236,8 +1693,68 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if parameter is in header and required for copilot", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [
+                {
+                  in: "header",
+                  required: true,
+                  schema: { type: "string" },
+                },
+                {
+                  in: "query",
+                  schema: { type: "string" },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        true
+      );
+      assert.strictEqual(result, true);
     });
 
     it("should return false if there is no parameters", () => {
@@ -1263,8 +1780,53 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if there is no parameters for copilot", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        true
+      );
+      assert.strictEqual(result, true);
     });
 
     it("should return false if parameters is null", () => {
@@ -1289,7 +1851,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -1321,7 +1892,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
 
@@ -1385,7 +1965,65 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
+      assert.strictEqual(result, false);
+    });
+
+    it("should return false if method is POST, and request body schema is not object", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        true
+      );
       assert.strictEqual(result, false);
     });
 
@@ -1433,7 +2071,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(
+        method,
+        path,
+        spec as any,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.strictEqual(result, false);
     });
   });
@@ -1470,7 +2117,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: false, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
     });
 
@@ -1479,7 +2126,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 2);
       assert.strictEqual(result.optionalNum, 0);
@@ -1491,7 +2138,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: true, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1501,7 +2148,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: true, schema: { type: "string", default: "value" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       // header param is ignored
       assert.strictEqual(result.requiredNum, 1);
@@ -1514,7 +2161,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "query", required: true, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 2);
@@ -1526,7 +2173,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "query", required: true, schema: { type: "array", default: ["item"] } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 1);
@@ -1538,7 +2185,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: false, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 1);
@@ -1549,7 +2196,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "array" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1558,7 +2205,7 @@ describe("utils", () => {
         { in: "query", required: false, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "object" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1567,7 +2214,7 @@ describe("utils", () => {
         { in: "query", required: false, schema: { type: "string" } },
         { in: "path", required: false, schema: { type: "object" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 0);
       assert.strictEqual(result.optionalNum, 1);
@@ -1731,7 +2378,14 @@ describe("utils", () => {
   describe("validateServer", () => {
     it("should return an error if there is no server information", () => {
       const spec = { paths: {} };
-      const errors = Utils.validateServer(spec as OpenAPIV3.Document, true, false, false, false);
+      const errors = Utils.validateServer(
+        spec as OpenAPIV3.Document,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1750,7 +2404,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1764,7 +2418,14 @@ describe("utils", () => {
         servers: [{ url: "https://example.com" }],
         paths: {},
       };
-      const errors = Utils.validateServer(spec as OpenAPIV3.Document, true, false, false, false);
+      const errors = Utils.validateServer(
+        spec as OpenAPIV3.Document,
+        true,
+        false,
+        false,
+        false,
+        false
+      );
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1776,7 +2437,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1808,7 +2469,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1842,7 +2503,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1876,7 +2537,7 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+      const errors = Utils.validateServer(spec as any, true, false, false, false, false);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.RelativeServerUrlNotSupported,
@@ -1894,6 +2555,35 @@ describe("utils", () => {
           data: "ftp",
         },
       ]);
+    });
+  });
+
+  describe("hasNestedObjectInSchema", () => {
+    it("should return false if schema type is not object", () => {
+      const schema: OpenAPIV3.SchemaObject = {
+        type: "string",
+      };
+      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
+    });
+
+    it("should return false if schema type is object but no nested object property", () => {
+      const schema: OpenAPIV3.SchemaObject = {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+        },
+      };
+      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
+    });
+
+    it("should return true if schema type is object and has nested object property", () => {
+      const schema: OpenAPIV3.SchemaObject = {
+        type: "object",
+        properties: {
+          nestedObject: { type: "object" },
+        },
+      };
+      expect(Utils.hasNestedObjectInSchema(schema)).to.be.true;
     });
   });
 

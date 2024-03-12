@@ -18,7 +18,7 @@ export class AzureAccountNode extends DynamicNode {
   }
 
   public setSignedIn(upn: string) {
-    if (this.status === AccountItemStatus.SignedIn) {
+    if (this.status === AccountItemStatus.SignedIn && this.label === upn) {
       return false;
     }
     this.status = AccountItemStatus.SignedIn;

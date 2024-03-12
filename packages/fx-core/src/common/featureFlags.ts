@@ -21,6 +21,7 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.AadManifest] = "true";
   process.env[FeatureFlagName.ApiConnect] = "true";
   process.env[FeatureFlagName.DeployManifest] = "true";
+  process.env[FeatureFlagName.OfficeXMLAddin] = "true";
 }
 
 export function isCLIDotNetEnabled(): boolean {
@@ -44,10 +45,6 @@ export function isApiCopilotPluginEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
 }
 
-export function isCustomCopilotEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CustomCopilot, false);
-}
-
 export function enableTestToolByDefault(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
 }
@@ -58,6 +55,10 @@ export function isApiKeyEnabled(): boolean {
 
 export function isMultipleParametersEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
+}
+
+export function isOfficeXMLAddinEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.OfficeXMLAddin, false);
 }
 
 export function isTeamsFxRebrandingEnabled(): boolean {

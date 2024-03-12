@@ -61,7 +61,6 @@ new TodoListM365TestCase(
   [LocalDebugTaskLabel.StartFrontend, LocalDebugTaskLabel.StartBackend],
   {
     teamsAppName: "toDoList-local",
-    skipValidation: true,
     debug: "cli",
     testRootFolder: path.resolve(os.homedir(), "resourse"), // fix eslint error
   }

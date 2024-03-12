@@ -91,6 +91,7 @@ export enum ErrorType {
   GenerateAdaptiveCardFailed = "generate-adaptive-card-failed",
   GenerateFailed = "generate-failed",
   ValidateFailed = "validate-failed",
+  GetSpecFailed = "get-spec-failed",
 
   Cancelled = "cancelled",
   Unknown = "unknown",
@@ -186,6 +187,7 @@ export interface ParseOptions {
   allowAPIKeyAuth?: boolean;
   allowMultipleParameters?: boolean;
   allowOauth2?: boolean;
+  isCopilot?: boolean;
 }
 
 export interface APIInfo {

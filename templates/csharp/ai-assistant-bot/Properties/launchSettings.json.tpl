@@ -59,36 +59,36 @@
 {{/isNewProjectTypeEnabled}}
 {{#isNewProjectTypeEnabled}}
 {{#enableTestToolByDefault}}
-    // Launch project with TestTool environment, will be used by Teams App Test Tool
     "Teams App Test Tool": {
       "commandName": "Project",
-      "commandLineArgs": "host start --port 5130 --pause-on-error",
       "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5130",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "TestTool",
         "TEAMSFX_NOTIFICATION_STORE_FILENAME": ".notification.testtoolstore.json"
-      }
+      },
+      "hotReloadProfile": "aspnetcore"
     },
 {{/enableTestToolByDefault}}
-    // Launch project directly
     "Start Project": {
       "commandName": "Project",
-      "commandLineArgs": "host start --port 5130 --pause-on-error",
       "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5130",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-      }
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "hotReloadProfile": "aspnetcore"
     },
 {{^enableTestToolByDefault}}
-    // Launch project with TestTool environment, will be used by Teams App Test Tool
     "Teams App Test Tool": {
       "commandName": "Project",
-      "commandLineArgs": "host start --port 5130 --pause-on-error",
       "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5130",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "TestTool",
         "TEAMSFX_NOTIFICATION_STORE_FILENAME": ".notification.testtoolstore.json"
-      }
+      },
+      "hotReloadProfile": "aspnetcore"
     },
 {{/enableTestToolByDefault}}
 {{/isNewProjectTypeEnabled}}

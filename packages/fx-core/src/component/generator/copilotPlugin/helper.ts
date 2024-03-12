@@ -80,7 +80,7 @@ export const copilotPluginParserOptions: ParseOptions = {
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
-  allowMethods: ["get", "head", "post", "put", "delete", "patch", "connect", "options", "trace"],
+  allowMethods: ["get", "post", "put", "delete"],
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";

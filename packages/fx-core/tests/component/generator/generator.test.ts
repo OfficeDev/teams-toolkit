@@ -822,7 +822,7 @@ describe("Generator happy path", async () => {
 
   it("template variables with custom copilot - OpenAI", async () => {
     const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
-      llmService: "llm-service-openAI",
+      llmService: "llm-service-openai",
       openAIKey: "test-key",
     });
     assert.equal(vars.useOpenAI, "true");
@@ -834,7 +834,7 @@ describe("Generator happy path", async () => {
 
   it("template variables with custom copilot - Azure OpenAI", async () => {
     const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
-      llmService: "llm-service-azureOpenAI",
+      llmService: "llm-service-azure-openai",
       azureOpenAIKey: "test-key",
       azureOpenAIEndpoint: "test-endpoint",
     });

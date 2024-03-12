@@ -428,6 +428,16 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
+    if (inputs?.platform === Platform.VS) {
+      return [
+        CapabilityOptions.basicBot(),
+        CapabilityOptions.aiBot(),
+        CapabilityOptions.aiAssistantBot(),
+        CapabilityOptions.notificationBot(),
+        CapabilityOptions.commandBot(),
+        CapabilityOptions.workflowBot(inputs),
+      ];
+    }
     return [
       CapabilityOptions.basicBot(),
       CapabilityOptions.notificationBot(),
@@ -711,7 +721,7 @@ export class CapabilityOptions {
 
   static customCopilotAssistant(): OptionItem {
     return {
-      id: "custom-copilot-assistant",
+      id: "custom-copilot-agent",
       label: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantOption.label"
       ),
@@ -2098,7 +2108,7 @@ export class CustomCopilotRagOptions {
 export class CustomCopilotAssistantOptions {
   static new(): OptionItem {
     return {
-      id: "custom-copilot-assistant-new",
+      id: "custom-copilot-agent-new",
       label: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantNewOption.label"
       ),
@@ -2110,7 +2120,7 @@ export class CustomCopilotAssistantOptions {
 
   static assistantsApi(): OptionItem {
     return {
-      id: "custom-copilot-assistant-assistantsApi",
+      id: "custom-copilot-agent-assistants-api",
       label: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.label"
       ),
@@ -2162,23 +2172,22 @@ function llmServiceQuestion(): SingleSelectQuestion {
     placeholder: getLocalizedString("core.createProjectQuestion.llmService.placeholder"),
     staticOptions: [
       {
-        id: "llm-service-azureOpenAI",
+        id: "llm-service-azure-openai",
+        cliName: "azure-openai",
         label: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.label"),
         detail: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.detail"),
       },
       {
-        id: "llm-service-openAI",
+        id: "llm-service-openai",
         label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
         detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
       },
     ],
     dynamicOptions: (inputs: Inputs) => {
       const options: OptionItem[] = [];
-      if (
-        inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-assistant-assistantsApi"
-      ) {
+      if (inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-agent-assistants-api") {
         options.push({
-          id: "llm-service-azureOpenAI",
+          id: "llm-service-azure-openai",
           label: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.label"),
           detail: getLocalizedString(
             "core.createProjectQuestion.llmServiceAzureOpenAIOption.detail"
@@ -2186,14 +2195,14 @@ function llmServiceQuestion(): SingleSelectQuestion {
         });
       }
       options.push({
-        id: "llm-service-openAI",
+        id: "llm-service-openai",
         label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
         detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
       });
       return options;
     },
     skipSingleOption: true,
-    default: "llm-service-azureOpenAI",
+    default: "llm-service-azure-openai",
   };
 }
 
@@ -2394,7 +2403,7 @@ export function capabilitySubTree(): IQTreeNode {
         data: llmServiceQuestion(),
         children: [
           {
-            condition: { equals: "llm-service-azureOpenAI" },
+            condition: { equals: "llm-service-azure-openai" },
             data: azureOpenAIKeyQuestion(),
             children: [
               {
@@ -2406,7 +2415,7 @@ export function capabilitySubTree(): IQTreeNode {
             ],
           },
           {
-            condition: { equals: "llm-service-openAI" },
+            condition: { equals: "llm-service-openai" },
             data: openAIKeyQuestion(),
           },
         ],

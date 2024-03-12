@@ -33,7 +33,9 @@ const actionName = "teamsApp/validateWithTestCases";
 
 @Service(actionName)
 export class ValidateWithTestCasesDriver implements StepDriver {
-  description = getLocalizedString("driver.teamsApp.description.validateWithTestCasesDriver");
+  description = getLocalizedString(
+    "core.selectValidateMethodQuestion.validate.testCasesOptionDescription"
+  );
   readonly progressTitle = getLocalizedString("driver.teamsApp.progressBar.validateWithTestCases");
 
   public async execute(
@@ -107,7 +109,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
           response.status,
           validationRequestListUrl
         );
-        context.logProvider?.info(message);
+        context.logProvider.info(message);
         if (args.showProgressBar) {
           await context.progressBar?.next(message);
         }
@@ -123,7 +125,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
             response.status,
             validationRequestListUrl
           );
-          context.logProvider?.info(message);
+          context.logProvider.info(message);
           response = await AppStudioClient.getAppValidationById(
             response.appValidationId,
             appStudioToken
@@ -144,7 +146,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
               )
               .then(async (res) => {
                 if (
-                  res?.isOk() &&
+                  res.isOk() &&
                   res.value ===
                     getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
                 ) {
@@ -152,7 +154,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
                 }
               });
           }
-          context.logProvider?.info(
+          context.logProvider.info(
             getLocalizedString(
               "driver.teamsApp.summary.validateWithTestCases",
               response.status,
@@ -173,7 +175,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
               )
               .then(async (res) => {
                 if (
-                  res?.isOk() &&
+                  res.isOk() &&
                   res.value ===
                     getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
                 ) {
@@ -181,7 +183,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
                 }
               });
           }
-          context.logProvider?.error(
+          context.logProvider.error(
             getLocalizedString(
               "driver.teamsApp.summary.validateWithTestCases",
               response.status,

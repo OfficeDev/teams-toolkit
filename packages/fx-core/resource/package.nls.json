@@ -686,7 +686,6 @@
   "driver.teamsApp.description.updateDriver": "update a Teams app.",
   "driver.teamsApp.description.publishDriver": "publish a Teams app to tenant app catalog.",
   "driver.teamsApp.description.validateDriver": "validate a Teams app.",
-  "driver.teamsApp.description.validateWithTestCasesDriver": "Run test cases Microsoft uses when reviewing your application for publish.",
   "driver.teamsApp.description.createAppPackageDriver": "build a Teams app package.",
   "driver.teamsApp.progressBar.copyAppPackageToSPFxStepMessage": "Copying Teams app package to SPFx solution...",
   "driver.teamsApp.progressBar.createTeamsAppStepMessage": "Creating Teams app...",

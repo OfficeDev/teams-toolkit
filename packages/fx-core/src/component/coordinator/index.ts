@@ -412,6 +412,18 @@ class Coordinator {
           );
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
+          if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
+            const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
+              context,
+              inputs,
+              projectPath
+            );
+            if (res.isErr()) {
+              return err(res.error);
+            } else {
+              warnings = res.value.warnings;
+            }
+          }
         } else {
           return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
         }

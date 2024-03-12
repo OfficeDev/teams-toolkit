@@ -47,6 +47,7 @@ import {
   ApiMessageExtensionAuthOptions,
   CustomCopilotRagOptions,
   CustomCopilotAssistantOptions,
+  OfficeAddinHostOptions,
 } from "../../question/create";
 import { QuestionNames } from "../../question/questionNames";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
@@ -296,10 +297,13 @@ class Coordinator {
         }
       } else if (
         isOfficeXMLAddinEnabled() &&
-        inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeXMLAddin().id
+        (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeXMLAddin().id ||
+          CapabilityOptions.officeXMLAddinHostOptionItems(inputs[QuestionNames.OfficeAddinHost])
+            .map((i) => i.id)
+            .includes(capability))
       ) {
         const res =
-          inputs[QuestionNames.OfficeAddinCapability] === ProjectTypeOptions.outlookAddin().id
+          inputs[QuestionNames.OfficeAddinHost] === OfficeAddinHostOptions.outlook().id
             ? await OfficeAddinGenerator.generate(context, inputs, projectPath)
             : await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {

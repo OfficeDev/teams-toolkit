@@ -20,10 +20,10 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: ["node", "dotnet"],
   },
   {
-    name: "addin-office-capability",
+    name: "addin-host",
     type: "string",
     description: "Select to create an Outlook, Word, Excel, or PowerPoint Add-in",
-    choices: ["outlook-addin-type", "word", "excel", "powerpoint"],
+    choices: ["outlook", "word", "excel", "powerpoint"],
   },
   {
     name: "capability",
@@ -103,12 +103,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "spfx-folder",
     type: "string",
     description: "Directory or Path that contains the existing SharePoint Framework solution.",
-  },
-  {
-    name: "addin-host",
-    type: "string",
-    description: "Add-in Host",
-    default: "No Options",
   },
   {
     name: "me-architecture",

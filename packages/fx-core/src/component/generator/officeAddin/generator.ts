@@ -88,9 +88,9 @@ export class OfficeAddinGenerator {
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
     const language = inputs[QuestionNames.ProgrammingLanguage];
     const host = isOfficeXMLAddinEnabled()
-      ? inputs[QuestionNames.OfficeAddinCapability] === ProjectTypeOptions.outlookAddin().id
+      ? inputs[QuestionNames.OfficeAddinHost] === ProjectTypeOptions.outlookAddin().id
         ? "Outlook"
-        : inputs[QuestionNames.OfficeAddinCapability]
+        : inputs[QuestionNames.OfficeAddinHost]
       : inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
     const importProgress = context.userInteraction.createProgressBar(

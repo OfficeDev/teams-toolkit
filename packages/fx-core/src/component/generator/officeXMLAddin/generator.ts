@@ -42,7 +42,7 @@ export class OfficeXMLAddinGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
-    const host = inputs[QuestionNames.OfficeAddinCapability] as string;
+    const host = inputs[QuestionNames.OfficeAddinHost] as string;
     const project = inputs[QuestionNames.Capabilities];
     const lang = inputs[QuestionNames.ProgrammingLanguage] === ProgrammingLanguage.TS ? "ts" : "js";
     const appName = inputs[QuestionNames.AppName] as string;

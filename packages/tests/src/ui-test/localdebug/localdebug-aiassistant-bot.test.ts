@@ -50,8 +50,9 @@ describe("Local Debug Tests", function () {
       );
       validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.local.user");
-      editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");
-      editDotEnvFile(envPath, "SECRET_OPENAI_ASSISTANT_ID", "fake");
+      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");
+      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", "https://test.com");
+      editDotEnvFile(envPath, "AZURE_OPENAI_DEPLOYMENT_NAME", "fake");
 
       await startDebugging(DebugItemSelect.DebugInTeamsUsingChrome);
 

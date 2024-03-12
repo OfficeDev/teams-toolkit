@@ -567,6 +567,7 @@ export class FxCore {
     const args: ValidateWithTestCasesArgs = {
       appPackagePath: inputs["app-package-file-path"] as string,
       showMessage: true,
+      showProgressBar: true,
     };
     const driver: ValidateWithTestCasesDriver = Container.get("teamsApp/validateWithTestCases");
     return (await driver.execute(args, context)).result;

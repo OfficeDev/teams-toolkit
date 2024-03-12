@@ -14,18 +14,27 @@ import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArg
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
 import { AppStudioClient } from "./clients/appStudioClient";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { AppStudioScopes } from "../../../common/tools";
+import { AppStudioScopes, waitSeconds } from "../../../common/tools";
 import AdmZip from "adm-zip";
-import { Constants, getAppStudioEndpoint } from "./constants";
+import {
+  Constants,
+  getAppStudioEndpoint,
+  CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS,
+} from "./constants";
 import { metadataUtil } from "../../utils/metadataUtil";
 import { FileNotFoundError, InvalidActionInputError } from "../../../error/common";
-import { AsyncAppValidationResponse } from "./interfaces/AsyncAppValidationResponse";
+import {
+  AsyncAppValidationResponse,
+  AsyncAppValidationStatus,
+} from "./interfaces/AsyncAppValidationResponse";
+import { AsyncAppValidationResultsResponse } from "./interfaces/AsyncAppValidationResultsResponse";
 
 const actionName = "teamsApp/validateWithTestCases";
 
 @Service(actionName)
 export class ValidateWithTestCasesDriver implements StepDriver {
   description = getLocalizedString("driver.teamsApp.description.validateWithTestCasesDriver");
+  readonly progressTitle = getLocalizedString("driver.teamsApp.progressBar.validateWithTestCases");
 
   public async execute(
     args: ValidateWithTestCasesArgs,
@@ -78,15 +87,113 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       }
       const appStudioToken = appStudioTokenRes.value;
 
-      const response: AsyncAppValidationResponse = await AppStudioClient.submitAppValidationRequest(
-        manifest.id,
-        appStudioToken
-      );
-      const url = `${getAppStudioEndpoint()}/apps/${manifest.id}/app-validation/${
-        response.appValidationId
-      }`;
-      const message = getLocalizedString("AppStudio.asyncValidationMessage", response.status, url);
-      context.logProvider?.info(message);
+      if (args.showProgressBar) {
+        context.progressBar = context.ui?.createProgressBar(this.progressTitle, 1);
+        await context.progressBar?.start();
+      }
+
+      try {
+        let response: AsyncAppValidationResponse | AsyncAppValidationResultsResponse =
+          await AppStudioClient.submitAppValidationRequest(manifest.id, appStudioToken);
+        const validationRequestListUrl = `${getAppStudioEndpoint()}/apps/${
+          manifest.id
+        }/app-validation`;
+        const validationStatusUrl = `${getAppStudioEndpoint()}/apps/${manifest.id}/app-validation/${
+          response.appValidationId
+        }`;
+
+        const message = getLocalizedString(
+          "driver.teamsApp.progressBar.validateWithTestCases.step",
+          response.status,
+          validationRequestListUrl
+        );
+        context.logProvider?.info(message);
+        if (args.showProgressBar) {
+          await context.progressBar?.next(message);
+        }
+
+        // Periodically check the result until it's completed or aborted
+        while (
+          response.status !== AsyncAppValidationStatus.Completed &&
+          response.status !== AsyncAppValidationStatus.Aborted
+        ) {
+          await waitSeconds(CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS);
+          const message = getLocalizedString(
+            "driver.teamsApp.progressBar.validateWithTestCases.step",
+            response.status,
+            validationRequestListUrl
+          );
+          context.logProvider?.info(message);
+          response = await AppStudioClient.getAppValidationById(
+            response.appValidationId,
+            appStudioToken
+          );
+        }
+
+        if (response.status === AsyncAppValidationStatus.Completed) {
+          if (args.showMessage) {
+            void context.ui
+              ?.showMessage(
+                "info",
+                getLocalizedString(
+                  "driver.teamsApp.summary.validateWithTestCases",
+                  response.status
+                ),
+                false,
+                getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
+              )
+              .then(async (res) => {
+                if (
+                  res?.isOk() &&
+                  res.value ===
+                    getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
+                ) {
+                  await context.ui?.openUrl(validationStatusUrl);
+                }
+              });
+          }
+          context.logProvider?.info(
+            getLocalizedString(
+              "driver.teamsApp.summary.validateWithTestCases",
+              response.status,
+              validationStatusUrl
+            )
+          );
+        } else {
+          if (args.showMessage) {
+            void context.ui
+              ?.showMessage(
+                "error",
+                getLocalizedString(
+                  "driver.teamsApp.summary.validateWithTestCases.result",
+                  response.status
+                ),
+                false,
+                getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
+              )
+              .then(async (res) => {
+                if (
+                  res?.isOk() &&
+                  res.value ===
+                    getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
+                ) {
+                  await context.ui?.openUrl(validationStatusUrl);
+                }
+              });
+          }
+          context.logProvider?.error(
+            getLocalizedString(
+              "driver.teamsApp.summary.validateWithTestCases",
+              response.status,
+              validationStatusUrl
+            )
+          );
+        }
+      } finally {
+        if (args.showProgressBar) {
+          await context.progressBar?.end(true);
+        }
+      }
       return ok(new Map());
     } else {
       return err(new FileNotFoundError(actionName, "manifest.json"));

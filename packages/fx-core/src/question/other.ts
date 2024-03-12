@@ -35,6 +35,7 @@ import {
   apiSpecLocationQuestion,
 } from "./create";
 import { QuestionNames } from "./questionNames";
+import { isAsyncAppValidationEnabled } from "../common/featureFlags";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -364,14 +365,16 @@ function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSele
 }
 
 function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
+  const options = [TeamsAppValidationOptions.schema(), TeamsAppValidationOptions.package()];
+
+  if (isAsyncAppValidationEnabled()) {
+    options.push(TeamsAppValidationOptions.testCases());
+  }
+
   return {
     name: QuestionNames.ValidateMethod,
     title: getLocalizedString("core.selectValidateMethodQuestion.validate.selectTitle"),
-    staticOptions: [
-      TeamsAppValidationOptions.schema(),
-      TeamsAppValidationOptions.package(),
-      TeamsAppValidationOptions.testCases(),
-    ],
+    staticOptions: options,
     type: "singleSelect",
   };
 }

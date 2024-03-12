@@ -11,4 +11,9 @@ export interface ValidateWithTestCasesArgs {
    * Show message for non-life cycle command
    */
   showMessage?: boolean;
+  /**
+   * Internal arguments
+   * Show progress bar for non-life cycle command
+   */
+  showProgressBar?: boolean;
 }

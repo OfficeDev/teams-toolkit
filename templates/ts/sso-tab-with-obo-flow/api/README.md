@@ -10,7 +10,7 @@ Azure Functions are a great way to add server-side behaviors to any Teams applic
 
 ## Develop
 
-The Teams Toolkit IDE Extension and TeamsFx CLI provide template code for you to get started with Azure Functions for your Teams application. Microsoft Teams Framework simplifies the task of establishing the user's identity within the Azure Function.
+The Teams Toolkit IDE Extension and TeamsFx CLI provide template code for you to get started with Azure Functions for your Teams application. Microsoft Teams Framework simplifies the task of establishing the user's identity within the Azure Functions.
 
 The template handles calls from your Teams "custom tab" (client-side of your app), initializes the TeamsFx SDK to access the current user context, and demonstrates how to obtain a pre-authenticated Microsoft Graph Client. Microsoft Graph is the "data plane" of Microsoft 365 - you can use it to access content within Microsoft 365 in your company. With it you can read and write documents, SharePoint collections, Teams channels, and many other entities within Microsoft 365. Read more about [Microsoft Graph](https://docs.microsoft.com/en-us/graph/overview).
 
@@ -46,7 +46,7 @@ const response = await axios.default.get(endpoint + "/api/" + functionName, {
 By default, Teams Toolkit and TeamsFx CLI will provision an Azure functions app with function runtime version 3, and node runtime version 12. You can change the node version through Azure Portal.
 
 - Sign in to [Azure Portal](https://azure.microsoft.com/).
-- Find your application's resource group and Azure Functions app resource. The resource group name and the Azure function app name are stored in your project configuration file `.fx/env.*.json`. You can find them by searching the key `resourceGroupName` and `functionAppName` in that file.
+- Find your application's resource group and Azure Functions app resource. The resource group name and the Azure functions app name are stored in your project configuration file `.fx/env.*.json`. You can find them by searching the key `resourceGroupName` and `functionAppName` in that file.
 - After enter the home page of the Azure Functions app, you can find a navigation item called `Configuration` under `settings` group.
 - Click `Configuration`, you would see a list of settings. Then click `WEBSITE_NODE_DEFAULT_VERSION` and update the value to `~16` or `~18` according to your requirement.
 - After Click `OK` button, don't forget to click `Save` button on the top of the page.

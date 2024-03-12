@@ -5,7 +5,7 @@
  * @author zyun@microsoft.com
  */
 
-import { Context, Inputs, ok, Platform } from "@microsoft/teamsfx-api";
+import { Context, Inputs, ok, Platform, err, SystemError } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import * as childProcess from "child_process";
 import fs from "fs";
@@ -35,6 +35,7 @@ describe("OfficeXMLAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
   let context: Context;
   let mockedEnvRestore: RestoreFn;
+  const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv(
@@ -89,7 +90,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.Capabilities]: ["taskpane"],
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
@@ -110,7 +111,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.Capabilities]: ["manifest"],
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "javascript",
     };
 
     sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -129,10 +130,70 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.Capabilities]: ["react"],
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(undefined);
+    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
+    const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(result.isErr());
+  });
+
+  it("should failed when get manifest-only failed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
+      [QuestionNames.Capabilities]: ["manifest"],
+      [QuestionNames.AppName]: "office-addin-test",
+      [QuestionNames.OfficeAddinFolder]: undefined,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+    };
+
+    sinon.stub(Generator, "generateTemplate").onCall(0).resolves(err(mockedError));
+    const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(result.isErr());
+  });
+
+  it("should failed when get readme failed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
+      [QuestionNames.Capabilities]: ["manifest"],
+      [QuestionNames.AppName]: "office-addin-test",
+      [QuestionNames.OfficeAddinFolder]: undefined,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+    };
+
+    const generatorStub = sinon.stub(Generator, "generateTemplate");
+    generatorStub.onCall(0).resolves(ok(undefined));
+    generatorStub.onCall(1).resolves(err(mockedError));
+    const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(result.isErr());
+  });
+
+  it("should failed when gen yml failed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
+      [QuestionNames.Capabilities]: ["manifest"],
+      [QuestionNames.AppName]: "office-addin-test",
+      [QuestionNames.OfficeAddinFolder]: undefined,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+    };
+
+    const generatorStub = sinon.stub(Generator, "generateTemplate");
+    generatorStub.onCall(0).resolves(ok(undefined));
+    generatorStub.onCall(1).resolves(ok(undefined));
+    generatorStub.onCall(2).resolves(err(mockedError));
     sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
     const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
 

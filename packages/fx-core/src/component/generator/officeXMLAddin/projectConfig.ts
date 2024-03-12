@@ -203,6 +203,6 @@ export function getOfficeXMLAddinHostProjectRepoInfo(
   proj: string,
   lang: "ts" | "js"
 ): string {
-  const result = OfficeXMLAddinProjectConfig[host][proj].lang?.[lang];
+  const result = OfficeXMLAddinProjectConfig[host][proj].lang[lang];
   return !!result ? result : "";
 }

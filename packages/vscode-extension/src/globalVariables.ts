@@ -32,6 +32,7 @@ export function initializeGlobalVariables(ctx: vscode.ExtensionContext): void {
   isExistingUser = context.globalState.get<string>(UserState.IsExisting) || "no";
   isTeamsFxProject = isValidProject(workspaceUri?.fsPath);
   isOfficeAddInProject = isValidOfficeAddInProject(workspaceUri?.fsPath);
+  if (isOfficeAddInProject) unsetIsTeamsFxProject();
   // Default Extension log path
   // e.g. C:/Users/xx/AppData/Roaming/Code/logs/20230221T095340/window7/exthost/TeamsDevApp.ms-teams-vscode-extension
   defaultExtensionLogPath = ctx.logUri.fsPath;

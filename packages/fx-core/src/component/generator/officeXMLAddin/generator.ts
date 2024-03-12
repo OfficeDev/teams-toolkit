@@ -97,7 +97,7 @@ export class OfficeXMLAddinGenerator {
           lang
         );
         if (getManifestOnlyProjectTemplateRes.isErr())
-          return err(getManifestOnlyProjectTemplateRes.error);
+          throw err(getManifestOnlyProjectTemplateRes.error);
       }
 
       // -> Common Step: Copy the README (or with manifest for manifest-only proj)
@@ -107,7 +107,7 @@ export class OfficeXMLAddinGenerator {
         `${TEMPLATE_BASE}-${templateName}`,
         lang
       );
-      if (getReadmeTemplateRes.isErr()) return err(getReadmeTemplateRes.error);
+      if (getReadmeTemplateRes.isErr()) throw err(getReadmeTemplateRes.error);
 
       // -> Common Step: Modify the Manifest
       await OfficeAddinManifest.modifyManifestFile(
@@ -123,7 +123,7 @@ export class OfficeXMLAddinGenerator {
         TEMPLATE_COMMON_NAME,
         TEMPLATE_COMMON_LANG
       );
-      if (generateOfficeYMLRes.isErr()) return err(generateOfficeYMLRes.error);
+      if (generateOfficeYMLRes.isErr()) throw err(generateOfficeYMLRes.error);
 
       process.chdir(workingDir);
       await progressBar.end(true, true);

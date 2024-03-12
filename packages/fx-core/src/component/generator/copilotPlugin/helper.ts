@@ -36,6 +36,8 @@ import {
   ErrorType,
   ErrorResult as ApiSpecErrorResult,
   ListAPIResult,
+  ProjectType,
+  ParseOptions,
   AdaptiveCardGenerator,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
@@ -70,6 +72,16 @@ enum OpenAIPluginManifestErrorType {
   AuthNotSupported = "openai-pliugin-auth-not-supported",
   ApiUrlMissing = "openai-plugin-api-url-missing",
 }
+
+export const copilotPluginParserOptions: ParseOptions = {
+  allowAPIKeyAuth: true,
+  allowMultipleParameters: true,
+  allowOauth2: true,
+  projectType: ProjectType.Copilot,
+  allowMissingId: true,
+  allowSwagger: true,
+  allowMethods: ["get", "post", "put", "delete"],
+};
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
@@ -166,10 +178,15 @@ export async function listOperations(
   try {
     const allowAPIKeyAuth = isPlugin || isApiKeyEnabled();
     const allowMultipleParameters = isPlugin || isMultipleParametersEnabled();
-    const specParser = new SpecParser(apiSpecUrl as string, {
-      allowAPIKeyAuth,
-      allowMultipleParameters,
-    });
+    const specParser = new SpecParser(
+      apiSpecUrl as string,
+      isPlugin
+        ? copilotPluginParserOptions
+        : {
+            allowAPIKeyAuth,
+            allowMultipleParameters,
+          }
+    );
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors);
 
@@ -300,7 +317,7 @@ export async function listPluginExistingOperations(
     );
   }
 
-  const specParser = new SpecParser(apiSpecFilePath);
+  const specParser = new SpecParser(apiSpecFilePath, copilotPluginParserOptions);
   const validationRes = await specParser.validate();
   validationRes.errors = formatValidationErrors(validationRes.errors);
 

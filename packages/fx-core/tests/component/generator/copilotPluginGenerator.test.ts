@@ -208,7 +208,7 @@ describe("copilotPluginGenerator", function () {
     sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(teamsManifest));
     sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
     const generateBasedOnSpec = sandbox
-      .stub(SpecParser.prototype, "generate")
+      .stub(SpecParser.prototype, "generateForCopilot")
       .resolves({ allSuccess: true, warnings: [] });
     const getDefaultVariables = sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
     const downloadTemplate = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));

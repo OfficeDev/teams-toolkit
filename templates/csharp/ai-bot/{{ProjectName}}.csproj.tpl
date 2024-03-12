@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
   </ItemGroup>
@@ -17,6 +18,7 @@
     <None Include="env/**/*" />
   </ItemGroup>
 
+{{/isNewProjectTypeEnabled}}
   <ItemGroup>
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.21.1" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.21.1" />

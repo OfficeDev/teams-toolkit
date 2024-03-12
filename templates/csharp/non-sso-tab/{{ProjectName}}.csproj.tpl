@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
   </ItemGroup>
@@ -14,6 +15,7 @@
     <None Include="infra/**/*" />
   </ItemGroup>
 
+{{/isNewProjectTypeEnabled}}
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.0" />
     <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.5.0" />

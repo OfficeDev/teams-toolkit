@@ -1011,7 +1011,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: "llm-service-openAI" });
+            return ok({ type: "success", result: "llm-service-openai" });
           } else if (question.name === QuestionNames.OpenAIKey) {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.Folder) {
@@ -1071,7 +1071,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: "llm-service-azureOpenAI" });
+            return ok({ type: "success", result: "llm-service-azure-openai" });
           } else if (question.name === QuestionNames.AzureOpenAIKey) {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
@@ -1135,7 +1135,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: "llm-service-azureOpenAI" });
+            return ok({ type: "success", result: "llm-service-azure-openai" });
           } else if (question.name === QuestionNames.AzureOpenAIKey) {
             return ok({ type: "success", result: undefined });
           } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
@@ -1206,7 +1206,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: "llm-service-azureOpenAI" });
+            return ok({ type: "success", result: "llm-service-azure-openai" });
           } else if (question.name === QuestionNames.AzureOpenAIKey) {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
@@ -1272,7 +1272,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: "llm-service-azureOpenAI" });
+            return ok({ type: "success", result: "llm-service-azure-openai" });
           } else if (question.name === QuestionNames.AzureOpenAIKey) {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
@@ -1336,7 +1336,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: "llm-service-openAI" });
+            return ok({ type: "success", result: "llm-service-openai" });
           } else if (question.name === QuestionNames.OpenAIKey) {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.Folder) {
@@ -1400,7 +1400,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 1);
-            return ok({ type: "success", result: "llm-service-openAI" });
+            return ok({ type: "success", result: "llm-service-openai" });
           } else if (question.name === QuestionNames.OpenAIKey) {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.Folder) {
@@ -2884,7 +2884,7 @@ describe("scaffold question", () => {
     it("vs non-interactive", () => {
       const question = capabilityQuestion();
       const options = question.dynamicOptions!({ platform: Platform.VS });
-      assert.deepEqual(options, CapabilityOptions.dotnetCaps());
+      assert.deepEqual(options, CapabilityOptions.dotnetCaps({ platform: Platform.VS }));
     });
 
     it("templates for TDP integration", () => {

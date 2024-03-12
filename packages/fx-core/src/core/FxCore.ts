@@ -41,7 +41,7 @@ import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { ProjectType, SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
+import { SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
 import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";

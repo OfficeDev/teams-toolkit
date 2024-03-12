@@ -12,7 +12,7 @@ This app template implements action command that allows you to present your user
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -61,5 +61,5 @@ Following documentation will help you to extend the template.
 - [Collaborate on app development](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration)
 - [Set up the CI/CD pipeline](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
 - [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
-- [Develop with Teams Toolkit CLI](https://aka.ms/teamsfx-cli/debug)
+- [Develop with Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli/debug)
 - [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)

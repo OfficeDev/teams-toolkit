@@ -14,7 +14,7 @@ $ teamsapp -h
 ```
 
 > [!NOTE]
-> Please refer to [Teams Toolkit CLI Documentation](https://aka.ms/teamsfx-cli) for in-depth instructions.
+> Please refer to [Teams Toolkit CLI Documentation](https://aka.ms/teams-toolkit-cli) for in-depth instructions.
 
 ## Feedback
 

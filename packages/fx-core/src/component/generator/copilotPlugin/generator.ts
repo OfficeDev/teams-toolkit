@@ -50,6 +50,7 @@ import {
   SpecParser,
   ValidationStatus,
   WarningType,
+  ProjectType,
 } from "@microsoft/m365-spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
@@ -77,11 +78,6 @@ const enum telemetryProperties {
   templateName = "template-name",
   generateType = "generate-type",
   isRemoteUrlTelemetryProperty = "remote-url",
-}
-
-enum GenerateType {
-  ME = "api-me",
-  ApiPlugin = "api-plugin",
 }
 
 function normalizePath(path: string): string {
@@ -223,7 +219,12 @@ export class CopilotPluginGenerator {
       const language = inputs[QuestionNames.ProgrammingLanguage];
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-      const type = isPlugin ? GenerateType.ApiPlugin : GenerateType.ME;
+      const type =
+        templateName === forCustomCopilotRagCustomApi
+          ? ProjectType.TeamsAi
+          : isPlugin
+          ? ProjectType.Copilot
+          : ProjectType.SME;
 
       const manifestPath = path.join(
         destinationPath,
@@ -283,13 +284,17 @@ export class CopilotPluginGenerator {
 
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
-        [telemetryProperties.generateType]: type,
+        [telemetryProperties.generateType]: type.toString(),
       });
 
       // validate API spec
       const allowAPIKeyAuth = isApiKeyEnabled();
       const allowMultipleParameters = isMultipleParametersEnabled();
-      const specParser = new SpecParser(url, { allowAPIKeyAuth, allowMultipleParameters });
+      const specParser = new SpecParser(url, {
+        allowAPIKeyAuth,
+        allowMultipleParameters,
+        projectType: type,
+      });
       const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
       const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
@@ -342,13 +347,11 @@ export class CopilotPluginGenerator {
         manifestPath,
         filters,
         openapiSpecPath,
-        adaptiveCardFolder,
-        undefined,
-        componentName != forCustomCopilotRagCustomApi
+        type === ProjectType.TeamsAi ? undefined : adaptiveCardFolder
       );
 
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
-        [telemetryProperties.generateType]: type,
+        [telemetryProperties.generateType]: type.toString(),
         [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)

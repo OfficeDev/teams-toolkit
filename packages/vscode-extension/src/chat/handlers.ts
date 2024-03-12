@@ -63,22 +63,20 @@ export async function chatCreateCommandHandler(folderOrSample: string | ProjectM
   let folderChoice: string | undefined = undefined;
   if (workspace.workspaceFolders !== undefined && workspace.workspaceFolders.length > 0) {
     folderChoice = await window.showQuickPick([
-      localize("teamstoolkit.chatParticipants.commands.create.quickPick.workspace"),
-      localize("teamstoolkit.chatParticipants.commands.create.quickPick.browse"),
+      localize("teamstoolkit.chatParticipants.create.quickPick.workspace"),
+      localize("teamstoolkit.chatParticipants.create.quickPick.browse"),
     ]);
     if (!folderChoice) {
       return;
     }
-    if (
-      folderChoice === localize("teamstoolkit.chatParticipants.commands.create.quickPick.workspace")
-    ) {
+    if (folderChoice === localize("teamstoolkit.chatParticipants.create.quickPick.workspace")) {
       dstPath = workspace.workspaceFolders[0].uri.fsPath;
     }
   }
   if (dstPath === "") {
     const customFolder = await window.showOpenDialog({
-      title: localize("teamstoolkit.chatParticipants.commands.create.selectFolder.title"),
-      openLabel: localize("teamstoolkit.chatParticipants.commands.create.selectFolder.label"),
+      title: localize("teamstoolkit.chatParticipants.create.selectFolder.title"),
+      openLabel: localize("teamstoolkit.chatParticipants.create.selectFolder.label"),
       canSelectFiles: false,
       canSelectFolders: true,
       canSelectMany: false,
@@ -95,21 +93,17 @@ export async function chatCreateCommandHandler(folderOrSample: string | ProjectM
       const downloadUrlInfo = await getSampleDownloadUrlInfo(folderOrSample.id);
       await downloadDirectory(downloadUrlInfo, dstPath, 2, 20);
     }
-    if (
-      folderChoice !== localize("teamstoolkit.chatParticipants.commands.create.quickPick.workspace")
-    ) {
+    if (folderChoice !== localize("teamstoolkit.chatParticipants.create.quickPick.workspace")) {
       void commands.executeCommand("vscode.openFolder", Uri.file(dstPath));
     } else {
       void window.showInformationMessage(
-        localize("teamstoolkit.chatParticipants.commands.create.successfullyCreated")
+        localize("teamstoolkit.chatParticipants.create.successfullyCreated")
       );
       void commands.executeCommand("workbench.view.extension.teamsfx");
     }
   } catch (error) {
     console.error("Error copying files:", error);
-    void window.showErrorMessage(
-      localize("teamstoolkit.chatParticipants.commands.create.failToCreate")
-    );
+    void window.showErrorMessage(localize("teamstoolkit.chatParticipants.create.failToCreate"));
   }
 }
 

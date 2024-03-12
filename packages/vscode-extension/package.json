@@ -1353,11 +1353,11 @@
         "commands": [
           {
             "name": "create",
-            "description": "%teamstoolkit.chatParticipants.commands.create.description%"
+            "description": "%teamstoolkit.chatParticipants.create.description%"
           },
           {
             "name": "nextstep",
-            "description": "%teamstoolkit.chatParticipants.commands.nextStep.description%"
+            "description": "%teamstoolkit.chatParticipants.nextStep.description%"
           }
         ]
       }

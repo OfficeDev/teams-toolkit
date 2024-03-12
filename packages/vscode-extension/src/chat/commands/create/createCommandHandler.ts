@@ -49,7 +49,7 @@ export default async function createCommandHandler(
   const matchedResult = await matchProject(request, token);
 
   if (matchedResult.length === 0) {
-    response.markdown(localize("teamstoolkit.chatParticipants.commands.create.noMatch"));
+    response.markdown(localize("teamstoolkit.chatParticipants.create.noMatch"));
     return {};
   }
   if (matchedResult.length === 1) {
@@ -70,13 +70,13 @@ export default async function createCommandHandler(
       response.button({
         command: CHAT_CREATE_SAMPLE_COMMAND_ID,
         arguments: [folder],
-        title: localize("teamstoolkit.chatParticipants.commands.create.sample"),
+        title: localize("teamstoolkit.chatParticipants.create.sample"),
       });
     } else if (firstMatch.type === "template") {
       response.button({
         command: "fx-extension.create",
         arguments: [TelemetryTriggerFrom.CopilotChat, firstMatch.data],
-        title: localize("teamstoolkit.chatParticipants.commands.create.template"),
+        title: localize("teamstoolkit.chatParticipants.create.template"),
       });
     }
 
@@ -84,7 +84,7 @@ export default async function createCommandHandler(
   } else {
     response.markdown(
       util.format(
-        localize("teamstoolkit.chatParticipants.commands.create.multipleMatch"),
+        localize("teamstoolkit.chatParticipants.create.multipleMatch"),
         matchedResult.slice(0, 3).length
       )
     );
@@ -105,13 +105,13 @@ export default async function createCommandHandler(
         response.button({
           command: CHAT_CREATE_SAMPLE_COMMAND_ID,
           arguments: [project],
-          title: localize("teamstoolkit.chatParticipants.commands.create.sample"),
+          title: localize("teamstoolkit.chatParticipants.create.sample"),
         });
       } else if (project.type === "template") {
         response.button({
           command: "fx-extension.create",
           arguments: [TelemetryTriggerFrom.CopilotChat, project.data],
-          title: localize("teamstoolkit.chatParticipants.commands.create.template"),
+          title: localize("teamstoolkit.chatParticipants.create.template"),
         });
       }
     }
@@ -183,7 +183,7 @@ async function showFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
 ): Promise<string> {
-  response.markdown(localize("teamstoolkit.chatParticipants.commands.create.showFileTree"));
+  response.markdown(localize("teamstoolkit.chatParticipants.create.showFileTree"));
   const downloadUrlInfo = await getSampleDownloadUrlInfo(projectMetadata.id);
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;

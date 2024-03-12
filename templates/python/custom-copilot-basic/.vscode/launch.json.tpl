@@ -68,7 +68,7 @@
     ],
     "compounds": [
         {
-            "name": "Debug (Edge)",
+            "name": "Debug in Teams (Edge)",
             "configurations": [
                 "Launch App (Edge)",
                 "Start Python"
@@ -89,7 +89,7 @@
             "stopAll": true
         },
         {
-            "name": "Debug (Chrome)",
+            "name": "Debug in Teams (Chrome)",
             "configurations": [
                 "Launch App (Chrome)",
                 "Start Python"

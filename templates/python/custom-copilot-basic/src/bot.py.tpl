@@ -43,7 +43,7 @@ planner = ActionPlanner(
 
 # Define storage and application
 storage = MemoryStorage()
-app = Application[TurnState](
+botapp = Application[TurnState](
     ApplicationOptions(
         bot_app_id=config.APP_ID,
         storage=storage,
@@ -52,11 +52,11 @@ app = Application[TurnState](
     )
 )
 
-@app.conversation_update("membersAdded")
+@botapp.conversation_update("membersAdded")
 async def on_members_added(context: TurnContext, state: TurnState):
     await context.send_activity("How can I help you today?")
 
-@app.error
+@botapp.error
 async def on_error(context: TurnContext, error: Exception):
     # This check writes out errors to console log .vs. app insights.
     # NOTE: In production environment, you should consider logging this to Azure

@@ -34,7 +34,7 @@ export interface CreateProjectInputs extends Inputs {
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
     | "custom-copilot-basic"
-    | "custom-copilot-assistant"
+    | "custom-copilot-agent"
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
@@ -65,19 +65,17 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Authentication Type */
   "api-me-auth"?: "none" | "api-key";
   /** @description AI Agent */
-  "custom-copilot-assistant"?:
-    | "custom-copilot-assistant-new"
-    | "custom-copilot-assistant-assistantsApi";
+  "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */
   "programming-language"?: "javascript" | "typescript" | "csharp" | "python";
   /** @description Service for Large Language Model (LLM) */
-  "llm-service"?: "llm-service-azureOpenAI" | "llm-service-openAI";
+  "llm-service"?: "llm-service-azure-openai" | "llm-service-openai";
   /** @description Azure OpenAI Key */
-  "azureOpenAI-key"?: string;
+  "azure-openai-key"?: string;
   /** @description Azure OpenAI Endpoint */
-  "azureOpenAI-endpoint"?: string;
+  "azure-openai-endpoint"?: string;
   /** @description OpenAI Key */
-  "openAI-key"?: string;
+  "openai-key"?: string;
   /** @description Framework */
   "office-addin-framework-type"?: "default" | "react";
   /** @description Application Name */

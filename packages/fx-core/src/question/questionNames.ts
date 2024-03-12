@@ -43,12 +43,11 @@ export enum QuestionNames {
   ApiMEAuth = "api-me-auth",
 
   CustomCopilotRag = "custom-copilot-rag",
-  CustomCopilotAssistant = "custom-copilot-assistant",
+  CustomCopilotAssistant = "custom-copilot-agent",
   LLMService = "llm-service",
-  OpenAIKey = "openAI-key",
-  AzureOpenAIKey = "azureOpenAI-key",
-  AzureOpenAIEndpoint = "azureOpenAI-endpoint",
-  OpenAIAssistantId = "openAI-assistantId",
+  OpenAIKey = "openai-key",
+  AzureOpenAIKey = "azure-openai-key",
+  AzureOpenAIEndpoint = "azure-openai-endpoint",
 
   Features = "features",
   Env = "env",

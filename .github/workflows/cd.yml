@@ -21,7 +21,7 @@ on:
         description: "Please enter the package names you want to publish, such as cli, vscode, ui, sdk, server and template. Please separate multiple entries with spaces"
   schedule:
     - cron: "0 16 * * *"
-
+permissions: write-all
 jobs:
   cd:
     runs-on: ubuntu-latest

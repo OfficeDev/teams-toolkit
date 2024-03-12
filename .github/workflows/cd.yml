@@ -135,7 +135,7 @@ jobs:
         with:
           tag_name: "templates@0.0.0-rc"
         env:
-          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
+          CD_PAT: ${{ secrets.CD_PAT }}
 
       - name: release templates' RC version to github
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
@@ -154,7 +154,7 @@ jobs:
         with:
           artifacts: ${{ github.workspace }}/templates/build/*.zip
           name: "Release for ${{ steps.version-change.outputs.TEMPLATE_VERSION }}"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CD_PAT }}
           tag: ${{ steps.version-change.outputs.TEMPLATE_VERSION }}
           allowUpdates: true
 
@@ -169,7 +169,7 @@ jobs:
           artifacts: ${{ runner.temp }}/template-tags.txt
           name: "Template Tag List"
           body: "Release to maintain template tag list."
-          token: ${{ secrets.github_token }}
+          token: ${{ secrets.CD_PAT }}
           tag: "template-tag-list"
           allowUpdates: true
 

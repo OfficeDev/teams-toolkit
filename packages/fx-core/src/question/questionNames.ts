@@ -23,7 +23,6 @@ export enum QuestionNames {
   OfficeAddinTemplate = "addin-template-select",
   OfficeAddinHost = "addin-host",
   OfficeAddinImport = "addin-import",
-  // OfficeAddinCapability = "addin-office-capability",
   OfficeAddinFramework = "office-addin-framework-type",
   Samples = "samples",
   ReplaceContentUrl = "replaceContentUrl",

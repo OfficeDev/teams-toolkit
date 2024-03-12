@@ -10,9 +10,11 @@ interface IOfficeXMLAddinHostConfig {
     title: string;
     detail: string;
     localTemplate: string;
-    lang: {
-      ts?: string;
-      js?: string;
+    framework?: {
+      [property: string]: {
+        typescript?: string;
+        javascript?: string;
+      };
     };
   };
 }
@@ -25,111 +27,143 @@ const CommonProjectConfig = {
   taskpane: {
     title: "core.createProjectQuestion.officeXMLAddin.taskpane.title",
     detail: "core.createProjectQuestion.officeXMLAddin.taskpane.detail",
-    lang: {
-      ts: "https://aka.ms/ccdevx-fx-taskpane-ts",
-      js: "https://aka.ms/ccdevx-fx-taskpane-js",
+    framework: {
+      default: {
+        typescript: "https://aka.ms/ccdevx-fx-taskpane-ts",
+        javascript: "https://aka.ms/ccdevx-fx-taskpane-js",
+      },
     },
   },
   sso: {
-    lang: {
-      ts: "https://aka.ms/ccdevx-fx-sso-ts",
-      js: "https://aka.ms/ccdevx-fx-sso-js",
+    framework: {
+      default: {
+        typescript: "https://aka.ms/ccdevx-fx-sso-ts",
+        javascript: "https://aka.ms/ccdevx-fx-sso-js",
+      },
     },
   },
   react: {
-    lang: {
-      ts: "https://aka.ms/ccdevx-fx-react-ts",
-      js: "https://aka.ms/ccdevx-fx-react-js",
+    framework: {
+      default: {
+        typescript: "https://aka.ms/ccdevx-fx-react-ts",
+        javascript: "https://aka.ms/ccdevx-fx-react-js",
+      },
     },
   },
   manifest: {
     title: "core.createProjectQuestion.officeXMLAddin.manifestOnly.title",
     detail: "core.createProjectQuestion.officeXMLAddin.manifestOnly.detail",
-    lang: {},
+    framework: {
+      default: {},
+    },
   },
 };
 
 const OfficeXMLAddinProjectConfig: IOfficeXMLAddinProjectConfig = {
+  outlook: {
+    "outlook-taskpane": {
+      title: "core.newTaskpaneAddin.label",
+      detail: "core.newTaskpaneAddin.detail",
+      localTemplate: "",
+      framework: {
+        default_old: {
+          typescript: "https://aka.ms/office-addin-taskpane",
+        },
+        default: {
+          typescript: "https://aka.ms/teams-toolkit/office-addin-taskpane/ts-default",
+          javascript: "https://aka.ms/teams-toolkit/office-addin-taskpane/js-default",
+        },
+        react: {
+          typescript: "https://aka.ms/teams-toolkit/office-addin-taskpane/ts-react",
+          javascript: "https://aka.ms/teams-toolkit/office-addin-taskpane/js-react",
+        },
+      },
+    },
+  },
   word: {
-    taskpane: {
+    "word-taskpane": {
       localTemplate: "word-taskpane",
       ...CommonProjectConfig.taskpane,
     },
-    sso: {
+    "word-sso": {
       title: "core.createProjectQuestion.officeXMLAddin.word.sso.title",
       detail: "core.createProjectQuestion.officeXMLAddin.word.sso.detail",
       localTemplate: "word-sso",
       ...CommonProjectConfig.sso,
     },
-    react: {
+    "word-react": {
       title: "core.createProjectQuestion.officeXMLAddin.word.react.title",
       detail: "core.createProjectQuestion.officeXMLAddin.word.react.detail",
       localTemplate: "word-react",
       ...CommonProjectConfig.react,
     },
-    manifest: {
+    "word-manifest": {
       localTemplate: "word-manifest-only",
       ...CommonProjectConfig.manifest,
     },
   },
   excel: {
-    taskpane: {
+    "excel-taskpane": {
       localTemplate: "excel-taskpane",
       ...CommonProjectConfig.taskpane,
     },
-    sso: {
+    "excel-sso": {
       title: "core.createProjectQuestion.officeXMLAddin.excel.sso.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.sso.detail",
       localTemplate: "excel-sso",
       ...CommonProjectConfig.sso,
     },
-    react: {
+    "excel-react": {
       title: "core.createProjectQuestion.officeXMLAddin.excel.react.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.react.detail",
       localTemplate: "excel-react",
       ...CommonProjectConfig.react,
     },
-    cfShared: {
+    "excel-cfshared": {
       title: "core.createProjectQuestion.officeXMLAddin.excel.cf.shared.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.cf.shared.detail",
       localTemplate: "excel-cf",
-      lang: {
-        ts: "https://aka.ms/ccdevx-fx-cf-shared-ts",
-        js: "https://aka.ms/ccdevx-fx-cf-shared-js",
+      framework: {
+        default: {
+          typescript: "https://aka.ms/ccdevx-fx-cf-shared-ts",
+          javascript: "https://aka.ms/ccdevx-fx-cf-shared-js",
+        },
       },
     },
-    cfJS: {
+    "excel-cfjs": {
       title: "core.createProjectQuestion.officeXMLAddin.excel.cf.js.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.cf.js.detail",
       localTemplate: "excel-cf",
-      lang: {
-        ts: "https://aka.ms/ccdevx-fx-cf-js-ts",
-        js: "https://aka.ms/ccdevx-fx-cf-js-js",
+      framework: {
+        default: {
+          typescript: "https://aka.ms/ccdevx-fx-cf-js-ts",
+          javascript: "https://aka.ms/ccdevx-fx-cf-js-js",
+        },
       },
     },
-    manifest: {
+    "excel-manifest": {
       localTemplate: "excel-manifest-only",
       ...CommonProjectConfig.manifest,
     },
   },
   powerpoint: {
-    taskpane: {
+    "powerpoint-taskpane": {
       localTemplate: "powerpoint-taskpane",
       ...CommonProjectConfig.taskpane,
     },
-    sso: {
+    "powerpoint-sso": {
       localTemplate: "powerpoint-sso",
       title: "core.createProjectQuestion.officeXMLAddin.powerpoint.sso.title",
       detail: "core.createProjectQuestion.officeXMLAddin.powerpoint.sso.detail",
       ...CommonProjectConfig.sso,
     },
-    react: {
+    "powerpoint-react": {
       localTemplate: "powerpoint-react",
       title: "core.createProjectQuestion.officeXMLAddin.powerpoint.react.title",
       detail: "core.createProjectQuestion.officeXMLAddin.powerpoint.react.detail",
       ...CommonProjectConfig.react,
     },
-    manifest: {
+    "powerpoint-manifest": {
       localTemplate: "powerpoint-manifest-only",
       ...CommonProjectConfig.manifest,
     },

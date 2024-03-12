@@ -287,9 +287,7 @@ class Coordinator {
       } else if (
         !isOfficeXMLAddinEnabled() &&
         (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id ||
-          CapabilityOptions.outlookAddinItems()
-            .map((i) => i.id)
-            .includes(capability))
+          capability === CapabilityOptions.outlookAddinTaskpane().id)
       ) {
         const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {

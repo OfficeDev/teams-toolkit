@@ -447,5 +447,21 @@
     "teamstoolkit.officeAddIn.terminal.fail.tips": "couldn't complete!",
     "teamstoolkit.officeAddIn.terminal.success.tips": "completed successfully!",
     "teamstoolkit.officeAddIn.terminal.manifest.notfound":"Manifest xml file not found",
-    "teamstoolkit.officeAddIn.workspace.invalid": "Invalid workspace path"
+    "teamstoolkit.officeAddIn.workspace.invalid": "Invalid workspace path",
+    "teamstoolkit.chatParticipants.teams.description": "Ask how to develop Teams applications",
+    "teamstoolkit.chatParticipants.commands.create.description": "Describe the app you want to build for Microsoft Teams",
+    "teamstoolkit.chatParticipants.commands.nextStep.description": "Describe what next step you might do in Teams",
+    "teamstoolkit.chatParticipants.nextStep.list": "Here are the next steps you can do:\n",
+    "teamstoolkit.chatParticipants.nextStep.whatsNext": "What's next I could do?",
+    "teamstoolkit.chatParticipants.commands.create.noMatch": "Sorry, I can't help with that right now. Please try to describe your app scenario.\n",
+    "teamstoolkit.chatParticipants.commands.create.multipleMatch": "I found %s projects that match your description.\n",
+    "teamstoolkit.chatParticipants.commands.create.sample": "Scaffold this sample",
+    "teamstoolkit.chatParticipants.commands.create.template": "Create this template",
+    "teamstoolkit.chatParticipants.commands.create.showFileTree": "\nHere is the files of the sample project.",
+    "teamstoolkit.chatParticipants.commands.create.quickPick.workspace": "Current workspace",
+    "teamstoolkit.chatParticipants.commands.create.quickPick.browse": "Browse...",
+    "teamstoolkit.chatParticipants.commands.create.selectFolder.title": "Choose where to save your project",
+    "teamstoolkit.chatParticipants.commands.create.selectFolder.label": "Select Folder",
+    "teamstoolkit.chatParticipants.commands.create.successfullyCreated": "Project is created in current workspace.",
+    "teamstoolkit.chatParticipants.commands.create.failToCreate": "Project cannot be created."
 }

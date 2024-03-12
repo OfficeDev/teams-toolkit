@@ -1349,15 +1349,15 @@
     "chatParticipants": [
       {
         "name": "teams",
-        "description": "Ask how to develop Teams applications",
+        "description": "%teamstoolkit.chatParticipants.teams.description%",
         "commands": [
           {
             "name": "create",
-            "description": "Describe the app you want to build for Microsoft Teams"
+            "description": "%teamstoolkit.chatParticipants.commands.create.description%"
           },
           {
             "name": "nextstep",
-            "description": "Describe what next step you might do in Teams"
+            "description": "%teamstoolkit.chatParticipants.commands.nextStep.description%"
           }
         ]
       }

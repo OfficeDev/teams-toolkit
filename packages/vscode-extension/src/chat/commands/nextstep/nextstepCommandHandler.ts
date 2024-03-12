@@ -19,6 +19,7 @@ import { getTeamsApps, getCopilotResponseAsString } from "../../utils";
 import { describeScenarioSystemPrompt } from "../../prompts";
 import { TeamsChatCommand } from "../../consts";
 import followupProvider from "../../followupProvider";
+import { localize } from "../../../utils/localizeUtils";
 
 let teamsApp: string | undefined = undefined;
 let projectId: string | undefined = undefined;
@@ -36,7 +37,7 @@ export default async function nextStepCommandHandler(
   projectId = status.projectOpened?.projectId;
   const steps = AllSteps.filter((s) => s.condition(status)).sort((a, b) => a.priority - b.priority);
   if (steps.length > 1) {
-    response.markdown("Here are the next steps you can do:\n");
+    response.markdown(localize("teamstoolkit.chatParticipants.nextStep.list"));
   }
   for (let index = 0; index < Math.min(3, steps.length); index++) {
     const s = steps[index];

@@ -37,6 +37,8 @@ import {
 } from "../../utils";
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
+import * as util from "util";
+import { localize } from "../../../utils/localizeUtils";
 
 export default async function createCommandHandler(
   request: ChatRequest,
@@ -47,9 +49,7 @@ export default async function createCommandHandler(
   const matchedResult = await matchProject(request, token);
 
   if (matchedResult.length === 0) {
-    response.markdown(
-      "Sorry, I can't help with that right now. Please try to describe your app scenario.\n"
-    );
+    response.markdown(localize("teamstoolkit.chatParticipants.commands.create.noMatch"));
     return {};
   }
   if (matchedResult.length === 1) {
@@ -70,20 +70,23 @@ export default async function createCommandHandler(
       response.button({
         command: CHAT_CREATE_SAMPLE_COMMAND_ID,
         arguments: [folder],
-        title: "Scaffold this sample",
+        title: localize("teamstoolkit.chatParticipants.commands.create.sample"),
       });
     } else if (firstMatch.type === "template") {
       response.button({
         command: "fx-extension.create",
         arguments: [TelemetryTriggerFrom.CopilotChat, firstMatch.data],
-        title: "Create this template",
+        title: localize("teamstoolkit.chatParticipants.commands.create.template"),
       });
     }
 
     return { metadata: { command: TeamsChatCommand.Create } };
   } else {
     response.markdown(
-      `I found ${matchedResult.slice(0, 3).length} projects that match your description.\n`
+      util.format(
+        localize("teamstoolkit.chatParticipants.commands.create.multipleMatch"),
+        matchedResult.slice(0, 3).length
+      )
     );
     for (const project of matchedResult.slice(0, 3)) {
       response.markdown(`- ${project.name}: `);
@@ -102,13 +105,13 @@ export default async function createCommandHandler(
         response.button({
           command: CHAT_CREATE_SAMPLE_COMMAND_ID,
           arguments: [project],
-          title: "Scaffold this sample",
+          title: localize("teamstoolkit.chatParticipants.commands.create.sample"),
         });
       } else if (project.type === "template") {
         response.button({
           command: "fx-extension.create",
           arguments: [TelemetryTriggerFrom.CopilotChat, project.data],
-          title: "Create this template",
+          title: localize("teamstoolkit.chatParticipants.commands.create.template"),
         });
       }
     }
@@ -180,7 +183,7 @@ async function showFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
 ): Promise<string> {
-  response.markdown("\nHere is the files of the sample project.");
+  response.markdown(localize("teamstoolkit.chatParticipants.commands.create.showFileTree"));
   const downloadUrlInfo = await getSampleDownloadUrlInfo(projectMetadata.id);
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;

@@ -22,6 +22,7 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.ApiConnect] = "true";
   process.env[FeatureFlagName.DeployManifest] = "true";
   process.env[FeatureFlagName.OfficeXMLAddin] = "true";
+  process.env[FeatureFlagName.OfficeAddin] = "false";
 }
 
 export function isCLIDotNetEnabled(): boolean {
@@ -67,4 +68,12 @@ export function isTeamsFxRebrandingEnabled(): boolean {
 
 export function isTdpTemplateCliTestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
+}
+
+export function isNewProjectTypeEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
+}
+
+export function isOfficeJSONAddinEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
 }

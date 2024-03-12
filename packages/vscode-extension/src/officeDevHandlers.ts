@@ -12,6 +12,7 @@ import {
   fetchManifestList,
   globalStateGet,
   globalStateUpdate,
+  InvalidProjectError,
 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -34,64 +35,114 @@ import {
   openSampleReadmeHandler,
   showLocalDebugMessage,
 } from "./handlers";
-import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
-import { isTriggerFromWalkThrough } from "./utils/commonUtils";
+import { TelemetryTriggerFrom, VSCodeWindowChoice } from "./telemetry/extTelemetryEvents";
+import { isTriggerFromWalkThrough, getTriggerFromProperty } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
+import { ExtTelemetry } from "./telemetry/extTelemetry";
+import {
+  TelemetryComponentType,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "./telemetry/extTelemetryEvents";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]
 ): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_partner_center",
+  });
   const url = "https://aka.ms/WXPAddinPublish";
   return VS_CODE_UI.openUrl(url);
 }
 
 export async function openGetStartedLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_get_started",
+  });
   const url = "https://learn.microsoft.com/office/dev/add-ins/overview/office-add-ins";
   return VS_CODE_UI.openUrl(url);
 }
 
 export async function openOfficeDevDeployHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_deploy",
+  });
   const url = "https://aka.ms/WXPAddinDeploy";
   return VS_CODE_UI.openUrl(url);
 }
 
 export async function publishToAppSourceHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_publish",
+  });
   const url =
     "https://learn.microsoft.com/partner-center/marketplace/submit-to-appsource-via-partner-center";
   return VS_CODE_UI.openUrl(url);
 }
 
-export async function openDebugLinkHandler(): Promise<Result<boolean, FxError>> {
+export async function openDebugLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_debug",
+  });
   return VS_CODE_UI.openUrl(
     "https://learn.microsoft.com/office/dev/add-ins/testing/debug-add-ins-overview"
   );
 }
 
 export async function openDocumentHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_document",
+  });
   return VS_CODE_UI.openUrl("https://learn.microsoft.com/office/dev/add-ins/");
 }
 
 export async function openDevelopmentLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_development",
+  });
   return VS_CODE_UI.openUrl(
     "https://learn.microsoft.com/office/dev/add-ins/develop/develop-overview"
   );
 }
 
 export async function openLifecycleLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_lifecycle",
+  });
   return VS_CODE_UI.openUrl(
     "https://learn.microsoft.com/office/dev/add-ins/overview/core-concepts-office-add-ins"
   );
 }
 
 export async function openHelpFeedbackLinkHandler(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_feedback",
+  });
   return VS_CODE_UI.openUrl("https://learn.microsoft.com/answers/tags/9/m365");
 }
 
 export async function openReportIssues(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_report",
+  });
   return VS_CODE_UI.openUrl("https://github.com/OfficeDev/office-js/issues");
 }
 
 export function validateOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.validateAddInManifest,
+    getTriggerFromProperty(args)
+  );
   const terminal = OfficeDevTerminal.getInstance();
   terminal.show();
   terminal.sendText(triggerValidate);
@@ -99,6 +150,10 @@ export function validateOfficeAddInManifest(args?: any[]): Promise<Result<null, 
 }
 
 export function installOfficeAddInDependencies(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.installAddInDependencies,
+    getTriggerFromProperty(args)
+  );
   const terminal = OfficeDevTerminal.getInstance();
   terminal.show();
   terminal.sendText(triggerInstall);
@@ -126,6 +181,7 @@ export async function popupOfficeAddInDependenciesMessage() {
 }
 
 export function stopOfficeAddInDebug(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.stopAddInDebug, getTriggerFromProperty(args));
   const terminal = OfficeDevTerminal.getInstance();
   terminal.show();
   terminal.sendText(triggerStopDebug);
@@ -133,6 +189,7 @@ export function stopOfficeAddInDebug(args?: any[]): Promise<Result<null, FxError
 }
 
 export function generateManifestGUID(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.generateAddInGUID, getTriggerFromProperty(args));
   const terminal = OfficeDevTerminal.getInstance();
   terminal.show();
   terminal.sendText(triggerGenerateGUID);
@@ -140,18 +197,24 @@ export function generateManifestGUID(args?: any[]): Promise<Result<null, FxError
 }
 
 export function editOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.editAddInManifest, getTriggerFromProperty(args));
   const workspacePath = globalVariables.workspaceUri?.fsPath;
   if (!workspacePath) {
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.editAddInManifest,
+      new InvalidProjectError()
+    );
     void VS_CODE_UI.showMessage(
       "error",
       localize("teamstoolkit.officeAddIn.workspace.invalid"),
       false
     );
-    return Promise.resolve(err(new FileNotFoundError("editManifest", "workspace")));
+    return Promise.resolve(err(new InvalidProjectError("editManifest", "workspace")));
   }
 
   const manifestList = fetchManifestList(workspacePath);
   if (!manifestList || manifestList.length == 0) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.editAddInManifest, new FileNotFoundError());
     void VS_CODE_UI.showMessage(
       "error",
       localize("teamstoolkit.officeAddIn.terminal.manifest.notfound"),
@@ -189,6 +252,9 @@ export async function openOfficeDevFolder(
   if (warnings?.length) {
     await globalStateUpdate(GlobalKey.CreateWarnings, JSON.stringify(warnings));
   }
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.openNewOfficeAddInProject, {
+    [TelemetryProperty.VscWindow]: VSCodeWindowChoice.NewWindowByDefault,
+  });
   await vscode.commands.executeCommand("vscode.openFolder", folderPath, true);
 }
 

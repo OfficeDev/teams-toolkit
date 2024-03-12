@@ -359,7 +359,6 @@ export function getSystemInputs(): Inputs {
 }
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   let inputs: Inputs | undefined;
   if (args?.length === 1) {
     if (!!args[0].teamsAppFromTdp) {
@@ -376,8 +375,16 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   const projectPathUri = Uri.file(res.projectPath);
   // show local debug button by default
   if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
+      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView,
+      [TelemetryProperty.IsOfficeAddIn]: "true",
+    });
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
   } else {
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CreateProjectStart,
+      getTriggerFromProperty(args)
+    );
     await openFolder(projectPathUri, true, res.warnings, args);
   }
   return result;

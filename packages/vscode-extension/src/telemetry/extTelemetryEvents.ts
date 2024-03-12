@@ -256,6 +256,14 @@ export enum TelemetryEvent {
   ShowScaffoldingWarningSummaryError = "show-scaffolding-warning-summary-error",
 
   FindSimilarIssues = "find-similar-issues",
+
+  //Office add-in related
+  validateAddInManifest = "validate-addin-manifest",
+  installAddInDependencies = "install-addin-dependencies",
+  stopAddInDebug = "stop-office-addin-debug",
+  generateAddInGUID = "generate-addin-guid",
+  editAddInManifest = "edit-addin-manifest",
+  openNewOfficeAddInProject = "open-new-office-addin-project",
 }
 
 export enum TelemetryProperty {
@@ -355,6 +363,8 @@ export enum TelemetryProperty {
   ChangedFilter = "changed-filter",
   SampleFilters = "sample-filters",
   Layout = "layout",
+  // If is Office add-in
+  IsOfficeAddIn = "is-office-add-in",
 }
 
 export enum TelemetryMeasurements {

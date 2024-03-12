@@ -4,17 +4,17 @@ This template showcases a bot app that responds to user questions like an AI ass
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
-- [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
-  - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
+- [Overview of the Basic AI Chatbot template](#overview-of-the-ai-chat-bot-template)
+  - [Get started with the Basic AI Chatbot template](#get-started-with-the-ai-chat-bot-template)
   - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
+  - [Extend the Basic AI Chatbot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)
 
-## Get started with the AI Chat Bot template
+## Get started with the Basic AI Chatbot template
 
 > **Prerequisites**
 >
-> To run the AI Chat Bot template in your local dev machine, you will need:
+> To run the Basic AI Chatbot template in your local dev machine, you will need:
 >
 > - [Python](https://www.python.org/), version 3.8 or higher
 > - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher
@@ -82,7 +82,7 @@ The following files can be customized and demonstrate an example implementation 
 | File                                 | Contents                                           |
 | - | - |
 |`src/app.py`| Hosts an aiohttp api server and exports an app module.|
-|`src/bot.py`| Handles business logics for the AI Chat Bot.|
+|`src/bot.py`| Handles business logics for the Basic AI Chatbot.|
 |`src/config.py`| Defines the environment variables.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|

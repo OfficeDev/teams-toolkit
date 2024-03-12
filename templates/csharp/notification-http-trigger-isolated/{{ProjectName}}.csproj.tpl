@@ -9,6 +9,7 @@
     <RootNamespace>{{SafeProjectName}}</RootNamespace>
   </PropertyGroup>
 
+{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
   </ItemGroup>
@@ -20,6 +21,7 @@
     <Content Remove="devTools/**/*" />
   </ItemGroup>
 
+{{/isNewProjectTypeEnabled}}
   <ItemGroup>
     <None Include=".notification.local*.json" />
     <None Include=".notification.testtool*.json" />

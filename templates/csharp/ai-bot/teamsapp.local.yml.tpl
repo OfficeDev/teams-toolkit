@@ -28,7 +28,17 @@ provision:
   # Generate runtime appsettings to JSON file
   - uses: file/createOrUpdateJsonFile
     with:
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      target: ../appsettings.Development.json
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      target: ../{{appName}}/appsettings.Development.json
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
+{{^isNewProjectTypeEnabled}}
       target: ./appsettings.Development.json
+{{/isNewProjectTypeEnabled}}
       content:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
@@ -73,6 +83,7 @@ provision:
     with:
       # Relative path to this file. This is the path for built zip file.
       appPackagePath: ./appPackage/build/appPackage.${{TEAMSFX_ENV}}.zip
+{{^isNewProjectTypeEnabled}}
 
   # Create or update debug profile in lauchsettings file
   - uses: file/createOrUpdateJsonFile
@@ -89,3 +100,4 @@ provision:
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"
+{{/isNewProjectTypeEnabled}}

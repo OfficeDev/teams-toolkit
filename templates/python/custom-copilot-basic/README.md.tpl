@@ -4,17 +4,17 @@ This template showcases a bot app that responds to user questions like an AI ass
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
-- [Overview of the AI Chat Bot template](#overview-of-the-ai-chat-bot-template)
-  - [Get started with the AI Chat Bot template](#get-started-with-the-ai-chat-bot-template)
+- [Overview of the Basic AI Chatbot template](#overview-of-the-ai-chat-bot-template)
+  - [Get started with the Basic AI Chatbot template](#get-started-with-the-ai-chat-bot-template)
   - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Chat Bot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
+  - [Extend the Basic AI Chatbot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)
 
-## Get started with the AI Chat Bot template
+## Get started with the Basic AI Chatbot template
 
 > **Prerequisites**
 >
-> To run the AI Chat Bot template in your local dev machine, you will need:
+> To run the Basic AI Chatbot template in your local dev machine, you will need:
 >
 > - [Python](https://www.python.org/), version 3.8 or higher
 > - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher
@@ -81,10 +81,9 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`src/api.py`| Host a aiohttp api server for the app.|
-|`src/bot.py`| Handles business logics for the AI Chat Bot.|
+|`src/app.py`| Hosts an aiohttp api server and exports an app module.|
+|`src/bot.py`| Handles business logics for the Basic AI Chatbot.|
 |`src/config.py`| Defines the environment variables.|
-|`src/app.py`| Main module of the AI Chat Bot.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
 
@@ -96,9 +95,15 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Chat Bot template with more AI capabilities
+## Extend the Basic AI Chatbot template with more AI capabilities
 
-You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Chat Bot template with more AI capabilities.
+You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the Basic AI Chatbot template with more AI capabilities, like:
+- [Customize prompt](https://aka.ms/teamsfx-basic-ai-chatbot#customize-prompt)
+- [Customize user input](https://aka.ms/teamsfx-basic-ai-chatbot#customize-user-input)
+- [Customize conversation history](https://aka.ms/teamsfx-basic-ai-chatbot#customize-conversation-history)
+- [Customize model type](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-type)
+- [Customize model parameters](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-parameters)
+- [Handle messages with image](https://aka.ms/teamsfx-basic-ai-chatbot#handle-messages-with-image)
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

@@ -61,6 +61,7 @@ import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
 import { sampleProvider } from "../../src/common/samples";
+import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXMLAddin/projectConfig";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   try {
@@ -100,6 +101,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
+        [FeatureFlagName.OfficeXMLAddin]: "false",
       });
     });
     afterEach(() => {
@@ -3231,6 +3233,26 @@ describe("scaffold question", () => {
           assert.equal("Select a programming language", placeholder);
         }
       }
+    });
+
+    it("office xml addin: patch coverage getLanguageOptions", async () => {
+      sandbox.stub(OfficeAddinProjectConfig, "word").value({
+        "word-taskpane": {
+          localTemplate: "word-taskpane",
+          title: "core.createProjectQuestion.officeXMLAddin.taskpane.title",
+          detail: "core.createProjectQuestion.officeXMLAddin.taskpane.detail",
+          framework: {
+            default: {},
+          },
+        },
+      });
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+        [QuestionNames.Capabilities]: "word-taskpane",
+      };
+      assert.deepEqual(getLanguageOptions(inputs), []);
     });
   });
 

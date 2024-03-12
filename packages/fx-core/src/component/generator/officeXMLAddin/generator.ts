@@ -8,13 +8,13 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import { FxError, Inputs, Result, ok, err, Context } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
-import _ from "lodash";
+import _, { merge } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { join } from "path";
 import { promisify } from "util";
 import { Generator } from "../generator";
 import { HelperMethods } from "../officeAddin/helperMethods";
-import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { assembleError } from "../../../error";
 import { ProgrammingLanguage } from "../../../question/create";
 import { QuestionNames } from "../../../question/questionNames";
@@ -27,6 +27,14 @@ import { getLocalizedString } from "../../../common/localizeUtils";
 const COMPONENT_NAME = "office-xml-addin";
 const TELEMETRY_EVENT = "generate";
 const TEMPLATE_BASE = "office-xml-addin";
+const TEMPLATE_COMMON_NAME = "office-xml-addin-common";
+const TEMPLATE_COMMON_LANG = "ts";
+
+const enum OfficeXMLAddinTelemetryProperties {
+  host = "office-xml-addin-host",
+  project = "office-xml-addin-project",
+  lang = "office-xml-addin-lang",
+}
 
 export class OfficeXMLAddinGenerator {
   @hooks([
@@ -40,7 +48,8 @@ export class OfficeXMLAddinGenerator {
   static async generate(
     context: Context,
     inputs: Inputs,
-    destinationPath: string
+    destinationPath: string,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const host = inputs[QuestionNames.OfficeAddinCapability] as string;
     const project = inputs[QuestionNames.Capabilities];
@@ -53,6 +62,12 @@ export class OfficeXMLAddinGenerator {
       getLocalizedString("core.createProjectQuestion.officeXMLAddin.bar.title"),
       1
     );
+
+    merge(actionContext?.telemetryProps, {
+      [OfficeXMLAddinTelemetryProperties.host]: host,
+      [OfficeXMLAddinTelemetryProperties.project]: project,
+      [OfficeXMLAddinTelemetryProperties.lang]: lang,
+    });
 
     try {
       process.chdir(destinationPath);
@@ -100,6 +115,15 @@ export class OfficeXMLAddinGenerator {
         "random",
         `${appName}`
       );
+
+      // -> Common Step: Generate OfficeXMLAddin specific `teamsapp.yml`
+      const generateOfficeYMLRes = await Generator.generateTemplate(
+        context,
+        destinationPath,
+        TEMPLATE_COMMON_NAME,
+        TEMPLATE_COMMON_LANG
+      );
+      if (generateOfficeYMLRes.isErr()) return err(generateOfficeYMLRes.error);
 
       process.chdir(workingDir);
       await progressBar.end(true, true);

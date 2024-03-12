@@ -182,7 +182,7 @@ export function getOfficeXMLAddinHostProjectLangOptions(
 }
 
 /**
- * Get all available Lang Options of one host and proj
+ * Get static local template suffix name of one host and proj
  * @param host Office host
  * @param proj proj name
  * @returns the detail lang options[] of the proj

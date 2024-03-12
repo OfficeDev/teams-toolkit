@@ -7,13 +7,13 @@ from http import HTTPStatus
 from aiohttp import web
 from botbuilder.core.integration import aiohttp_error_middleware
 
-from bot import botapp
+from bot import bot_app
 
 routes = web.RouteTableDef()
 
 @routes.post("/api/messages")
 async def on_messages(req: web.Request) -> web.Response:
-    res = await botapp.process(req)
+    res = await bot_app.process(req)
 
     if res is not None:
         return res

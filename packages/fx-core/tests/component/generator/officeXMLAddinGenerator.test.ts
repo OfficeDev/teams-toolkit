@@ -84,7 +84,7 @@ describe("OfficeXMLAddinGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
       [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
       [QuestionNames.Capabilities]: ["taskpane"],
       [QuestionNames.AppName]: "office-addin-test",
@@ -105,7 +105,7 @@ describe("OfficeXMLAddinGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
       [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
       [QuestionNames.Capabilities]: ["manifest"],
       [QuestionNames.AppName]: "office-addin-test",
@@ -124,7 +124,7 @@ describe("OfficeXMLAddinGenerator", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
       [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
       [QuestionNames.Capabilities]: ["react"],
       [QuestionNames.AppName]: "office-addin-test",

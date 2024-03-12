@@ -21,6 +21,7 @@ import {
   Warning,
   ApiOperation,
   ApiKeyAuthInfo,
+  SystemError,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
 import path from "path";
@@ -37,6 +38,8 @@ import {
   specParserGenerateResultWarningsTelemetryProperty,
   isYamlSpecFile,
   invalidApiSpecErrorName,
+  copilotPluginParserOptions,
+  updateForCustomApi,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -48,6 +51,7 @@ import {
   SpecParser,
   ValidationStatus,
   WarningType,
+  ProjectType,
 } from "@microsoft/m365-spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
@@ -60,23 +64,22 @@ const fromApiSpecTemplateName = "copilot-plugin-existing-api";
 const fromApiSpecWithApiKeyTemplateName = "copilot-plugin-existing-api-api-key";
 const fromOpenAIPlugincomponentName = "copilot-plugin-from-oai-plugin";
 const fromOpenAIPluginTemplateName = "copilot-plugin-from-oai-plugin";
+const forCustomCopilotRagCustomApi = "custom-copilot-rag-custom-api";
 const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
+const pluginManifestFileName = "ai-plugin.json";
 
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
 
+const failedToUpdateCustomApiTemplateErrorName = "failed-to-update-custom-api-template";
+
 const enum telemetryProperties {
   templateName = "template-name",
   generateType = "generate-type",
   isRemoteUrlTelemetryProperty = "remote-url",
-}
-
-enum GenerateType {
-  ME = "api-me",
-  ApiPlugin = "api-plugin",
 }
 
 function normalizePath(path: string): string {
@@ -181,6 +184,29 @@ export class CopilotPluginGenerator {
     );
   }
 
+  @hooks([
+    ActionExecutionMW({
+      enableTelemetry: true,
+      telemetryComponentName: fromOpenAIPlugincomponentName,
+      telemetryEventName: TelemetryEvents.Generate,
+      errorSource: fromOpenAIPlugincomponentName,
+    }),
+  ])
+  public static async generateForCustomCopilotRagCustomApi(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string
+  ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
+    return await this.generate(
+      context,
+      inputs,
+      destinationPath,
+      forCustomCopilotRagCustomApi,
+      forCustomCopilotRagCustomApi,
+      false
+    );
+  }
+
   private static async generate(
     context: Context,
     inputs: Inputs,
@@ -195,7 +221,12 @@ export class CopilotPluginGenerator {
       const language = inputs[QuestionNames.ProgrammingLanguage];
       const safeProjectNameFromVS =
         language === "csharp" ? inputs[QuestionNames.SafeProjectName] : undefined;
-      const type = isPlugin ? GenerateType.ApiPlugin : GenerateType.ME;
+      const type =
+        templateName === forCustomCopilotRagCustomApi
+          ? ProjectType.TeamsAi
+          : isPlugin
+          ? ProjectType.Copilot
+          : ProjectType.SME;
 
       const manifestPath = path.join(
         destinationPath,
@@ -223,6 +254,7 @@ export class CopilotPluginGenerator {
           appName,
           safeProjectNameFromVS,
           inputs.targetFramework,
+          inputs.placeProjectFileInSolutionDir === "true",
           {
             authName: apiKeyAuthData.authName,
             openapiSpecPath: normalizePath(
@@ -235,29 +267,41 @@ export class CopilotPluginGenerator {
         context.templateVariables = Generator.getDefaultVariables(
           appName,
           safeProjectNameFromVS,
-          inputs.targetFramework
+          inputs.targetFramework,
+          inputs.placeProjectFileInSolutionDir === "true"
         );
       }
       const filters = inputs[QuestionNames.ApiOperation] as string[];
 
-      // download template
-      const templateRes = await Generator.generateTemplate(
-        context,
-        destinationPath,
-        templateName,
-        language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
-      );
-      if (templateRes.isErr()) return err(templateRes.error);
+      if (templateName != forCustomCopilotRagCustomApi) {
+        // download template
+        const templateRes = await Generator.generateTemplate(
+          context,
+          destinationPath,
+          templateName,
+          language === ProgrammingLanguage.CSharp ? ProgrammingLanguage.CSharp : undefined
+        );
+        if (templateRes.isErr()) return err(templateRes.error);
+      }
 
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
-        [telemetryProperties.generateType]: type,
+        [telemetryProperties.generateType]: type.toString(),
       });
 
       // validate API spec
       const allowAPIKeyAuth = isApiKeyEnabled();
       const allowMultipleParameters = isMultipleParametersEnabled();
-      const specParser = new SpecParser(url, { allowAPIKeyAuth, allowMultipleParameters });
+      const specParser = new SpecParser(
+        url,
+        isPlugin
+          ? copilotPluginParserOptions
+          : {
+              allowAPIKeyAuth,
+              allowMultipleParameters,
+              projectType: type,
+            }
+      );
       const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
       const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
@@ -301,20 +345,36 @@ export class CopilotPluginGenerator {
       // generate files
       await fs.ensureDir(apiSpecFolderPath);
 
-      const adaptiveCardFolder = path.join(
-        destinationPath,
-        AppPackageFolderName,
-        ResponseTemplatesFolderName
-      );
-      const generateResult = await specParser.generate(
-        manifestPath,
-        filters,
-        openapiSpecPath,
-        adaptiveCardFolder
-      );
+      let generateResult;
+
+      if (isPlugin) {
+        const pluginManifestPath = path.join(
+          destinationPath,
+          AppPackageFolderName,
+          pluginManifestFileName
+        );
+        generateResult = await specParser.generateForCopilot(
+          manifestPath,
+          filters,
+          openapiSpecPath,
+          pluginManifestPath
+        );
+      } else {
+        const responseTemplateFolder = path.join(
+          destinationPath,
+          AppPackageFolderName,
+          ResponseTemplatesFolderName
+        );
+        generateResult = await specParser.generate(
+          manifestPath,
+          filters,
+          openapiSpecPath,
+          type === ProjectType.TeamsAi ? undefined : responseTemplateFolder
+        );
+      }
 
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
-        [telemetryProperties.generateType]: type,
+        [telemetryProperties.generateType]: type.toString(),
         [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)
@@ -345,6 +405,21 @@ export class CopilotPluginGenerator {
           manifestPath
         );
         if (updateManifestRes.isErr()) return err(updateManifestRes.error);
+      }
+
+      if (componentName === forCustomCopilotRagCustomApi) {
+        const specs = await specParser.getFilteredSpecs(filters);
+        const spec = specs[1];
+        try {
+          await updateForCustomApi(spec, language, destinationPath, openapiSpecFileName);
+        } catch (error: any) {
+          throw new SystemError(
+            componentName,
+            failedToUpdateCustomApiTemplateErrorName,
+            error.message,
+            error.message
+          );
+        }
       }
 
       // log warnings

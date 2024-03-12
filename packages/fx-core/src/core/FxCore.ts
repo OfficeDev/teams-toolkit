@@ -81,6 +81,7 @@ import {
   ErrorResult,
   OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
+  copilotPluginParserOptions,
   generateScaffoldingSummary,
   listOperations,
   listPluginExistingOperations,
@@ -1256,10 +1257,15 @@ export class FxCore {
     }
 
     // Merge existing operations in manifest.json
-    const specParser = new SpecParser(url, {
-      allowAPIKeyAuth: isApiKeyEnabled(),
-      allowMultipleParameters: isMultipleParametersEnabled(),
-    });
+    const specParser = new SpecParser(
+      url,
+      isPlugin
+        ? copilotPluginParserOptions
+        : {
+            allowAPIKeyAuth: isApiKeyEnabled(),
+            allowMultipleParameters: isMultipleParametersEnabled(),
+          }
+    );
 
     const apiResultList = await specParser.list();
 

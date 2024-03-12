@@ -1472,6 +1472,7 @@ describe("isEnvFile", async () => {
           "azureOpenAI-key",
           "azureOpenAI-endpoint",
           "openAI-key",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1512,6 +1513,7 @@ describe("isEnvFile", async () => {
           "azureOpenAI-key",
           "azureOpenAI-endpoint",
           "openAI-key",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1552,6 +1554,7 @@ describe("isEnvFile", async () => {
           "azureOpenAI-key",
           "azureOpenAI-endpoint",
           "openAI-key",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);
@@ -1593,6 +1596,7 @@ describe("isEnvFile", async () => {
           "azureOpenAI-key",
           "azureOpenAI-endpoint",
           "openAI-key",
+          "office-addin-framework-type",
           "folder",
           "app-name",
         ]);

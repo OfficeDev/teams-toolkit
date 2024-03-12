@@ -44,6 +44,7 @@ import {
   createSampleProjectQuestionNode,
   folderQuestion,
   getLanguageOptions,
+  getAddinHostOptions,
   getTemplate,
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
@@ -463,7 +464,7 @@ describe("scaffold question", () => {
       ]);
     });
 
-    it("traverse in vscode Office addin", async () => {
+    it("traverse in vscode Outlook addin", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -487,8 +488,8 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.deepEqual(options, [
-            ...CapabilityOptions.officeAddinItems(),
-            CapabilityOptions.officeAddinImport(),
+            ...CapabilityOptions.outlookAddinItems(),
+            CapabilityOptions.outlookAddinImport(),
           ]);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
@@ -496,7 +497,7 @@ describe("scaffold question", () => {
             title,
             getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title")
           );
-          return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
+          return ok({ type: "success", result: CapabilityOptions.outlookAddinImport().id });
         } else if (question.name === QuestionNames.OfficeAddinFolder) {
           return ok({ type: "success", result: "./" });
         } else if (question.name === QuestionNames.OfficeAddinManifest) {
@@ -544,7 +545,7 @@ describe("scaffold question", () => {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 5);
-          return ok({ type: "success", result: ProjectTypeOptions.officeAddin().id });
+          return ok({ type: "success", result: ProjectTypeOptions.officeXMLAddin().id });
         } else if (question.name === QuestionNames.OfficeAddinCapability) {
           const select = question as SingleSelectQuestion;
           const options = await select.staticOptions;
@@ -594,6 +595,70 @@ describe("scaffold question", () => {
         QuestionNames.AppName,
       ]);
       mockedEnvRestoreLocal();
+    });
+    it("traverse in vscode Office addin", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 5);
+          return ok({ type: "success", result: ProjectTypeOptions.officeAddin().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.deepEqual(options, [
+            ...CapabilityOptions.officeAddinItems(),
+            CapabilityOptions.officeAddinImport(),
+          ]);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title")
+          );
+          return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
+        } else if (question.name === QuestionNames.OfficeAddinFolder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.OfficeAddinManifest) {
+          return ok({ type: "success", result: "./manifest.json" });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 1);
+          return ok({ type: "success", result: "typescript" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.OfficeAddinFramework) {
+          return ok({ type: "success", result: "default" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.OfficeAddinFolder,
+        QuestionNames.OfficeAddinManifest,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.OfficeAddinFramework,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
     });
     it("traverse in vscode SPFx new", async () => {
       const inputs: Inputs = {
@@ -2634,6 +2699,26 @@ describe("scaffold question", () => {
     });
   });
 
+  describe("getAddinHostOptions", () => {
+    it("should return outlook host", async () => {
+      const options = getAddinHostOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+      });
+      assert.isTrue(options.length === 1 || options[0].id === "Outlook");
+    });
+
+    it("should return office host", async () => {
+      const options = getAddinHostOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+      });
+      assert.isTrue(options.length === 4);
+    });
+  });
+
   describe("getLanguageOptions", () => {
     let mockedEnvRestore: RestoreFn = () => {};
 
@@ -2658,7 +2743,7 @@ describe("scaffold question", () => {
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });
 
-    it("office addin", async () => {
+    it("outlook addin", async () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,
         [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
@@ -2666,6 +2751,16 @@ describe("scaffold question", () => {
       });
       assert.isTrue(options.length === 1 && options[0].id === "TypeScript");
     });
+    it("office addin", async () => {
+      const options = getLanguageOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+        [QuestionNames.OfficeAddinFramework]: "default",
+      });
+      assert.isTrue(options.length === 2 && options[0].id === "typescript");
+    });
+
     it("SPFx", async () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,
@@ -3006,7 +3101,7 @@ describe("scaffold question", () => {
   });
   describe("programmingLanguageQuestion", () => {
     const question = programmingLanguageQuestion();
-    it("office addin: should have typescript as options", async () => {
+    it("outlook addin: should have typescript as options", async () => {
       const inputs: Inputs = { platform: Platform.CLI };
       inputs[QuestionNames.Capabilities] = ["taskpane"];
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
@@ -3017,7 +3112,7 @@ describe("scaffold question", () => {
       }
     });
 
-    it("office addin: should default to TypeScript for taskpane projects", async () => {
+    it("outlook addin: should default to TypeScript for taskpane projects", async () => {
       const inputs: Inputs = { platform: Platform.CLI };
       inputs[QuestionNames.Capabilities] = ["taskpane"];
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
@@ -3032,7 +3127,7 @@ describe("scaffold question", () => {
       });
       const inputs: Inputs = {
         platform: Platform.CLI,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
         [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
         [QuestionNames.Capabilities]: "react",
       };
@@ -3053,7 +3148,7 @@ describe("scaffold question", () => {
       });
       const inputs: Inputs = {
         platform: Platform.CLI,
-        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
         [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
         [QuestionNames.Capabilities]: "manifest",
       };
@@ -3063,6 +3158,31 @@ describe("scaffold question", () => {
         assert.deepEqual(options, [{ label: "JavaScript", id: "javascript" }]);
       }
       mockedEnvRestoreLocal();
+    });
+
+    it("office addin: should have typescript as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.OfficeAddinFramework] = "default";
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [
+          { label: "TypeScript", id: "typescript" },
+          { label: "JavaScript", id: "javascript" },
+        ]);
+      }
+    });
+
+    it("office addin: should default to TypeScript for taskpane projects", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.OfficeAddinFramework] = "default";
+      assert.isDefined(question.default);
+      const lang = await (question.default as LocalFunc<string | undefined>)(inputs);
+      assert.equal(lang, "typescript");
     });
 
     it("SPFxTab", async () => {

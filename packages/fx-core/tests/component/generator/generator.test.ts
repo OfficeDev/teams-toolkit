@@ -800,7 +800,11 @@ describe("Generator happy path", async () => {
   });
 
   it("template variables when new project enabled", async () => {
-    sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "true" });
+    sandbox.stub(process, "env").value({
+      TEAMSFX_NEW_PROJECT_TYPE: "true",
+      TEAMSFX_NEW_PROJECT_TYPE_NAME: "M365",
+      TEAMSFX_NEW_PROJECT_TYPE_EXTENSION: "maproj",
+    });
     const vars = Generator.getDefaultVariables("test");
     assert.equal(vars.isNewProjectTypeEnabled, "true");
   });

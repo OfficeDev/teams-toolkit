@@ -56,7 +56,7 @@ It showcases how to build an AI agent in Teams capable of chatting with users an
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![AI Agent](https://github.com/OfficeDev/TeamsFx/assets/37978464/e850e92b-ee62-4837-a054-6565132f71a7)
+![AI Agent](https://github.com/OfficeDev/TeamsFx/assets/37978464/4e64c733-ee01-4938-8be1-9de0195b7244)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template

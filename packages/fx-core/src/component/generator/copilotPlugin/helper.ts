@@ -799,10 +799,23 @@ async function updateActionForCustomApi(
         for (let i = 0; i < paramObject.length; i++) {
           const param = paramObject[i];
           const schema = param.schema as OpenAPIV3.SchemaObject;
-          parameters.properties[param.name] = schema;
-          parameters.properties[param.name].description = param.description ?? "";
+          const paramType = param.in;
+
+          if (!parameters.properties[paramType]) {
+            parameters.properties[paramType] = {
+              type: "object",
+              properties: {},
+              required: [],
+            };
+          }
+          parameters.properties[paramType].properties[param.name] = schema;
+          parameters.properties[paramType].properties[param.name].description =
+            param.description ?? "";
           if (param.required) {
-            parameters.required?.push(param.name);
+            parameters.properties[paramType].required.push(param.name);
+            if (!parameters.required.includes(paramType)) {
+              parameters.required.push(paramType);
+            }
           }
         }
       }

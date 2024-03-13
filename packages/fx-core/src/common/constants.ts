@@ -55,9 +55,9 @@ export class FeatureFlagName {
   static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
   static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
+  static readonly OfficeXMLAddin = "TEAMSFX_OFFICE_XML_ADDIN";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
   static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
-  static readonly CustomCopilot = "TEAMSFX_CUSTOM_COPILOT";
   static readonly TeamsSampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly OfficeSampleConfigBranch = "TEAMSFX_OFFICE_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
@@ -65,4 +65,5 @@ export class FeatureFlagName {
   static readonly MultipleParameters = "API_COPILOT_MULTIPLE_PARAMETERS";
   static readonly TeamsFxRebranding = "TEAMSFX_REBRANDING";
   static readonly TdpTemplateCliTest = "TEAMSFX_TDP_TEMPLATE_CLI_TEST";
+  static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
 }

@@ -21,7 +21,7 @@ This template showcases how Microsoft Teams supports the ability to run web-base
 
 **Congratulations**! You are running an application that can now show a basic web page in Teams, Outlook and the Microsoft 365 app.
 
-![Basic Tab](https://github.com/OfficeDev/TeamsFx/assets/11220663/ad7bd534-cdb2-4c18-a71b-b206b6387b4c)
+![Basic Tab](https://github.com/OfficeDev/TeamsFx/assets/139844715/1a7edb41-a471-46da-850c-dc21f5a4d431)
 
 ## What's included in the template
 

@@ -29,5 +29,5 @@ export interface ManifestCommonProperties {
   /**
    * Whether it's an API plugin
    */
-  isApiPlugin: boolean;
+  isPlugin: boolean;
 }

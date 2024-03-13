@@ -270,6 +270,7 @@ describe("handlers", () => {
   it("updateAutoOpenGlobalKey", async () => {
     sandbox.stub(commonUtils, "isTriggerFromWalkThrough").returns(true);
     sandbox.stub(globalVariables, "checkIsSPFx").returns(true);
+    sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(false);
     const globalStateUpdateStub = sinon.stub(globalState, "globalStateUpdate");
 
     await handlers.updateAutoOpenGlobalKey(false, vscode.Uri.file("test"), [
@@ -476,6 +477,14 @@ describe("handlers", () => {
       chai.assert.isTrue(result.isOk());
       chai.assert.equal(tutorialOptions[0].data, "https://aka.ms/teamsfx-add-cicd-new");
     });
+  });
+
+  it("azureAccountSignOutHelpHandler()", async () => {
+    try {
+      handlers.azureAccountSignOutHelpHandler();
+    } catch (e) {
+      chai.assert.isTrue(e instanceof Error);
+    }
   });
 
   it("openAccountHelpHandler()", async () => {
@@ -2475,7 +2484,7 @@ describe("autoOpenProjectHandler", () => {
       isApiME: true,
       isSPFx: false,
       isApiBasedMe: true,
-      isApiPlugin: false,
+      isPlugin: false,
     };
     const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
     VsCodeLogInstance.outputChannel = {

@@ -10,10 +10,12 @@ import fs from "fs-extra";
 import path from "path";
 import {
   APIInfo,
+  AuthInfo,
   ErrorType,
   GenerateResult,
   ListAPIResult,
   ParseOptions,
+  ProjectType,
   ValidateResult,
   ValidationStatus,
   WarningType,
@@ -45,6 +47,8 @@ export class SpecParser {
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
+    allowMethods: ["get", "post"],
+    projectType: ProjectType.SME,
   };
 
   /**
@@ -89,15 +93,7 @@ export class SpecParser {
         };
       }
 
-      return Utils.validateSpec(
-        this.spec!,
-        this.parser,
-        !!this.isSwaggerFile,
-        this.options.allowMissingId,
-        this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters,
-        this.options.allowOauth2
-      );
+      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -170,23 +166,13 @@ export class SpecParser {
   }
 
   /**
-   * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
-   * @param manifestPath A file path of the Teams app manifest file to update.
+   * Generate specs according to the filters.
    * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
-   * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
-   * @param adaptiveCardFolder Folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
    */
-  async generate(
-    manifestPath: string,
+  async getFilteredSpecs(
     filter: string[],
-    outputSpecPath: string,
-    adaptiveCardFolder: string,
     signal?: AbortSignal
-  ): Promise<GenerateResult> {
-    const result: GenerateResult = {
-      allSuccess: true,
-      warnings: [],
-    };
+  ): Promise<[OpenAPIV3.Document, OpenAPIV3.Document]> {
     try {
       if (signal?.aborted) {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
@@ -201,10 +187,7 @@ export class SpecParser {
         filter,
         this.unResolveSpec!,
         this.spec!,
-        this.options.allowMissingId,
-        this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters,
-        this.options.allowOauth2
+        this.options
       );
 
       if (signal?.aborted) {
@@ -212,9 +195,96 @@ export class SpecParser {
       }
 
       const newSpec = (await this.parser.dereference(newUnResolvedSpec)) as OpenAPIV3.Document;
+      return [newUnResolvedSpec, newSpec];
+    } catch (err) {
+      if (err instanceof SpecParserError) {
+        throw err;
+      }
+      throw new SpecParserError((err as Error).toString(), ErrorType.GetSpecFailed);
+    }
+  }
 
-      const AuthSet: Set<OpenAPIV3.SecuritySchemeObject> = new Set();
-      let hasMultipleAPIKeyAuth = false;
+  /**
+   * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
+   * @param manifestPath A file path of the Teams app manifest file to update.
+   * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
+   * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param pluginFilePath File path of the api plugin file to generate.
+   */
+  async generateForCopilot(
+    manifestPath: string,
+    filter: string[],
+    outputSpecPath: string,
+    pluginFilePath: string,
+    signal?: AbortSignal
+  ): Promise<GenerateResult> {
+    const result: GenerateResult = {
+      allSuccess: true,
+      warnings: [],
+    };
+
+    try {
+      const newSpecs = await this.getFilteredSpecs(filter, signal);
+      const newUnResolvedSpec = newSpecs[0];
+      const newSpec = newSpecs[1];
+
+      let resultStr;
+      if (outputSpecPath.endsWith(".yaml") || outputSpecPath.endsWith(".yml")) {
+        resultStr = jsyaml.dump(newUnResolvedSpec);
+      } else {
+        resultStr = JSON.stringify(newUnResolvedSpec, null, 2);
+      }
+      await fs.outputFile(outputSpecPath, resultStr);
+
+      if (signal?.aborted) {
+        throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
+      }
+
+      const [updatedManifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        newSpec,
+        this.options
+      );
+
+      await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
+      await fs.outputJSON(pluginFilePath, apiPlugin, { spaces: 2 });
+    } catch (err) {
+      if (err instanceof SpecParserError) {
+        throw err;
+      }
+      throw new SpecParserError((err as Error).toString(), ErrorType.GenerateFailed);
+    }
+
+    return result;
+  }
+
+  /**
+   * Generates and update artifacts from the OpenAPI specification file. Generate Adaptive Cards, update Teams app manifest, and generate a new OpenAPI specification file.
+   * @param manifestPath A file path of the Teams app manifest file to update.
+   * @param filter An array of strings that represent the filters to apply when generating the artifacts. If filter is empty, it would process nothing.
+   * @param outputSpecPath File path of the new OpenAPI specification file to generate. If not specified or empty, no spec file will be generated.
+   * @param adaptiveCardFolder Folder path where the Adaptive Card files will be generated. If not specified or empty, Adaptive Card files will not be generated.
+   */
+  async generate(
+    manifestPath: string,
+    filter: string[],
+    outputSpecPath: string,
+    adaptiveCardFolder?: string,
+    signal?: AbortSignal
+  ): Promise<GenerateResult> {
+    const result: GenerateResult = {
+      allSuccess: true,
+      warnings: [],
+    };
+    try {
+      const newSpecs = await this.getFilteredSpecs(filter, signal);
+      const newUnResolvedSpec = newSpecs[0];
+      const newSpec = newSpecs[1];
+
+      const authSet: Set<AuthInfo> = new Set();
+      let hasMultipleAuth = false;
 
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
@@ -223,19 +293,19 @@ export class SpecParser {
           const authArray = Utils.getAuthArray(operation.security, newSpec);
 
           if (authArray && authArray.length > 0) {
-            AuthSet.add(authArray[0][0].authSchema);
-            if (AuthSet.size > 1) {
-              hasMultipleAPIKeyAuth = true;
+            authSet.add(authArray[0][0]);
+            if (authSet.size > 1) {
+              hasMultipleAuth = true;
               break;
             }
           }
         }
       }
 
-      if (hasMultipleAPIKeyAuth) {
+      if (hasMultipleAuth && this.options.projectType !== ProjectType.TeamsAi) {
         throw new SpecParserError(
-          ConstantString.MultipleAPIKeyNotSupported,
-          ErrorType.MultipleAPIKeyNotSupported
+          ConstantString.MultipleAuthNotSupported,
+          ErrorType.MultipleAuthNotSupported
         );
       }
 
@@ -247,28 +317,30 @@ export class SpecParser {
       }
       await fs.outputFile(outputSpecPath, resultStr);
 
-      for (const url in newSpec.paths) {
-        for (const method in newSpec.paths[url]) {
-          // paths object may contain description/summary, so we need to check if it is a operation object
-          if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
-            const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
-            try {
-              const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
-              const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
-              const wrappedCard = wrapAdaptiveCard(card, jsonPath);
-              await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
-              const dataFileName = path.join(
-                adaptiveCardFolder,
-                `${operation.operationId!}.data.json`
-              );
-              await fs.outputJSON(dataFileName, {}, { spaces: 2 });
-            } catch (err) {
-              result.allSuccess = false;
-              result.warnings.push({
-                type: WarningType.GenerateCardFailed,
-                content: (err as Error).toString(),
-                data: operation.operationId!,
-              });
+      if (adaptiveCardFolder) {
+        for (const url in newSpec.paths) {
+          for (const method in newSpec.paths[url]) {
+            // paths object may contain description/summary which is not a http method, so we need to check if it is a operation object
+            if (this.options.allowMethods.includes(method)) {
+              const operation = (newSpec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
+              try {
+                const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operation);
+                const fileName = path.join(adaptiveCardFolder, `${operation.operationId!}.json`);
+                const wrappedCard = wrapAdaptiveCard(card, jsonPath);
+                await fs.outputJSON(fileName, wrappedCard, { spaces: 2 });
+                const dataFileName = path.join(
+                  adaptiveCardFolder,
+                  `${operation.operationId!}.data.json`
+                );
+                await fs.outputJSON(dataFileName, {}, { spaces: 2 });
+              } catch (err) {
+                result.allSuccess = false;
+                result.warnings.push({
+                  type: WarningType.GenerateCardFailed,
+                  content: (err as Error).toString(),
+                  data: operation.operationId!,
+                });
+              }
             }
           }
         }
@@ -278,14 +350,14 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const auth = Array.from(AuthSet)[0];
+      const authInfo = Array.from(authSet)[0];
       const [updatedManifest, warnings] = await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
-        adaptiveCardFolder,
         newSpec,
-        this.options.allowMultipleParameters,
-        auth
+        this.options,
+        adaptiveCardFolder,
+        authInfo
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });
@@ -322,13 +394,7 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = Utils.listSupportedAPIs(
-      spec,
-      this.options.allowMissingId,
-      this.options.allowAPIKeyAuth,
-      this.options.allowMultipleParameters,
-      this.options.allowOauth2
-    );
+    const result = Utils.listSupportedAPIs(spec, this.options);
     this.apiMap = result;
     return result;
   }

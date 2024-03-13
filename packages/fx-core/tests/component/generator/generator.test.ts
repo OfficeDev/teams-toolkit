@@ -359,6 +359,31 @@ describe("Generator utils", () => {
     assert.equal(data, mockFileData);
   });
 
+  it("download directory with LFS files", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const lfsData =
+      "version https://git-lfs.github.com/spec/v1\noid sha256:548c1fe07b6b278da680ccd84483be06262521f2e3\nsize 100";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: lfsData });
+    axiosStub.onThirdCall().resolves({ status: 200, data: mockFileData });
+    await fs.ensureDir(tmpDir);
+    await downloadDirectory(
+      {
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: "dev",
+        dir: "test",
+      },
+      tmpDir
+    );
+    const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
+    assert.equal(data, mockFileData);
+  });
+
   it("limit concurrency", async () => {
     const data = [1, 10, 2, 3];
     let res: number[] = [];
@@ -774,9 +799,30 @@ describe("Generator happy path", async () => {
     assert.equal(vars.enableTestToolByDefault, "");
   });
 
+  it("template variables when new project enabled", async () => {
+    sandbox.stub(process, "env").value({
+      TEAMSFX_NEW_PROJECT_TYPE: "true",
+      TEAMSFX_NEW_PROJECT_TYPE_NAME: "M365",
+      TEAMSFX_NEW_PROJECT_TYPE_EXTENSION: "maproj",
+    });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.isNewProjectTypeEnabled, "true");
+  });
+
+  it("template variables when test tool disabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "false" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.isNewProjectTypeEnabled, "");
+  });
+
+  it("template variables when set placeProjectFileInSolutionDir to true", async () => {
+    const vars = Generator.getDefaultVariables("test", undefined, undefined, true);
+    assert.equal(vars.PlaceProjectFileInSolutionDir, "true");
+  });
+
   it("template variables with custom copilot - OpenAI", async () => {
-    const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
-      llmService: "llm-service-openAI",
+    const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
+      llmService: "llm-service-openai",
       openAIKey: "test-key",
     });
     assert.equal(vars.useOpenAI, "true");
@@ -787,8 +833,8 @@ describe("Generator happy path", async () => {
   });
 
   it("template variables with custom copilot - Azure OpenAI", async () => {
-    const vars = Generator.getDefaultVariables("test", "test", undefined, undefined, {
-      llmService: "llm-service-azureOpenAI",
+    const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
+      llmService: "llm-service-azure-openai",
       azureOpenAIKey: "test-key",
       azureOpenAIEndpoint: "test-endpoint",
     });
@@ -801,7 +847,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "AUTHNAME_REGISTRATION_ID",
@@ -817,7 +863,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth with special characters", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "AUTH-NAME_REGISTRATION*ID",
@@ -833,7 +879,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth with name not start with [A-Z]", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", undefined, {
+    const vars = Generator.getDefaultVariables("Test", "Test", undefined, false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "*AUTH-NAME_REGISTRATION*ID",

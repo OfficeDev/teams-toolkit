@@ -6,7 +6,7 @@ import "mocha";
 import { Utils } from "../src/utils";
 import { OpenAPIV3 } from "openapi-types";
 import { ConstantString } from "../src/constants";
-import { ErrorType } from "../src/interfaces";
+import { ErrorType, ProjectType, ParseOptions } from "../src/interfaces";
 
 describe("utils", () => {
   describe("updateFirstLetter", () => {
@@ -100,7 +100,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
     });
 
@@ -138,7 +148,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, false, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: false,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -190,7 +210,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
     });
 
@@ -262,7 +292,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -334,7 +373,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: true,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
     });
 
@@ -407,7 +456,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: true,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -420,8 +478,10 @@ describe("utils", () => {
             oauth: {
               type: "oauth2",
               flows: {
-                implicit: {
+                authorizationCode: {
                   authorizationUrl: "https://example.com/api/oauth/dialog",
+                  tokenUrl: "https://example.com/api/oauth/token",
+                  refreshUrl: "https://example.com/api/outh/refresh",
                   scopes: {
                     "write:pets": "modify pets in your account",
                     "read:pets": "read your pets",
@@ -481,11 +541,20 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, true);
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: true,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
     });
 
-    it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, but contains aad auth", () => {
+    it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, but contain oauth", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
@@ -499,8 +568,10 @@ describe("utils", () => {
             oauth: {
               type: "oauth2",
               flows: {
-                implicit: {
+                authorizationCode: {
                   authorizationUrl: "https://example.com/api/oauth/dialog",
+                  tokenUrl: "https://example.com/api/oauth/token",
+                  refreshUrl: "https://example.com/api/outh/refresh",
                   scopes: {
                     "write:pets": "modify pets in your account",
                     "read:pets": "read your pets",
@@ -560,11 +631,20 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, false);
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: true,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
-    it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, and contains aad auth", () => {
+    it("should return false if allowAPIKeyAuth is true, allowOauth2 is true, but not auth code flow", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
@@ -639,7 +719,106 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, true, false, true);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: true,
+        allowMultipleParameters: false,
+        allowOauth2: true,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return true if allowAPIKeyAuth is true, allowOauth2 is true, but not auth code flow for teams ai project", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+            oauth: {
+              type: "oauth2",
+              flows: {
+                implicit: {
+                  authorizationUrl: "https://example.com/api/oauth/dialog",
+                  scopes: {
+                    "write:pets": "modify pets in your account",
+                    "read:pets": "read your pets",
+                  },
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  oauth: ["read:pets"],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: true,
+        allowMultipleParameters: false,
+        allowOauth2: true,
+        projectType: ProjectType.TeamsAi,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
     });
 
@@ -692,7 +871,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
     });
 
@@ -745,8 +934,81 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if method is POST, path is valid, parameter is supported and both postBody and parameters contains multiple required param for copilot", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: true,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
     });
 
     it("should support multiple required parameters", () => {
@@ -798,7 +1060,16 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, true, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: true,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
     });
 
@@ -859,8 +1130,160 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, true, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: true,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
+    });
+
+    it("should support multiple required parameters count larger than 5 for teams ai project", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["id1", "id2", "id3", "id4", "id5", "id6"],
+                      properties: {
+                        id1: {
+                          type: "string",
+                        },
+                        id2: {
+                          type: "string",
+                        },
+                        id3: {
+                          type: "string",
+                        },
+                        id4: {
+                          type: "string",
+                        },
+                        id5: {
+                          type: "string",
+                        },
+                        id6: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: true,
+        allowOauth2: false,
+        projectType: ProjectType.TeamsAi,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
+    });
+
+    it("should not support multiple required parameters count larger than 5 for copilot", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["id1", "id2", "id3", "id4", "id5", "id6"],
+                      properties: {
+                        id1: {
+                          type: "string",
+                        },
+                        id2: {
+                          type: "string",
+                        },
+                        id3: {
+                          type: "string",
+                        },
+                        id4: {
+                          type: "string",
+                        },
+                        id5: {
+                          type: "string",
+                        },
+                        id6: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: true,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
     });
 
     it("should return false if method is POST, but requestBody contains unsupported parameter and required", () => {
@@ -915,7 +1338,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: true,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -972,8 +1405,156 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: true,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
+    });
+
+    it("should return false if method is POST, but parameters contain nested object", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "object",
+                        properties: {
+                          id: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return false if method is POST, but requestBody contain nested object", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "object",
+                          properties: {
+                            id: {
+                              type: "string",
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, false);
     });
 
     it("should return true if method is POST, path is valid, parameter is supported and only one required param in postBody", () => {
@@ -1010,7 +1591,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
     });
 
@@ -1048,7 +1639,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -1085,7 +1686,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -1122,7 +1733,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -1160,7 +1781,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -1198,11 +1829,21 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
-    it("should return false if parameter is in header and required supported", () => {
+    it("should return false if parameter is in header and required", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
@@ -1236,8 +1877,70 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if parameter is in header and required for copilot", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [
+                {
+                  in: "header",
+                  required: true,
+                  schema: { type: "string" },
+                },
+                {
+                  in: "query",
+                  schema: { type: "string" },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
     });
 
     it("should return false if there is no parameters", () => {
@@ -1263,8 +1966,55 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if there is no parameters for copilot", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "string",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
     });
 
     it("should return false if parameters is null", () => {
@@ -1289,7 +2039,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -1321,7 +2081,17 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -1385,7 +2155,139 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return true if method is POST, and request body contains media type other than application/json for teams ai project", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                  "application/xml": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.TeamsAi,
+        allowMethods: ["get", "post"],
+      };
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
+    });
+
+    it("should return false if method is POST, and request body schema is not object", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
     });
 
@@ -1433,8 +2335,76 @@ describe("utils", () => {
           },
         },
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if method is GET, and response body contains media type other than application/json for teams ai project", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                    "application/xml": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.TeamsAi,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
     });
   });
 
@@ -1470,7 +2440,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: false, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
     });
 
@@ -1479,7 +2449,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 2);
       assert.strictEqual(result.optionalNum, 0);
@@ -1491,7 +2461,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: true, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1501,7 +2471,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: true, schema: { type: "string", default: "value" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       // header param is ignored
       assert.strictEqual(result.requiredNum, 1);
@@ -1514,7 +2484,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "query", required: true, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 2);
@@ -1526,7 +2496,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "query", required: true, schema: { type: "array", default: ["item"] } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 1);
@@ -1538,7 +2508,7 @@ describe("utils", () => {
         { in: "path", required: false, schema: { type: "string" } },
         { in: "header", required: false, schema: { type: "string" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 1);
       assert.strictEqual(result.optionalNum, 1);
@@ -1549,7 +2519,7 @@ describe("utils", () => {
         { in: "query", required: true, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "array" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1558,7 +2528,7 @@ describe("utils", () => {
         { in: "query", required: false, schema: { type: "string" } },
         { in: "path", required: true, schema: { type: "object" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, false);
     });
 
@@ -1567,7 +2537,7 @@ describe("utils", () => {
         { in: "query", required: false, schema: { type: "string" } },
         { in: "path", required: false, schema: { type: "object" } },
       ];
-      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[]);
+      const result = Utils.checkParameters(paramObject as OpenAPIV3.ParameterObject[], false);
       assert.strictEqual(result.isValid, true);
       assert.strictEqual(result.requiredNum, 0);
       assert.strictEqual(result.optionalNum, 1);
@@ -1731,7 +2701,17 @@ describe("utils", () => {
   describe("validateServer", () => {
     it("should return an error if there is no server information", () => {
       const spec = { paths: {} };
-      const errors = Utils.validateServer(spec as OpenAPIV3.Document, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const errors = Utils.validateServer(spec as OpenAPIV3.Document, options);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1750,7 +2730,17 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const errors = Utils.validateServer(spec as any, options);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.NoServerInformation,
@@ -1764,7 +2754,17 @@ describe("utils", () => {
         servers: [{ url: "https://example.com" }],
         paths: {},
       };
-      const errors = Utils.validateServer(spec as OpenAPIV3.Document, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const errors = Utils.validateServer(spec as OpenAPIV3.Document, options);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1776,7 +2776,17 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const errors = Utils.validateServer(spec as any, options);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1808,7 +2818,17 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const errors = Utils.validateServer(spec as any, options);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1842,7 +2862,16 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const errors = Utils.validateServer(spec as any, options);
       assert.deepStrictEqual(errors, []);
     });
 
@@ -1876,7 +2905,17 @@ describe("utils", () => {
           },
         },
       };
-      const errors = Utils.validateServer(spec as any, true, false, false, false);
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const errors = Utils.validateServer(spec as any, options);
       assert.deepStrictEqual(errors, [
         {
           type: ErrorType.RelativeServerUrlNotSupported,
@@ -1894,6 +2933,35 @@ describe("utils", () => {
           data: "ftp",
         },
       ]);
+    });
+  });
+
+  describe("hasNestedObjectInSchema", () => {
+    it("should return false if schema type is not object", () => {
+      const schema: OpenAPIV3.SchemaObject = {
+        type: "string",
+      };
+      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
+    });
+
+    it("should return false if schema type is object but no nested object property", () => {
+      const schema: OpenAPIV3.SchemaObject = {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+        },
+      };
+      expect(Utils.hasNestedObjectInSchema(schema)).to.be.false;
+    });
+
+    it("should return true if schema type is object and has nested object property", () => {
+      const schema: OpenAPIV3.SchemaObject = {
+        type: "object",
+        properties: {
+          nestedObject: { type: "object" },
+        },
+      };
+      expect(Utils.hasNestedObjectInSchema(schema)).to.be.true;
     });
   });
 
@@ -1922,6 +2990,71 @@ describe("utils", () => {
         },
       } as any;
       const json = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({
+        schema: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+          },
+        },
+      });
+    });
+
+    it("should return empty JSON response for status code 200 with multiple media type", () => {
+      const operationObject = {
+        responses: {
+          "200": {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+              "application/xml": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({});
+    });
+
+    it("should return JSON response for status code 200 with multiple media type when it is teams ai project", () => {
+      const operationObject = {
+        responses: {
+          "200": {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+              "application/xml": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = Utils.getResponseJson(operationObject, true);
       expect(json).to.deep.equal({
         schema: {
           type: "object",

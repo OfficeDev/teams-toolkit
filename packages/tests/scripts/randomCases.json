@@ -17,7 +17,6 @@
             "sample-localdebug-query-org",
             "sample-localdebug-stock-update",
             "sample-localdebug-incoming-webhook",
-            "sample-localdebug-proactive-message",
             "basic-tab-debug-upgrade-debug",
             "bot-debug-upgrade-debug",
             "bot-upgrade-debug"
@@ -40,7 +39,8 @@
         },
         "cases": [
             "sample-localdebug-npm-search",
-            "sample-localdebug-large-scale-notification"
+            "sample-localdebug-large-scale-notification",
+            "sample-localdebug-proactive-message"
         ]
     },
     {

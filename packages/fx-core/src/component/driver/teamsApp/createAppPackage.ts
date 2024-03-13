@@ -221,17 +221,13 @@ export class CreateAppPackageDriver implements StepDriver {
     }
 
     // API plugin
-    if (
-      manifest.apiPlugins &&
-      manifest.apiPlugins.length > 0 &&
-      manifest.apiPlugins[0].pluginFile
-    ) {
-      const pluginFile = path.resolve(appDirectory, manifest.apiPlugins[0].pluginFile);
+    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].pluginFile) {
+      const pluginFile = path.resolve(appDirectory, manifest.plugins[0].pluginFile);
       const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
       if (checkExistenceRes.isErr()) {
         return err(checkExistenceRes.error);
       }
-      const dir = path.dirname(manifest.apiPlugins[0].pluginFile);
+      const dir = path.dirname(manifest.plugins[0].pluginFile);
       this.addFileInZip(zip, dir, pluginFile);
 
       const addFilesRes = await this.addPluginRelatedFiles(zip, pluginFile, appDirectory);

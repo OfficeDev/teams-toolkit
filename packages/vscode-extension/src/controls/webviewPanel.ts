@@ -6,7 +6,12 @@ import * as uuid from "uuid";
 import * as vscode from "vscode";
 
 import { Inputs } from "@microsoft/teamsfx-api";
-import { Correlator, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
+import {
+  Correlator,
+  SampleConfig,
+  isValidOfficeAddInProject,
+  sampleProvider,
+} from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
@@ -25,6 +30,7 @@ import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
 import { PanelType } from "./PanelType";
 import { isTriggerFromWalkThrough } from "../utils/commonUtils";
+import { openOfficeDevFolder } from "../officeDevHandlers";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -204,7 +210,11 @@ export class WebviewPanel {
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      await openFolder(res.value, true);
+      if (isValidOfficeAddInProject((res.value as vscode.Uri).fsPath)) {
+        await openOfficeDevFolder(res.value, true);
+      } else {
+        await openFolder(res.value, true);
+      }
     } else {
       props[TelemetryProperty.Success] = TelemetrySuccess.No;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);

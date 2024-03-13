@@ -22,7 +22,7 @@ import {
   ManifestUtil,
   IMessagingExtensionCommand,
   SystemError,
-  Platform,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import axios, { AxiosResponse } from "axios";
 import { sendRequestWithRetry } from "../utils";
@@ -36,6 +36,9 @@ import {
   ErrorType,
   ErrorResult as ApiSpecErrorResult,
   ListAPIResult,
+  ProjectType,
+  ParseOptions,
+  AdaptiveCardGenerator,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -45,6 +48,11 @@ import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
+import { QuestionNames } from "../../../question/questionNames";
+import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
+import { copilotPluginApiSpecOptionId } from "../../../question/constants";
+import { OpenAPIV3 } from "openapi-types";
+import { ProgrammingLanguage } from "../../../question";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -65,9 +73,22 @@ enum OpenAIPluginManifestErrorType {
   ApiUrlMissing = "openai-plugin-api-url-missing",
 }
 
+export const copilotPluginParserOptions: ParseOptions = {
+  allowAPIKeyAuth: true,
+  allowMultipleParameters: true,
+  allowOauth2: true,
+  projectType: ProjectType.Copilot,
+  allowMissingId: true,
+  allowSwagger: true,
+  allowMethods: ["get", "post", "put", "delete"],
+};
+
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
 export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
+
+export const invalidApiSpecErrorName = "invalid-api-spec";
+const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
 
 export interface ErrorResult {
   /**
@@ -130,7 +151,7 @@ export async function listOperations(
   context: Context,
   manifest: OpenAIPluginManifest | undefined,
   apiSpecUrl: string | undefined,
-  teamsManifestPath: string | undefined,
+  inputs: Inputs,
   includeExistingAPIs = true,
   shouldLogWarning = true,
   existingCorrelationId?: string
@@ -152,13 +173,20 @@ export async function listOperations(
     apiSpecUrl = manifest.api.url;
   }
 
+  const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+
   try {
-    const allowAPIKeyAuth = isApiKeyEnabled();
-    const allowMultipleParameters = isMultipleParametersEnabled();
-    const specParser = new SpecParser(apiSpecUrl as string, {
-      allowAPIKeyAuth,
-      allowMultipleParameters,
-    });
+    const allowAPIKeyAuth = isPlugin || isApiKeyEnabled();
+    const allowMultipleParameters = isPlugin || isMultipleParametersEnabled();
+    const specParser = new SpecParser(
+      apiSpecUrl as string,
+      isPlugin
+        ? copilotPluginParserOptions
+        : {
+            allowAPIKeyAuth,
+            allowMultipleParameters,
+          }
+    );
     const validationRes = await specParser.validate();
     validationRes.errors = formatValidationErrors(validationRes.errors);
 
@@ -179,16 +207,25 @@ export async function listOperations(
 
     // Filter out exsiting APIs
     if (!includeExistingAPIs) {
+      const teamsManifestPath = inputs[QuestionNames.ManifestPath];
       if (!teamsManifestPath) {
         throw new MissingRequiredInputError("teamsManifestPath", "inputs");
       }
       const manifest = await manifestUtils._readAppManifest(teamsManifestPath);
+      let existingOperations: string[] = [];
       if (manifest.isOk()) {
-        const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
-
-        const existingOperations = existingOperationIds.map(
-          (key) => operations.find((item) => item.operationId === key)?.api
-        );
+        if (isPlugin) {
+          existingOperations = await listPluginExistingOperations(
+            manifest.value,
+            teamsManifestPath,
+            inputs[QuestionNames.DestinationApiSpecFilePath]
+          );
+        } else {
+          const existingOperationIds = manifestUtils.getOperationIds(manifest.value);
+          existingOperations = operations
+            .filter((operation) => existingOperationIds.includes(operation.operationId))
+            .map((operation) => operation.api);
+        }
 
         operations = operations.filter(
           (operation: ListAPIResult) => !existingOperations.includes(operation.api)
@@ -248,6 +285,56 @@ function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
 
 function formatTelemetryValidationProperty(result: ErrorResult | WarningResult): string {
   return result.type.toString() + ": " + result.content;
+}
+
+export async function listPluginExistingOperations(
+  manifest: TeamsAppManifest,
+  teamsManifestPath: string,
+  destinationApiSpecFilePath: string
+): Promise<string[]> {
+  const getApiSPecFileRes = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+    manifest,
+    teamsManifestPath
+  );
+  if (getApiSPecFileRes.isErr()) {
+    throw getApiSPecFileRes.error;
+  }
+
+  let apiSpecFilePath;
+  const apiSpecFiles = getApiSPecFileRes.value;
+  for (const file of apiSpecFiles) {
+    if (path.resolve(file) === path.resolve(destinationApiSpecFilePath)) {
+      apiSpecFilePath = file;
+      break;
+    }
+  }
+  if (!apiSpecFilePath) {
+    throw new UserError(
+      "listPluginExistingOperations",
+      apiSpecNotUsedInPlugin,
+      getLocalizedString("error.copilotPlugin.apiSpecNotUsedInPlugin", destinationApiSpecFilePath),
+      getLocalizedString("error.copilotPlugin.apiSpecNotUsedInPlugin", destinationApiSpecFilePath)
+    );
+  }
+
+  const specParser = new SpecParser(apiSpecFilePath, copilotPluginParserOptions);
+  const validationRes = await specParser.validate();
+  validationRes.errors = formatValidationErrors(validationRes.errors);
+
+  if (validationRes.status === ValidationStatus.Error) {
+    const errorMessage = getLocalizedString(
+      "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
+    );
+    throw new UserError(
+      "listPluginExistingOperations",
+      invalidApiSpecErrorName,
+      errorMessage,
+      errorMessage
+    );
+  }
+
+  const operations = await specParser.list();
+  return operations.map((o) => o.api);
 }
 
 export function logValidationResults(
@@ -623,4 +710,202 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
   } catch (e) {
     return error.content;
   }
+}
+
+interface SpecObject {
+  pathUrl: string;
+  method: string;
+  item: OpenAPIV3.OperationObject;
+}
+
+function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
+  const res: SpecObject[] = [];
+
+  const paths = spec.paths;
+  if (paths) {
+    for (const pathUrl in paths) {
+      const pathItem = paths[pathUrl];
+      if (pathItem) {
+        const operations = pathItem;
+        for (const method in operations) {
+          if (method === "get" || method === "post") {
+            const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
+            if (operationItem) {
+              res.push({
+                item: operationItem,
+                method: method,
+                pathUrl: pathUrl,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return res;
+}
+
+async function updatePromptForCustomApi(
+  spec: OpenAPIV3.Document,
+  language: string,
+  chatFolder: string
+): Promise<void> {
+  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+    const promptFilePath = path.join(chatFolder, "skprompt.txt");
+    const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
+      spec.info.description ? ". " + spec.info.description : "."
+    }\n\ncontext:\nAvailable actions: {{getAction}}.`;
+    await fs.writeFile(promptFilePath, prompt, { encoding: "utf-8", flag: "w" });
+  }
+}
+
+async function updateAdaptiveCardForCustomApi(
+  specItems: SpecObject[],
+  language: string,
+  destinationPath: string
+): Promise<void> {
+  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+    const adaptiveCardsFolderPath = path.join(destinationPath, "src", "adaptiveCards");
+    await fs.ensureDir(adaptiveCardsFolderPath);
+
+    for (const item of specItems) {
+      const name = item.item.operationId;
+      const [card] = AdaptiveCardGenerator.generateAdaptiveCard(item.item);
+      const cardFilePath = path.join(adaptiveCardsFolderPath, `${name!}.json`);
+      await fs.writeFile(cardFilePath, JSON.stringify(card, null, 2));
+    }
+  }
+}
+
+async function updateActionForCustomApi(
+  specItems: SpecObject[],
+  language: string,
+  chatFolder: string
+): Promise<void> {
+  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+    const actionsFilePath = path.join(chatFolder, "actions.json");
+    const actions = [];
+
+    for (const item of specItems) {
+      const parameters: any = {
+        type: "object",
+        properties: {} as OpenAPIV3.SchemaObject,
+        required: [],
+      };
+
+      const paramObject = item.item.parameters as OpenAPIV3.ParameterObject[];
+      if (paramObject) {
+        for (let i = 0; i < paramObject.length; i++) {
+          const param = paramObject[i];
+          const schema = param.schema as OpenAPIV3.SchemaObject;
+          parameters.properties[param.name] = schema;
+          parameters.properties[param.name].description = param.description ?? "";
+          if (param.required) {
+            parameters.required?.push(param.name);
+          }
+        }
+      }
+
+      actions.push({
+        name: item.item.operationId,
+        description: item.item.description,
+        parameters: parameters,
+      });
+    }
+
+    await fs.writeFile(actionsFilePath, JSON.stringify(actions, null, 2));
+  }
+}
+
+const ActionCode = {
+  javascript: `
+app.ai.action("{{operationId}}", async (context, state, parameter) => {
+  const client = await api.getClient();
+  const path = client.paths["{{pathUrl}}"];
+  if (path && path.{{method}}) {
+    const result = await path.{{method}}(parameter.path, parameter.body, {
+      params: parameter.query,
+    });
+    const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
+    await context.sendActivity({ attachments: [card] });
+  } else {
+    await context.sendActivity("no result");
+  }
+  return "result";
+});
+  `,
+  typescript: `
+app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
+  const client = await api.getClient();
+  const path = client.paths["{{pathUrl}}"];
+  if (path && path.{{method}}) {
+    const result = await path.{{method}}(parameter.path, parameter.body, {
+      params: parameter.query,
+    });
+    const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
+    await context.sendActivity({ attachments: [card] });
+  } else {
+    await context.sendActivity("no result");
+  }
+  return "result";
+});
+  `,
+};
+
+async function updateCodeForCustomApi(
+  specItems: SpecObject[],
+  language: string,
+  destinationPath: string,
+  openapiSpecFileName: string
+): Promise<void> {
+  if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
+    const codeTemplate =
+      ActionCode[language === ProgrammingLanguage.JS ? "javascript" : "typescript"];
+    const appFolderPath = path.join(destinationPath, "src", "app");
+
+    const actionsCode = [];
+    for (const item of specItems) {
+      const code = codeTemplate
+        .replace(/{{operationId}}/g, item.item.operationId!)
+        .replace("{{pathUrl}}", item.pathUrl)
+        .replace(/{{method}}/g, item.method);
+      actionsCode.push(code);
+    }
+
+    // Update code in app file
+    const indexFilePath = path.join(
+      appFolderPath,
+      language === ProgrammingLanguage.JS ? "app.js" : "app.ts"
+    );
+    const indexFileContent = (await fs.readFile(indexFilePath)).toString();
+    const updateIndexFileContent = indexFileContent
+      .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
+      .replace("// Replace with action code", actionsCode.join("\n"));
+    await fs.writeFile(indexFilePath, updateIndexFileContent);
+  }
+}
+
+export async function updateForCustomApi(
+  spec: OpenAPIV3.Document,
+  language: string,
+  destinationPath: string,
+  openapiSpecFileName: string
+): Promise<void> {
+  const chatFolder = path.join(destinationPath, "src", "prompts", "chat");
+  await fs.ensureDir(chatFolder);
+
+  // 1. update prompt folder
+  await updatePromptForCustomApi(spec, language, chatFolder);
+
+  const specItems = parseSpec(spec);
+
+  // 2. update adaptive card folder
+  await updateAdaptiveCardForCustomApi(specItems, language, destinationPath);
+
+  // 3. update actions file
+  await updateActionForCustomApi(specItems, language, chatFolder);
+
+  // 4. update code
+  await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName);
 }

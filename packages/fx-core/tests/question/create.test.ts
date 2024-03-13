@@ -44,11 +44,16 @@ import {
   createSampleProjectQuestionNode,
   folderQuestion,
   getLanguageOptions,
+  getAddinHostOptions,
   getTemplate,
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
   ApiMessageExtensionAuthOptions,
+  CustomCopilotRagOptions,
+  CustomCopilotAssistantOptions,
+  OfficeAddinCapabilityOptions,
+  ProgrammingLanguage,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
@@ -56,6 +61,8 @@ import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
 import * as utils from "../../src/component/utils";
+import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
+import { convertToLangKey } from "../../src/component/generator/utils";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   if (question.default && typeof question.default !== "string") {
@@ -92,7 +99,7 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "false",
-        [FeatureFlagName.SampleConfigBranch]: "dev",
+        [FeatureFlagName.TeamsSampleConfigBranch]: "dev",
       });
     });
     afterEach(() => {
@@ -145,12 +152,12 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 4);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
           assert.equal(
@@ -199,7 +206,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           assert.isFalse((options[2] as OptionItem).detail?.includes("Copilot"));
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
@@ -259,7 +266,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -337,7 +344,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -412,7 +419,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -457,7 +464,7 @@ describe("scaffold question", () => {
       ]);
     });
 
-    it("traverse in vscode Office addin", async () => {
+    it("traverse in vscode Outlook addin", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -475,14 +482,14 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.outlookAddin().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
           assert.deepEqual(options, [
-            ...CapabilityOptions.officeAddinItems(),
-            CapabilityOptions.officeAddinImport(),
+            ...CapabilityOptions.outlookAddinItems(),
+            CapabilityOptions.outlookAddinImport(),
           ]);
           const title =
             typeof question.title === "function" ? await question.title(inputs) : question.title;
@@ -490,7 +497,7 @@ describe("scaffold question", () => {
             title,
             getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title")
           );
-          return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
+          return ok({ type: "success", result: CapabilityOptions.outlookAddinImport().id });
         } else if (question.name === QuestionNames.OfficeAddinFolder) {
           return ok({ type: "success", result: "./" });
         } else if (question.name === QuestionNames.OfficeAddinManifest) {
@@ -518,6 +525,141 @@ describe("scaffold question", () => {
         QuestionNames.AppName,
       ]);
     });
+    it("traverse in vscode Office XML addin", async () => {
+      const mockedEnvRestoreLocal = mockedEnv({
+        [FeatureFlagName.OfficeXMLAddin]: "true",
+      });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs
+      ) => {
+        questions.push(question.name);
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 5);
+          return ok({ type: "success", result: ProjectTypeOptions.officeXMLAddin().id });
+        } else if (question.name === QuestionNames.OfficeAddinCapability) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.staticOptions;
+          assert.deepEqual(options, [
+            ProjectTypeOptions.outlookAddin(),
+            OfficeAddinCapabilityOptions.word(),
+            OfficeAddinCapabilityOptions.excel(),
+            OfficeAddinCapabilityOptions.powerpoint(),
+          ]);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.officeXMLAddin.create.title")
+          );
+          return ok({ type: "success", result: OfficeAddinCapabilityOptions.excel().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.deepEqual(options, CapabilityOptions.officeXMLAddinHostOptionItems("excel"));
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.officeXMLAddin.excel.create.title")
+          );
+          return ok({ type: "success", result: "react" });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 2);
+          return ok({ type: "success", result: "typescript" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.OfficeAddinCapability,
+        QuestionNames.Capabilities,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
+      mockedEnvRestoreLocal();
+    });
+    it("traverse in vscode Office addin", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 5);
+          return ok({ type: "success", result: ProjectTypeOptions.officeAddin().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.deepEqual(options, [
+            ...CapabilityOptions.officeAddinItems(),
+            CapabilityOptions.officeAddinImport(),
+          ]);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title")
+          );
+          return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
+        } else if (question.name === QuestionNames.OfficeAddinFolder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.OfficeAddinManifest) {
+          return ok({ type: "success", result: "./manifest.json" });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 1);
+          return ok({ type: "success", result: "typescript" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.OfficeAddinFramework) {
+          return ok({ type: "success", result: "default" });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.OfficeAddinFolder,
+        QuestionNames.OfficeAddinManifest,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.OfficeAddinFramework,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
+    });
     it("traverse in vscode SPFx new", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -535,7 +677,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.tab().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -598,7 +740,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.tab().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -890,6 +1032,463 @@ describe("scaffold question", () => {
       ]);
     });
 
+    describe("Custom Copilot", () => {
+      let mockedEnvRestore: RestoreFn;
+      const tools = new MockTools();
+      setTools(tools);
+
+      afterEach(() => {
+        if (mockedEnvRestore) {
+          mockedEnvRestore();
+        }
+      });
+
+      it("Basic AI Chatbot - OpenAI", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotBasic().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 3);
+            return ok({ type: "success", result: "typescript" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "llm-service-openai" });
+          } else if (question.name === QuestionNames.OpenAIKey) {
+            return ok({ type: "success", result: "testKey" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.OpenAIKey,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("RAG - Customize - Azure OpenAI", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotRag().id });
+          } else if (question.name === QuestionNames.CustomCopilotRag) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 4);
+            return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "typescript" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "llm-service-azure-openai" });
+          } else if (question.name === QuestionNames.AzureOpenAIKey) {
+            return ok({ type: "success", result: "testKey" });
+          } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
+            return ok({ type: "success", result: "testEndppint" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          // QuestionNames.CustomCopilotRag,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("RAG - Azure AI Search - Azure OpenAI", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotRag().id });
+          } else if (question.name === QuestionNames.CustomCopilotRag) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 4);
+            return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "typescript" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "llm-service-azure-openai" });
+          } else if (question.name === QuestionNames.AzureOpenAIKey) {
+            return ok({ type: "success", result: undefined });
+          } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
+            return ok({ type: "success", result: "testEndppint" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          // QuestionNames.CustomCopilotRag,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("RAG - Custom API - Azure OpenAI", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotRag().id });
+          } else if (question.name === QuestionNames.CustomCopilotRag) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 4);
+            return ok({ type: "success", result: CustomCopilotRagOptions.customApi().id });
+          } else if (question.name === QuestionNames.ApiSpecLocation) {
+            inputs.supportedApisFromApiSpec = [
+              { id: "operation1", label: "operation1", groupName: "1" },
+              { id: "operation2", label: "operation2", groupName: "2" },
+            ];
+            return ok({ type: "success", result: "https://test.com" });
+          } else if (question.name === QuestionNames.ApiOperation) {
+            return ok({ type: "success", result: ["operation1"] });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "typescript" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "llm-service-azure-openai" });
+          } else if (question.name === QuestionNames.AzureOpenAIKey) {
+            return ok({ type: "success", result: "testKey" });
+          } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
+            return ok({ type: "success", result: "testEndppint" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          // QuestionNames.CustomCopilotRag,
+          // QuestionNames.ApiSpecLocation,
+          // QuestionNames.ApiOperation,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("RAG - Microsoft 365 - Azure OpenAI", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotRag().id });
+          } else if (question.name === QuestionNames.CustomCopilotRag) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 4);
+            return ok({ type: "success", result: CustomCopilotRagOptions.microsoft365().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "typescript" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "llm-service-azure-openai" });
+          } else if (question.name === QuestionNames.AzureOpenAIKey) {
+            return ok({ type: "success", result: "testKey" });
+          } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
+            return ok({ type: "success", result: "testEndppint" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          // QuestionNames.CustomCopilotRag,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("AI Assistant - New - OpenAI", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotAssistant().id });
+          } else if (question.name === QuestionNames.CustomCopilotAssistant) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: CustomCopilotAssistantOptions.new().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "typescript" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "llm-service-openai" });
+          } else if (question.name === QuestionNames.OpenAIKey) {
+            return ok({ type: "success", result: "testKey" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.CustomCopilotAssistant,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.OpenAIKey,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("AI Assistant - Assistants API", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotAssistant().id });
+          } else if (question.name === QuestionNames.CustomCopilotAssistant) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({
+              type: "success",
+              result: CustomCopilotAssistantOptions.assistantsApi().id,
+            });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "typescript" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 1);
+            return ok({ type: "success", result: "llm-service-openai" });
+          } else if (question.name === QuestionNames.OpenAIKey) {
+            return ok({ type: "success", result: "testKey" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.CustomCopilotAssistant,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.OpenAIKey,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+    });
+
     describe("copilot plugin enabled", () => {
       let mockedEnvRestore: RestoreFn;
       const tools = new MockTools();
@@ -926,7 +1525,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 5);
+            assert.isTrue(options.length === 6);
             return ok({ type: "success", result: "copilot-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -981,7 +1580,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 5);
+            assert.isTrue(options.length === 6);
             return ok({ type: "success", result: "copilot-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1035,7 +1634,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 5);
+            assert.isTrue(options.length === 6);
             return ok({ type: "success", result: "copilot-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1723,6 +2322,54 @@ describe("scaffold question", () => {
           const res = await validationSchema.validFunc!("file", inputs);
           assert.isNotNull(res);
         });
+
+        it("list operations without existing APIs if Copilot plugin", async () => {
+          const question = apiSpecLocationQuestion(false);
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            "manifest-path": "fakePath",
+            [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginApiSpec().id,
+            [QuestionNames.DestinationApiSpecFilePath]: "openapi.yaml",
+          };
+
+          sandbox
+            .stub(SpecParser.prototype, "validate")
+            .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
+          sandbox
+            .stub(SpecParser.prototype, "list")
+            .onFirstCall()
+            .resolves([
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                operationId: "getUserById",
+              },
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ])
+            .onSecondCall()
+            .resolves([
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ]);
+          sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
+          sandbox
+            .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
+            .resolves(ok(["openapi.yaml"]));
+          sandbox.stub(fs, "pathExists").resolves(true);
+
+          const validationSchema = question.validation as FuncValidation<string>;
+          const res = await validationSchema.validFunc!("file", inputs);
+          assert.deepEqual(inputs.supportedApisFromApiSpec, [
+            {
+              data: {
+                serverUrl: "https://server",
+              },
+              groupName: "GET",
+              id: "GET /user/{userId}",
+              label: "GET /user/{userId}",
+            },
+          ]);
+          assert.isUndefined(res);
+        });
       });
 
       describe("openAIPluginManifestLocationQuestion", async () => {
@@ -2052,6 +2699,26 @@ describe("scaffold question", () => {
     });
   });
 
+  describe("getAddinHostOptions", () => {
+    it("should return outlook host", async () => {
+      const options = getAddinHostOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+      });
+      assert.isTrue(options.length === 1 || options[0].id === "Outlook");
+    });
+
+    it("should return office host", async () => {
+      const options = getAddinHostOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+      });
+      assert.isTrue(options.length === 4);
+    });
+  });
+
   describe("getLanguageOptions", () => {
     let mockedEnvRestore: RestoreFn = () => {};
 
@@ -2076,7 +2743,7 @@ describe("scaffold question", () => {
       assert.isTrue(options.length === 1 && options[0].id === "csharp");
     });
 
-    it("office addin", async () => {
+    it("outlook addin", async () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,
         [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
@@ -2084,6 +2751,16 @@ describe("scaffold question", () => {
       });
       assert.isTrue(options.length === 1 && options[0].id === "TypeScript");
     });
+    it("office addin", async () => {
+      const options = getLanguageOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+        [QuestionNames.Capabilities]: "taskpane",
+        [QuestionNames.OfficeAddinFramework]: "default",
+      });
+      assert.isTrue(options.length === 2 && options[0].id === "typescript");
+    });
+
     it("SPFx", async () => {
       const options = getLanguageOptions({
         platform: Platform.VSCode,
@@ -2100,7 +2777,20 @@ describe("scaffold question", () => {
       });
       assert.isTrue(options.length === 2);
     });
+    it("should return python for ProgrammingLanguage.PY", () => {
+      const output = convertToLangKey(ProgrammingLanguage.PY);
+      assert.isTrue(output == "python");
+    });
+    it("should return expected 3 language options for custom copilot basic python", () => {
+      const options = getLanguageOptions({
+        platform: Platform.VSCode,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.customCopilot().id,
+        [QuestionNames.Capabilities]: CapabilityOptions.customCopilotBasic().id,
+      });
+      assert.isTrue(options.length === 3); // js, ts, python
+    });
   });
+
   describe("getTemplate", () => {
     it("should find taskpane template", () => {
       const inputs: Inputs = {
@@ -2289,7 +2979,7 @@ describe("scaffold question", () => {
     it("vs non-interactive", () => {
       const question = capabilityQuestion();
       const options = question.dynamicOptions!({ platform: Platform.VS });
-      assert.deepEqual(options, CapabilityOptions.dotnetCaps());
+      assert.deepEqual(options, CapabilityOptions.dotnetCaps({ platform: Platform.VS }));
     });
 
     it("templates for TDP integration", () => {
@@ -2369,8 +3059,8 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 4);
-          assert.isTrue((options[2] as OptionItem).detail?.includes("Copilot"));
+          assert.isTrue(options.length === 5);
+          assert.isTrue((options[3] as OptionItem).detail?.includes("Copilot"));
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -2411,7 +3101,7 @@ describe("scaffold question", () => {
   });
   describe("programmingLanguageQuestion", () => {
     const question = programmingLanguageQuestion();
-    it("office addin: should have typescript as options", async () => {
+    it("outlook addin: should have typescript as options", async () => {
       const inputs: Inputs = { platform: Platform.CLI };
       inputs[QuestionNames.Capabilities] = ["taskpane"];
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
@@ -2422,13 +3112,77 @@ describe("scaffold question", () => {
       }
     });
 
-    it("office addin: should default to TypeScript for taskpane projects", async () => {
+    it("outlook addin: should default to TypeScript for taskpane projects", async () => {
       const inputs: Inputs = { platform: Platform.CLI };
       inputs[QuestionNames.Capabilities] = ["taskpane"];
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
       assert.isDefined(question.default);
       const lang = await (question.default as LocalFunc<string | undefined>)(inputs);
       assert.equal(lang, "TypeScript");
+    });
+
+    it("office xml addin: normal project have ts and js", async () => {
+      const mockedEnvRestoreLocal = mockedEnv({
+        [FeatureFlagName.OfficeXMLAddin]: "true",
+      });
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
+        [QuestionNames.Capabilities]: "react",
+      };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [
+          { label: "TypeScript", id: "typescript" },
+          { label: "JavaScript", id: "javascript" },
+        ]);
+      }
+      mockedEnvRestoreLocal();
+    });
+
+    it("office xml addin: manifest-only project only have js option as default", async () => {
+      const mockedEnvRestoreLocal = mockedEnv({
+        [FeatureFlagName.OfficeXMLAddin]: "true",
+      });
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+        [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
+        [QuestionNames.Capabilities]: "manifest",
+      };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [{ label: "JavaScript", id: "javascript" }]);
+      }
+      mockedEnvRestoreLocal();
+    });
+
+    it("office addin: should have typescript as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.OfficeAddinFramework] = "default";
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [
+          { label: "TypeScript", id: "typescript" },
+          { label: "JavaScript", id: "javascript" },
+        ]);
+      }
+    });
+
+    it("office addin: should default to TypeScript for taskpane projects", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = ["taskpane"];
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.OfficeAddinFramework] = "default";
+      assert.isDefined(question.default);
+      const lang = await (question.default as LocalFunc<string | undefined>)(inputs);
+      assert.equal(lang, "typescript");
     });
 
     it("SPFxTab", async () => {

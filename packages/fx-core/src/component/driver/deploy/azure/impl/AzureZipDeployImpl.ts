@@ -202,15 +202,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                   e.response?.data
                 )}`
               );
-              throw new DeployZipPackageError(
-                zipDeployEndpoint,
-                new Error(
-                  `remote server error with status code: ${
-                    e.response?.status ?? "NA"
-                  }, message: ${JSON.stringify(e.response?.data)}`
-                ),
-                this.helpLink
-              );
+              throw new DeployZipPackageError(zipDeployEndpoint, e, this.helpLink);
             }
           } else {
             // None server error, throw
@@ -219,15 +211,7 @@ export class AzureZipDeployImpl extends AzureDeployImpl {
                 e.response?.status ?? "NA"
               }, message: ${JSON.stringify(e.response?.data)}`
             );
-            throw new DeployZipPackageError(
-              zipDeployEndpoint,
-              new Error(
-                `status code: ${e.response?.status ?? "NA"}, message: ${JSON.stringify(
-                  e.response?.data
-                )}`
-              ),
-              this.helpLink
-            );
+            throw new DeployZipPackageError(zipDeployEndpoint, e, this.helpLink);
           }
         } else {
           // if the error is not axios error, throw

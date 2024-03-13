@@ -23,6 +23,8 @@ export enum QuestionNames {
   OfficeAddinTemplate = "addin-template-select",
   OfficeAddinHost = "addin-host",
   OfficeAddinImport = "addin-import",
+  OfficeAddinCapability = "addin-office-capability",
+  OfficeAddinFramework = "office-addin-framework-type",
   Samples = "samples",
   ReplaceContentUrl = "replaceContentUrl",
   ReplaceWebsiteUrl = "replaceWebsiteUrl",
@@ -39,6 +41,13 @@ export enum QuestionNames {
   ApiSpecApiKey = "api-key",
   ApiSpecApiKeyConfirm = "api-key-confirm",
   ApiMEAuth = "api-me-auth",
+
+  CustomCopilotRag = "custom-copilot-rag",
+  CustomCopilotAssistant = "custom-copilot-agent",
+  LLMService = "llm-service",
+  OpenAIKey = "openai-key",
+  AzureOpenAIKey = "azure-openai-key",
+  AzureOpenAIEndpoint = "azure-openai-endpoint",
 
   Features = "features",
   Env = "env",
@@ -65,6 +74,7 @@ export enum QuestionNames {
   UserEmail = "email",
 
   collaborationAppType = "collaborationType",
+  DestinationApiSpecFilePath = "destination-api-spec-location",
 }
 
 export enum CliQuestionName {

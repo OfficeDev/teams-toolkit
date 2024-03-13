@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, Result, ok } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { merge } from "lodash";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
@@ -17,13 +17,10 @@ import {
   sampleDefaultTimeoutInMs,
 } from "./constant";
 import {
-  CancelDownloading,
   DownloadSampleApiLimitError,
   DownloadSampleNetworkError,
   FetchSampleInfoError,
-  TemplateNotFoundError,
-  TemplateZipFallbackError,
-  UnzipError,
+  ScaffoldLocalTemplateError,
 } from "./error";
 import {
   SampleActionSeq,
@@ -38,7 +35,7 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
-import { enableTestToolByDefault } from "../../common/featureFlags";
+import { enableTestToolByDefault, isNewProjectTypeEnabled } from "../../common/featureFlags";
 import { Utils } from "@microsoft/m365-spec-parser";
 
 export class Generator {
@@ -46,7 +43,14 @@ export class Generator {
     appName: string,
     safeProjectNameFromVS?: string,
     targetFramework?: string,
-    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string }
+    placeProjectFileInSolutionDir?: boolean,
+    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string },
+    llmServiceData?: {
+      llmService?: string;
+      openAIKey?: string;
+      azureOpenAIKey?: string;
+      azureOpenAIEndpoint?: string;
+    }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
@@ -58,12 +62,21 @@ export class Generator {
       appName: appName,
       ProjectName: appName,
       TargetFramework: targetFramework ?? "net8.0",
+      PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
       ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
+      useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",
+      useAzureOpenAI: llmServiceData?.llmService === "llm-service-azure-openai" ? "true" : "",
+      openAIKey: llmServiceData?.openAIKey ?? "",
+      azureOpenAIKey: llmServiceData?.azureOpenAIKey ?? "",
+      azureOpenAIEndpoint: llmServiceData?.azureOpenAIEndpoint ?? "",
+      isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
+      NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "M365App",
+      NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "maproj",
     };
   }
   @hooks([
@@ -112,9 +125,6 @@ export class Generator {
     merge(actionContext?.telemetryProps, {
       [TelemetryProperty.Fallback]: generatorContext.fallback ? "true" : "false", // Track fallback cases.
     });
-    if (!generatorContext.outputs?.length) {
-      return err(new TemplateNotFoundError(scenario).toFxError());
-    }
     return ok(undefined);
   }
 
@@ -165,7 +175,6 @@ export class Generator {
         await action.run(context);
         await context.onActionEnd?.(action, context);
       } catch (e) {
-        if (e instanceof BaseComponentInnerError) throw e.toFxError();
         if (e instanceof Error) await context.onActionError(action, context, e);
       }
     }
@@ -178,20 +187,18 @@ export function templateDefaultOnActionError(
   error: Error
 ): Promise<void> {
   switch (action.name) {
-    case GeneratorActionName.FetchUrlForHotfixOnly:
-    case GeneratorActionName.FetchZipFromUrl:
-      context.cancelDownloading = true;
-      if (!(error instanceof CancelDownloading)) {
-        context.logProvider.info(error.message);
-        context.logProvider.info(LogMessages.getTemplateFromLocal);
-      }
+    case GeneratorActionName.ScaffoldRemoteTemplate:
+      context.fallback = true;
+      context.logProvider.debug(error.message);
+      context.logProvider.info(LogMessages.getTemplateFromLocal);
       break;
-    case GeneratorActionName.FetchTemplateZipFromLocal:
-      context.logProvider.error(error.message);
-      return Promise.reject(new TemplateZipFallbackError().toFxError());
-    case GeneratorActionName.Unzip:
-      context.logProvider.error(error.message);
-      return Promise.reject(new UnzipError().toFxError());
+    case GeneratorActionName.ScaffoldLocalTemplate:
+      if (error instanceof BaseComponentInnerError) {
+        return Promise.reject(error.toFxError());
+      } else {
+        context.logProvider.error(error.message);
+        return Promise.reject(new ScaffoldLocalTemplateError().toFxError());
+      }
     default:
       return Promise.reject(new Error(error.message));
   }
@@ -204,6 +211,7 @@ export async function sampleDefaultOnActionError(
   error: Error
 ): Promise<void> {
   context.logProvider.error(error.message);
+  if (error instanceof BaseComponentInnerError) throw error.toFxError();
   if (await fs.pathExists(context.destination)) {
     await fs.rm(context.destination, { recursive: true });
   }

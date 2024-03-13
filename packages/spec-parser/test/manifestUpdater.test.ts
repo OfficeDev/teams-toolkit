@@ -8,9 +8,654 @@ import os from "os";
 import "mocha";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { SpecParserError } from "../src/specParserError";
-import { ErrorType, WarningType } from "../src/interfaces";
+import { AuthInfo, ErrorType, ParseOptions, ProjectType, WarningType } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 import { Utils } from "../src/utils";
+import { PluginManifestSchema } from "@microsoft/teams-manifest";
+
+describe("updateManifestWithAiPlugin", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should update the manifest with the correct manifest and apiPlugin files", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human: "My API",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "getPets",
+          description: "Returns all pets from the system that the user has access to",
+          parameters: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "integer",
+                description: "Maximum number of pets to return",
+              },
+            },
+            required: ["limit"],
+          },
+        },
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+          parameters: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the pet",
+              },
+            },
+          },
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["getPets", "createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should update the manifest with the correct manifest and apiPlugin files with optional parameters", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+              {
+                name: "id",
+                schema: {
+                  type: "string",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human: "My API",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "getPets",
+          description: "Returns all pets from the system that the user has access to",
+          parameters: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "integer",
+                description: "Maximum number of pets to return",
+              },
+              id: {
+                type: "string",
+                description: "",
+              },
+            },
+            required: ["limit"],
+          },
+        },
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+          parameters: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the pet",
+              },
+            },
+          },
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["getPets", "createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should generate default ai plugin file if no api", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {},
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human: "My API",
+      description_for_human: "My API description",
+      functions: [],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: [],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should truncate if title is long", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title:
+          "long title long title long title long title long title long title long title long title long title long title long title long title",
+        description: "This is the description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: {
+        short: "long title long title long title long title long title long title long title lon",
+        full: "This is the description",
+      },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human:
+        "long title long title long title long title long title long title long title long title long title long title long title long title",
+      description_for_human: "This is the description",
+      functions: [
+        {
+          name: "getPets",
+          description: "Returns all pets from the system that the user has access to",
+          parameters: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "integer",
+                description: "Maximum number of pets to return",
+              },
+            },
+            required: ["limit"],
+          },
+        },
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+          parameters: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the pet",
+              },
+            },
+          },
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["getPets", "createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should throw error if has nested object property", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "petObj",
+                description: "Pet object",
+                required: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    id: {
+                      type: "integer",
+                    },
+                    name: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+    };
+
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    try {
+      const options: ParseOptions = {
+        allowMethods: ["get", "post"],
+      };
+      await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        spec,
+        options
+      );
+      expect.fail("Expected updateManifest to throw a SpecParserError");
+    } catch (err: any) {
+      expect(err).to.be.instanceOf(SpecParserError);
+      expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
+      expect(err.message).to.equal(
+        "Unsupported schema in get /pets: " +
+          JSON.stringify({
+            type: "object",
+            properties: {
+              id: {
+                type: "integer",
+              },
+              name: {
+                type: "string",
+              },
+            },
+          })
+      );
+    }
+  });
+
+  it("should throw error if request body is not object", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+            operationId: "postPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+    };
+
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    try {
+      const options: ParseOptions = {
+        allowMethods: ["get", "post"],
+      };
+      await ManifestUpdater.updateManifestWithAiPlugin(
+        manifestPath,
+        outputSpecPath,
+        pluginFilePath,
+        spec,
+        options
+      );
+      expect.fail("Expected updateManifest to throw a SpecParserError");
+    } catch (err: any) {
+      expect(err).to.be.instanceOf(SpecParserError);
+      expect(err.errorType).to.equal(ErrorType.UpdateManifestFailed);
+      expect(err.message).to.equal(
+        "Unsupported schema in post /pets: " +
+          JSON.stringify({
+            type: "string",
+          })
+      );
+    }
+  });
+});
 
 describe("manifestUpdater", () => {
   const spec: any = {
@@ -107,12 +752,18 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -260,12 +911,17 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: true,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      true
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -360,12 +1016,17 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: true,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      true
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -445,12 +1106,17 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: true,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      true
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -477,7 +1143,7 @@ describe("manifestUpdater", () => {
           authorization: {
             authType: "apiSecretServiceAuth",
             apiSecretServiceAuthConfiguration: {
-              apiSecretRegistrationId: "${{API_KEY_NAME_REGISTRATION_ID}}",
+              apiSecretRegistrationId: "${{API_KEY_AUTH_REGISTRATION_ID}}",
             },
           },
           commands: [
@@ -506,17 +1172,26 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const apiKeyAuth = {
-      type: "apiKey" as const,
-      name: "api_key_name",
-      in: "header",
+    const apiKeyAuth: AuthInfo = {
+      authSchema: {
+        type: "apiKey" as const,
+        name: "api_key_name",
+        in: "header",
+      },
+      name: "api_key_auth",
     };
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      false,
+      options,
+      adaptiveCardFolder,
       apiKeyAuth
     );
 
@@ -524,7 +1199,7 @@ describe("manifestUpdater", () => {
     expect(warnings).to.deep.equal([]);
   });
 
-  it("should contain auth property in manifest if pass the sso auth", async () => {
+  it("should contain auth property in manifest if pass the oauth2 with auth code flow", async () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
     const adaptiveCardFolder = "/path/to/your/adaptiveCards";
@@ -542,9 +1217,9 @@ describe("manifestUpdater", () => {
           composeExtensionType: "apiBased",
           apiSpecificationFile: "spec/outputSpec.yaml",
           authorization: {
-            authType: "microsoftEntra",
-            microsoftEntraConfiguration: {
-              supportsSingleSignOn: true,
+            authType: "oAuth2.0",
+            oAuthConfiguration: {
+              oauthConfigurationId: "${{OAUTH_AUTH_OAUTH_REGISTRATION_ID}}",
             },
           },
           commands: [
@@ -577,24 +1252,34 @@ describe("manifestUpdater", () => {
       },
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const oauth2 = {
-      type: "oauth2" as const,
-      flows: {
-        implicit: {
-          authorizationUrl: "https://example.com/api/oauth/dialog",
-          scopes: {
-            "write:pets": "modify pets in your account",
-            "read:pets": "read your pets",
+    const oauth2: AuthInfo = {
+      authSchema: {
+        type: "oauth2",
+        flows: {
+          authorizationCode: {
+            authorizationUrl: "https://example.com/api/oauth/dialog",
+            tokenUrl: "https://example.com/api/oauth/token",
+            refreshUrl: "https://example.com/api/outh/refresh",
+            scopes: {
+              "write:pets": "modify pets in your account",
+              "read:pets": "read your pets",
+            },
           },
         },
       },
+      name: "oauth_auth",
+    };
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
     };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      false,
+      options,
+      adaptiveCardFolder,
       oauth2
     );
 
@@ -645,16 +1330,24 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const basicAuth = {
-      type: "http" as const,
-      scheme: "basic",
+    const basicAuth: AuthInfo = {
+      authSchema: {
+        type: "http" as const,
+        scheme: "basic",
+      },
+      name: "basic_auth",
+    };
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
     };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      false,
+      options,
+      adaptiveCardFolder,
       basicAuth
     );
 
@@ -682,7 +1375,7 @@ describe("manifestUpdater", () => {
           authorization: {
             authType: "apiSecretServiceAuth",
             apiSecretServiceAuthConfiguration: {
-              apiSecretRegistrationId: "${{PREFIX__API_KEY_NAME_REGISTRATION_ID}}",
+              apiSecretRegistrationId: "${{PREFIX__API_KEY_AUTH_REGISTRATION_ID}}",
             },
           },
           commands: [
@@ -711,17 +1404,27 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const apiKeyAuth = {
-      type: "apiKey" as const,
-      name: "*api-key_name",
-      in: "header",
+    const apiKeyAuth: AuthInfo = {
+      authSchema: {
+        type: "apiKey" as const,
+        name: "key_name",
+        in: "header",
+      },
+      name: "*api-key_auth",
     };
+
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      false,
+      options,
+      adaptiveCardFolder,
       apiKeyAuth
     );
 
@@ -806,13 +1509,17 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       spec,
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -832,12 +1539,17 @@ describe("manifestUpdater", () => {
     const spec = {} as any;
     const readJSONStub = sinon.stub(fs, "readJSON").rejects(new Error("readJSON error"));
     try {
+      const options: ParseOptions = {
+        allowMultipleParameters: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
       await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
-        adaptiveCardFolder,
         spec,
-        false
+        options,
+        adaptiveCardFolder
       );
       expect.fail("Expected updateManifest to throw a SpecParserError");
     } catch (err: any) {
@@ -902,15 +1614,21 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
 
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       {
         ...spec,
         info: { title: "My API" },
       },
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -968,21 +1686,57 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.updateManifest(
       manifestPath,
       outputSpecPath,
-      adaptiveCardFolder,
       {
         ...spec,
         info: { title: "My API" },
       },
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedManifest);
     expect(warnings).to.deep.equal([]);
     readJSONStub.restore();
+  });
+
+  it("should not update manifest if project type is Teams AI", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.TeamsAi,
+      allowMethods: ["get", "post"],
+    };
+    const [result, warnings] = await ManifestUpdater.updateManifest(
+      manifestPath,
+      outputSpecPath,
+      spec,
+      options
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
   });
 });
 
@@ -1117,12 +1871,15 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getOwnerPets.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);
@@ -1172,12 +1929,15 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);
@@ -1220,12 +1980,15 @@ describe("generateCommands", () => {
       },
     };
     sinon.stub(fs, "pathExists").resolves(true);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      options,
+      adaptiveCardFolder
     );
     expect(result).to.deep.equal([
       {
@@ -1302,12 +2065,15 @@ describe("generateCommands", () => {
       },
     };
     sinon.stub(fs, "pathExists").resolves(true);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      options,
+      adaptiveCardFolder
     );
     expect(result).to.deep.equal([
       {
@@ -1361,12 +2127,15 @@ describe("generateCommands", () => {
       },
     };
     sinon.stub(fs, "pathExists").resolves(true);
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      options,
+      adaptiveCardFolder
     );
     expect(result).to.deep.equal([
       {
@@ -1431,12 +2200,15 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);
@@ -1487,12 +2259,15 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);
@@ -1546,12 +2321,15 @@ describe("generateCommands", () => {
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
       },
     ];
-
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      allowMethods: ["get", "post"],
+    };
     const [result, warnings] = await ManifestUpdater.generateCommands(
       spec,
-      adaptiveCardFolder,
       manifestPath,
-      false
+      options,
+      adaptiveCardFolder
     );
 
     expect(result).to.deep.equal(expectedCommands);

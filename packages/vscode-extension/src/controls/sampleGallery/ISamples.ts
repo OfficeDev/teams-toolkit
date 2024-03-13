@@ -37,7 +37,7 @@ export interface SampleInfo {
     ref: string;
     dir: string;
   };
-  thumbnailUrl: string;
+  thumbnailPath: string;
   gifUrl?: string;
   // -1 means TTK is lower than required.
   versionComparisonResult: -1 | 0 | 1;

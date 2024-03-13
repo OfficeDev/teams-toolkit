@@ -24,7 +24,7 @@ This template showcases an app that embeds a canvas containing multiple cards th
 
 **Congratulations**! You are running an application that can now show a dashboard in Teams:
 
-![Dashboard](https://github.com/OfficeDev/TeamsFx/assets/11220663/326e4f55-43a6-4c40-81e7-f5a9ea719169)
+![Dashboard](https://github.com/OfficeDev/TeamsFx/assets/107838226/9d0f4dcc-e216-418f-a947-671957f3dbee)
 
 ## What's included in the template
 

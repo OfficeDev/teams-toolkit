@@ -121,6 +121,7 @@ export abstract class CaseFactory {
     skipValidation?: boolean;
     skipDebug?: boolean;
     debug?: "cli" | "ttk";
+    botFlag?: boolean;
   };
 
   public constructor(
@@ -140,6 +141,7 @@ export abstract class CaseFactory {
       skipValidation?: boolean;
       skipDebug?: boolean;
       debug?: "cli" | "ttk";
+      botFlag?: boolean;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -382,18 +384,24 @@ export abstract class CaseFactory {
             // cli preview
             if (options?.debug === "cli") {
               console.log("======= debug with cli ========");
-              console.log("botFlag: ", botFlag);
               // start local tunnel
-              if (botFlag) {
+              if (options.botFlag || botFlag) {
                 const tunnel = Executor.debugBotFunctionPreparation(
                   sampledebugContext.projectPath
                 );
                 devtunnelProcess = tunnel.devtunnelProcess;
               }
               await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
-              await Executor.provision(sampledebugContext.projectPath, "local");
-              await Executor.deploy(sampledebugContext.projectPath, "local");
-
+              const { success: provisionSuccess } = await Executor.provision(
+                sampledebugContext.projectPath,
+                "local"
+              );
+              expect(provisionSuccess).to.be.true;
+              const { success: deploySuccess } = await Executor.deploy(
+                sampledebugContext.projectPath,
+                "local"
+              );
+              expect(deploySuccess).to.be.true;
               const teamsAppId = await sampledebugContext.getTeamsAppId(env);
               expect(teamsAppId).to.not.be.empty;
 
@@ -415,6 +423,7 @@ export abstract class CaseFactory {
                   ) {
                     console.log("[skip error] ", error);
                   } else {
+                    successFlag = false;
                     expect.fail(errorMsg);
                   }
                 }

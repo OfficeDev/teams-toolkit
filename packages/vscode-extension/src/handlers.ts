@@ -69,11 +69,13 @@ import {
   globalStateUpdate,
   isUserCancelError,
   isValidProject,
+  isValidOfficeAddInProject,
   pathUtils,
   setRegion,
   manifestUtils,
   JSONSyntaxError,
   MetadataV3,
+  CapabilityOptions,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -137,6 +139,7 @@ import {
   openTestToolMessage,
   RecommendedOperations,
 } from "./debug/constants";
+import { openOfficeDevFolder } from "./officeDevHandlers";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -372,7 +375,11 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
   // show local debug button by default
-  await openFolder(projectPathUri, true, res.warnings, args);
+  if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
+    await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
+  } else {
+    await openFolder(projectPathUri, true, res.warnings, args);
+  }
   return result;
 }
 
@@ -1268,7 +1275,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
 
 export async function openReadMeHandler(args: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickOpenReadMe, getTriggerFromProperty(args));
-  if (!globalVariables.isTeamsFxProject) {
+  if (!globalVariables.isTeamsFxProject && !globalVariables.isOfficeAddInProject) {
     const createProject = {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {
@@ -1403,7 +1410,7 @@ export async function showLocalDebugMessage() {
   });
 }
 
-async function ShowScaffoldingWarningSummary(
+export async function ShowScaffoldingWarningSummary(
   workspacePath: string,
   warning: string
 ): Promise<void> {
@@ -1451,7 +1458,7 @@ async function ShowScaffoldingWarningSummary(
 
 export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(PanelType.SampleGallery, isTriggerFromWalkThrough(args));
+  WebviewPanel.createOrShow(PanelType.SampleGallery, args);
   return Promise.resolve(ok(null));
 }
 
@@ -2223,7 +2230,15 @@ export async function copilotPluginAddAPIHandler(args: any[]) {
   const inputs = getSystemInputs();
   if (args && args.length > 0) {
     const filePath = args[0].fsPath as string;
-    inputs[CoreQuestionNames.ManifestPath] = filePath;
+    const isFromApiPlugin: boolean = args[0].isFromApiPlugin ?? false;
+    if (!isFromApiPlugin) {
+      // Codelens for API ME. Trigger from manifest.json
+      inputs[CoreQuestionNames.ManifestPath] = filePath;
+    } else {
+      inputs[CoreQuestionNames.Capabilities] = CapabilityOptions.copilotPluginApiSpec().id;
+      inputs[CoreQuestionNames.DestinationApiSpecFilePath] = filePath;
+      inputs[CoreQuestionNames.ManifestPath] = args[0].manifestPath;
+    }
   }
   const result = await runCommand(Stage.copilotPluginAddAPI, inputs);
   return result;
@@ -2842,6 +2857,12 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
       return VS_CODE_UI.openUrl(PublishAppLearnMoreLink);
     }
   }
+  return Promise.resolve(ok(false));
+}
+
+export async function azureAccountSignOutHelpHandler(
+  args?: any[]
+): Promise<Result<boolean, FxError>> {
   return Promise.resolve(ok(false));
 }
 

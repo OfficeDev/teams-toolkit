@@ -59,7 +59,11 @@
       "remotedebug-msg-newapi-win-only",
       "remotedebug-msg-newapi-ts-win-only",
       "remotedebug-msg-openapi-win-only",
-      "localdebug-command-and-response-ts"
+      "localdebug-command-and-response-ts",
+      "localdebug-aichat-bot",
+      "localdebug-aichat-bot-ts",
+      "localdebug-aiassistant-bot",
+      "localdebug-aiassistant-bot-ts"
     ],
     "node-20": [
       "localdebug-obo-tab"
@@ -106,10 +110,6 @@
       "localdebug-notification-func-timertrigger",
       "localdebug-link-unfurling",
       "localdebug-link-unfurling-ts",
-      "localdebug-aichat-bot",
-      "localdebug-aichat-bot-ts",
-      "localdebug-aiassistant-bot",
-      "localdebug-aiassistant-bot-ts",
       "localdebug-msg-newapi",
       "localdebug-msg-newapi-ts"
     ],

@@ -9,6 +9,7 @@ export class Extension {
   public static readonly activatedItemName: string = "DEVELOPMENT";
   public static readonly sidebarWelcomeSectionName: string = "Teams Toolkit";
   public static readonly sidebarWelcomeContentName: string = "Create a New App";
+  public static readonly sidebarCommandContentName: string = "Create New App";
   public static readonly settingsCategory: string = "Fx-extension";
   public static readonly settingsInsiderPreview: string = "Insider Preview";
 }
@@ -156,7 +157,8 @@ export enum Capability {
   // v2 only
   Tab = "tab",
   // v3 only
-  AiBot = "ai-bot",
+  AiBot = "custom-copilot-basic",
+  TaskPane = "taskpane",
 }
 
 export enum Trigger {
@@ -251,14 +253,14 @@ export class Timeout {
 }
 
 export class TreeViewCommands {
-  public static readonly CreateProjectCommand: string = "Create a New App";
+  public static readonly CreateProjectCommand: string = "Create New App";
   public static readonly SamplesCommand: string = "View Samples";
   public static readonly QuickStartCommand: string = "Get Started";
   public static readonly BuildTeamsPackageCommand: string =
     "Zip Teams App Package";
   public static readonly DevelopmentSectionName: string = "DEVELOPMENT";
   public static readonly DevelopmentSectionItems: string[] = [
-    "Create a New App",
+    "Create New App",
     "View Samples",
     "View How-to Guides",
     "Preview Your Teams App (F5)",
@@ -270,8 +272,7 @@ export class CommandPaletteCommands {
   public static readonly QuickStartCommand: string = "Teams: Get Started";
   public static readonly AccountsCommand: string = "Teams: Accounts";
   public static readonly SamplesCommand: string = "Teams: View Samples";
-  public static readonly CreateProjectCommand: string =
-    "Teams: Create a New App";
+  public static readonly CreateProjectCommand: string = "Teams: Create New App";
   public static readonly ManifestValidateCommand: string =
     "Teams: Validate manifest file";
   public static readonly BuildTeamsPackageCommand: string =
@@ -408,7 +409,7 @@ export class CreateProjectQuestion {
   static readonly SpfxSharepointFrameworkGlobalEnvInTtk =
     "Use globally installed SPFx";
   static readonly NewAddinApp = "Start with an Outlook add-in";
-  static readonly CreateNewSpfxSolution = "Create a New SPFx Solution";
+  static readonly CreateNewSpfxSolution = "Create New SPFx Solution";
 }
 
 export class ValidationContent {

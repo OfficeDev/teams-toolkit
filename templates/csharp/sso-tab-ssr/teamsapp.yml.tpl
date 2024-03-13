@@ -120,7 +120,15 @@ provision:
 deploy:
   - uses: cli/runDotnetCommand
     with:
-      args: publish --configuration Release
+      args: publish --configuration Release {{ProjectName}}.csproj
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      workingDirectory: ..
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      workingDirectory: ../{{ProjectName}}
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
   # Deploy your application to Azure App Service using the zip deploy feature.
   # For additional details, refer to https://aka.ms/zip-deploy-to-app-services.
   - uses: azureAppService/zipDeploy
@@ -132,3 +140,11 @@ deploy:
       # You can replace it with your existing Azure Resource id
       # or add it to your environment variable file.
       resourceId: ${{TAB_AZURE_APP_SERVICE_RESOURCE_ID}}
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      workingDirectory: ..
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      workingDirectory: ../{{ProjectName}}
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}

@@ -55,7 +55,7 @@ export function isApiKeyEnabled(): boolean {
 }
 
 export function isMultipleParametersEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
+  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, true);
 }
 
 export function isOfficeXMLAddinEnabled(): boolean {

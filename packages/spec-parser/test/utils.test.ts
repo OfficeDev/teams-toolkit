@@ -1497,7 +1497,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
 
@@ -1545,7 +1545,7 @@ describe("utils", () => {
           },
         },
       };
-      const result = isSupportedApi(method, path, spec as any, true, false, false, false);
+      const result = Utils.isSupportedApi(method, path, spec as any, true, false, false, false);
       assert.strictEqual(result, false);
     });
   });

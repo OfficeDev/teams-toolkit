@@ -23,7 +23,7 @@
         "url": "https://github.com"
     },
     "dependencies": {
-        "@microsoft/teamsfx": "^2.3.1",
+        "@microsoft/teamsfx": "^2.3.1-rc-hotfix.0",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },

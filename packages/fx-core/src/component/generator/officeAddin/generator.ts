@@ -29,6 +29,7 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { getOfficeAddinTemplateConfig } from "../officeXMLAddin/projectConfig";
 import { HelperMethods } from "./helperMethods";
+import _ from "lodash";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -124,9 +125,9 @@ export class OfficeAddinGenerator {
           await HelperMethods.downloadProjectTemplateZipFile(addinRoot, projectLink);
           let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;
+            cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)} json`;
           } else {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${host}`;
+            cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
           }
           await OfficeAddinGenerator.childProcessExec(cmdLine);
           const manifestPath = templteConfig[capability].manifestPath as string;

@@ -296,6 +296,11 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
 
   // Quick start
   registerInCommandController(context, CommandKeys.OpenWelcome, handlers.openWelcomeHandler);
+  registerInCommandController(
+    context,
+    CommandKeys.BuildIntelligentAppsWalkthrough,
+    handlers.openBuildIntelligentAppsWalkthroughHandler
+  );
 
   // Tutorials
   registerInCommandController(
@@ -313,6 +318,9 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     CommandKeys.ValidateGetStartedPrerequisites,
     handlers.validateGetStartedPrerequisitesHandler
   );
+
+  // commmand: check copilot access
+  registerInCommandController(context, CommandKeys.CheckCopilotAccess, handlers.checkCopilotAccess);
 
   // Upgrade command to update Teams manifest
   const migrateTeamsManifestCmd = vscode.commands.registerCommand(

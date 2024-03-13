@@ -77,3 +77,7 @@ export function isNewProjectTypeEnabled(): boolean {
 export function isOfficeJSONAddinEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
 }
+
+export function isApiMeSSOEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiMeSSO, false);
+}

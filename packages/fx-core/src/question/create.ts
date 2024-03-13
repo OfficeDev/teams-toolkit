@@ -30,6 +30,7 @@ import {
   isTdpTemplateCliTestEnabled,
   isOfficeXMLAddinEnabled,
   isOfficeJSONAddinEnabled,
+  isApiMeSSOEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -1751,8 +1752,19 @@ export class ApiMessageExtensionAuthOptions {
     };
   }
 
+  static microsoftEntra(): OptionItem {
+    return {
+      id: "microsoft-entra",
+      label: "Microsoft Entra",
+    };
+  }
+
   static all(): OptionItem[] {
-    return [ApiMessageExtensionAuthOptions.none(), ApiMessageExtensionAuthOptions.apiKey()];
+    return [
+      ApiMessageExtensionAuthOptions.none(),
+      ApiMessageExtensionAuthOptions.apiKey(),
+      ApiMessageExtensionAuthOptions.microsoftEntra(),
+    ];
   }
 }
 
@@ -1948,6 +1960,16 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
     ),
     cliDescription: "The authentication type for the API.",
     staticOptions: ApiMessageExtensionAuthOptions.all(),
+    dynamicOptions: () => {
+      const options: OptionItem[] = [ApiMessageExtensionAuthOptions.none()];
+      if (isApiKeyEnabled()) {
+        options.push(ApiMessageExtensionAuthOptions.apiKey());
+      }
+      if (isApiMeSSOEnabled()) {
+        options.push(ApiMessageExtensionAuthOptions.microsoftEntra());
+      }
+      return options;
+    },
     default: ApiMessageExtensionAuthOptions.none().id,
   };
 }
@@ -2338,9 +2360,8 @@ export function capabilitySubTree(): IQTreeNode {
       {
         condition: (inputs: Inputs) => {
           return (
-            isApiKeyEnabled() &&
-            (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+            (isApiKeyEnabled() || isApiMeSSOEnabled()) &&
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id
           );
         },
         data: apiMessageExtensionAuthQuestion(),

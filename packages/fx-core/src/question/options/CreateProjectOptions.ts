@@ -135,7 +135,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     description: "The authentication type for the API.",
     default: "none",
-    choices: ["none", "api-key"],
+    choices: ["none", "api-key", "microsoft-entra"],
   },
   {
     name: "custom-copilot-agent",

@@ -1341,6 +1341,13 @@ describe("updateForCustomApi", async () => {
                 schema: { type: "string" },
                 requried: false,
               },
+              {
+                name: "query3",
+                in: "query",
+                schema: { type: "string" },
+                requried: true,
+                description: "test",
+              },
             ],
             responses: {
               "200": {

@@ -264,6 +264,7 @@ export enum TelemetryEvent {
   generateAddInGUID = "generate-addin-guid",
   editAddInManifest = "edit-addin-manifest",
   openNewOfficeAddInProject = "open-new-office-addin-project",
+  popupOfficeAddInInstallMessage = "popup-office-addin-install-message",
 }
 
 export enum TelemetryProperty {

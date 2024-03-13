@@ -23,7 +23,17 @@ provision:
   # Generate runtime settings to JSON file
   - uses: file/createOrUpdateJsonFile
     with:
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      target: ../local.settings.json
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      target: ../{{appName}}/local.settings.json
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
+{{^isNewProjectTypeEnabled}}
       target: ./local.settings.json
+{{/isNewProjectTypeEnabled}}
       content:
         IsEncrypted: false
         Values:
@@ -84,6 +94,7 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+{{^isNewProjectTypeEnabled}}
 
   # Create or update debug profile in lauchsettings file
   - uses: file/createOrUpdateJsonFile
@@ -100,3 +111,4 @@ provision:
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"
+{{/isNewProjectTypeEnabled}}

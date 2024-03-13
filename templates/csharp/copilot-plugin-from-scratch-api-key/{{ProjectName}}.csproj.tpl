@@ -9,15 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+{{^isNewProjectTypeEnabled}}
     <ProjectCapability Include="TeamsFx" />
+{{/isNewProjectTypeEnabled}}
     <ProjectCapability Include="APIME" />
   </ItemGroup>
 
+{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <None Remove="build/**/*" />
     <Content Remove="build/**/*" />
   </ItemGroup>
 
+{{/isNewProjectTypeEnabled}}
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.20.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />

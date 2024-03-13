@@ -1,12 +1,10 @@
 # Changelog
 
-> Note: This changelog only includes the changes for the stable versions of Teams Toolkit. For the changelog of Prereleased versions, please refer to the [Teams Toolkit Prerelease Changelog](./PRERELEASE.md).
-
 ## 5.6.0 - Mar 12, 2024
 
 This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include Deploy Tab Apps to Static Web App, Teams Toolkit CLI v3 and many other enhancements. We previously shared these incremental changes in the prerelease version and through a blog post:
 
-- [Janaury Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-january-2024/): Deploy Tab Apps to Static Web App, Teams Toolkit CLI v3, new Link Unfurliing sample app and many other enhancements.
+- [Janaury Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-january-2024/): Deploy Tab Apps to Static Web App, Teams Toolkit CLI v3, new Link Unfurling sample app and many other enhancements.
 
 We've listened to your feedback and included these additional new features, enhancements, and bug fixes to this release.
 

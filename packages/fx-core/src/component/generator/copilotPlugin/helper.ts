@@ -39,6 +39,7 @@ import {
   ProjectType,
   ParseOptions,
   AdaptiveCardGenerator,
+  Utils,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -716,10 +717,12 @@ interface SpecObject {
   pathUrl: string;
   method: string;
   item: OpenAPIV3.OperationObject;
+  auth: boolean;
 }
 
-function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
+function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   const res: SpecObject[] = [];
+  let needAuth = false;
 
   const paths = spec.paths;
   if (paths) {
@@ -731,10 +734,16 @@ function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
           if (method === "get" || method === "post") {
             const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
             if (operationItem) {
+              const authResult = Utils.getAuthArray(operationItem.security, spec);
+              const hasAuth = authResult.length != 0;
+              if (hasAuth) {
+                needAuth = true;
+              }
               res.push({
                 item: operationItem,
                 method: method,
                 pathUrl: pathUrl,
+                auth: hasAuth,
               });
             }
           }
@@ -743,7 +752,7 @@ function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
     }
   }
 
-  return res;
+  return [res, needAuth];
 }
 
 async function updatePromptForCustomApi(
@@ -835,6 +844,7 @@ const ActionCode = {
   javascript: `
 app.ai.action("{{operationId}}", async (context, state, parameter) => {
   const client = await api.getClient();
+  // Add authentication configuration for the client
   const path = client.paths["{{pathUrl}}"];
   if (path && path.{{method}}) {
     const result = await path.{{method}}(parameter.path, parameter.body, {
@@ -851,6 +861,7 @@ app.ai.action("{{operationId}}", async (context, state, parameter) => {
   typescript: `
 app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
   const client = await api.getClient();
+  // Add authentication configuration for the client
   const path = client.paths["{{pathUrl}}"];
   if (path && path.{{method}}) {
     const result = await path.{{method}}(parameter.path, parameter.body, {
@@ -866,11 +877,55 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
   `,
 };
 
+const AuthCode = {
+  javascript: {
+    importCode: `const addAuthConfig = require("./utility.js");`,
+    importPlaceholder: `// Import addAuthConfig function from utility file`,
+    actionCode: `addAuthConfig(client, "{{pathUrl}}", "{{method}}");`,
+    actionPlaceholder: `// Add authentication configuration for the client`,
+    utilityCode: `
+    function addAuthConfig(client, url, method) {
+      // This part is sample code for adding authentication to the client.
+      // Please replace it with your own authentication logic.
+      // You can specify different authentication methods for different urls and methods.
+    
+      // For Basic Authentication
+      //client.defaults.headers["Authorization"] = \`Basic ${btoa("Your-Username:Your-Password")}\`;
+    
+      // For Bearer Token
+      client.defaults.headers["Authorization"] = \`Bearer ${"Your-Token"}\`;
+    }
+    module.exports = addAuthConfig;`,
+    utilityPlaceholder: `// Add authentication configuration for the client`,
+  },
+  typescript: {
+    importCode: `import { addAuthConfig } from "./utility";`,
+    importPlaceholder: `// Import addAuthConfig function from utility file`,
+    actionCode: `addAuthConfig(client, "{{pathUrl}}", "{{method}}");`,
+    actionPlaceholder: `// Add authentication configuration for the client`,
+    utilityCode: `
+    import { OpenAPIClient } from "openapi-client-axios";
+    export function addAuthConfig(client: OpenAPIClient, url: string, method: string) {
+      // This part is sample code for adding authentication to the client.
+      // Please replace it with your own authentication logic.
+      // You can specify different authentication methods for different urls and methods.
+
+      // For Basic Authentication
+      //client.defaults.headers["Authorization"] = \`Basic ${btoa("Your-Username:Your-Password")}\`;
+
+      // For Bearer Token
+      //client.defaults.headers["Authorization"] = \`Bearer ${"Your-Token"}\`;
+    },`,
+    utilityPlaceholder: `// Add authentication configuration for the client`,
+  },
+};
+
 async function updateCodeForCustomApi(
   specItems: SpecObject[],
   language: string,
   destinationPath: string,
-  openapiSpecFileName: string
+  openapiSpecFileName: string,
+  needAuth: boolean
 ): Promise<void> {
   if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
     const codeTemplate =
@@ -878,8 +933,12 @@ async function updateCodeForCustomApi(
     const appFolderPath = path.join(destinationPath, "src", "app");
 
     const actionsCode = [];
+    const authCodeTemplate =
+      AuthCode[language === ProgrammingLanguage.JS ? "javascript" : "typescript"];
     for (const item of specItems) {
+      const auth = item.auth;
       const code = codeTemplate
+        .replace(authCodeTemplate.actionPlaceholder, auth ? authCodeTemplate.actionCode : "")
         .replace(/{{operationId}}/g, item.item.operationId!)
         .replace("{{pathUrl}}", item.pathUrl)
         .replace(/{{method}}/g, item.method);
@@ -893,9 +952,23 @@ async function updateCodeForCustomApi(
     );
     const indexFileContent = (await fs.readFile(indexFilePath)).toString();
     const updateIndexFileContent = indexFileContent
+      .replace(authCodeTemplate.importPlaceholder, needAuth ? authCodeTemplate.importCode : "")
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(indexFilePath, updateIndexFileContent);
+
+    if (needAuth) {
+      const utilityFilePath = path.join(
+        appFolderPath,
+        language === ProgrammingLanguage.JS ? "utility.js" : "utility.ts"
+      );
+      const utilityFileContent = (await fs.readFile(utilityFilePath)).toString();
+      const updateUtilityFileContent = utilityFileContent.replace(
+        authCodeTemplate.utilityPlaceholder,
+        authCodeTemplate.utilityCode
+      );
+      await fs.writeFile(utilityFilePath, updateUtilityFileContent);
+    }
   }
 }
 
@@ -911,7 +984,7 @@ export async function updateForCustomApi(
   // 1. update prompt folder
   await updatePromptForCustomApi(spec, language, chatFolder);
 
-  const specItems = parseSpec(spec);
+  const [specItems, needAuth] = parseSpec(spec);
 
   // 2. update adaptive card folder
   await updateAdaptiveCardForCustomApi(specItems, language, destinationPath);
@@ -920,5 +993,5 @@ export async function updateForCustomApi(
   await updateActionForCustomApi(specItems, language, chatFolder);
 
   // 4. update code
-  await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName);
+  await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
 }

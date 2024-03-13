@@ -12,3 +12,4 @@ export function generateAdaptiveCard(templatePath: string, result: any) {
   const card = CardFactory.adaptiveCard(cardContent);
   return card;
 }
+// Add authentication configuration for the client

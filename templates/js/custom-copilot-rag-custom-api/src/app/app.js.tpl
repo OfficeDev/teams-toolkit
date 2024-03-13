@@ -42,6 +42,7 @@ const generateAdaptiveCard = require("./utility.js");
 const yaml = require("js-yaml");
 const { OpenAPIClientAxios } = require("openapi-client-axios");
 const fs = require("fs-extra");
+// Import addAuthConfig function from utility file
 // Define a prompt function for getting the current status of the lights
 planner.prompts.addFunction("getAction", async (context, memory) => {
   const specFilePath = path.join(__dirname, "../prompts/chat/actions.json");

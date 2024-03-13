@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProjectType } from "@microsoft/m365-spec-parser";
 import { OfficeAddinHostOptions, ProjectTypeOptions } from "../../../question";
 
 /**

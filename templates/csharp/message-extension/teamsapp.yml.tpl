@@ -104,6 +104,7 @@ deploy:
 {{^PlaceProjectFileInSolutionDir}}
       workingDirectory: ../{{ProjectName}}
 {{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
   # Deploy your application to Azure App Service using the zip deploy feature.
   # For additional details, refer to https://aka.ms/zip-deploy-to-app-services.
   - uses: azureAppService/zipDeploy

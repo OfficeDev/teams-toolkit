@@ -478,8 +478,10 @@ describe("utils", () => {
             oauth: {
               type: "oauth2",
               flows: {
-                implicit: {
+                authorizationCode: {
                   authorizationUrl: "https://example.com/api/oauth/dialog",
+                  tokenUrl: "https://example.com/api/oauth/token",
+                  refreshUrl: "https://example.com/api/outh/refresh",
                   scopes: {
                     "write:pets": "modify pets in your account",
                     "read:pets": "read your pets",
@@ -552,7 +554,7 @@ describe("utils", () => {
       assert.strictEqual(result, true);
     });
 
-    it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, but contains aad auth", () => {
+    it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, but contain oauth", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
@@ -566,8 +568,10 @@ describe("utils", () => {
             oauth: {
               type: "oauth2",
               flows: {
-                implicit: {
+                authorizationCode: {
                   authorizationUrl: "https://example.com/api/oauth/dialog",
+                  tokenUrl: "https://example.com/api/oauth/token",
+                  refreshUrl: "https://example.com/api/outh/refresh",
                   scopes: {
                     "write:pets": "modify pets in your account",
                     "read:pets": "read your pets",
@@ -640,7 +644,7 @@ describe("utils", () => {
       assert.strictEqual(result, false);
     });
 
-    it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, and contains aad auth", () => {
+    it("should return false if allowAPIKeyAuth is true, allowOauth2 is true, but not auth code flow", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
@@ -722,6 +726,95 @@ describe("utils", () => {
         allowMultipleParameters: false,
         allowOauth2: true,
         projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, false);
+    });
+
+    it("should return true if allowAPIKeyAuth is true, allowOauth2 is true, but not auth code flow for teams ai project", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+            oauth: {
+              type: "oauth2",
+              flows: {
+                implicit: {
+                  authorizationUrl: "https://example.com/api/oauth/dialog",
+                  scopes: {
+                    "write:pets": "modify pets in your account",
+                    "read:pets": "read your pets",
+                  },
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  oauth: ["read:pets"],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: true,
+        allowMultipleParameters: false,
+        allowOauth2: true,
+        projectType: ProjectType.TeamsAi,
         allowMethods: ["get", "post"],
       };
 
@@ -1049,6 +1142,77 @@ describe("utils", () => {
 
       const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
+    });
+
+    it("should support multiple required parameters count larger than 5 for teams ai project", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["id1", "id2", "id3", "id4", "id5", "id6"],
+                      properties: {
+                        id1: {
+                          type: "string",
+                        },
+                        id2: {
+                          type: "string",
+                        },
+                        id3: {
+                          type: "string",
+                        },
+                        id4: {
+                          type: "string",
+                        },
+                        id5: {
+                          type: "string",
+                        },
+                        id6: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: true,
+        allowOauth2: false,
+        projectType: ProjectType.TeamsAi,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
     });
 
     it("should not support multiple required parameters count larger than 5 for copilot", () => {
@@ -2004,6 +2168,79 @@ describe("utils", () => {
       assert.strictEqual(result, false);
     });
 
+    it("should return true if method is POST, and request body contains media type other than application/json for teams ai project", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                  "application/xml": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.TeamsAi,
+        allowMethods: ["get", "post"],
+      };
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
+    });
+
     it("should return false if method is POST, and request body schema is not object", () => {
       const method = "POST";
       const path = "/users";
@@ -2110,6 +2347,64 @@ describe("utils", () => {
 
       const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, false);
+    });
+
+    it("should return true if method is GET, and response body contains media type other than application/json for teams ai project", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        paths: {
+          "/users": {
+            get: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                    "application/xml": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.TeamsAi,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
     });
   });
 
@@ -2695,6 +2990,71 @@ describe("utils", () => {
         },
       } as any;
       const json = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({
+        schema: {
+          type: "object",
+          properties: {
+            message: { type: "string" },
+          },
+        },
+      });
+    });
+
+    it("should return empty JSON response for status code 200 with multiple media type", () => {
+      const operationObject = {
+        responses: {
+          "200": {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+              "application/xml": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = Utils.getResponseJson(operationObject);
+      expect(json).to.deep.equal({});
+    });
+
+    it("should return JSON response for status code 200 with multiple media type when it is teams ai project", () => {
+      const operationObject = {
+        responses: {
+          "200": {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+              "application/xml": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as any;
+      const json = Utils.getResponseJson(operationObject, true);
       expect(json).to.deep.equal({
         schema: {
           type: "object",

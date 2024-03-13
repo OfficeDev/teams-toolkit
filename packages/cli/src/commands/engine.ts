@@ -204,7 +204,16 @@ class CLIEngine {
     // 6. version check
     const inputs = getSystemInputs(context.optionValues.projectPath as string);
     inputs.ignoreEnvInfo = true;
-    const skipCommands = ["new", "sample", "upgrade", "update", "package", "publish", "validate"];
+    const skipCommands = [
+      "new",
+      "sample",
+      "upgrade",
+      "update",
+      "package",
+      "publish",
+      "validate",
+      "deploy",
+    ];
     if (!skipCommands.includes(context.command.name) && context.optionValues.projectPath) {
       const core = getFxCore();
       const res = await core.projectVersionCheck(inputs);

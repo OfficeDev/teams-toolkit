@@ -5,7 +5,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import fs from "fs-extra";
 import path from "path";
-import { ErrorType, ParseOptions, ProjectType, WarningResult } from "./interfaces";
+import { AuthInfo, ErrorType, ParseOptions, ProjectType, WarningResult } from "./interfaces";
 import { Utils } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
@@ -200,7 +200,7 @@ export class ManifestUpdater {
     spec: OpenAPIV3.Document,
     options: ParseOptions,
     adaptiveCardFolder?: string,
-    auth?: OpenAPIV3.SecuritySchemeObject
+    authInfo?: AuthInfo
   ): Promise<[TeamsAppManifest, WarningResult[]]> {
     try {
       const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
@@ -224,11 +224,12 @@ export class ManifestUpdater {
           commands: commands,
         };
 
-        if (auth) {
+        if (authInfo) {
+          let auth = authInfo.authSchema;
           if (Utils.isAPIKeyAuth(auth)) {
             auth = auth as OpenAPIV3.ApiKeySecurityScheme;
             const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
-              `${auth.name}_${ConstantString.RegistrationIdPostfix}`
+              `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
             );
             (composeExtension as any).authorization = {
               authType: "apiSecretServiceAuth",
@@ -236,11 +237,15 @@ export class ManifestUpdater {
                 apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
               },
             };
-          } else if (Utils.isBearerTokenAuth(auth)) {
+          } else if (Utils.isOAuthWithAuthCodeFlow(auth)) {
+            const safeOAuth2RegistrationId = Utils.getSafeRegistrationIdEnvName(
+              `${authInfo.name}_${ConstantString.OAuthRegistrationIdPostFix}`
+            );
+
             (composeExtension as any).authorization = {
-              authType: "microsoftEntra",
-              microsoftEntraConfiguration: {
-                supportsSingleSignOn: true,
+              authType: "oAuth2.0",
+              oAuthConfiguration: {
+                oauthConfigurationId: `\${{${safeOAuth2RegistrationId}}}`,
               },
             };
 

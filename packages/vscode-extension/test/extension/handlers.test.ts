@@ -987,6 +987,18 @@ describe("handlers", () => {
     );
   });
 
+  it("walkthrough: build intelligent apps", async () => {
+    sandbox.stub(featureFlags, "isApiCopilotPluginEnabled").returns(true);
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+
+    await handlers.openBuildIntelligentAppsWalkthroughHandler();
+    sandbox.assert.calledOnceWithExactly(
+      executeCommands,
+      "workbench.action.openWalkthrough",
+      "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
+    );
+  });
+
   it("openSurveyHandler", async () => {
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     const openLink = sandbox.stub(ExtensionSurvey.getInstance(), "openSurveyLink");

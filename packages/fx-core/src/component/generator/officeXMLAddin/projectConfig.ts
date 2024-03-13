@@ -70,7 +70,7 @@ export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
       localTemplate: "",
       framework: {
         default_old: {
-          typescript: "https://aka.ms/office-addin-taskpane",
+          typescript: "https://aka.ms/teams-toolkit/office-addin-taskpane",
         },
         default: {
           typescript: "https://aka.ms/teams-toolkit/office-addin-taskpane/ts-default",

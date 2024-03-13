@@ -46,7 +46,6 @@ import {
   OpenAIPluginManifestHelper,
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
-import projectsJsonData from "../component/generator/officeAddin/config/projectsJsonData";
 import {
   OfficeAddinProjectConfig,
   getOfficeAddinTemplateConfig,
@@ -1335,15 +1334,6 @@ export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion
       : undefined,
   };
 }
-export const getTemplate = (inputs: Inputs): string => {
-  const capabilities: string[] = inputs[QuestionNames.Capabilities];
-  const templates: string[] = officeAddinJsonData.getProjectTemplateNames();
-  const foundTemplate = templates.find((template) => {
-    return capabilities && capabilities.includes(template);
-  });
-
-  return foundTemplate ?? "";
-};
 
 export function officeAddinHostingQuestion(): SingleSelectQuestion {
   return {
@@ -1353,26 +1343,6 @@ export function officeAddinHostingQuestion(): SingleSelectQuestion {
     staticOptions: OfficeAddinHostOptions.all(),
   };
 }
-
-// /**
-//  * @deprecated
-//  */
-// export function outlookAddinHostingQuestion(): SingleSelectQuestion {
-//   const OfficeHostQuestion: SingleSelectQuestion = {
-//     type: "singleSelect",
-//     name: QuestionNames.OfficeAddinHost,
-//     title: "Add-in Host",
-//     staticOptions: [],
-//     dynamicOptions: officeAddinHostingOptions,
-//     default: (inputs: Inputs) => {
-//       const template = getTemplate(inputs);
-//       const options = officeAddinJsonData.getHostTemplateNames(template);
-//       return options[0] || "No Options";
-//     },
-//     skipSingleOption: true,
-//   };
-//   return OfficeHostQuestion;
-// }
 
 export function OfficeAddinFrameworkQuestion(): SingleSelectQuestion {
   return {
@@ -1392,7 +1362,24 @@ export function OfficeAddinFrameworkQuestion(): SingleSelectQuestion {
   };
 }
 
-const officeAddinJsonData = new projectsJsonData();
+/**
+ * when project-type=office-addin-type(office-addin-framework-type=default or react), use selected value;
+ * when project-type=outlook-addin-type, no framework to select, office-addin-framework-type=default_old
+ * when project-type=office-xml-addin-type, no framework to select, office-addin-framework-type=default_old
+ */
+export function getOfficeAddinFramework(inputs: Inputs): string {
+  const projectType = inputs[QuestionNames.ProjectType];
+  if (
+    projectType === ProjectTypeOptions.officeAddin().id &&
+    inputs[QuestionNames.OfficeAddinFramework]
+  ) {
+    return inputs[QuestionNames.OfficeAddinFramework];
+  } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+    return "default";
+  } else {
+    return "default_old";
+  }
+}
 
 export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
@@ -1409,9 +1396,7 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     if (capabilities.endsWith("-manifest")) {
       return [{ id: "javascript", label: "JavaScript" }];
     }
-    const framework =
-      inputs[QuestionNames.OfficeAddinFramework] ||
-      (projectType === ProjectTypeOptions.outlookAddin().id ? "default_old" : "default");
+    const framework = getOfficeAddinFramework(inputs);
     const templteConfig = getOfficeAddinTemplateConfig(projectType, officeHost);
     const languages = Object.keys(templteConfig[capabilities].framework[framework]) || [];
     return languages.map((language) => ({

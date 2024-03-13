@@ -23,13 +23,12 @@ import { join } from "path";
 import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
-import { ProjectTypeOptions } from "../../../question/create";
+import { ProjectTypeOptions, getOfficeAddinFramework } from "../../../question/create";
 import { QuestionNames } from "../../../question/questionNames";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { getOfficeAddinTemplateConfig } from "../officeXMLAddin/projectConfig";
 import { HelperMethods } from "./helperMethods";
-import _ from "lodash";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -108,12 +107,7 @@ export class OfficeAddinGenerator {
     try {
       if (!fromFolder) {
         // from template
-        // when project-type=office-addin-type(office-addin-framework-type=default or react), use selected value;
-        // when project-type=outlook-addin-type, use office-addin-framework-type=default_old
-        // when project-type=office-xml-addin-type, use office-addin-framework-type=default
-        const framework =
-          inputs[QuestionNames.OfficeAddinFramework] ||
-          (projectType === ProjectTypeOptions.outlookAddin().id ? "default_old" : "default");
+        const framework = getOfficeAddinFramework(inputs);
         const templteConfig = getOfficeAddinTemplateConfig(
           projectType,
           inputs[QuestionNames.OfficeAddinHost]
@@ -125,9 +119,9 @@ export class OfficeAddinGenerator {
           await HelperMethods.downloadProjectTemplateZipFile(addinRoot, projectLink);
           let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)} json`;
+            cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;
           } else {
-            cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
+            cmdLine = `npm run convert-to-single-host --if-present -- ${host}`;
           }
           await OfficeAddinGenerator.childProcessExec(cmdLine);
           const manifestPath = templteConfig[capability].manifestPath as string;

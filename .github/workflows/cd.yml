@@ -23,9 +23,9 @@ on:
     - cron: "0 16 * * *"
 
 permissions:
-      actions: read
-      contents: read
-      
+  actions: read
+  contents: read
+
 jobs:
   cd:
     runs-on: ubuntu-latest
@@ -139,7 +139,7 @@ jobs:
         with:
           tag_name: "templates@0.0.0-rc"
         env:
-          CD_PAT: ${{ secrets.CD_PAT }}
+          GITHUB_TOKEN: ${{ secrets.CD_PAT }}
 
       - name: release templates' RC version to github
         if: ${{ (contains(steps.version-change.outputs.CHANGED, 'templates@') || contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx')) && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}

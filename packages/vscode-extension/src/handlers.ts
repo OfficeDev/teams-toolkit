@@ -374,9 +374,10 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
   // show local debug button by default
+  const triggerFrom = getTriggerFromProperty(args);
   if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
-      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.TreeView,
+      ...triggerFrom,
       [TelemetryProperty.IsOfficeAddIn]: "true",
     });
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);

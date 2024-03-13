@@ -216,7 +216,7 @@
   "error.generator.FetchSampleInfoError": "Unable to fetch sample info",
   "error.generator.DownloadSampleApiLimitError": "Unable to download sample due to rate limitation. Try again in an  hour after rate limit reset or you can manually clone the repo from %s.",
   "error.generator.DownloadSampleNetworkError": "Unable to download sample due to network error. Check your network connection and try again or you can manually clone the repo from %s",
-  "error.copilotPlugin.apiSpecNotUsedInPlugin": "\"%s\" is not used in the plugin."
+  "error.copilotPlugin.apiSpecNotUsedInPlugin": "\"%s\" is not used in the plugin.",
   "error.copilotPlugin.openAiPluginManifest.CannotGetManifest": "Unable to get OpenAI plugin manifest from '%s'.",
   "error.copilotPlugin.noExtraAPICanBeAdded": "No API can be added. Only GET and POST methods with at most one required parameter and no auth are supported. Methods defined in manifest.json are not listed.",
   "error.m365.NotExtendedToM365Error": "Unable to extend Teams app to Microsoft 365. Use 'teamsApp/extendToM365' action to extend your Teams app to Microsoft 365.",

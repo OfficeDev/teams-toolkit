@@ -23,10 +23,13 @@ import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
+import { isApiKeyEnabled } from "../../common/featureFlags";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
+import { convertToAlphanumericOnly } from "../../common/utils";
 import { MetadataV3 } from "../../common/versionMetadata";
+import { environmentNameManager } from "../../core/environmentName";
 import { ObjectIsUndefinedError } from "../../core/error";
 import { ErrorContextMW, globalVars } from "../../core/globalVars";
 import { ResourceGroupConflictError, SelectSubscriptionError } from "../../error/azure";
@@ -38,16 +41,16 @@ import {
 } from "../../error/common";
 import { LifeCycleUndefinedError } from "../../error/yml";
 import {
-  MeArchitectureOptions,
+  ApiMessageExtensionAuthOptions,
   AppNamePattern,
   CapabilityOptions,
+  CustomCopilotAssistantOptions,
+  CustomCopilotRagOptions,
+  MeArchitectureOptions,
   NotificationTriggerOptions,
+  OfficeAddinHostOptions,
   ProjectTypeOptions,
   ScratchOptions,
-  ApiMessageExtensionAuthOptions,
-  CustomCopilotRagOptions,
-  CustomCopilotAssistantOptions,
-  OfficeAddinHostOptions,
 } from "../../question/create";
 import { QuestionNames } from "../../question/questionNames";
 import { ExecutionError, ExecutionOutput, ILifecycle } from "../configManager/interface";
@@ -61,6 +64,7 @@ import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { CopilotPluginGenerator } from "../generator/copilotPlugin/generator";
 import { Generator } from "../generator/generator";
 import { OfficeAddinGenerator } from "../generator/officeAddin/generator";
+import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
 import { SPFxGenerator } from "../generator/spfx/spfxGenerator";
 import { convertToLangKey } from "../generator/utils";
 import { ActionContext, ActionExecutionMW } from "../middleware/actionExecutionMW";
@@ -71,10 +75,6 @@ import { metadataUtil } from "../utils/metadataUtil";
 import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
-import { convertToAlphanumericOnly } from "../../common/utils";
-import { isApiKeyEnabled, isOfficeXMLAddinEnabled } from "../../common/featureFlags";
-import { environmentNameManager } from "../../core/environmentName";
-import { OfficeXMLAddinGenerator } from "../generator/officeXMLAddin/generator";
 
 export enum TemplateNames {
   Tab = "non-sso-tab",
@@ -202,11 +202,6 @@ const M365Actions = [
   "teamsApp/extendToM365",
 ];
 const AzureActions = ["arm/deploy"];
-const AzureDeployActions = [
-  "azureAppService/zipDeploy",
-  "azureFunctions/zipDeploy",
-  "azureStorage/deploy",
-];
 const needTenantCheckActions = ["botAadApp/create", "aadApp/create", "botFramework/create"];
 
 class Coordinator {
@@ -272,6 +267,7 @@ class Coordinator {
       const language = inputs[QuestionNames.ProgrammingLanguage];
       globalVars.isVS = language === "csharp";
       const capability = inputs.capabilities as string;
+      const projectType = inputs[QuestionNames.ProjectType];
       const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
       const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
       delete inputs.folder;
@@ -284,33 +280,18 @@ class Coordinator {
       if (capability === CapabilityOptions.SPFxTab().id) {
         const res = await SPFxGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
-      } else if (
-        !isOfficeXMLAddinEnabled() &&
-        (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id ||
-          capability === CapabilityOptions.jsonAddinTaskpane().id)
-      ) {
-        const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      } else if (
-        isOfficeXMLAddinEnabled() &&
-        (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeXMLAddin().id ||
-          CapabilityOptions.officeXMLAddinHostOptionItems(inputs[QuestionNames.OfficeAddinHost])
-            .map((i) => i.id)
-            .includes(capability))
-      ) {
-        const res =
-          inputs[QuestionNames.OfficeAddinHost] === OfficeAddinHostOptions.outlook().id
-            ? await OfficeAddinGenerator.generate(context, inputs, projectPath)
-            : await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
-        const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
-        if (res.isErr()) {
-          return err(res.error);
+      } else if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
+        const addinHost = inputs[QuestionNames.OfficeAddinHost];
+        if (
+          projectType === ProjectTypeOptions.officeXMLAddin().id &&
+          addinHost &&
+          addinHost !== OfficeAddinHostOptions.outlook().id
+        ) {
+          const res = await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
+          if (res.isErr()) return err(res.error);
+        } else {
+          const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
+          if (res.isErr()) return err(res.error);
         }
       } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
         const res = await CopilotPluginGenerator.generatePluginFromApiSpec(

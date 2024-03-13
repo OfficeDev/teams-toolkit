@@ -50,7 +50,6 @@ import projectsJsonData from "../component/generator/officeAddin/config/projects
 import {
   OfficeAddinProjectConfig,
   getOfficeAddinTemplateConfig,
-  getOfficeXMLAddinHostProjectOptions,
 } from "../component/generator/officeXMLAddin/projectConfig";
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
@@ -557,7 +556,7 @@ export class CapabilityOptions {
         label: getLocalizedString(capabilityValue.title),
         detail: getLocalizedString(capabilityValue.detail),
       });
-      if (projectType === ProjectTypeOptions.outlookAddin().id) {
+      if (host === OfficeAddinHostOptions.outlook().id) {
         items.push(CapabilityOptions.outlookAddinImport());
       }
     } else {
@@ -659,43 +658,43 @@ export class CapabilityOptions {
     };
   }
 
-  static officeAddinImport(): OptionItem {
-    return {
-      id: "import",
-      label: getLocalizedString("core.importOfficeAddin.label"),
-      detail: getLocalizedString("core.importAddin.detail"),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.previewOnWindow"
-      ),
-    };
-  }
+  // static officeAddinImport(): OptionItem {
+  //   return {
+  //     id: "import",
+  //     label: getLocalizedString("core.importOfficeAddin.label"),
+  //     detail: getLocalizedString("core.importAddin.detail"),
+  //     description: getLocalizedString(
+  //       "core.createProjectQuestion.option.description.previewOnWindow"
+  //     ),
+  //   };
+  // }
 
-  static officeXMLAddinHostOptionItems(host: string): OptionItem[] {
-    return getOfficeXMLAddinHostProjectOptions(host).map((x) => ({
-      id: x.proj,
-      label: getLocalizedString(x.title),
-      detail: getLocalizedString(x.detail),
-    }));
-  }
+  // static officeXMLAddinHostOptionItems(host: string): OptionItem[] {
+  //   return getOfficeXMLAddinHostProjectOptions(host).map((x) => ({
+  //     id: x.proj,
+  //     label: getLocalizedString(x.title),
+  //     detail: getLocalizedString(x.detail),
+  //   }));
+  // }
 
-  static jsonAddinTaskpane(): OptionItem {
-    return {
-      id: "json-taskpane",
-      label: getLocalizedString("core.newTaskpaneAddin.label"),
-      detail: getLocalizedString("core.newTaskpaneAddin.detail"),
-      description: getLocalizedString(
-        "core.createProjectQuestion.option.description.previewOnWindow"
-      ),
-    };
-  }
+  // static jsonAddinTaskpane(): OptionItem {
+  //   return {
+  //     id: "json-taskpane",
+  //     label: getLocalizedString("core.newTaskpaneAddin.label"),
+  //     detail: getLocalizedString("core.newTaskpaneAddin.detail"),
+  //     description: getLocalizedString(
+  //       "core.createProjectQuestion.option.description.previewOnWindow"
+  //     ),
+  //   };
+  // }
 
-  static officeAddinItems(): OptionItem[] {
-    return officeAddinJsonData.getProjectTemplateNames().map((template) => ({
-      id: template,
-      label: getLocalizedString(officeAddinJsonData.getProjectDisplayName(template)),
-      detail: getLocalizedString(officeAddinJsonData.getProjectDetails(template)),
-    }));
-  }
+  // static officeAddinItems(): OptionItem[] {
+  //   return officeAddinJsonData.getProjectTemplateNames().map((template) => ({
+  //     id: template,
+  //     label: getLocalizedString(officeAddinJsonData.getProjectDisplayName(template)),
+  //     detail: getLocalizedString(officeAddinJsonData.getProjectDetails(template)),
+  //   }));
+  // }
 
   static nonSsoTabAndBot(): OptionItem {
     return {
@@ -881,7 +880,10 @@ export function capabilityQuestion(): SingleSelectQuestion {
       } else if (projectType === ProjectTypeOptions.me().id) {
         return CapabilityOptions.mes();
       } else if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
-        return CapabilityOptions.officeAddinDynamicCapabilities(projectType, inputs?.host);
+        return CapabilityOptions.officeAddinDynamicCapabilities(
+          projectType,
+          inputs[QuestionNames.OfficeAddinHost]
+        );
       } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
         return CapabilityOptions.copilotPlugins();
       } else if (projectType === ProjectTypeOptions.customCopilot().id) {

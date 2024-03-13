@@ -38,7 +38,21 @@ export interface CreateProjectInputs extends Inputs {
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
-    | "taskpane";
+    | "json-taskpane"
+    | "word-taskpane"
+    | "word-sso"
+    | "word-react"
+    | "word-manifest"
+    | "excel-taskpane"
+    | "excel-sso"
+    | "excel-react"
+    | "excel-cfshared"
+    | "excel-cfjs"
+    | "excel-manifest"
+    | "powerpoint-taskpane"
+    | "powerpoint-sso"
+    | "powerpoint-react"
+    | "powerpoint-manifest";
   /** @description Select triggers */
   "bot-host-type-trigger"?:
     | "http-restify"

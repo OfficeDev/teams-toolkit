@@ -179,79 +179,83 @@ export function getOfficeAddinTemplateConfig(
   projectType: string,
   addinHost?: string
 ): IOfficeAddinHostConfig {
-  if (projectType === ProjectTypeOptions.officeXMLAddin().id && addinHost) {
-    OfficeAddinProjectConfig[addinHost];
+  if (
+    projectType === ProjectTypeOptions.officeXMLAddin().id &&
+    addinHost &&
+    addinHost !== OfficeAddinHostOptions.outlook().id
+  ) {
+    return OfficeAddinProjectConfig[addinHost];
   }
   return OfficeAddinProjectConfig["json"];
 }
 
-/**
- * Get all available Office XML Addin Project Options of one host
- * @param host Office host
- * @returns the detail proj options[] of the host
- */
-export function getOfficeXMLAddinHostProjectOptions(host: string): {
-  proj: string;
-  title: string;
-  detail: string;
-}[] {
-  const result = [];
-  for (const proj in OfficeAddinProjectConfig[host]) {
-    result.push({
-      proj,
-      title: OfficeAddinProjectConfig[host][proj].title,
-      detail: OfficeAddinProjectConfig[host][proj].detail,
-    });
-  }
-  return result;
-}
+// /**
+//  * Get all available Office XML Addin Project Options of one host
+//  * @param host Office host
+//  * @returns the detail proj options[] of the host
+//  */
+// export function getOfficeXMLAddinHostProjectOptions(host: string): {
+//   proj: string;
+//   title: string;
+//   detail: string;
+// }[] {
+//   const result = [];
+//   for (const proj in OfficeAddinProjectConfig[host]) {
+//     result.push({
+//       proj,
+//       title: OfficeAddinProjectConfig[host][proj].title,
+//       detail: OfficeAddinProjectConfig[host][proj].detail,
+//     });
+//   }
+//   return result;
+// }
 
-/**
- * Get all available Lang Options of one host and proj
- * @param host Office host
- * @param proj proj name
- * @returns the detail lang options[] of the proj
- */
-export function getOfficeXMLAddinHostProjectLangOptions(
-  host: string,
-  proj: string
-): {
-  id: string;
-  label: string;
-}[] {
-  const result = [];
-  for (const lang in OfficeAddinProjectConfig[host][proj].lang) {
-    result.push(
-      lang === "ts"
-        ? { id: "typescript", label: "TypeScript" }
-        : { id: "javascript", label: "JavaScript" }
-    );
-  }
-  return result;
-}
+// /**
+//  * Get all available Lang Options of one host and proj
+//  * @param host Office host
+//  * @param proj proj name
+//  * @returns the detail lang options[] of the proj
+//  */
+// export function getOfficeXMLAddinHostProjectLangOptions(
+//   host: string,
+//   proj: string
+// ): {
+//   id: string;
+//   label: string;
+// }[] {
+//   const result = [];
+//   for (const lang in OfficeAddinProjectConfig[host][proj].lang) {
+//     result.push(
+//       lang === "ts"
+//         ? { id: "typescript", label: "TypeScript" }
+//         : { id: "javascript", label: "JavaScript" }
+//     );
+//   }
+//   return result;
+// }
 
-/**
- * Get all available Lang Options of one host and proj
- * @param host Office host
- * @param proj proj name
- * @returns the detail lang options[] of the proj
- */
-export function getOfficeXMLAddinHostProjectTemplateName(host: string, proj: string): string {
-  return OfficeAddinProjectConfig[host][proj].localTemplate;
-}
+// /**
+//  * Get all available Lang Options of one host and proj
+//  * @param host Office host
+//  * @param proj proj name
+//  * @returns the detail lang options[] of the proj
+//  */
+// export function getOfficeXMLAddinHostProjectTemplateName(host: string, proj: string): string {
+//   return OfficeAddinProjectConfig[host][proj].localTemplate;
+// }
 
-/**
- * Get the Repo Info of the proj
- * @param host wxp
- * @param proj proj name
- * @param lang ts or js
- * @returns Repo Info
- */
-export function getOfficeXMLAddinHostProjectRepoInfo(
-  host: string,
-  proj: string,
-  lang: "ts" | "js"
-): string {
-  const result = OfficeAddinProjectConfig[host][proj].lang?.[lang];
-  return !!result ? result : "";
-}
+// /**
+//  * Get the Repo Info of the proj
+//  * @param host wxp
+//  * @param proj proj name
+//  * @param lang ts or js
+//  * @returns Repo Info
+//  */
+// export function getOfficeXMLAddinHostProjectRepoInfo(
+//   host: string,
+//   proj: string,
+//   lang: "ts" | "js"
+// ): string {
+//   const result = OfficeAddinProjectConfig[host][proj].lang?.[lang];
+//   return !!result ? result : "";
+// }

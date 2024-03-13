@@ -19,6 +19,7 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { HelperMethods } from "../officeAddin/helperMethods";
 import { getOfficeAddinTemplateConfig } from "./projectConfig";
+import { convertToLangKey } from "../utils";
 
 const COMPONENT_NAME = "office-xml-addin";
 const TELEMETRY_EVENT = "generate";
@@ -44,7 +45,7 @@ export class OfficeXMLAddinGenerator {
     const host = inputs[QuestionNames.OfficeAddinHost] as string;
     const capability = inputs[QuestionNames.Capabilities];
     const language = inputs[QuestionNames.ProgrammingLanguage] as "javascript" | "typescript";
-    const languageShort = language === "typescript" ? "ts" : "js";
+    const languageShort = convertToLangKey(language);
     const appName = inputs[QuestionNames.AppName] as string;
     const projectType = inputs[QuestionNames.ProjectType];
     const templteConfig = getOfficeAddinTemplateConfig(projectType, host);

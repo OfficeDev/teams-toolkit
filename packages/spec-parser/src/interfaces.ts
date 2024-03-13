@@ -82,7 +82,7 @@ export enum ErrorType {
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
-  MultipleAPIKeyNotSupported = "multiple-api-key-not-supported",
+  MultipleAuthNotSupported = "multiple-auth-not-supported",
 
   ListFailed = "list-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",
@@ -198,12 +198,12 @@ export interface ParseOptions {
   allowAPIKeyAuth?: boolean;
 
   /**
-   * If true, the parser will allow multiple parameters in the spec file.
+   * If true, the parser will allow multiple parameters in the spec file. Teams AI project would ignore this parameters and always true
    */
   allowMultipleParameters?: boolean;
 
   /**
-   * If true, the parser will allow OAuth2 authentication in the spec file.
+   * If true, the parser will allow OAuth2 authentication in the spec file. Currently only support OAuth2 with auth code flow.
    */
   allowOauth2?: boolean;
 
@@ -242,7 +242,7 @@ export interface ListAPIResult {
   auth?: OpenAPIV3.SecuritySchemeObject;
 }
 
-export interface AuthSchema {
+export interface AuthInfo {
   authSchema: OpenAPIV3.SecuritySchemeObject;
   name: string;
 }

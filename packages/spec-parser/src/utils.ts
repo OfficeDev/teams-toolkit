@@ -6,7 +6,7 @@ import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { ConstantString } from "./constants";
 import {
-  AuthSchema,
+  AuthInfo,
   CheckParamResult,
   ErrorResult,
   ErrorType,
@@ -155,6 +155,12 @@ export class Utils {
     return paramResult;
   }
 
+  static containMultipleMediaTypes(
+    bodyObject: OpenAPIV3.RequestBodyObject | OpenAPIV3.ResponseObject
+  ): boolean {
+    return Object.keys(bodyObject?.content || {}).length > 1;
+  }
+
   /**
    * Checks if the given API is supported.
    * @param {string} method - The HTTP method of the API.
@@ -180,9 +186,17 @@ export class Utils {
     if (pathObj) {
       if (options.allowMethods?.includes(method) && pathObj[method]) {
         const securities = pathObj[method].security;
-        const authArray = Utils.getAuthArray(securities, spec);
-        if (!Utils.isSupportedAuth(authArray, options)) {
-          return false;
+
+        const isTeamsAi = options.projectType === ProjectType.TeamsAi;
+        const isCopilot = options.projectType === ProjectType.Copilot;
+
+        // Teams AI project doesn't care about auth, it will use authProvider for user to implement
+        if (!isTeamsAi) {
+          const authArray = Utils.getAuthArray(securities, spec);
+
+          if (!Utils.isSupportedAuth(authArray, options)) {
+            return false;
+          }
         }
 
         const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
@@ -194,14 +208,19 @@ export class Utils {
         const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
         const requestJsonBody = requestBody?.content["application/json"];
 
-        const mediaTypesCount = Object.keys(requestBody?.content || {}).length;
-        if (mediaTypesCount > 1) {
+        if (!isTeamsAi && Utils.containMultipleMediaTypes(requestBody)) {
           return false;
         }
 
-        const responseJson = Utils.getResponseJson(operationObject);
+        const responseJson = Utils.getResponseJson(operationObject, isTeamsAi);
+
         if (Object.keys(responseJson).length === 0) {
           return false;
+        }
+
+        // Teams AI project doesn't care about request parameters/body
+        if (isTeamsAi) {
+          return true;
         }
 
         let requestBodyParamResult = {
@@ -209,8 +228,6 @@ export class Utils {
           optionalNum: 0,
           isValid: true,
         };
-
-        const isCopilot = options.projectType === ProjectType.Copilot;
 
         if (requestJsonBody) {
           const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
@@ -267,7 +284,7 @@ export class Utils {
     return false;
   }
 
-  static isSupportedAuth(authSchemaArray: AuthSchema[][], options: ParseOptions): boolean {
+  static isSupportedAuth(authSchemaArray: AuthInfo[][], options: ParseOptions): boolean {
     if (authSchemaArray.length === 0) {
       return true;
     }
@@ -289,14 +306,14 @@ export class Utils {
           } else if (
             !options.allowAPIKeyAuth &&
             options.allowOauth2 &&
-            Utils.isBearerTokenAuth(auths[0].authSchema)
+            Utils.isOAuthWithAuthCodeFlow(auths[0].authSchema)
           ) {
             return true;
           } else if (
             options.allowAPIKeyAuth &&
             options.allowOauth2 &&
             (Utils.isAPIKeyAuth(auths[0].authSchema) ||
-              Utils.isBearerTokenAuth(auths[0].authSchema))
+              Utils.isOAuthWithAuthCodeFlow(auths[0].authSchema))
           ) {
             return true;
           }
@@ -311,25 +328,25 @@ export class Utils {
     return authSchema.type === "apiKey";
   }
 
-  static isBearerTokenAuth(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
-    return (
-      authSchema.type === "oauth2" ||
-      authSchema.type === "openIdConnect" ||
-      (authSchema.type === "http" && authSchema.scheme === "bearer")
-    );
+  static isOAuthWithAuthCodeFlow(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
+    if (authSchema.type === "oauth2" && authSchema.flows && authSchema.flows.authorizationCode) {
+      return true;
+    }
+
+    return false;
   }
 
   static getAuthArray(
     securities: OpenAPIV3.SecurityRequirementObject[] | undefined,
     spec: OpenAPIV3.Document
-  ): AuthSchema[][] {
-    const result: AuthSchema[][] = [];
+  ): AuthInfo[][] {
+    const result: AuthInfo[][] = [];
     const securitySchemas = spec.components?.securitySchemes;
     if (securities && securitySchemas) {
       for (let i = 0; i < securities.length; i++) {
         const security = securities[i];
 
-        const authArray: AuthSchema[] = [];
+        const authArray: AuthInfo[] = [];
         for (const name in security) {
           const auth = securitySchemas[name] as OpenAPIV3.SecuritySchemeObject;
           authArray.push({
@@ -354,21 +371,21 @@ export class Utils {
   }
 
   static getResponseJson(
-    operationObject: OpenAPIV3.OperationObject | undefined
+    operationObject: OpenAPIV3.OperationObject | undefined,
+    isTeamsAiProject = false
   ): OpenAPIV3.MediaTypeObject {
     let json: OpenAPIV3.MediaTypeObject = {};
 
     for (const code of ConstantString.ResponseCodeFor20X) {
       const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
 
-      const mediaTypesCount = Object.keys(responseObject?.content || {}).length;
-      if (mediaTypesCount > 1) {
-        return {};
-      }
-
       if (responseObject?.content?.["application/json"]) {
         json = responseObject.content["application/json"];
-        break;
+        if (!isTeamsAiProject && Utils.containMultipleMediaTypes(responseObject)) {
+          json = {};
+        } else {
+          break;
+        }
       }
     }
 
@@ -674,7 +691,6 @@ export class Utils {
     for (const path in paths) {
       const methods = paths[path];
       for (const method in methods) {
-        // For developer preview, only support GET operation with only 1 parameter without auth
         if (Utils.isSupportedApi(method, path, spec, options)) {
           const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
           result[`${method.toUpperCase()} ${path}`] = operationObject;

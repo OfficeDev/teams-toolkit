@@ -1,16 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ProjectType } from "@microsoft/m365-spec-parser";
+import { OfficeAddinHostOptions, ProjectTypeOptions } from "../../../question";
+
 /**
  * @author zyun@microsoft.com
  */
 
-interface IOfficeXMLAddinHostConfig {
+interface IOfficeAddinHostConfig {
   [property: string]: {
     title: string;
     detail: string;
     localTemplate: string;
-    framework?: {
+    manifestPath?: string;
+    framework: {
       [property: string]: {
         typescript?: string;
         javascript?: string;
@@ -19,8 +23,8 @@ interface IOfficeXMLAddinHostConfig {
   };
 }
 
-interface IOfficeXMLAddinProjectConfig {
-  [property: string]: IOfficeXMLAddinHostConfig;
+interface IOfficeAddinProjectConfig {
+  [property: string]: IOfficeAddinHostConfig;
 }
 
 const CommonProjectConfig = {
@@ -59,9 +63,9 @@ const CommonProjectConfig = {
   },
 };
 
-const OfficeXMLAddinProjectConfig: IOfficeXMLAddinProjectConfig = {
-  outlook: {
-    "outlook-taskpane": {
+export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
+  json: {
+    "json-taskpane": {
       title: "core.newTaskpaneAddin.label",
       detail: "core.newTaskpaneAddin.detail",
       localTemplate: "",
@@ -78,6 +82,7 @@ const OfficeXMLAddinProjectConfig: IOfficeXMLAddinProjectConfig = {
           javascript: "https://aka.ms/teams-toolkit/office-addin-taskpane/js-react",
         },
       },
+      manifestPath: "manifest.json",
     },
   },
   word: {
@@ -170,6 +175,16 @@ const OfficeXMLAddinProjectConfig: IOfficeXMLAddinProjectConfig = {
   },
 };
 
+export function getOfficeAddinTemplateConfig(
+  projectType: string,
+  addinHost?: string
+): IOfficeAddinHostConfig {
+  if (projectType === ProjectTypeOptions.officeXMLAddin().id && addinHost) {
+    OfficeAddinProjectConfig[addinHost];
+  }
+  return OfficeAddinProjectConfig["json"];
+}
+
 /**
  * Get all available Office XML Addin Project Options of one host
  * @param host Office host
@@ -181,11 +196,11 @@ export function getOfficeXMLAddinHostProjectOptions(host: string): {
   detail: string;
 }[] {
   const result = [];
-  for (const proj in OfficeXMLAddinProjectConfig[host]) {
+  for (const proj in OfficeAddinProjectConfig[host]) {
     result.push({
       proj,
-      title: OfficeXMLAddinProjectConfig[host][proj].title,
-      detail: OfficeXMLAddinProjectConfig[host][proj].detail,
+      title: OfficeAddinProjectConfig[host][proj].title,
+      detail: OfficeAddinProjectConfig[host][proj].detail,
     });
   }
   return result;
@@ -205,7 +220,7 @@ export function getOfficeXMLAddinHostProjectLangOptions(
   label: string;
 }[] {
   const result = [];
-  for (const lang in OfficeXMLAddinProjectConfig[host][proj].lang) {
+  for (const lang in OfficeAddinProjectConfig[host][proj].lang) {
     result.push(
       lang === "ts"
         ? { id: "typescript", label: "TypeScript" }
@@ -222,7 +237,7 @@ export function getOfficeXMLAddinHostProjectLangOptions(
  * @returns the detail lang options[] of the proj
  */
 export function getOfficeXMLAddinHostProjectTemplateName(host: string, proj: string): string {
-  return OfficeXMLAddinProjectConfig[host][proj].localTemplate;
+  return OfficeAddinProjectConfig[host][proj].localTemplate;
 }
 
 /**
@@ -237,6 +252,6 @@ export function getOfficeXMLAddinHostProjectRepoInfo(
   proj: string,
   lang: "ts" | "js"
 ): string {
-  const result = OfficeXMLAddinProjectConfig[host][proj].lang?.[lang];
+  const result = OfficeAddinProjectConfig[host][proj].lang?.[lang];
   return !!result ? result : "";
 }

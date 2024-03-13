@@ -548,7 +548,8 @@ export class CapabilityOptions {
     if (
       projectType === ProjectTypeOptions.outlookAddin().id ||
       projectType === ProjectTypeOptions.officeAddin().id ||
-      host === OfficeAddinHostOptions.outlook().id
+      (projectType === ProjectTypeOptions.officeXMLAddin().id &&
+        host === OfficeAddinHostOptions.outlook().id)
     ) {
       const capabilityValue = OfficeAddinProjectConfig.json["json-taskpane"];
       items.push({

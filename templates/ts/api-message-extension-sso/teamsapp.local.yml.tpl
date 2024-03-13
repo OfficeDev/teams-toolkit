@@ -4,13 +4,23 @@
 version: 1.0.0
 
 provision:
-  - uses: aadApp/create # Creates a new Azure Active Directory (AAD) app to authenticate users if the environment variable that stores clientId is empty
+  # Creates a new Microsoft Entra app to authenticate users if
+  # the environment variable that stores clientId is empty
+  - uses: aadApp/create
     with:
-      name: me-sso-test-aad # Note: when you run aadApp/update, the AAD app name will be updated based on the definition in manifest. If you don't want to change the name, make sure the name in AAD manifest is the same with the name defined here.
-      generateClientSecret: false # If the value is false, the action will not generate client secret for you
-      signInAudience: "AzureADMyOrg" # Authenticate users with a Microsoft work or school account in your organization's Azure AD tenant (for example, single tenant).
+      # Note: when you run aadApp/update, the Microsoft Entra app name will be updated
+      # based on the definition in manifest. If you don't want to change the
+      # name, make sure the name in Microsoft Entra manifest is the same with the name
+      # defined here.
+      name: {{appName}}
+      # If the value is false, the action will not generate client secret for you
+      generateClientSecret: false
+      # Authenticate users with a Microsoft work or school account in your
+      # organization's Microsoft Entra tenant (for example, single tenant).
+      signInAudience: AzureADMyOrg
+    # Write the information of created resources into environment file for the
+    # specified environment variable(s).
     writeToEnvironmentFile:
-      # Write the information of created resources into environment file for the specified environment variable(s).
       clientId: AAD_APP_CLIENT_ID
       objectId: AAD_APP_OBJECT_ID
       tenantId: AAD_APP_TENANT_ID

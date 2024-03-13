@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.1.0/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.0.0
+version: 1.1.0
 
 provision:
   # Creates a new Microsoft Entra app to authenticate users if
@@ -37,12 +37,11 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-  # Set required variables for local launch
+  # Set OPENAPI_SERVER_URL for local launch
   - uses: script
     with:
       run:
-        echo "::set-teamsfx-env FUNC_NAME=repair";
-        echo "::set-teamsfx-env FUNC_ENDPOINT=http://localhost:7071";
+        echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
 
   # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
   # manifest file to determine which Microsoft Entra app to update.
@@ -91,21 +90,21 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+{{^isNewProjectTypeEnabled}}
 
-deploy:
-  # Install development tool(s)
-  - uses: devTool/install
+  # Create or update debug profile in lauchsettings file
+  - uses: file/createOrUpdateJsonFile
     with:
-      func:
-        version: ~4.0.5455
-        symlinkDir: ./devTools/func
-    # Write the information of installed development tool(s) into environment
-    # file for the specified environment variable(s).
-    writeToEnvironmentFile:
-      funcPath: FUNC_PATH
-
-  # Run npm command
-  - uses: cli/runNpmCommand
-    name: install dependencies
-    with:
-      args: install --no-audit
+      target: ./Properties/launchSettings.json
+      content:
+        profiles:
+          Microsoft Teams (browser):
+            commandName: "Project"
+            commandLineArgs: "host start --port 5130 --pause-on-error"
+            dotnetRunMessages: true
+            launchBrowser: true
+            launchUrl: "https://teams.microsoft.com?appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}"
+            environmentVariables:
+              ASPNETCORE_ENVIRONMENT: "Development"
+            hotReloadProfile: "aspnetcore"
+{{/isNewProjectTypeEnabled}}

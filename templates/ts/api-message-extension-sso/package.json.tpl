@@ -12,12 +12,12 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@azure/functions": "^4.1.0"
+        "@azure/functions": "^4.3.0"
     },
     "devDependencies": {
         "env-cmd": "^10.1.0",
-        "@types/node": "^18.11.9"
-        "typescript": "^5.2.2"
+        "@types/node": "^20.11.26",
+        "typescript": "^5.4.2"
     },
     "main": "dist/src/functions/*.js"
 }

@@ -6,7 +6,7 @@ if [ -z $stringarray ]; then
     echo "for all the pkgs"
     exit 0
 else 
-    git update-index --assume-unchanged "lerna.json"
+    git update-index --assume-unchanged "pnpm-workspace.yaml"
     content=$(jq ".common" .github/scripts/lernaDeps.json)
     for i in "${stringarray[@]}"
     do :
@@ -18,9 +18,13 @@ else
         pkgContent=$(jq --arg a "$i" '.[$a]' -r .github/scripts/lernaDeps.json)
         content=$(jq --argjson arr1 "$content" --argjson arr2 "$pkgContent" -n '$arr1 + $arr2 | unique')
     done
+    content=$(echo $content|jq -r '.[]')
     echo ======== deps: $content ==========
-    lernaBase=$(jq 'del(.packages)' lerna.json)
-    jq --argjson arr1 "$content" --argjson arr2 "$lernaBase" -n '$arr2 + {"packages": $arr1}' > tmp.$$.json
-    mv tmp.$$.json lerna.json
-    cat lerna.json
+    echo "packages:" > tmp.$$.yaml
+    for key in $content
+    do
+        echo "- $key" >> tmp.$$.yaml
+    done
+    mv tmp.$$.yaml pnpm-workspace.yaml
+    cat pnpm-workspace.yaml
 fi

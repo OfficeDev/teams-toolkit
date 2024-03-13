@@ -25,13 +25,14 @@ import { Executor } from "../../utils/executor";
 import { expect } from "chai";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
+import { initDebugPort } from "../../utils/commonUtils";
+import os from "os";
 
 describe("Local Debug Tests", function () {
   this.timeout(Timeout.testCase);
   let localDebugTestContext: LocalDebugTestContext;
-  let devtunnelProcess: ChildProcessWithoutNullStreams;
-  let debugProcess: ChildProcessWithoutNullStreams;
-  let tunnelName = "";
+  let devtunnelProcess: ChildProcessWithoutNullStreams | null;
+  let debugProcess: ChildProcessWithoutNullStreams | null;
   let successFlag = true;
   let errorMessage = "";
 
@@ -42,34 +43,15 @@ describe("Local Debug Tests", function () {
     await localDebugTestContext.before();
   });
 
-  afterEach(async function () {
+  after(async function () {
     this.timeout(Timeout.finishTestCase);
-    if (debugProcess) {
-      setTimeout(() => {
-        debugProcess.kill("SIGTERM");
-      }, 2000);
-    }
-
-    if (tunnelName) {
-      setTimeout(() => {
-        devtunnelProcess.kill("SIGTERM");
-      }, 2000);
-      Executor.deleteTunnel(
-        tunnelName,
-        (data) => {
-          if (data) {
-            console.log(data);
-          }
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
-    }
     await localDebugTestContext.after(false, true);
-    this.timeout(Timeout.finishAzureTestCase);
-    if (successFlag) process.exit(0);
-    else process.exit(1);
+    setTimeout(() => {
+      if (os.type() === "Windows_NT") {
+        if (successFlag) process.exit(0);
+        else process.exit(1);
+      }
+    }, 30000);
   });
 
   it(
@@ -106,26 +88,9 @@ describe("Local Debug Tests", function () {
         }
 
         // cli preview
-        console.log("======= debug with cli ========");
-        const tunnel = Executor.debugBotFunctionPreparation(projectPath);
-        tunnelName = tunnel.tunnelName;
-        devtunnelProcess = tunnel.devtunnelProcess;
-        await new Promise((resolve) => setTimeout(resolve, 60 * 1000));
-        debugProcess = Executor.debugProject(
-          projectPath,
-          "local",
-          true,
-          process.env,
-          (data) => {
-            if (data) {
-              console.log(data);
-            }
-          },
-          (error) => {
-            console.log(error);
-          }
-        );
-        await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000));
+        const res = await Executor.cliPreview(projectPath, true);
+        devtunnelProcess = res.devtunnelProcess;
+        debugProcess = res.debugProcess;
         {
           const page = await reopenPage(
             localDebugTestContext.context!,
@@ -142,6 +107,12 @@ describe("Local Debug Tests", function () {
         await VSBrowser.instance.takeScreenshot(getScreenshotName("error"));
         await VSBrowser.instance.driver.sleep(Timeout.playwrightDefaultTimeout);
       }
+
+      // kill process
+      await Executor.closeProcess(debugProcess);
+      await Executor.closeProcess(devtunnelProcess);
+      await initDebugPort();
+
       expect(successFlag, errorMessage).to.true;
       console.log("debug finish!");
     }

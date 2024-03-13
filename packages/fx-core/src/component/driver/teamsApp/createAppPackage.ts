@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Colors, FxError, Platform, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Colors, FxError, Result, err, ok } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";

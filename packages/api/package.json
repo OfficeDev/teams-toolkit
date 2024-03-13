@@ -65,6 +65,7 @@
     "@azure/core-auth": "^1.4.0",
     "@microsoft/teams-manifest": "workspace:*",
     "axios": "^1.6.7",
+    "chai": "^4.3.4",
     "jsonschema": "^1.4.0",
     "neverthrow": "^3.2.0",
     "tslib": "^2.3.1"

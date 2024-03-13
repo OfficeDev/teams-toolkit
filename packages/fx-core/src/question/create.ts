@@ -27,6 +27,7 @@ import {
   isCopilotPluginEnabled,
   isApiCopilotPluginEnabled,
   isApiKeyEnabled,
+  isTdpTemplateCliTestEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -380,13 +381,18 @@ export class CapabilityOptions {
   }
 
   static dotnetCaps(inputs?: Inputs): OptionItem[] {
-    return [
+    const capabilities = [
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.bots(inputs, true),
       CapabilityOptions.nonSsoTab(),
       CapabilityOptions.tab(),
       ...CapabilityOptions.collectMECaps(),
     ];
+    if (isTdpTemplateCliTestEnabled()) {
+      capabilities.push(CapabilityOptions.me());
+    }
+
+    return capabilities;
   }
 
   /**
@@ -420,7 +426,16 @@ export class CapabilityOptions {
     return [
       CapabilityOptions.copilotPluginNewApi(),
       CapabilityOptions.copilotPluginApiSpec(),
-      CapabilityOptions.copilotPluginOpenAIPlugin(),
+      // CapabilityOptions.copilotPluginOpenAIPlugin(),
+    ];
+  }
+
+  static tdpIntegrationCapabilities(): OptionItem[] {
+    // templates that are used by TDP integration only
+    return [
+      CapabilityOptions.me(),
+      CapabilityOptions.botAndMe(),
+      CapabilityOptions.nonSsoTabAndBot(),
     ];
   }
 
@@ -433,6 +448,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
       ...CapabilityOptions.copilotPlugins(),
+      ...CapabilityOptions.tdpIntegrationCapabilities(),
     ];
 
     return capabilityOptions;
@@ -449,6 +465,10 @@ export class CapabilityOptions {
     ];
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+    }
+    if (isTdpTemplateCliTestEnabled()) {
+      // test templates that are used by TDP integration only
+      capabilityOptions.push(...CapabilityOptions.tdpIntegrationCapabilities());
     }
     return capabilityOptions;
   }
@@ -653,7 +673,7 @@ export class MeArchitectureOptions {
         "core.createProjectQuestion.capability.copilotPluginNewApiOption.label"
       ),
       detail: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginNewApiOption.detail"
+        "core.createProjectQuestion.capability.messageExtensionNewApiOption.detail"
       ),
     };
   }
@@ -665,7 +685,7 @@ export class MeArchitectureOptions {
         "core.createProjectQuestion.capability.copilotPluginApiSpecOption.label"
       ),
       detail: getLocalizedString(
-        "core.createProjectQuestion.capability.copilotPluginApiSpecOption.detail"
+        "core.createProjectQuestion.capability.messageExtensionApiSpecOption.detail"
       ),
     };
   }
@@ -1116,7 +1136,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
   const programmingLanguageQuestion: SingleSelectQuestion = {
     name: QuestionNames.ProgrammingLanguage,
     cliShortName: "l",
-    title: "Programming Language",
+    title: getLocalizedString("core.ProgrammingLanguageQuestion.title"),
     type: "singleSelect",
     staticOptions: [
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
@@ -1179,7 +1199,7 @@ export function appNameQuestion(): TextInputQuestion {
     type: "text",
     name: QuestionNames.AppName,
     cliShortName: "n",
-    title: "Application name",
+    title: getLocalizedString("core.question.appName.title"),
     required: true,
     default: async (inputs: Inputs) => {
       let defaultName = undefined;
@@ -1235,7 +1255,7 @@ export function appNameQuestion(): TextInputQuestion {
         return undefined;
       },
     },
-    placeholder: "Application name",
+    placeholder: getLocalizedString("core.question.appName.placeholder"),
   };
   return question;
 }
@@ -1483,7 +1503,7 @@ function selectBotIdsQuestion(): MultiSelectQuestion {
 const maximumLengthOfDetailsErrorMessageInInputBox = 90;
 
 export function apiSpecLocationQuestion(includeExistingAPIs = true): SingleFileOrInputQuestion {
-  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will loose correlation id when user accepts the value.
+  const correlationId = Correlator.getId(); // This is a workaround for VSCode which will lose correlation id when user accepts the value.
   const validationOnAccept = async (
     input: string,
     inputs?: Inputs
@@ -1659,17 +1679,45 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
 
 export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
   // export for unit test
+  let placeholder = "";
+
+  const isApiPlugin = (inputs?: Inputs): boolean => {
+    return (
+      !!inputs && inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id
+    );
+  };
+
   return {
     type: "multiSelect",
     name: QuestionNames.ApiOperation,
-    title: getLocalizedString("core.createProjectQuestion.apiSpec.operation.title"),
+    title: (inputs: Inputs) => {
+      return isApiPlugin(inputs)
+        ? getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
+        : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title");
+    },
     cliDescription: "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
-    placeholder: includeExistingAPIs
-      ? isApiKeyEnabled()
-        ? getLocalizedString("core.createProjectQuestion.apiSpec.operation.apikey.placeholder")
-        : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
-      : getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"),
+    placeholder: (inputs: Inputs) => {
+      const isApiPlugin =
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id;
+      if (!includeExistingAPIs) {
+        placeholder = getLocalizedString(
+          "core.createProjectQuestion.apiSpec.operation.placeholder.skipExisting"
+        );
+      } else if (isApiPlugin) {
+        placeholder = ""; // TODO: add placeholder for api plugin
+      } else if (isApiKeyEnabled()) {
+        placeholder = getLocalizedString(
+          "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
+        );
+      } else {
+        placeholder = getLocalizedString(
+          "core.createProjectQuestion.apiSpec.operation.placeholder"
+        );
+      }
+
+      return placeholder;
+    },
     forgetLastValue: true,
     staticOptions: [],
     validation: {
@@ -1806,10 +1854,10 @@ export function capabilitySubTree(): IQTreeNode {
             },
             data: apiSpecLocationQuestion(),
           },
-          {
-            condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
-            data: openAIPluginManifestLocationQuestion(),
-          },
+          // {
+          //   condition: { equals: CapabilityOptions.copilotPluginOpenAIPlugin().id },
+          //   data: openAIPluginManifestLocationQuestion(),
+          // },
           {
             data: apiOperationQuestion(),
           },
@@ -1925,9 +1973,6 @@ export function createProjectCliHelpNode(): IQTreeNode {
   ];
   if (!isCLIDotNetEnabled()) {
     deleteNames.push(QuestionNames.Runtime);
-  }
-  if (!isApiCopilotPluginEnabled()) {
-    deleteNames.push(QuestionNames.CopilotPluginExistingApi);
   }
   trimQuestionTreeForCliHelp(node, deleteNames);
   return node;

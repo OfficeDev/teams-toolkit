@@ -3,13 +3,13 @@
 Teams Toolkit CLI is a text-based command line interface that accelerates Teams application development. It aims you to provide keyboard-centric experience when building Teams applications. It also enables CI/CD scenario where CLI can be easily integrated in scripts for automation.
 
 > [!IMPORTANT]
-> This user manual has been moved to [Teams platform development documentation](https://aka.ms/teams-toolkit-cli) and will no longer be updated. Please refer to the new documentation for the latest information.
+> This user manual has been moved to [Teams platform development documentation](https://aka.ms/teamsfx-toolkit-cli) and will no longer be updated. Please refer to the new documentation for the latest information.
 
 ## Additional References
 
 * [Source code](https://github.com/OfficeDev/teamsapp/tree/dev/packages/cli)
 * [Package (NPM)](https://www.npmjs.com/package/@microsoft/teamsapp-cli)
-* [Official Documentation](https://aka.ms/teams-toolkit-cli)
+* [Official Documentation](https://aka.ms/teamsfx-toolkit-cli)
 
 ## Feedback
 

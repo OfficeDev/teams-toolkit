@@ -6,7 +6,11 @@ Azure Functions are a great way to add server-side behaviors to any Teams applic
 
 - [Node.js](https://nodejs.org/), supported versions: 16, 18
 - A Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
+<<<<<<< HEAD
 - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teams-toolkit-cli)
+=======
+- [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-toolkit-cli)
+>>>>>>> main
 
 ## Develop
 
@@ -40,7 +44,6 @@ const response = await axios.default.get(endpoint + "/api/" + functionName, {
 ### Add More Functions
 
 - From Visual Studio Code, open the command palette, select `Teams: Add Resources` and select `Azure Function App`.
-- From TeamsFx CLI: run command `teamsapp resource add azure-function --function-name <your-function-name>` in your project directory.
 
 ## Change Node.js runtime version
 

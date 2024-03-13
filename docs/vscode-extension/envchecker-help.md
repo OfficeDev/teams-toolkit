@@ -176,7 +176,7 @@ To resolve this issue, you can use your own tunneling service, please follow bel
     * Use Settings in Visual Studio Code
 
     ![VSCode skip ngrok](../images/fx-core/localdebug/vsc-skip-ngrok-2.png)
-    * Or execute command `teamsfx config set validate-ngrok off` with [TeamsFx CLI](https://aka.ms/teams-toolkit-cli) in the terminal.
+    * Or execute command `teamsfx config set validate-ngrok off` with [TeamsFx CLI](https://aka.ms/teamsfx-toolkit-cli) in the terminal.
 1. Set the configurations in *.fx/configs/config.local.json* under the project root, then start debugging.
 
     ``` json

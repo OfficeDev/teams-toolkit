@@ -17,7 +17,7 @@ import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clien
 import { ApiSecretRegistrationAppType } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { setTools } from "../../../../src/core/globalVars";
-import { SpecParser } from "../../../../src/common/spec-parser";
+import { SpecParser } from "@microsoft/m365-spec-parser";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;

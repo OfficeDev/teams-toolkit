@@ -183,6 +183,26 @@ describe("AadAppClient", async () => {
     });
   });
 
+  describe("deleteAadApp", async () => {
+    let aadAppClient: AadAppClient;
+    let axiosInstance: AxiosInstance;
+    beforeEach(() => {
+      axiosInstance = mockAxiosCreate();
+      doNotWaitBetweenEachRetry();
+      aadAppClient = new AadAppClient(new MockedM365Provider(), new MockedLogProvider());
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("happy", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onDelete(`https://graph.microsoft.com/v1.0/applications/test-id`).reply(200);
+      await aadAppClient.deleteAadApp("test-id");
+    });
+  });
+
   describe("generateClientSecret", async () => {
     let aadAppClient: AadAppClient;
     let axiosInstance: AxiosInstance;

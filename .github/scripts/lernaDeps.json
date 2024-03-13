@@ -5,6 +5,7 @@
     "packages/manifest",
     "packages/api",
     "packages/fx-core",
+    "packages/spec-parser",
     "packages/cli",
     "packages/metrics-ts",
     "templates"
@@ -13,6 +14,8 @@
     "packages/manifest",
     "packages/api",
     "packages/fx-core",
+    "packages/spec-parser",
+    "packages/vscode-ui",
     "packages/vscode-extension",
     "templates"
   ],
@@ -20,6 +23,7 @@
     "packages/manifest",
     "packages/api",
     "packages/fx-core",
+    "packages/spec-parser",
     "packages/server",
     "templates"
   ],
@@ -32,6 +36,7 @@
     "packages/manifest",
     "packages/api",
     "packages/fx-core",
+    "packages/spec-parser",
     "packages/cli",
     "packages/tests",
     "packages/metrics-ts",
@@ -43,5 +48,9 @@
   "ui": [
     "packages/api",
     "packages/vscode-ui"
+  ],
+  "spec-parser": [
+    "packages/spec-parser",
+    "packages/manifest"
   ]
 }

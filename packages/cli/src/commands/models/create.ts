@@ -28,11 +28,6 @@ import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryE
 import { createSampleCommand } from "./createSample";
 
 function adjustOptions(options: CLICommandOption[]) {
-  if (!isApiCopilotPluginEnabled()) {
-    //skip copilot plugin options if API copilot plugin is not enabled
-    const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-    options = options.filter((option) => !copilotPluginQuestionNames.includes(option.name));
-  }
   for (const option of options) {
     if (option.type === "string" && option.name === CliQuestionName.Capability) {
       // use dynamic options for capability question

@@ -99,6 +99,7 @@ export enum TelemetryEvent {
   EnvList = "env-list",
   CreateNewEnvironmentStart = "create-new-environment-start",
   CreateNewEnvironment = "create-new-environment",
+  ResetEnvironment = "reset-environment",
 
   AddSsoStart = "add-sso-start",
   AddSso = "add-sso",

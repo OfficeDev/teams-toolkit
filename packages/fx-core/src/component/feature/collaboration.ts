@@ -23,7 +23,6 @@ import { addStartAndEndTelemetry } from "../driver/middleware/addStartAndEndTele
 import { AppStudioClient } from "../driver/teamsApp/clients/appStudioClient";
 import { AppStudioScopes, Constants } from "../driver/teamsApp/constants";
 import { AppUser } from "../driver/teamsApp/interfaces/appdefinitions/appUser";
-import { TelemetryUtils } from "../driver/teamsApp/utils/telemetry";
 
 const EventName = {
   grantPermission: "grant-permission",
@@ -130,9 +129,8 @@ export class AadCollaboration {
 export class TeamsCollaboration {
   private readonly tokenProvider: M365TokenProvider;
 
-  constructor(ctx: Context, m365TokenProvider: M365TokenProvider) {
+  constructor(m365TokenProvider: M365TokenProvider) {
     this.tokenProvider = m365TokenProvider;
-    TelemetryUtils.init(ctx);
   }
   @hooks([
     ErrorContextMW({ source: "Teams", component: "TeamsCollaboration" }),

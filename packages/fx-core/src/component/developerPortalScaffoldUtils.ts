@@ -33,7 +33,6 @@ import {
 } from "./driver/teamsApp/constants";
 import { AppDefinition } from "./driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "./driver/teamsApp/utils/ManifestUtils";
-import { TelemetryUtils } from "./driver/teamsApp/utils/telemetry";
 import {
   isBot,
   isBotAndBotBasedMessageExtension,
@@ -90,7 +89,6 @@ async function updateManifest(
   appDefinition: AppDefinition,
   inputs: Inputs
 ): Promise<Result<undefined, FxError>> {
-  TelemetryUtils.init(ctx);
   const res = await appStudio.getAppPackage(
     appDefinition.teamsAppId!,
     ctx.tokenProvider!.m365TokenProvider,

@@ -43,7 +43,6 @@ import set from "lodash/set";
 import { actionName as createAppPackageActionName } from "./createAppPackage";
 import { actionName as configureTeamsAppActionName } from "./configure";
 import { FileNotFoundError, UserCancelError } from "../../../error/common";
-import { TelemetryUtils } from "./utils/telemetry";
 import { QuestionNames } from "../../../question";
 
 export async function checkIfAppInDifferentAcountSameTenant(
@@ -77,7 +76,6 @@ export async function updateManifestV3(
   ctx: Context,
   inputs: InputsWithProjectPath
 ): Promise<Result<Map<string, string>, FxError>> {
-  TelemetryUtils.init(ctx);
   const state = {
     ENV_NAME: process.env.TEAMSFX_ENV,
   };

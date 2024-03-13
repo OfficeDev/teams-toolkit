@@ -19,7 +19,6 @@ import { logMessageKeys } from "../aad/utility/constants";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
 import { addStartAndEndTelemetry } from "../middleware/addStartAndEndTelemetry";
-import { TelemetryUtils } from "../teamsApp/utils/telemetry";
 import { InvalidBotIdUserError } from "./error/invalidBotIdError";
 import {
   CreateOrUpdateBotFrameworkBotArgs,
@@ -101,7 +100,6 @@ export class CreateOrUpdateBotFrameworkBotDriver implements StepDriver {
         configuredChannels,
       };
 
-      TelemetryUtils.init(context); // AppStudioClient will use TelemetryUtils to send telemetry.
       const result = await createOrUpdateBotRegistration(
         context.m365TokenProvider,
         botRegistrationData,

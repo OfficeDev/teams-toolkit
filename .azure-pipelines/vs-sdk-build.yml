@@ -1,0 +1,83 @@
+# This pipeline was generated from the classic pipeline "Build Dotnet SDK Release Artifacts" on 2023-12-26 with https://aka.ms/1ESPTMigration (v1.1.0): https://dev.azure.com/mseng/VSIoT/_build?definitionId=11984
+#
+# The following items require attention:
+# Variables were exported from the classic pipeline, confirm that `variables` values do not contain private information. If a variable contains private information, follow the guidance on handling secret variables: https://learn.microsoft.com/en-us/azure/devops/pipelines/process/set-secret-variables
+# No trigger found, defaulting to 'none'. Update the trigger as needed.
+# No name found, setting the default value '$(Date:yyyyMMdd).$(Rev:r)'. This value determines how your pipeline runs are numbered. Update the name as needed: https://learn.microsoft.com/en-us/azure/devops/pipelines/process/run-number?view=azure-devops&tabs=yaml
+# The pipeline uses service connection "TeamsFx Nuget", you will need to grant the new pipeline access: https://dev.azure.com/mseng/VSIoT/_settings/adminservices?resourceId=ab0f26f6-d242-48e6-be26-4ad22b04a983
+
+name: $(Date:yyyyMMdd).$(Rev:r)
+variables:
+  - name: BuildConfiguration
+    value: Release
+  - name: skipComponentGovernanceDetection
+    value: true
+  - name: NUGET_PACKAGES
+    value: $(Pipeline.Workspace)/.nuget/packages
+  - name: TeamName
+    value: MetaOS China
+resources:
+  repositories:
+    - repository: self
+      type: git
+      ref: refs/heads/dev
+    - repository: MicroBuildTemplate
+      type: git
+      name: 1ESPipelineTemplates/MicroBuildTemplate
+      ref: refs/tags/release
+trigger: none
+extends:
+  template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
+  parameters:
+    sdl:
+      sourceAnalysisPool: $(PoolName)
+      eslint:
+        enabled: false
+      credscan:
+        suppressionsFile: .azure-pipelines/CredScanSuppressions.json
+    stages:
+      - stage: Stage
+        jobs:
+          - job: Job_1
+            pool: $(PoolName)
+            displayName: Agent job 1
+            templateContext:
+              # mb:
+              #   signing:
+              #     enabled: true
+              #     signType: $(SignType)
+              #     zipSources: false
+              outputs:
+                - output: pipelineArtifact
+                  artifactName: drop
+                  targetPath: $(Build.ArtifactStagingDirectory)
+                  displayName: "Publish Artifact: drop"
+                - output: pipelineArtifact
+                  artifactName: output
+                  targetPath: $(OutputPath)
+                  displayName: "Publish Artifact: output"
+                  condition: succeededOrFailed()
+            steps:
+              - checkout: self
+                fetchDepth: 1
+                fetchTags: true
+              - task: MicroBuildSigningPlugin@4
+                displayName: "Install Signing Plugin"
+                inputs:
+                  signType: $(SignType)
+                env:
+                  TeamName: MetaOS China
+              - task: UseDotNet@2
+                displayName: Use .NET Core 2.1
+                inputs:
+                  version: 2.1.x
+              - task: UseDotNet@2
+                displayName: Use .NET 6.0
+                inputs:
+                  version: 6.0.x
+              - task: DotNetCoreCLI@2
+                displayName: dotnet pack
+                inputs:
+                  command: pack
+                  searchPatternPack: packages/dotnet-sdk/src/TeamsFx/Microsoft.TeamsFx.csproj
+                  packDirectory: '$(OutputPath)'

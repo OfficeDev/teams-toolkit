@@ -35,6 +35,9 @@ on:
 
   pull_request_target:
 
+permissions:
+  actions: read
+
 jobs:
   setup:
     if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.get-coverage == 'false' ) || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx') }}
@@ -303,6 +306,8 @@ jobs:
           npm run test:e2e:clean
 
   rerun:
+    permissions:
+      actions: write
     needs: tear-down
     if: ${{ (github.event_name == 'schedule' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name == 'teamsfx-bot/TeamsFx')) && failure() && github.run_attempt < 5 }}
     runs-on: ubuntu-latest

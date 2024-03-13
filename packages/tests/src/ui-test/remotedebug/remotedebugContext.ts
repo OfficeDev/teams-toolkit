@@ -265,22 +265,17 @@ export async function reRunProvision() {
   await driver.sleep(waitTime);
 }
 
-export async function runDeploy(
-  waitTime: number = Timeout.tabDeploy,
-  spfx = false
-) {
+export async function runDeploy(waitTime: number = Timeout.tabDeploy) {
   const driver = VSBrowser.instance.driver;
   await clearNotifications();
   console.log("start to deploy");
   await execCommandIfExist(CommandPaletteCommands.DeployCommand);
 
   await driver.sleep(Timeout.shortTimeWait);
-  if (!spfx) {
-    const dialog = new ModalDialog();
-    console.log("click deploy button");
-    await dialog.pushButton("Deploy");
-    await driver.sleep(waitTime);
-  }
+  const dialog = new ModalDialog();
+  console.log("click deploy button");
+  await dialog.pushButton("Deploy");
+  await driver.sleep(waitTime);
 
   try {
     await getNotification(

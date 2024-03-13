@@ -17,6 +17,9 @@ class AssistDashboardTestCase extends CaseFactory {
   override async onValidate(page: Page): Promise<void> {
     return await validateDashboardTab(page);
   }
+  public override async onCliValidate(page: Page): Promise<void> {
+    return await validateDashboardTab(page);
+  }
 
   override async onAfterCreate(
     sampledebugContext: SampledebugContext,
@@ -46,6 +49,6 @@ new AssistDashboardTestCase(
   {
     dashboardFlag: true,
     skipInit: true,
-    debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk",
+    debug: "cli",
   } // [TODO] skipInit browser security block
 ).test();

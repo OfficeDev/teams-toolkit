@@ -28,6 +28,14 @@ describe("Package Service", () => {
         common: {},
       },
     },
+    interceptors: {
+      request: {
+        use: sandbox.stub(),
+      },
+      response: {
+        use: sandbox.stub(),
+      },
+    },
     delete: function <T = any, R = AxiosResponse<T>>(
       url: string,
       config?: AxiosRequestConfig
@@ -47,7 +55,7 @@ describe("Package Service", () => {
       const response = axiosPostResponses[url] as any;
       return response.message !== undefined ? Promise.reject(response) : Promise.resolve(response);
     },
-  } as AxiosInstance;
+  } as any as AxiosInstance;
 
   afterEach(() => {
     sandbox.restore();

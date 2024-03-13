@@ -6,7 +6,7 @@ import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/t
 import { Service } from "typedi";
 import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { SpecParser } from "../../../common/spec-parser";
+import { SpecParser } from "@microsoft/m365-spec-parser";
 import { AppStudioScopes, GraphScopes } from "../../../common/tools";
 import { InvalidActionInputError, assembleError } from "../../../error";
 import { QuestionNames } from "../../../question";
@@ -24,7 +24,6 @@ import {
   ApiSecretRegistrationUserAccessType,
 } from "../teamsApp/interfaces/ApiSecretRegistration";
 import { ApiSecretRegistrationClientSecret } from "../teamsApp/interfaces/ApiSecretRegistrationClientSecret";
-import { TelemetryUtils } from "../teamsApp/utils/telemetry";
 import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvalid";
 import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
 import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
@@ -57,7 +56,6 @@ export class CreateApiKeyDriver implements StepDriver {
 
     try {
       context.logProvider?.info(getLocalizedString(logMessageKeys.startExecuteDriver, actionName));
-      TelemetryUtils.init(context);
 
       if (!outputEnvVarNames) {
         throw new OutputEnvironmentVariableUndefinedError(actionName);

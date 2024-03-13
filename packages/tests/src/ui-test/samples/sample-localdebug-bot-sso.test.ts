@@ -18,6 +18,12 @@ class BotSSOTestCase extends CaseFactory {
       expected: Env.displayName,
     });
   }
+  public override async onCliValidate(page: Page): Promise<void> {
+    return await validateBot(page, {
+      botCommand: "show",
+      expected: Env.displayName,
+    });
+  }
 }
 
 new BotSSOTestCase(
@@ -26,5 +32,5 @@ new BotSSOTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartApplication],
-  { debug: ["cli", "ttk"][Math.floor(Math.random() * 2)] as "cli" | "ttk" }
+  { debug: "cli" }
 ).test();

@@ -11,6 +11,8 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
     env:
       SDK_INTEGRATION_TEST_SQL: ${{ secrets.SDK_INTEGRATION_TEST_SQL }}
       SDK_INTEGRATION_TEST_ACCOUNT: ${{ secrets.SDK_INTEGRATION_TEST_ACCOUNT }}

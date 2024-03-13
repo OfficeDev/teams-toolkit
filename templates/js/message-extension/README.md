@@ -1,8 +1,11 @@
-# Overview of Collect Form Input and Process Data template
+# Overview of Bot Based Message Extension template
 
 A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
-This app template implements action command that allows you to present your users with a modal pop-up called a task module in Teams. The task module collects or displays information, processes the interaction, and sends the information back to Teams.
+This app template has a search command, an action command and a link unfurling.
+1. The search command allows users to search an external system and share results through the compose message area of the Microsoft Teams client.
+2. The action command allows you to present your users with a modal pop-up called a task module in Teams. The task module collects or displays information, processes the interaction, and sends the information back to Teams.
+3. With link unfurling, an app can unfurl a link into an adaptive card when URLs with a particular domain are pasted into the compose message area in Microsoft Teams or email body in Outlook.
 
 ## Get started with the template
 
@@ -12,17 +15,27 @@ This app template implements action command that allows you to present your user
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+<<<<<<< HEAD
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli)
+=======
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
+>>>>>>> main
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-5. To trigger the Message Extension, you can click the `...` under compose message area to find your message extension.
+5. To trigger the Message Extension to invoke commands, you can:
+   1. In Teams: `@mention` Your message extension from the `search box area`, `@mention` your message extension from the `compose message area` or click the `...` under compose message area to find your message extension.
+   2. In Outlook: click the `More apps` icon under compose email area to find your message extension. Only search command and link unfurling works in Outlook.
+6. Paste a link ending with `.botframework.com` into compose message area in Teams or email body in Outlook. You should see an adaptive card unfurled.
 
-**Congratulations**! You are running an application that can share information in rich format by creating an Adaptive Card in Teams.
-
+<<<<<<< HEAD
 ![action-ME](https://github.com/OfficeDev/TeamsFx/assets/25220706/378ea4d7-9332-4aec-9f85-59891d086b80)
+=======
+![Search app demo](https://user-images.githubusercontent.com/11220663/167868361-40ffaaa3-0300-4313-ae22-0f0bab49c329.png)
+![action-ME](https://github.com/OfficeDev/TeamsFx/assets/11220663/4af867b1-0b4b-4665-ac43-badf56106d84)
+>>>>>>> main
 
 ## What's included in the template
 
@@ -37,8 +50,8 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`teamsBot.js`| Handles the business logic for this app template to query npm registry and return result list to Teams.|
-|`index.js`| `index.js` is used to setup and configure the Message Extension.|
+|`src/teamsBot.js`| Handles the business logic for this app template to query npm registry and return result list to Teams.|
+|`src/index.js`| `index.js` is used to setup and configure the Message Extension.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

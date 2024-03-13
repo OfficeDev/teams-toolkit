@@ -63,6 +63,7 @@ import * as utils from "../../src/utils";
 import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
+import { envResetCommand } from "../../src/commands/models/envReset";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -102,28 +103,6 @@ describe("CLI commands", () => {
         ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
       );
       const res = await getCreateCommand().handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-
-    it("createProjectOptions - API copilot plugin enabled", async () => {
-      mockedEnvRestore = mockedEnv({
-        DEVELOP_COPILOT_PLUGIN: "true",
-        API_COPILOT_PLUGIN: "true",
-      });
-      sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
-      sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
-      const ctx: CLIContext = {
-        command: { ...getCreateCommand(), fullName: "new" },
-        optionValues: {},
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await getCreateCommand().handler!(ctx);
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
-      assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 1
-      );
       assert.isTrue(res.isOk());
     });
 
@@ -359,6 +338,32 @@ describe("CLI commands", () => {
       };
       const res = await envListCommand.handler!(ctx);
       assert.isTrue(res.isErr());
+    });
+  });
+  describe("envResetCommand", async () => {
+    it("success with env", async () => {
+      sandbox.stub(envUtil, "resetEnv").resolves();
+      const ctx: CLIContext = {
+        command: { ...envAddCommand, fullName: "teamsapp env reset" },
+        optionValues: { env: "dev", projectPath: "." },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envResetCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("success with env file", async () => {
+      sandbox.stub(envUtil, "resetEnvFile").resolves();
+      const ctx: CLIContext = {
+        command: { ...envAddCommand, fullName: "teamsapp env reset" },
+        optionValues: { "env-file": ".env.dev" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await envResetCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
     });
   });
   describe("provisionCommand", async () => {

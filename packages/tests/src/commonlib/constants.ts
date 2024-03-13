@@ -40,7 +40,10 @@ export type CliCapabilities =
   | "bot"
   | "link-unfurling"
   | "search-message-extension"
-  | "collect-form-message-extension";
+  | "collect-form-message-extension"
+  | "message-extension"
+  | "BotAndMessageExtension"
+  | "TabNonSsoAndBot";
 export type CliTriggerType =
   | "http-restify"
   | "http-functions"

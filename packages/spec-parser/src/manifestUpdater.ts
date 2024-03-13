@@ -238,8 +238,6 @@ export class ManifestUpdater {
               },
             };
           } else if (Utils.isOAuthWithAuthCodeFlow(auth)) {
-            auth = auth as OpenAPIV3.OAuth2SecurityScheme;
-
             const safeOAuth2RegistrationId = Utils.getSafeRegistrationIdEnvName(
               `${authInfo.name}_${ConstantString.OAuthRegistrationIdPostFix}`
             );

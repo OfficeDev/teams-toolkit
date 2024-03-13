@@ -23,9 +23,9 @@ on:
     - cron: "0 16 * * *"
 
 permissions:
-      actions: read
-      contents: read
-      
+  actions: read
+  contents: read
+
 jobs:
   cd:
     runs-on: ubuntu-latest

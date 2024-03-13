@@ -45,6 +45,7 @@ import {
   Warning,
   err,
   ok,
+  Colors,
 } from "@microsoft/teamsfx-api";
 import * as commonTools from "@microsoft/teamsfx-core";
 import {
@@ -78,6 +79,8 @@ import {
   CapabilityOptions,
   isChatParticipantEnabled,
   pluginManifestUtils,
+  serviceScope,
+  getCopilotStatus,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -440,11 +443,27 @@ export async function updateAutoOpenGlobalKey(
   }
 }
 
+// There is an implicit protocol of args
+// args[0] string for telemetry event
+// args[1] object for question moedel. For example,
+//{
+//  capabilities: "custom-copilot-basic",
+//  project-type: "custom-copilot-type",
+//}
 export async function createProjectFromWalkthroughHandler(
   args?: any[]
 ): Promise<Result<CreateProjectResult, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  const result = await runCommand(Stage.create);
+
+  // parse questions model answers to inputs
+  const inputs = getSystemInputs();
+  if (args && args.length >= 2 && args[1]) {
+    Object.keys(args[1]).forEach((k) => {
+      inputs[k] = args[1][k];
+    });
+  }
+
+  const result = await runCommand(Stage.create, inputs);
   return result;
 }
 
@@ -1240,11 +1259,26 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
   });
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
 }
+
 export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unknown, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
     getWalkThroughId()
+  );
+  return Promise.resolve(ok(data));
+}
+
+export async function openBuildIntelligentAppsWalkthroughHandler(
+  ...args: unknown[]
+): Promise<Result<unknown, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.WalkThroughBuildIntelligentApps,
+    getTriggerFromProperty(args)
+  );
+  const data = await vscode.commands.executeCommand(
+    "workbench.action.openWalkthrough",
+    "TeamsDevApp.ms-teams-vscode-extension#buildIntelligentApps"
   );
   return Promise.resolve(ok(data));
 }
@@ -3005,7 +3039,61 @@ export function checkSideloadingCallback(args?: any[]): Promise<Result<null, FxE
   return Promise.resolve(ok(null));
 }
 
-export function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
+export async function checkCopilotAccess(): Promise<Result<null, FxError>> {
+  // check m365 login status, if not logged in, pop up a message
+  const status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+  if (!(status.isOk() && status.value.status === signedIn)) {
+    const message = localize("teamstoolkit.m365.needSignIn.message");
+    const signin = localize("teamstoolkit.common.signin");
+    const userSelected = await vscode.window.showInformationMessage(
+      message,
+      { modal: false },
+      signin
+    );
+
+    // user may cancel the follow.
+    if (userSelected) {
+      try {
+        await signInM365();
+      } catch (e) {
+        return Promise.resolve(wrapError(e as Error));
+      }
+    }
+  }
+
+  // if logged in, check copilot access with a different scopes
+  const copilotCheckServiceScope = process.env.SIDELOADING_SERVICE_SCOPE ?? serviceScope;
+  const copilotTokenRes = await M365TokenInstance.getAccessToken({
+    scopes: [copilotCheckServiceScope],
+  });
+  if (copilotTokenRes.isOk()) {
+    const hasCopilotAccess = await getCopilotStatus(copilotTokenRes.value, false);
+    if (hasCopilotAccess) {
+      VsCodeLogInstance.semLog({
+        content: "Your Microsoft 365 account has Copilot access enabled",
+        status: commonTools.SummaryConstant.Succeeded,
+      });
+    } else {
+      VsCodeLogInstance.semLog([
+        {
+          content:
+            "Microsoft 365 account administrator hasn't enabled Copilot access for this account",
+          status: commonTools.SummaryConstant.Failed,
+        },
+        {
+          content:
+            "Contact Your Teams administrator to resolve this issue by enrolling in Microsoft 365 Copilot Early Access program(https://learn.microsoft.com/en-us/microsoft-365-copilot/extensibility/prerequisites#prerequisites)",
+        },
+      ]);
+    }
+  } else {
+    return Promise.resolve(err(copilotTokenRes.error));
+  }
+
+  return Promise.resolve(ok(null));
+}
+
+export async function checkCopilotCallback(args?: any[]): Promise<Result<null, FxError>> {
   VS_CODE_UI.showMessage(
     "warn",
     localize("teamstoolkit.accountTree.copilotMessage"),

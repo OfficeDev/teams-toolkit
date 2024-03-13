@@ -813,7 +813,7 @@ describe("teamsApp/validateWithTestCases", async () => {
     const args: ValidateWithTestCasesArgs = {
       appPackagePath: "fakepath",
       showMessage: true,
-      showProgressBar: true,
+      showProgressBar: false,
     };
 
     const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;

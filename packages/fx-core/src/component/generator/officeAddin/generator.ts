@@ -21,20 +21,21 @@ import { OfficeAddinManifest } from "office-addin-manifest";
 import projectsJsonData from "./config/projectsJsonData";
 import * as childProcess from "child_process";
 import { promisify } from "util";
-import { CopyFileError } from "../../../core/error";
 import _ from "lodash";
 import { hooks } from "@feathersjs/hooks/lib";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { convertProject } from "office-addin-project";
 import { QuestionNames } from "../../../question/questionNames";
-import { getTemplate } from "../../../question/create";
+import { ProjectTypeOptions, getTemplate } from "../../../question/create";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
+import { isOfficeXMLAddinEnabled } from "../../../common/featureFlags";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
 const templateName = "office-addin";
+const templateNameForWXPO = "office-json-addin";
 
 export class OfficeAddinGenerator {
   @hooks([
@@ -62,7 +63,9 @@ export class OfficeAddinGenerator {
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,
-      templateName,
+      inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id
+        ? templateNameForWXPO
+        : templateName,
       langKey
     );
     if (templateRes.isErr()) return err(templateRes.error);
@@ -84,7 +87,11 @@ export class OfficeAddinGenerator {
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
     const language = inputs[QuestionNames.ProgrammingLanguage];
-    const host = inputs[QuestionNames.OfficeAddinHost];
+    const host = isOfficeXMLAddinEnabled()
+      ? inputs[QuestionNames.OfficeAddinCapability] === ProjectTypeOptions.outlookAddin().id
+        ? "Outlook"
+        : inputs[QuestionNames.OfficeAddinCapability]
+      : inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
     const importProgress = context.userInteraction.createProgressBar(
       getLocalizedString("core.generator.officeAddin.importProject.title"),
@@ -96,15 +103,28 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const jsonData = new projectsJsonData();
-        const projectLink = jsonData.getProjectDownloadLink(template, language);
+        const isOfficeAddin =
+          inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id;
+        const framework = isOfficeAddin ? inputs[QuestionNames.OfficeAddinFramework] : undefined;
+        const projectLink = isOfficeAddin
+          ? jsonData.getProjectDownloadLinkNew(template, language, framework)
+          : jsonData.getProjectDownloadLink(template, language);
 
         // Copy project template files from project repository
         if (projectLink) {
           await HelperMethods.downloadProjectTemplateZipFile(addinRoot, projectLink);
 
-          // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
-          const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
-          await OfficeAddinGenerator.childProcessExec(cmdLine);
+          if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
+            // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(
+              "wxpo" // support word, excel, powerpoint, outlook
+            )} ${"json"}`;
+            await OfficeAddinGenerator.childProcessExec(cmdLine);
+          } else {
+            // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
+            const cmdLine = `npm run convert-to-single-host --if-present -- ${_.toLower(host)}`;
+            await OfficeAddinGenerator.childProcessExec(cmdLine);
+          }
 
           const manifestPath = jsonData.getManifestPath(template) as string;
           // modify manifest guid and DisplayName

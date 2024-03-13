@@ -84,8 +84,7 @@ class ProjectTypeChecker {
         const manifestContent = await fs.readFile(filePath, "utf-8");
         const manifestObject = JSON.parse(manifestContent);
         const schemaLink = manifestObject["$schema"];
-        const targetSchema = "https://developer.microsoft.com/en-us/json-schemas/teams";
-        if (schemaLink && schemaLink.startsWith(targetSchema)) {
+        if (schemaLink && schemaLink.endsWith("/MicrosoftTeams.schema.json")) {
           data.hasTeamsManifest = true;
           data.manifestCapabilities = getCapabilities(manifestObject);
           data.manifestAppId = manifestObject.id;

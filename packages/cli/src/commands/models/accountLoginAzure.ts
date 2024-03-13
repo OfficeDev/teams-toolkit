@@ -44,18 +44,17 @@ export const accountLoginAzureCommand: CLICommand = {
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure --interactive false --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID`,
       description: "Log in with a service principal using client secret",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure --interactive false --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID`,
       description: "Log in with a service principal using client certificate",
     },
   ],
   telemetry: {
     event: TelemetryEvent.AccountLoginAzure,
   },
-  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const args = ctx.optionValues;
     const isSP = args["service-principal"] as boolean;

@@ -23,7 +23,7 @@ import { join } from "path";
 import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
-import { ProjectTypeOptions, getTemplate } from "../../../question/create";
+import { ProjectTypeOptions } from "../../../question/create";
 import { QuestionNames } from "../../../question/questionNames";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";

@@ -10,11 +10,7 @@ This template showcases an app that unfurls a link into an adaptive card when UR
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/microsoft-365/dev-program)
-<<<<<<< HEAD
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teams-toolkit-cli)
-=======
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-toolkit-cli)
->>>>>>> main
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -24,22 +20,22 @@ This template showcases an app that unfurls a link into an adaptive card when UR
 
 ## What's included in the template
 
-| Folder / File | Contents |
-| - | - |
-| `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
-| `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
-| `.vscode/` | VSCode files for local debug |
-| `src/` | The source code for the link unfurling application |
-| `appPackage/` | Templates for the Teams application manifest |
-| `infra/` | Templates for provisioning Azure resources |
+| Folder / File        | Contents                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `teamsapp.yml`       | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
+| `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging                                      |
+| `.vscode/`           | VSCode files for local debug                                                                                              |
+| `src/`               | The source code for the link unfurling application                                                                        |
+| `appPackage/`        | Templates for the Teams application manifest                                                                              |
+| `infra/`             | Templates for provisioning Azure resources                                                                                |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File | Contents |
-| - | - |
-| `src/index.js` | Application entry point and `restify` handlers |
-| `src/linkUnfurlingApp.js`| The teams activity handler |
-| `src/adaptiveCards/helloWorldCard.json` | The adaptive card |
+| File                                    | Contents                                       |
+| --------------------------------------- | ---------------------------------------------- |
+| `src/index.js`                          | Application entry point and `restify` handlers |
+| `src/linkUnfurlingApp.js`               | The teams activity handler                     |
+| `src/adaptiveCards/helloWorldCard.json` | The adaptive card                              |
 
 ## Extend this template
 

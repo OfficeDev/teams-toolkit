@@ -12,11 +12,7 @@ This app template implements action command that allows you to present your user
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
-<<<<<<< HEAD
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli)
-=======
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
->>>>>>> main
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -30,27 +26,27 @@ This app template implements action command that allows you to present your user
 
 ## What's included in the template
 
-| Folder       | Contents                                            |
-| - | - |
-| `.vscode/`    | VSCode files for debugging                          |
-| `appPackage/` | Templates for the Teams application manifest        |
-| `env/`        | Environment files                                   |
-| `infra/`      | Templates for provisioning Azure resources          |
-| `src/` | The source code for the action application |
+| Folder        | Contents                                     |
+| ------------- | -------------------------------------------- |
+| `.vscode/`    | VSCode files for debugging                   |
+| `appPackage/` | Templates for the Teams application manifest |
+| `env/`        | Environment files                            |
+| `infra/`      | Templates for provisioning Azure resources   |
+| `src/`        | The source code for the action application   |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                 | Contents                                           |
-| - | - |
-|`src/actionApp.js`| Handles the business logic for this app template to collect form input and process data.|
-|`src/index.js`| `index.js` is used to setup and configure the Message Extension.|
+| File               | Contents                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `src/actionApp.js` | Handles the business logic for this app template to collect form input and process data. |
+| `src/index.js`     | `index.js` is used to setup and configure the Message Extension.                         |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
-| File                                 | Contents                                           |
-| - | - |
-|`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
-|`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+| File                 | Contents                                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
+| `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                     |
 
 ## Extend the template
 
@@ -68,3 +64,4 @@ Following documentation will help you to extend the template.
 - [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
 - [Develop with Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli/debug)
 - [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)
+

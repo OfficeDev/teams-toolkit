@@ -51,3 +51,4 @@ export * from "./question/util";
 export * from "./common/projectTypeChecker";
 export { DefaultTemplateGenerator } from "./component/generator/templates/templateGenerator";
 export { fetchAndUnzip } from "./component/utils";
+export { SummaryConstant } from "./component/configManager/constant";

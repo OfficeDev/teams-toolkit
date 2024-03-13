@@ -32,6 +32,6 @@ describe("openWelcomePageAfterExtensionInstallation()", () => {
     await openWelcomePageAfterExtensionInstallation();
 
     chai.assert.isTrue(globalStateUpdateStub.calledOnce);
-    chai.assert.isTrue(executeCommandStub.calledTwice);
+    chai.assert.isTrue(executeCommandStub.calledThrice);
   });
 });

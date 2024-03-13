@@ -7,6 +7,7 @@ export enum TelemetryEvent {
   CreateAccount = "create-account",
 
   GetStarted = "quick-start",
+  WalkThroughBuildIntelligentApps = "walkthrough-build-intelligent-apps",
 
   Samples = "samples",
 

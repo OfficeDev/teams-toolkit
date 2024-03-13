@@ -812,9 +812,9 @@ async function updateActionForCustomApi(
           parameters.properties[paramType].properties[param.name].description =
             param.description ?? "";
           if (param.required) {
-            parameters.properties[paramType].required?.push(param.name);
-            if (!parameters.required?.includes(paramType)) {
-              parameters.required?.push(paramType);
+            parameters.properties[paramType].required.push(param.name);
+            if (!parameters.required.includes(paramType)) {
+              parameters.required.push(paramType);
             }
           }
         }

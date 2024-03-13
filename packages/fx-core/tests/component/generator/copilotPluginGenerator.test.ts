@@ -1344,7 +1344,7 @@ describe("updateForCustomApi", async () => {
             ],
             responses: {
               "200": {
-                description: "A greeting message",
+                description: "",
                 content: {
                   "application/json": {
                     schema: {
@@ -1358,7 +1358,7 @@ describe("updateForCustomApi", async () => {
           post: {
             operationId: "createPet",
             summary: "Create a pet",
-            description: "Create a new pet in the store",
+            description: "",
             requestBody: {
               content: {
                 "application/json": {
@@ -1368,7 +1368,7 @@ describe("updateForCustomApi", async () => {
                     properties: {
                       name: {
                         type: "string",
-                        description: "Name of the pet",
+                        description: "",
                       },
                     },
                   },

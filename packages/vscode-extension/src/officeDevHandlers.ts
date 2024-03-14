@@ -13,13 +13,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { Uri } from "vscode";
 import { GlobalKey } from "./constants";
-import {
-  OfficeDevTerminal,
-  triggerGenerateGUID,
-  triggerInstall,
-  triggerStopDebug,
-  triggerValidate,
-} from "./debug/taskTerminal/officeDevTerminal";
+import { OfficeDevTerminal, TriggerCmdType } from "./debug/taskTerminal/officeDevTerminal";
 import { VS_CODE_UI } from "./extension";
 import * as globalVariables from "./globalVariables";
 import {
@@ -139,9 +133,9 @@ export function validateOfficeAddInManifest(args?: any[]): Promise<Result<null, 
     TelemetryEvent.validateAddInManifest,
     getTriggerFromProperty(args)
   );
-  const terminal = OfficeDevTerminal.getInstance();
+  const terminal = OfficeDevTerminal.getInstance(TriggerCmdType.triggerValidate);
   terminal.show();
-  terminal.sendText(triggerValidate);
+  terminal.sendText(TriggerCmdType.triggerValidate);
   return Promise.resolve(ok(null));
 }
 
@@ -150,9 +144,9 @@ export function installOfficeAddInDependencies(args?: any[]): Promise<Result<nul
     TelemetryEvent.installAddInDependencies,
     getTriggerFromProperty(args)
   );
-  const terminal = OfficeDevTerminal.getInstance();
+  const terminal = OfficeDevTerminal.getInstance(TriggerCmdType.triggerInstall);
   terminal.show();
-  terminal.sendText(triggerInstall);
+  terminal.sendText(TriggerCmdType.triggerInstall);
   return Promise.resolve(ok(null));
 }
 
@@ -178,17 +172,17 @@ export async function popupOfficeAddInDependenciesMessage() {
 
 export function stopOfficeAddInDebug(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.stopAddInDebug, getTriggerFromProperty(args));
-  const terminal = OfficeDevTerminal.getInstance();
+  const terminal = OfficeDevTerminal.getInstance(TriggerCmdType.triggerStopDebug);
   terminal.show();
-  terminal.sendText(triggerStopDebug);
+  terminal.sendText(TriggerCmdType.triggerStopDebug);
   return Promise.resolve(ok(null));
 }
 
 export function generateManifestGUID(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.generateAddInGUID, getTriggerFromProperty(args));
-  const terminal = OfficeDevTerminal.getInstance();
+  const terminal = OfficeDevTerminal.getInstance(TriggerCmdType.triggerGenerateGUID);
   terminal.show();
-  terminal.sendText(triggerGenerateGUID);
+  terminal.sendText(TriggerCmdType.triggerGenerateGUID);
   return Promise.resolve(ok(null));
 }
 

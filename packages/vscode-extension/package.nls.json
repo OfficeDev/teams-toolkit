@@ -179,7 +179,7 @@
     "teamstoolkit.commandsTreeViewProvider.officeAddIn.getStartedDescription": "Learn more about how to create Office Add-in project",
     "teamstoolkit.commandsTreeViewProvider.officeAddIn.documentationTitle": "Documentation",
     "teamstoolkit.commandsTreeViewProvider.officeAddIn.documentationDescription": "The documentation about how to create Office Add-in project",
-    "teamstoolkit.commandsTreeViewProvider.officeAddIn.stopDebugTitle": "Stop Previewing your Office Add-in",
+    "teamstoolkit.commandsTreeViewProvider.officeAddIn.stopDebugTitle": "Stop Previewing Your Office Add-in",
     "teamstoolkit.commandsTreeViewProvider.officeAddIn.stopDebugDescription": "Stop debugging the Office Add-in project",
     "teamstoolkit.common.readMore": "Read more",
     "teamstoolkit.common.signin": "Sign in",
@@ -221,7 +221,6 @@
     "teamstoolkit.handlers.installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Previewer\" extension.",
     "_teamstoolkit.handlers.installAdaptiveCardExt": "product name, no need to translate 'Adaptive Card Previewer'.",
     "teamstoolkit.handlers.autoInstallDependency": "Dependency installation in progress...",
-    "teamstoolkit.officeAddIn.terminal.open": "Run tasks in this terminal for Office add-in",
     "teamstoolkit.handlers.adaptiveCardExtUsage": "Type \"Adaptive Card: Open Preview\" in command pallete to start previewing current Adaptive Card file.",
     "teamstoolkit.handlers.invalidProject": "Unable to debug Teams App. This is not a valid Teams project.",
     "teamstoolkit.handlers.localDebugDescription": "[%s] is successfully created at [local address](%s). Continue to debug your app in Test Tool or Teams.",
@@ -442,9 +441,7 @@
     "teamstoolkit.officeAddIn.terminal.validateManifest": "Validating manifest...",
     "teamstoolkit.officeAddIn.terminal.stopDebugging": "Stopping debugging...",
     "teamstoolkit.officeAddIn.terminal.generateManifestGUID": "Generating manifest GUID...",
-    "teamstoolkit.officeAddIn.terminal.terminate": "* Ctrl +C to close the terminal.",
-    "teamstoolkit.officeAddIn.terminal.fail.tips": "couldn't complete!",
-    "teamstoolkit.officeAddIn.terminal.success.tips": "completed successfully!",
+    "teamstoolkit.officeAddIn.terminal.terminate": "* Terminal will be reused by tasks, press any key to close it.",
     "teamstoolkit.officeAddIn.terminal.manifest.notfound":"Manifest xml file not found",
     "teamstoolkit.officeAddIn.workspace.invalid": "Invalid workspace path"
 }

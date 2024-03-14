@@ -46,10 +46,7 @@ import {
   OpenAIPluginManifestHelper,
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
-import {
-  OfficeAddinProjectConfig,
-  getOfficeAddinTemplateConfig,
-} from "../component/generator/officeXMLAddin/projectConfig";
+import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
 import { Constants } from "../component/generator/spfx/utils/constants";

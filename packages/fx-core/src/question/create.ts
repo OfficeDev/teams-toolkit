@@ -653,7 +653,7 @@ export class CapabilityOptions {
 
   static outlookAddinImport(): OptionItem {
     return {
-      id: "office-addin-import",
+      id: "outlook-addin-import",
       label: getLocalizedString("core.importAddin.label"),
       detail: getLocalizedString("core.importAddin.detail"),
     };

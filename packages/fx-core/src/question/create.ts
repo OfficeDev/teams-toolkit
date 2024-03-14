@@ -556,7 +556,9 @@ export class CapabilityOptions {
         label: getLocalizedString(capabilityValue.title),
         detail: getLocalizedString(capabilityValue.detail),
       });
-      items.push(CapabilityOptions.outlookAddinImport());
+      if (projectType === ProjectTypeOptions.outlookAddin().id)
+        items.push(CapabilityOptions.outlookAddinImport());
+      else items.push(CapabilityOptions.officeAddinImport());
     } else {
       if (host) {
         const hostValue = OfficeAddinProjectConfig[host];
@@ -650,22 +652,22 @@ export class CapabilityOptions {
 
   static outlookAddinImport(): OptionItem {
     return {
-      id: "import",
+      id: "office-addin-import",
       label: getLocalizedString("core.importAddin.label"),
       detail: getLocalizedString("core.importAddin.detail"),
     };
   }
 
-  // static officeAddinImport(): OptionItem {
-  //   return {
-  //     id: "import",
-  //     label: getLocalizedString("core.importOfficeAddin.label"),
-  //     detail: getLocalizedString("core.importAddin.detail"),
-  //     description: getLocalizedString(
-  //       "core.createProjectQuestion.option.description.previewOnWindow"
-  //     ),
-  //   };
-  // }
+  static officeAddinImport(): OptionItem {
+    return {
+      id: "office-addin-import",
+      label: getLocalizedString("core.importOfficeAddin.label"),
+      detail: getLocalizedString("core.importAddin.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.previewOnWindow"
+      ),
+    };
+  }
 
   // static officeXMLAddinHostOptionItems(host: string): OptionItem[] {
   //   return getOfficeXMLAddinHostProjectOptions(host).map((x) => ({
@@ -1372,7 +1374,7 @@ export function getOfficeAddinFramework(inputs: Inputs): string {
     inputs[QuestionNames.OfficeAddinFramework]
   ) {
     return inputs[QuestionNames.OfficeAddinFramework];
-  } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+  } else if (projectType === ProjectTypeOptions.officeXMLAddin().id) {
     return "default";
   } else {
     return "default_old";
@@ -2404,7 +2406,9 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
             inputs[QuestionNames.Capabilities] !==
               CapabilityOptions.copilotPluginOpenAIPlugin().id &&
-            inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id
+            inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id
           );
         },
       },

@@ -56,7 +56,7 @@ import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
   capabilitiesHavePythonOption,
-    copilotPluginApiSpecOptionId,
+  copilotPluginApiSpecOptionId,
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
 } from "./constants";

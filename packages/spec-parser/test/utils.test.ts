@@ -2393,7 +2393,6 @@ describe("utils", () => {
           },
         },
       };
-
       const options: ParseOptions = {
         allowMissingId: true,
         allowAPIKeyAuth: false,
@@ -2405,6 +2404,7 @@ describe("utils", () => {
 
       const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
+
     });
   });
 

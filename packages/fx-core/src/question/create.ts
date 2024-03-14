@@ -1385,7 +1385,7 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const runtime = getRuntime(inputs);
   // dotnet runtime only supports C#
   if (runtime === RuntimeOptions.DotNet().id) {
-    return [{ id: "csharp", label: "C#" }];
+    return [{ id: ProgrammingLanguage.CSharp, label: "C#" }];
   }
   const capabilities = inputs[QuestionNames.Capabilities] as string;
 
@@ -1393,32 +1393,32 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   const projectType = inputs[QuestionNames.ProjectType];
   if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
     if (capabilities.endsWith("-manifest")) {
-      return [{ id: "javascript", label: "JavaScript" }];
+      return [{ id: ProgrammingLanguage.JS, label: "JavaScript" }];
     }
     if (projectType === ProjectTypeOptions.outlookAddin().id) {
-      return [{ id: "tavascript", label: "TypeScript" }];
+      return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
     }
     return [
-      { id: "tavascript", label: "TypeScript" },
-      { id: "javascript", label: "JavaScript" },
+      { id: ProgrammingLanguage.TS, label: "TypeScript" },
+      { id: ProgrammingLanguage.JS, label: "JavaScript" },
     ];
   }
 
   if (capabilities === CapabilityOptions.SPFxTab().id) {
     // SPFx only supports typescript
-    return [{ id: "typescript", label: "TypeScript" }];
+    return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
   } else if (capabilitiesHavePythonOption.includes(capabilities)) {
     // support python language
     return [
-      { id: "javascript", label: "JavaScript" },
-      { id: "typescript", label: "TypeScript" },
-      { id: "python", label: "Python" },
+      { id: ProgrammingLanguage.JS, label: "JavaScript" },
+      { id: ProgrammingLanguage.TS, label: "TypeScript" },
+      { id: ProgrammingLanguage.PY, label: "Python" },
     ];
   } else {
     // other cases
     return [
-      { id: "javascript", label: "JavaScript" },
-      { id: "typescript", label: "TypeScript" },
+      { id: ProgrammingLanguage.JS, label: "JavaScript" },
+      { id: ProgrammingLanguage.TS, label: "TypeScript" },
     ];
   }
 }

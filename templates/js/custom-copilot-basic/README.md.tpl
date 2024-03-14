@@ -16,13 +16,13 @@ The app template is built using the Teams AI library, which provides the capabil
 >
 > To run the Basic AI Chatbot template in your local dev machine, you will need:
 >
-> - [Node.js](https://nodejs.org/), supported versions: 16, 18
+> - [Node.js](https://nodejs.org/), supported versions: 16, 18.
 {{^enableTestToolByDefault}}
-> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 {{/enableTestToolByDefault}}
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) latest version and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) latest version or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli).
 {{#useOpenAI}}
-> - An account with [OpenAI](https://platform.openai.com/)
+> - An account with [OpenAI](https://platform.openai.com/).
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.

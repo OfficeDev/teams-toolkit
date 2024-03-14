@@ -26,7 +26,7 @@ The app template is built using the Teams AI library, which provides the capabil
 > - An account with [OpenAI](https://platform.openai.com/).
 {{/useOpenAI}}
 {{^enableTestToolByDefault}}
-> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 {{/enableTestToolByDefault}}
 {{#enableTestToolByDefault}}
 > - [Node.js](https://nodejs.org/) (supported versions: 16, 18) for local debug in Test Tool.

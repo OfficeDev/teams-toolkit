@@ -332,10 +332,11 @@ export async function reopenPage(
         "button>span:has-text('Add')"
       );
 
-      // dashboard template will have a popup
-      if (options?.dashboardFlag) {
-        console.log("Before popup");
-        const popup = await page
+    // dashboard template will have a popup
+    if (options?.dashboardFlag) {
+      console.log("Before popup");
+      const [popup] = await Promise.all([
+        page
           .waitForEvent("popup")
           .then((popup) =>
             popup
@@ -344,29 +345,33 @@ export async function reopenPage(
               })
               .catch(() => popup)
           )
-          .catch(() => { });
-        if (popup && !popup?.isClosed()) {
-          // input password
-          console.log(`fill in password`);
-          await popup.fill(
-            "input.input[type='password'][name='passwd']",
-            password
-          );
-          // sign in
-          await Promise.all([
-            popup.click("input.button[type='submit'][value='Sign in']"),
-            popup.waitForNavigation(),
-          ]);
-          await popup.click("input.button[type='submit'][value='Accept']");
-          try {
-            await popup.close();
-          } catch (error) {
-            console.log("popup is closed");
-          }
+          .catch(() => { }),
+        addBtn?.click(),
+      ]);
+      console.log("after popup");
+
+      if (popup && !popup?.isClosed()) {
+        // input password
+        console.log(`fill in password`);
+        await popup.fill(
+          "input.input[type='password'][name='passwd']",
+          password
+        );
+        // sign in
+        await Promise.all([
+          popup.click("input.button[type='submit'][value='Sign in']"),
+          popup.waitForNavigation(),
+        ]);
+        await popup.click("input.button[type='submit'][value='Accept']");
+        try {
+          await popup?.close();
+        } catch (error) {
+          console.log("popup is closed");
         }
-      } else {
-        await addBtn?.click();
       }
+    } else {
+      await addBtn?.click();
+    }
       await page.waitForTimeout(Timeout.shortTimeLoading);
       // verify add page is closed
       await frame?.waitForSelector("button>span:has-text('Add')", {

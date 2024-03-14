@@ -1378,7 +1378,10 @@ export function getOfficeAddinFramework(inputs: Inputs): string {
     inputs[QuestionNames.OfficeAddinFramework]
   ) {
     return inputs[QuestionNames.OfficeAddinFramework];
-  } else if (projectType === ProjectTypeOptions.officeXMLAddin().id) {
+  } else if (
+    projectType === ProjectTypeOptions.officeXMLAddin().id &&
+    inputs[QuestionNames.OfficeAddinHost] !== OfficeAddinHostOptions.outlook().id
+  ) {
     return "default";
   } else {
     return "default_old";
@@ -1403,7 +1406,9 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     if (
       projectType === ProjectTypeOptions.outlookAddin().id ||
       (projectType === ProjectTypeOptions.officeXMLAddin().id &&
-        host === OfficeAddinHostOptions.outlook().id)
+        host === OfficeAddinHostOptions.outlook().id) ||
+      capabilities === CapabilityOptions.officeAddinImport().id ||
+      capabilities === CapabilityOptions.outlookAddinImport().id
     ) {
       return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
     }
@@ -2420,8 +2425,7 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] !==
               CapabilityOptions.copilotPluginOpenAIPlugin().id &&
             inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
-            inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id
           );
         },
       },
@@ -2456,7 +2460,10 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // WXP addin framework
         condition: (inputs: Inputs) => {
-          return inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id;
+          return (
+            inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id
+          );
         },
         data: OfficeAddinFrameworkQuestion(),
       },

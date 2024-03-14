@@ -2302,8 +2302,13 @@ export function capabilitySubTree(): IQTreeNode {
         ],
       },
       {
-        // office addin import sub-tree (capabilities=import)
-        condition: { equals: CapabilityOptions.outlookAddinImport().id },
+        // office addin import sub-tree (capabilities=office-addin-import | outlook-addin-import)
+        condition: {
+          enum: [
+            CapabilityOptions.outlookAddinImport().id,
+            CapabilityOptions.officeAddinImport().id,
+          ],
+        },
         data: { type: "group", name: QuestionNames.OfficeAddinImport },
         children: [
           {

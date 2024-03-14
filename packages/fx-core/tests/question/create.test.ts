@@ -611,12 +611,11 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: ProjectTypeOptions.officeAddin().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
-          const title =
-            typeof question.title === "function" ? await question.title(inputs) : question.title;
-          assert.equal(
-            title,
-            getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title")
+          const options = await select.dynamicOptions!(inputs);
+          const items = CapabilityOptions.officeAddinDynamicCapabilities(
+            ProjectTypeOptions.officeAddin().id
           );
+          assert.deepEqual(options, items);
           return ok({ type: "success", result: CapabilityOptions.officeAddinImport().id });
         } else if (question.name === QuestionNames.OfficeAddinFolder) {
           return ok({ type: "success", result: "./" });

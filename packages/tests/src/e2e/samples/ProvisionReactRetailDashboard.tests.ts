@@ -21,5 +21,5 @@ class RetailDashboardTestCase extends CaseFactory {
 new RetailDashboardTestCase(
   TemplateProjectFolder.RetailDashboard,
   25051144,
-  "huihuiwu@microsoft.com"
+  "ning.tang@microsoft.com"
 ).test();

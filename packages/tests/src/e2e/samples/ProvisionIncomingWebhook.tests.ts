@@ -19,7 +19,7 @@ class IncomingWebhookTestCase extends CaseFactory {
 new IncomingWebhookTestCase(
   TemplateProjectFolder.IncomingWebhook,
   15277475,
-  "dol@microsoft.com",
+  "qidon@microsoft.com",
   [],
   { skipProvision: true }
 ).test();

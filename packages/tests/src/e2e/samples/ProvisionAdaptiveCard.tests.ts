@@ -13,5 +13,5 @@ class AdaptiveCardTestCase extends CaseFactory {}
 new AdaptiveCardTestCase(
   TemplateProjectFolder.AdaptiveCard,
   15277474,
-  "dol@microsoft.com"
+  "qidon@microsoft.com"
 ).test();

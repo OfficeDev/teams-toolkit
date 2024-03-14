@@ -40,7 +40,7 @@ class ProactiveMessagingTestCase extends CaseFactory {
 new ProactiveMessagingTestCase(
   TemplateProjectFolder.ProactiveMessaging,
   15277473,
-  "huihuiwu@microsoft.com",
+  "ning.tang@microsoft.com",
   [],
   { manifestFolderName: "appManifest" }
 ).test();

@@ -1053,7 +1053,7 @@ describe("App Studio API Test", () => {
       };
       sinon.stub(fakeAxiosInstance, "get").resolves(response);
       const res = await AppStudioClient.getAppValidationRequestList("fakeId", appStudioToken);
-      chai.assert.equal(res.appValidations.length, 0);
+      chai.assert.equal(res.appValidations!.length, 0);
     });
 
     it("404 not found", async () => {

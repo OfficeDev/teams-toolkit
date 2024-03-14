@@ -20,22 +20,22 @@ This template showcases an app that unfurls a link into an adaptive card when UR
 
 ## What's included in the template
 
-| Folder / File | Contents |
-| - | - |
-| `teamsapp.yml` | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
-| `teamsapp.local.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging |
-| `.vscode/` | VSCode files for local debug |
-| `src/` | The source code for the link unfurling application |
-| `appPackage/` | Templates for the Teams application manifest |
-| `infra/` | Templates for provisioning Azure resources |
+| Folder / File        | Contents                                                                                                                  |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `teamsapp.yml`       | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
+| `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging                                      |
+| `.vscode/`           | VSCode files for local debug                                                                                              |
+| `src/`               | The source code for the link unfurling application                                                                        |
+| `appPackage/`        | Templates for the Teams application manifest                                                                              |
+| `infra/`             | Templates for provisioning Azure resources                                                                                |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File | Contents |
-| - | - |
-| `src/index.ts` | Application entry point and `restify` handlers |
-| `src/linkUnfurlingApp.ts`| The teams activity handler |
-| `src/adaptiveCards/helloWorldCard.json` | The adaptive card |
+| File                                    | Contents                                       |
+| --------------------------------------- | ---------------------------------------------- |
+| `src/index.ts`                          | Application entry point and `restify` handlers |
+| `src/linkUnfurlingApp.ts`               | The teams activity handler                     |
+| `src/adaptiveCards/helloWorldCard.json` | The adaptive card                              |
 
 ## Extend this template
 

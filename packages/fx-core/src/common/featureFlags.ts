@@ -70,6 +70,10 @@ export function isTdpTemplateCliTestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
 }
 
+export function isAsyncAppValidationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.AsyncAppValidation, false);
+}
+
 export function isNewProjectTypeEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
 }

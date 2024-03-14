@@ -66,6 +66,7 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { ValidateWithTestCasesArgs } from "../component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
 import { teamsappMgr } from "../component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import {
@@ -74,6 +75,7 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../component/driver/teamsApp/validateTestCases";
 import { SSO } from "../component/feature/sso";
 import {
   ErrorResult,
@@ -108,7 +110,11 @@ import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ValidateTeamsAppInputs } from "../question";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
-import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
+import {
+  HubTypes,
+  isAadMainifestContainsPlaceholder,
+  TeamsAppValidationOptions,
+} from "../question/other";
 import { QuestionNames } from "../question/questionNames";
 import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { CallbackRegistry } from "./callback";
@@ -505,6 +511,8 @@ export class FxCore {
   async validateApplication(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
     if (inputs["manifest-path"]) {
       return await this.validateManifest(inputs);
+    } else if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.testCases().id) {
+      return await this.validateWithTestCases(inputs);
     } else {
       return await this.validateAppPackage(inputs);
     }
@@ -547,6 +555,22 @@ export class FxCore {
       showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+    return (await driver.execute(args, context)).result;
+  }
+
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "validateWithTestCases", reset: true }),
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+  ])
+  async validateWithTestCases(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
+    const context: DriverContext = createDriverContext(inputs);
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: inputs["app-package-file-path"] as string,
+      showMessage: true,
+      showProgressBar: true,
+    };
+    const driver: ValidateWithTestCasesDriver = Container.get("teamsApp/validateWithTestCases");
     return (await driver.execute(args, context)).result;
   }
   /**

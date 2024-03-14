@@ -13,5 +13,5 @@ class DiceRollerTestCase extends CaseFactory {}
 new DiceRollerTestCase(
   TemplateProjectFolder.DiceRoller,
   24132156,
-  "v-ivanchen@microsoft.com"
+  "ning.tang@microsoft.com"
 ).test();

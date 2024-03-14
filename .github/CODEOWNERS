@@ -105,6 +105,7 @@
 /templates/scripts @hund030 @eriolchan @huimiu
 /templates/constraints/yml/actions @hund030 @eriolchan @huimiu
 
+/templates/**/api-plugin-from-scratch @hund030 @eriolchan @huimiu
 /templates/**/copilot-plugin-from-scratch @hund030 @eriolchan @huimiu
 /templates/**/copilot-plugin-from-scratch-api-key @hund030 @eriolchan @huimiu
 /templates/**/dashboard-tab @hund030 @eriolchan @huimiu
@@ -124,10 +125,11 @@
 /templates/**/office-addin @jayzhang @nliu-ms
 /templates/**/copilot-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/copilot-plugin-existing-api-api-key @yuqizhou77 @Alive-Fish @jayzhang
+/templates/**/api-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/spfx-tab @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /templates/**/spfx-tab-import @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 
-/templates/**/sso-tab-with-obo-flow @KennethBWSong @adashen @SLdragon
+/templates/**/sso-tab-with-obo-flow @Yimin-Jin @hund030 @huimiu @eriolchan
 
 /templates/**/command-and-response @kimizhu @dooriya @swatDong
 /templates/**/notification-http-timer-trigger @kimizhu @dooriya @swatDong
@@ -139,6 +141,10 @@
 /templates/**/m365-message-extension @kimizhu @swatDong @kuojianlu
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/ai-assistant-bot @kimizhu @swatDong @kuojianlu
+/templates/**/custom-copilot-basic @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/templates/python/custom-copilot-basic @frankqianms @adashen
+/templates/**/custom-copilot-assistant-new @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/templates/**/custom-copilot-assistant-assistants-api @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
 /packages/fx-core/.eslintignore @LongOddCode @wenytang-ms
 /packages/fx-core/.eslintrc.js @LongOddCode @wenytang-ms

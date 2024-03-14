@@ -3,6 +3,7 @@
 
 import {
   AppPackageFolderName,
+  ManifestTemplateFileName,
   ManifestUtil,
   TeamsAppManifest,
   TemplateFolderName,
@@ -24,6 +25,7 @@ import { getSystemInputs } from "./handlers";
 import { TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import { localize } from "./utils/localizeUtils";
 import * as _ from "lodash";
+import * as path from "path";
 
 async function resolveEnvironmentVariablesCodeLens(lens: vscode.CodeLens, from: string) {
   // Get environment variables
@@ -543,6 +545,51 @@ export class CopilotPluginCodeLensProvider implements vscode.CodeLensProvider {
   }
 }
 
+export class ApiPluginCodeLensProvider implements vscode.CodeLensProvider {
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const inputs = getSystemInputs();
+
+    if (inputs.projectPath) {
+      const text = document.getText();
+      if (!text.includes("openapi")) {
+        return [];
+      }
+
+      const manifestFilePath = path.join(
+        inputs.projectPath,
+        AppPackageFolderName,
+        ManifestTemplateFileName
+      );
+      if (!fs.existsSync(manifestFilePath)) {
+        return [];
+      }
+      const manifestContent = fs.readFileSync(manifestFilePath, "utf-8");
+      const manifest = JSON.parse(manifestContent);
+      const manifestProperties = ManifestUtil.parseCommonProperties(manifest);
+      if (!manifestProperties.isPlugin) {
+        return [];
+      }
+
+      const startPosition = new vscode.Position(0, 0); // Position at the top of the document
+      const endPosition = document.positionAt(document.getText().indexOf("\n"));
+      const range = new vscode.Range(startPosition, endPosition);
+      const command = {
+        title: "➕" + localize("teamstoolkit.codeLens.copilotPluginAddAPI"),
+        command: "fx-extension.copilotPluginAddAPI",
+        arguments: [
+          { fsPath: document.fileName, isFromApiPlugin: true, manifestPath: manifestFilePath },
+        ],
+      };
+      const codeLens = new vscode.CodeLens(range, command);
+      return [codeLens];
+    } else {
+      return [];
+    }
+  }
+}
+
 export class TeamsAppYamlCodeLensProvider implements vscode.CodeLensProvider {
   private provisionRegex = /^provision:/m;
   private deployRegex = /^deploy:/m;
@@ -594,5 +641,37 @@ export class TeamsAppYamlCodeLensProvider implements vscode.CodeLensProvider {
     } else {
       return undefined;
     }
+  }
+}
+
+export class OfficeDevManifestCodeLensProvider implements vscode.CodeLensProvider {
+  manifestIdRegex = /<Id>([a-zA-Z0-9-]*)<\/Id>/g;
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    const regex = new RegExp(this.manifestIdRegex);
+    let matches;
+    while ((matches = regex.exec(text)) !== null) {
+      const match = matches[1];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+      const command = {
+        title: "🔑" + localize("teamstoolkit.codeLens.generateManifestGUID"),
+        command: "fx-extension.generateManifestGUID",
+        arguments: [match, range],
+      };
+      if (range) {
+        codeLenses.push(new vscode.CodeLens(range, command));
+      }
+    }
+    return codeLenses;
   }
 }

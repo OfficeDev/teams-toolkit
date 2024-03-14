@@ -771,6 +771,25 @@ describe("SpecParser in Browser", () => {
     });
   });
 
+  describe("generateForCopilot", () => {
+    it("should throw not implemented error", async () => {
+      try {
+        const specParser = new SpecParser("path/to/spec.yaml");
+        const filter = ["get /hello"];
+        const outputSpecPath = "path/to/output.yaml";
+        const result = await specParser.generateForCopilot(
+          "path/to/manifest.json",
+          filter,
+          outputSpecPath,
+          "ai-plugin"
+        );
+        expect.fail("Should throw not implemented error");
+      } catch (error: any) {
+        expect(error.message).to.equal("Method not implemented.");
+      }
+    });
+  });
+
   describe("list", () => {
     it("should throw an error when the SwaggerParser library throws an error", async () => {
       try {

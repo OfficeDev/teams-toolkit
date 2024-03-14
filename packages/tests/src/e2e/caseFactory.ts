@@ -128,7 +128,7 @@ export abstract class CaseFactory {
       onBeforeProvision,
       onCreate,
     } = this;
-    describe("Sample Tests", function () {
+    describe(`template Test: ${capability}`, function () {
       const testFolder = getTestFolder();
       const appName = getUniqueAppName();
       const projectPath = path.resolve(testFolder, appName);

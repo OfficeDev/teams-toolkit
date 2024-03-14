@@ -21,6 +21,8 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.AadManifest] = "true";
   process.env[FeatureFlagName.ApiConnect] = "true";
   process.env[FeatureFlagName.DeployManifest] = "true";
+  process.env[FeatureFlagName.OfficeXMLAddin] = "true";
+  process.env[FeatureFlagName.OfficeAddin] = "false";
 }
 
 export function isCLIDotNetEnabled(): boolean {
@@ -53,7 +55,11 @@ export function isApiKeyEnabled(): boolean {
 }
 
 export function isMultipleParametersEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
+  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, true);
+}
+
+export function isOfficeXMLAddinEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.OfficeXMLAddin, false);
 }
 
 export function isTeamsFxRebrandingEnabled(): boolean {
@@ -62,4 +68,16 @@ export function isTeamsFxRebrandingEnabled(): boolean {
 
 export function isTdpTemplateCliTestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
+}
+
+export function isAsyncAppValidationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.AsyncAppValidation, false);
+}
+
+export function isNewProjectTypeEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
+}
+
+export function isOfficeJSONAddinEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
 }

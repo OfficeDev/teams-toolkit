@@ -18,7 +18,6 @@ import AdmZip from "adm-zip";
 import axios, { AxiosResponse, CancelToken } from "axios";
 import templateConfig from "../../common/templates-config.json";
 import semver from "semver";
-import { CancelDownloading } from "./error";
 import { deepCopy } from "../../common/tools";
 import { InvalidInputError } from "../../core/error";
 import { ProgrammingLanguage } from "../../question";
@@ -30,12 +29,7 @@ async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<stri
     : "";
   const templateVersion = templateConfig.version;
   const templateTagPrefix = templateConfig.tagPrefix;
-  const useLocal = templateConfig.useLocalTemplate;
   const versionPattern = preRelease || templateVersion;
-
-  if (useLocal.toString() === "true") {
-    throw new CancelDownloading();
-  }
 
   const versionList = (await getTags()).map((tag: string) => tag.replace(templateTagPrefix, ""));
   const selectedVersion = semver.maxSatisfying(versionList, versionPattern);
@@ -120,10 +114,6 @@ export async function getTemplateLatestTag(
   return selectedTag;
 }
 
-export function getTemplateLocalVersion(): string {
-  return templateConfig.localVersion;
-}
-
 export function getTemplateZipUrlByTag(name: string, selectedTag: string): string {
   return `${templateConfig.templateDownloadBaseURL}/${selectedTag}/${name}.zip`;
 }
@@ -199,7 +189,16 @@ function escapeEmptyVariable(
 ): string[][] {
   const parsed = Mustache.parse(template, tags) as string[][];
   const tokens = deepCopy(parsed); // Mustache cache the parsed result. Modify the result in place may cause unexpected issue.
-  let accShift = 0;
+  updateTokens(tokens, view, tags, 0);
+  return tokens;
+}
+
+function updateTokens(
+  tokens: string[][],
+  view: Record<string, string | undefined>,
+  tags: [string, string],
+  accShift: number
+): number {
   const shift = tags[0].length + tags[1].length;
   // token: [Type, Value, Start, End]
   for (const token of tokens) {
@@ -209,10 +208,14 @@ function escapeEmptyVariable(
       token[0] = "text";
       token[1] = tags[0] + value + tags[1];
       accShift += shift;
+    } else if (token[0] === "#") {
+      token[2] += accShift;
+      token[3] += accShift;
+      accShift += updateTokens(token[4] as any, view, tags, accShift);
+      token[5] += accShift;
     }
-    token[3] += accShift;
   }
-  return tokens;
+  return accShift;
 }
 
 export function renderTemplateFileName(
@@ -250,6 +253,7 @@ export async function downloadDirectory(
 ): Promise<string[]> {
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(sampleInfo, retryLimits);
   await downloadSampleFiles(
+    sampleInfo,
     fileUrlPrefix,
     samplePaths,
     dstPath,
@@ -291,6 +295,7 @@ async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): P
 }
 
 async function downloadSampleFiles(
+  sampleInfo: SampleUrlInfo,
   fileUrlPrefix: string,
   samplePaths: string[],
   dstPath: string,
@@ -299,8 +304,19 @@ async function downloadSampleFiles(
   concurrencyLimits: number
 ): Promise<void> {
   const downloadCallback = async (samplePath: string) => {
+    const lfsRegex = /^.*oid sha256:[0-9a-f]+\nsize \d+/gm;
     const file = (await sendRequestWithRetry(async () => {
-      return await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
+      const content = await axios.get(fileUrlPrefix + samplePath, { responseType: "arraybuffer" });
+      if (lfsRegex.test(content.data.toString())) {
+        return await axios.get(
+          `https://media.githubusercontent.com/media/${sampleInfo.owner}/${sampleInfo.repository}/${sampleInfo.ref}/${samplePath}`,
+          {
+            responseType: "arraybuffer",
+          }
+        );
+      } else {
+        return content;
+      }
     }, retryLimits)) as unknown as any;
     const filePath = path.join(dstPath, path.relative(`${relativePath}/`, samplePath));
     await fs.ensureFile(filePath);
@@ -346,6 +362,9 @@ export function convertToLangKey(programmingLanguage: string): string {
     }
     case ProgrammingLanguage.CSharp: {
       return "csharp";
+    }
+    case ProgrammingLanguage.PY: {
+      return "python";
     }
   }
   return programmingLanguage;

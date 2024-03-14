@@ -13,6 +13,6 @@ class OneProductivityHubTestCase extends CaseFactory {}
 new OneProductivityHubTestCase(
   TemplateProjectFolder.OneProductivityHub,
   15277463,
-  "v-ivanchen@microsoft.com",
+  "rentu@microsoft.com",
   ["aad", "tab"]
 ).test();

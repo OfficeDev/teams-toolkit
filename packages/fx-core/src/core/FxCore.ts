@@ -66,6 +66,7 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { ValidateWithTestCasesArgs } from "../component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
 import { teamsappMgr } from "../component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import {
@@ -74,13 +75,16 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../component/driver/teamsApp/validateTestCases";
 import { SSO } from "../component/feature/sso";
 import {
   ErrorResult,
   OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
+  copilotPluginParserOptions,
   generateScaffoldingSummary,
   listOperations,
+  listPluginExistingOperations,
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
@@ -97,6 +101,7 @@ import {
   FileNotFoundError,
   InjectAPIKeyActionFailedError,
   InvalidProjectError,
+  MissingRequiredInputError,
   MultipleAuthError,
   MultipleServerError,
   assembleError,
@@ -105,8 +110,13 @@ import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ValidateTeamsAppInputs } from "../question";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
-import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
+import {
+  HubTypes,
+  isAadMainifestContainsPlaceholder,
+  TeamsAppValidationOptions,
+} from "../question/other";
 import { QuestionNames } from "../question/questionNames";
+import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -501,6 +511,8 @@ export class FxCore {
   async validateApplication(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
     if (inputs["manifest-path"]) {
       return await this.validateManifest(inputs);
+    } else if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.testCases().id) {
+      return await this.validateWithTestCases(inputs);
     } else {
       return await this.validateAppPackage(inputs);
     }
@@ -543,6 +555,22 @@ export class FxCore {
       showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+    return (await driver.execute(args, context)).result;
+  }
+
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "validateWithTestCases", reset: true }),
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+  ])
+  async validateWithTestCases(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
+    const context: DriverContext = createDriverContext(inputs);
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: inputs["app-package-file-path"] as string,
+      showMessage: true,
+      showProgressBar: true,
+    };
+    const driver: ValidateWithTestCasesDriver = Container.get("teamsApp/validateWithTestCases");
     return (await driver.execute(args, context)).result;
   }
   /**
@@ -1220,29 +1248,46 @@ export class FxCore {
     const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
+    const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
 
     // Get API spec file path from manifest
     const manifestRes = await manifestUtils._readAppManifest(manifestPath);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
-    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
 
     // Merge existing operations in manifest.json
-    const specParser = new SpecParser(url, {
-      allowAPIKeyAuth: isApiKeyEnabled(),
-      allowMultipleParameters: isMultipleParametersEnabled(),
-    });
-    const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+    const specParser = new SpecParser(
+      url,
+      isPlugin
+        ? copilotPluginParserOptions
+        : {
+            allowAPIKeyAuth: isApiKeyEnabled(),
+            allowMultipleParameters: isMultipleParametersEnabled(),
+          }
+    );
+
     const apiResultList = await specParser.list();
 
-    const existingOperations: string[] = [];
-    for (const id of existingOperationIds) {
-      const operation = apiResultList.find((item) => item.operationId === id);
-      if (operation) {
-        existingOperations.push(operation.api);
+    let existingOperations: string[];
+    let outputAPISpecPath: string;
+    if (isPlugin) {
+      existingOperations = await listPluginExistingOperations(
+        manifestRes.value,
+        manifestPath,
+        inputs[QuestionNames.DestinationApiSpecFilePath]
+      );
+      if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
+        return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
       }
+      outputAPISpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
+    } else {
+      const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+      existingOperations = apiResultList
+        .filter((operation) => existingOperationIds.includes(operation.operationId))
+        .map((operation) => operation.api);
+      const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
+      outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
     }
 
     const operations = [...existingOperations, ...newOperations];
@@ -1360,7 +1405,7 @@ export class FxCore {
       createContextV3(),
       inputs.manifest,
       inputs.apiSpecUrl,
-      inputs[QuestionNames.ManifestPath],
+      inputs,
       inputs.includeExistingAPIs,
       inputs.shouldLogWarning
     );

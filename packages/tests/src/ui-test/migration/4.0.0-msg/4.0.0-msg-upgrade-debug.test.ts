@@ -26,6 +26,7 @@ import {
 } from "../../../utils/vscodeOperation";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../../utils/nameUtil";
+import { updateDeverloperInManifestFile } from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.testCase);
@@ -69,6 +70,9 @@ describe("Migration Tests", function () {
 
       // local debug with TTK
       try {
+        await updateDeverloperInManifestFile(
+          mirgationDebugTestContext.projectPath
+        );
         await startDebugging("Debug (Chrome)");
 
         console.log("Start Local Tunnel");
@@ -78,10 +82,7 @@ describe("Migration Tests", function () {
         );
 
         console.log("Start Bot");
-        await waitForTerminal(
-          LocalDebugTaskLabel.StartBot,
-          LocalDebugTaskResult.AppSuccess
-        );
+        await waitForTerminal("Start Bot", LocalDebugTaskResult.AppSuccess);
       } catch (error) {
         await VSBrowser.instance.takeScreenshot(getScreenshotName("debug"));
         throw new Error(error as string);

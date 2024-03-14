@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
   </ItemGroup>
@@ -16,6 +17,7 @@
     <Content Remove="devTools/**/*" />
   </ItemGroup>
 
+{{/isNewProjectTypeEnabled}}
   <ItemGroup>
     <PackageReference Include="AdaptiveCards.Templating" Version="1.3.1" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.21.1" />

@@ -87,6 +87,7 @@ import {
 import { HubOptions } from "../../src/question/other";
 import { validationUtils } from "../../src/ui/validationUtils";
 import { MockTools, randomAppName } from "./utils";
+import { ValidateWithTestCasesDriver } from "../../src/component/driver/teamsApp/validateTestCases";
 
 const tools = new MockTools();
 
@@ -1045,6 +1046,28 @@ describe("Teams app APIs", async () => {
     const runSpy = sinon.spy(ValidateManifestDriver.prototype, "execute");
     await core.validateApplication(inputs);
     sinon.assert.calledOnce(runSpy);
+  });
+
+  it("validate with test cases", async () => {
+    const appName = await mockV3Project();
+
+    const mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.AsyncAppValidation]: "true",
+    });
+
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.TeamsAppPackageFilePath]: ".\\build\\appPackage\\appPackage.dev.zip",
+      [QuestionNames.ValidateMethod]: "validateWithTestCases",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+
+    const runSpy = sinon.spy(ValidateWithTestCasesDriver.prototype, "execute");
+    await core.validateApplication(inputs);
+    sinon.assert.calledOnce(runSpy);
+
+    mockedEnvRestore();
   });
 
   it("create app package", async () => {

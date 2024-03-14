@@ -10,6 +10,7 @@ import fs from "fs-extra";
 import path from "path";
 import {
   APIInfo,
+  AuthInfo,
   ErrorType,
   GenerateResult,
   ListAPIResult,
@@ -282,8 +283,8 @@ export class SpecParser {
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
 
-      const AuthSet: Set<OpenAPIV3.SecuritySchemeObject> = new Set();
-      let hasMultipleAPIKeyAuth = false;
+      const authSet: Set<AuthInfo> = new Set();
+      let hasMultipleAuth = false;
 
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
@@ -292,19 +293,19 @@ export class SpecParser {
           const authArray = Utils.getAuthArray(operation.security, newSpec);
 
           if (authArray && authArray.length > 0) {
-            AuthSet.add(authArray[0][0].authSchema);
-            if (AuthSet.size > 1) {
-              hasMultipleAPIKeyAuth = true;
+            authSet.add(authArray[0][0]);
+            if (authSet.size > 1) {
+              hasMultipleAuth = true;
               break;
             }
           }
         }
       }
 
-      if (hasMultipleAPIKeyAuth) {
+      if (hasMultipleAuth && this.options.projectType !== ProjectType.TeamsAi) {
         throw new SpecParserError(
-          ConstantString.MultipleAPIKeyNotSupported,
-          ErrorType.MultipleAPIKeyNotSupported
+          ConstantString.MultipleAuthNotSupported,
+          ErrorType.MultipleAuthNotSupported
         );
       }
 
@@ -349,14 +350,14 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const auth = Array.from(AuthSet)[0];
+      const authInfo = Array.from(authSet)[0];
       const [updatedManifest, warnings] = await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
         newSpec,
         this.options,
         adaptiveCardFolder,
-        auth
+        authInfo
       );
 
       await fs.outputJSON(manifestPath, updatedManifest, { spaces: 2 });

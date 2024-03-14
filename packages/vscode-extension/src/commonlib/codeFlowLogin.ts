@@ -332,6 +332,14 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
+            VsCodeLogInstance.debug(
+              "[Login] " +
+                stringUtil.format(
+                  localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+                  path.join(os.homedir(), ".fx", "account"),
+                  error.message
+                )
+            );
             if (!(await checkIsOnline())) {
               return undefined;
             }
@@ -377,6 +385,14 @@ export class CodeFlowLogin {
           return err(LoginCodeFlowError(new Error("No token response.")));
         }
       } catch (error) {
+        VsCodeLogInstance.debug(
+          "[Login] " +
+            stringUtil.format(
+              localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
+              path.join(os.homedir(), ".fx", "account"),
+              error.message
+            )
+        );
         if (!(await checkIsOnline())) {
           return error(CheckOnlineError());
         }

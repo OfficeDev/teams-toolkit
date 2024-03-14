@@ -38,6 +38,7 @@ import {
   specParserGenerateResultWarningsTelemetryProperty,
   isYamlSpecFile,
   invalidApiSpecErrorName,
+  copilotPluginParserOptions,
   updateForCustomApi,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -67,6 +68,7 @@ const forCustomCopilotRagCustomApi = "custom-copilot-rag-custom-api";
 const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
+const pluginManifestFileName = "ai-plugin.json";
 
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
@@ -290,11 +292,16 @@ export class CopilotPluginGenerator {
       // validate API spec
       const allowAPIKeyAuth = isApiKeyEnabled();
       const allowMultipleParameters = isMultipleParametersEnabled();
-      const specParser = new SpecParser(url, {
-        allowAPIKeyAuth,
-        allowMultipleParameters,
-        projectType: type,
-      });
+      const specParser = new SpecParser(
+        url,
+        isPlugin
+          ? copilotPluginParserOptions
+          : {
+              allowAPIKeyAuth,
+              allowMultipleParameters,
+              projectType: type,
+            }
+      );
       const validationRes = await specParser.validate();
       const warnings = validationRes.warnings;
       const operationIdWarning = warnings.find((w) => w.type === WarningType.OperationIdMissing);
@@ -338,17 +345,33 @@ export class CopilotPluginGenerator {
       // generate files
       await fs.ensureDir(apiSpecFolderPath);
 
-      const adaptiveCardFolder = path.join(
-        destinationPath,
-        AppPackageFolderName,
-        ResponseTemplatesFolderName
-      );
-      const generateResult = await specParser.generate(
-        manifestPath,
-        filters,
-        openapiSpecPath,
-        type === ProjectType.TeamsAi ? undefined : adaptiveCardFolder
-      );
+      let generateResult;
+
+      if (isPlugin) {
+        const pluginManifestPath = path.join(
+          destinationPath,
+          AppPackageFolderName,
+          pluginManifestFileName
+        );
+        generateResult = await specParser.generateForCopilot(
+          manifestPath,
+          filters,
+          openapiSpecPath,
+          pluginManifestPath
+        );
+      } else {
+        const responseTemplateFolder = path.join(
+          destinationPath,
+          AppPackageFolderName,
+          ResponseTemplatesFolderName
+        );
+        generateResult = await specParser.generate(
+          manifestPath,
+          filters,
+          openapiSpecPath,
+          type === ProjectType.TeamsAi ? undefined : responseTemplateFolder
+        );
+      }
 
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
         [telemetryProperties.generateType]: type.toString(),

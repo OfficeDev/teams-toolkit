@@ -8,7 +8,7 @@ import os from "os";
 import "mocha";
 import { ManifestUpdater } from "../src/manifestUpdater";
 import { SpecParserError } from "../src/specParserError";
-import { ErrorType, ParseOptions, ProjectType, WarningType } from "../src/interfaces";
+import { AuthInfo, ErrorType, ParseOptions, ProjectType, WarningType } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
 import { Utils } from "../src/utils";
 import { PluginManifestSchema } from "@microsoft/teams-manifest";
@@ -1143,7 +1143,7 @@ describe("manifestUpdater", () => {
           authorization: {
             authType: "apiSecretServiceAuth",
             apiSecretServiceAuthConfiguration: {
-              apiSecretRegistrationId: "${{API_KEY_NAME_REGISTRATION_ID}}",
+              apiSecretRegistrationId: "${{API_KEY_AUTH_REGISTRATION_ID}}",
             },
           },
           commands: [
@@ -1172,10 +1172,13 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const apiKeyAuth = {
-      type: "apiKey" as const,
-      name: "api_key_name",
-      in: "header",
+    const apiKeyAuth: AuthInfo = {
+      authSchema: {
+        type: "apiKey" as const,
+        name: "api_key_name",
+        in: "header",
+      },
+      name: "api_key_auth",
     };
     const options: ParseOptions = {
       allowMultipleParameters: false,
@@ -1196,7 +1199,7 @@ describe("manifestUpdater", () => {
     expect(warnings).to.deep.equal([]);
   });
 
-  it("should contain auth property in manifest if pass the sso auth", async () => {
+  it("should contain auth property in manifest if pass the oauth2 with auth code flow", async () => {
     const manifestPath = "/path/to/your/manifest.json";
     const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
     const adaptiveCardFolder = "/path/to/your/adaptiveCards";
@@ -1214,9 +1217,9 @@ describe("manifestUpdater", () => {
           composeExtensionType: "apiBased",
           apiSpecificationFile: "spec/outputSpec.yaml",
           authorization: {
-            authType: "microsoftEntra",
-            microsoftEntraConfiguration: {
-              supportsSingleSignOn: true,
+            authType: "oAuth2.0",
+            oAuthConfiguration: {
+              oauthConfigurationId: "${{OAUTH_AUTH_OAUTH_REGISTRATION_ID}}",
             },
           },
           commands: [
@@ -1249,17 +1252,22 @@ describe("manifestUpdater", () => {
       },
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const oauth2 = {
-      type: "oauth2" as const,
-      flows: {
-        implicit: {
-          authorizationUrl: "https://example.com/api/oauth/dialog",
-          scopes: {
-            "write:pets": "modify pets in your account",
-            "read:pets": "read your pets",
+    const oauth2: AuthInfo = {
+      authSchema: {
+        type: "oauth2",
+        flows: {
+          authorizationCode: {
+            authorizationUrl: "https://example.com/api/oauth/dialog",
+            tokenUrl: "https://example.com/api/oauth/token",
+            refreshUrl: "https://example.com/api/outh/refresh",
+            scopes: {
+              "write:pets": "modify pets in your account",
+              "read:pets": "read your pets",
+            },
           },
         },
       },
+      name: "oauth_auth",
     };
     const options: ParseOptions = {
       allowMultipleParameters: false,
@@ -1322,9 +1330,12 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const basicAuth = {
-      type: "http" as const,
-      scheme: "basic",
+    const basicAuth: AuthInfo = {
+      authSchema: {
+        type: "http" as const,
+        scheme: "basic",
+      },
+      name: "basic_auth",
     };
     const options: ParseOptions = {
       allowMultipleParameters: false,
@@ -1364,7 +1375,7 @@ describe("manifestUpdater", () => {
           authorization: {
             authType: "apiSecretServiceAuth",
             apiSecretServiceAuthConfiguration: {
-              apiSecretRegistrationId: "${{PREFIX__API_KEY_NAME_REGISTRATION_ID}}",
+              apiSecretRegistrationId: "${{PREFIX__API_KEY_AUTH_REGISTRATION_ID}}",
             },
           },
           commands: [
@@ -1393,10 +1404,13 @@ describe("manifestUpdater", () => {
       ],
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const apiKeyAuth = {
-      type: "apiKey" as const,
-      name: "*api-key_name",
-      in: "header",
+    const apiKeyAuth: AuthInfo = {
+      authSchema: {
+        type: "apiKey" as const,
+        name: "key_name",
+        in: "header",
+      },
+      name: "*api-key_auth",
     };
 
     const options: ParseOptions = {

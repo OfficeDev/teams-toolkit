@@ -49,7 +49,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
-   SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
+   OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
 
 **If you already have an Assistant created**
@@ -57,7 +57,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
-   SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
+   OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
 
 ### Run Teams Bot locally
@@ -79,7 +79,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![AI Agent in Teams](https://github.com/OfficeDev/TeamsFx/assets/37978464/ccff0457-726a-486b-9247-c7f53e0a80ab)
+![AI Agent in Teams](https://github.com/OfficeDev/TeamsFx/assets/37978464/fd1cf673-e7d8-4826-9cac-e9481a74ee1e)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template

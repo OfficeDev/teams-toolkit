@@ -1,27 +1,25 @@
 import { FxError, ManifestUtil, Result, ok } from "@microsoft/teamsfx-api";
-import { FileNotFoundError, manifestUtils } from "@microsoft/teamsfx-core";
+import { manifestUtils } from "@microsoft/teamsfx-core";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
-import * as projectSettingsHelper from "@microsoft/teamsfx-core/build/common/projectSettingsHelper";
 import * as chai from "chai";
-import * as fs from "fs-extra";
 import * as mockfs from "mock-fs";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { Terminal } from "vscode";
-import * as extension from "../../src/extension";
-import * as globalVariables from "../../src/globalVariables";
-import * as handlers from "../../src/handlers";
-import * as officeDevHandlers from "../../src/officeDevHandlers";
-import { VsCodeUI } from "../../src/qm/vsc_ui";
-import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
-import * as localizeUtils from "../../src/utils/localizeUtils";
 import {
   OfficeDevTerminal,
   triggerGenerateGUID,
   triggerInstall,
   triggerValidate,
 } from "../../src/debug/taskTerminal/officeDevTerminal";
+import * as extension from "../../src/extension";
+import * as globalVariables from "../../src/globalVariables";
+import * as handlers from "../../src/handlers";
+import * as officeDevHandlers from "../../src/officeDevHandlers";
 import { generateManifestGUID, stopOfficeAddInDebug } from "../../src/officeDevHandlers";
+import { VsCodeUI } from "../../src/qm/vsc_ui";
+import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import * as localizeUtils from "../../src/utils/localizeUtils";
 
 describe("officeDevHandler", () => {
   const sandbox = sinon.createSandbox();
@@ -113,31 +111,11 @@ describe("officeDevHandler", () => {
     );
   });
 
-  it("editOfficeAddInManifest", async () => {
-    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
-    sandbox.stub(projectSettingsHelper, "fetchManifestList").returns(["/test/manifest.xml"]);
-    const showTextDocumentStub = sandbox.stub(vscode.window, "showTextDocument");
-
-    await officeDevHandlers.editOfficeAddInManifest();
-
-    sandbox.assert.calledOnce(showTextDocumentStub);
-  });
-
-  it("editOfficeAddInManifest workspace undefined", async () => {
-    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: undefined });
-
-    const result = await officeDevHandlers.editOfficeAddInManifest();
-
-    chai.assert(result.isErr() && result.error instanceof FileNotFoundError);
-  });
-
-  it("editOfficeAddInManifest manifest xml not exist", async () => {
-    sandbox.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
-    sandbox.stub(projectSettingsHelper, "fetchManifestList").returns(undefined);
-
-    const result = await officeDevHandlers.editOfficeAddInManifest();
-
-    chai.assert(result.isErr() && result.error instanceof FileNotFoundError);
+  it("openScriptLabLink", async () => {
+    testOpenUrlHandler(
+      officeDevHandlers.openScriptLabLink,
+      "https://learn.microsoft.com/office/dev/add-ins/overview/explore-with-script-lab"
+    );
   });
 
   it("popupOfficeAddInDependenciesMessage", async () => {

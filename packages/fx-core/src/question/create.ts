@@ -553,7 +553,11 @@ export class CapabilityOptions {
         label: getLocalizedString(capabilityValue.title),
         detail: getLocalizedString(capabilityValue.detail),
       });
-      if (projectType === ProjectTypeOptions.outlookAddin().id)
+      if (
+        projectType === ProjectTypeOptions.outlookAddin().id ||
+        (projectType === ProjectTypeOptions.officeXMLAddin().id &&
+          host === OfficeAddinHostOptions.outlook().id)
+      )
         items.push(CapabilityOptions.outlookAddinImport());
       else items.push(CapabilityOptions.officeAddinImport());
     } else {
@@ -1388,11 +1392,16 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
 
   // office addin supports language defined in officeAddinJsonData
   const projectType = inputs[QuestionNames.ProjectType];
+  const host = inputs[QuestionNames.OfficeAddinHost];
   if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
     if (capabilities.endsWith("-manifest")) {
       return [{ id: ProgrammingLanguage.JS, label: "JavaScript" }];
     }
-    if (projectType === ProjectTypeOptions.outlookAddin().id) {
+    if (
+      projectType === ProjectTypeOptions.outlookAddin().id ||
+      (projectType === ProjectTypeOptions.officeXMLAddin().id &&
+        host === OfficeAddinHostOptions.outlook().id)
+    ) {
       return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
     }
     return [

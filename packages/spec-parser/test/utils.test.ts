@@ -2393,7 +2393,6 @@ describe("utils", () => {
           },
         },
       };
-
       const options: ParseOptions = {
         allowMissingId: true,
         allowAPIKeyAuth: false,

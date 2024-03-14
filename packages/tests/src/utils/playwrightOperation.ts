@@ -215,6 +215,11 @@ export async function initPage(
       } catch (error) {
         console.log("popup is closed");
       }
+      try {
+        await popup?.close();
+      } catch (error) {
+        console.log("popup is closed");
+      }
     } else {
       await addBtn?.click();
     }

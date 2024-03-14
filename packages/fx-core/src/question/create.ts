@@ -1997,7 +1997,11 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     staticOptions: [],
     validation: {
       validFunc: (input: string[], inputs?: Inputs): string | undefined => {
-        if (input.length < 1 || input.length > 10) {
+        if (
+          input.length < 1 ||
+          (input.length > 10 &&
+            inputs?.[QuestionNames.CustomCopilotRag] != CustomCopilotRagOptions.customApi().id)
+        ) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
             input.length,

@@ -30,6 +30,7 @@ import {
   WarningType,
   SpecParserError,
   AdaptiveCardGenerator,
+  ProjectType,
 } from "@microsoft/m365-spec-parser";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { assert, expect } from "chai";
@@ -1404,5 +1405,110 @@ describe("updateForCustomApi", async () => {
       .stub(fs, "readFile")
       .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(newSpec, "typescript", "path", "openapi.yaml");
+  });
+});
+
+describe("listOperations", async () => {
+  const context = createContextV3();
+  const sandbox = sinon.createSandbox();
+  const inputs = {
+    "custom-copilot-rag": "custom-copilot-rag-customApi",
+    platform: Platform.VSCode,
+  };
+  const spec = {
+    openapi: "3.0.0",
+    info: {
+      title: "My API",
+      version: "1.0.0",
+    },
+    description: "test",
+    paths: {
+      "/hello": {
+        get: {
+          operationId: "getHello",
+          summary: "Returns a greeting",
+          parameters: [
+            {
+              name: "query",
+              in: "query",
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "A greeting message",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+          },
+          security: [
+            {
+              api_key: [],
+            },
+          ],
+        },
+        post: {
+          operationId: "createPet",
+          summary: "Create a pet",
+          description: "Create a new pet in the store",
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name"],
+                  properties: {
+                    name: {
+                      type: "string",
+                      description: "Name of the pet",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      securitySchemes: {
+        api_key: {
+          type: "apiKey",
+          name: "api_key",
+          in: "header",
+        },
+      },
+    },
+  } as OpenAPIV3.Document;
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("allow auth for teams ai project", async () => {
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+    });
+    sandbox.stub(SpecParser.prototype, "list").resolves([]);
+
+    const res = await CopilotPluginHelper.listOperations(
+      context,
+      undefined,
+      "",
+      inputs,
+      true,
+      false,
+      ""
+    );
+    expect(res.isOk()).to.be.true;
   });
 });

@@ -53,7 +53,7 @@ import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
-import { ProgrammingLanguage } from "../../../question";
+import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -175,6 +175,8 @@ export async function listOperations(
   }
 
   const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+  const isCustomApi =
+    inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 
   try {
     const allowAPIKeyAuth = isPlugin || isApiKeyEnabled();
@@ -183,6 +185,10 @@ export async function listOperations(
       apiSpecUrl as string,
       isPlugin
         ? copilotPluginParserOptions
+        : isCustomApi
+        ? {
+            projectType: ProjectType.TeamsAi,
+          }
         : {
             allowAPIKeyAuth,
             allowMultipleParameters,
@@ -879,44 +885,12 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
 
 const AuthCode = {
   javascript: {
-    importCode: `const addAuthConfig = require("./utility.js");`,
-    importPlaceholder: `// Import addAuthConfig function from utility file`,
-    actionCode: `addAuthConfig(client, "{{pathUrl}}", "{{method}}");`,
+    actionCode: `addAuthConfig(client);`,
     actionPlaceholder: `// Add authentication configuration for the client`,
-    utilityCode: `
-    function addAuthConfig(client, url, method) {
-      // This part is sample code for adding authentication to the client.
-      // Please replace it with your own authentication logic.
-      // You can specify different authentication methods for different urls and methods.
-    
-      // For Basic Authentication
-      //client.defaults.headers["Authorization"] = \`Basic ${btoa("Your-Username:Your-Password")}\`;
-    
-      // For Bearer Token
-      client.defaults.headers["Authorization"] = \`Bearer ${"Your-Token"}\`;
-    }
-    module.exports = addAuthConfig;`,
-    utilityPlaceholder: `// Add authentication configuration for the client`,
   },
   typescript: {
-    importCode: `import { addAuthConfig } from "./utility";`,
-    importPlaceholder: `// Import addAuthConfig function from utility file`,
-    actionCode: `addAuthConfig(client, "{{pathUrl}}", "{{method}}");`,
+    actionCode: `addAuthConfig(client);`,
     actionPlaceholder: `// Add authentication configuration for the client`,
-    utilityCode: `
-    import { OpenAPIClient } from "openapi-client-axios";
-    export function addAuthConfig(client: OpenAPIClient, url: string, method: string) {
-      // This part is sample code for adding authentication to the client.
-      // Please replace it with your own authentication logic.
-      // You can specify different authentication methods for different urls and methods.
-
-      // For Basic Authentication
-      //client.defaults.headers["Authorization"] = \`Basic ${btoa("Your-Username:Your-Password")}\`;
-
-      // For Bearer Token
-      //client.defaults.headers["Authorization"] = \`Bearer ${"Your-Token"}\`;
-    },`,
-    utilityPlaceholder: `// Add authentication configuration for the client`,
   },
 };
 
@@ -940,7 +914,7 @@ async function updateCodeForCustomApi(
       const code = codeTemplate
         .replace(authCodeTemplate.actionPlaceholder, auth ? authCodeTemplate.actionCode : "")
         .replace(/{{operationId}}/g, item.item.operationId!)
-        .replace("{{pathUrl}}", item.pathUrl)
+        .replace(/{{pathUrl}}/g, item.pathUrl)
         .replace(/{{method}}/g, item.method);
       actionsCode.push(code);
     }
@@ -952,23 +926,9 @@ async function updateCodeForCustomApi(
     );
     const indexFileContent = (await fs.readFile(indexFilePath)).toString();
     const updateIndexFileContent = indexFileContent
-      .replace(authCodeTemplate.importPlaceholder, needAuth ? authCodeTemplate.importCode : "")
       .replace("{{OPENAPI_SPEC_PATH}}", openapiSpecFileName)
       .replace("// Replace with action code", actionsCode.join("\n"));
     await fs.writeFile(indexFilePath, updateIndexFileContent);
-
-    if (needAuth) {
-      const utilityFilePath = path.join(
-        appFolderPath,
-        language === ProgrammingLanguage.JS ? "utility.js" : "utility.ts"
-      );
-      const utilityFileContent = (await fs.readFile(utilityFilePath)).toString();
-      const updateUtilityFileContent = utilityFileContent.replace(
-        authCodeTemplate.utilityPlaceholder,
-        authCodeTemplate.utilityCode
-      );
-      await fs.writeFile(utilityFilePath, updateUtilityFileContent);
-    }
   }
 }
 

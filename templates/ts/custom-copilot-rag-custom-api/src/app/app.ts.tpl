@@ -37,12 +37,11 @@ const app = new Application({
   },
 });
 
-import { generateAdaptiveCard } from "./utility";
+import { generateAdaptiveCard, addAuthConfig } from "./utility";
 import { TurnContext, ConversationState } from "botbuilder";
 import { TurnState, Memory } from "@microsoft/teams-ai";
 import yaml from "js-yaml";
 import { OpenAPIClientAxios, Document } from "openapi-client-axios";
-// Import addAuthConfig function from utility file
 const fs = require("fs-extra");
 type ApplicationTurnState = TurnState<ConversationState>;
 // Define a prompt function for getting the current status of the lights

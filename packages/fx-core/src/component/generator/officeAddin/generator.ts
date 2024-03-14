@@ -29,6 +29,7 @@ import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { getOfficeAddinTemplateConfig } from "../officeXMLAddin/projectConfig";
 import { HelperMethods } from "./helperMethods";
+import { toLower } from "lodash";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -88,7 +89,9 @@ export class OfficeAddinGenerator {
     const name = inputs[QuestionNames.AppName] as string;
     const addinRoot = destinationPath;
     const fromFolder = inputs[QuestionNames.OfficeAddinFolder];
-    const language = inputs[QuestionNames.ProgrammingLanguage] as "javascript" | "typescript";
+    const language = toLower(inputs[QuestionNames.ProgrammingLanguage]) as
+      | "javascript"
+      | "typescript";
     const projectType = inputs[QuestionNames.ProjectType];
     const capability = inputs[QuestionNames.Capabilities];
     const host: string =

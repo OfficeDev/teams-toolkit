@@ -82,10 +82,10 @@ describe("OfficeXMLAddinGenerator", function () {
       projectPath: testFolder,
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
       [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-      [QuestionNames.Capabilities]: ["taskpane"],
+      [QuestionNames.Capabilities]: "word-taskpane",
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
@@ -103,10 +103,10 @@ describe("OfficeXMLAddinGenerator", function () {
       projectPath: testFolder,
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
       [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
-      [QuestionNames.Capabilities]: ["manifest"],
+      [QuestionNames.Capabilities]: "word-manifest",
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
     sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -125,7 +125,7 @@ describe("OfficeXMLAddinGenerator", function () {
       [QuestionNames.Capabilities]: ["react"],
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(undefined);
@@ -141,7 +141,7 @@ describe("getOfficeAddinTemplateConfig", () => {
     const config = getOfficeAddinTemplateConfig(ProjectTypeOptions.officeXMLAddin().id, "excel");
     chai.assert.equal(config["excel-manifest"].framework?.default?.typescript, undefined);
     chai.assert.equal(
-      config["excel-react"].framework?.react?.typescript,
+      config["excel-react"].framework?.default?.typescript,
       "https://aka.ms/ccdevx-fx-react-ts"
     );
   });

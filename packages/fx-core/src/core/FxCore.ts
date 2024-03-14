@@ -665,15 +665,6 @@ export class FxCore {
     );
     return result;
   }
-  /**
-   * Warning: this API only works for CLI_HELP, it has no business with interactive run for CLI!
-   */
-  getQuestions(stage: Stage, inputs: Inputs): Result<IQTreeNode | undefined, FxError> {
-    if (stage === Stage.create) {
-      return ok(createProjectCliHelpNode());
-    }
-    return ok(undefined);
-  }
 
   /**
    * get all dot envs

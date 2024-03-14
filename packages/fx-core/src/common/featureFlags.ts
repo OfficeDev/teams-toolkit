@@ -111,7 +111,7 @@ export function isOfficeJSONAddinEnabled(): boolean {
 // Case 3: TEAMSFX_OFFICE_ADDIN = true AND TEAMSFX_OFFICE_XML_ADDIN = true
 //     3.1 project-type option: `office-addin-type`
 //   3.2 addin-host: not show but will use `wxpo` internally
-//   3.3 capabilities options: [`jason-taskpane`, `office-addin-import`]
+//   3.3 capabilities options: [`json-taskpane`, `office-addin-import`]
 //   3.4 programming-language options: [`typescript`, `javascript`]
 //   3.5 office-addin-framework-type options: [`default`, `react`]
 //   3.6 generator class: OfficeAddinGenerator

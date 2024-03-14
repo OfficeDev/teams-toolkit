@@ -2404,7 +2404,6 @@ describe("utils", () => {
 
       const result = Utils.isSupportedApi(method, path, spec as any, options);
       assert.strictEqual(result, true);
-
     });
   });
 

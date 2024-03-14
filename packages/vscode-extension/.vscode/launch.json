@@ -14,6 +14,7 @@
       ],
       "env": {
         "NODE_ENV": "development",
+        "TEAMSFX_TELEMETRY_TEST": "true",
         "TEAMSFX_SAMPLE_CONFIG_BRANCH": "dev",
       },
       "preLaunchTask": "npm: build"

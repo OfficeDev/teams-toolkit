@@ -359,7 +359,6 @@ export function getSystemInputs(): Inputs {
 }
 
 export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   let inputs: Inputs | undefined;
   if (args?.length === 1) {
     if (!!args[0].teamsAppFromTdp) {
@@ -374,10 +373,19 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
 
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
+  const triggerfrom = getTriggerFromProperty(args);
   // show local debug button by default
   if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
+      ...triggerfrom,
+      [TelemetryProperty.IsOfficeAddIn]: "true",
+    });
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
   } else {
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, {
+      ...triggerfrom,
+      [TelemetryProperty.IsOfficeAddIn]: "false",
+    });
     await openFolder(projectPathUri, true, res.warnings, args);
   }
   return result;
@@ -439,7 +447,9 @@ export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, 
 }
 
 export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug);
+  const isOfficeAddIn = globalVariables.isOfficeAddInProject;
+  const properties = { [TelemetryProperty.IsOfficeAddIn]: isOfficeAddIn.toString() };
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug, properties);
   await vscode.commands.executeCommand("workbench.action.quickOpen", "debug ");
 
   return ok(null);
@@ -1385,7 +1395,11 @@ export async function showLocalDebugMessage() {
     },
   };
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
+  const isOfficeAddIn = globalVariables.isOfficeAddInProject;
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification, {
+    [TelemetryProperty.IsOfficeAddIn]: isOfficeAddIn.toString(),
+  });
   const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
   let message = util.format(
@@ -1414,6 +1428,7 @@ export async function ShowScaffoldingWarningSummary(
   workspacePath: string,
   warning: string
 ): Promise<void> {
+  const isOfficeAddIn = globalVariables.isOfficeAddInProject;
   try {
     let createWarnings: Warning[] = [];
 
@@ -1424,7 +1439,10 @@ export async function ShowScaffoldingWarningSummary(
         const error = new JSONSyntaxError(warning, e, "vscode");
         ExtTelemetry.sendTelemetryErrorEvent(
           TelemetryEvent.ShowScaffoldingWarningSummaryError,
-          error
+          error,
+          {
+            [TelemetryProperty.IsOfficeAddIn]: isOfficeAddIn.toString(),
+          }
         );
       }
     }
@@ -1439,7 +1457,9 @@ export async function ShowScaffoldingWarningSummary(
           workspacePath
         );
         if (message) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary, {
+            [TelemetryProperty.IsOfficeAddIn]: isOfficeAddIn.toString(),
+          });
           VsCodeLogInstance.outputChannel.show();
           void VsCodeLogInstance.info(message);
         }
@@ -1447,17 +1467,28 @@ export async function ShowScaffoldingWarningSummary(
     } else {
       ExtTelemetry.sendTelemetryErrorEvent(
         TelemetryEvent.ShowScaffoldingWarningSummaryError,
-        manifestRes.error
+        manifestRes.error,
+        {
+          [TelemetryProperty.IsOfficeAddIn]: isOfficeAddIn.toString(),
+        }
       );
     }
   } catch (e) {
     const error = assembleError(e);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ShowScaffoldingWarningSummaryError, error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ShowScaffoldingWarningSummaryError, error, {
+      [TelemetryProperty.IsOfficeAddIn]: isOfficeAddIn.toString(),
+    });
   }
 }
 
 export async function openSamplesHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, getTriggerFromProperty(args));
+  const isOfficeAddIn = globalVariables.isOfficeAddInProject;
+  const triggerFrom = getTriggerFromProperty(args);
+  const properties = {
+    [TelemetryProperty.IsOfficeAddIn]: isOfficeAddIn.toString(),
+    ...triggerFrom,
+  };
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Samples, properties);
   WebviewPanel.createOrShow(PanelType.SampleGallery, args);
   return Promise.resolve(ok(null));
 }

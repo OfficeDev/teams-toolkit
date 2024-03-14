@@ -19,5 +19,5 @@ export const enum TeamsChatCommand {
 export const DefaultNextStep: ChatFollowup = {
   prompt: "",
   command: "nextstep",
-  label: localize("teamstoolkit.chatParticipants.nextStep.whatsNext"),
+  label: "What's next I could do?",
 };

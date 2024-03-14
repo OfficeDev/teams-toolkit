@@ -67,16 +67,18 @@ export default async function createCommandHandler(
     );
     if (firstMatch.type === "sample") {
       const folder = await showFileTree(firstMatch, response);
+      const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
       response.button({
         command: CHAT_CREATE_SAMPLE_COMMAND_ID,
         arguments: [folder],
-        title: localize("teamstoolkit.chatParticipants.create.sample"),
+        title: sampleTitle,
       });
     } else if (firstMatch.type === "template") {
+      const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
       response.button({
         command: "fx-extension.create",
         arguments: [TelemetryTriggerFrom.CopilotChat, firstMatch.data],
-        title: localize("teamstoolkit.chatParticipants.create.template"),
+        title: templateTitle,
       });
     }
 
@@ -102,16 +104,18 @@ export default async function createCommandHandler(
         token
       );
       if (project.type === "sample") {
+        const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         response.button({
           command: CHAT_CREATE_SAMPLE_COMMAND_ID,
           arguments: [project],
-          title: localize("teamstoolkit.chatParticipants.create.sample"),
+          title: sampleTitle,
         });
       } else if (project.type === "template") {
+        const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         response.button({
           command: "fx-extension.create",
           arguments: [TelemetryTriggerFrom.CopilotChat, project.data],
-          title: localize("teamstoolkit.chatParticipants.create.template"),
+          title: templateTitle,
         });
       }
     }

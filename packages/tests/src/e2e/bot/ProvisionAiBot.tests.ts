@@ -32,7 +32,7 @@ class AiBotTestCase extends CaseFactory {
 new AiBotTestCase(
   Capability.AiBot,
   24808531,
-  "v-ivanchen@microsoft.com",
+  "qidon@microsoft.com",
   ["bot"],
   {}
 ).test();

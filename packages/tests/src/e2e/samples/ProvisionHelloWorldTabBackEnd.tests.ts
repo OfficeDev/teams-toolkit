@@ -13,6 +13,6 @@ class HelloWorldTabBackEndTestCase extends CaseFactory {}
 new HelloWorldTabBackEndTestCase(
   TemplateProjectFolder.HelloWorldTabBackEnd,
   15277459,
-  "v-ivanchen@microsoft.com",
+  "rentu@microsoft.com",
   ["tab"]
 ).test();

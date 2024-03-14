@@ -13,6 +13,6 @@ class MyFirstMettingTestCase extends CaseFactory {}
 new MyFirstMettingTestCase(
   TemplateProjectFolder.MyFirstMetting,
   15277468,
-  "v-ivanchen@microsoft.com",
+  "kaiyan@microsoft.com",
   ["tab"]
 ).test();

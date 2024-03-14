@@ -23,6 +23,7 @@ import fse from "fs-extra";
 import "mocha";
 import mockfs from "mock-fs";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import * as fetch from "node-fetch";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import * as path from "path";
 import proxyquire from "proxyquire";
@@ -32,7 +33,6 @@ import * as uuid from "uuid";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { Generator } from "../../../src/component/generator/generator";
-import projectsJsonData from "../../../src/component/generator/officeAddin/config/projectsJsonData";
 import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
 import {
   HelperMethods,
@@ -40,11 +40,9 @@ import {
 } from "../../../src/component/generator/officeAddin/helperMethods";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
+import { AccessGithubError, UserCancelError } from "../../../src/error";
 import { ProjectTypeOptions, QuestionNames } from "../../../src/question";
 import { MockTools } from "../../core/utils";
-import * as fetch from "node-fetch";
-import { AccessGithubError, ReadFileError, UserCancelError } from "../../../src/error";
-import { Readable } from "stream";
 
 describe("OfficeAddinGenerator for Outlook Addin", function () {
   const testFolder = path.resolve("./tmp");
@@ -667,92 +665,6 @@ describe("helperMethods", async () => {
         `<img width="90" height="90" src="../../appPackage/assets/logo-filled.png" alt="Contoso" title="Contoso" />`
       );
     });
-  });
-});
-
-describe("projectsJsonData for Outlook Addin", () => {
-  it("should contain desired values", () => {
-    const data = new projectsJsonData();
-    chai.assert.equal(data.getHostDisplayName("outlook"), "Outlook");
-    chai.assert.isUndefined(data.getHostDisplayName("xxx"));
-    chai.assert.deepEqual(data.getHostTemplateNames("taskpane"), [
-      "Outlook",
-      "Word",
-      "Excel",
-      "PowerPoint",
-    ]);
-    chai.assert.isEmpty(data.getHostTemplateNames("xxx"));
-    chai.assert.deepEqual(data.getSupportedScriptTypes("taskpane"), ["TypeScript"]);
-    chai.assert.equal(
-      data.getProjectTemplateRepository("taskpane", "typescript"),
-      "https://github.com/OfficeDev/Office-Addin-TaskPane"
-    );
-    chai.assert.equal(
-      data.getProjectTemplateBranchName("taskpane", "typescript", false),
-      "json-preview-yo-office"
-    );
-
-    chai.assert.deepEqual(
-      data.getProjectDownloadLink("taskpane", "TypeScript"),
-      "https://aka.ms/teams-toolkit/office-addin-taskpane"
-    );
-
-    chai.assert.isDefined(data.getParsedProjectJsonData());
-    chai.assert.isFalse(data.projectBothScriptTypes("taskpane"));
-  });
-});
-
-describe("projectsJsonData for Office Addin", () => {
-  it("should contain desired values", () => {
-    const data = new projectsJsonData();
-    chai.assert.equal(data.getHostDisplayName("outlook"), "Outlook");
-    chai.assert.isUndefined(data.getHostDisplayName("xxx"));
-    chai.assert.deepEqual(data.getHostTemplateNames("taskpane"), [
-      "Outlook",
-      "Word",
-      "Excel",
-      "PowerPoint",
-    ]);
-    chai.assert.isEmpty(data.getHostTemplateNames("xxx"));
-    chai.assert.deepEqual(data.getSupportedScriptTypesNew("taskpane"), [
-      "TypeScript",
-      "JavaScript",
-    ]);
-    chai.assert.equal(
-      data.getProjectTemplateRepositoryNew("taskpane", "typescript", "default"),
-      "https://github.com/OfficeDev/Office-Addin-TaskPane"
-    );
-    chai.assert.isUndefined(data.getProjectTemplateRepositoryNew("xxx", "typescript", "default"));
-    chai.assert.equal(
-      data.getProjectTemplateBranchNameNew("taskpane", "typescript", "default", false),
-      "json-wxpo-preview"
-    );
-    chai.assert.isUndefined(
-      data.getProjectTemplateBranchNameNew("xxx", "typescript", "default", false)
-    );
-    chai.assert.equal(
-      data.getProjectTemplateBranchNameNew("taskpane", "typescript", "default", true),
-      "json-wxpo-preview"
-    );
-    chai.assert.deepEqual(
-      data.getProjectRepoAndBranchNew("taskpane", "typescript", "default", false),
-      {
-        repo: "https://github.com/OfficeDev/Office-Addin-TaskPane",
-        branch: "json-wxpo-preview",
-      }
-    );
-    chai.assert.deepEqual(data.getProjectRepoAndBranchNew("xxx", "typescript", "default", false), {
-      repo: undefined,
-      branch: undefined,
-    });
-
-    chai.assert.deepEqual(
-      data.getProjectDownloadLinkNew("taskpane", "TypeScript", "default"),
-      "https://aka.ms/teams-toolkit/office-addin-taskpane/ts-default"
-    );
-
-    chai.assert.isDefined(data.getParsedProjectJsonData());
-    chai.assert.isTrue(data.projectBothScriptTypesNew("taskpane"));
   });
 });
 

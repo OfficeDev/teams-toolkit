@@ -100,8 +100,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   }
 }
 var apiEndpoint = 'https://${functionApp.properties.defaultHostName}'
-var oauthAuthority = uri(aadAppOauthAuthorityHost, 'v2.0')
-var aadIssuer = uri(oauthAuthority, aadAppTenantId)
+var oauthAuthority = uri(aadAppOauthAuthorityHost, aadAppTenantId)
 var aadApplicationIdUri = 'api://${functionApp.properties.defaultHostName}/${aadAppClientId}'
 
 // Configure Azure Functions to use Azure AD for authentication.
@@ -113,11 +112,12 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
       requireAuthentication: true
       unauthenticatedClientAction: 'Return401'
     }
+
     identityProviders: {
       azureActiveDirectory: {
         enabled: true
         registration: {
-          openIdIssuer: aadIssuer
+          openIdIssuer: oauthAuthority
           clientId: aadAppClientId
         }
         validation: {
@@ -125,6 +125,18 @@ resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
             aadAppClientId
             aadApplicationIdUri
           ]
+          defaultAuthorizationPolicy: {
+            allowedApplications: [
+              teamsMobileOrDesktopAppClientId
+              teamsWebAppClientId
+              officeWebAppClientId1
+              officeWebAppClientId2
+              outlookDesktopAppClientId
+              outlookWebAppClientId
+              officeUwpPwaClientId
+              outlookOnlineAddInAppClientId
+            ]
+          }
         }
       }
     }    

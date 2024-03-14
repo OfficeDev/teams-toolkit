@@ -541,25 +541,28 @@ export class CapabilityOptions {
 
   static officeAddinDynamicCapabilities(projectType: string, host?: string): OptionItem[] {
     const items: OptionItem[] = [];
-    if (
-      projectType === ProjectTypeOptions.outlookAddin().id ||
-      projectType === ProjectTypeOptions.officeAddin().id ||
-      (projectType === ProjectTypeOptions.officeXMLAddin().id &&
-        host === OfficeAddinHostOptions.outlook().id)
-    ) {
-      const capabilityValue = OfficeAddinProjectConfig.json["json-taskpane"];
+    const isOutlookAddin = projectType === ProjectTypeOptions.outlookAddin().id;
+    const isOfficeAddin = projectType === ProjectTypeOptions.officeAddin().id;
+    const isOfficeXMLAddinForOutlook =
+      projectType === ProjectTypeOptions.officeXMLAddin().id &&
+      host === OfficeAddinHostOptions.outlook().id;
+
+    const pushToItems = (option: any) => {
+      const capabilityValue = OfficeAddinProjectConfig.json[option];
       items.push({
-        id: "json-taskpane",
+        id: option,
         label: getLocalizedString(capabilityValue.title),
         detail: getLocalizedString(capabilityValue.detail),
       });
-      if (
-        projectType === ProjectTypeOptions.outlookAddin().id ||
-        (projectType === ProjectTypeOptions.officeXMLAddin().id &&
-          host === OfficeAddinHostOptions.outlook().id)
-      )
+    };
+
+    if (isOutlookAddin || isOfficeAddin || isOfficeXMLAddinForOutlook) {
+      pushToItems("json-taskpane");
+      if (isOutlookAddin || isOfficeXMLAddinForOutlook) {
         items.push(CapabilityOptions.outlookAddinImport());
-      else items.push(CapabilityOptions.officeAddinImport());
+      } else if (isOfficeAddin) {
+        items.push(CapabilityOptions.officeAddinImport());
+      }
     } else {
       if (host) {
         const hostValue = OfficeAddinProjectConfig[host];
@@ -1389,10 +1392,10 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     return [{ id: ProgrammingLanguage.CSharp, label: "C#" }];
   }
   const capabilities = inputs[QuestionNames.Capabilities] as string;
+  const host = inputs[QuestionNames.OfficeAddinHost] as string;
 
   // office addin supports language defined in officeAddinJsonData
   const projectType = inputs[QuestionNames.ProjectType];
-  const host = inputs[QuestionNames.OfficeAddinHost];
   if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
     if (capabilities.endsWith("-manifest")) {
       return [{ id: ProgrammingLanguage.JS, label: "JavaScript" }];

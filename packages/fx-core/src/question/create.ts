@@ -56,7 +56,7 @@ import { CliQuestionName, QuestionNames } from "./questionNames";
 import { isValidHttpUrl } from "./util";
 import {
   capabilitiesHavePythonOption,
-  copilotPluginApiSpecOptionId,
+    copilotPluginApiSpecOptionId,
   copilotPluginNewApiOptionId,
   copilotPluginOpenAIPluginOptionId,
 } from "./constants";
@@ -704,7 +704,6 @@ export class CapabilityOptions {
       detail: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotBasicOption.detail"
       ),
-      description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
     };
   }
 
@@ -1389,7 +1388,12 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     return [
       { id: "javascript", label: "JavaScript" },
       { id: "typescript", label: "TypeScript" },
-      { id: "python", label: "Python" },
+      {
+        id: "python",
+        label: "Python",
+        detail: "",
+        description: getLocalizedString("core.createProjectQuestion.option.description.preview"),
+      },
     ];
   } else {
     // other cases

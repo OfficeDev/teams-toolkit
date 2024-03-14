@@ -25,7 +25,7 @@ class ChefBotTestCase extends CaseFactory {
 new ChefBotTestCase(
   TemplateProjectFolder.ChefBot,
   25227103,
-  "v-ivanchen@microsoft.com",
+  "huihuiwu@microsoft.com",
   [],
   { skipValidate: true }
 ).test();

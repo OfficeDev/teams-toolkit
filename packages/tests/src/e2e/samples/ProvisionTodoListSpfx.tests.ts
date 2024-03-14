@@ -21,6 +21,6 @@ class TodoListSpfxTestCase extends CaseFactory {
 new TodoListSpfxTestCase(
   TemplateProjectFolder.TodoListSpfx,
   15277466,
-  "v-ivanchen@microsoft.com",
+  "huihuiwu@microsoft.com",
   ["spfx"]
 ).test();

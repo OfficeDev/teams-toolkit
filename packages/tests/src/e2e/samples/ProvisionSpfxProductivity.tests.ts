@@ -21,6 +21,6 @@ class SpfxProductivityTestCase extends CaseFactory {
 new SpfxProductivityTestCase(
   TemplateProjectFolder.SpfxProductivity,
   24753056,
-  "v-ivanchen@microsoft.com",
+  "huihuiwu@microsoft.com",
   ["spfx"]
 ).test();

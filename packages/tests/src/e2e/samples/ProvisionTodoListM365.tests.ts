@@ -13,6 +13,6 @@ class TodoListM365TestCase extends CaseFactory {}
 new TodoListM365TestCase(
   TemplateProjectFolder.TodoListM365,
   15277470,
-  "v-ivanchen@microsoft.com",
+  "qidon@microsoft.com",
   ["aad", "tab", "function"]
 ).test();

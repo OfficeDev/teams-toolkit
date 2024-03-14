@@ -13,6 +13,6 @@ class GraphConnectorTestCase extends CaseFactory {}
 new GraphConnectorTestCase(
   TemplateProjectFolder.GraphConnector,
   15277460,
-  "v-ivanchen@microsoft.com",
+  "junhan@microsoft.com",
   ["tab", "aad"]
 ).test();

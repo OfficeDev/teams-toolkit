@@ -1391,18 +1391,17 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
 
   // office addin supports language defined in officeAddinJsonData
   const projectType = inputs[QuestionNames.ProjectType];
-  const officeHost = inputs[QuestionNames.OfficeAddinHost];
   if (ProjectTypeOptions.officeAddinAllIds().includes(projectType)) {
     if (capabilities.endsWith("-manifest")) {
       return [{ id: "javascript", label: "JavaScript" }];
     }
-    const framework = getOfficeAddinFramework(inputs);
-    const templteConfig = getOfficeAddinTemplateConfig(projectType, officeHost);
-    const languages = Object.keys(templteConfig[capabilities].framework[framework]) || [];
-    return languages.map((language) => ({
-      label: language === "typescript" ? "TypeScript" : "JavaScript",
-      id: language,
-    }));
+    if (projectType === ProjectTypeOptions.outlookAddin().id) {
+      return [{ id: "tavascript", label: "TypeScript" }];
+    }
+    return [
+      { id: "tavascript", label: "TypeScript" },
+      { id: "javascript", label: "JavaScript" },
+    ];
   }
 
   if (capabilities === CapabilityOptions.SPFxTab().id) {

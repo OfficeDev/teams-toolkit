@@ -16,7 +16,16 @@ import {
   upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+import {
+  CLIVersionCheck,
+  updateDeverloperInManifestFile,
+} from "../../../utils/commonUtils";
+import { VSBrowser } from "vscode-extension-tester";
+import {
+  reRunProvision,
+  runDeploy,
+  runProvision,
+} from "../../remotedebug/remotedebugContext";
 
 describe("Migration Tests", function () {
   this.timeout(Timeout.migrationTestCase);
@@ -53,8 +62,6 @@ describe("Migration Tests", function () {
       await CLIVersionCheck("V2", mirgationDebugTestContext.projectPath);
       // v2 provision
       await mirgationDebugTestContext.provisionWithCLI("dev", false);
-      // v2 deploy
-      await mirgationDebugTestContext.deployWithCLI("dev");
 
       // upgrade
       await upgradeByTreeView();
@@ -70,11 +77,13 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
+
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      // v3 deploy
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await reRunProvision();
+      await runDeploy(Timeout.botDeploy);
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
 

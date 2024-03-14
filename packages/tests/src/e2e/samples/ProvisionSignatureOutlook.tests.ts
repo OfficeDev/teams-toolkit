@@ -35,7 +35,7 @@ class OutlookSignatureTestCase extends CaseFactory {
 new OutlookSignatureTestCase(
   TemplateProjectFolder.OutlookSignature,
   24132154,
-  "v-ivanchen@microsoft.com",
+  "huajiezhang@microsoft.com",
   [],
   { skipDeploy: true }
 ).test();

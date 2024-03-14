@@ -488,6 +488,8 @@ export class Executor {
                 envContent += `\nBOT_ENDPOINT=${endpoint}`;
                 envContent += `\nBOT_DOMAIN=${domain}`;
                 envContent += `\nBOT_FUNCTION_ENDPOINT=${endpoint}`;
+                envContent += `\nPROVISIONOUTPUT__BOTOUTPUT__SITEENDPOINT=${endpoint}`;
+                envContent += `\nPROVISIONOUTPUT__BOTOUTPUT__VALIDDOMAIN=${domain}`;
                 fs.writeFileSync(envFile, envContent);
                 console.log(envContent);
               } catch (error) {

@@ -5,34 +5,38 @@
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
 
+import { Page } from "playwright";
 import { TemplateProject } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
+import { validateLargeNotificationBot } from "../../utils/playwrightOperation";
 import { SampledebugContext } from "./sampledebugContext";
-import * as path from "path";
-import * as fs from "fs";
+import { getBotSiteEndpoint } from "../../utils/commonUtils";
 
-class BotSSOTestCase extends CaseFactory {
-  public override async onAfterCreate(
-    sampledebugContext: SampledebugContext,
-    env: "local" | "dev"
+class LargeNotiTestCase extends CaseFactory {
+  override async onValidate(
+    page: Page,
+    options: {
+      context: SampledebugContext;
+      displayName: string;
+      includeFunction: boolean;
+      npmName: string;
+      env: "local" | "dev";
+    }
   ): Promise<void> {
-    const envFile = path.resolve(
-      sampledebugContext.projectPath,
-      "env",
-      `.env.${env}`
+    const funcEndpoint = await getBotSiteEndpoint(
+      options.context.projectPath,
+      "dev"
     );
-    let ENDPOINT = fs.readFileSync(envFile, "utf-8");
-    ENDPOINT += "\nSERVICE_BUS_QUEUE_NAME=test-service-bus";
-    fs.writeFileSync(envFile, ENDPOINT);
-    console.log(`add endpoint ${ENDPOINT} to .env.${env} file`);
+    return await validateLargeNotificationBot(
+      page,
+      funcEndpoint + "/api/notification"
+    );
   }
 }
 
-new BotSSOTestCase(
+new LargeNotiTestCase(
   TemplateProject.LargeScaleBot,
   25960873,
   "v-ivanchen@microsoft.com",
-  "dev",
-  [],
-  { skipInit: true }
+  "dev"
 ).test();

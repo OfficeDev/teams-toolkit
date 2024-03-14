@@ -5,18 +5,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
+    <RootNamespace>{{SafeProjectName}}</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+{{^isNewProjectTypeEnabled}}
     <ProjectCapability Include="TeamsFx" />
+{{/isNewProjectTypeEnabled}}
     <ProjectCapability Include="APIME" />
   </ItemGroup>
 
+{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <None Include="appPackage/**/*" />
     <None Include="infra/**/*" />
   </ItemGroup>
 
+{{/isNewProjectTypeEnabled}}
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.20.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.1.0" />

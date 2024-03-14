@@ -54,7 +54,12 @@ Above steps use OpenAI as AI service, optionally, you can also use Azure OpenAI 
 >
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 
+{{#enableTestToolByDefault}}
+1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
+{{/enableTestToolByDefault}}
 1. In `src/app.js`, comment out *"Use OpenAI"* part and uncomment *"use Azure OpenAI"* part, e.g.
     ```javascript
     const model = new OpenAIModel({

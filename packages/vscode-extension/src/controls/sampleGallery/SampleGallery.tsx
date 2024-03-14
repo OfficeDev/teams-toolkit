@@ -70,13 +70,10 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
     );
     if (this.state.loading) {
       return <div className="sample-gallery">{titleSection}</div>;
-    } else if (this.state.selectedSampleId) {
-      const selectedSample = this.samples.filter(
-        (sample: SampleInfo) => sample.id == this.state.selectedSampleId
-      )[0];
+    } else if (this.selectedSample) {
       return (
         <SampleDetailPage
-          sample={selectedSample}
+          sample={this.selectedSample}
           selectSample={this.onSampleSelected}
           createSample={this.onCreateSample}
           viewGitHub={this.onViewGithub}
@@ -87,9 +84,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       const featuredSamples = (this.state.filteredSamples ?? this.samples).filter(
         (sample) => sample.suggested
       );
-      const normalSamples = (this.state.filteredSamples ?? this.samples).filter(
-        (sample) => !sample.suggested
-      );
+      const filteredSamples = this.state.filteredSamples ?? this.samples;
       return (
         <div className="sample-gallery">
           {titleSection}
@@ -141,7 +136,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
               )}
               <div className={`sample-section ${this.state.layout}`}>
                 {this.state.layout === "grid"
-                  ? normalSamples.map((sample: SampleInfo) => {
+                  ? filteredSamples.map((sample: SampleInfo) => {
                       return (
                         <SampleCard
                           key={sample.id}
@@ -153,7 +148,7 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
                         />
                       );
                     })
-                  : normalSamples.map((sample: SampleInfo) => {
+                  : filteredSamples.map((sample: SampleInfo) => {
                       return (
                         <SampleListItem
                           key={sample.id}
@@ -171,6 +166,16 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         </div>
       );
     }
+  }
+
+  private get selectedSample(): SampleInfo | null {
+    if (!this.state.selectedSampleId) {
+      return null;
+    }
+    const selectedSamples = this.samples.filter(
+      (sample: SampleInfo) => sample.id == this.state.selectedSampleId
+    );
+    return selectedSamples.length > 0 ? selectedSamples[0] : null;
   }
 
   private messageHandler = (event: any) => {
@@ -193,6 +198,9 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
             layout: value || "grid",
           });
         }
+        break;
+      case Commands.OpenDesignatedSample:
+        this.onSampleSelected(event.data.sampleId, TelemetryTriggerFrom.ExternalUrl);
         break;
       default:
         break;

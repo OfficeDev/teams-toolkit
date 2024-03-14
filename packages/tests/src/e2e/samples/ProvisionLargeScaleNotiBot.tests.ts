@@ -26,6 +26,6 @@ class LargeScaleBotTestCase extends CaseFactory {
 new LargeScaleBotTestCase(
   TemplateProjectFolder.LargeScaleBot,
   25929126,
-  "v-ivanchen@microsoft.com",
+  "yiqingzhao@microsoft.com",
   ["bot"]
 ).test();

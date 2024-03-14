@@ -11,6 +11,7 @@ import { environmentNameManager } from "../../core/environmentName";
 
 class PathUtils {
   getYmlFilePath(projectPath: string, env?: string): string {
+    if (process.env.TEAMSFX_CONFIG_FILE_PATH) return process.env.TEAMSFX_CONFIG_FILE_PATH;
     const envName = env || process.env.TEAMSFX_ENV || "dev";
     if (!envName) throw new MissingRequiredInputError("env", "PathUtils");
     const ymlPath = path.join(

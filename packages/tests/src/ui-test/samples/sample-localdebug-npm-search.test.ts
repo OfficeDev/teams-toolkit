@@ -17,6 +17,7 @@ class NpmSearchTestCase extends CaseFactory {
   ): Promise<void> {
     return await validateNpm(page, { npmName: options?.npmName });
   }
+
   override async onCliValidate(
     page: Page,
     options?: { npmName: string }
@@ -31,8 +32,5 @@ new NpmSearchTestCase(
   "v-ivanchen@microsoft.com",
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
-  {
-    npmName: "axios",
-    debug: "cli",
-  }
+  { npmName: "axios", debug: "ttk" }
 ).test();

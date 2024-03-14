@@ -1,20 +1,23 @@
-import * as chai from "chai";
-import * as sinon from "sinon";
-import * as fs from "fs-extra";
-import { envUtil } from "@microsoft/teamsfx-core";
 import { TeamsAppManifest, ok } from "@microsoft/teamsfx-api";
+import { envUtil } from "@microsoft/teamsfx-core";
+import * as chai from "chai";
+import * as fs from "fs-extra";
+import * as sinon from "sinon";
+import * as vscode from "vscode";
 import {
   AadAppTemplateCodeLensProvider,
+  ApiPluginCodeLensProvider,
   CopilotPluginCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
+  OfficeDevManifestCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   PlaceholderCodeLens,
   TeamsAppYamlCodeLensProvider,
 } from "../../src/codeLensProvider";
-import * as vscode from "vscode";
 import * as globalVariables from "../../src/globalVariables";
 import { TelemetryTriggerFrom } from "../../src/telemetry/extTelemetryEvents";
+import path = require("path");
 
 describe("Manifest codelens", () => {
   afterEach(() => {
@@ -238,7 +241,7 @@ describe("Crypto CodeLensProvider", () => {
   });
 });
 
-describe("Copilot plugin CodeLensProvider", () => {
+describe("API ME CodeLensProvider", () => {
   afterEach(() => {
     sinon.restore();
   });
@@ -309,6 +312,158 @@ describe("Copilot plugin CodeLensProvider", () => {
   });
 });
 
+describe("Api plugin CodeLensProvider", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("Add API", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.plugins = [
+      {
+        pluginFile: "test.json",
+      },
+    ];
+    const openApiObject = {
+      openapi: "3.0",
+    };
+    const text = JSON.stringify(openApiObject);
+    const document = {
+      fileName: "openapi.yaml",
+      getText: () => {
+        return text;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    sinon.stub(fs, "existsSync").returns(true);
+    sinon.stub(fs, "readFileSync").returns(JSON.stringify(manifest));
+    sinon
+      .stub(globalVariables, "workspaceUri")
+      .value(vscode.Uri.parse(path.resolve(__dirname, "unknown")));
+    const apiPluginCodelensProvider = new ApiPluginCodeLensProvider();
+    const codelens: vscode.CodeLens[] = apiPluginCodelensProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 1);
+    chai.expect(codelens[0].command!.title).to.equal("➕Add another API");
+    chai.expect(codelens[0].command!.command).to.equal("fx-extension.copilotPluginAddAPI");
+    chai.expect(codelens[0].command!.arguments![0].fsPath).to.equal(document.fileName);
+    chai.expect(codelens[0].command!.arguments![0].isFromApiPlugin).to.be.true;
+  });
+
+  it("Do not show codelens for if not api spec file", async () => {
+    const openApiObject = {
+      unknown: "3.0",
+    };
+    const text = JSON.stringify(openApiObject);
+    const document = {
+      fileName: "openapi.yaml",
+      getText: () => {
+        return text;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    sinon.stub(fs, "existsSync").returns(false);
+    sinon
+      .stub(globalVariables, "workspaceUri")
+      .value(vscode.Uri.parse(path.resolve(__dirname, "unknown")));
+    const apiPluginCodelensProvider = new ApiPluginCodeLensProvider();
+    const codelens: vscode.CodeLens[] = apiPluginCodelensProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 0);
+  });
+
+  it("Do not show codelens for if Teams manifest not exist", async () => {
+    const openApiObject = {
+      openapi: "3.0",
+    };
+    const text = JSON.stringify(openApiObject);
+    const document = {
+      fileName: "openapi.yaml",
+      getText: () => {
+        return text;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    sinon.stub(fs, "existsSync").returns(false);
+    sinon
+      .stub(globalVariables, "workspaceUri")
+      .value(vscode.Uri.parse(path.resolve(__dirname, "unknown")));
+    const apiPluginCodelensProvider = new ApiPluginCodeLensProvider();
+    const codelens: vscode.CodeLens[] = apiPluginCodelensProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 0);
+  });
+
+  it("Do not show codelens for if not API plugin project", async () => {
+    const manifest = new TeamsAppManifest();
+    manifest.plugins = [];
+    const openApiObject = {
+      openapi: "3.0",
+    };
+    const text = JSON.stringify(openApiObject);
+    const document = {
+      fileName: "openapi.yaml",
+      getText: () => {
+        return text;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    sinon.stub(fs, "existsSync").returns(true);
+    sinon.stub(fs, "readFileSync").returns(JSON.stringify(manifest));
+    sinon
+      .stub(globalVariables, "workspaceUri")
+      .value(vscode.Uri.parse(path.resolve(__dirname, "unknown")));
+    const apiPluginCodelensProvider = new ApiPluginCodeLensProvider();
+    const codelens: vscode.CodeLens[] = apiPluginCodelensProvider.provideCodeLenses(
+      document
+    ) as vscode.CodeLens[];
+
+    chai.assert.equal(codelens.length, 0);
+  });
+});
+
 describe("teamsapp.yml CodeLensProvider", () => {
   afterEach(() => {
     sinon.restore();
@@ -350,5 +505,46 @@ publish:
     chai.expect(codelens[1].command?.arguments).deep.eq([TelemetryTriggerFrom.CodeLens]);
     chai.expect(codelens[2].command?.command).eq("fx-extension.publish");
     chai.expect(codelens[2].command?.arguments).deep.eq([TelemetryTriggerFrom.CodeLens]);
+  });
+});
+
+describe("manifest*.xml CodeLensProvider", () => {
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should work with correct manifest.xml", async () => {
+    const text = `
+    <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
+       <Id>518f978a-6cf4-46f8-8f1e-10881613fe54</Id>
+        <Version>1.0.0.0</Version>
+        <ProviderName>Contoso</ProviderName>
+        <DefaultLocale>en-US</DefaultLocale>
+    </OfficeApp>
+    `;
+
+    const document = {
+      fileName: "manifest-localhost.yml",
+      getText: () => {
+        return text;
+      },
+      positionAt: () => {
+        return new vscode.Position(0, 0);
+      },
+      lineAt: () => {
+        return {
+          lineNumber: 0,
+          text: text,
+        };
+      },
+    } as any as vscode.TextDocument;
+
+    const provider = new OfficeDevManifestCodeLensProvider();
+    const codelens: vscode.CodeLens[] = provider.provideCodeLenses(document) as vscode.CodeLens[];
+    chai.assert.equal(codelens.length, 1);
+    chai.expect(codelens[0].command?.command).eq("fx-extension.generateManifestGUID");
+    chai
+      .expect(codelens[0].command?.arguments?.[0])
+      .deep.eq("518f978a-6cf4-46f8-8f1e-10881613fe54");
   });
 });

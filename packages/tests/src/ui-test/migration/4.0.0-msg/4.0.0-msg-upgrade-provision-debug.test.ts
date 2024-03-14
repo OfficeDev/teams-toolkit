@@ -16,10 +16,13 @@ import {
   upgradeByTreeView,
   validateUpgrade,
 } from "../../../utils/vscodeOperation";
-import { CLIVersionCheck } from "../../../utils/commonUtils";
+import {
+  CLIVersionCheck,
+  updateDeverloperInManifestFile,
+} from "../../../utils/commonUtils";
 
 describe("Migration Tests", function () {
-  this.timeout(Timeout.testCase);
+  this.timeout(Timeout.migrationTestCase);
   let mirgationDebugTestContext: MigrationTestContext;
 
   beforeEach(async function () {
@@ -27,7 +30,7 @@ describe("Migration Tests", function () {
     this.timeout(Timeout.prepareTestCase);
 
     mirgationDebugTestContext = new MigrationTestContext(
-      Capability.Tab,
+      Capability.MessageExtension,
       "javascript"
     );
     await mirgationDebugTestContext.before();
@@ -63,6 +66,9 @@ describe("Migration Tests", function () {
       // enable cli v3
       CliHelper.setV3Enable();
 
+      await updateDeverloperInManifestFile(
+        mirgationDebugTestContext.projectPath
+      );
       // v3 provision
       await mirgationDebugTestContext.provisionWithCLI("dev", true);
       // v3 deploy

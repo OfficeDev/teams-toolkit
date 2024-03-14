@@ -16,29 +16,25 @@ import {
   isApiLimitError,
 } from "../../../src/component/generator/utils";
 import { assert } from "chai";
-import {
-  Generator,
-  templateDefaultOnActionError,
-} from "../../../src/component/generator/generator";
+import { Generator } from "../../../src/component/generator/generator";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
 import AdmZip from "adm-zip";
 import { createSandbox } from "sinon";
 import {
-  GeneratorContext,
-  fetchUrlForHotfixOnlyAction,
-  fetchTemplateFromLocalAction,
-  fetchZipFromUrlAction,
-  unzipAction,
+  ScaffoldRemoteTemplateAction,
   fetchSampleInfoAction,
+  TemplateActionSeq,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
 import mockedEnv from "mocked-env";
-import { FeatureFlagName } from "../../../src/common/constants";
 import { sampleProvider, SampleConfig } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
-import { placeholderDelimiters } from "../../../src/component/generator/constant";
+import {
+  commonTemplateName,
+  placeholderDelimiters,
+} from "../../../src/component/generator/constant";
 import sampleConfigV3 from "../../common/samples-config-v3.json";
 import Mustache from "mustache";
 import * as folderUtils from "../../../../fx-core/src/folder";
@@ -60,7 +56,7 @@ const mockedSampleInfo: SampleConfig = {
   time: "",
   configuration: "test-configuration",
   suggested: false,
-  thumbnailUrl: "",
+  thumbnailPath: "",
   gifUrl: "",
   downloadUrlInfo: {
     owner: "OfficeDev",
@@ -363,6 +359,31 @@ describe("Generator utils", () => {
     assert.equal(data, mockFileData);
   });
 
+  it("download directory with LFS files", async () => {
+    const axiosStub = sandbox.stub(axios, "get");
+    const sampleName = "test";
+    const mockFileName = "test.txt";
+    const mockFileData = "test data";
+    const lfsData =
+      "version https://git-lfs.github.com/spec/v1\noid sha256:548c1fe07b6b278da680ccd84483be06262521f2e3\nsize 100";
+    const fileInfo = [{ type: "file", path: `${sampleName}/${mockFileName}` }];
+    axiosStub.onFirstCall().resolves({ status: 200, data: { tree: fileInfo } });
+    axiosStub.onSecondCall().resolves({ status: 200, data: lfsData });
+    axiosStub.onThirdCall().resolves({ status: 200, data: mockFileData });
+    await fs.ensureDir(tmpDir);
+    await downloadDirectory(
+      {
+        owner: "OfficeDev",
+        repository: "TeamsFx-Samples",
+        ref: "dev",
+        dir: "test",
+      },
+      tmpDir
+    );
+    const data = await fs.readFile(path.join(tmpDir, mockFileName), "utf8");
+    assert.equal(data, mockFileData);
+  });
+
   it("limit concurrency", async () => {
     const data = [1, 10, 2, 3];
     let res: number[] = [];
@@ -501,53 +522,25 @@ describe("Generator error", async () => {
     sandbox.restore();
   });
 
-  it("no zip url", async () => {
-    sandbox.stub(generatorUtils, "fetchZipFromUrl").rejects();
-    const generatorContext: GeneratorContext = {
-      name: "test",
-      destination: "test",
-      logProvider: tools.logProvider,
-      filterFn: (filename) => filename.startsWith("/"),
-      onActionError: templateDefaultOnActionError,
-    };
-    try {
-      try {
-        await fetchZipFromUrlAction.run(generatorContext);
-      } catch (error) {
-        if (generatorContext.onActionError) {
-          await generatorContext.onActionError(fetchZipFromUrlAction, generatorContext, error);
-        } else {
-          throw error;
-        }
-      }
-    } catch (error) {
-      assert.notExists(error);
-      assert.fail("Should not reach here.");
-    }
-    assert.isTrue(generatorContext.cancelDownloading);
-  });
-
   it("template fallback error", async () => {
-    sandbox.stub(fetchUrlForHotfixOnlyAction, "run").throws(new Error("test"));
-    sandbox.stub(fetchTemplateFromLocalAction, "run").throws(new Error("test"));
+    sandbox.stub(ScaffoldRemoteTemplateAction, "run").resolves();
+    sandbox.stub(folderUtils, "getTemplatesFolder").resolves("foobar");
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "TemplateZipFallbackError");
+      assert.equal(result.error.innerError.name, "ScaffoldLocalTemplateError");
     } else {
       assert.fail("template fallback error should be thrown.");
     }
   });
 
-  it("unzip error", async () => {
-    sandbox.stub(fetchUrlForHotfixOnlyAction, "run").resolves();
-    sandbox.stub(fetchZipFromUrlAction, "run").resolves();
-    sandbox.stub(fetchTemplateFromLocalAction, "run").resolves();
-    sandbox.stub(unzipAction, "run").throws(new Error("test"));
+  it("template not found error", async () => {
+    sandbox.stub(ScaffoldRemoteTemplateAction, "run").resolves();
+    sandbox.stub(generatorUtils, "unzip").resolves();
     const result = await Generator.generateTemplate(ctx, tmpDir, "bot", "ts");
     if (result.isErr()) {
-      assert.equal(result.error.innerError.name, "UnzipError");
+      assert.equal(result.error.innerError.name, "TemplateNotFoundError");
     } else {
-      assert.fail("upzip error should be thrown.");
+      assert.fail("template not found error should be thrown.");
     }
   });
 
@@ -663,6 +656,24 @@ describe("render template", () => {
 
       assert.equal(result, expectedResult);
     });
+  });
+
+  it("escape nested undefined variables", () => {
+    // arrange
+    const filename = "test.tpl";
+    const fileData = Buffer.from("{{#parent}}test{{child}}{{/parent}}");
+    const variables1 = { parent: "true", child: null };
+    const variables2 = { parent: "true", child: "hello" };
+    const expectedResult1 = "test{{child}}";
+    const expectedResult2 = "testhello";
+
+    // execute
+    const result1 = renderTemplateFileData(filename, fileData, variables1 as any);
+    const result2 = renderTemplateFileData(filename, fileData, variables2 as any);
+
+    // assert
+    assert.equal(result1, expectedResult1);
+    assert.equal(result2, expectedResult2);
   });
 
   it("do not escape empty string variable", () => {
@@ -788,9 +799,55 @@ describe("Generator happy path", async () => {
     assert.equal(vars.enableTestToolByDefault, "");
   });
 
+  it("template variables when new project enabled", async () => {
+    sandbox.stub(process, "env").value({
+      TEAMSFX_NEW_PROJECT_TYPE: "true",
+      TEAMSFX_NEW_PROJECT_TYPE_NAME: "M365",
+      TEAMSFX_NEW_PROJECT_TYPE_EXTENSION: "maproj",
+    });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.isNewProjectTypeEnabled, "true");
+  });
+
+  it("template variables when test tool disabled", async () => {
+    sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "false" });
+    const vars = Generator.getDefaultVariables("test");
+    assert.equal(vars.isNewProjectTypeEnabled, "");
+  });
+
+  it("template variables when set placeProjectFileInSolutionDir to true", async () => {
+    const vars = Generator.getDefaultVariables("test", undefined, undefined, true);
+    assert.equal(vars.PlaceProjectFileInSolutionDir, "true");
+  });
+
+  it("template variables with custom copilot - OpenAI", async () => {
+    const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
+      llmService: "llm-service-openai",
+      openAIKey: "test-key",
+    });
+    assert.equal(vars.useOpenAI, "true");
+    assert.equal(vars.useAzureOpenAI, "");
+    assert.equal(vars.openAIKey, "test-key");
+    assert.equal(vars.azureOpenAIKey, "");
+    assert.equal(vars.azureOpenAIEndpoint, "");
+  });
+
+  it("template variables with custom copilot - Azure OpenAI", async () => {
+    const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
+      llmService: "llm-service-azure-openai",
+      azureOpenAIKey: "test-key",
+      azureOpenAIEndpoint: "test-endpoint",
+    });
+    assert.equal(vars.useOpenAI, "");
+    assert.equal(vars.useAzureOpenAI, "true");
+    assert.equal(vars.openAIKey, "");
+    assert.equal(vars.azureOpenAIKey, "test-key");
+    assert.equal(vars.azureOpenAIEndpoint, "test-endpoint");
+  });
+
   it("template variables when contains auth", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "AUTHNAME_REGISTRATION_ID",
@@ -806,7 +863,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth with special characters", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", "net6", {
+    const vars = Generator.getDefaultVariables("Test", "Test", "net6", false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "AUTH-NAME_REGISTRATION*ID",
@@ -822,7 +879,7 @@ describe("Generator happy path", async () => {
 
   it("template variables when contains auth with name not start with [A-Z]", async () => {
     sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-    const vars = Generator.getDefaultVariables("Test", "Test", undefined, {
+    const vars = Generator.getDefaultVariables("Test", "Test", undefined, false, {
       authName: "authName",
       openapiSpecPath: "path/to/spec.yaml",
       registrationIdEnvName: "*AUTH-NAME_REGISTRATION*ID",
@@ -836,40 +893,18 @@ describe("Generator happy path", async () => {
     assert.equal(vars.SafeProjectNameLowerCase, "test");
   });
 
-  it("template from source code", async () => {
-    const templateName = "test";
-    const language = "ts";
-    const mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.DebugTemplate]: "true",
-      NODE_ENV: "development",
-    });
-    sandbox.stub(generatorUtils, "unzip").resolves();
-    sandbox.stub(generatorUtils, "zipFolder").returns(new AdmZip());
-
-    let success = false;
-    try {
-      await Generator.generateTemplate(context, tmpDir, templateName, language);
-      success = true;
-    } catch (e) {
-      assert.fail(e.toString());
-    }
-    assert.isTrue(success);
-    mockedEnvRestore();
-  });
-
-  it("template from fallback when remote zip processing fails", async () => {
+  it("generate templates from local when remote download processing fails", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
-    const foobarTemplateZip = new AdmZip();
     const actionContext: ActionContext = {
       telemetryProps: {},
     };
     await buildFakeTemplateZip(templateName, mockFileName);
 
-    sandbox.replace(templateConfig, "useLocalTemplate", false);
-    sandbox.stub(generatorUtils, "fetchZipFromUrl").resolves(foobarTemplateZip);
+    sandbox.replace(templateConfig, "useLocalTemplate", true);
     sandbox.stub(folderUtils, "getTemplatesFolder").returns(tmpDir);
+    sandbox.stub(ScaffoldRemoteTemplateAction, "run").throws(new Error("test"));
 
     const result = await Generator.generateTemplate(
       context,
@@ -879,7 +914,6 @@ describe("Generator happy path", async () => {
       actionContext
     );
 
-    // template with fallback
     const isFallback = actionContext.telemetryProps?.fallback === "true";
     if (isFallback === false) {
       assert.fail("template should be generated by fallback");
@@ -891,7 +925,7 @@ describe("Generator happy path", async () => {
     assert.isTrue(result.isOk());
   });
 
-  it("template from fallback when using local template tag", async () => {
+  it("template from local when using local template tag", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
@@ -911,10 +945,9 @@ describe("Generator happy path", async () => {
       actionContext
     );
 
-    // template with fallback
     const isFallback = actionContext.telemetryProps?.fallback === "true";
-    if (isFallback === false) {
-      assert.fail("template should be generated by fallback");
+    if (isFallback === true) {
+      assert.fail("template should not be generated from remote to local");
     }
 
     if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
@@ -923,7 +956,7 @@ describe("Generator happy path", async () => {
     assert.isTrue(result.isOk());
   });
 
-  it("template from fallback when local version is higher than online version", async () => {
+  it("template from local when local version is higher than git tag version", async () => {
     const templateName = "test";
     const mockFileName = "test.txt";
     const language = "ts";
@@ -947,10 +980,9 @@ describe("Generator happy path", async () => {
       actionContext
     );
 
-    // template with fallback
     const isFallback = actionContext.telemetryProps?.fallback === "true";
-    if (isFallback === false) {
-      assert.fail("template should be generated by fallback");
+    if (isFallback === true) {
+      assert.fail("template should not be generated from remote to local");
     }
 
     if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
@@ -982,16 +1014,43 @@ describe("Generator happy path", async () => {
       actionContext
     );
 
-    // template without fallback
     const isFallback = actionContext.telemetryProps?.fallback === "true";
     if (isFallback === true) {
-      assert.fail("template should be generated by downloading");
+      assert.fail("template should not be generated from remote to local");
     }
 
     if (!fs.existsSync(path.join(tmpDir, mockFileName))) {
       assert.fail("local template creation failure");
     }
     assert.isTrue(result.isOk());
+  });
+
+  it("telemetry contains correct template name", async () => {
+    const templateName = "test";
+    const language = "ts";
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+
+    sandbox.replace(TemplateActionSeq, "values", () => [] as any);
+    await Generator.generateTemplate(context, tmpDir, templateName, language, actionContext);
+
+    assert.equal(actionContext.telemetryProps?.["template-name"], `${templateName}-${language}`);
+  });
+
+  it("telemetry contains correct template name when language undefined", async () => {
+    const templateName = "test";
+    const actionContext: ActionContext = {
+      telemetryProps: {},
+    };
+
+    sandbox.replace(TemplateActionSeq, "values", () => [] as any);
+    await Generator.generateTemplate(context, tmpDir, templateName, undefined, actionContext);
+
+    assert.equal(
+      actionContext.telemetryProps?.["template-name"],
+      `${templateName}-${commonTemplateName}`
+    );
   });
 });
 

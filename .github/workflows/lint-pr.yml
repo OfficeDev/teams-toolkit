@@ -43,30 +43,6 @@ jobs:
               }
             }
 
-  npm-audit:
-    if: ${{ github.event_name != 'pull_request' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14
-      - name: audit
-        run: npx lerna-audit
-      - name: check cache
-        run: |
-          git add .
-          VAR=$(git diff --cached --name-only)
-          if [ ! -z "$VAR" ]
-          then
-            echo $VAR
-            echo '======================================= Prompt Information ==============================================='
-            echo 'There found several moderate severity vulnerabilities in this repo, please check in the package or lock file to repo with: '
-            echo 'npx lerna-audit'
-            exit 1
-          fi
-
   check-format:
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
@@ -213,11 +189,6 @@ jobs:
       - name: Get branch name
         id: branch-name
         uses: tj-actions/branch-names@v7
-      - name: Add Pull Request Reviewer
-        uses: AveryCameronUofR/add-reviewer-gh-action@1.0.3
-        with: 
-          reviewers: "MuyangAmigo"
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: check origin or remote
         id: remote
         run: |

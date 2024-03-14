@@ -135,9 +135,9 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
       projectPath: testFolder,
       "app-name": "outlook-addin-test",
     };
-    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
-    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
@@ -153,9 +153,9 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
       projectPath: testFolder,
       "app-name": "outlook-addin-test",
     };
-    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
-    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(new UserCancelError());
@@ -171,9 +171,9 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
       projectPath: testFolder,
       "app-name": "outlook-addin-test",
     };
-    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = "somepath";
-    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
     inputs[QuestionNames.OfficeAddinManifest] = "manifest.json";
 
     const copyAddinFilesStub = sinon
@@ -211,9 +211,9 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
       projectPath: testFolder,
       "app-name": "outlook-addin-test",
     };
-    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = "somepath";
-    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
     inputs[QuestionNames.OfficeAddinManifest] = "manifest.xml";
 
     let progressBarStartCalled = 0;
@@ -767,7 +767,7 @@ describe("OfficeAddinGenerator for Office Addin", function () {
       "app-name": "office-addin-test",
       "office-addin-framework-type": "default",
     };
-    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
     inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
@@ -783,13 +783,13 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
-      "project-type": ProjectTypeOptions.officeAddin().id,
-      "app-name": "office-addin-test",
-      "office-addin-framework-type": "default",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeAddin().id,
+      [QuestionNames.AppName]: "office-addin-test",
+      [QuestionNames.OfficeAddinFramework]: "default",
     };
-    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = undefined;
-    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
 
     sinon.stub(OfficeAddinGenerator, "childProcessExec").resolves();
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(new UserCancelError());
@@ -807,9 +807,9 @@ describe("OfficeAddinGenerator for Office Addin", function () {
       "app-name": "office-addin-test",
       "office-addin-framework-type": "default",
     };
-    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = "somepath";
-    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
     inputs[QuestionNames.OfficeAddinManifest] = "manifest.json";
 
     const copyAddinFilesStub = sinon
@@ -849,9 +849,9 @@ describe("OfficeAddinGenerator for Office Addin", function () {
       "app-name": "office-addin-test",
       "office-addin-framework-type": "default",
     };
-    inputs["capabilities"] = ["taskpane"];
+    inputs[QuestionNames.Capabilities] = "json-taskpane";
     inputs[QuestionNames.OfficeAddinFolder] = "somepath";
-    inputs[QuestionNames.ProgrammingLanguage] = "TypeScript";
+    inputs[QuestionNames.ProgrammingLanguage] = "typescript";
     inputs[QuestionNames.OfficeAddinManifest] = "manifest.xml";
 
     let progressBarStartCalled = 0;

@@ -25,6 +25,7 @@ import { teamsappPublishCommand } from "./teamsapp/publish";
 import { teamsappUpdateCommand } from "./teamsapp/update";
 import { teamsappValidateCommand } from "./teamsapp/validate";
 import { upgradeCommand } from "./upgrade";
+import { cleanCommand } from "./clean";
 
 export const helpCommand: CLICommand = {
   name: "help",
@@ -45,6 +46,7 @@ export const rootCommand: CLICommand = {
     accountCommand,
     getCreateCommand(),
     addCommand,
+    cleanCommand,
     provisionCommand,
     deployCommand,
     previewCommand,

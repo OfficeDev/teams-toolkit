@@ -104,6 +104,7 @@ import {
   MissingRequiredInputError,
   MultipleAuthError,
   MultipleServerError,
+  UnhandledError,
   assembleError,
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
@@ -118,7 +119,12 @@ import {
 import { QuestionNames } from "../question/questionNames";
 import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { CallbackRegistry } from "./callback";
-import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
+import {
+  CollaborationUtil,
+  checkPermission,
+  grantPermission,
+  listCollaborator,
+} from "./collaborator";
 import { LocalCrypto } from "./crypto";
 import { environmentNameManager } from "./environmentName";
 import { InvalidInputError } from "./error";
@@ -138,6 +144,7 @@ import "../component/feature/sso";
 import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
 import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
 import { AppStudioScopes } from "../common/tools";
+import { AadAppClient } from "../component/driver/aad/utility/aadAppClient";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -243,11 +250,15 @@ export class FxCore {
     ContextInjectorMW,
     EnvWriterMW,
   ])
-  async clean(ctx: Context, inputs: InputsWithProjectPath): Promise<Result<undefined, FxError>> {
+  async clean(inputs: InputsWithProjectPath): Promise<Result<undefined, FxError>> {
     const templatePath = pathUtils.getYmlFilePath(inputs.projectPath, inputs.env);
     const maybeProjectModel = await metadataUtil.parse(templatePath, inputs.env);
     if (maybeProjectModel.isErr()) {
       return err(maybeProjectModel.error);
+    }
+    const m365TokenProvider = TOOLS.tokenProvider.m365TokenProvider;
+    if (!m365TokenProvider) {
+      return err(new UnhandledError(new Error("m365TokenProvider is undefined"), "FxCore"));
     }
     const projectModel = maybeProjectModel.value;
     let teamsAppId;
@@ -271,22 +282,28 @@ export class FxCore {
     }
     if (teamsAppId) {
       // delete teams app in tdp
-      const appStudioTokenRes = await ctx.tokenProvider!.m365TokenProvider.getAccessToken({
-        scopes: AppStudioScopes,
-      });
-      if (appStudioTokenRes.isErr()) {
-        return err(appStudioTokenRes.error);
+      // const appStudioTokenRes = await m365TokenProvider.getAccessToken({
+      //   scopes: AppStudioScopes,
+      // });
+      // if (appStudioTokenRes.isErr()) {
+      //   return err(appStudioTokenRes.error);
+      // }
+      // const token = appStudioTokenRes.value;
+      // await AppStudioClient.deleteApp(teamsAppId, token, TOOLS.logProvider);
+      // TODO uninstall Teams app
+      const userInfoRes = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
+      if (userInfoRes.isErr()) {
+        return err(userInfoRes.error);
       }
-      const token = appStudioTokenRes.value;
-      await AppStudioClient.deleteApp(teamsAppId, token, ctx.logProvider);
-      // remove sideloaded app in teams
+      const uid = userInfoRes.value.aadId;
+      const aadClient = new AadAppClient(m365TokenProvider, TOOLS.logProvider);
       if (m365TitleId) {
-        // uninstall m365 app
+        //TODO uninstall M365 app
       }
     }
     if (botId) {
       // delete bot reg in tdp
-      const appStudioTokenRes = await ctx.tokenProvider!.m365TokenProvider.getAccessToken({
+      const appStudioTokenRes = await TOOLS.tokenProvider.m365TokenProvider.getAccessToken({
         scopes: AppStudioScopes,
       });
       if (appStudioTokenRes.isErr()) {

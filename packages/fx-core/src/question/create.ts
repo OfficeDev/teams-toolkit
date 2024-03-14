@@ -556,9 +556,7 @@ export class CapabilityOptions {
         label: getLocalizedString(capabilityValue.title),
         detail: getLocalizedString(capabilityValue.detail),
       });
-      if (host === OfficeAddinHostOptions.outlook().id) {
-        items.push(CapabilityOptions.outlookAddinImport());
-      }
+      items.push(CapabilityOptions.outlookAddinImport());
     } else {
       if (host) {
         const hostValue = OfficeAddinProjectConfig[host];

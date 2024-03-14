@@ -210,6 +210,11 @@ export async function initPage(
         ]);
         await popup.click("input.button[type='submit'][value='Accept']");
       }
+      try {
+        await popup?.close();
+      } catch (error) {
+        console.log("popup is closed");
+      }
     } else {
       await addBtn?.click();
     }

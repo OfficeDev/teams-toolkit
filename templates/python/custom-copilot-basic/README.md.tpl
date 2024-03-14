@@ -16,9 +16,9 @@ The app template is built using the Teams AI library, which provides the capabil
 >
 > To run the Basic AI Chatbot template in your local dev machine, you will need:
 >
-> - [Python](https://www.python.org/), version 3.8 or higher
-> - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+> - [Python](https://www.python.org/), version 3.8 to 3.11.
+> - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher.
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli).
 {{#useAzureOpenAI}}
 > - An account with [Azure OpenAI](https://aka.ms/oai/access).
 {{/useAzureOpenAI}}

@@ -23,7 +23,8 @@ import {
   sendRequestWithRetry,
 } from "@microsoft/teamsfx-core/build/component/generator/utils";
 
-import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
+import { TelemetryTriggerFrom, TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
+import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { CHAT_CREATE_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
 import {
   brieflyDescribeProjectSystemPrompt,
@@ -44,6 +45,10 @@ export default async function createCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ChatResult> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatCreateStart);
+  const startTime = Date.now();
+  const chatMessages: LanguageModelChatUserMessage[] = [];
+
   const matchedResult = await matchProject(request, token);
 
   if (matchedResult.length === 0) {

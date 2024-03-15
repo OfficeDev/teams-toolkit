@@ -256,6 +256,10 @@ export enum TelemetryEvent {
   ShowScaffoldingWarningSummaryError = "show-scaffolding-warning-summary-error",
 
   FindSimilarIssues = "find-similar-issues",
+
+  // Copilot Chat
+  CopilotChatCreateStart = "copilot-chat-create-start",
+  CopilotChatCreate = "copilot-chat-create",
 }
 
 export enum TelemetryProperty {

@@ -1555,62 +1555,6 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.ApiMEAuth,
-          QuestionNames.ProgrammingLanguage,
-          QuestionNames.Folder,
-          QuestionNames.AppName,
-        ]);
-      });
-
-      it("traverse in vscode Copilot Plugin from new API (key auth)", async () => {
-        mockedEnvRestore = mockedEnv({
-          [FeatureFlagName.ApiKey]: "true",
-        });
-        const inputs: Inputs = {
-          platform: Platform.VSCode,
-        };
-        const questions: string[] = [];
-        const visitor: QuestionTreeVisitor = async (
-          question: Question,
-          ui: UserInteraction,
-          inputs: Inputs,
-          step?: number,
-          totalSteps?: number
-        ) => {
-          questions.push(question.name);
-          await callFuncs(question, inputs);
-          if (question.name === QuestionNames.ProjectType) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
-          } else if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
-          } else if (question.name === QuestionNames.ApiMEAuth) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.staticOptions;
-            assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
-          } else if (question.name === QuestionNames.ProgrammingLanguage) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: "typescript" });
-          } else if (question.name === QuestionNames.Folder) {
-            return ok({ type: "success", result: "./" });
-          } else if (question.name === QuestionNames.AppName) {
-            return ok({ type: "success", result: "test001" });
-          }
-          return ok({ type: "success", result: undefined });
-        };
-        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
-        assert.deepEqual(questions, [
-          QuestionNames.ProjectType,
-          QuestionNames.Capabilities,
-          QuestionNames.ApiMEAuth,
           QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,

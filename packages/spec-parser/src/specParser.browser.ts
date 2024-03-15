@@ -37,6 +37,7 @@ export class SpecParser {
     allowSwagger: false,
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
+    allowBearerTokenAuth: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
     projectType: ProjectType.SME,

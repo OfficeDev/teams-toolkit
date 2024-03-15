@@ -225,9 +225,9 @@ export class ManifestUpdater {
         };
 
         if (authInfo) {
-          let auth = authInfo.authSchema;
-          if (Utils.isAPIKeyAuth(auth)) {
-            auth = auth as OpenAPIV3.ApiKeySecurityScheme;
+          let auth = authInfo.authScheme;
+          if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
+            auth = auth as OpenAPIV3.ApiKeySecurityScheme | OpenAPIV3.HttpSecurityScheme;
             const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
               `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
             );

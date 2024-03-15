@@ -4,10 +4,10 @@ This template showcases a bot app that responds to user questions like an AI ass
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
-- [Overview of the Basic AI Chatbot template](#overview-of-the-ai-chat-bot-template)
-  - [Get started with the Basic AI Chatbot template](#get-started-with-the-ai-chat-bot-template)
+- [Overview of the Basic AI Chatbot template](#overview-of-the-basic-ai-chatbot-template)
+  - [Get started with the Basic AI Chatbot template](#get-started-with-the-basic-ai-chatbot-template)
   - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the Basic AI Chatbot template with more AI capabilities](#extend-the-ai-chat-bot-template-with-more-ai-capabilities)
+  - [Extend the Basic AI Chatbot template with more AI capabilities](#extend-the-basic-ai-chatbot-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)
 
 ## Get started with the Basic AI Chatbot template
@@ -16,9 +16,9 @@ The app template is built using the Teams AI library, which provides the capabil
 >
 > To run the Basic AI Chatbot template in your local dev machine, you will need:
 >
-> - [Python](https://www.python.org/), version 3.8 or higher
-> - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher
-> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+> - [Python](https://www.python.org/), version 3.8 to 3.11.
+> - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher.
+> - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) latest version or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli).
 {{#useAzureOpenAI}}
 > - An account with [Azure OpenAI](https://aka.ms/oai/access).
 {{/useAzureOpenAI}}
@@ -26,7 +26,7 @@ The app template is built using the Teams AI library, which provides the capabil
 > - An account with [OpenAI](https://platform.openai.com/).
 {{/useOpenAI}}
 {{^enableTestToolByDefault}}
-> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
 {{/enableTestToolByDefault}}
 {{#enableTestToolByDefault}}
 > - [Node.js](https://nodejs.org/) (supported versions: 16, 18) for local debug in Test Tool.
@@ -110,3 +110,6 @@ You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
+
+## Known issue
+- If you use Test Tool to local debug, you might get an error `InternalServiceError: connect ECONNREFUSED 127.0.0.1:3978` in Test Tool log. You can wait for Python launch console ready and then refresh the front end web page. 

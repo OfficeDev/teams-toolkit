@@ -305,6 +305,87 @@ describe("utils", () => {
       assert.strictEqual(result, false);
     });
 
+    it("should return true if allowBearerTokenAuth is true and contains bearer token auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        components: {
+          securitySchemes: {
+            bearer_token1: {
+              type: "http",
+              scheme: "bearer",
+            },
+            bearer_token2: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  bearer_token2: [],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowBearerTokenAuth: true,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const result = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(result, true);
+    });
+
     it("should return true if allowAPIKeyAuth is true and contains apiKey auth", () => {
       const method = "POST";
       const path = "/users";

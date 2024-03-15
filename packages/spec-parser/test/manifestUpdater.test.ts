@@ -1173,7 +1173,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const apiKeyAuth: AuthInfo = {
-      authSchema: {
+      authScheme: {
         type: "apiKey" as const,
         name: "api_key_name",
         in: "header",
@@ -1193,6 +1193,81 @@ describe("manifestUpdater", () => {
       options,
       adaptiveCardFolder,
       apiKeyAuth
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should contain auth property in manifest if pass the bearer token auth", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          authorization: {
+            authType: "apiSecretServiceAuth",
+            apiSecretServiceAuthConfiguration: {
+              apiSecretRegistrationId: "${{BEARER_TOKEN_AUTH_REGISTRATION_ID}}",
+            },
+          },
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              id: "getPets",
+              parameters: [
+                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Create a pet",
+              description: "Create a new pet in the store",
+              id: "createPet",
+              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const bearerTokenAuth: AuthInfo = {
+      authScheme: {
+        type: "http" as const,
+        scheme: "bearer",
+      },
+      name: "bearer_token_auth",
+    };
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
+    const [result, warnings] = await ManifestUpdater.updateManifest(
+      manifestPath,
+      outputSpecPath,
+      spec,
+      options,
+      adaptiveCardFolder,
+      bearerTokenAuth
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1253,7 +1328,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const oauth2: AuthInfo = {
-      authSchema: {
+      authScheme: {
         type: "oauth2",
         flows: {
           authorizationCode: {
@@ -1331,7 +1406,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const basicAuth: AuthInfo = {
-      authSchema: {
+      authScheme: {
         type: "http" as const,
         scheme: "basic",
       },
@@ -1405,10 +1480,10 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const apiKeyAuth: AuthInfo = {
-      authSchema: {
-        type: "apiKey" as const,
-        name: "key_name",
-        in: "header",
+      authScheme: {
+        type: "http" as const,
+        scheme: "bearer",
+        bearerFormat: "JWT",
       },
       name: "*api-key_auth",
     };

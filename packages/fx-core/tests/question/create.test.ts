@@ -641,7 +641,6 @@ describe("scaffold question", () => {
         QuestionNames.Capabilities,
         QuestionNames.OfficeAddinFolder,
         QuestionNames.OfficeAddinManifest,
-        QuestionNames.OfficeAddinFramework,
         QuestionNames.Folder,
         QuestionNames.AppName,
       ]);

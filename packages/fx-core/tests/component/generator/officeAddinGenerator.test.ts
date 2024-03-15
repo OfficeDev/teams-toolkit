@@ -283,12 +283,12 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     }
   });
 
-  it(`should generate common template if language is "No Options"`, async () => {
+  it(`should generate common template if language is undefined`, async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
       "app-name": "outlook-addin-test",
-      "programming-language": "No Options",
+      "programming-language": undefined,
     };
     sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
     const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -302,12 +302,12 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     );
   });
 
-  it(`should generate ts template if language is "TypeScript"`, async () => {
+  it(`should generate ts template if language is "typescript"`, async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
       "app-name": "outlook-addin-test",
-      "programming-language": "TypeScript",
+      "programming-language": "typescript",
     };
     sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
     const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -317,12 +317,12 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
     chai.assert.isTrue(result.isOk() && stub.calledWith(context, testFolder, "office-addin", "ts"));
   });
 
-  it(`should generate js template if language is "JavaScript"`, async () => {
+  it(`should generate js template if language is "javascript"`, async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
       "app-name": "outlook-addin-test",
-      "programming-language": "JavaScript",
+      "programming-language": "javascript",
     };
     sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));
     const stub = sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -921,13 +921,13 @@ describe("OfficeAddinGenerator for Office Addin", function () {
     }
   });
 
-  it(`should generate common template if language is "No Options"`, async () => {
+  it(`should generate common template if language is undefined`, async () => {
     const inputs: Inputs = {
       platform: Platform.CLI,
       projectPath: testFolder,
       "project-type": ProjectTypeOptions.officeAddin().id,
       "app-name": "office-addin-test",
-      "programming-language": "No Options",
+      "programming-language": undefined,
       "office-addin-framework-type": "default",
     };
     sinon.stub(OfficeAddinGenerator, "doScaffolding").resolves(ok(undefined));

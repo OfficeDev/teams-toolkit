@@ -111,11 +111,11 @@ export class OfficeAddinGenerator {
       if (!fromFolder) {
         // from template
         const framework = getOfficeAddinFramework(inputs);
-        const templteConfig = getOfficeAddinTemplateConfig(
+        const templateConfig = getOfficeAddinTemplateConfig(
           projectType,
           inputs[QuestionNames.OfficeAddinHost]
         );
-        const projectLink = templteConfig[capability].framework[framework][language];
+        const projectLink = templateConfig[capability].framework[framework][language];
 
         // Copy project template files from project repository
         if (projectLink) {
@@ -127,7 +127,7 @@ export class OfficeAddinGenerator {
             cmdLine = `npm run convert-to-single-host --if-present -- ${host}`;
           }
           await OfficeAddinGenerator.childProcessExec(cmdLine);
-          const manifestPath = templteConfig[capability].manifestPath as string;
+          const manifestPath = templateConfig[capability].manifestPath as string;
           // modify manifest guid and DisplayName
           await OfficeAddinManifest.modifyManifestFile(
             `${join(addinRoot, manifestPath)}`,

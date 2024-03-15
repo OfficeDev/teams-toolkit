@@ -30,6 +30,7 @@ import { Generator } from "../generator";
 import { getOfficeAddinTemplateConfig } from "../officeXMLAddin/projectConfig";
 import { HelperMethods } from "./helperMethods";
 import { toLower } from "lodash";
+import { convertToLangKey } from "../utils";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -61,9 +62,8 @@ export class OfficeAddinGenerator {
     }
 
     // If lang is undefined, it means the project is created from a folder.
-    const lang = inputs[QuestionNames.ProgrammingLanguage];
-    const langKey =
-      lang != "No Options" ? (lang?.toLowerCase() === "typescript" ? "ts" : "js") : undefined;
+    const lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as "javascript" | "typescript";
+    const langKey = convertToLangKey(lang);
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,

@@ -44,15 +44,15 @@ export class OfficeXMLAddinGenerator {
   ): Promise<Result<undefined, FxError>> {
     const host = inputs[QuestionNames.OfficeAddinHost] as string;
     const capability = inputs[QuestionNames.Capabilities];
-    const language = _.toLower(inputs[QuestionNames.ProgrammingLanguage]) as
+    const lang = _.toLower(inputs[QuestionNames.ProgrammingLanguage]) as
       | "javascript"
       | "typescript";
-    const languageShort = convertToLangKey(language);
+    const langKey = convertToLangKey(lang);
     const appName = inputs[QuestionNames.AppName] as string;
     const projectType = inputs[QuestionNames.ProjectType];
     const templteConfig = getOfficeAddinTemplateConfig(projectType, host);
     const templateName = templteConfig[capability].localTemplate;
-    const projectLink = templteConfig[capability].framework["default"][language];
+    const projectLink = templteConfig[capability].framework["default"][lang];
     const workingDir = process.cwd();
     const progressBar = context.userInteraction.createProgressBar(
       getLocalizedString("core.createProjectQuestion.officeXMLAddin.bar.title"),
@@ -84,7 +84,7 @@ export class OfficeXMLAddinGenerator {
           context,
           destinationPath,
           `${TEMPLATE_BASE}-manifest-only`,
-          languageShort
+          langKey
         );
         if (getManifestOnlyProjectTemplateRes.isErr())
           return err(getManifestOnlyProjectTemplateRes.error);
@@ -95,7 +95,7 @@ export class OfficeXMLAddinGenerator {
         context,
         destinationPath,
         `${TEMPLATE_BASE}-${templateName}`,
-        languageShort
+        langKey
       );
       if (getReadmeTemplateRes.isErr()) return err(getReadmeTemplateRes.error);
 

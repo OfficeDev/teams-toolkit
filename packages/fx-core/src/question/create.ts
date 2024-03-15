@@ -1378,7 +1378,10 @@ export function getOfficeAddinFramework(inputs: Inputs): string {
     inputs[QuestionNames.OfficeAddinFramework]
   ) {
     return inputs[QuestionNames.OfficeAddinFramework];
-  } else if (projectType === ProjectTypeOptions.officeXMLAddin().id) {
+  } else if (
+    projectType === ProjectTypeOptions.officeXMLAddin().id &&
+    inputs[QuestionNames.OfficeAddinHost] !== OfficeAddinHostOptions.outlook().id
+  ) {
     return "default";
   } else {
     return "default_old";
@@ -2456,7 +2459,10 @@ export function capabilitySubTree(): IQTreeNode {
       {
         // WXP addin framework
         condition: (inputs: Inputs) => {
-          return inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id;
+          return (
+            inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id
+          );
         },
         data: OfficeAddinFrameworkQuestion(),
       },

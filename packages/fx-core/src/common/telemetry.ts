@@ -131,7 +131,6 @@ export enum TelemetryEvent {
 
 export enum ProjectTypeProps {
   IsTeamsFx = "is-teamsfx",
-  IsOfficeAddin = "is-office-addin",
   TeamsfxConfigType = "teamsfx-config-type",
   TeamsfxConfigVersion = "teamsfx-config-version",
   TeamsfxVersionState = "teamsfx-version-state",
@@ -142,6 +141,7 @@ export enum ProjectTypeProps {
   TeamsManifestCapabilities = "manifest-capabilities",
   TeamsJs = "teams-js",
   Lauguages = "languages",
+  OfficeProjectType = "office-project-type",
 }
 
 export enum TelemetrySuccess {
@@ -271,7 +271,6 @@ export function fillinProjectTypeProperties(
 ) {
   const newProps = {
     [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
-    [ProjectTypeProps.IsOfficeAddin]: projectTypeRes.isOfficeAddin ? "XML" : "null",
     [ProjectTypeProps.TeamsfxConfigType]: projectTypeRes.teamsfxConfigType || "",
     [ProjectTypeProps.TeamsfxConfigVersion]: projectTypeRes.teamsfxConfigVersion || "",
     [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",
@@ -283,6 +282,7 @@ export function fillinProjectTypeProperties(
     [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
     [ProjectTypeProps.TeamsManifestCapabilities]:
       projectTypeRes.manifestCapabilities?.join(",") || "",
+    [ProjectTypeProps.OfficeProjectType]: projectTypeRes.officeProjectType || "",
   };
   assign(props, newProps);
 }

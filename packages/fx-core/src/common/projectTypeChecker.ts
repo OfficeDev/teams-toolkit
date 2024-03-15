@@ -35,7 +35,7 @@ export interface ProjectTypeResult {
   manifestVersion?: string;
   dependsOnTeamsJs?: boolean;
   isSPFx?: boolean;
-  isOfficeAddin?: boolean;
+  officeProjectType?: string;
   lauguages: ("ts" | "js" | "csharp" | "java" | "python" | "c")[];
 }
 
@@ -200,10 +200,11 @@ class ProjectTypeChecker {
 
   findOfficeAddinProject(filePath: string, data: ProjectTypeResult): boolean {
     if (isValidOfficeAddInProject(filePath)) {
-      data.isOfficeAddin = true;
+      data.officeProjectType = "XML";
       data.isTeamsFx = false;
       return false;
     }
+    data.officeProjectType = "null";
     return true;
   }
 

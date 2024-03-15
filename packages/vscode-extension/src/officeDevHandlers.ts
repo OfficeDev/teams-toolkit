@@ -7,13 +7,7 @@
 "use strict";
 
 import { FxError, Result, Warning, err, ok } from "@microsoft/teamsfx-api";
-import {
-  FileNotFoundError,
-  fetchManifestList,
-  globalStateGet,
-  globalStateUpdate,
-  InvalidProjectError,
-} from "@microsoft/teamsfx-core";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
@@ -39,11 +33,7 @@ import { TelemetryTriggerFrom, VSCodeWindowChoice } from "./telemetry/extTelemet
 import { isTriggerFromWalkThrough, getTriggerFromProperty } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
-import {
-  TelemetryComponentType,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "./telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryProperty } from "./telemetry/extTelemetryEvents";
 
 export async function openOfficePartnerCenterHandler(
   args?: any[]

@@ -374,7 +374,6 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
 
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
-  const triggerfrom = getTriggerFromProperty(args);
   // show local debug button by default
   if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);

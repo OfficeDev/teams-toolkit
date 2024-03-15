@@ -23,7 +23,11 @@ import { join } from "path";
 import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
-import { ProjectTypeOptions, getOfficeAddinFramework } from "../../../question/create";
+import {
+  CapabilityOptions,
+  ProjectTypeOptions,
+  getOfficeAddinFramework,
+} from "../../../question/create";
 import { QuestionNames } from "../../../question/questionNames";
 import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
@@ -63,7 +67,11 @@ export class OfficeAddinGenerator {
 
     // If lang is undefined, it means the project is created from a folder.
     const lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as "javascript" | "typescript";
-    const langKey = convertToLangKey(lang);
+    const langKey =
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.outlookAddinImport().id ||
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.officeAddinImport().id
+        ? "ts"
+        : convertToLangKey(lang);
     const templateRes = await Generator.generateTemplate(
       context,
       destinationPath,

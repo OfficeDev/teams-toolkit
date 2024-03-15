@@ -198,6 +198,11 @@ export interface ParseOptions {
   allowAPIKeyAuth?: boolean;
 
   /**
+   * If true, the parser will allow Bearer Token authentication in the spec file.
+   */
+  allowBearerTokenAuth?: boolean;
+
+  /**
    * If true, the parser will allow multiple parameters in the spec file. Teams AI project would ignore this parameters and always true
    */
   allowMultipleParameters?: boolean;
@@ -243,6 +248,6 @@ export interface ListAPIResult {
 }
 
 export interface AuthInfo {
-  authSchema: OpenAPIV3.SecuritySchemeObject;
+  authScheme: OpenAPIV3.SecuritySchemeObject;
   name: string;
 }

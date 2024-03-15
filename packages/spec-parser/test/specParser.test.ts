@@ -1819,6 +1819,73 @@ describe("SpecParser", () => {
       ]);
     });
 
+    it("should return a list of HTTP methods and paths for all GET with 1 parameter and bearer token auth security", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowBearerTokenAuth: true });
+      const spec = {
+        components: {
+          securitySchemes: {
+            bearerTokenAuth: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              security: [{ bearerTokenAuth: [] }],
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          auth: { type: "http", scheme: "bearer" },
+          operationId: "getUserById",
+        },
+      ]);
+    });
+
     it("should return correct auth information", async () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowAPIKeyAuth: true });

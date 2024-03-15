@@ -284,36 +284,23 @@ export class Utils {
     return false;
   }
 
-  static isSupportedAuth(authSchemaArray: AuthInfo[][], options: ParseOptions): boolean {
-    if (authSchemaArray.length === 0) {
+  static isSupportedAuth(authSchemeArray: AuthInfo[][], options: ParseOptions): boolean {
+    if (authSchemeArray.length === 0) {
       return true;
     }
 
-    if (options.allowAPIKeyAuth || options.allowOauth2) {
+    if (options.allowAPIKeyAuth || options.allowOauth2 || options.allowBearerTokenAuth) {
       // Currently we don't support multiple auth in one operation
-      if (authSchemaArray.length > 0 && authSchemaArray.every((auths) => auths.length > 1)) {
+      if (authSchemeArray.length > 0 && authSchemeArray.every((auths) => auths.length > 1)) {
         return false;
       }
 
-      for (const auths of authSchemaArray) {
+      for (const auths of authSchemeArray) {
         if (auths.length === 1) {
           if (
-            !options.allowOauth2 &&
-            options.allowAPIKeyAuth &&
-            Utils.isAPIKeyAuth(auths[0].authSchema)
-          ) {
-            return true;
-          } else if (
-            !options.allowAPIKeyAuth &&
-            options.allowOauth2 &&
-            Utils.isOAuthWithAuthCodeFlow(auths[0].authSchema)
-          ) {
-            return true;
-          } else if (
-            options.allowAPIKeyAuth &&
-            options.allowOauth2 &&
-            (Utils.isAPIKeyAuth(auths[0].authSchema) ||
-              Utils.isOAuthWithAuthCodeFlow(auths[0].authSchema))
+            (options.allowAPIKeyAuth && Utils.isAPIKeyAuth(auths[0].authScheme)) ||
+            (options.allowOauth2 && Utils.isOAuthWithAuthCodeFlow(auths[0].authScheme)) ||
+            (options.allowBearerTokenAuth && Utils.isBearerTokenAuth(auths[0].authScheme))
           ) {
             return true;
           }
@@ -324,12 +311,16 @@ export class Utils {
     return false;
   }
 
-  static isAPIKeyAuth(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
-    return authSchema.type === "apiKey";
+  static isBearerTokenAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    return authScheme.type === "http" && authScheme.scheme === "bearer";
   }
 
-  static isOAuthWithAuthCodeFlow(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
-    if (authSchema.type === "oauth2" && authSchema.flows && authSchema.flows.authorizationCode) {
+  static isAPIKeyAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    return authScheme.type === "apiKey";
+  }
+
+  static isOAuthWithAuthCodeFlow(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    if (authScheme.type === "oauth2" && authScheme.flows && authScheme.flows.authorizationCode) {
       return true;
     }
 
@@ -350,7 +341,7 @@ export class Utils {
         for (const name in security) {
           const auth = securitySchemas[name] as OpenAPIV3.SecuritySchemeObject;
           authArray.push({
-            authSchema: auth,
+            authScheme: auth,
             name: name,
           });
         }

@@ -45,6 +45,7 @@ export class SpecParser {
     allowMissingId: true,
     allowSwagger: true,
     allowAPIKeyAuth: false,
+    allowBearerTokenAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
@@ -147,7 +148,7 @@ export class SpecParser {
 
         for (const auths of authArray) {
           if (auths.length === 1) {
-            apiResult.auth = auths[0].authSchema;
+            apiResult.auth = auths[0].authScheme;
             break;
           }
         }

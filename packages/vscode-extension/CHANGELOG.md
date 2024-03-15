@@ -1,9 +1,41 @@
 # Changelog
 
+> Note: This changelog only includes the changes for the stable versions of Teams Toolkit. For the changelog of Prereleased versions, please refer to the [Teams Toolkit Prerelease Changelog](./PRERELEASE.md).
+
+## 5.6.0 - Mar 12, 2024
+
+This minor version update of Teams Toolkit includes new features and bug fixes based on your feedback. The new features include Deploy Tab Apps to Static Web App, Teams Toolkit CLI v3 and many other enhancements. We previously shared these incremental changes in the prerelease version and through a blog post:
+
+- [Janaury Prerelease](https://devblogs.microsoft.com/microsoft365dev/teams-toolkit-for-visual-studio-code-update-january-2024/): Deploy Tab Apps to Static Web App, Teams Toolkit CLI v3, new Link Unfurling sample app and many other enhancements.
+
+We've listened to your feedback and included these additional new features, enhancements, and bug fixes to this release.
+
+New features:
+
+- **Deploy Tab Apps to Static Web App**: Azure Static Web Apps, an automatic service for building and deploying full-stack web apps to Azure from a code repository, is now the default solution for deploying Tab-based applications in Teams Toolkit. If you prefer the old way using Azure Storage, please refer to this [sample](https://github.com/OfficeDev/TeamsFx-Samples/tree/dev/hello-world-tab-codespaces).
+- **Teams Toolkit CLI ([`@microsoft/teamsapp-cli`](https://www.npmjs.com/package/@microsoft/teamsapp-cli)) `v3.0.0`**. Teams Toolkit CLI version 3 is now released in stable version. Major changes include:
+  ![Teams Toolkit CLI](https://camo.githubusercontent.com/67608a468cbd406d6ff18585c8bc3b34d3d97d0a8ef525bdf516ca23fd5e32dd/68747470733a2f2f616b612e6d732f636c692d6865726f2d696d616765)
+  - **New Command Signature**: Teams Toolkit CLI now starts with `teamsapp` as the root command signature for more clarity. We recommend changing your scripts to use `teamsapp` as the command prefix.
+  - **New Command Structure**: Teams Toolkit CLI now has a new command structure that is more intuitive and easier to use. You can find the new command structure in the [Teams Toolkit CLI Command Reference](https://aka.ms/teamsfx-toolkit-cli).
+  - **New Doctor Command**: `teamsapp doctor` command is a new command that helps diagnose and fix common issues with Teams Toolkit and Teams application development.
+
+Enhancements:
+
+- **Format Reddit Link into Adaptive Card Sample**: This sample application demonstrates how to format a Reddit link into an Adaptive Card in Microsoft Teams conversations.
+  ![Link Unfurling Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/0d44f8c3-d02e-4912-bfa2-6ed3fdb29c1b)
+- **Clean up `.deployment` Folder in between Deployments**: Teams Toolkit now cleans up the `.deployment` folder in the build directory before each deployment, addressing a [known issue](https://github.com/OfficeDev/TeamsFx/issues/10075) and reducing deployment time.
+- **Optimized Dev Tunnel Expiration**: Inactive Dev Tunnel instances will now be automatically cleaned up after an hour, mitigating Dev Tunnel instance limitation errors.
+- **Log Level Settings**: Added log level settings for controlling the verbosity of Teams Toolkit logs. You can find the settings in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) under the `Teams Toolkit` section.
+  ![Logs](https://github.com/OfficeDev/TeamsFx/assets/11220663/3a1fc3a0-d69b-446e-8db2-0c756a18f95e)
+- **Richer Information in Sample App Details Page**: The Sample app detail page now includes additional details from the project README file, such as the project description, prerequisites, and steps to run the project.
+- **Improved Troubleshooting for Multi-tenant Scenario**: Teams Toolkit now provides a [troubleshooting guide](https://aka.ms/teamsfx-multi-tenant) for scenarios where `aadApp/update` action fails with a `HostNameNotOnVerifiedDomain` error in multi-tenant setups.
+- **Optimized SPFx Solution Version Handling**: Teams Toolkit now compares the SPFx solution version between global installations and the one used by Teams Toolkit when developers add additional web parts. Developers will be prompted if there's a need to install or upgrade the solution version when differences are detected.
+
 ## 5.4.1 - Feb 07, 2024
+
 Hotfix version.
 
-We made UI and docs updates to multiple places according to [Latest updates to the Microsoft 365 Developer Program](https://devblogs.microsoft.com/microsoft365dev/stay-ahead-of-the-game-with-the-latest-updates-to-the-microsoft-365-developer-program/).
+We have made UI and docs updates to multiple places according to the [latest updates to the Microsoft 365 Developer Program](https://devblogs.microsoft.com/microsoft365dev/stay-ahead-of-the-game-with-the-latest-updates-to-the-microsoft-365-developer-program/).
 
 ## 5.4.0 - Dec 18, 2023
 
@@ -30,7 +62,7 @@ New features:
 Enhancement:
 
 - New samples in the Sample Gallery:
-    ![new samples](https://github.com/OfficeDev/TeamsFx/assets/113089977/2af41ec4-ee19-4b66-a58a-d2d8bdbbbd60)
+  ![new samples](https://github.com/OfficeDev/TeamsFx/assets/113089977/2af41ec4-ee19-4b66-a58a-d2d8bdbbbd60)
 
   - Large Scale Notification Bot: send individual chat messages to a large number of users in a tenant
   - Graph Connector Bot: Teams command bot that queries custom data ingested into Microsoft Graph using Graph connector.
@@ -44,7 +76,7 @@ Enhancement:
   ![Provision Region](https://github.com/OfficeDev/TeamsFx/assets/113089977/97867d08-b7af-4eae-b1e7-d0102e1a1361)
 - Automatic `npm install` for SPFx Tab App
   ![npm install for SPFx](https://github.com/OfficeDev/TeamsFx/assets/113089977/514d262d-9695-40dc-91aa-5c35044a319d)
-- Teams Toolkit CLI Enhancement including: Commands have been reorganized into a hierarchical structure, added a teamsfx list command, improve the help command readability, outputs have been refreshed and log      levels have been streamlined for clarity.
+- Teams Toolkit CLI Enhancement including: Commands have been reorganized into a hierarchical structure, added a teamsfx list command, improve the help command readability, outputs have been refreshed and log levels have been streamlined for clarity.
 - Update Teams AI chat bot template to use latest teams-ai library.
 
 Bug Fixes:
@@ -66,15 +98,15 @@ We've listened to your feedback and included these additional new features, enha
 New features:
 
 - Import an existing SharePoint Framework solution and continue development with Teams Toolkit.
-    ![SPFx Existing App](https://github.com/OfficeDev/TeamsFx/assets/11220663/3944f5c8-6c8c-4b4d-8df8-dc4f45b5967f)
+  ![SPFx Existing App](https://github.com/OfficeDev/TeamsFx/assets/11220663/3944f5c8-6c8c-4b4d-8df8-dc4f45b5967f)
 - A new link unfurling project template to help you get started with displaying rich content from links in Teams messages and Outlook emails.
-    ![Link Unfurling](https://github.com/OfficeDev/TeamsFx/assets/11220663/6e8b982a-0531-4ec1-8420-f6f17955ff40)
+  ![Link Unfurling](https://github.com/OfficeDev/TeamsFx/assets/11220663/6e8b982a-0531-4ec1-8420-f6f17955ff40)
 - A new AI Chat Bot project template to help you get started with building a GPT-like chat bot with AI capabilities using the [Teams AI Library](https://github.com/microsoft/teams-ai).
   ![AI Bot](https://github.com/OfficeDev/TeamsFx/assets/11220663/86a90d2a-efc3-4d8b-9e8c-5d34a1e8c081)
 - The Sample Gallery has a new sample, One Productivity Hub using Graph Toolkit with SPFx, that shows you how to build a Tab for viewing your calendar events, to-do tasks, and files using Microsoft Graph Toolkit components and a SharePoint provider.
-    ![SPFx Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/084ac508-49ea-4b30-854c-8b4d578ff6ee)
+  ![SPFx Sample](https://github.com/OfficeDev/TeamsFx/assets/11220663/084ac508-49ea-4b30-854c-8b4d578ff6ee)
 - Run life-cycle commands like Provision, Deploy, and Publish using new CodeLens hints added in-line to `teamsapp.yml`` when editing the file.
-    ![Inline Commands](https://github.com/OfficeDev/TeamsFx/assets/11220663/f6897b26-0e3c-441c-b028-32093e8322a7)
+  ![Inline Commands](https://github.com/OfficeDev/TeamsFx/assets/11220663/f6897b26-0e3c-441c-b028-32093e8322a7)
 
 Bug fixes:
 
@@ -111,7 +143,7 @@ New features:
 - Simplified the Basic Tab project template by removing the dependency on React, single sign-on, and complicated example code. Use this template like an empty starting point for Tab apps.
 - You can customize which version of Azure Functions Core Tools is used with the `devTool/install` action. If not specified, the default version used is `4.0.4670` and [supports Node.js 18](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=v4&pivots=programming-language-typescript#languages).
 - We've re-categorized the project templates to use familiar terminology that matches the documentation and platform.
-    ![create-new-app](https://github.com/OfficeDev/TeamsFx/assets/11220663/fe3ac358-775d-4deb-9b1e-a9eb4d932e56)
+  ![create-new-app](https://github.com/OfficeDev/TeamsFx/assets/11220663/fe3ac358-775d-4deb-9b1e-a9eb4d932e56)
 
 Enhancements:
 

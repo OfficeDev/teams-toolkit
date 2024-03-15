@@ -39,6 +39,7 @@ import {
   ProjectType,
   ParseOptions,
   AdaptiveCardGenerator,
+  Utils,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -52,7 +53,7 @@ import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
-import { ProgrammingLanguage } from "../../../question";
+import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -174,6 +175,8 @@ export async function listOperations(
   }
 
   const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+  const isCustomApi =
+    inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 
   try {
     const allowAPIKeyAuth = isPlugin || isApiKeyEnabled();
@@ -182,6 +185,10 @@ export async function listOperations(
       apiSpecUrl as string,
       isPlugin
         ? copilotPluginParserOptions
+        : isCustomApi
+        ? {
+            projectType: ProjectType.TeamsAi,
+          }
         : {
             allowAPIKeyAuth,
             allowMultipleParameters,
@@ -716,10 +723,12 @@ interface SpecObject {
   pathUrl: string;
   method: string;
   item: OpenAPIV3.OperationObject;
+  auth: boolean;
 }
 
-function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
+function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   const res: SpecObject[] = [];
+  let needAuth = false;
 
   const paths = spec.paths;
   if (paths) {
@@ -731,10 +740,16 @@ function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
           if (method === "get" || method === "post") {
             const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
             if (operationItem) {
+              const authResult = Utils.getAuthArray(operationItem.security, spec);
+              const hasAuth = authResult.length != 0;
+              if (hasAuth) {
+                needAuth = true;
+              }
               res.push({
                 item: operationItem,
                 method: method,
                 pathUrl: pathUrl,
+                auth: hasAuth,
               });
             }
           }
@@ -743,7 +758,7 @@ function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
     }
   }
 
-  return res;
+  return [res, needAuth];
 }
 
 async function updatePromptForCustomApi(
@@ -835,6 +850,7 @@ const ActionCode = {
   javascript: `
 app.ai.action("{{operationId}}", async (context, state, parameter) => {
   const client = await api.getClient();
+  // Add authentication configuration for the client
   const path = client.paths["{{pathUrl}}"];
   if (path && path.{{method}}) {
     const result = await path.{{method}}(parameter.path, parameter.body, {
@@ -851,6 +867,7 @@ app.ai.action("{{operationId}}", async (context, state, parameter) => {
   typescript: `
 app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
   const client = await api.getClient();
+  // Add authentication configuration for the client
   const path = client.paths["{{pathUrl}}"];
   if (path && path.{{method}}) {
     const result = await path.{{method}}(parameter.path, parameter.body, {
@@ -866,11 +883,23 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
   `,
 };
 
+const AuthCode = {
+  javascript: {
+    actionCode: `addAuthConfig(client);`,
+    actionPlaceholder: `// Add authentication configuration for the client`,
+  },
+  typescript: {
+    actionCode: `addAuthConfig(client);`,
+    actionPlaceholder: `// Add authentication configuration for the client`,
+  },
+};
+
 async function updateCodeForCustomApi(
   specItems: SpecObject[],
   language: string,
   destinationPath: string,
-  openapiSpecFileName: string
+  openapiSpecFileName: string,
+  needAuth: boolean
 ): Promise<void> {
   if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
     const codeTemplate =
@@ -878,10 +907,14 @@ async function updateCodeForCustomApi(
     const appFolderPath = path.join(destinationPath, "src", "app");
 
     const actionsCode = [];
+    const authCodeTemplate =
+      AuthCode[language === ProgrammingLanguage.JS ? "javascript" : "typescript"];
     for (const item of specItems) {
+      const auth = item.auth;
       const code = codeTemplate
+        .replace(authCodeTemplate.actionPlaceholder, auth ? authCodeTemplate.actionCode : "")
         .replace(/{{operationId}}/g, item.item.operationId!)
-        .replace("{{pathUrl}}", item.pathUrl)
+        .replace(/{{pathUrl}}/g, item.pathUrl)
         .replace(/{{method}}/g, item.method);
       actionsCode.push(code);
     }
@@ -911,7 +944,7 @@ export async function updateForCustomApi(
   // 1. update prompt folder
   await updatePromptForCustomApi(spec, language, chatFolder);
 
-  const specItems = parseSpec(spec);
+  const [specItems, needAuth] = parseSpec(spec);
 
   // 2. update adaptive card folder
   await updateAdaptiveCardForCustomApi(specItems, language, destinationPath);
@@ -920,5 +953,5 @@ export async function updateForCustomApi(
   await updateActionForCustomApi(specItems, language, chatFolder);
 
   // 4. update code
-  await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName);
+  await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
 }

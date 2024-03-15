@@ -23,14 +23,14 @@ async function callFunction(teamsUserCredential: TeamsUserCredential) {
       let funcErrorMsg = "";
 
       if (err?.response?.status === 404) {
-        funcErrorMsg = `There may be a problem with the deployment of Azure Function App, please deploy Azure Function (Run command palette "Teams: Deploy") first before running this App`;
+        funcErrorMsg = `There may be a problem with the deployment of Azure Functions App, please deploy Azure Functions (Run command palette "Teams: Deploy") first before running this App`;
       } else if (err.message === "Network Error") {
         funcErrorMsg =
-          "Cannot call Azure Function due to network error, please check your network connection status and ";
+          "Cannot call Azure Functions due to network error, please check your network connection status and ";
         if (err.config?.url && err.config.url.indexOf("localhost") >= 0) {
-          funcErrorMsg += `make sure to start Azure Function locally (Run "npm run start" command inside api folder from terminal) first before running this App`;
+          funcErrorMsg += `make sure to start Azure Functions locally (Run "npm run start" command inside api folder from terminal) first before running this App`;
         } else {
-          funcErrorMsg += `make sure to provision and deploy Azure Function (Run command palette "Teams: Provision" and "Teams: Deploy") first before running this App`;
+          funcErrorMsg += `make sure to provision and deploy Azure Functions (Run command palette "Teams: Provision" and "Teams: Deploy") first before running this App`;
         }
       } else {
         funcErrorMsg = err.message;
@@ -48,7 +48,7 @@ async function callFunction(teamsUserCredential: TeamsUserCredential) {
 export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
   const [needConsent, setNeedConsent] = useState(false);
   const { codePath, docsUrl } = {
-    codePath: `api/${functionName}/index.ts`,
+    codePath: `api/functions/${functionName}.ts`,
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };
@@ -72,14 +72,14 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
   });
   return (
     <div>
-      <h2>Call your Azure Function</h2>
+      <h2>Call your Azure Functions</h2>
       <p>
         An Azure Functions app is running. Authorize this app and click below to call it for a
         response:
       </p>
       {!loading && (
         <Button appearance="primary" disabled={loading} onClick={reload}>
-          Authorize and call Azure Function
+          Authorize and call Azure Functions
         </Button>
       )}
       {loading && (
@@ -90,7 +90,7 @@ export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
       {!loading && !!data && !error && <pre className="fixed">{JSON.stringify(data, null, 2)}</pre>}
       {!loading && !data && !error && <pre className="fixed"></pre>}
       {!loading && !!error && <div className="error fixed">{(error as any).toString()}</div>}
-      <h4>How to edit the Azure Function</h4>
+      <h4>How to edit the Azure Functions</h4>
       <p>
         See the code in <code>{codePath}</code> to add your business logic.
       </p>

@@ -17,7 +17,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -1781,6 +1781,245 @@ describe("scaffold question", () => {
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
           assert.isUndefined(res);
+        });
+
+        it(" validate operations successfully with Teams AI project", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            "custom-copilot-rag": "custom-copilot-rag-customApi",
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation3",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation4",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation5",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation6",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation7",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation8",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation9",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation10",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation11",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(
+            [
+              "operation1",
+              "operation2",
+              "operation3",
+              "operation4",
+              "operation5",
+              "operation6",
+              "operation7",
+              "operation8",
+              "operation9",
+              "operation10",
+              "operation11",
+            ],
+            inputs
+          );
+
+          assert.isUndefined(res);
+        });
+
+        it(" validate operations successfully due to length limitation", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation3",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation4",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation5",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation6",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation7",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation8",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation9",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation10",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation11",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(
+            [
+              "operation1",
+              "operation2",
+              "operation3",
+              "operation4",
+              "operation5",
+              "operation6",
+              "operation7",
+              "operation8",
+              "operation9",
+              "operation10",
+              "operation11",
+            ],
+            inputs
+          );
+
+          expect(res).to.equal(
+            "11 API(s) selected. You can select at least one and at most 10 APIs."
+          );
         });
 
         it(" validate operations with auth successfully", async () => {

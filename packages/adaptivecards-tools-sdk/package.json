@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/adaptivecards-tools",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Microsoft sdk for Adaptive Cards",
   "main": "lib/index.js",
   "types": "types/index.d.ts",

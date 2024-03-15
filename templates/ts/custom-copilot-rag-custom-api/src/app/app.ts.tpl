@@ -37,7 +37,7 @@ const app = new Application({
   },
 });
 
-import { generateAdaptiveCard } from "./utility";
+import { generateAdaptiveCard, addAuthConfig } from "./utility";
 import { TurnContext, ConversationState } from "botbuilder";
 import { TurnState, Memory } from "@microsoft/teams-ai";
 import yaml from "js-yaml";

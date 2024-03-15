@@ -55,7 +55,7 @@ export function isApiKeyEnabled(): boolean {
 }
 
 export function isMultipleParametersEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, false);
+  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, true);
 }
 
 export function isOfficeXMLAddinEnabled(): boolean {
@@ -68,6 +68,10 @@ export function isTeamsFxRebrandingEnabled(): boolean {
 
 export function isTdpTemplateCliTestEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
+}
+
+export function isAsyncAppValidationEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.AsyncAppValidation, false);
 }
 
 export function isNewProjectTypeEnabled(): boolean {

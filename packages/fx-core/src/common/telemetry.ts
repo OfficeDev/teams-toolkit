@@ -6,6 +6,7 @@ import { TelemetryConstants } from "../component/constants";
 import { TOOLS, globalVars } from "../core/globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
 import { assign } from "lodash";
+import { ProjectType } from "@microsoft/m365-spec-parser";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -130,6 +131,7 @@ export enum TelemetryEvent {
 
 export enum ProjectTypeProps {
   IsTeamsFx = "is-teamsfx",
+  IsOfficeAddin = "is-office-addin",
   TeamsfxConfigType = "teamsfx-config-type",
   TeamsfxConfigVersion = "teamsfx-config-version",
   TeamsfxVersionState = "teamsfx-version-state",
@@ -269,6 +271,7 @@ export function fillinProjectTypeProperties(
 ) {
   const newProps = {
     [ProjectTypeProps.IsTeamsFx]: projectTypeRes.isTeamsFx ? "true" : "false",
+    [ProjectTypeProps.IsOfficeAddin]: projectTypeRes.isOfficeAddin ? "XML" : "null",
     [ProjectTypeProps.TeamsfxConfigType]: projectTypeRes.teamsfxConfigType || "",
     [ProjectTypeProps.TeamsfxConfigVersion]: projectTypeRes.teamsfxConfigVersion || "",
     [ProjectTypeProps.TeamsfxVersionState]: projectTypeRes.teamsfxVersionState || "",

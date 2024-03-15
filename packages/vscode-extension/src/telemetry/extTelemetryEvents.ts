@@ -362,8 +362,6 @@ export enum TelemetryProperty {
   ChangedFilter = "changed-filter",
   SampleFilters = "sample-filters",
   Layout = "layout",
-  // If is Office add-in
-  IsOfficeAddIn = "is-office-add-in",
 }
 
 export enum TelemetryMeasurements {

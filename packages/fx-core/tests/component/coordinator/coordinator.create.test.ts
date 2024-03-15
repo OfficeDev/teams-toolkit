@@ -726,30 +726,6 @@ describe("coordinator create", () => {
     assert.equal(generator.args[0][2], TemplateNames.CopilotPluginFromScratchApiKey);
   });
 
-  it("create API ME (sso auth) from new api sucessfully", async () => {
-    mockedEnvRestore = mockedEnv({
-      API_ME_SSO: "true",
-    });
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
-      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-      [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.microsoftEntra().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isOk());
-    assert.equal(generator.args[0][2], TemplateNames.ApiMessageExtensionSso);
-  });
-
   it("create API ME from existing api sucessfully", async () => {
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();

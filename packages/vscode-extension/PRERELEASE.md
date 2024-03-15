@@ -2,6 +2,39 @@
 
 ## Changelog
 
+### March 19, 2024
+
+#### New Features
+
+- **Build Your Own Copilots in Teams with Teams AI Library**: We have improved the user experience for developers to build your own copilots (an AI-powered intelligent chatbot for Temas):
+  - Streamlined UX for scaffolding including a top-level entry points, easily configure your LLM services and credentials during scaffolding flow.
+  - A new applictaion templates that allow your build an AI Agent from scratch.
+  - Python language support for building `Basic AI Chatbot`.
+- **Word, Excel and PowerPoint Add-ins in Teams Toolkit**: Microsoft Word, Excel or PowerPoint JavaScript add-in development is now supported in Teams Toolkit. This new support allows developers to get started quickly and build add-ins with high productivity. The main features are: 
+  - A wizard in Command Palette that guides developers through the creation of a Word, Excel or PowerPoint add-in project with appropriate configuration and dependencies.
+  - A set of templates that provide you with the sample code and UI elements for different types of add-ins, such as task pane, content, or ribbon. You can create your add-in project from a sample and customize it.
+  - A side pane that provides unified and centralized experience which allows you to check dependencies, run and debug add-ins, manage life cycle, leverage utility, get help and provide feedback.
+
+#### Enhancements
+
+- Updated the default app icon in the Teams Toolkit generated app templates and sample with Microsoft 365 and Copilot themed colors.
+- Added `LLM.Description` in app manifest for bot-based message extensions when it's used as copilot plugin for better reasoning with LLMs. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) and create a new app via `Create a New App` -> `Message Extension` -> `Custom Search Results` -> `Start with Bot`.
+- Improved Azure account authentication with a buit-in Microsoft authentication provider in Visual Studio Code. This improvements increases the reliability of Azure authentication, especially when using a proxy.
+- Upgraded `Custom Search Results` (Start with a New API) template to Azure Functions to v4 as it's the officially recommended version with better supports. See more details for [Azure Functions runtime versions overview](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=isolated-process%2Cv4&pivots=programming-language-javascript).
+- Multiple parameters are now supported for API-based message extensions.
+- Updated `Teams Chef Bot` sample to point the latest verison under [teams-ai repository](https://github.com/microsoft/teams-ai/tree/main/js/samples/04.ai.a.teamsChefBot).
+
+#### Bug Fix
+
+- Fixed an issue where you might see an empty env file path in error messages. [#11024](https://github.com/OfficeDev/TeamsFx/pull/11024)
+- Fxied an issue where you might see `arm/deploy.UnhandledError`. [#10911](https://github.com/OfficeDev/TeamsFx/pull/10911)
+- Fxied an issue with inconsistent capatilizations in project creation dialog. [#10792](https://github.com/OfficeDev/TeamsFx/pull/10792)
+- Fixed an issue with Teams Toolkit CLI where you might see `Error: TeamsfxCLI.CannotDetectRunCommand` when using `teamsapp preview` command. [#10808](https://github.com/OfficeDev/TeamsFx/pull/10808)
+- Fixed an issue with unclear error messages when sideloading the app using unsupported file format. [#10799](https://github.com/OfficeDev/TeamsFx/pull/10799)
+- Fixed an issue with you might get unexpected error when executing `teamsapp account login azure`. [#11015](https://github.com/OfficeDev/TeamsFx/pull/11015)
+- Fixed broken links in README documentation. [#10836](https://github.com/OfficeDev/TeamsFx/pull/10836), [#10831](https://github.com/OfficeDev/TeamsFx/pull/10831)
+- Fixed an issue where featured sample are not shown in full list. [#10841](https://github.com/OfficeDev/TeamsFx/pull/10841)
+
 ### January 23, 2024
 
 #### New Features

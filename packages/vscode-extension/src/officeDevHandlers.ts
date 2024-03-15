@@ -6,7 +6,7 @@
  */
 "use strict";
 
-import { FxError, Result, Warning, err, ok } from "@microsoft/teamsfx-api";
+import { FxError, Result, Warning, ok } from "@microsoft/teamsfx-api";
 import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";

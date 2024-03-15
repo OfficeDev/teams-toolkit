@@ -22,7 +22,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "addin-host",
     type: "string",
-    description: "Select to create an Outlook, Word, Excel, or PowerPoint Add-in",
+    description: "Select to Create an Outlook, Word, Excel, or PowerPoint Add-in",
     choices: ["outlook", "word", "excel", "powerpoint"],
   },
   {

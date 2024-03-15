@@ -209,6 +209,11 @@ export async function initPage(
           popup.waitForNavigation(),
         ]);
         await popup.click("input.button[type='submit'][value='Accept']");
+        try {
+          await popup?.close();
+        } catch (error) {
+          console.log("popup is closed");
+        }
       }
     } else {
       await addBtn?.click();
@@ -358,6 +363,11 @@ export async function reopenPage(
             popup.waitForNavigation(),
           ]);
           await popup.click("input.button[type='submit'][value='Accept']");
+          try {
+            await popup?.close();
+          } catch (error) {
+            console.log("popup is closed");
+          }
         }
       } else {
         await addBtn?.click();

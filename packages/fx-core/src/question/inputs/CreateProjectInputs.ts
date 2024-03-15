@@ -65,7 +65,7 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
   /** @description Authentication Type */
-  "api-me-auth"?: "none" | "api-key";
+  "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */

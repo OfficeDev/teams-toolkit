@@ -103,6 +103,7 @@ export enum TemplateNames {
   LinkUnfurling = "link-unfurling",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
   CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
+  ApiMessageExtensionSso = "api-message-extension-sso",
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
   CustomCopilotBasic = "custom-copilot-basic",
@@ -166,6 +167,9 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
     ApiMessageExtensionAuthOptions.apiKey().id
   }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.microsoftEntra().id
+  }`]: TemplateNames.ApiMessageExtensionSso,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,

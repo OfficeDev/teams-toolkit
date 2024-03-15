@@ -56,7 +56,13 @@ export namespace SPOClient {
     file: Buffer
   ): Promise<any> {
     const requester = createRequesterWithToken(spoToken);
-    await requester.post(`/_api/web/tenantappcatalog/Add(overwrite=true, url='${fileName}')`, file);
+    await requester.post(
+      `/_api/web/tenantappcatalog/Add(overwrite=true, url='${fileName}')`,
+      file,
+      {
+        maxBodyLength: Infinity,
+      }
+    );
   }
 
   /**

@@ -64,7 +64,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
         }
         {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'node' // Set runtime to NodeJS
+          value: 'dotnet-isolated' // Use .NET isolated process
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
@@ -75,8 +75,8 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '1' // Run Azure Functions from a package file
         }
         {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~18' // Set NodeJS version to 18.x
+          name: 'SCM_ZIPDEPLOY_DONOT_PRESERVE_FILETIME'
+          value: '1' // Zipdeploy files will always be updated. Detail: https://aka.ms/teamsfx-zipdeploy-donot-preserve-filetime
         }
         {
           name: 'M365_CLIENT_ID'

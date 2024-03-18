@@ -35,6 +35,7 @@ import {
 } from "../../src/common/projectTypeChecker";
 import {
   ErrorType,
+  ListAPIResult,
   SpecParser,
   SpecParserError,
   ValidationStatus,
@@ -1666,10 +1667,14 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
-    ];
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -1700,10 +1705,15 @@ describe("copilotPlugin", async () => {
         pluginFile: "ai-plugin.json",
       },
     ];
-    const listResult = [
-      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
-    ];
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -1737,10 +1747,15 @@ describe("copilotPlugin", async () => {
         pluginFile: "ai-plugin.json",
       },
     ];
-    const listResult = [
-      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
-    ];
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -1779,28 +1794,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key2",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key2",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -1838,28 +1859,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server2",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server2",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -1897,28 +1924,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -1962,28 +1995,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2036,28 +2075,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2119,28 +2164,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2242,28 +2293,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2336,28 +2393,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2470,28 +2533,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2599,28 +2668,33 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2732,28 +2806,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2853,28 +2933,34 @@ describe("copilotPlugin", async () => {
         commands: [],
       },
     ];
-    const listResult = [
-      {
-        operationId: "getUserById",
-        server: "https://server1",
-        api: "GET /user/{userId}",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server1",
+          api: "GET /user/{userId}",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-      {
-        operationId: "getStoreOrder",
-        server: "https://server1",
-        api: "GET /store/order",
-        auth: {
-          type: "apiKey" as const,
-          name: "api_key1",
-          in: "header",
+        {
+          operationId: "getStoreOrder",
+          server: "https://server1",
+          api: "GET /store/order",
+          auth: {
+            type: "apiKey" as const,
+            name: "api_key1",
+            in: "header",
+          },
         },
-      },
-    ];
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
+
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
       warnings: [],
@@ -2990,10 +3076,14 @@ describe("copilotPlugin", async () => {
       },
     ];
 
-    const listResult = [
-      { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-      { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
-    ];
+    const listResult: ListAPIResult = {
+      validAPIs: [
+        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
+        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      ],
+      validAPICount: 2,
+      allAPICount: 2,
+    };
 
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").resolves({
@@ -3152,7 +3242,9 @@ describe("copilotPlugin", async () => {
     sinon
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
-    sinon.stub(SpecParser.prototype, "list").resolves([]);
+    sinon
+      .stub(SpecParser.prototype, "list")
+      .resolves({ validAPIs: [], allAPICount: 0, validAPICount: 0 });
 
     try {
       await core.copilotPluginListOperations(inputs as any);
@@ -3176,7 +3268,9 @@ describe("copilotPlugin", async () => {
     sinon
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
-    sinon.stub(SpecParser.prototype, "list").resolves([]);
+    sinon
+      .stub(SpecParser.prototype, "list")
+      .resolves({ validAPIs: [], allAPICount: 0, validAPICount: 0 });
 
     try {
       await core.copilotPluginListOperations(inputs as any);

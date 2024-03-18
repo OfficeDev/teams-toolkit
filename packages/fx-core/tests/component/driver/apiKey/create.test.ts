@@ -63,18 +63,22 @@ describe("CreateApiKeyDriver", () => {
       targetUrlsShouldStartWith: [],
       applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
     });
-    sinon.stub(SpecParser.prototype, "list").resolves([
-      {
-        api: "api",
-        server: "https://test",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            type: "apiKey",
+            name: "test",
+            in: "header",
+          },
         },
-      },
-    ]);
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
 
     const args: any = {
       name: "test",
@@ -97,18 +101,23 @@ describe("CreateApiKeyDriver", () => {
       targetUrlsShouldStartWith: [],
       applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
     });
-    sinon.stub(SpecParser.prototype, "list").resolves([
-      {
-        api: "api",
-        server: "https://test",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            type: "apiKey",
+            name: "test",
+            in: "header",
+          },
         },
-      },
-    ]);
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
 
     const args: any = {
       name: "test",
@@ -132,18 +141,23 @@ describe("CreateApiKeyDriver", () => {
       targetUrlsShouldStartWith: [],
       applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
     });
-    sinon.stub(SpecParser.prototype, "list").resolves([
-      {
-        api: "api",
-        server: "https://test",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            type: "apiKey",
+            name: "test",
+            in: "header",
+          },
         },
-      },
-    ]);
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
 
     envRestore = mockedEnv({
       ["api-key"]: "existingvalue",
@@ -327,28 +341,34 @@ describe("CreateApiKeyDriver", () => {
       primaryClientSecret: "mockedSecret",
       apiSpecPath: "mockedPath",
     };
-    sinon.stub(SpecParser.prototype, "list").resolves([
-      {
-        api: "api",
-        server: "https://test",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            type: "apiKey",
+            name: "test",
+            in: "header",
+          },
         },
-      },
-      {
-        api: "api",
-        server: "https://test2",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+        {
+          api: "api",
+          server: "https://test2",
+          operationId: "get",
+          auth: {
+            type: "apiKey",
+            name: "test",
+            in: "header",
+          },
         },
-      },
-    ]);
+      ],
+      allAPICount: 2,
+      validAPICount: 2,
+    });
+
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
@@ -363,7 +383,9 @@ describe("CreateApiKeyDriver", () => {
       primaryClientSecret: "mockedSecret",
       apiSpecPath: "mockedPath",
     };
-    sinon.stub(SpecParser.prototype, "list").resolves([]);
+    sinon
+      .stub(SpecParser.prototype, "list")
+      .resolves({ validAPIs: [], validAPICount: 0, allAPICount: 1 });
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
@@ -375,18 +397,23 @@ describe("CreateApiKeyDriver", () => {
     sinon
       .stub(AppStudioClient, "createApiKeyRegistration")
       .throws(new SystemError("source", "name", "message"));
-    sinon.stub(SpecParser.prototype, "list").resolves([
-      {
-        api: "api",
-        server: "https://test",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            type: "apiKey",
+            name: "test",
+            in: "header",
+          },
         },
-      },
-    ]);
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
 
     const args: any = {
       name: "test",

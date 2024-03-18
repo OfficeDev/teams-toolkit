@@ -2292,19 +2292,23 @@ describe("scaffold question", () => {
             errors: [],
             warnings: [{ content: "warn", type: WarningType.Unknown }],
           });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "get operation1",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "get operation1",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  in: "header",
+                  type: "apiKey",
+                },
+                operationId: "getOperation1",
               },
-              operationId: "getOperation1",
-            },
-            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
-          ]);
+              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
           sandbox.stub(fs, "pathExists").resolves(true);
 
           const validationSchema = question.validation as FuncValidation<string>;
@@ -2340,20 +2344,25 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "get operation1",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
-              },
-              operationId: "getOperation1",
-            },
 
-            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
-          ]);
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "get operation1",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  in: "header",
+                  type: "apiKey",
+                },
+                operationId: "getOperation1",
+              },
+
+              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("https://www.test.com", inputs);
@@ -2386,19 +2395,24 @@ describe("scaffold question", () => {
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(fs, "pathExists").resolves(true);
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "get operation1",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "get operation1",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  in: "header",
+                  type: "apiKey",
+                },
+                operationId: "getOperation1",
               },
-              operationId: "getOperation1",
-            },
-            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
-          ]);
+              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           let err: Error | undefined = undefined;
           try {
@@ -2510,19 +2524,24 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  in: "header",
+                  type: "apiKey",
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
+
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById"]);
           sandbox.stub(fs, "pathExists").resolves(true);
@@ -2552,19 +2571,24 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  in: "header",
+                  type: "apiKey",
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById", "getStoreOrder"]);
           sandbox.stub(fs, "pathExists").resolves(true);
@@ -2589,18 +2613,35 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "list")
             .onFirstCall()
-            .resolves([
-              {
-                api: "GET /user/{userId}",
-                server: "https://server",
-                operationId: "getUserById",
-              },
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-            ])
+            .resolves({
+              validAPIs: [
+                {
+                  api: "GET /user/{userId}",
+                  server: "https://server",
+                  operationId: "getUserById",
+                },
+                {
+                  api: "GET /store/order",
+                  server: "https://server2",
+                  operationId: "getStoreOrder",
+                },
+              ],
+              allAPICount: 2,
+              validAPICount: 2,
+            })
             .onSecondCall()
-            .resolves([
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-            ]);
+            .resolves({
+              validAPIs: [
+                {
+                  api: "GET /store/order",
+                  server: "https://server2",
+                  operationId: "getStoreOrder",
+                },
+              ],
+              allAPICount: 2,
+              validAPICount: 2,
+            });
+
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox
             .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
@@ -2641,19 +2682,23 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  in: "header",
+                  type: "apiKey",
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
@@ -2682,19 +2727,24 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  in: "header",
+                  type: "apiKey",
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
@@ -2723,19 +2773,24 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  in: "header",
+                  type: "apiKey",
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           const res = await (question.additionalValidationOnAccept as any).validFunc(
             "https://test.com/",

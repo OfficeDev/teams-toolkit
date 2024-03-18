@@ -1267,7 +1267,8 @@ export class FxCore {
           }
     );
 
-    const apiResultList = await specParser.list();
+    const listResult = await specParser.list();
+    const apiResultList = listResult.validAPIs;
 
     let existingOperations: string[];
     let outputAPISpecPath: string;

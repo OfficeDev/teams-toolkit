@@ -1,6 +1,6 @@
 # Overview of the Custom Coilot from Custom API template
 
-This template showcases a bot app that calls real API according to OpenAPI spec, and response with adaptive card.
+This template showcases an AI-powered intelligent chatbot that can understand natural language to invoke the API defined in the OpenAPI description document.
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
  
@@ -40,7 +40,7 @@ The app template is built using the Teams AI library, which provides the capabil
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
 
-![custom api template](https://github.com/OfficeDev/TeamsFx/assets/63089166/c5a8c749-9b96-4d1e-89c9-576621a9bc20)
+![custom api template](https://github.com/OfficeDev/TeamsFx/assets/63089166/81f985a1-b81d-4c27-a82a-73a9b65ece1f)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't yet.

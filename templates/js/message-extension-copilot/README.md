@@ -24,7 +24,7 @@ This app template is a search-based [message extension](https://docs.microsoft.c
 4. To trigger the Message Extension through Copilot, you can:
    1. Select `Debug in Copilot (Edge)` or `Debug in Copilot (Chrome)` from the launch configuration dropdown.
    2. When Teams launches in the browser, click the `Apps` icon from Teams client left rail to open Teams app store and search for `Copilot`.
-   3. Open the `Copilot` app and send a prompt to trigger your plugin.
+   3. Open the `Copilot` app, select `Plugins`, and from the list of plugins, turn on the toggle for your message extension. Now, you can send a prompt to trigger your plugin.
    4. Send a message to Copilot to find an NPM package information. For example: `Find the npm package info on teamsfx-react`.
       > Note: This prompt may not always make Copilot include a response from your message extension. If it happens, try some other prompts or leave a feedback to us by thumbing down the Copilot response and leave a message tagged with [MessageExtension].
 

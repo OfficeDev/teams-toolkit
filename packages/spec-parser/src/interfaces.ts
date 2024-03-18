@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { IParameter } from "@microsoft/teams-manifest";
 import { OpenAPIV3 } from "openapi-types";
 
 /**
@@ -161,20 +162,6 @@ export interface WrappedAdaptiveCard {
   previewCardTemplate: PreviewCardTemplate;
 }
 
-export interface ChoicesItem {
-  title: string;
-  value: string;
-}
-
-export interface Parameter {
-  name: string;
-  title: string;
-  description: string;
-  inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
-  value?: string;
-  choices?: ChoicesItem[];
-}
-
 export interface CheckParamResult {
   requiredNum: number;
   optionalNum: number;
@@ -235,7 +222,7 @@ export interface APIInfo {
   path: string;
   title: string;
   id: string;
-  parameters: Parameter[];
+  parameters: IParameter[];
   description: string;
   warning?: WarningResult;
 }

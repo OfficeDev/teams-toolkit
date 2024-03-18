@@ -268,8 +268,7 @@ export class CreateApiKeyDriver implements StepDriver {
     const apiKey: ApiSecretRegistration = {
       description: args.name,
       targetUrlsShouldStartWith: domain,
-      applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
-      specificAppId: args.appId,
+      applicableToApps: ApiSecretRegistrationAppType.AnyApp,
       targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
       clientSecrets: clientSecrets,
       manageableByUsers: [

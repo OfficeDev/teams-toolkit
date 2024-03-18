@@ -13,5 +13,5 @@ class QueryOrgTestCase extends CaseFactory {}
 new QueryOrgTestCase(
   TemplateProjectFolder.QueryOrg,
   24132148,
-  "v-ivanchen@microsoft.com"
+  "wenyutang@microsoft.com"
 ).test();

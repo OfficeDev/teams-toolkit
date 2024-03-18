@@ -271,6 +271,18 @@ describe("CLI commands", () => {
       const res = await deployCommand.handler!(ctx);
       assert.isTrue(res.isOk());
     });
+    it("success for customized yaml path", async () => {
+      sandbox.stub(FxCore.prototype, "deployArtifacts").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...deployCommand, fullName: "teamsfx" },
+        optionValues: { "config-file-path": "fakePath" },
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await deployCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
   });
   describe("envAddCommand", async () => {
     it("success", async () => {

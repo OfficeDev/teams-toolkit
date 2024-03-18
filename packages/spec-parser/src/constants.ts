@@ -30,8 +30,8 @@ export class ConstantString {
   static readonly SwaggerNotSupported =
     "Swagger 2.0 is not supported. Please convert to OpenAPI 3.0 manually before proceeding.";
 
-  static readonly MultipleAPIKeyNotSupported =
-    "Multiple API keys are not supported. Please make sure that all selected APIs use the same API key.";
+  static readonly MultipleAuthNotSupported =
+    "Multiple authentication methods are unsupported. Ensure all selected APIs use identical authentication.";
 
   static readonly UnsupportedSchema = "Unsupported schema in %s %s: %s";
 
@@ -48,6 +48,7 @@ export class ConstantString {
   static readonly TextBlockType = "TextBlock";
   static readonly ContainerType = "Container";
   static readonly RegistrationIdPostfix = "REGISTRATION_ID";
+  static readonly OAuthRegistrationIdPostFix = "OAUTH_REGISTRATION_ID";
   static readonly ResponseCodeFor20X = [
     "200",
     "201",
@@ -110,4 +111,5 @@ export class ConstantString {
   static readonly ParameterDescriptionMaxLens = 128;
   static readonly CommandTitleMaxLens = 32;
   static readonly ParameterTitleMaxLens = 32;
+  static readonly SMERequiredParamsMaxNum = 5;
 }

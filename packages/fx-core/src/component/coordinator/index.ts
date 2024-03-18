@@ -103,6 +103,7 @@ export enum TemplateNames {
   LinkUnfurling = "link-unfurling",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
   CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
+  ApiMessageExtensionSso = "api-message-extension-sso",
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
   CustomCopilotBasic = "custom-copilot-basic",
@@ -166,6 +167,9 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
     ApiMessageExtensionAuthOptions.apiKey().id
   }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.microsoftEntra().id
+  }`]: TemplateNames.ApiMessageExtensionSso,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
@@ -286,7 +290,7 @@ class Coordinator {
       } else if (
         !isOfficeXMLAddinEnabled() &&
         (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.outlookAddin().id ||
-          CapabilityOptions.officeAddinItems()
+          CapabilityOptions.outlookAddinItems()
             .map((i) => i.id)
             .includes(capability))
       ) {
@@ -296,12 +300,17 @@ class Coordinator {
         }
       } else if (
         isOfficeXMLAddinEnabled() &&
-        inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id
+        inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeXMLAddin().id
       ) {
         const res =
           inputs[QuestionNames.OfficeAddinCapability] === ProjectTypeOptions.outlookAddin().id
             ? await OfficeAddinGenerator.generate(context, inputs, projectPath)
             : await OfficeXMLAddinGenerator.generate(context, inputs, projectPath);
+        if (res.isErr()) {
+          return err(res.error);
+        }
+      } else if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
+        const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
         if (res.isErr()) {
           return err(res.error);
         }
@@ -401,6 +410,7 @@ class Coordinator {
             appName,
             safeProjectNameFromVS,
             inputs.targetFramework,
+            inputs.placeProjectFileInSolutionDir === "true",
             undefined,
             {
               llmService,
@@ -411,6 +421,18 @@ class Coordinator {
           );
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);
           if (res.isErr()) return err(res.error);
+          if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
+            const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
+              context,
+              inputs,
+              projectPath
+            );
+            if (res.isErr()) {
+              return err(res.error);
+            } else {
+              warnings = res.value.warnings;
+            }
+          }
         } else {
           return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
         }

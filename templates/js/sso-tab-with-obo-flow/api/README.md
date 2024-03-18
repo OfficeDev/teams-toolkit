@@ -10,15 +10,15 @@ Azure Functions are a great way to add server-side behaviors to any Teams applic
 
 ## Develop
 
-The Teams Toolkit IDE Extension and TeamsFx CLI provide template code for you to get started with Azure Functions for your Teams application. Microsoft Teams Framework simplifies the task of establishing the user's identity within the Azure Function.
+The Teams Toolkit IDE Extension and TeamsFx CLI provide template code for you to get started with Azure Functions for your Teams application. Microsoft Teams Framework simplifies the task of establishing the user's identity within the Azure Functions.
 
 The template handles calls from your Teams "custom tab" (client-side of your app), initializes the TeamsFx SDK to access the current user context, and demonstrates how to obtain a pre-authenticated Microsoft Graph Client. Microsoft Graph is the "data plane" of Microsoft 365 - you can use it to access content within Microsoft 365 in your company. With it you can read and write documents, SharePoint collections, Teams channels, and many other entities within Microsoft 365. Read more about [Microsoft Graph](https://docs.microsoft.com/en-us/graph/overview).
 
-You can add your logic to the single Azure Function created by this template, as well as add more functions as necessary. See [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference) for more information.
+You can add your logic to the single Azure Functions created by this template, as well as add more functions as necessary. See [Azure Functions developer guide](https://docs.microsoft.com/en-us/azure/azure-functions/functions-reference) for more information.
 
 ### Call the Function
 
-To call your Azure Function, the client sends an HTTP request with an SSO token in the `Authorization` header. Here is an example:
+To call your Azure Functions, the client sends an HTTP request with an SSO token in the `Authorization` header. Here is an example:
 
 ```js
 import { TeamsUserCredentialAuthConfig, TeamsUserCredential } from "@microsoft/teamsfx";
@@ -39,19 +39,19 @@ const response = await axios.default.get(endpoint + "/api/" + functionName, {
 
 ### Add More Functions
 
-- From Visual Studio Code, open the command palette, select `Teams: Add Resources` and select `Azure Function App`.
+- From Visual Studio Code, open the command palette, select `Teams: Add Resources` and select `Azure Functions App`.
 
 ## Change Node.js runtime version
 
-By default, Teams Toolkit and TeamsFx CLI will provision an Azure function app with function runtime version 3, and node runtime version 12. You can change the node version through Azure Portal.
+By default, Teams Toolkit and TeamsFx CLI will provision an Azure functions app with function runtime version 3, and node runtime version 12. You can change the node version through Azure Portal.
 
 - Sign in to [Azure Portal](https://azure.microsoft.com/).
-- Find your application's resource group and Azure Function app resource. The resource group name and the Azure function app name are stored in your project configuration file `.fx/env.*.json`. You can find them by searching the key `resourceGroupName` and `functionAppName` in that file.
-- After enter the home page of the Azure function app, you can find a navigation item called `Configuration` under `settings` group.
+- Find your application's resource group and Azure Functions app resource. The resource group name and the Azure functions app name are stored in your project configuration file `.fx/env.*.json`. You can find them by searching the key `resourceGroupName` and `functionAppName` in that file.
+- After enter the home page of the Azure functions app, you can find a navigation item called `Configuration` under `settings` group.
 - Click `Configuration`, you would see a list of settings. Then click `WEBSITE_NODE_DEFAULT_VERSION` and update the value to `~16` or `~18` according to your requirement.
 - After Click `OK` button, don't forget to click `Save` button on the top of the page.
 
-Then following requests sent to the Azure function app will be handled by new node runtime version.
+Then following requests sent to the Azure functions app will be handled by new node runtime version.
 
 ## Debug
 
@@ -70,8 +70,8 @@ This file contains template arguments with `${{...}}` statements which will be r
 
 Deploy your project to Azure by following these steps:
 
-| From Visual Studio Code                                                                                                                                                                                                                                                                                                                        | From TeamsFx CLI                                                                                                                                                                                                                   |
-| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| From Visual Studio Code                                                                                                                                                                                                                                                                                                                        | From TeamsFx CLI                                                                                                                                 |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
 | <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the command palette and select: `Teams: Provision`.</li><li>Open the command palette and select: `Teams: Deploy`.</li></ul> | <ul> <li>Run command `teamsapp auth login azure`.</li> <li> Run command `teamsapp provision`.</li> <li>Run command `teamsapp deploy`. </li></ul> |
 
 > Note: Provisioning and deployment may incur charges to your Azure Subscription.

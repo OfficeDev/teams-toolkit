@@ -7,7 +7,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import converter from "swagger2openapi";
 import { SpecParser } from "../src/specParser";
-import { ErrorType, ValidationStatus, WarningType } from "../src/interfaces";
+import { ErrorType, ProjectType, ValidationStatus, WarningType } from "../src/interfaces";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { SpecParserError } from "../src/specParserError";
 import { ConstantString } from "../src/constants";
@@ -1083,8 +1083,8 @@ describe("SpecParser", () => {
       expect(outputJSONStub.calledThrice).to.be.true;
     });
 
-    it("should works fine if paths object contains description for bot project", async () => {
-      const specParser = new SpecParser("path/to/spec.yaml");
+    it("should works fine if paths object contains description for teams ai project", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml", { projectType: ProjectType.TeamsAi });
       const spec = {
         openapi: "3.0.0",
         paths: {
@@ -1142,14 +1142,7 @@ describe("SpecParser", () => {
       const filter = ["get /hello"];
 
       const outputSpecPath = "path/to/output.yaml";
-      const result = await specParser.generate(
-        "path/to/manifest.json",
-        filter,
-        outputSpecPath,
-        "path/to/adaptiveCardFolder",
-        undefined,
-        false
-      );
+      const result = await specParser.generate("path/to/manifest.json", filter, outputSpecPath);
 
       expect(result.allSuccess).to.be.true;
       expect(JsyamlSpy.calledOnce).to.be.true;
@@ -1272,9 +1265,126 @@ describe("SpecParser", () => {
         );
         expect.fail("Expected generate to throw a SpecParserError");
       } catch (err) {
-        expect((err as SpecParserError).message).contain(ConstantString.MultipleAPIKeyNotSupported);
-        expect((err as SpecParserError).errorType).to.equal(ErrorType.MultipleAPIKeyNotSupported);
+        expect((err as SpecParserError).message).contain(ConstantString.MultipleAuthNotSupported);
+        expect((err as SpecParserError).errorType).to.equal(ErrorType.MultipleAuthNotSupported);
       }
+    });
+
+    it("should work if contain multiple API key in spec when project Type is teams ai", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml", {
+        allowAPIKeyAuth: true,
+        projectType: ProjectType.TeamsAi,
+      });
+      const spec = {
+        openapi: "3.0.0",
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+            api_key2: {
+              type: "apiKey",
+              name: "api_key2",
+              in: "header",
+            },
+          },
+        },
+        paths: {
+          "/hello": {
+            get: {
+              operationId: "getHello",
+              security: [
+                {
+                  api_key: [],
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              security: [
+                {
+                  api_key2: [],
+                },
+              ],
+              operationId: "postHello",
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns([
+          {
+            type: "AdaptiveCard",
+            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            version: "1.5",
+            body: [
+              {
+                type: "TextBlock",
+                text: "id: ${id}",
+                wrap: true,
+              },
+            ],
+          },
+          "$",
+        ]);
+
+      const filter = ["get /hello", "post /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const result = await specParser.generate("path/to/manifest.json", filter, outputSpecPath);
+
+      expect(result.allSuccess).to.be.true;
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      expect(outputJSONStub.calledOnce).to.be.true;
+      expect(generateAdaptiveCardStub.notCalled).to.be.true;
     });
 
     it("should contain warnings if generate adaptive card failed", async () => {
@@ -1704,6 +1814,73 @@ describe("SpecParser", () => {
           api: "GET /user/{userId}",
           server: "https://server1",
           auth: { type: "apiKey", name: "api_key", in: "header" },
+          operationId: "getUserById",
+        },
+      ]);
+    });
+
+    it("should return a list of HTTP methods and paths for all GET with 1 parameter and bearer token auth security", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowBearerTokenAuth: true });
+      const spec = {
+        components: {
+          securitySchemes: {
+            bearerTokenAuth: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        },
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              security: [{ bearerTokenAuth: [] }],
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal([
+        {
+          api: "GET /user/{userId}",
+          server: "https://server1",
+          auth: { type: "http", scheme: "bearer" },
           operationId: "getUserById",
         },
       ]);

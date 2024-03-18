@@ -37,7 +37,7 @@ const app = new Application({
   },
 });
 
-import { generateAdaptiveCard } from "./utility";
+import { generateAdaptiveCard, addAuthConfig } from "./utility";
 import { TurnContext, ConversationState } from "botbuilder";
 import { TurnState, Memory } from "@microsoft/teams-ai";
 import yaml from "js-yaml";
@@ -54,5 +54,7 @@ const specPath = path.join(__dirname, "../../appPackage/apiSpecificationFile/{{O
 const specContent = yaml.load(fs.readFileSync(specPath, "utf8")) as Document;
 const api = new OpenAPIClientAxios({ definition: specContent });
 api.init();
+
+// Replace with action code
 
 export default app;

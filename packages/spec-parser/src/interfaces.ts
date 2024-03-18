@@ -82,7 +82,7 @@ export enum ErrorType {
   NoExtraAPICanBeAdded = "no-extra-api-can-be-added",
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
-  MultipleAPIKeyNotSupported = "multiple-api-key-not-supported",
+  MultipleAuthNotSupported = "multiple-auth-not-supported",
 
   ListFailed = "list-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",
@@ -182,12 +182,52 @@ export interface CheckParamResult {
 }
 
 export interface ParseOptions {
+  /**
+   * If true, the parser will not throw an error if an ID is missing the spec file.
+   */
   allowMissingId?: boolean;
+
+  /**
+   * If true, the parser will allow parsing of Swagger specifications.
+   */
   allowSwagger?: boolean;
+
+  /**
+   * If true, the parser will allow API Key authentication in the spec file.
+   */
   allowAPIKeyAuth?: boolean;
+
+  /**
+   * If true, the parser will allow Bearer Token authentication in the spec file.
+   */
+  allowBearerTokenAuth?: boolean;
+
+  /**
+   * If true, the parser will allow multiple parameters in the spec file. Teams AI project would ignore this parameters and always true
+   */
   allowMultipleParameters?: boolean;
+
+  /**
+   * If true, the parser will allow OAuth2 authentication in the spec file. Currently only support OAuth2 with auth code flow.
+   */
   allowOauth2?: boolean;
-  isCopilot?: boolean;
+
+  /**
+   * An array of HTTP methods that the parser will allow in the spec file.
+   */
+  allowMethods?: string[];
+
+  /**
+   * The type of project that the parser is being used for.
+   * Project can be SME/Copilot/TeamsAi
+   */
+  projectType?: ProjectType;
+}
+
+export enum ProjectType {
+  Copilot,
+  SME,
+  TeamsAi,
 }
 
 export interface APIInfo {
@@ -207,7 +247,7 @@ export interface ListAPIResult {
   auth?: OpenAPIV3.SecuritySchemeObject;
 }
 
-export interface AuthSchema {
-  authSchema: OpenAPIV3.SecuritySchemeObject;
+export interface AuthInfo {
+  authScheme: OpenAPIV3.SecuritySchemeObject;
   name: string;
 }

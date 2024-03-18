@@ -13,6 +13,7 @@ import {
   ValidationStatus,
   Parameter,
   ListAPIResult,
+  ProjectType,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { Utils } from "./utils";
@@ -36,8 +37,10 @@ export class SpecParser {
     allowSwagger: false,
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
+    allowBearerTokenAuth: false,
     allowOauth2: false,
-    isCopilot: false,
+    allowMethods: ["get", "post"],
+    projectType: ProjectType.SME,
   };
 
   /**
@@ -86,16 +89,7 @@ export class SpecParser {
         };
       }
 
-      return Utils.validateSpec(
-        this.spec!,
-        this.parser,
-        !!this.isSwaggerFile,
-        this.options.allowMissingId,
-        this.options.allowAPIKeyAuth,
-        this.options.allowMultipleParameters,
-        this.options.allowOauth2,
-        this.options.isCopilot
-      );
+      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -116,10 +110,7 @@ export class SpecParser {
           continue;
         }
 
-        const [command, warning] = Utils.parseApiInfo(
-          pathObjectItem,
-          this.options.allowMultipleParameters
-        );
+        const [command, warning] = Utils.parseApiInfo(pathObjectItem, this.options);
 
         const apiInfo: APIInfo = {
           method: method,
@@ -195,9 +186,8 @@ export class SpecParser {
     manifestPath: string,
     filter: string[],
     outputSpecPath: string,
-    adaptiveCardFolder: string,
-    signal?: AbortSignal,
-    isMe?: boolean
+    adaptiveCardFolder?: string,
+    signal?: AbortSignal
   ): Promise<GenerateResult> {
     throw new Error("Method not implemented.");
   }
@@ -220,14 +210,7 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = Utils.listSupportedAPIs(
-      spec,
-      this.options.allowMissingId,
-      this.options.allowAPIKeyAuth,
-      this.options.allowMultipleParameters,
-      this.options.allowOauth2,
-      this.options.isCopilot
-    );
+    const result = Utils.listSupportedAPIs(spec, this.options);
     this.apiMap = result;
     return result;
   }

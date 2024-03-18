@@ -65,4 +65,7 @@ export class FeatureFlagName {
   static readonly MultipleParameters = "API_COPILOT_MULTIPLE_PARAMETERS";
   static readonly TeamsFxRebranding = "TEAMSFX_REBRANDING";
   static readonly TdpTemplateCliTest = "TEAMSFX_TDP_TEMPLATE_CLI_TEST";
+  static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
+  static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
+  static readonly ApiMeSSO = "API_ME_SSO";
 }

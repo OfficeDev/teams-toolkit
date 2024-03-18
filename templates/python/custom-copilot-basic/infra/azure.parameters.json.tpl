@@ -19,7 +19,7 @@
       "value": "${{AZURE_OPENAI_MODEL_DEPLOYMENT_NAME}}"
     },
     "azureOpenaiEndpoint" : {
-      "value": "${{SECRET_AZURE_OPENAI_ENDPOINT}}"
+      "value": "${{AZURE_OPENAI_ENDPOINT}}"
     },
     {{/useAzureOpenAI}}
     {{#useOpenAI}}

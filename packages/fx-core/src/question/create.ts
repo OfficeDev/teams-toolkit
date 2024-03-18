@@ -29,6 +29,8 @@ import {
   isApiKeyEnabled,
   isTdpTemplateCliTestEnabled,
   isOfficeXMLAddinEnabled,
+  isOfficeJSONAddinEnabled,
+  isApiMeSSOEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -130,13 +132,23 @@ export class ProjectTypeOptions {
     };
   }
 
-  static officeAddin(platform?: Platform): OptionItem {
+  static officeXMLAddin(platform?: Platform): OptionItem {
     return {
-      id: "office-addin-type",
+      id: "office-xml-addin-type",
       label: `${platform === Platform.VSCode ? "$(inbox) " : ""}${getLocalizedString(
         "core.createProjectQuestion.officeXMLAddin.mainEntry.title"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.mainEntry.detail"),
+    };
+  }
+
+  static officeAddin(platform?: Platform): OptionItem {
+    return {
+      id: "office-addin-type",
+      label: `${platform === Platform.VSCode ? "$(extensions) " : ""}${getLocalizedString(
+        "core.createProjectQuestion.projectType.officeAddin.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
     };
   }
 
@@ -167,8 +179,9 @@ function projectTypeQuestion(): SingleSelectQuestion {
     ProjectTypeOptions.tab(Platform.CLI),
     ProjectTypeOptions.me(Platform.CLI),
     isOfficeXMLAddinEnabled()
-      ? ProjectTypeOptions.officeAddin(Platform.CLI)
+      ? ProjectTypeOptions.officeXMLAddin(Platform.CLI)
       : ProjectTypeOptions.outlookAddin(Platform.CLI),
+    ProjectTypeOptions.officeAddin(Platform.CLI),
   ];
   return {
     name: QuestionNames.ProjectType,
@@ -195,7 +208,9 @@ function projectTypeQuestion(): SingleSelectQuestion {
         }
       } else {
         staticOptions.push(
-          isOfficeXMLAddinEnabled()
+          isOfficeXMLAddinEnabled() && !isOfficeJSONAddinEnabled()
+            ? ProjectTypeOptions.officeXMLAddin(inputs.platform)
+            : isOfficeJSONAddinEnabled()
             ? ProjectTypeOptions.officeAddin(inputs.platform)
             : ProjectTypeOptions.outlookAddin(inputs.platform)
         );
@@ -414,6 +429,16 @@ export class CapabilityOptions {
     };
   }
   static bots(inputs?: Inputs): OptionItem[] {
+    if (inputs?.platform === Platform.VS) {
+      return [
+        CapabilityOptions.basicBot(),
+        CapabilityOptions.aiBot(),
+        CapabilityOptions.aiAssistantBot(),
+        CapabilityOptions.notificationBot(),
+        CapabilityOptions.commandBot(),
+        CapabilityOptions.workflowBot(inputs),
+      ];
+    }
     return [
       CapabilityOptions.basicBot(),
       CapabilityOptions.notificationBot(),
@@ -473,6 +498,10 @@ export class CapabilityOptions {
         ];
   }
 
+  static officeAll(): OptionItem[] {
+    return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
+  }
+
   static copilotPlugins(): OptionItem[] {
     return [
       CapabilityOptions.copilotPluginNewApi(),
@@ -525,7 +554,7 @@ export class CapabilityOptions {
         ]
       );
     } else {
-      capabilityOptions.push(...CapabilityOptions.officeAddinItems());
+      capabilityOptions.push(...CapabilityOptions.outlookAddinItems());
     }
 
     return capabilityOptions;
@@ -539,7 +568,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.bots(inputs),
       ...CapabilityOptions.tabs(),
       ...CapabilityOptions.collectMECaps(),
-      ...CapabilityOptions.officeAddinItems(),
+      ...CapabilityOptions.outlookAddinItems(),
     ];
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
@@ -552,11 +581,22 @@ export class CapabilityOptions {
     return capabilityOptions;
   }
 
-  static officeAddinImport(): OptionItem {
+  static outlookAddinImport(): OptionItem {
     return {
       id: "import",
       label: getLocalizedString("core.importAddin.label"),
       detail: getLocalizedString("core.importAddin.detail"),
+    };
+  }
+
+  static officeAddinImport(): OptionItem {
+    return {
+      id: "import",
+      label: getLocalizedString("core.importOfficeAddin.label"),
+      detail: getLocalizedString("core.importAddin.detail"),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.previewOnWindow"
+      ),
     };
   }
 
@@ -565,6 +605,17 @@ export class CapabilityOptions {
       id: x.proj,
       label: getLocalizedString(x.title),
       detail: getLocalizedString(x.detail),
+    }));
+  }
+
+  static outlookAddinItems(): OptionItem[] {
+    return officeAddinJsonData.getProjectTemplateNames().map((template) => ({
+      id: template,
+      label: getLocalizedString(officeAddinJsonData.getProjectDisplayName(template)),
+      detail: getLocalizedString(officeAddinJsonData.getProjectDetails(template)),
+      description: getLocalizedString(
+        "core.createProjectQuestion.option.description.previewOnWindow"
+      ),
     }));
   }
 
@@ -671,7 +722,7 @@ export class CapabilityOptions {
 
   static customCopilotAssistant(): OptionItem {
     return {
-      id: "custom-copilot-assistant",
+      id: "custom-copilot-agent",
       label: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantOption.label"
       ),
@@ -718,6 +769,8 @@ export function capabilityQuestion(): SingleSelectQuestion {
           );
         case ProjectTypeOptions.outlookAddin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.title");
+        case ProjectTypeOptions.officeAddin().id:
+          return getLocalizedString("core.createProjectQuestion.projectType.officeAddin.title");
         case ProjectTypeOptions.copilotPlugin().id:
           return getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title");
         case ProjectTypeOptions.customCopilot().id:
@@ -762,12 +815,17 @@ export function capabilityQuestion(): SingleSelectQuestion {
       } else if (
         (!isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.outlookAddin().id) ||
         (isOfficeXMLAddinEnabled() &&
-          projectType === ProjectTypeOptions.officeAddin().id &&
+          projectType === ProjectTypeOptions.officeXMLAddin().id &&
           officeHost === ProjectTypeOptions.outlookAddin().id)
       ) {
-        return [...CapabilityOptions.officeAddinItems(), CapabilityOptions.officeAddinImport()];
-      } else if (isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.officeAddin().id) {
+        return [...CapabilityOptions.outlookAddinItems(), CapabilityOptions.outlookAddinImport()];
+      } else if (
+        isOfficeXMLAddinEnabled() &&
+        projectType === ProjectTypeOptions.officeXMLAddin().id
+      ) {
         return CapabilityOptions.officeXMLAddinHostOptionItems(officeHost);
+      } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+        return CapabilityOptions.officeAll();
       } else if (projectType === ProjectTypeOptions.copilotPlugin().id) {
         return CapabilityOptions.copilotPlugins();
       } else if (projectType === ProjectTypeOptions.customCopilot().id) {
@@ -1233,15 +1291,7 @@ export function officeAddinHostingQuestion(): SingleSelectQuestion {
     name: QuestionNames.OfficeAddinHost,
     title: "Add-in Host",
     staticOptions: [],
-    dynamicOptions: (inputs: Inputs) => {
-      const template = getTemplate(inputs);
-      const getHostTemplateNames = officeAddinJsonData.getHostTemplateNames(template);
-      const options = getHostTemplateNames.map((host) => ({
-        label: officeAddinJsonData.getHostDisplayName(host) as string,
-        id: host,
-      }));
-      return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
-    },
+    dynamicOptions: getAddinHostOptions,
     default: (inputs: Inputs) => {
       const template = getTemplate(inputs);
       const options = officeAddinJsonData.getHostTemplateNames(template);
@@ -1250,6 +1300,42 @@ export function officeAddinHostingQuestion(): SingleSelectQuestion {
     skipSingleOption: true,
   };
   return OfficeHostQuestion;
+}
+
+export function getAddinHostOptions(inputs: Inputs): OptionItem[] {
+  // office addin supports host defined in officeAddinJsonData
+  const projectType = inputs[QuestionNames.ProjectType];
+  const template = getTemplate(inputs);
+  const hostTypes = officeAddinJsonData.getHostTemplateNames(template);
+  const options: OptionItem[] = [];
+  hostTypes.forEach((host) => {
+    options.push({ label: officeAddinJsonData.getHostDisplayName(host) as string, id: host });
+  });
+  // Outlook addin only supports outlook
+  if (projectType === ProjectTypeOptions.outlookAddin().id) {
+    return [options[0] || { label: "No Options", id: "No Options" }];
+  } else if (projectType === ProjectTypeOptions.officeAddin().id) {
+    return options;
+  }
+  return options || "No Options";
+}
+
+export function OfficeAddinFrameworkQuestion(): SingleSelectQuestion {
+  return {
+    type: "singleSelect",
+    name: QuestionNames.OfficeAddinFramework,
+    cliShortName: "f",
+    cliDescription: "Framework for WXP extension.",
+    title: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.framework.title"),
+    staticOptions: [
+      { id: "default", label: "Default" },
+      { id: "react", label: "React" },
+    ],
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.projectType.officeAddin.framework.placeholder"
+    ),
+    default: "default",
+  };
 }
 
 const officeAddinJsonData = new projectsJsonData();
@@ -1266,7 +1352,7 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   if (
     (!isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.outlookAddin().id) ||
     (isOfficeXMLAddinEnabled() &&
-      projectType === ProjectTypeOptions.officeAddin().id &&
+      projectType === ProjectTypeOptions.officeXMLAddin().id &&
       officeHost === ProjectTypeOptions.outlookAddin().id)
   ) {
     const template = getTemplate(inputs);
@@ -1274,11 +1360,24 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     const options = supportedTypes.map((language) => ({ label: language, id: language }));
     return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
   }
-  if (isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.officeAddin().id) {
+  if (isOfficeXMLAddinEnabled() && projectType === ProjectTypeOptions.officeXMLAddin().id) {
     const officeProject = inputs[QuestionNames.Capabilities];
     return officeProject !== "manifest"
       ? getOfficeXMLAddinHostProjectLangOptions(officeHost, officeProject)
       : [{ id: "javascript", label: "JavaScript" }];
+  }
+  if (projectType === ProjectTypeOptions.officeAddin().id) {
+    const template = getTemplate(inputs);
+    const supportedTypes = officeAddinJsonData.getSupportedScriptTypesNew(template);
+    const options: OptionItem[] = [];
+    supportedTypes.forEach((language) => {
+      if (language === "TypeScript") {
+        options.push({ label: "TypeScript", id: "typescript" });
+      } else if (language === "JavaScript") {
+        options.push({ label: "JavaScript", id: "javascript" });
+      }
+    });
+    return options.length > 0 ? options : [{ label: "No Options", id: "No Options" }];
   }
 
   const capabilities = inputs[QuestionNames.Capabilities] as string;
@@ -1334,7 +1433,7 @@ export function programmingLanguageQuestion(): SingleSelectQuestion {
       const projectType = inputs[QuestionNames.ProjectType];
       if (projectType === ProjectTypeOptions.outlookAddin().id) {
         const template = getTemplate(inputs);
-        const options = officeAddinJsonData.getSupportedScriptTypes(template);
+        const options = officeAddinJsonData.getSupportedScriptTypesNew(template);
         return options[0] || "No Options";
       }
       const capabilities = inputs[QuestionNames.Capabilities] as string;
@@ -1653,8 +1752,19 @@ export class ApiMessageExtensionAuthOptions {
     };
   }
 
+  static microsoftEntra(): OptionItem {
+    return {
+      id: "microsoft-entra",
+      label: "Microsoft Entra",
+    };
+  }
+
   static all(): OptionItem[] {
-    return [ApiMessageExtensionAuthOptions.none(), ApiMessageExtensionAuthOptions.apiKey()];
+    return [
+      ApiMessageExtensionAuthOptions.none(),
+      ApiMessageExtensionAuthOptions.apiKey(),
+      ApiMessageExtensionAuthOptions.microsoftEntra(),
+    ];
   }
 }
 
@@ -1850,6 +1960,16 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
     ),
     cliDescription: "The authentication type for the API.",
     staticOptions: ApiMessageExtensionAuthOptions.all(),
+    dynamicOptions: () => {
+      const options: OptionItem[] = [ApiMessageExtensionAuthOptions.none()];
+      if (isApiKeyEnabled()) {
+        options.push(ApiMessageExtensionAuthOptions.apiKey());
+      }
+      if (isApiMeSSOEnabled()) {
+        options.push(ApiMessageExtensionAuthOptions.microsoftEntra());
+      }
+      return options;
+    },
     default: ApiMessageExtensionAuthOptions.none().id,
   };
 }
@@ -1899,7 +2019,11 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     staticOptions: [],
     validation: {
       validFunc: (input: string[], inputs?: Inputs): string | undefined => {
-        if (input.length < 1 || input.length > 10) {
+        if (
+          input.length < 1 ||
+          (input.length > 10 &&
+            inputs?.[QuestionNames.CustomCopilotRag] != CustomCopilotRagOptions.customApi().id)
+        ) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
             input.length,
@@ -2010,7 +2134,7 @@ export class CustomCopilotRagOptions {
 export class CustomCopilotAssistantOptions {
   static new(): OptionItem {
     return {
-      id: "custom-copilot-assistant-new",
+      id: "custom-copilot-agent-new",
       label: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantNewOption.label"
       ),
@@ -2022,7 +2146,7 @@ export class CustomCopilotAssistantOptions {
 
   static assistantsApi(): OptionItem {
     return {
-      id: "custom-copilot-assistant-assistantsApi",
+      id: "custom-copilot-agent-assistants-api",
       label: getLocalizedString(
         "core.createProjectQuestion.capability.customCopilotAssistantAssistantsApiOption.label"
       ),
@@ -2074,23 +2198,22 @@ function llmServiceQuestion(): SingleSelectQuestion {
     placeholder: getLocalizedString("core.createProjectQuestion.llmService.placeholder"),
     staticOptions: [
       {
-        id: "llm-service-azureOpenAI",
+        id: "llm-service-azure-openai",
+        cliName: "azure-openai",
         label: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.label"),
         detail: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.detail"),
       },
       {
-        id: "llm-service-openAI",
+        id: "llm-service-openai",
         label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
         detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
       },
     ],
     dynamicOptions: (inputs: Inputs) => {
       const options: OptionItem[] = [];
-      if (
-        inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-assistant-assistantsApi"
-      ) {
+      if (inputs[QuestionNames.CustomCopilotAssistant] !== "custom-copilot-agent-assistants-api") {
         options.push({
-          id: "llm-service-azureOpenAI",
+          id: "llm-service-azure-openai",
           label: getLocalizedString("core.createProjectQuestion.llmServiceAzureOpenAIOption.label"),
           detail: getLocalizedString(
             "core.createProjectQuestion.llmServiceAzureOpenAIOption.detail"
@@ -2098,14 +2221,14 @@ function llmServiceQuestion(): SingleSelectQuestion {
         });
       }
       options.push({
-        id: "llm-service-openAI",
+        id: "llm-service-openai",
         label: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.label"),
         detail: getLocalizedString("core.createProjectQuestion.llmServiceOpenAIOption.detail"),
       });
       return options;
     },
     skipSingleOption: true,
-    default: "llm-service-azureOpenAI",
+    default: "llm-service-azure-openai",
   };
 }
 
@@ -2173,7 +2296,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         // office addin import sub-tree
-        condition: { equals: CapabilityOptions.officeAddinImport().id },
+        condition: { equals: CapabilityOptions.outlookAddinImport().id },
         data: { type: "group", name: QuestionNames.OfficeAddinImport },
         children: [
           {
@@ -2197,7 +2320,7 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) =>
           isOfficeXMLAddinEnabled()
             ? false
-            : CapabilityOptions.officeAddinItems()
+            : CapabilityOptions.outlookAddinItems()
                 .map((i) => i.id)
                 .includes(inputs[QuestionNames.Capabilities]),
         data: officeAddinHostingQuestion(),
@@ -2241,9 +2364,8 @@ export function capabilitySubTree(): IQTreeNode {
       {
         condition: (inputs: Inputs) => {
           return (
-            isApiKeyEnabled() &&
-            (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+            (isApiKeyEnabled() || isApiMeSSOEnabled()) &&
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id
           );
         },
         data: apiMessageExtensionAuthQuestion(),
@@ -2306,7 +2428,7 @@ export function capabilitySubTree(): IQTreeNode {
         data: llmServiceQuestion(),
         children: [
           {
-            condition: { equals: "llm-service-azureOpenAI" },
+            condition: { equals: "llm-service-azure-openai" },
             data: azureOpenAIKeyQuestion(),
             children: [
               {
@@ -2318,10 +2440,17 @@ export function capabilitySubTree(): IQTreeNode {
             ],
           },
           {
-            condition: { equals: "llm-service-openAI" },
+            condition: { equals: "llm-service-openai" },
             data: openAIKeyQuestion(),
           },
         ],
+      },
+      {
+        // WXP addin framework
+        condition: (inputs: Inputs) => {
+          return inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id;
+        },
+        data: OfficeAddinFrameworkQuestion(),
       },
       {
         // root folder
@@ -2354,7 +2483,7 @@ export function createProjectQuestionNode(): IQTreeNode {
       {
         condition: (inputs: Inputs) =>
           isOfficeXMLAddinEnabled() &&
-          inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id,
+          inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeXMLAddin().id,
         data: {
           name: QuestionNames.OfficeAddinCapability,
           title: getLocalizedString("core.createProjectQuestion.officeXMLAddin.create.title"),

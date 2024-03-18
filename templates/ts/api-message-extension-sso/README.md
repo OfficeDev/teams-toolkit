@@ -49,9 +49,9 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                                                                                                                                   |
 | `aad.manifest.json`  | This file defines the configuration of Microsoft Entra app. This template will only provision [single tenant](https://learn.microsoft.com/azure/active-directory/develop/single-and-multi-tenant-apps#who-can-sign-in-to-your-app) Microsoft Entra app. |
 
-## How Azure Active Directory (AAD) Works
+## How Microsoft Entra works
 
-![aad-flow](https://github.com/OfficeDev/TeamsFx/assets/107838226/846e7a60-8cc1-4d8b-852e-2aec93b61fe9)
+![microsoft-entra-flow](https://github.com/OfficeDev/TeamsFx/assets/107838226/846e7a60-8cc1-4d8b-852e-2aec93b61fe9)
 
 > **Note**: The Azure Active Directory (AAD) flow is only functional in remote environments. It cannot be tested in a local environment due to the lack of authentication support in Azure Function core tools.
 

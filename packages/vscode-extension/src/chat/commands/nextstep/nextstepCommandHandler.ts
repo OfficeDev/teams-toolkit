@@ -37,7 +37,7 @@ export default async function nextStepCommandHandler(
   projectId = status.projectOpened?.projectId;
   const steps = AllSteps.filter((s) => s.condition(status)).sort((a, b) => a.priority - b.priority);
   if (steps.length > 1) {
-    response.markdown(localize("teamstoolkit.chatParticipants.nextStep.list"));
+    response.markdown("Here are the next steps you can do:\n");
   }
   for (let index = 0; index < Math.min(3, steps.length); index++) {
     const s = steps[index];

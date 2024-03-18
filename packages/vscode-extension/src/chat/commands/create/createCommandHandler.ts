@@ -49,7 +49,9 @@ export default async function createCommandHandler(
   const matchedResult = await matchProject(request, token);
 
   if (matchedResult.length === 0) {
-    response.markdown(localize("teamstoolkit.chatParticipants.create.noMatch"));
+    response.markdown(
+      "No matching templates or samples found. Try a different app description or explore other templates.\n"
+    );
     return {};
   }
   if (matchedResult.length === 1) {
@@ -85,10 +87,9 @@ export default async function createCommandHandler(
     return { metadata: { command: TeamsChatCommand.Create } };
   } else {
     response.markdown(
-      util.format(
-        localize("teamstoolkit.chatParticipants.create.multipleMatch"),
+      `We've found ${
         matchedResult.slice(0, 3).length
-      )
+      } projects that match your description. Take a look at them below.\n`
     );
     for (const project of matchedResult.slice(0, 3)) {
       response.markdown(`- ${project.name}: `);
@@ -187,7 +188,9 @@ async function showFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
 ): Promise<string> {
-  response.markdown(localize("teamstoolkit.chatParticipants.create.showFileTree"));
+  response.markdown(
+    "\nWe've found a sample project that matches your description. Take a look at it below."
+  );
   const downloadUrlInfo = await getSampleDownloadUrlInfo(projectMetadata.id);
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;

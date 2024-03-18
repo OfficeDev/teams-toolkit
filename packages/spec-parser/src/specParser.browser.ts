@@ -11,7 +11,6 @@ import {
   ParseOptions,
   ValidateResult,
   ValidationStatus,
-  Parameter,
   ListAPIResult,
   ProjectType,
 } from "./interfaces";
@@ -117,7 +116,7 @@ export class SpecParser {
           path: path,
           title: command.title,
           id: operationId,
-          parameters: command.parameters! as Parameter[],
+          parameters: command.parameters!,
           description: command.description!,
         };
 

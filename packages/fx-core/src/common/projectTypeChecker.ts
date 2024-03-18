@@ -204,7 +204,6 @@ class ProjectTypeChecker {
       data.isTeamsFx = false;
       return false;
     }
-    data.officeProjectType = "null";
     return true;
   }
 

@@ -16,7 +16,7 @@ We have enhanced the user experience for developers to create their own copilots
   - Python language support for building a `Basic AI Chatbot`.
 
 - **Word, Excel and PowerPoint Add-ins in Teams Toolkit**
-![WXP Add-in](https://github.com/OfficeDev/TeamsFx/assets/11220663/b91fd26e-b26e-4755-b0c5-e9c4d395c27d)
+![WXP Add-in](https://github.com/OfficeDev/TeamsFx/assets/11220663/89612209-cddb-4480-a1c8-9a67e2288b00)
 Teams Toolkit now supports Microsoft Word, Excel, or PowerPoint JavaScript add-in development. This support enables developers to quickly get started and build add-ins with high productivity, featuring:
   - A wizard in Command Palette that guides developers through creating a Word, Excel, or PowerPoint add-in project with appropriate configuration and dependencies.
   - Templates providing sample code and UI elements for various add-in types such as task pane, content, or ribbon. Developers can customize these templates to create their own add-in projects.

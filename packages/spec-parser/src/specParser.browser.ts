@@ -11,13 +11,13 @@ import {
   ParseOptions,
   ValidateResult,
   ValidationStatus,
-  Parameter,
   ListAPIResult,
   ProjectType,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { Utils } from "./utils";
 import { ConstantString } from "./constants";
+import { IParameter } from "@microsoft/teams-manifest";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -117,7 +117,7 @@ export class SpecParser {
           path: path,
           title: command.title,
           id: operationId,
-          parameters: command.parameters! as Parameter[],
+          parameters: command.parameters!,
           description: command.description!,
         };
 

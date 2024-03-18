@@ -15,6 +15,8 @@ import {
   Uri,
   window,
   workspace,
+  ChatResultFeedback,
+  ChatResultFeedbackKind,
 } from "vscode";
 
 import { downloadDirectory } from "@microsoft/teamsfx-core/build/component/generator/utils";
@@ -26,13 +28,23 @@ import { TeamsChatCommand } from "./consts";
 import followupProvider from "./followupProvider";
 import { defaultSystemPrompt } from "./prompts";
 import { getSampleDownloadUrlInfo, verbatimCopilotInteraction } from "./utils";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import {
+  ISharedTelemetryProperty,
+  ITelemetryMetadata,
+  ICopilotChatResult,
+  ICopilotChatResultMetadata,
+} from "./types";
+import { getUuid } from "@microsoft/teamsfx-core";
+import { TelemetryMetadata } from "./telemetryData";
 
 export function chatRequestHandler(
   request: ChatRequest,
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): ProviderResult<ChatResult> {
+): ProviderResult<ICopilotChatResult> {
   // Matching chat commands in the package.json
   followupProvider.clearFollowups();
   if (request.command == TeamsChatCommand.Create) {
@@ -50,10 +62,29 @@ async function defaultHandler(
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<null> {
+): Promise<ICopilotChatResult> {
+  const sharedTelemetryProperty: ISharedTelemetryProperty = {
+    "correlation-id": getUuid(),
+  };
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatDefaultStart, {
+    ...sharedTelemetryProperty,
+  });
+
+  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
+
   const messages = [defaultSystemPrompt, new LanguageModelChatUserMessage(request.prompt)];
+  telemetryMetadata.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
-  return null;
+
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChatDefault,
+    { ...sharedTelemetryProperty },
+    {
+      [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
+      [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - telemetryMetadata.startTime,
+    }
+  );
+  return { metadata: { command: undefined, sharedTelemetryProperty: sharedTelemetryProperty } };
 }
 
 export async function chatCreateCommandHandler(folderOrSample: string | ProjectMetadata) {
@@ -103,4 +134,23 @@ export async function chatCreateCommandHandler(folderOrSample: string | ProjectM
 
 export async function openUrlCommandHandler(url: string) {
   await env.openExternal(Uri.parse(url));
+}
+
+export function handleFeedback(e: ChatResultFeedback): void {
+  const result = e.result as ICopilotChatResult;
+  const sharedTelemetryProperty: ISharedTelemetryProperty =
+    result.metadata?.sharedTelemetryProperty || ({} as ISharedTelemetryProperty);
+  if (!sharedTelemetryProperty["correlation-id"]) {
+    sharedTelemetryProperty["correlation-id"] = getUuid();
+  }
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChatFeedback,
+    {
+      ...sharedTelemetryProperty,
+      [TelemetryProperty.CopilotChatSlashCommand]: result.metadata?.command || "",
+    },
+    {
+      [TelemetryProperty.CopilotChatFeedbackHelpful]: e.kind,
+    }
+  );
 }

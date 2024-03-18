@@ -16,14 +16,19 @@ import {
   Uri,
 } from "vscode";
 
-import { sampleProvider } from "@microsoft/teamsfx-core";
+import { TelemetrySuccess, getUuid, sampleProvider } from "@microsoft/teamsfx-core";
 import {
   getSampleFileInfo,
   runWithLimitedConcurrency,
   sendRequestWithRetry,
 } from "@microsoft/teamsfx-core/build/component/generator/utils";
 
-import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
+import {
+  TelemetryTriggerFrom,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../../telemetry/extTelemetryEvents";
+import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { CHAT_CREATE_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
 import {
   brieflyDescribeProjectSystemPrompt,
@@ -37,6 +42,32 @@ import {
 } from "../../utils";
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
+import { TelemetryMetadata } from "../../telemetryData";
+import { ISharedTelemetryProperty, ITelemetryMetadata } from "../../types";
+
+function sendTelemetry(
+  sharedTelemetryProperty: ISharedTelemetryProperty,
+  telemetryMetadata: ITelemetryMetadata
+) {
+  const startTime = telemetryMetadata.startTime;
+  // const requestStartTime = telemetryMetadata.requestStartTime;
+  // const firstTokenTime = telemetryMetadata.firstTokenTime;
+
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChatCreate,
+    {
+      ...sharedTelemetryProperty,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    },
+    {
+      [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
+      [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - startTime,
+      // TODO: there are multi entry for requesting LLM, is these measurements needed?
+      // [TelemetryProperty.CopilotChatTimeToRequest]: requestStartTime ? requestStartTime - startTime : -1,
+      // [TelemetryProperty.CopilotChatTimeToFirstToken]: firstTokenTime ? firstTokenTime - startTime : -1,
+    }
+  );
+}
 
 export default async function createCommandHandler(
   request: ChatRequest,
@@ -44,24 +75,41 @@ export default async function createCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ChatResult> {
-  const matchedResult = await matchProject(request, token);
+  const sharedTelemetryProperty: ISharedTelemetryProperty = {
+    "correlation-id": getUuid(),
+  };
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatCreateStart, {
+    ...sharedTelemetryProperty,
+  });
+  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
+
+  const matchedResult = await matchProject(request, token, telemetryMetadata);
 
   if (matchedResult.length === 0) {
     response.markdown(
       "Sorry, I can't help with that right now. Please try to describe your app scenario.\n"
     );
-    return {};
+    sendTelemetry(sharedTelemetryProperty, telemetryMetadata);
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        sharedTelemetryProperty: sharedTelemetryProperty,
+      },
+    };
   }
   if (matchedResult.length === 1) {
     const firstMatch = matchedResult[0];
+    const describeProjectChatMessages = [
+      describeProjectSystemPrompt,
+      new LanguageModelChatUserMessage(
+        `The project you are looking for is '${JSON.stringify(firstMatch)}'.`
+      ),
+    ];
+    telemetryMetadata.chatMessages.push(...describeProjectChatMessages);
+
     await verbatimCopilotInteraction(
       "copilot-gpt-3.5-turbo",
-      [
-        describeProjectSystemPrompt,
-        new LanguageModelChatUserMessage(
-          `The project you are looking for is '${JSON.stringify(firstMatch)}'.`
-        ),
-      ],
+      describeProjectChatMessages,
       response,
       token
     );
@@ -80,21 +128,31 @@ export default async function createCommandHandler(
       });
     }
 
-    return { metadata: { command: TeamsChatCommand.Create } };
+    sendTelemetry(sharedTelemetryProperty, telemetryMetadata);
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        sharedTelemetryProperty: sharedTelemetryProperty,
+      },
+    };
   } else {
     response.markdown(
       `I found ${matchedResult.slice(0, 3).length} projects that match your description.\n`
     );
     for (const project of matchedResult.slice(0, 3)) {
       response.markdown(`- ${project.name}: `);
+
+      const brieflyDescribeProjectChatMessages = [
+        brieflyDescribeProjectSystemPrompt,
+        new LanguageModelChatUserMessage(
+          `The project you are looking for is '${JSON.stringify(project)}'.`
+        ),
+      ];
+      telemetryMetadata.chatMessages.push(...brieflyDescribeProjectChatMessages);
+
       await verbatimCopilotInteraction(
         "copilot-gpt-3.5-turbo",
-        [
-          brieflyDescribeProjectSystemPrompt,
-          new LanguageModelChatUserMessage(
-            `The project you are looking for is '${JSON.stringify(project)}'.`
-          ),
-        ],
+        brieflyDescribeProjectChatMessages,
         response,
         token
       );
@@ -112,19 +170,30 @@ export default async function createCommandHandler(
         });
       }
     }
-    return { metadata: { command: TeamsChatCommand.Create } };
+
+    sendTelemetry(sharedTelemetryProperty, telemetryMetadata);
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        sharedTelemetryProperty: sharedTelemetryProperty,
+      },
+    };
   }
 }
 
 async function matchProject(
   request: ChatRequest,
-  token: CancellationToken
+  token: CancellationToken,
+  telemetryMetadata: ITelemetryMetadata
 ): Promise<ProjectMetadata[]> {
   const allProjectMetadata = [...getTeamsTemplateMetadata(), ...(await getTeamsSampleMetadata())];
   const messages = [
     getProjectMatchSystemPrompt(allProjectMetadata),
     new LanguageModelChatUserMessage(request.prompt),
   ];
+
+  telemetryMetadata.chatMessages.push(...messages);
+
   const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   const matchedProjectId: string[] = [];
   if (response) {

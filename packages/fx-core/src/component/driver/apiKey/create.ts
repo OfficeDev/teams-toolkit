@@ -269,7 +269,6 @@ export class CreateApiKeyDriver implements StepDriver {
       description: args.name,
       targetUrlsShouldStartWith: domain,
       applicableToApps: ApiSecretRegistrationAppType.AnyApp,
-      specificAppId: args.appId,
       targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
       clientSecrets: clientSecrets,
       manageableByUsers: [

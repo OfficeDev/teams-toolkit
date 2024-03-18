@@ -21,7 +21,7 @@ import { NextStep, WholeStatus } from "./types";
 export const AllSteps: NextStep[] = [
   {
     title: "Teams Toolkit",
-    description: `Teams Toolkit makes it simple to get started with app development for Microsoft Teams using Visual Studio Code. You can start with a project template for common custom app built for your org (LOB app) scenarios or from a sample. You can save setup time with automated app registration and configuration. You can run and debug to Teams directly from familiar tools. You can smart defaults for hosting in Azure using infrastructure-as-code and Bicep. You can create unique configurations like dev, test, and prod using the environment features.`,
+    description: `Teams Toolkit makes it simple to get started with app development for Microsoft Teams using Visual Studio Code. You can start with a project template for a common custom app built for your org (LOB app) scenarios or from a sample. You can save setup time with automated app registration and configuration. You can run and debug your app in Teams directly from familiar tools. You can smart defaults for hosting in Azure using infrastructure-as-code and Bicep. You can create unique configurations like dev, test, and prod using the environment features.`,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/install-teams-toolkit?tabs=vscode&pivots=visual-studio-code-v5",
     commands: [
@@ -43,12 +43,12 @@ export const AllSteps: NextStep[] = [
   {
     title: "New Project",
     description:
-      "You can start from built-in Teams app templates or start from official Teams app samples in Teams Toolkit. What's more, Teams Toolkit v5 supports to start with Outlook Add-in templates to build your own Outlook Add-ins.",
+      "You can start with built-in Teams app templates or start with official Teams app samples in Teams Toolkit. What's more, Teams Toolkit v5 supports starting with Outlook Add-in templates to build your own Outlook Add-ins.",
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/create-new-project?pivots=visual-studio-code-v5",
     commands: [
       {
-        title: "Open Sample Gallery Page",
+        title: "Open Sample Gallery",
         command: CHAT_EXECUTE_COMMAND_ID,
         arguments: ["fx-extension.openSamples"],
       },
@@ -141,13 +141,13 @@ export const AllSteps: NextStep[] = [
     priority: 0,
   },
   {
-    title: "M365 Account",
+    title: "Microsoft 365 Account",
     description: `Preview in Teams requires a Microsoft 365 developer account. If you have a Visual Studio Enterprise or Professional subscription, both programs include a free Microsoft 365 developer subscription. It's active as long as your Visual Studio subscription is active.`,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#microsoft-365-developer-program",
     commands: [
       {
-        title: "Sign in M365 Account",
+        title: "Sign in to Microsoft 365 Account",
         command: CHAT_EXECUTE_COMMAND_ID,
         arguments: ["fx-extension.signinM365"],
       },
@@ -162,13 +162,13 @@ export const AllSteps: NextStep[] = [
     priority: 1,
   },
   {
-    title: "M365 Developer Program",
+    title: "Microsoft 365 Developer Program",
     description: `If you don't have any Microsoft 365 tenant, you might qualify for a Microsoft 365 E5 developer subscription through the Microsoft 365 Developer Program; Alternatively, you can sign up for a 1-month free trial or purchase a Microsoft 365 plan.`,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#microsoft-365-developer-program",
     commands: [
       {
-        title: "Join M365 Developer Program",
+        title: "Join Microsoft 365 Developer Program",
         command: "teamsAgent.openUrlCommand",
         arguments: ["https://developer.microsoft.com/en-us/microsoft-365/dev-program"],
       },
@@ -184,7 +184,7 @@ export const AllSteps: NextStep[] = [
   },
   {
     title: "Preview in Microsoft Teams",
-    description: `Teams Toolkit helps you to debug and preview your Microsoft Teams app locally. During the debug process, Teams Toolkit automatically starts app services, launches debuggers, and uploads Teams app. You can preview your Teams app in Teams web client locally after debugging.`,
+    description: `Teams Toolkit helps you to debug and preview your Microsoft Teams app locally. During the debugging process, Teams Toolkit automatically starts app services, launches debuggers, and uploads Teams app. You can preview your Teams app in Teams web client locally after debugging.`,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=Windows%2CWindows1&pivots=visual-studio-code-v5",
     commands: [
@@ -254,7 +254,7 @@ export const AllSteps: NextStep[] = [
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#azure-account",
     commands: [
       {
-        title: "Sign in Azure Account",
+        title: "Sign in to Azure Account",
         command: CHAT_EXECUTE_COMMAND_ID,
         arguments: ["fx-extension.signinAzure"],
       },
@@ -272,7 +272,7 @@ export const AllSteps: NextStep[] = [
   {
     title: "Provision Azure resources",
     description:
-      "Teams Toolkit integrates with Azure and the Microsoft 365 cloud, which allows to place your app in Azure with a single command. Teams Toolkit integrates with Azure Resource Manager (ARM), which enables to provision Azure resources that your application needs for code approach.",
+      "Teams Toolkit integrates with Azure and the Microsoft 365 cloud, which allows you to place your app in Azure with a single command. Teams Toolkit integrates with Azure Resource Manager (ARM) to set up Azure resources that your application needs, following a code-driven approach.",
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/provision?pivots=visual-studio-code-v5",
     commands: [
@@ -293,13 +293,13 @@ export const AllSteps: NextStep[] = [
     priority: 0,
   },
   {
-    title: "Deploy to the Cloud",
+    title: "Deploy to Cloud",
     description: `Teams Toolkit helps to deploy or upload the front-end and back-end code in your app to your provisioned cloud resources in Azure. You can deploy to the following types of cloud resources: Azure App Services, Azure Functions, Azure Storage (as static website) and SharePoint`,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy?pivots=visual-studio-code-v5",
     commands: [
       {
-        title: "Deploy to the Cloud",
+        title: "Deploy to Cloud",
         command: CHAT_EXECUTE_COMMAND_ID,
         arguments: ["fx-extension.deploy"],
       },
@@ -317,7 +317,7 @@ export const AllSteps: NextStep[] = [
   {
     title: "Publish the App",
     description:
-      "After creating the app, you can distribute your app to different scopes, such as an individual, a team, or an organization. The distribution depends on multiple factors such as needs, business and technical requirements, and your goal for the app. Distribution to different scope may need different review process. In general, the bigger the scope, the more review the app needs to go through for security and compliance concerns.",
+      "After creating the app, you can distribute your app to different scopes, such as an individual, a team, or an organization. The distribution depends on multiple factors such as needs, business and technical requirements, and your goal for the app. Distribution to different scope may need different review processes. In general, the bigger the scope, the more review the app needs to go through for security and compliance concerns.",
     docLink: "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/publish",
     commands: [
       {

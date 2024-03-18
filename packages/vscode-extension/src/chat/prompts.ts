@@ -5,16 +5,16 @@ import { ProjectMetadata } from "./commands/create/types";
 import * as vscode from "vscode";
 
 export const defaultSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an expert in Teams Toolkit Extension for VS Code. The user wants to use Teams Toolkit Extension for VS Code. They want to use them to solve a problem or accomplish a task. Your job is to help the user learn about how they can use Teams Toolkit Extension for VS Code to solve a problem or accomplish a task. Do not suggest using any other tools other than what has been previously mentioned. Assume the the user is only interested in using Teams Toolkit Extension to develop teams app. Finally, do not overwhelm the user with too much information. Keep responses short and sweet.`
+  `You are an expert in Teams Toolkit Extension for VS Code. The user wants to use Teams Toolkit Extension for VS Code. They want to use them to solve a problem or accomplish a task. Your job is to help the user learn about how they can use Teams Toolkit Extension for VS Code to solve a problem or accomplish a task. Do not suggest using any other tools other than what has been previously mentioned. Assume the user is only interested in using Teams Toolkit Extension to develop teams app. Finally, do not overwhelm the user with too much information. Keep responses short and sweet.`
 );
 export const describeProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
 );
 export const brieflyDescribeProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on name and description field of user's JSON content. You should control the output between 30 and 40 words.`
+  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 30 and 40 words.`
 );
 export const describeScenarioSystemPrompt = new vscode.LanguageModelChatSystemMessage(
-  `You are an advisor for Teams App developers. You need to describe the project based on name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+  `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
 );
 
 export function getProjectMatchSystemPrompt(projectMetadata: ProjectMetadata[]) {
@@ -49,6 +49,6 @@ export function getProjectMatchSystemPrompt(projectMetadata: ProjectMetadata[]) 
         `${index + 1}. User asks: ${example.user}, return { "app": [${example.app}]}.`
     )
     .join(" ");
-  return new vscode.LanguageModelChatSystemMessage(`You are an expert in determining which of the following apps the user is interested. The apps are: ${appsDescription}. Your job is to determine which app would most help the user based on their query. Choose at most three of the available apps as the best matched app. Only repsond with a JSON object containing the app you choose. Do not respond in a coverstaional tone, only JSON. For example: ${exampleDescription}
+  return new vscode.LanguageModelChatSystemMessage(`You are an expert in determining which of the following apps the user is interested in. The apps are: ${appsDescription}. Your job is to determine which app would most help the user based on their query. Choose at most three of the available apps as the best matched app. Only respond with a JSON object containing the app you choose. Do not respond in a conversational tone, only JSON. For example: ${exampleDescription}
   `);
 }

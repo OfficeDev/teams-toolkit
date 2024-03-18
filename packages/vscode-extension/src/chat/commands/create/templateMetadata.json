@@ -33,7 +33,7 @@
     "id": "workflow-bot",
     "name": "Sequential Workflow in Chat",
     "project-type": "bot-type",
-    "description": "This project is a workflow bot template for Microsoft Teams. User can interact with multi-step processes. The bot responds to chat commands by displaying a user interface using an Adaptive Card. The card includes a button that can receive user input, perform an action like calling an API, and update the card's UI. This functionality can be further customized to create a more complex sequence of steps, forming a complete workflow."
+    "description": "This project is a workflow bot template for Microsoft Teams. Users can interact with multi-step processes. The bot responds to chat commands by displaying a user interface using an Adaptive Card. The card includes a button that can receive user input, perform an action like calling an API, and update the card's UI. This functionality can be further customized to create a more complex sequence of steps, forming a complete workflow."
   },
   {
     "id": "tab-non-sso",
@@ -69,13 +69,13 @@
     "id": "collect-form-message-extension",
     "name": "Collect Form Input and Process Data",
     "project-type": "me-type",
-    "description": "This project is a template for creating a Message Extension in Microsoft Teams. The extension allows users to interact with a web service while composing messages. Users can search or initiate actions in an external system from the compose message area, the command box, or directly from a message. The template implements an action command that presents users with a modal pop-up, known as a task module, in Teams. This task module is used to collect or display information. After the user interaction, it processes the information and sends it back to Teams."
+    "description": "This project is a template for creating a Message Extension in Microsoft Teams. The extension allows users to interact with a web service while composing messages. Users can search or initiate actions in an external system from the text input box, the command box, or directly from a message. The template implements an action command that presents users with a modal pop-up, known as a task module, in Teams. This task module is used to collect or display information. After the user interaction, it processes the information and sends it back to Teams."
   },
   {
     "id": "link-unfurling",
     "name": "Link Unfurling",
     "project-type": "me-type",
-    "description": "The project is a Link Unfurling app template. This application is designed to unfurl links into adaptive cards when URLs from a specific domain are pasted into the compose message area in Microsoft Teams or the email body in Outlook. The functionality is showcased in the hero image provided in the README."
+    "description": "The project is a Link Unfurling app template. This application is designed to unfurl links into adaptive cards when URLs from a specific domain are pasted into the text input box in Microsoft Teams or the email body in Outlook. The functionality is showcased in the hero image provided in the README."
   },
   {
     "id": "outlook-addin-type",

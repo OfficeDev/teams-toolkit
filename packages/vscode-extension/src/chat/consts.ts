@@ -19,5 +19,5 @@ export const enum TeamsChatCommand {
 export const DefaultNextStep: ChatFollowup = {
   prompt: "",
   command: "nextstep",
-  label: "What's next I could do?",
+  label: "What should I do next?",
 };

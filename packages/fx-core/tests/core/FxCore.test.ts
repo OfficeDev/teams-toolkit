@@ -898,6 +898,7 @@ describe("createEnvCopyV3", async () => {
   const sourceEnvContent = [
     "# this is a comment",
     "TEAMSFX_ENV=dev",
+    "APP_NAME_SUFFIX=dev",
     "",
     "_KEY1=value1",
     "KEY2=value2",
@@ -939,6 +940,10 @@ describe("createEnvCopyV3", async () => {
     assert(
       writeStreamContent[1] === `TEAMSFX_ENV=newEnv${os.EOL}`,
       "TEAMSFX_ENV's value should be new env name"
+    );
+    assert(
+      writeStreamContent[1] === `APP_NAME_SUFFIX=newEnv${os.EOL}`,
+      "APP_NAME_SUFFIX's value should be new env name"
     );
     assert(writeStreamContent[2] === `${os.EOL}`, "empty line should be coped");
     assert(

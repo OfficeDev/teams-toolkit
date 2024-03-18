@@ -942,20 +942,20 @@ describe("createEnvCopyV3", async () => {
       "TEAMSFX_ENV's value should be new env name"
     );
     assert(
-      writeStreamContent[1] === `APP_NAME_SUFFIX=newEnv${os.EOL}`,
+      writeStreamContent[2] === `APP_NAME_SUFFIX=newEnv${os.EOL}`,
       "APP_NAME_SUFFIX's value should be new env name"
     );
-    assert(writeStreamContent[2] === `${os.EOL}`, "empty line should be coped");
+    assert(writeStreamContent[3] === `${os.EOL}`, "empty line should be coped");
     assert(
-      writeStreamContent[3] === `_KEY1=${os.EOL}`,
+      writeStreamContent[4] === `_KEY1=${os.EOL}`,
       "key starts with _ should be copied with empty value"
     );
     assert(
-      writeStreamContent[4] === `KEY2=${os.EOL}`,
+      writeStreamContent[5] === `KEY2=${os.EOL}`,
       "key not starts with _ should be copied with empty value"
     );
     assert(
-      writeStreamContent[5] === `SECRET_KEY3=${os.EOL}`,
+      writeStreamContent[6] === `SECRET_KEY3=${os.EOL}`,
       "key not starts with SECRET_ should be copied with empty value"
     );
   });

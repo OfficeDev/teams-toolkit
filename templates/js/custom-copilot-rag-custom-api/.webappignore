@@ -23,5 +23,7 @@ teamsapp.*.yml
 /node_modules/.bin
 /node_modules/ts-node
 /node_modules/typescript
-/appPackage/
+/appPackage/build/
+/appPackage/*.png
+/appPackage/manifest.json
 /infra/

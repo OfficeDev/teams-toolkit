@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { CLICommandOption } from "@microsoft/teamsfx-api";
+import { commands } from "../resource";
 
 export const ProjectFolderOption: CLICommandOption = {
   name: "folder",
@@ -68,7 +69,7 @@ export const IgnoreKeysOption: CLICommandOption = {
 export const ListFormatOption: CLICommandOption = {
   name: "format",
   shortName: "f",
-  description: "Specifies the format of the results.",
+  description: commands["list.templates"].options.format,
   type: "string",
   choices: ["table", "json"],
   default: "table",

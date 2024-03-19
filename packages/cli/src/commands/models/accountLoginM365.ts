@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import M365TokenProvider from "../../commonlib/m365Login";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { accountUtils } from "./accountShow";
-import * as commands from "../../resource/commands.json";
 
 export const accountLoginM365Command: CLICommand = {
   name: "m365",

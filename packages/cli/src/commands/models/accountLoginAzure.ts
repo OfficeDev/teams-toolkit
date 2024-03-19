@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { UserError, err, ok, CLICommand } from "@microsoft/teamsfx-api";
+import { CLICommand, UserError, err, ok } from "@microsoft/teamsfx-api";
 import AzureTokenProvider from "../../commonlib/azureLogin";
 import {
   codeFlowLoginFormat,
@@ -8,9 +8,9 @@ import {
   servicePrincipalLoginFormat,
   usageError,
 } from "../../commonlib/common/constant";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { accountUtils } from "./accountShow";
-import * as commands from "../../resource/commands.json";
 
 export const accountLoginAzureCommand: CLICommand = {
   name: "azure",

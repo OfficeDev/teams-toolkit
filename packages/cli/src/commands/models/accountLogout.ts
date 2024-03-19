@@ -4,9 +4,8 @@ import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import AzureTokenProvider from "../../commonlib/azureLogin";
 import { logger } from "../../commonlib/logger";
 import M365TokenProvider from "../../commonlib/m365Login";
+import { commands, strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import * as commands from "../../resource/commands.json";
-import * as strings from "../../resource/strings.json";
 
 export const accountLogoutCommand: CLICommand = {
   name: "logout",

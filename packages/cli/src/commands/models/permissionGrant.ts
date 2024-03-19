@@ -4,9 +4,10 @@ import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-a
 import { PermissionGrantInputs, PermissionGrantOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
+import { MissingRequiredOptionError } from "../../error";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
-import { MissingRequiredOptionError } from "../../error";
 
 export const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -21,7 +22,7 @@ export const spfxMessage =
 
 export const permissionGrantCommand: CLICommand = {
   name: "grant",
-  description: "Grant permission for another account.",
+  description: commands["collaborator.grant"].description,
   options: [...PermissionGrantOptions, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.GrantPermission,

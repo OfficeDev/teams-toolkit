@@ -48,6 +48,13 @@ describe("Microsoft Entra manifest helper Test", () => {
     chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim.trimEnd());
   });
 
+  it("validateManifest with no accessToken property", async () => {
+    const invalidAadManifest = JSON.parse(JSON.stringify(fakeAadManifest));
+    delete invalidAadManifest.optionalClaims.accessToken;
+    const warning = AadManifestHelper.validateManifest(invalidAadManifest);
+    chai.expect(warning).contain(AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim.trimEnd());
+  });
+
   it("processRequiredResourceAccessInManifest with id", async () => {
     const manifestWithId: any = {
       requiredResourceAccess: [

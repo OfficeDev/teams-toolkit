@@ -22,7 +22,7 @@
     SECRET_API_KEY=<your-api-key>
     ```
 
-### Debug app in Teams Web Client
+### Start the app in Teams Web Client
 
 1. If you haven't added your own API Key, please follow the above steps to add your own API Key.
 2. In the debug dropdown menu, select `Dev Tunnels > Create a Tunnel` (set authentication type to Public) or select an existing public dev tunnel

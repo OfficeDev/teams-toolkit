@@ -19,6 +19,7 @@ import { getTeamsApps, getCopilotResponseAsString } from "../../utils";
 import { describeScenarioSystemPrompt } from "../../prompts";
 import { TeamsChatCommand } from "../../consts";
 import followupProvider from "../../followupProvider";
+import { localize } from "../../../utils/localizeUtils";
 
 let teamsApp: string | undefined = undefined;
 let projectId: string | undefined = undefined;

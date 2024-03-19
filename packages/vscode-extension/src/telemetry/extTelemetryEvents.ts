@@ -256,6 +256,15 @@ export enum TelemetryEvent {
   ShowScaffoldingWarningSummaryError = "show-scaffolding-warning-summary-error",
 
   FindSimilarIssues = "find-similar-issues",
+
+  // Copilot Chat
+  CopilotChatCreateStart = "copilot-chat-create-start",
+  CopilotChatCreate = "copilot-chat-create",
+  CopilotChatNextStepStart = "copilot-chat-next-step-start",
+  CopilotChatNextStep = "copilot-chat-next-step",
+  CopilotChatDefaultStart = "copilot-chat-default-start",
+  CopilotChatDefault = "copilot-chat-default",
+  CopilotChatFeedback = "copilot-chat-feedback",
 }
 
 export enum TelemetryProperty {
@@ -355,6 +364,13 @@ export enum TelemetryProperty {
   ChangedFilter = "changed-filter",
   SampleFilters = "sample-filters",
   Layout = "layout",
+  // Used in ChatParticipant
+  CopilotChatTokenCount = "token-count",
+  CopilotChatTimeToRequest = "time-to-request",
+  CopilotChatTimeToFirstToken = "time-to-first-token",
+  CopilotChatTimeToComplete = "time-to-complete",
+  CopilotChatFeedbackHelpful = "helpful",
+  CopilotChatSlashCommand = "slash-command",
 }
 
 export enum TelemetryMeasurements {

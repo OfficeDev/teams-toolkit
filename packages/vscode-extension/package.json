@@ -1368,7 +1368,8 @@
     "vscode:prepublish": "rimraf out && npm run package",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css out/src/",
     "copy-md-files": "copyfiles CHANGELOG.md PRERELEASE.md out/resource",
-    "compile": "tsc -p ./ && npm run copy-files && npm run copy-md-files",
+    "copy-static-assets": "copyfiles -f src/chat/cl100k_base.tiktoken out/src/chat",
+    "compile": "tsc -p ./ && npm run copy-files && npm run copy-md-files && npm run copy-static-assets",
     "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
     "build-failpoint": "rimraf out && npx ttsc -p ./",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
@@ -1472,16 +1473,18 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@azure/arm-resources-subscriptions": "^2.1.0",
     "@azure/identity": "^3.1.3",
+    "@azure/ms-rest-azure-env": "^2.0.0",
     "@azure/ms-rest-nodeauth": "^3.1.1",
     "@azure/msal-node": "^1.14.6",
-    "@azure/ms-rest-azure-env": "^2.0.0",
     "@microsoft/dev-tunnels-connections": "1.1.9",
     "@microsoft/dev-tunnels-contracts": "1.1.9",
     "@microsoft/dev-tunnels-management": "1.1.9",
     "@microsoft/dev-tunnels-ssh": "3.11.36",
     "@microsoft/teamsfx-api": "workspace:*",
     "@microsoft/teamsfx-core": "workspace:*",
+    "@microsoft/tiktokenizer": "^1.0.4",
     "@microsoft/vscode-ui": "workspace:*",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/extension-telemetry": "^0.6.2",
@@ -1501,11 +1504,9 @@
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",
-    "tiktoken": "^1.0.13",
     "tmp": "^0.2.1",
     "validator": "^13.7.0",
-    "vscode-tas-client": "^0.1.75",
-    "@azure/arm-resources-subscriptions": "^2.1.0"
+    "vscode-tas-client": "^0.1.75"
   },
   "extensionDependencies": [
     "github.copilot-chat",

@@ -10,6 +10,8 @@ import {
 } from "vscode";
 
 import { isValidProjectV3, sampleProvider } from "@microsoft/teamsfx-core";
+import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
+import { Tokenizer } from "./tokenizer";
 
 export async function verbatimCopilotInteraction(
   model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
@@ -48,4 +50,30 @@ export async function getSampleDownloadUrlInfo(sampleId: string) {
 export function getTeamsApps(folders?: readonly WorkspaceFolder[]): string[] | undefined {
   const teamsApps = folders?.map((folder) => folder.uri.fsPath).filter((p) => isValidProjectV3(p));
   return teamsApps;
+}
+
+// count message token for GPT3.5 and GPT4 message
+// refer to vscode copilot tokenizer solution
+export function countMessageTokens(message: LanguageModelChatMessage): number {
+  let numTokens = BaseTokensPerMessage;
+  const tokenizer = Tokenizer.getInstance();
+  for (const [key, value] of Object.entries(message)) {
+    if (!value) {
+      continue;
+    }
+    numTokens += tokenizer.tokenLength(value);
+    if (key === "name") {
+      numTokens += BaseTokensPerName;
+    }
+  }
+  return numTokens;
+}
+
+export function countMessagesTokens(messages: LanguageModelChatMessage[]): number {
+  let numTokens = 0;
+  for (const message of messages) {
+    numTokens += countMessageTokens(message);
+  }
+  numTokens += BaseTokensPerCompletion;
+  return numTokens;
 }

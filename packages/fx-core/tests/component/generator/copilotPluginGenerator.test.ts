@@ -1021,18 +1021,22 @@ describe("listPluginExistingOperations", () => {
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
-    sandbox.stub(SpecParser.prototype, "list").resolves([
-      {
-        api: "api1",
-        server: "https://test",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api1",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            type: "apiKey",
+            name: "test",
+            in: "header",
+          },
         },
-      },
-    ]);
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
     const res = await listPluginExistingOperations(
       teamsManifestWithPlugin,
       "manifestPath",
@@ -1589,7 +1593,9 @@ describe("listOperations", async () => {
       warnings: [],
       errors: [],
     });
-    sandbox.stub(SpecParser.prototype, "list").resolves([]);
+    sandbox
+      .stub(SpecParser.prototype, "list")
+      .resolves({ validAPIs: [], allAPICount: 1, validAPICount: 0 });
 
     const res = await CopilotPluginHelper.listOperations(
       context,

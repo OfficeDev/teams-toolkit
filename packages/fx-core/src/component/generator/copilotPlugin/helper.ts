@@ -54,6 +54,7 @@ import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestU
 import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
 import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
+import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -62,11 +63,15 @@ const enum telemetryProperties {
   validationStatus = "validation-status",
   validationErrors = "validation-errors",
   validationWarnings = "validation-warnings",
+  validApisCount = "valid-apis-count",
+  allApisCount = "all-apis-count",
+  isFromAddingApi = "is-from-adding-api",
 }
 
 const enum telemetryEvents {
   validateApiSpec = "validate-api-spec",
   validateOpenAiPluginManifest = "validate-openai-plugin-manifest",
+  listApis = "spec-parser-list-apis-result",
 }
 
 enum OpenAIPluginManifestErrorType {
@@ -210,7 +215,13 @@ export async function listOperations(
       return err(validationRes.errors);
     }
 
-    let operations: ListAPIResult[] = await specParser.list();
+    const listResult: ListAPIResult = await specParser.list();
+    let operations = listResult.validAPIs;
+    context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
+      [telemetryProperties.validApisCount]: listResult.allAPICount.toString(),
+      [telemetryProperties.allApisCount]: listResult.validAPICount.toString(),
+      [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),
+    });
 
     // Filter out exsiting APIs
     if (!includeExistingAPIs) {
@@ -235,7 +246,7 @@ export async function listOperations(
         }
 
         operations = operations.filter(
-          (operation: ListAPIResult) => !existingOperations.includes(operation.api)
+          (operation: ListAPIInfo) => !existingOperations.includes(operation.api)
         );
         // No extra API can be added
         if (operations.length == 0) {
@@ -264,7 +275,7 @@ export async function listOperations(
   }
 }
 
-function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
+function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
   const operationsWithSeparator: ApiOperation[] = [];
   for (const operation of operations) {
     const arr = operation.api.toUpperCase().split(" ");
@@ -340,7 +351,8 @@ export async function listPluginExistingOperations(
     );
   }
 
-  const operations = await specParser.list();
+  const listResult = await specParser.list();
+  const operations = listResult.validAPIs;
   return operations.map((o) => o.api);
 }
 

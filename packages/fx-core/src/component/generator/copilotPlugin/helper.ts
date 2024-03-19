@@ -857,7 +857,7 @@ app.ai.action("{{operationId}}", async (context, state, parameter) => {
       params: parameter.query,
     });
     const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
-    await context.sendActivity({ attachments: [card] });
+    await context.sendActivity({ attachments: card });
   } else {
     await context.sendActivity("no result");
   }
@@ -874,7 +874,7 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
       params: parameter.query,
     });
     const card = generateAdaptiveCard("../adaptiveCards/{{operationId}}.json", result);
-    await context.sendActivity({ attachments: [card] });
+    await context.sendActivity({ attachments: card });
   } else {
     await context.sendActivity("no result");
   }

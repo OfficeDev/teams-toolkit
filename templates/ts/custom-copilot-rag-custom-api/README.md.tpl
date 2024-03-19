@@ -1,19 +1,19 @@
-# Overview of the Custom Coilot from Custom API template
+# Overview of the Custom Copilot from Custom API template
 
 This template showcases an AI-powered intelligent chatbot that can understand natural language to invoke the API defined in the OpenAPI description document.
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
  
-- [Overview of the Custom Coilot from Custom API template](#overview-of-the-basic-ai-chatbot-template)
-  - [Get started with the Custom Coilot from Custom API template](#get-started-with-the-basic-ai-chatbot-template)
+- [Overview of the Custom Copilot from Custom API template](#overview-of-the-basic-ai-chatbot-template)
+  - [Get started with the Custom Copilot from Custom API template](#get-started-with-the-basic-ai-chatbot-template)
   - [What's included in the template](#whats-included-in-the-template)
   - [Additional information and references](#additional-information-and-references)
 
-## Get started with the Custom Coilot from Custom API template
+## Get started with the Custom Copilot from Custom API template
 
 > **Prerequisites**
 >
-> To run the Custom Coilot from Custom API template in your local dev machine, you will need:
+> To run the Custom Copilot from Custom API template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 {{^enableTestToolByDefault}}
@@ -35,6 +35,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{#useAzureOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>`, endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>` and deployment name `AZURE_OPENAI_DEPLOYMENT=<your-deployment-name>`.
 {{/useAzureOpenAI}}
+1. Optional: You may need to update `src/app/utility.js` according to your API respsone.
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 1. You can send any message to get a response from the bot.
 
@@ -50,6 +51,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{#useAzureOpenAI}}
 1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>`, endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint> and deployment name `AZURE_OPENAI_DEPLOYMENT=<your-deployment-name>`.
 {{/useAzureOpenAI}}
+1. Optional: You may need to update `src/app/utility.js` according to your API respsone.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 1. You can send any message to get a response from the bot.

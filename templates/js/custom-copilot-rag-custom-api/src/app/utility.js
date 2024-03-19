@@ -5,12 +5,18 @@ function generateAdaptiveCard(templatePath, result) {
     throw new Error("Get empty result from api call.");
   }
   const adaptiveCardTemplate = require(templatePath);
-  const template = new ACData.Template(adaptiveCardTemplate);
-  const cardContent = template.expand({
-    $root: result.data,
+
+  const cards = [];
+  result.data.forEach((item) => {
+    const template = new ACData.Template(adaptiveCardTemplate);
+    const cardContent = template.expand({
+      $root: item,
+    });
+    const card = CardFactory.adaptiveCard(cardContent);
+    cards.push(card);
   });
-  const card = CardFactory.adaptiveCard(cardContent);
-  return card;
+
+  return cards;
 }
 
 function addAuthConfig(client) {

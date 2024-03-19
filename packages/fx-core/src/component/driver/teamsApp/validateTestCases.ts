@@ -89,116 +89,134 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       }
       const appStudioToken = appStudioTokenRes.value;
 
+      const response: AsyncAppValidationResponse | AsyncAppValidationResultsResponse =
+        await AppStudioClient.submitAppValidationRequest(manifest.id, appStudioToken);
+
+      const message = getLocalizedString(
+        "driver.teamsApp.progressBar.validateWithTestCases.step",
+        response.status,
+        `${getAppStudioEndpoint()}/apps/${manifest.id}/app-validation`
+      );
+      context.logProvider.info(message);
+
+      // Do not await the final validation result, return immediately
+      void this.runningBackgroundJob(args, context, appStudioToken, response, manifest.id);
+      return ok(new Map());
+    } else {
+      return err(new FileNotFoundError(actionName, "manifest.json"));
+    }
+  }
+
+  /**
+   * Periodically check the result until it's completed or aborted
+   * @param args
+   * @param context
+   * @param appStudioToken
+   * @param response
+   * @param teamsAppId
+   */
+  private async runningBackgroundJob(
+    args: ValidateWithTestCasesArgs,
+    context: WrapDriverContext,
+    appStudioToken: string,
+    response: AsyncAppValidationResponse | AsyncAppValidationResultsResponse,
+    teamsAppId: string
+  ): Promise<void> {
+    const validationStatusUrl = `${getAppStudioEndpoint()}/apps/${teamsAppId}/app-validation/${
+      response.appValidationId
+    }`;
+    const validationRequestListUrl = `${getAppStudioEndpoint()}/apps/${teamsAppId}/app-validation`;
+
+    try {
       if (args.showProgressBar) {
         context.progressBar = context.ui?.createProgressBar(this.progressTitle, 1);
         await context.progressBar?.start();
-      }
-
-      try {
-        let response: AsyncAppValidationResponse | AsyncAppValidationResultsResponse =
-          await AppStudioClient.submitAppValidationRequest(manifest.id, appStudioToken);
-        const validationRequestListUrl = `${getAppStudioEndpoint()}/apps/${
-          manifest.id
-        }/app-validation`;
-        const validationStatusUrl = `${getAppStudioEndpoint()}/apps/${manifest.id}/app-validation/${
-          response.appValidationId
-        }`;
 
         const message = getLocalizedString(
           "driver.teamsApp.progressBar.validateWithTestCases.step",
           response.status,
           validationRequestListUrl
         );
-        context.logProvider.info(message);
-        if (args.showProgressBar) {
-          await context.progressBar?.next(message);
-        }
-
-        // Periodically check the result until it's completed or aborted
-        while (
-          response.status !== AsyncAppValidationStatus.Completed &&
-          response.status !== AsyncAppValidationStatus.Aborted
-        ) {
-          await waitSeconds(CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS);
-          const message = getLocalizedString(
-            "driver.teamsApp.progressBar.validateWithTestCases.step",
-            response.status,
-            validationRequestListUrl
-          );
-          context.logProvider.info(message);
-          response = await AppStudioClient.getAppValidationById(
-            response.appValidationId,
-            appStudioToken
-          );
-        }
-
-        if (response.status === AsyncAppValidationStatus.Completed) {
-          if (args.showMessage) {
-            void context.ui
-              ?.showMessage(
-                "info",
-                getLocalizedString(
-                  "driver.teamsApp.summary.validateWithTestCases",
-                  response.status
-                ),
-                false,
-                getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
-              )
-              .then(async (res) => {
-                if (
-                  res.isOk() &&
-                  res.value ===
-                    getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
-                ) {
-                  await context.ui?.openUrl(validationStatusUrl);
-                }
-              });
-          }
-          context.logProvider.info(
-            getLocalizedString(
-              "driver.teamsApp.summary.validateWithTestCases",
-              response.status,
-              validationStatusUrl
-            )
-          );
-        } else {
-          if (args.showMessage) {
-            void context.ui
-              ?.showMessage(
-                "error",
-                getLocalizedString(
-                  "driver.teamsApp.summary.validateWithTestCases.result",
-                  response.status
-                ),
-                false,
-                getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
-              )
-              .then(async (res) => {
-                if (
-                  res.isOk() &&
-                  res.value ===
-                    getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
-                ) {
-                  await context.ui?.openUrl(validationStatusUrl);
-                }
-              });
-          }
-          context.logProvider.error(
-            getLocalizedString(
-              "driver.teamsApp.summary.validateWithTestCases",
-              response.status,
-              validationStatusUrl
-            )
-          );
-        }
-      } finally {
-        if (args.showProgressBar) {
-          await context.progressBar?.end(true);
-        }
+        await context.progressBar?.next(message);
       }
-      return ok(new Map());
-    } else {
-      return err(new FileNotFoundError(actionName, "manifest.json"));
+
+      while (
+        response.status !== AsyncAppValidationStatus.Completed &&
+        response.status !== AsyncAppValidationStatus.Aborted
+      ) {
+        await waitSeconds(CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS);
+        const message = getLocalizedString(
+          "driver.teamsApp.progressBar.validateWithTestCases.step",
+          response.status,
+          validationRequestListUrl
+        );
+        context.logProvider.info(message);
+        response = await AppStudioClient.getAppValidationById(
+          response.appValidationId,
+          appStudioToken
+        );
+      }
+
+      if (response.status === AsyncAppValidationStatus.Completed) {
+        if (args.showMessage) {
+          void context.ui
+            ?.showMessage(
+              "info",
+              getLocalizedString("driver.teamsApp.summary.validateWithTestCases", response.status),
+              false,
+              getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
+            )
+            .then(async (res) => {
+              if (
+                res.isOk() &&
+                res.value ===
+                  getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
+              ) {
+                await context.ui?.openUrl(validationStatusUrl);
+              }
+            });
+        }
+        context.logProvider.info(
+          getLocalizedString(
+            "driver.teamsApp.summary.validateWithTestCases",
+            response.status,
+            validationStatusUrl
+          )
+        );
+      } else {
+        if (args.showMessage) {
+          void context.ui
+            ?.showMessage(
+              "error",
+              getLocalizedString(
+                "driver.teamsApp.summary.validateWithTestCases.result",
+                response.status
+              ),
+              false,
+              getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
+            )
+            .then(async (res) => {
+              if (
+                res.isOk() &&
+                res.value ===
+                  getLocalizedString("driver.teamsApp.summary.validateWithTestCases.viewResult")
+              ) {
+                await context.ui?.openUrl(validationStatusUrl);
+              }
+            });
+        }
+        context.logProvider.error(
+          getLocalizedString(
+            "driver.teamsApp.summary.validateWithTestCases",
+            response.status,
+            validationStatusUrl
+          )
+        );
+      }
+    } finally {
+      if (args.showProgressBar) {
+        await context.progressBar?.end(true);
+      }
     }
   }
 

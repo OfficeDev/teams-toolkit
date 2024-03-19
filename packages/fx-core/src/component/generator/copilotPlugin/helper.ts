@@ -218,8 +218,8 @@ export async function listOperations(
     const listResult: ListAPIResult = await specParser.list();
     let operations = listResult.validAPIs;
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
-      [telemetryProperties.validApisCount]: listResult.allAPICount.toString(),
-      [telemetryProperties.allApisCount]: listResult.validAPICount.toString(),
+      [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
+      [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
       [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),
     });
 

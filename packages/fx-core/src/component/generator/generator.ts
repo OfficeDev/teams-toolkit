@@ -75,8 +75,8 @@ export class Generator {
       azureOpenAIKey: llmServiceData?.azureOpenAIKey ?? "",
       azureOpenAIEndpoint: llmServiceData?.azureOpenAIEndpoint ?? "",
       isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
-      NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
-      NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",
+      NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "M365App",
+      NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "maproj",
     };
   }
   @hooks([

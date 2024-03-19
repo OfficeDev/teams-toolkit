@@ -1262,7 +1262,7 @@ export class FxCore {
       isPlugin
         ? copilotPluginParserOptions
         : {
-            allowAPIKeyAuth: isApiKeyEnabled(),
+            allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: isMultipleParametersEnabled(),
           }
     );
@@ -1308,7 +1308,11 @@ export class FxCore {
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
           if (operation) {
-            if (operation.auth && operation.auth.type === "apiKey") {
+            if (
+              operation.auth &&
+              operation.auth.authScheme.type === "http" &&
+              operation.auth.authScheme.scheme === "bearer"
+            ) {
               authNames.add(operation.auth.name);
               serverUrls.add(operation.server);
             }

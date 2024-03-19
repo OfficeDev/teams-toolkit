@@ -2298,9 +2298,11 @@ describe("scaffold question", () => {
                 api: "get operation1",
                 server: "https://server",
                 auth: {
-                  name: "api_key",
-                  in: "header",
-                  type: "apiKey",
+                  name: "bearerAuth",
+                  authScheme: {
+                    type: "http",
+                    scheme: "bearer",
+                  },
                 },
                 operationId: "getOperation1",
               },
@@ -2319,7 +2321,7 @@ describe("scaffold question", () => {
               label: "get operation1",
               groupName: "GET",
               data: {
-                authName: "api_key",
+                authName: "bearerAuth",
                 serverUrl: "https://server",
               },
             },
@@ -2351,9 +2353,11 @@ describe("scaffold question", () => {
                 api: "get operation1",
                 server: "https://server",
                 auth: {
-                  name: "api_key",
-                  in: "header",
-                  type: "apiKey",
+                  name: "bearerAuth",
+                  authScheme: {
+                    type: "http",
+                    scheme: "bearer",
+                  },
                 },
                 operationId: "getOperation1",
               },
@@ -2372,7 +2376,7 @@ describe("scaffold question", () => {
               label: "get operation1",
               groupName: "GET",
               data: {
-                authName: "api_key",
+                authName: "bearerAuth",
                 serverUrl: "https://server",
               },
             },
@@ -2403,8 +2407,11 @@ describe("scaffold question", () => {
                 server: "https://server",
                 auth: {
                   name: "api_key",
-                  in: "header",
-                  type: "apiKey",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
                 },
                 operationId: "getOperation1",
               },
@@ -2531,8 +2538,11 @@ describe("scaffold question", () => {
                 server: "https://server",
                 auth: {
                   name: "api_key",
-                  in: "header",
-                  type: "apiKey",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
                 },
                 operationId: "getUserById",
               },
@@ -2579,8 +2589,11 @@ describe("scaffold question", () => {
                 server: "https://server",
                 auth: {
                   name: "api_key",
-                  in: "header",
-                  type: "apiKey",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
                 },
                 operationId: "getUserById",
               },
@@ -2689,8 +2702,11 @@ describe("scaffold question", () => {
                 server: "https://server",
                 auth: {
                   name: "api_key",
-                  in: "header",
-                  type: "apiKey",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
                 },
                 operationId: "getUserById",
               },
@@ -2735,8 +2751,11 @@ describe("scaffold question", () => {
                 server: "https://server",
                 auth: {
                   name: "api_key",
-                  in: "header",
-                  type: "apiKey",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
                 },
                 operationId: "getUserById",
               },
@@ -2781,8 +2800,11 @@ describe("scaffold question", () => {
                 server: "https://server",
                 auth: {
                   name: "api_key",
-                  in: "header",
-                  type: "apiKey",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
                 },
                 operationId: "getUserById",
               },

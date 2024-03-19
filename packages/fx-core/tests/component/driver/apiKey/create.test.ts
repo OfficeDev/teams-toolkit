@@ -70,9 +70,11 @@ describe("CreateApiKeyDriver", () => {
           server: "https://test",
           operationId: "get",
           auth: {
-            type: "apiKey",
             name: "test",
-            in: "header",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -109,9 +111,11 @@ describe("CreateApiKeyDriver", () => {
           server: "https://test",
           operationId: "get",
           auth: {
-            type: "apiKey",
             name: "test",
-            in: "header",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -149,9 +153,11 @@ describe("CreateApiKeyDriver", () => {
           server: "https://test",
           operationId: "get",
           auth: {
-            type: "apiKey",
             name: "test",
-            in: "header",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -349,9 +355,11 @@ describe("CreateApiKeyDriver", () => {
           server: "https://test",
           operationId: "get",
           auth: {
-            type: "apiKey",
             name: "test",
-            in: "header",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -359,9 +367,11 @@ describe("CreateApiKeyDriver", () => {
           server: "https://test2",
           operationId: "get",
           auth: {
-            type: "apiKey",
             name: "test",
-            in: "header",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -405,9 +415,11 @@ describe("CreateApiKeyDriver", () => {
           server: "https://test",
           operationId: "get",
           auth: {
-            type: "apiKey",
             name: "test",
-            in: "header",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],

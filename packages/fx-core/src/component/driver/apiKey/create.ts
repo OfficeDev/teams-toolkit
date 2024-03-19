@@ -183,10 +183,12 @@ export class CreateApiKeyDriver implements StepDriver {
     const operations = listResult.validAPIs;
     const domains = operations
       .filter((value) => {
+        const auth = value.auth;
         return (
-          value.auth?.authScheme.type === "http" &&
-          value.auth?.authScheme.scheme === "bearer" &&
-          value.auth?.name === args.name
+          auth &&
+          auth.authScheme.type === "http" &&
+          auth.authScheme.scheme === "bearer" &&
+          auth.name === args.name
         );
       })
       .map((value) => {

@@ -1,19 +1,19 @@
-# Overview of the Custom Coilot from Custom API template
+# Overview of the Custom Copilot from Custom API template
 
 This template showcases an AI-powered intelligent chatbot that can understand natural language to invoke the API defined in the OpenAPI description document.
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
  
-- [Overview of the Custom Coilot from Custom API template](#overview-of-the-basic-ai-chatbot-template)
-  - [Get started with the Custom Coilot from Custom API template](#get-started-with-the-basic-ai-chatbot-template)
+- [Overview of the Custom Copilot from Custom API template](#overview-of-the-basic-ai-chatbot-template)
+  - [Get started with the Custom Copilot from Custom API template](#get-started-with-the-basic-ai-chatbot-template)
   - [What's included in the template](#whats-included-in-the-template)
   - [Additional information and references](#additional-information-and-references)
 
-## Get started with the Custom Coilot from Custom API template
+## Get started with the Custom Copilot from Custom API template
 
 > **Prerequisites**
 >
-> To run the Custom Coilot from Custom API template in your local dev machine, you will need:
+> To run the Custom Copilot from Custom API template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 {{^enableTestToolByDefault}}

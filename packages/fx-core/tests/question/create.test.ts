@@ -99,7 +99,7 @@ describe("scaffold question", () => {
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "false",
-        [FeatureFlagName.TeamsSampleConfigBranch]: "dev",
+        [FeatureFlagName.SampleConfigBranch]: "dev",
       });
     });
     afterEach(() => {

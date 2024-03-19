@@ -204,7 +204,7 @@ export class AadManifestHelper {
     // if manifest doesn't contain optionalClaims or access token doesn't contain idtyp clams
     if (!manifest.optionalClaims) {
       warningMsg += AadManifestErrorMessage.OptionalClaimsIsMissing;
-    } else if (!manifest.optionalClaims.accessToken.find((item) => item.name === "idtyp")) {
+    } else if (!manifest.optionalClaims.accessToken?.find((item) => item.name === "idtyp")) {
       warningMsg += AadManifestErrorMessage.OptionalClaimsMissingIdtypClaim;
     }
 

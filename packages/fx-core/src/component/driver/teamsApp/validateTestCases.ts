@@ -128,16 +128,16 @@ export class ValidateWithTestCasesDriver implements StepDriver {
     const validationRequestListUrl = `${getAppStudioEndpoint()}/apps/${teamsAppId}/app-validation`;
 
     try {
-      if (args.showProgressBar) {
-        context.progressBar = context.ui?.createProgressBar(this.progressTitle, 1);
-        await context.progressBar?.start();
+      if (args.showProgressBar && context.ui) {
+        context.progressBar = context.ui.createProgressBar(this.progressTitle, 1);
+        await context.progressBar.start();
 
         const message = getLocalizedString(
           "driver.teamsApp.progressBar.validateWithTestCases.step",
           response.status,
           validationRequestListUrl
         );
-        await context.progressBar?.next(message);
+        await context.progressBar.next(message);
       }
 
       while (
@@ -214,8 +214,8 @@ export class ValidateWithTestCasesDriver implements StepDriver {
         );
       }
     } finally {
-      if (args.showProgressBar) {
-        await context.progressBar?.end(true);
+      if (args.showProgressBar && context.progressBar) {
+        await context.progressBar.end(true);
       }
     }
   }

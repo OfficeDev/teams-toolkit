@@ -2,7 +2,7 @@
 
 ## Changelog
 
-> Note: This changelog only includes the changes for the prerelease versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
+> Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
 ### March 19, 2024
 
@@ -10,7 +10,7 @@
 
 - **Build Your Own Copilots in Teams with Teams AI Library**
 ![Custom Copilots](https://github.com/OfficeDev/TeamsFx/assets/11220663/0387a2ce-ec39-4c72-aabc-1ec2b9e85d59)
-We have enhanced the user experience for developers to create their own copilots, an AI-powered intelligent chatbot for Teams, with the following improvements:
+We have enhanced the user experience for developers to create their custom copilots, an AI-powered intelligent chatbot for Teams, with the following improvements:
   - Streamlined UX for scaffolding, including top-level entry points and easy configuration of LLM services and credentials during the scaffolding flow.
   - New application templates allowing developers to build an AI Agent from scratch.
   - Python language support for building a `Basic AI Chatbot`.
@@ -20,9 +20,9 @@ We have enhanced the user experience for developers to create their own copilots
 - Updated the default app icon in the Teams Toolkit-generated app templates and samples with Microsoft 365 and Copilot-themed colors.
 - Added `LLM.Description` in the app manifest for bot-based message extensions when used as copilot plugin for better reasoning with LLMs. To utilize this feature, please enable the `Develop Copilot Plugin` feature setting via Visual Studio Code in the [User and Workspace Settings](https://code.visualstudio.com/docs/getstarted/settings) and create a new app via `Create a New App` -> `Message Extension` -> `Custom Search Results` -> `Start with Bot`.
 - Improved Azure account authentication with a built-in Microsoft authentication provider in Visual Studio Code. This enhancement increases the reliability of Azure authentication, especially when using a proxy.
-- Upgraded `Custom Search Results` (Start with a New API) template to Azure Functions to v4, the officially recommended version with better support. See more details for [Azure Functions runtime versions overview](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=isolated-process%2Cv4&pivots=programming-language-javascript).
+- Upgraded `Custom Search Results` (Start with a New API) template to Azure Functions v4, the officially recommended version with better support. See more details for [Azure Functions runtime versions overview](https://learn.microsoft.com/azure/azure-functions/functions-versions?tabs=isolated-process%2Cv4&pivots=programming-language-javascript).
 - Multiple parameters are now supported for API-based message extensions.
-- Updated `Teams Chef Bot` sample to point to the latest version under [teams-ai repository](https://github.com/microsoft/teams-ai/tree/main/js/samples/04.ai.a.teamsChefBot).
+- Updated `Teams Chef Bot` sample to [teams-ai repository](https://github.com/microsoft/teams-ai/tree/main/js/samples/04.ai.a.teamsChefBot).
 
 #### Bug Fixes
 
@@ -33,7 +33,7 @@ We have enhanced the user experience for developers to create their own copilots
 - Fixed an issue with unclear error messages when sideloading the app using an unsupported file format. [#10799](https://github.com/OfficeDev/TeamsFx/pull/10799)
 - Fixed an issue where an unexpected error might occur when executing `teamsapp account login azure`. [#11015](https://github.com/OfficeDev/TeamsFx/pull/11015)
 - Fixed broken links in README documentation. [#10836](https://github.com/OfficeDev/TeamsFx/pull/10836), [#10831](https://github.com/OfficeDev/TeamsFx/pull/10831)
-- Fixed an issue where featured sample are not shown in the full list. [#10841](https://github.com/OfficeDev/TeamsFx/pull/10841)
+- Fixed an issue where featured samples are not shown in the full list. [#10841](https://github.com/OfficeDev/TeamsFx/pull/10841)
 
 
 ### January 23, 2024

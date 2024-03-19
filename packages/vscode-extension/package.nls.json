@@ -455,7 +455,6 @@
     "teamstoolkit.chatParticipants.create.sample": "Scaffold this sample",
     "teamstoolkit.chatParticipants.create.template": "Create this template",
     "teamstoolkit.chatParticipants.create.quickPick.workspace": "Current workspace",
-    "teamstoolkit.chatParticipants.create.quickPick.browse": "Browse...",
     "teamstoolkit.chatParticipants.create.selectFolder.title": "Choose the location to save your project",
     "teamstoolkit.chatParticipants.create.selectFolder.label": "Select Folder",
     "teamstoolkit.chatParticipants.create.successfullyCreated": "Project successfully created in current workspace.",

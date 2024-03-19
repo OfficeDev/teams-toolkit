@@ -64,7 +64,7 @@ export async function chatCreateCommandHandler(folderOrSample: string | ProjectM
   if (workspace.workspaceFolders !== undefined && workspace.workspaceFolders.length > 0) {
     folderChoice = await window.showQuickPick([
       localize("teamstoolkit.chatParticipants.create.quickPick.workspace"),
-      localize("teamstoolkit.chatParticipants.create.quickPick.browse"),
+      localize("teamstoolkit.qm.browse"),
     ]);
     if (!folderChoice) {
       return;

@@ -28,6 +28,7 @@ import {
   TelemetryTriggerFrom,
 } from "../../../telemetry/extTelemetryEvents";
 import { getUuid } from "@microsoft/teamsfx-core";
+import { localize } from "../../../utils/localizeUtils";
 
 let teamsApp: string | undefined = undefined;
 let projectId: string | undefined = undefined;

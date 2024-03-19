@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ChatFollowup } from "vscode";
+import { localize } from "../utils/localizeUtils";
 
 export const chatParticipantName = "teams";
 
@@ -18,7 +19,7 @@ export const enum TeamsChatCommand {
 export const DefaultNextStep: ChatFollowup = {
   prompt: "",
   command: "nextstep",
-  label: "What's next I could do?",
+  label: "What should I do next?",
 };
 
 // for counting message token, refer to vscode copilot solution

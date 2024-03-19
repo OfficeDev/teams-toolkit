@@ -37,6 +37,7 @@ import {
 import { ISharedTelemetryProperty, ITelemetryMetadata, ICopilotChatResult } from "./types";
 import { getUuid } from "@microsoft/teamsfx-core";
 import { TelemetryMetadata } from "./telemetryData";
+import { localize } from "../utils/localizeUtils";
 
 export function chatRequestHandler(
   request: ChatRequest,
@@ -92,18 +93,21 @@ export async function chatCreateCommandHandler(folderOrSample: string | ProjectM
   let dstPath = "";
   let folderChoice: string | undefined = undefined;
   if (workspace.workspaceFolders !== undefined && workspace.workspaceFolders.length > 0) {
-    folderChoice = await window.showQuickPick(["Current workspace", "Browse..."]);
+    folderChoice = await window.showQuickPick([
+      localize("teamstoolkit.chatParticipants.create.quickPick.workspace"),
+      localize("teamstoolkit.qm.browse"),
+    ]);
     if (!folderChoice) {
       return;
     }
-    if (folderChoice === "Current workspace") {
+    if (folderChoice === localize("teamstoolkit.chatParticipants.create.quickPick.workspace")) {
       dstPath = workspace.workspaceFolders[0].uri.fsPath;
     }
   }
   if (dstPath === "") {
     const customFolder = await window.showOpenDialog({
-      title: "Choose where to save your project",
-      openLabel: "Select Folder",
+      title: localize("teamstoolkit.chatParticipants.create.selectFolder.title"),
+      openLabel: localize("teamstoolkit.chatParticipants.create.selectFolder.label"),
       canSelectFiles: false,
       canSelectFolders: true,
       canSelectMany: false,
@@ -120,15 +124,17 @@ export async function chatCreateCommandHandler(folderOrSample: string | ProjectM
       const downloadUrlInfo = await getSampleDownloadUrlInfo(folderOrSample.id);
       await downloadDirectory(downloadUrlInfo, dstPath, 2, 20);
     }
-    if (folderChoice !== "Current workspace") {
+    if (folderChoice !== localize("teamstoolkit.chatParticipants.create.quickPick.workspace")) {
       void commands.executeCommand("vscode.openFolder", Uri.file(dstPath));
     } else {
-      void window.showInformationMessage("Project is created in current workspace.");
+      void window.showInformationMessage(
+        localize("teamstoolkit.chatParticipants.create.successfullyCreated")
+      );
       void commands.executeCommand("workbench.view.extension.teamsfx");
     }
   } catch (error) {
     console.error("Error copying files:", error);
-    void window.showErrorMessage("Project cannot be created.");
+    void window.showErrorMessage(localize("teamstoolkit.chatParticipants.create.failToCreate"));
   }
 }
 

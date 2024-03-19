@@ -158,9 +158,9 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       }
 
       if (response.status === AsyncAppValidationStatus.Completed) {
-        if (args.showMessage) {
+        if (args.showMessage && context.ui) {
           void context.ui
-            ?.showMessage(
+            .showMessage(
               "info",
               getLocalizedString("driver.teamsApp.summary.validateWithTestCases", response.status),
               false,
@@ -184,9 +184,9 @@ export class ValidateWithTestCasesDriver implements StepDriver {
           )
         );
       } else {
-        if (args.showMessage) {
+        if (args.showMessage && context.ui) {
           void context.ui
-            ?.showMessage(
+            .showMessage(
               "error",
               getLocalizedString(
                 "driver.teamsApp.summary.validateWithTestCases.result",

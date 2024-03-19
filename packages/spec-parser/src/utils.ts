@@ -785,4 +785,18 @@ export class Utils {
 
     return safeRegistrationIdEnvName;
   }
+
+  static getAllAPICount(spec: OpenAPIV3.Document): number {
+    let count = 0;
+    const paths = spec.paths;
+    for (const path in paths) {
+      const methods = paths[path];
+      for (const method in methods) {
+        if (ConstantString.AllOperationMethods.includes(method)) {
+          count++;
+        }
+      }
+    }
+    return count;
+  }
 }

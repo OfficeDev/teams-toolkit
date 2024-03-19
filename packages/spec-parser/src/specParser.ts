@@ -13,6 +13,7 @@ import {
   AuthInfo,
   ErrorType,
   GenerateResult,
+  ListAPIInfo,
   ListAPIResult,
   ParseOptions,
   ProjectType,
@@ -110,14 +111,18 @@ export class SpecParser {
    * @returns A string array that represents the HTTP method and path of each operation, such as ['GET /pets/{petId}', 'GET /user/{userId}']
    * according to copilot plugin spec, only list get and post method without auth
    */
-  async list(): Promise<ListAPIResult[]> {
+  async list(): Promise<ListAPIResult> {
     try {
       await this.loadSpec();
       const spec = this.spec!;
       const apiMap = this.getAllSupportedAPIs(spec);
-      const result: ListAPIResult[] = [];
+      const result: ListAPIResult = {
+        validAPIs: [],
+        allAPICount: 0,
+        validAPICount: 0,
+      };
       for (const apiKey in apiMap) {
-        const apiResult: ListAPIResult = {
+        const apiResult: ListAPIInfo = {
           api: "",
           server: "",
           operationId: "",
@@ -154,8 +159,11 @@ export class SpecParser {
         }
 
         apiResult.api = apiKey;
-        result.push(apiResult);
+        result.validAPIs.push(apiResult);
       }
+
+      result.allAPICount = Utils.getAllAPICount(spec);
+      result.validAPICount = result.validAPIs.length;
 
       return result;
     } catch (err) {

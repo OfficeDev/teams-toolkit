@@ -1,4 +1,21 @@
 {
+  "root": {
+    "description": "Microsoft Teams Toolkit CLI.",
+    "options": {
+      "version": "Display Microsoft Teams Toolkit CLI version.",
+      "help": "Show Microsoft Teams Toolkit CLI help.",
+      "interactive": "Run the command in interactive mode.",
+      "debug": "Print debug information.",
+      "verbose": "Print diagnostic information.",
+      "telemetry": "Whether to enable telemetry."
+    }
+  },
+  "help": {
+    "description": "Show Microsoft Teams Toolkit CLI help.",
+    "arguments": {
+      "command": "The command to get help for."
+    }
+  },
   "auth": {
     "description": "Manage Microsoft 365 and Azure accounts."
   },
@@ -50,18 +67,11 @@
       "all": "Whether to list all collaborators."
     }
   },
-  "provision": {
-    "description": "Run the provision stage in teamsapp.yml or teamsapp.local.yml.",
-    "options": {
-      "resource-group": "Specifies resource group name.",
-      "region": "Specifies resource group region."
-    }
-  },
-  "preview": {
-    "description": "Preview the current application."
-  },
   "deploy": {
     "description": "Run the deploy stage in teamsapp.yml or teamsapp.local.yml."
+  },
+  "doctor": {
+    "description": "Prerequiste checker for building Microsoft Teams apps."
   },
   "entra-app": {
     "description": "Manage the Microsoft Entra app in the current application."
@@ -110,12 +120,15 @@
       "xml-path": "Path to the XML manifest xml file."
     }
   },
-  "uninstall": {
-    "description": "Remove an acquired M365 App.",
+  "provision": {
+    "description": "Run the provision stage in teamsapp.yml or teamsapp.local.yml.",
     "options": {
-      "title-id": "Title ID of the acquired M365 App.",
-      "manifest-id": "Manifest ID of the acquired M365 App."
+      "resource-group": "Specifies resource group name.",
+      "region": "Specifies resource group region."
     }
+  },
+  "preview": {
+    "description": "Preview the current application."
   },
   "package": {
     "description": "Build your Microsoft Teams app into a package for publishing.",
@@ -127,6 +140,16 @@
   "publish": {
     "description": "Run the publish stage in teamsapp.yml."
   },
+  "uninstall": {
+    "description": "Remove an acquired M365 App.",
+    "options": {
+      "title-id": "Title ID of the acquired M365 App.",
+      "manifest-id": "Manifest ID of the acquired M365 App."
+    }
+  },
+  "update": {
+    "description": "Update the Microsoft Teams App manifest to Teams Developer Portal."
+  },
   "upgrade": {
     "description": "Upgrade the project to work with the latest version of Teams Toolkit.",
     "options": {
@@ -134,31 +157,8 @@
     },
     "success": "Upgrade project successfully."
   },
-  "doctor": {
-    "account": {
-      "SideLoadingDisabled": "Your Microsoft 365 tenant admin hasn't enabled custom app upload permission for your account. You can't install your app to Teams!",
-      "NotSignIn": "You have not logged in to your Microsoft 365 account yet. Please use teamsapp auth login command to login to your Microsoft 365 account.",
-      "SignInSuccess": "Microsoft 365 Account (%s) is logged in and custom app upload permission is enabled."
-    },
-    "node" : {
-      "NotFound": "Cannot find Node.js. Node.js used for developing Teams apps with JavaScript or TypeScript using Teams Toolkit for Visual Studio Code. Visit https://nodejs.org to install the LTS version.",
-      "NotSupported": "Node.js (%s) is not the officially supported version (%s). Your project may continue to work but we recommend to install the supported version.",
-      "Success": "Node.js version (%s) is installed."
-    },
-    "dotnet" : {
-      "NotFound": "Cannot find .NET Core SDK. .NET Core SDK is used for developing Teams app in C# using Teams Toolkit for Visual Studio. Visit https://dotnet.microsoft.com/en-us/download to install the LTS version.",
-      "NotSupported": ".NET Core SDK (%s) is not the officially supported version (%s).",
-      "Success": ".NET Core SDK version (%s) is installed."
-    },
-    "func" : {
-      "NotFound": "Cannot find Azure Functions Core Tools.",
-      "NotSupported": "Azure Functions Core Tools (%s) is not the officially supported version (%s).",
-      "Success": "Azure Functions Core Tools version (%s) is installed."
-    },
-    "cert" : {
-      "NotFound": "Cannot find local Certificate.",
-      "FoundNotTrust": "Local Certificate is found but not trusted.",
-      "Success": "Local Certificate is found and is trusted."
-    }
+  "validate": {
+    "description": "Validate the Microsoft Teams app using manifest schema or validation rules."
   }
 }
+

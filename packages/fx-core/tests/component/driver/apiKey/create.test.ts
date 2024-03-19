@@ -386,7 +386,7 @@ describe("CreateApiKeyDriver", () => {
     }
   });
 
-  it("should throw error if domain = 0", async () => {
+  it("should throw error if list api is empty and domain = 0", async () => {
     const args: any = {
       name: "test",
       appId: "mockedAppId",
@@ -396,6 +396,63 @@ describe("CreateApiKeyDriver", () => {
     sinon
       .stub(SpecParser.prototype, "list")
       .resolves({ validAPIs: [], validAPICount: 0, allAPICount: 1 });
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("ApiKeyFailedToGetDomain");
+    }
+  });
+
+  it("should throw error if list api contains no auth and domain = 0", async () => {
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      primaryClientSecret: "mockedSecret",
+      apiSpecPath: "mockedPath",
+    };
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+        },
+      ],
+      validAPICount: 1,
+      allAPICount: 1,
+    });
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("ApiKeyFailedToGetDomain");
+    }
+  });
+
+  it("should throw error if list api contains unsupported auth and domain = 0", async () => {
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      primaryClientSecret: "mockedSecret",
+      apiSpecPath: "mockedPath",
+    };
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "basic",
+            },
+          },
+        },
+      ],
+      validAPICount: 1,
+      allAPICount: 1,
+    });
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {

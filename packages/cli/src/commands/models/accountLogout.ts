@@ -4,17 +4,18 @@ import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import AzureTokenProvider from "../../commonlib/azureLogin";
 import { logger } from "../../commonlib/logger";
 import M365TokenProvider from "../../commonlib/m365Login";
-import { cliSource } from "../../constants";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import * as commands from "../../resource/commands.json";
+import * as strings from "../../resource/strings.json";
 
 export const accountLogoutCommand: CLICommand = {
   name: "logout",
-  description: "Log out of Microsoft 365 or Azure account.",
+  description: commands["auth.logout"].description,
   arguments: [
     {
       type: "string",
       name: "service",
-      description: "Azure or Microsoft 365.",
+      description: commands["auth.logout"].arguments.service,
       choices: ["azure", "m365"],
       required: true,
     },
@@ -30,9 +31,9 @@ export const accountLogoutCommand: CLICommand = {
         ctx.telemetryProperties.service = "azure";
         const result = await AzureTokenProvider.signout();
         if (result) {
-          logger.info(`[${cliSource}] Successfully signed out of Azure.`);
+          logger.info(strings["account.logout.azure"]);
         } else {
-          logger.error(`[${cliSource}] Failed to sign out of Azure.`);
+          logger.error(strings["account.logout.azure.fail"]);
         }
         break;
       }
@@ -40,9 +41,9 @@ export const accountLogoutCommand: CLICommand = {
         ctx.telemetryProperties.service = "m365";
         const result = await M365TokenProvider.signout();
         if (result) {
-          logger.info(`[${cliSource}] Successfully signed out of Microsoft 365.`);
+          logger.info(strings["account.logout.m365"]);
         } else {
-          logger.error(`[${cliSource}] Failed to sign out of Microsoft 365.`);
+          logger.error(strings["account.logout.m365.fail"]);
         }
         break;
       }

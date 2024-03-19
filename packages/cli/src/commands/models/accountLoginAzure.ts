@@ -10,34 +10,35 @@ import {
 } from "../../commonlib/common/constant";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { accountUtils } from "./accountShow";
+import * as commands from "../../resource/commands.json";
 
 export const accountLoginAzureCommand: CLICommand = {
   name: "azure",
-  description: "Log in to Azure account.",
+  description: commands["auth.login.azure"].description,
   options: [
     {
       name: "tenant",
-      description: "Authenticate with a specific Microsoft Entra tenant.",
+      description: commands["auth.login.azure"].options["tenant"],
       type: "string",
       default: "",
     },
     {
       name: "service-principal",
-      description: "Authenticate Azure with a credential representing a service principal",
+      description: commands["auth.login.azure"].options["service-principal"],
       type: "boolean",
       default: false,
     },
     {
       name: "username",
       shortName: "u",
-      description: "Client ID for service principal",
+      description: commands["auth.login.azure"].options.username,
       type: "string",
       default: "",
     },
     {
       name: "password",
       shortName: "p",
-      description: "Provide client secret or a pem file with key and public certificate.",
+      description: commands["auth.login.azure"].options.password,
       type: "string",
       default: "",
     },

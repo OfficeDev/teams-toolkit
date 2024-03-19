@@ -22,7 +22,11 @@ import followupProvider from "../../followupProvider";
 import { TelemetryMetadata } from "../../telemetryData";
 import { ISharedTelemetryProperty, ITelemetryMetadata } from "../../types";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../../../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../../../telemetry/extTelemetryEvents";
 import { getUuid } from "@microsoft/teamsfx-core";
 
 let teamsApp: string | undefined = undefined;
@@ -36,7 +40,8 @@ export default async function nextStepCommandHandler(
 ): Promise<ChatResult> {
   // Telemetry
   const sharedTelemetryProperty: ISharedTelemetryProperty = {
-    "correlation-id": getUuid(),
+    [TelemetryProperty.CorrelationId]: getUuid(),
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
   };
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatNextStepStart, {
     ...sharedTelemetryProperty,

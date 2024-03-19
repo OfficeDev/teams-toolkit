@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { LanguageModelChatMessage, ChatResult } from "vscode";
-import { TelemetryProperty } from "../telemetry/extTelemetryEvents";
+import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
 
 export interface ISharedTelemetryProperty {
   [TelemetryProperty.CorrelationId]: string;
+  [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom;
 }
 
 // metadata is used to generate telemetryData

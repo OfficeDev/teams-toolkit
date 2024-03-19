@@ -50,9 +50,6 @@ function sendTelemetry(
   telemetryMetadata: ITelemetryMetadata
 ) {
   const startTime = telemetryMetadata.startTime;
-  // const requestStartTime = telemetryMetadata.requestStartTime;
-  // const firstTokenTime = telemetryMetadata.firstTokenTime;
-
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatCreate,
     {
@@ -62,9 +59,6 @@ function sendTelemetry(
     {
       [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
       [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - startTime,
-      // TODO: there are multi entry for requesting LLM, is these measurements needed?
-      // [TelemetryProperty.CopilotChatTimeToRequest]: requestStartTime ? requestStartTime - startTime : -1,
-      // [TelemetryProperty.CopilotChatTimeToFirstToken]: firstTokenTime ? firstTokenTime - startTime : -1,
     }
   );
 }
@@ -76,7 +70,8 @@ export default async function createCommandHandler(
   token: CancellationToken
 ): Promise<ChatResult> {
   const sharedTelemetryProperty: ISharedTelemetryProperty = {
-    "correlation-id": getUuid(),
+    [TelemetryProperty.CorrelationId]: getUuid(),
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
   };
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatCreateStart, {
     ...sharedTelemetryProperty,

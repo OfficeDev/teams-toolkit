@@ -29,13 +29,12 @@ import followupProvider from "./followupProvider";
 import { defaultSystemPrompt } from "./prompts";
 import { getSampleDownloadUrlInfo, verbatimCopilotInteraction } from "./utils";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import {
-  ISharedTelemetryProperty,
-  ITelemetryMetadata,
-  ICopilotChatResult,
-  ICopilotChatResultMetadata,
-} from "./types";
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../telemetry/extTelemetryEvents";
+import { ISharedTelemetryProperty, ITelemetryMetadata, ICopilotChatResult } from "./types";
 import { getUuid } from "@microsoft/teamsfx-core";
 import { TelemetryMetadata } from "./telemetryData";
 
@@ -64,7 +63,8 @@ async function defaultHandler(
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
   const sharedTelemetryProperty: ISharedTelemetryProperty = {
-    "correlation-id": getUuid(),
+    [TelemetryProperty.CorrelationId]: getUuid(),
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
   };
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatDefaultStart, {
     ...sharedTelemetryProperty,

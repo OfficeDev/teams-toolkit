@@ -12,7 +12,6 @@ import {
 import { isValidProjectV3, sampleProvider } from "@microsoft/teamsfx-core";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
 import { Tokenizer } from "./tokenizer";
-import { ITelemetryMetadata } from "./types";
 
 export async function verbatimCopilotInteraction(
   model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",

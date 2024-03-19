@@ -235,6 +235,7 @@
   "core.generator.officeAddin.importProject.copyFiles": "Copying files...",
   "core.generator.officeAddin.importProject.convertProject": "Converting project...",
   "core.generator.officeAddin.importProject.updateManifest": "Modifying manifest...",
+  "core.generator.officeAddin.importOfficeProject.title": "Importing Existing Office Add-in Project",
   "core.TabOption.description": "UI-based app",
   "core.TabOption.detail": "Teams-aware webpages embedded in Microsoft Teams",
   "core.DashboardOption.label": "Dashboard",

@@ -3,7 +3,6 @@
 
 import { confirm, password } from "@inquirer/prompts";
 import { prompt } from "inquirer";
-import chalk from "chalk";
 import {
   Colors,
   ConfirmConfig,

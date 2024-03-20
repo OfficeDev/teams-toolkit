@@ -73,7 +73,7 @@ async function defaultHandler(
 
   const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
 
-  const messages = [defaultSystemPrompt, new LanguageModelChatUserMessage(request.prompt)];
+  const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
   telemetryMetadata.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 

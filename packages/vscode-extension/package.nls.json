@@ -458,5 +458,6 @@
     "teamstoolkit.chatParticipants.create.selectFolder.title": "Choose the location to save your project",
     "teamstoolkit.chatParticipants.create.selectFolder.label": "Select Folder",
     "teamstoolkit.chatParticipants.create.successfullyCreated": "Project successfully created in current workspace.",
-    "teamstoolkit.chatParticipants.create.failToCreate": "Unable to create the project."
+    "teamstoolkit.chatParticipants.create.failToCreate": "Unable to create the project.",
+    "teamstoolkit.chatParticipants.default.noConceptualAnswer": "I can only answer conceptual questions."
 }

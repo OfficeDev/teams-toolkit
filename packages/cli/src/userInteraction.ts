@@ -123,7 +123,7 @@ class CLIUserInteraction implements UserInteraction {
       },
     ]);
     ScreenManager.continue();
-    return ok(answer);
+    return ok(answer[name]);
   }
 
   async password(

@@ -16,7 +16,7 @@ import {
   Uri,
 } from "vscode";
 
-import { TelemetrySuccess, getUuid, sampleProvider } from "@microsoft/teamsfx-core";
+import { Correlator, TelemetrySuccess, getUuid, sampleProvider } from "@microsoft/teamsfx-core";
 import {
   getSampleFileInfo,
   runWithLimitedConcurrency,
@@ -43,19 +43,16 @@ import {
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
 import { TelemetryMetadata } from "../../telemetryData";
-import { ISharedTelemetryProperty, ITelemetryMetadata } from "../../types";
+import { ICopilotChatResult, ITelemetryMetadata } from "../../types";
 import * as util from "util";
 import { localize } from "../../../utils/localizeUtils";
 
-function sendTelemetry(
-  sharedTelemetryProperty: ISharedTelemetryProperty,
-  telemetryMetadata: ITelemetryMetadata
-) {
+function sendTelemetry(property: { [key: string]: string }, telemetryMetadata: ITelemetryMetadata) {
   const startTime = telemetryMetadata.startTime;
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatCreate,
     {
-      ...sharedTelemetryProperty,
+      ...property,
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
     },
     {
@@ -70,13 +67,9 @@ export default async function createCommandHandler(
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ChatResult> {
-  const sharedTelemetryProperty: ISharedTelemetryProperty = {
-    [TelemetryProperty.CorrelationId]: getUuid(),
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-  };
+): Promise<ICopilotChatResult> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatCreateStart, {
-    ...sharedTelemetryProperty,
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
   });
   const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
 
@@ -86,11 +79,16 @@ export default async function createCommandHandler(
     response.markdown(
       "No matching templates or samples found. Try a different app description or explore other templates.\n"
     );
-    sendTelemetry(sharedTelemetryProperty, telemetryMetadata);
+    sendTelemetry(
+      {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+      },
+      telemetryMetadata
+    );
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        sharedTelemetryProperty: sharedTelemetryProperty,
+        correlationId: Correlator.getId(),
       },
     };
   }
@@ -127,11 +125,16 @@ export default async function createCommandHandler(
       });
     }
 
-    sendTelemetry(sharedTelemetryProperty, telemetryMetadata);
+    sendTelemetry(
+      {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+      },
+      telemetryMetadata
+    );
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        sharedTelemetryProperty: sharedTelemetryProperty,
+        correlationId: Correlator.getId(),
       },
     };
   } else {
@@ -174,11 +177,16 @@ export default async function createCommandHandler(
       }
     }
 
-    sendTelemetry(sharedTelemetryProperty, telemetryMetadata);
+    sendTelemetry(
+      {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+      },
+      telemetryMetadata
+    );
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        sharedTelemetryProperty: sharedTelemetryProperty,
+        correlationId: Correlator.getId(),
       },
     };
   }

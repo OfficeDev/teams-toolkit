@@ -34,8 +34,8 @@ import {
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { ISharedTelemetryProperty, ITelemetryMetadata, ICopilotChatResult } from "./types";
-import { getUuid } from "@microsoft/teamsfx-core";
+import { ITelemetryMetadata, ICopilotChatResult } from "./types";
+import { Correlator } from "@microsoft/teamsfx-core";
 import { TelemetryMetadata } from "./telemetryData";
 import { localize } from "../utils/localizeUtils";
 
@@ -48,11 +48,11 @@ export function chatRequestHandler(
   // Matching chat commands in the package.json
   followupProvider.clearFollowups();
   if (request.command == TeamsChatCommand.Create) {
-    return createCommandHandler(request, context, response, token);
+    return Correlator.run(createCommandHandler, request, context, response, token);
   } else if (request.command == TeamsChatCommand.NextStep) {
-    return nextStepCommandHandler(request, context, response, token);
+    return Correlator.run(nextStepCommandHandler, request, context, response, token);
   } else {
-    return defaultHandler(request, context, response, token);
+    return Correlator.run(defaultHandler, request, context, response, token);
   }
   return {};
 }
@@ -63,12 +63,8 @@ async function defaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const sharedTelemetryProperty: ISharedTelemetryProperty = {
-    [TelemetryProperty.CorrelationId]: getUuid(),
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-  };
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatDefaultStart, {
-    ...sharedTelemetryProperty,
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
   });
 
   const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
@@ -79,13 +75,13 @@ async function defaultHandler(
 
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatDefault,
-    { ...sharedTelemetryProperty },
+    { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat },
     {
       [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
       [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - telemetryMetadata.startTime,
     }
   );
-  return { metadata: { command: undefined, sharedTelemetryProperty: sharedTelemetryProperty } };
+  return { metadata: { command: undefined, correlationId: Correlator.getId() } };
 }
 
 export async function chatCreateCommandHandler(folderOrSample: string | ProjectMetadata) {
@@ -144,15 +140,11 @@ export async function openUrlCommandHandler(url: string) {
 
 export function handleFeedback(e: ChatResultFeedback): void {
   const result = e.result as ICopilotChatResult;
-  const sharedTelemetryProperty: ISharedTelemetryProperty =
-    result.metadata?.sharedTelemetryProperty || ({} as ISharedTelemetryProperty);
-  if (!sharedTelemetryProperty["correlation-id"]) {
-    sharedTelemetryProperty["correlation-id"] = getUuid();
-  }
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatFeedback,
     {
-      ...sharedTelemetryProperty,
+      [TelemetryProperty.CorrelationId]: result.metadata?.correlationId || "",
+      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
       [TelemetryProperty.CopilotChatSlashCommand]: result.metadata?.command || "",
     },
     {

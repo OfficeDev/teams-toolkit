@@ -127,6 +127,18 @@
               "type": "string",
               "description": "Specifies what Microsoft accounts are supported for the current application.",
               "enum": ["AzureADMyOrg", "AzureADMultipleOrgs", "AzureADandPersonalMicrosoftAccount", "PersonalMicrosoftAccount"]
+            },
+            "serviceManagementReference": {
+              "type": "string",
+              "description": "References application or service contact information from a Service or Asset Management database."
+            },
+            "clientSecretExpireDays": {
+              "type": "integer",
+              "description": "The number of days the client secret is valid."
+            },
+            "clientSecretDescription": {
+              "type": "string",
+              "description": "The description of the client secret."
             }
           }
         },
@@ -192,6 +204,10 @@
               "type": "string",
               "description": "Specifies what Microsoft accounts are supported for the current application.",
               "enum": ["AzureADMyOrg", "AzureADMultipleOrgs", "AzureADandPersonalMicrosoftAccount", "PersonalMicrosoftAccount"]
+            },
+            "serviceManagementReference": {
+              "type": "string",
+              "description": "References application or service contact information from a Service or Asset Management database."
             }
           }
         },

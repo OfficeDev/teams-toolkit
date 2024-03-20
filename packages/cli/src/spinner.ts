@@ -6,11 +6,30 @@ const defaultSpinnerFrames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "
 const defaultTextType = TextType.Spinner;
 const defaultRefreshInterval = 100;
 
+interface CustomizedSpinnerOptions {
+  spinnerFrames?: string[];
+  textType?: TextType;
+  refreshInterval?: number;
+}
+
 export class CustomizedSpinner {
   public spinnerFrames: string[] = defaultSpinnerFrames;
   public textType: TextType = defaultTextType;
   public refreshInterval: number = defaultRefreshInterval; // refresh internal in milliseconds
   private intervalId: NodeJS.Timeout | null = null;
+
+  constructor(options: CustomizedSpinnerOptions = {}) {
+    if (options.spinnerFrames) {
+      this.spinnerFrames = options.spinnerFrames;
+    }
+    if (options.textType) {
+      this.textType = options.textType;
+    }
+    if (options.refreshInterval) {
+      this.refreshInterval = options.refreshInterval;
+    }
+  }
+
   public start(): void {
     // hide cursor
     process.stdout.write("\x1b[?25l");

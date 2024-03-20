@@ -153,7 +153,7 @@ export class SpecParser {
 
         for (const auths of authArray) {
           if (auths.length === 1) {
-            apiResult.auth = auths[0].authScheme;
+            apiResult.auth = auths[0];
             break;
           }
         }

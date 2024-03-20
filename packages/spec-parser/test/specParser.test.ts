@@ -1826,7 +1826,10 @@ describe("SpecParser", () => {
           {
             api: "GET /user/{userId}",
             server: "https://server1",
-            auth: { type: "apiKey", name: "api_key", in: "header" },
+            auth: {
+              authScheme: { type: "apiKey", name: "api_key", in: "header" },
+              name: "api_key",
+            },
             operationId: "getUserById",
           },
         ],
@@ -1896,7 +1899,13 @@ describe("SpecParser", () => {
           {
             api: "GET /user/{userId}",
             server: "https://server1",
-            auth: { type: "http", scheme: "bearer" },
+            auth: {
+              authScheme: {
+                type: "http",
+                scheme: "bearer",
+              },
+              name: "bearerTokenAuth",
+            },
             operationId: "getUserById",
           },
         ],
@@ -2024,13 +2033,27 @@ describe("SpecParser", () => {
           {
             api: "GET /user/{userId}",
             server: "https://server1",
-            auth: { type: "apiKey", name: "api_key1", in: "header" },
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key1",
+                in: "header",
+              },
+              name: "api_key1",
+            },
             operationId: "getUserById",
           },
           {
             api: "POST /user/{userId}",
             server: "https://server1",
-            auth: { type: "apiKey", name: "api_key1", in: "header" },
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key1",
+                in: "header",
+              },
+              name: "api_key1",
+            },
             operationId: "postUserById",
           },
         ],
@@ -2318,7 +2341,14 @@ describe("SpecParser", () => {
           {
             api: "GET /user/{userId}",
             server: "https://server1",
-            auth: { type: "apiKey", name: "api_key", in: "header" },
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key",
+                in: "header",
+              },
+              name: "api_key",
+            },
             operationId: "getUserById",
           },
         ],

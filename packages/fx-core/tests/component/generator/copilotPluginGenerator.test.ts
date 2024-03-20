@@ -1028,9 +1028,11 @@ describe("listPluginExistingOperations", () => {
           server: "https://test",
           operationId: "get",
           auth: {
-            type: "apiKey",
             name: "test",
-            in: "header",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],

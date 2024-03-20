@@ -1851,9 +1851,11 @@ describe("copilotPlugin", async () => {
           server: "https://server",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -1861,9 +1863,11 @@ describe("copilotPlugin", async () => {
           server: "https://server",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key2",
-            in: "header",
+            name: "bearerAuth2",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -1916,9 +1920,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -1926,9 +1932,11 @@ describe("copilotPlugin", async () => {
           server: "https://server2",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -1981,9 +1989,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -1991,9 +2001,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2052,9 +2064,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -2062,9 +2076,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2132,9 +2148,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -2142,9 +2160,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2221,9 +2241,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -2231,9 +2253,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2295,12 +2319,12 @@ describe("copilotPlugin", async () => {
           {
             uses: "apiKey/register",
             with: {
-              name: "api_key1",
+              name: "bearerAuth1",
               appId: "${{TEAMS_APP_ID}}",
               apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
-              registrationId: "API_KEY1_REGISTRATION_ID",
+              registrationId: "BEARERAUTH1_REGISTRATION_ID",
             },
           },
           {
@@ -2350,9 +2374,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -2360,9 +2386,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2392,12 +2420,12 @@ describe("copilotPlugin", async () => {
         {
           uses: "apiKey/register",
           with: {
-            name: "api_key1",
+            name: "bearerAuth1",
             appId: "${{TEAMS_APP_ID}}",
             apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
           },
           writeToEnvironmentFile: {
-            registrationId: "API_KEY1_REGISTRATION_ID",
+            registrationId: "BEARERAUTH1_REGISTRATION_ID",
           },
         },
         {
@@ -2450,9 +2478,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -2460,9 +2490,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2535,12 +2567,12 @@ describe("copilotPlugin", async () => {
           {
             uses: "apiKey/register",
             with: {
-              name: "api_key1",
+              name: "bearerAuth1",
               appId: "${{TEAMS_APP_ID}}",
               apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
-              registrationId: "API_KEY1_REGISTRATION_ID",
+              registrationId: "BEARERAUTH1_REGISTRATION_ID",
             },
           },
           {
@@ -2590,9 +2622,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -2600,9 +2634,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2632,7 +2668,7 @@ describe("copilotPlugin", async () => {
         {
           uses: "apiKey/register",
           writeToEnvironmentFile: {
-            registrationId: "API_KEY1_REGISTRATION_ID",
+            registrationId: "BEARERAUTH1_REGISTRATION_ID",
           },
         },
         {
@@ -2670,12 +2706,12 @@ describe("copilotPlugin", async () => {
           {
             uses: "apiKey/register",
             with: {
-              name: "api_key1",
+              name: "bearerAuth1",
               appId: "${{TEAMS_APP_ID}}",
               apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
-              registrationId: "API_KEY1_REGISTRATION_ID",
+              registrationId: "BEARERAUTH1_REGISTRATION_ID",
             },
           },
           {
@@ -2725,9 +2761,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -2735,9 +2773,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2808,12 +2848,12 @@ describe("copilotPlugin", async () => {
           {
             uses: "apiKey/register",
             with: {
-              name: "api_key1",
+              name: "bearerAuth1",
               appId: "${{TEAMS_APP_ID}}",
               apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
-              registrationId: "API_KEY1_REGISTRATION_ID",
+              registrationId: "BEARERAUTH1_REGISTRATION_ID",
             },
           },
           {
@@ -2863,9 +2903,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -2873,9 +2915,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -2934,12 +2978,12 @@ describe("copilotPlugin", async () => {
           {
             uses: "apiKey/register",
             with: {
-              name: "api_key1",
+              name: "bearerAuth1",
               appId: "${{TEAMS_APP_ID}}",
               apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
-              registrationId: "API_KEY1_REGISTRATION_ID",
+              registrationId: "BEARERAUTH1_REGISTRATION_ID",
             },
           },
           {
@@ -2990,9 +3034,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /user/{userId}",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
         {
@@ -3000,9 +3046,11 @@ describe("copilotPlugin", async () => {
           server: "https://server1",
           api: "GET /store/order",
           auth: {
-            type: "apiKey" as const,
-            name: "api_key1",
-            in: "header",
+            name: "bearerAuth1",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
           },
         },
       ],
@@ -3072,12 +3120,12 @@ describe("copilotPlugin", async () => {
           {
             uses: "apiKey/register",
             with: {
-              name: "api_key1",
+              name: "bearerAuth1",
               appId: "${{TEAMS_APP_ID}}",
               apiSpecPath: "./appPackage/apiSpecificationFiles/openapi.json",
             },
             writeToEnvironmentFile: {
-              registrationId: "API_KEY1_REGISTRATION_ID",
+              registrationId: "BEARERAUTH1_REGISTRATION_ID",
             },
           },
           {

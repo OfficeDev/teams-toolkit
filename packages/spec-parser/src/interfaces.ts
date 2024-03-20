@@ -231,7 +231,7 @@ export interface ListAPIInfo {
   api: string;
   server: string;
   operationId: string;
-  auth?: OpenAPIV3.SecuritySchemeObject;
+  auth?: AuthInfo;
 }
 
 export interface ListAPIResult {

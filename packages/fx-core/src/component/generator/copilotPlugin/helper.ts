@@ -81,6 +81,7 @@ enum OpenAIPluginManifestErrorType {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: true,
+  allowBearerTokenAuth: true,
   allowMultipleParameters: true,
   allowOauth2: true,
   projectType: ProjectType.Copilot,
@@ -195,7 +196,7 @@ export async function listOperations(
             projectType: ProjectType.TeamsAi,
           }
         : {
-            allowAPIKeyAuth,
+            allowBearerTokenAuth: allowAPIKeyAuth, // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters,
           }
     );
@@ -288,7 +289,11 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
       },
     };
 
-    if (operation.auth && operation.auth.type === "apiKey") {
+    if (
+      operation.auth &&
+      operation.auth.authScheme.type === "http" &&
+      operation.auth.authScheme.scheme === "bearer"
+    ) {
       result.data.authName = operation.auth.name;
     }
     operationsWithSeparator.push(result);

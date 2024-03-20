@@ -197,7 +197,7 @@ async function matchProject(
 
   telemetryMetadata.chatMessages.push(...messages);
 
-  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  const response = await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
   const matchedProjectId: string[] = [];
   if (response) {
     try {

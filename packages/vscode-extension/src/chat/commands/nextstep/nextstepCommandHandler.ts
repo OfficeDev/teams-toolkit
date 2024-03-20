@@ -20,14 +20,14 @@ import { describeScenarioSystemPrompt } from "../../prompts";
 import { TeamsChatCommand } from "../../consts";
 import followupProvider from "../../followupProvider";
 import { TelemetryMetadata } from "../../telemetryData";
-import { ISharedTelemetryProperty, ITelemetryMetadata } from "../../types";
+import { ICopilotChatResult, ITelemetryMetadata } from "../../types";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../../../telemetry/extTelemetryEvents";
-import { getUuid } from "@microsoft/teamsfx-core";
+import { Correlator, getUuid } from "@microsoft/teamsfx-core";
 import { localize } from "../../../utils/localizeUtils";
 
 let teamsApp: string | undefined = undefined;
@@ -38,14 +38,9 @@ export default async function nextStepCommandHandler(
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ChatResult> {
-  // Telemetry
-  const sharedTelemetryProperty: ISharedTelemetryProperty = {
-    [TelemetryProperty.CorrelationId]: getUuid(),
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-  };
+): Promise<ICopilotChatResult> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatNextStepStart, {
-    ...sharedTelemetryProperty,
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
   });
   const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
 
@@ -82,7 +77,7 @@ export default async function nextStepCommandHandler(
 
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatNextStep,
-    { ...sharedTelemetryProperty },
+    { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat },
     {
       [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
       [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - telemetryMetadata.startTime,
@@ -91,7 +86,7 @@ export default async function nextStepCommandHandler(
   return {
     metadata: {
       command: TeamsChatCommand.NextStep,
-      sharedTelemetryProperty: sharedTelemetryProperty,
+      correlationId: Correlator.getId(),
     },
   };
 }

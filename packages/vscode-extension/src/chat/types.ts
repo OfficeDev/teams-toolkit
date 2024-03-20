@@ -1,12 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { LanguageModelChatMessage, ChatResult } from "vscode";
-import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
-
-export interface ISharedTelemetryProperty {
-  [TelemetryProperty.CorrelationId]: string;
-  [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom;
-}
 
 // metadata is used to generate telemetryData
 export interface ITelemetryMetadata {
@@ -21,8 +15,8 @@ export interface ITelemetryMetadata {
 }
 
 export interface ICopilotChatResultMetadata {
-  readonly command: string;
-  readonly sharedTelemetryProperty: ISharedTelemetryProperty;
+  readonly command?: string;
+  readonly correlationId?: string;
 }
 
 export interface ICopilotChatResult extends ChatResult {

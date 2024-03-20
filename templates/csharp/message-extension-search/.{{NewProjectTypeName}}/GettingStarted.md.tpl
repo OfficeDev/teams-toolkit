@@ -2,16 +2,6 @@
 
 ## Quick Start
 
-{{#enableTestToolByDefault}}
-1. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
-2. Teams App Test Tool will be opened in the launched browser 
-3. Open Windows PowerShell and post a HTTP request to trigger the notification:
-
-   Invoke-WebRequest -Uri "http://localhost:5130/api/notification" -Method Post
-   
-{{/enableTestToolByDefault}}
-{{^enableTestToolByDefault}}
 1. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/create-devtunnel-button.png)
 2. Right-click your `{{NewProjectTypeName}}` project and select Teams Toolkit > Prepare Teams App Dependencies
@@ -20,11 +10,7 @@ to install the app to
 4. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
 5. In the launched browser, select the Add button to load the app in Teams
-6. Open Windows PowerShell and post a HTTP request to trigger the notification:
-
-   Invoke-WebRequest -Uri "http://localhost:5130/api/notification" -Method Post
-
-{{/enableTestToolByDefault}}
+6. You can search nuget package from compose message area, or from the command box.
 
 ## Start multiple profiles
 Instead of launching the app in Teams client with default profile, you can also run your app with other profile like App Test Tool, office.com and outlook or even Copilot. You can select profile to start.
@@ -32,29 +18,17 @@ Instead of launching the app in Teams client with default profile, you can also 
 2. Check "Enable Multi-Project Launch Profiles"
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/enable-multiple-profiles-feature.png)
 
-{{^enableTestToolByDefault}}
-### Start the app in Teams App Test Tool
-1. Select `Teams App Test Tool (browser)` in debug dropdown menu
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/switch-to-test-tool.png)
+### Start the app in Outlook
+1. Select `Outlook (browser)` in debug dropdown menu
+</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/switch-to-outlook-no-m365.png)
 2. Press F5, or select the Debug > Start Debugging menu in Visual Studio
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
-{{/enableTestToolByDefault}}
-{{#enableTestToolByDefault}}
-### Start the app in Microsoft Teams
-1. In the debug dropdown menu, select `Microsoft Teams (browser)`.
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/switch-to-teams.png)
-2. Press F5, or select the Debug > Start Debugging menu in Visual Studio
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
-{{/enableTestToolByDefault}}
 
 ## Learn more
 
 New to Teams app development or Teams Toolkit? Learn more about 
 Teams app manifests, deploying to the cloud, and more in the documentation 
 at https://aka.ms/teams-toolkit-vs-docs
-
-Learn more advanced topic like how to customize your notification bot code in 
-tutorials at https://aka.ms/notification-bot-tutorial
 
 ## Report an issue
 

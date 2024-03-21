@@ -42,25 +42,10 @@ import {
 } from "../../utils";
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
-import { TelemetryMetadata } from "../../telemetryData";
+import { TelemetryMetadata, sendStartTelemetry, sendTelemetry } from "../../telemetry";
 import { ICopilotChatResult, ITelemetryMetadata } from "../../types";
 import * as util from "util";
 import { localize } from "../../../utils/localizeUtils";
-
-function sendTelemetry(property: { [key: string]: string }, telemetryMetadata: ITelemetryMetadata) {
-  const startTime = telemetryMetadata.startTime;
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CopilotChatCreate,
-    {
-      ...property,
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    },
-    {
-      [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
-      [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - startTime,
-    }
-  );
-}
 
 export default async function createCommandHandler(
   request: ChatRequest,
@@ -68,10 +53,8 @@ export default async function createCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatCreateStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-  });
-  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
+  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(TeamsChatCommand.Create);
+  sendStartTelemetry(TelemetryEvent.CopilotChatStart, telemetryMetadata);
 
   const matchedResult = await matchProject(request, token, telemetryMetadata);
 
@@ -79,16 +62,11 @@ export default async function createCommandHandler(
     response.markdown(
       "No matching templates or samples found. Try a different app description or explore other templates.\n"
     );
-    sendTelemetry(
-      {
-        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-      },
-      telemetryMetadata
-    );
+    sendTelemetry(TelemetryEvent.CopilotChat, telemetryMetadata);
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        correlationId: Correlator.getId(),
+        requestId: telemetryMetadata.requestId,
       },
     };
   }
@@ -125,16 +103,11 @@ export default async function createCommandHandler(
       });
     }
 
-    sendTelemetry(
-      {
-        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-      },
-      telemetryMetadata
-    );
+    sendTelemetry(TelemetryEvent.CopilotChat, telemetryMetadata);
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        correlationId: Correlator.getId(),
+        requestId: telemetryMetadata.requestId,
       },
     };
   } else {
@@ -177,16 +150,11 @@ export default async function createCommandHandler(
       }
     }
 
-    sendTelemetry(
-      {
-        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-      },
-      telemetryMetadata
-    );
+    sendTelemetry(TelemetryEvent.CopilotChat, telemetryMetadata);
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        correlationId: Correlator.getId(),
+        requestId: telemetryMetadata.requestId,
       },
     };
   }

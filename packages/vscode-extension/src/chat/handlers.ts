@@ -7,7 +7,6 @@ import {
   ChatContext,
   ChatRequest,
   ChatResponseStream,
-  ChatResult,
   commands,
   env,
   LanguageModelChatUserMessage,
@@ -16,7 +15,6 @@ import {
   window,
   workspace,
   ChatResultFeedback,
-  ChatResultFeedbackKind,
 } from "vscode";
 
 import { downloadDirectory } from "@microsoft/teamsfx-core/build/component/generator/utils";
@@ -36,7 +34,7 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { ITelemetryMetadata, ICopilotChatResult } from "./types";
 import { Correlator } from "@microsoft/teamsfx-core";
-import { TelemetryMetadata } from "./telemetryData";
+import { TelemetryMetadata, sendTelemetry } from "./telemetry";
 import { localize } from "../utils/localizeUtils";
 
 export function chatRequestHandler(
@@ -48,11 +46,11 @@ export function chatRequestHandler(
   // Matching chat commands in the package.json
   followupProvider.clearFollowups();
   if (request.command == TeamsChatCommand.Create) {
-    return Correlator.run(createCommandHandler, request, context, response, token);
+    return createCommandHandler(request, context, response, token);
   } else if (request.command == TeamsChatCommand.NextStep) {
-    return Correlator.run(nextStepCommandHandler, request, context, response, token);
+    return nextStepCommandHandler(request, context, response, token);
   } else {
-    return Correlator.run(defaultHandler, request, context, response, token);
+    return defaultHandler(request, context, response, token);
   }
   return {};
 }
@@ -63,25 +61,14 @@ async function defaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatDefaultStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-  });
-
-  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
-
+  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata("");
+  sendTelemetry(TelemetryEvent.CopilotChatStart, telemetryMetadata);
   const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
   telemetryMetadata.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CopilotChatDefault,
-    { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat },
-    {
-      [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
-      [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - telemetryMetadata.startTime,
-    }
-  );
-  return { metadata: { command: undefined, correlationId: Correlator.getId() } };
+  sendTelemetry(TelemetryEvent.CopilotChat, telemetryMetadata);
+  return { metadata: { command: undefined, requestId: telemetryMetadata.requestId } };
 }
 
 export async function chatCreateCommandHandler(folderOrSample: string | ProjectMetadata) {

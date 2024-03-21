@@ -390,7 +390,9 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
  * Copilot Chat Participant
  */
 function registerChatParticipant(context: vscode.ExtensionContext) {
-  const participant = vscode.chat.createChatParticipant(chatParticipantName, chatRequestHandler);
+  const participant = vscode.chat.createChatParticipant(chatParticipantName, (...args) =>
+    Correlator.run(chatRequestHandler, ...args)
+  );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
   participant.followupProvider = followupProvider;
   participant.onDidReceiveFeedback((e) => handleFeedback(e));

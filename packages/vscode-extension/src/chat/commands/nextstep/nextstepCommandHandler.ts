@@ -19,7 +19,7 @@ import { getTeamsApps, getCopilotResponseAsString } from "../../utils";
 import { describeScenarioSystemPrompt } from "../../prompts";
 import { TeamsChatCommand } from "../../consts";
 import followupProvider from "../../followupProvider";
-import { TelemetryMetadata } from "../../telemetryData";
+import { TelemetryMetadata, sendTelemetry } from "../../telemetry";
 import { ICopilotChatResult, ITelemetryMetadata } from "../../types";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import {
@@ -39,10 +39,8 @@ export default async function nextStepCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatNextStepStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-  });
-  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
+  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(TeamsChatCommand.NextStep);
+  sendTelemetry(TelemetryEvent.CopilotChatStart, telemetryMetadata);
 
   // get all Teams apps under workspace
   const teamsApps = getTeamsApps(workspace.workspaceFolders);
@@ -75,18 +73,12 @@ export default async function nextStepCommandHandler(
   });
   followupProvider.addFollowups(followUps);
 
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CopilotChatNextStep,
-    { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat },
-    {
-      [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
-      [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - telemetryMetadata.startTime,
-    }
-  );
+  sendTelemetry(TelemetryEvent.CopilotChat, telemetryMetadata);
+
   return {
     metadata: {
       command: TeamsChatCommand.NextStep,
-      correlationId: Correlator.getId(),
+      requestId: telemetryMetadata.requestId,
     },
   };
 }

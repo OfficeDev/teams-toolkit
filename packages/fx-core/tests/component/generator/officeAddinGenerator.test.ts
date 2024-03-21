@@ -1,4 +1,3 @@
-import { ProjectType } from "./../../../../spec-parser/src/interfaces";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 

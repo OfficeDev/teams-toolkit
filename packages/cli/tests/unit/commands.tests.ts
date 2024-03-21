@@ -1328,7 +1328,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and custom app upload permission is enabled");
+        assert.include(account, "is signed in and custom app upload permission is enabled");
       });
 
       it("checkM365Account - no custom app upload permission", async () => {

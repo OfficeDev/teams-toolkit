@@ -144,7 +144,8 @@
 /packages/fx-core/src/component/feature/sso.ts @KennethBWSong @xzf0587 @adashen
 /packages/fx-core/src/component/generator @Yukun-dong @hund030 @JerryYangKai @eriolchan
 /packages/fx-core/src/component/generator/copilotPlugin @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
-/packages/fx-core/src/component/generator/officeAddin @jayzhang @LongOddCode
+/packages/fx-core/src/component/generator/officeAddin @jayzhang @tecton
+/packages/fx-core/src/component/generator/officeXMLAddin @jayzhang @tecton
 /packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @adashen @SLdragon
 /packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
@@ -196,7 +197,8 @@
 /packages/fx-core/tests/component/feature/sso.test.ts @KennethBWSong @xzf0587 @adashen
 /packages/fx-core/tests/component/generator/copilotPluginGenerator.test.ts @yuqizhou77 @nliu-ms @Alive-Fish @jayzhang
 /packages/fx-core/tests/component/generator/generator.test.ts @Yukun-dong @hund030 @JerryYangKai @eriolchan
-/packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @jayzhang @LongOddCode
+/packages/fx-core/tests/component/generator/officeAddinGenerator.test.ts @jayzhang @tecton
+/packages/fx-core/tests/component/generator/officeXMLAddinGenerator.test.ts @jayzhang @tecton
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/jsonUtils.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/middleware/helper.ts @jayzhang @xzf0587 @LongOddCode
@@ -273,6 +275,7 @@
 /packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/src/debug/taskTerminal/officeDevTerminal.ts @tecton @swatDong
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
@@ -307,7 +310,18 @@
 /templates/**/notification-restify @kimizhu @dooriya @swatDong
 /templates/**/notification-timer-trigger @kimizhu @dooriya @swatDong
 /templates/**/notification-webapi @kimizhu @dooriya @swatDong
-/templates/**/office-addin @jayzhang @nliu-ms
+/templates/**/office-addin @jayzhang @tecton
+/templates/**/office-json-addin @jayzhang @tecton
+/templates/**/office-xml-addin-excel-cf @jayzhang @tecton
+/templates/**/office-xml-addin-excel-react @jayzhang @tecton
+/templates/**/office-xml-addin-excel-sso @jayzhang @tecton
+/templates/**/office-xml-addin-excel-taskpane @jayzhang @tecton
+/templates/**/office-xml-addin-powerpoint-react @jayzhang @tecton
+/templates/**/office-xml-addin-powerpoint-sso @jayzhang @tecton
+/templates/**/office-xml-addin-powerpoint-taskpane @jayzhang @tecton
+/templates/**/office-xml-addin-word-react @jayzhang @tecton
+/templates/**/office-xml-addin-word-sso @jayzhang @tecton
+/templates/**/office-xml-addin-word-taskpane @jayzhang @tecton
 /templates/**/spfx-tab @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /templates/**/spfx-tab-import @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /templates/**/sso-tab @hund030 @eriolchan @Yimin-Jin

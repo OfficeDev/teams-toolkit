@@ -9,12 +9,13 @@ import {
 } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 
 export const envAddCommand: CLICommand = {
   name: "add",
-  description: "Add a new environment by copying from the specified environment.",
+  description: commands["env.add"].description,
   options: [...CreateEnvOptions, ProjectFolderOption],
   arguments: CreateEnvArguments,
   telemetry: {

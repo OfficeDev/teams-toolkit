@@ -3,6 +3,7 @@
 import { CLICommand, Result, TeamsAppInputs, err, ok } from "@microsoft/teamsfx-api";
 import { getFxCore } from "../../../activate";
 import { ArgumentConflictError } from "../../../error";
+import { commands } from "../../../resource";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
 import {
   EnvFileOption,
@@ -16,7 +17,7 @@ import {
 
 export const teamsappUpdateCommand: CLICommand = {
   name: "update",
-  description: "Update the Microsoft Teams App manifest to Teams Developer Portal.",
+  description: commands.update.description,
   options: [
     TeamsAppManifestFileOption,
     TeamsAppPackageOption,

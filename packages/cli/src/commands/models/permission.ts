@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand } from "@microsoft/teamsfx-api";
+import { commands } from "../../resource";
 import { permissionGrantCommand } from "./permissionGrant";
 import { permissionStatusCommand } from "./permissionStatus";
 
 export const permissionCommand: CLICommand = {
   name: "collaborator",
   aliases: ["permission"],
-  description:
-    "Check, grant and list permissions for who can access and manage Microsoft Teams application and Microsoft Entra application.",
+  description: commands.collaborator.description,
   commands: [permissionStatusCommand, permissionGrantCommand],
 };

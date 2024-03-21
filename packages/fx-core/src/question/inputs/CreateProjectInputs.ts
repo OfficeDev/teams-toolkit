@@ -14,7 +14,12 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Teams Toolkit: select runtime for your app */
   runtime?: "node" | "dotnet";
   /** @description New Project */
-  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type" | "office-addin-type";
+  "project-type"?:
+    | "bot-type"
+    | "tab-type"
+    | "me-type"
+    | "office-xml-addin-type"
+    | "office-addin-type";
   /** @description Select to Create an Outlook, Word, Excel, or PowerPoint Add-in */
   "addin-host"?: "outlook" | "word" | "excel" | "powerpoint";
   /** @description Capabilities */

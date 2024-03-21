@@ -1293,7 +1293,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "You have not logged in");
+        assert.include(account, "You've not logged in");
       });
       it("checkM365Account - error2", async () => {
         sandbox.stub(M365TokenProvider, "getStatus").rejects(new Error("test"));

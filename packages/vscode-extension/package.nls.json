@@ -167,7 +167,7 @@
     "teamstoolkit.commandsTreeViewProvider.createOfficeAddInDescription": "Create a new add-in project of Word, Excel, or Powerpoint",
     "teamstoolkit.commandsTreeViewProvider.checkAndInstallDependenciesTitle": "Check and Install Dependencies",
     "teamstoolkit.commandsTreeViewProvider.checkAndInstallDependenciesDescription": "Check and install dependencies",
-    "teamstoolkit.commandsTreeViewProvider.officeDevLocalDebugTitle": "Preview Your Add-in (F5)",
+    "teamstoolkit.commandsTreeViewProvider.officeDevLocalDebugTitle": "Preview Your Office Add-in (F5)",
     "teamstoolkit.commandsTreeViewProvider.officeDevLocalDebugDescription": "Local debug your Add-in App",
     "teamstoolkit.commandsTreeViewProvider.validateManifestTitle": "Validate Manifest File",
     "teamstoolkit.commandsTreeViewProvider.validateManifestDescription": "Validate the manifest file of Office add-ins project",

@@ -6,6 +6,7 @@ import { TelemetryConstants } from "../component/constants";
 import { TOOLS, globalVars } from "../core/globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
 import { assign } from "lodash";
+import { ProjectType } from "@microsoft/m365-spec-parser";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -140,6 +141,7 @@ export enum ProjectTypeProps {
   TeamsManifestCapabilities = "manifest-capabilities",
   TeamsJs = "teams-js",
   Lauguages = "languages",
+  OfficeAddinProjectType = "office-addin-project-type",
 }
 
 export enum TelemetrySuccess {
@@ -280,6 +282,7 @@ export function fillinProjectTypeProperties(
     [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
     [ProjectTypeProps.TeamsManifestCapabilities]:
       projectTypeRes.manifestCapabilities?.join(",") || "",
+    [ProjectTypeProps.OfficeAddinProjectType]: projectTypeRes.officeAddinProjectType || "",
   };
   assign(props, newProps);
 }

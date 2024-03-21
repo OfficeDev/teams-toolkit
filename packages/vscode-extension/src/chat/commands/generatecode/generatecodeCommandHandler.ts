@@ -5,26 +5,13 @@ import {
   ChatContext,
   ChatResponseStream,
   CancellationToken,
-  ChatResult,
-  ChatFollowup,
   LanguageModelChatUserMessage,
-  workspace,
-  commands,
 } from "vscode";
-import { getTeamsApps, getCopilotResponseAsString } from "../../utils";
-import { defaultSystemPrompt, describeScenarioSystemPrompt } from "../../prompts";
-import { OfficeAddinChatCommand, TeamsChatCommand } from "../../consts";
-import followupProvider from "../../followupProvider";
-import { TelemetryMetadata } from "../../telemetryData";
-import { ICopilotChatResult, ITelemetryMetadata } from "../../types";
-import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import {
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetryTriggerFrom,
-} from "../../../telemetry/extTelemetryEvents";
-import { Correlator, getUuid } from "@microsoft/teamsfx-core";
-import { localize } from "../../../utils/localizeUtils";
+import { getCopilotResponseAsString } from "../../utils";
+import { defaultSystemPrompt } from "../../prompts";
+import { OfficeAddinChatCommand } from "../../consts";
+import { ICopilotChatResult } from "../../types";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 // TODO: Implement the function.
 export default async function generatecodeCommandHandler(

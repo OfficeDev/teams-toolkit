@@ -87,7 +87,6 @@ import {
 } from "./chat/handlers";
 import { chatExecuteCommandHandler } from "./chat/commands/nextstep/nextstepCommandHandler";
 import officeAddinCreateCommandHandler from "./chat/commands/create/officeAddinCreateCommandHandler";
-import officeAddinFollowupProvider from "./chat/officeAddinFollowupProvider";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -419,7 +418,7 @@ function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
     officeAddinChatRequestHandler
   );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
-  participant.followupProvider = officeAddinFollowupProvider;
+  participant.followupProvider = followupProvider;
   participant.onDidReceiveFeedback((e) => handleFeedback(e));
 
   context.subscriptions.push(

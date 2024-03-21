@@ -6,28 +6,28 @@
  */
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { FxError, Inputs, Result, ok, err, Context } from "@microsoft/teamsfx-api";
+import { Context, FxError, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
 import _ from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { join } from "path";
 import { promisify } from "util";
+import { getLocalizedString } from "../../../common/localizeUtils";
+import { assembleError } from "../../../error";
+import { QuestionNames } from "../../../question/questionNames";
+import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { HelperMethods } from "../officeAddin/helperMethods";
-import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { assembleError } from "../../../error";
-import { ProgrammingLanguage } from "../../../question/create";
-import { QuestionNames } from "../../../question/questionNames";
-import {
-  getOfficeXMLAddinHostProjectRepoInfo,
-  getOfficeXMLAddinHostProjectTemplateName,
-} from "./projectConfig";
-import { getLocalizedString } from "../../../common/localizeUtils";
+import { getOfficeAddinTemplateConfig } from "./projectConfig";
+import { convertToLangKey } from "../utils";
 
 const COMPONENT_NAME = "office-xml-addin";
 const TELEMETRY_EVENT = "generate";
 const TEMPLATE_BASE = "office-xml-addin";
 
+/**
+ * project-type=office-xml-addin-type addin-host!==outlook
+ */
 export class OfficeXMLAddinGenerator {
   @hooks([
     ActionExecutionMW({
@@ -42,12 +42,17 @@ export class OfficeXMLAddinGenerator {
     inputs: Inputs,
     destinationPath: string
   ): Promise<Result<undefined, FxError>> {
-    const host = inputs[QuestionNames.OfficeAddinCapability] as string;
-    const project = inputs[QuestionNames.Capabilities];
-    const lang = inputs[QuestionNames.ProgrammingLanguage] === ProgrammingLanguage.TS ? "ts" : "js";
+    const host = inputs[QuestionNames.OfficeAddinHost] as string;
+    const capability = inputs[QuestionNames.Capabilities];
+    const lang = _.toLower(inputs[QuestionNames.ProgrammingLanguage]) as
+      | "javascript"
+      | "typescript";
+    const langKey = convertToLangKey(lang);
     const appName = inputs[QuestionNames.AppName] as string;
-    const templateName = getOfficeXMLAddinHostProjectTemplateName(host, project);
-    const repoInfo = getOfficeXMLAddinHostProjectRepoInfo(host, project, lang);
+    const projectType = inputs[QuestionNames.ProjectType];
+    const templteConfig = getOfficeAddinTemplateConfig(projectType, host);
+    const templateName = templteConfig[capability].localTemplate;
+    const projectLink = templteConfig[capability].framework["default"][lang];
     const workingDir = process.cwd();
     const progressBar = context.userInteraction.createProgressBar(
       getLocalizedString("core.createProjectQuestion.officeXMLAddin.bar.title"),
@@ -61,11 +66,11 @@ export class OfficeXMLAddinGenerator {
         getLocalizedString("core.createProjectQuestion.officeXMLAddin.bar.detail")
       );
 
-      if (!!repoInfo) {
+      if (!!projectLink) {
         // [Condition]: Project have remote repo (not manifest-only proj)
 
         // -> Step: Download the project from GitHub
-        await HelperMethods.downloadProjectTemplateZipFile(destinationPath, repoInfo);
+        await HelperMethods.downloadProjectTemplateZipFile(destinationPath, projectLink);
 
         // -> Step: Convert to single Host
         await OfficeXMLAddinGenerator.childProcessExec(
@@ -79,7 +84,7 @@ export class OfficeXMLAddinGenerator {
           context,
           destinationPath,
           `${TEMPLATE_BASE}-manifest-only`,
-          lang
+          langKey
         );
         if (getManifestOnlyProjectTemplateRes.isErr())
           return err(getManifestOnlyProjectTemplateRes.error);
@@ -90,7 +95,7 @@ export class OfficeXMLAddinGenerator {
         context,
         destinationPath,
         `${TEMPLATE_BASE}-${templateName}`,
-        lang
+        langKey
       );
       if (getReadmeTemplateRes.isErr()) return err(getReadmeTemplateRes.error);
 

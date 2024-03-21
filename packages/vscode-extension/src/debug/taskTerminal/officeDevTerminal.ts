@@ -7,7 +7,7 @@ import * as globalVariables from "../../globalVariables";
 import { FxError, Result, Void, ok } from "@microsoft/teamsfx-api";
 // eslint-disable-next-line import/no-cycle
 import { BaseTaskTerminal, ControlCodes } from "./baseTaskTerminal";
-import { fetchManifestList } from "@microsoft/teamsfx-core";
+import { OfficeManifestType, fetchManifestList } from "@microsoft/teamsfx-core";
 import { localize } from "../../utils/localizeUtils";
 
 export enum TriggerCmdType {
@@ -161,7 +161,7 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
 
   private getManifest(): string | undefined {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestList = fetchManifestList(workspacePath);
+    const manifestList = fetchManifestList(workspacePath, OfficeManifestType.XmlAddIn);
     if (!manifestList || manifestList.length == 0) {
       this.writeEmitter.fire(
         this.color(`${localize("teamstoolkit.officeAddIn.terminal.manifest.notfound")}\r\n`, "red")

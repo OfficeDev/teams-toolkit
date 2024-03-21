@@ -297,7 +297,7 @@ export class CopilotPluginGenerator {
         isPlugin
           ? copilotPluginParserOptions
           : {
-              allowAPIKeyAuth,
+              allowBearerTokenAuth: allowAPIKeyAuth, // Currently, API key auth support is actually bearer token auth
               allowMultipleParameters,
               projectType: type,
             }

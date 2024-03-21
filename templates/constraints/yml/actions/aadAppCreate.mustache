@@ -8,7 +8,12 @@
       # defined here.
       name: {{appName}}
       # If the value is false, the action will not generate client secret for you
+  {{#skipClientSecret}}
+      generateClientSecret: false
+  {{/skipClientSecret}}
+  {{^skipClientSecret}}
       generateClientSecret: true
+  {{/skipClientSecret}}
       # Authenticate users with a Microsoft work or school account in your
       # organization's Microsoft Entra tenant (for example, single tenant).
       signInAudience: AzureADMyOrg
@@ -16,9 +21,11 @@
     # specified environment variable(s).
     writeToEnvironmentFile:
       clientId: AAD_APP_CLIENT_ID
+  {{^skipClientSecret}}
       # Environment variable that starts with `SECRET_` will be stored to the
       # .env.{envName}.user environment file
       clientSecret: SECRET_AAD_APP_CLIENT_SECRET
+  {{/skipClientSecret}}
       objectId: AAD_APP_OBJECT_ID
       tenantId: AAD_APP_TENANT_ID
       authority: AAD_APP_OAUTH_AUTHORITY

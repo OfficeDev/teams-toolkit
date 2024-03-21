@@ -3,27 +3,26 @@
 import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 import { SelectTeamsManifestInputs, SelectTeamsManifestOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvOption, ProjectFolderOption } from "../common";
 
 export const packageCommand: CLICommand = {
   name: "package",
-  description: "Build your Microsoft Teams app into a package for publishing.",
+  description: commands.package.description,
   options: [
     ...SelectTeamsManifestOptions,
     {
       name: "output-zip-path",
       type: "string",
       shortName: "oz",
-      description:
-        "Specifies the output path of the zipped app package, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'.",
+      description: commands.package.options["output-zip-path"],
     },
     {
       name: "output-manifest-path",
       type: "string",
       shortName: "om",
-      description:
-        "Specifies the output path of the generated manifest path, defaults to '${folder}/appPackage/build/manifest.${env}.json'",
+      description: commands.package.options["output-manifest-path"],
     },
     EnvOption,
     ProjectFolderOption,

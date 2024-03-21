@@ -2,18 +2,18 @@
 // Licensed under the MIT license.
 import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 import { getFxCore } from "../../activate";
-import { strings } from "../../resource";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import {
+  ConfigFilePathOption,
   EnvOption,
   IgnoreLoadEnvOption,
   ProjectFolderOption,
-  ConfigFilePathOption,
 } from "../common";
 
 export const deployCommand: CLICommand = {
   name: "deploy",
-  description: strings.command.deploy.description,
+  description: commands.deploy.description,
   options: [EnvOption, ProjectFolderOption, IgnoreLoadEnvOption, ConfigFilePathOption],
   telemetry: {
     event: TelemetryEvent.Deploy,

@@ -176,13 +176,20 @@ export class CreateApiKeyDriver implements StepDriver {
   private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<string[]> {
     const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
     const parser = new SpecParser(absolutePath, {
-      allowAPIKeyAuth: isApiKeyEnabled(),
+      allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
       allowMultipleParameters: isMultipleParametersEnabled(),
     });
-    const operations = await parser.list();
+    const listResult = await parser.list();
+    const operations = listResult.validAPIs;
     const domains = operations
       .filter((value) => {
-        return value.auth?.type === "apiKey" && value.auth?.name === args.name;
+        const auth = value.auth;
+        return (
+          auth &&
+          auth.authScheme.type === "http" &&
+          auth.authScheme.scheme === "bearer" &&
+          auth.name === args.name
+        );
       })
       .map((value) => {
         return value.server;

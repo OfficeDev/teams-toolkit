@@ -2267,6 +2267,11 @@ export async function validateGraphConnector(
       page.waitForTimeout(1000);
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("error"),
+        fullPage: true,
+      });
+      throw e;
     }
 
     await page.waitForTimeout(Timeout.shortTimeLoading);

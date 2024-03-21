@@ -227,11 +227,17 @@ export interface APIInfo {
   warning?: WarningResult;
 }
 
-export interface ListAPIResult {
+export interface ListAPIInfo {
   api: string;
   server: string;
   operationId: string;
-  auth?: OpenAPIV3.SecuritySchemeObject;
+  auth?: AuthInfo;
+}
+
+export interface ListAPIResult {
+  allAPICount: number;
+  validAPICount: number;
+  validAPIs: ListAPIInfo[];
 }
 
 export interface AuthInfo {

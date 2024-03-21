@@ -35,7 +35,7 @@ export interface ProjectTypeResult {
   manifestVersion?: string;
   dependsOnTeamsJs?: boolean;
   isSPFx?: boolean;
-  officeProjectType?: string;
+  officeAddinProjectType?: string;
   lauguages: ("ts" | "js" | "csharp" | "java" | "python" | "c")[];
 }
 

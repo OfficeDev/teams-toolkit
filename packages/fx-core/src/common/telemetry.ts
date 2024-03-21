@@ -141,7 +141,7 @@ export enum ProjectTypeProps {
   TeamsManifestCapabilities = "manifest-capabilities",
   TeamsJs = "teams-js",
   Lauguages = "languages",
-  OfficeProjectType = "office-project-type",
+  OfficeAddinProjectType = "office-addin-project-type",
 }
 
 export enum TelemetrySuccess {
@@ -282,7 +282,7 @@ export function fillinProjectTypeProperties(
     [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
     [ProjectTypeProps.TeamsManifestCapabilities]:
       projectTypeRes.manifestCapabilities?.join(",") || "",
-    [ProjectTypeProps.OfficeProjectType]: projectTypeRes.officeProjectType || "",
+    [ProjectTypeProps.OfficeAddinProjectType]: projectTypeRes.officeAddinProjectType || "",
   };
   assign(props, newProps);
 }

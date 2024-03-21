@@ -105,10 +105,13 @@ export class CreateAadAppDriver implements StepDriver {
               driverConstants.generateSecretErrorMessageKey
             );
           }
+
+          const clientSecretExpireDays = args.clientSecretExpireDays ?? 180; // Recommended lifetime from Azure Portal
+          const clientSecretDescription = args.clientSecretDescription ?? "default";
           aadAppState.clientSecret = await aadAppClient.generateClientSecret(
             aadAppState.objectId,
-            args.clientSecretExpireDays,
-            args.clientSecretDescription
+            clientSecretExpireDays,
+            clientSecretDescription
           );
           outputs.set(outputEnvVarNames.get(OutputKeys.clientSecret)!, aadAppState.clientSecret);
 

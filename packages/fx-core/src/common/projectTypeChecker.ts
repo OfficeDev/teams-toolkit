@@ -200,7 +200,7 @@ class ProjectTypeChecker {
 
   findOfficeAddinProject(filePath: string, data: ProjectTypeResult): boolean {
     if (isValidOfficeAddInProject(filePath)) {
-      data.officeProjectType = "XML";
+      data.officeAddinProjectType = "XML";
       data.isTeamsFx = false;
       return false;
     }

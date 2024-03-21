@@ -134,7 +134,8 @@
             },
             "clientSecretExpireDays": {
               "type": "integer",
-              "description": "The number of days the client secret is valid."
+              "description": "The number of days the client secret is valid.",
+              "minimum": 1
             },
             "clientSecretDescription": {
               "type": "string",

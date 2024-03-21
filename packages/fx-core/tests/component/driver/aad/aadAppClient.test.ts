@@ -177,7 +177,7 @@ describe("AadAppClient", async () => {
           201,
           {
             id: expectedObjectId,
-            displayName: data.description,
+            displayName: data.displayName,
             signInAudience: data.signInAudience,
           },
         ];

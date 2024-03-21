@@ -1601,13 +1601,17 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal([
-        {
-          api: "GET /user/{userId}",
-          server: "https://server1",
-          operationId: "getUserById",
-        },
-      ]);
+      expect(result).to.deep.equal({
+        validAPIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            operationId: "getUserById",
+          },
+        ],
+        allAPICount: 4,
+        validAPICount: 1,
+      });
     });
 
     it("should generate an operationId if not exist", async () => {
@@ -1666,13 +1670,17 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal([
-        {
-          api: "GET /user/{userId}",
-          server: "https://server1",
-          operationId: "getUserUserId",
-        },
-      ]);
+      expect(result).to.deep.equal({
+        validAPIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            operationId: "getUserUserId",
+          },
+        ],
+        allAPICount: 3,
+        validAPICount: 1,
+      });
     });
 
     it("should return correct server information", async () => {
@@ -1742,13 +1750,17 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal([
-        {
-          api: "GET /user/{userId}",
-          server: "https://server5",
-          operationId: "getUserById",
-        },
-      ]);
+      expect(result).to.deep.equal({
+        validAPIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server5",
+            operationId: "getUserById",
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
     });
 
     it("should return a list of HTTP methods and paths for all GET with 1 parameter and api key auth security", async () => {
@@ -1809,14 +1821,97 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal([
-        {
-          api: "GET /user/{userId}",
-          server: "https://server1",
-          auth: { type: "apiKey", name: "api_key", in: "header" },
-          operationId: "getUserById",
+      expect(result).to.deep.equal({
+        validAPIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: { type: "apiKey", name: "api_key", in: "header" },
+              name: "api_key",
+            },
+            operationId: "getUserById",
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
+    });
+
+    it("should return a list of HTTP methods and paths for all GET with 1 parameter and bearer token auth security", async () => {
+      const specPath = "valid-spec.yaml";
+      const specParser = new SpecParser(specPath, { allowBearerTokenAuth: true });
+      const spec = {
+        components: {
+          securitySchemes: {
+            bearerTokenAuth: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
         },
-      ]);
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/user/{userId}": {
+            get: {
+              security: [{ bearerTokenAuth: [] }],
+              operationId: "getUserById",
+              parameters: [
+                {
+                  name: "userId",
+                  in: "path",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+
+      const result = await specParser.list();
+      expect(result).to.deep.equal({
+        validAPIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: {
+                type: "http",
+                scheme: "bearer",
+              },
+              name: "bearerTokenAuth",
+            },
+            operationId: "getUserById",
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
     });
 
     it("should return correct auth information", async () => {
@@ -1933,20 +2028,38 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal([
-        {
-          api: "GET /user/{userId}",
-          server: "https://server1",
-          auth: { type: "apiKey", name: "api_key1", in: "header" },
-          operationId: "getUserById",
-        },
-        {
-          api: "POST /user/{userId}",
-          server: "https://server1",
-          auth: { type: "apiKey", name: "api_key1", in: "header" },
-          operationId: "postUserById",
-        },
-      ]);
+      expect(result).to.deep.equal({
+        validAPIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key1",
+                in: "header",
+              },
+              name: "api_key1",
+            },
+            operationId: "getUserById",
+          },
+          {
+            api: "POST /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key1",
+                in: "header",
+              },
+              name: "api_key1",
+            },
+            operationId: "postUserById",
+          },
+        ],
+        allAPICount: 2,
+        validAPICount: 2,
+      });
     });
 
     it("should allow multiple parameters if allowMultipleParameters is true", async () => {
@@ -2006,13 +2119,17 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal([
-        {
-          api: "GET /user/{userId}",
-          server: "https://server1",
-          operationId: "getUserById",
-        },
-      ]);
+      expect(result).to.deep.equal({
+        validAPIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            operationId: "getUserById",
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
     });
 
     it("should not list api without operationId with allowMissingId is false", async () => {
@@ -2072,7 +2189,11 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal([]);
+      expect(result).to.deep.equal({
+        validAPIs: [],
+        allAPICount: 4,
+        validAPICount: 0,
+      });
     });
 
     it("should throw an error when the SwaggerParser library throws an error", async () => {
@@ -2215,14 +2336,25 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
 
-      expect(result).to.deep.equal([
-        {
-          api: "GET /user/{userId}",
-          server: "https://server1",
-          auth: { type: "apiKey", name: "api_key", in: "header" },
-          operationId: "getUserById",
-        },
-      ]);
+      expect(result).to.deep.equal({
+        validAPIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            auth: {
+              authScheme: {
+                type: "apiKey",
+                name: "api_key",
+                in: "header",
+              },
+              name: "api_key",
+            },
+            operationId: "getUserById",
+          },
+        ],
+        allAPICount: 1,
+        validAPICount: 1,
+      });
     });
   });
 

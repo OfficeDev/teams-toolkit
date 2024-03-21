@@ -135,6 +135,7 @@ import {
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import "../component/feature/sso";
+import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1264,12 +1265,13 @@ export class FxCore {
       isPlugin
         ? copilotPluginParserOptions
         : {
-            allowAPIKeyAuth: isApiKeyEnabled(),
+            allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: isMultipleParametersEnabled(),
           }
     );
 
-    const apiResultList = await specParser.list();
+    const listResult = await specParser.list();
+    const apiResultList = listResult.validAPIs;
 
     let existingOperations: string[];
     let outputAPISpecPath: string;
@@ -1309,7 +1311,11 @@ export class FxCore {
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
           if (operation) {
-            if (operation.auth && operation.auth.type === "apiKey") {
+            if (
+              operation.auth &&
+              operation.auth.authScheme.type === "http" &&
+              operation.auth.authScheme.scheme === "bearer"
+            ) {
               authNames.add(operation.auth.name);
               serverUrls.add(operation.server);
             }
@@ -1340,12 +1346,29 @@ export class FxCore {
         }
       }
 
-      const generateResult = await specParser.generate(
-        manifestPath,
-        operations,
-        outputAPISpecPath,
-        adaptiveCardFolder
-      );
+      let generateResult;
+      if (!isPlugin) {
+        generateResult = await specParser.generate(
+          manifestPath,
+          operations,
+          outputAPISpecPath,
+          adaptiveCardFolder
+        );
+      } else {
+        const pluginPathRes = await manifestUtils.getPluginFilePath(
+          manifestRes.value,
+          manifestPath
+        );
+        if (pluginPathRes.isErr()) {
+          return err(pluginPathRes.error);
+        }
+        generateResult = await specParser.generateForCopilot(
+          manifestPath,
+          operations,
+          outputAPISpecPath,
+          pluginPathRes.value
+        );
+      }
 
       // Send SpecParser.generate() warnings
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
@@ -1381,6 +1404,31 @@ export class FxCore {
     );
     void context.userInteraction.showMessage("info", message, false);
     return ok(undefined);
+  }
+
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "copilotPluginListApiSpecs" }),
+    ErrorHandlerMW,
+  ])
+  async listPluginApiSpecs(inputs: Inputs): Promise<Result<string[], FxError>> {
+    try {
+      const manifestPath = inputs[QuestionNames.ManifestPath];
+      const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+      if (manifestRes.isErr()) {
+        return err(manifestRes.error);
+      }
+      const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+        manifestRes.value,
+        manifestPath
+      );
+      if (res.isOk()) {
+        return ok(res.value);
+      } else {
+        return err(res.error);
+      }
+    } catch (error) {
+      return err(error as FxError);
+    }
   }
 
   @hooks([

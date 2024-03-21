@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { IParameter } from "@microsoft/teams-manifest";
 import { OpenAPIV3 } from "openapi-types";
 
 /**
@@ -161,20 +162,6 @@ export interface WrappedAdaptiveCard {
   previewCardTemplate: PreviewCardTemplate;
 }
 
-export interface ChoicesItem {
-  title: string;
-  value: string;
-}
-
-export interface Parameter {
-  name: string;
-  title: string;
-  description: string;
-  inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
-  value?: string;
-  choices?: ChoicesItem[];
-}
-
 export interface CheckParamResult {
   requiredNum: number;
   optionalNum: number;
@@ -196,6 +183,11 @@ export interface ParseOptions {
    * If true, the parser will allow API Key authentication in the spec file.
    */
   allowAPIKeyAuth?: boolean;
+
+  /**
+   * If true, the parser will allow Bearer Token authentication in the spec file.
+   */
+  allowBearerTokenAuth?: boolean;
 
   /**
    * If true, the parser will allow multiple parameters in the spec file. Teams AI project would ignore this parameters and always true
@@ -230,19 +222,25 @@ export interface APIInfo {
   path: string;
   title: string;
   id: string;
-  parameters: Parameter[];
+  parameters: IParameter[];
   description: string;
   warning?: WarningResult;
 }
 
-export interface ListAPIResult {
+export interface ListAPIInfo {
   api: string;
   server: string;
   operationId: string;
-  auth?: OpenAPIV3.SecuritySchemeObject;
+  auth?: AuthInfo;
+}
+
+export interface ListAPIResult {
+  allAPICount: number;
+  validAPICount: number;
+  validAPIs: ListAPIInfo[];
 }
 
 export interface AuthInfo {
-  authSchema: OpenAPIV3.SecuritySchemeObject;
+  authScheme: OpenAPIV3.SecuritySchemeObject;
   name: string;
 }

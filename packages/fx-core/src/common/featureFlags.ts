@@ -80,6 +80,10 @@ export function isOfficeJSONAddinEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
 }
 
+export function isApiMeSSOEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ApiMeSSO, false);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Notes for Office Addin Feature flags:
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false

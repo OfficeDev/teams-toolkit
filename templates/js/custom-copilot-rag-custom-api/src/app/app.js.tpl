@@ -38,7 +38,7 @@ const app = new Application({
   },
 });
 
-const generateAdaptiveCard = require("./utility.js");
+const { generateAdaptiveCard, addAuthConfig } = require("./utility.js");
 const yaml = require("js-yaml");
 const { OpenAPIClientAxios } = require("openapi-client-axios");
 const fs = require("fs-extra");

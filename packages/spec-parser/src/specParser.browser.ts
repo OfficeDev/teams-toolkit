@@ -11,7 +11,6 @@ import {
   ParseOptions,
   ValidateResult,
   ValidationStatus,
-  Parameter,
   ListAPIResult,
   ProjectType,
 } from "./interfaces";
@@ -37,6 +36,7 @@ export class SpecParser {
     allowSwagger: false,
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
+    allowBearerTokenAuth: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
     projectType: ProjectType.SME,
@@ -116,7 +116,7 @@ export class SpecParser {
           path: path,
           title: command.title,
           id: operationId,
-          parameters: command.parameters! as Parameter[],
+          parameters: command.parameters!,
           description: command.description!,
         };
 

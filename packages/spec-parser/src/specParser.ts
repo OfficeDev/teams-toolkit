@@ -95,6 +95,25 @@ export class SpecParser {
         };
       }
 
+      if (
+        this.options.projectType === ProjectType.SME ||
+        this.options.projectType === ProjectType.Copilot
+      ) {
+        if (this.spec!.openapi >= "3.1.0") {
+          return {
+            status: ValidationStatus.Error,
+            warnings: [],
+            errors: [
+              {
+                type: ErrorType.SpecVersionNotSupported,
+                content: Utils.format(ConstantString.SpecVersionNotSupported, this.spec!.openapi),
+                data: this.spec!.openapi,
+              },
+            ],
+          };
+        }
+      }
+
       return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);

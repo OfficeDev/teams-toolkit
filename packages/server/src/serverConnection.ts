@@ -442,6 +442,19 @@ export default class ServerConnection implements IServerConnection {
     return standardizeResult(res);
   }
 
+  public async listPluginApiSpecs(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<string[], FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.listPluginApiSpecs(inputs),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
   public async loadOpenAIPluginManifestRequest(
     inputs: Inputs,
     token: CancellationToken

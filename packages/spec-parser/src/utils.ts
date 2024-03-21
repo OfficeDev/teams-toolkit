@@ -10,7 +10,6 @@ import {
   CheckParamResult,
   ErrorResult,
   ErrorType,
-  Parameter,
   ParseOptions,
   ProjectType,
   ValidateResult,
@@ -18,7 +17,7 @@ import {
   WarningResult,
   WarningType,
 } from "./interfaces";
-import { IMessagingExtensionCommand } from "@microsoft/teams-manifest";
+import { IMessagingExtensionCommand, IParameter } from "@microsoft/teams-manifest";
 
 export class Utils {
   static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
@@ -284,36 +283,23 @@ export class Utils {
     return false;
   }
 
-  static isSupportedAuth(authSchemaArray: AuthInfo[][], options: ParseOptions): boolean {
-    if (authSchemaArray.length === 0) {
+  static isSupportedAuth(authSchemeArray: AuthInfo[][], options: ParseOptions): boolean {
+    if (authSchemeArray.length === 0) {
       return true;
     }
 
-    if (options.allowAPIKeyAuth || options.allowOauth2) {
+    if (options.allowAPIKeyAuth || options.allowOauth2 || options.allowBearerTokenAuth) {
       // Currently we don't support multiple auth in one operation
-      if (authSchemaArray.length > 0 && authSchemaArray.every((auths) => auths.length > 1)) {
+      if (authSchemeArray.length > 0 && authSchemeArray.every((auths) => auths.length > 1)) {
         return false;
       }
 
-      for (const auths of authSchemaArray) {
+      for (const auths of authSchemeArray) {
         if (auths.length === 1) {
           if (
-            !options.allowOauth2 &&
-            options.allowAPIKeyAuth &&
-            Utils.isAPIKeyAuth(auths[0].authSchema)
-          ) {
-            return true;
-          } else if (
-            !options.allowAPIKeyAuth &&
-            options.allowOauth2 &&
-            Utils.isOAuthWithAuthCodeFlow(auths[0].authSchema)
-          ) {
-            return true;
-          } else if (
-            options.allowAPIKeyAuth &&
-            options.allowOauth2 &&
-            (Utils.isAPIKeyAuth(auths[0].authSchema) ||
-              Utils.isOAuthWithAuthCodeFlow(auths[0].authSchema))
+            (options.allowAPIKeyAuth && Utils.isAPIKeyAuth(auths[0].authScheme)) ||
+            (options.allowOauth2 && Utils.isOAuthWithAuthCodeFlow(auths[0].authScheme)) ||
+            (options.allowBearerTokenAuth && Utils.isBearerTokenAuth(auths[0].authScheme))
           ) {
             return true;
           }
@@ -324,12 +310,16 @@ export class Utils {
     return false;
   }
 
-  static isAPIKeyAuth(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
-    return authSchema.type === "apiKey";
+  static isBearerTokenAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    return authScheme.type === "http" && authScheme.scheme === "bearer";
   }
 
-  static isOAuthWithAuthCodeFlow(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
-    if (authSchema.type === "oauth2" && authSchema.flows && authSchema.flows.authorizationCode) {
+  static isAPIKeyAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    return authScheme.type === "apiKey";
+  }
+
+  static isOAuthWithAuthCodeFlow(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    if (authScheme.type === "oauth2" && authScheme.flows && authScheme.flows.authorizationCode) {
       return true;
     }
 
@@ -350,7 +340,7 @@ export class Utils {
         for (const name in security) {
           const auth = securitySchemas[name] as OpenAPIV3.SecuritySchemeObject;
           authArray.push({
-            authSchema: auth,
+            authScheme: auth,
             name: name,
           });
         }
@@ -524,9 +514,9 @@ export class Utils {
     name: string,
     allowMultipleParameters: boolean,
     isRequired = false
-  ): [Parameter[], Parameter[]] {
-    const requiredParams: Parameter[] = [];
-    const optionalParams: Parameter[] = [];
+  ): [IParameter[], IParameter[]] {
+    const requiredParams: IParameter[] = [];
+    const optionalParams: IParameter[] = [];
 
     if (
       schema.type === "string" ||
@@ -534,7 +524,7 @@ export class Utils {
       schema.type === "boolean" ||
       schema.type === "number"
     ) {
-      const parameter = {
+      const parameter: IParameter = {
         name: name,
         title: Utils.updateFirstLetter(name).slice(0, ConstantString.ParameterTitleMaxLens),
         description: (schema.description ?? "").slice(
@@ -548,6 +538,7 @@ export class Utils {
       }
 
       if (isRequired && schema.default === undefined) {
+        parameter.isRequired = true;
         requiredParams.push(parameter);
       } else {
         optionalParams.push(parameter);
@@ -574,7 +565,7 @@ export class Utils {
     return [requiredParams, optionalParams];
   }
 
-  static updateParameterWithInputType(schema: OpenAPIV3.SchemaObject, param: Parameter): void {
+  static updateParameterWithInputType(schema: OpenAPIV3.SchemaObject, param: IParameter): void {
     if (schema.enum) {
       param.inputType = "choiceset";
       param.choices = [];
@@ -601,13 +592,13 @@ export class Utils {
     operationItem: OpenAPIV3.OperationObject,
     options: ParseOptions
   ): [IMessagingExtensionCommand, WarningResult | undefined] {
-    const requiredParams: Parameter[] = [];
-    const optionalParams: Parameter[] = [];
+    const requiredParams: IParameter[] = [];
+    const optionalParams: IParameter[] = [];
     const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
 
     if (paramObject) {
       paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
-        const parameter: Parameter = {
+        const parameter: IParameter = {
           name: param.name,
           title: Utils.updateFirstLetter(param.name).slice(0, ConstantString.ParameterTitleMaxLens),
           description: (param.description ?? "").slice(
@@ -623,6 +614,7 @@ export class Utils {
 
         if (param.in !== "header" && param.in !== "cookie") {
           if (param.required && schema?.default === undefined) {
+            parameter.isRequired = true;
             requiredParams.push(parameter);
           } else {
             optionalParams.push(parameter);
@@ -792,5 +784,19 @@ export class Utils {
     }
 
     return safeRegistrationIdEnvName;
+  }
+
+  static getAllAPICount(spec: OpenAPIV3.Document): number {
+    let count = 0;
+    const paths = spec.paths;
+    for (const path in paths) {
+      const methods = paths[path];
+      for (const method in methods) {
+        if (ConstantString.AllOperationMethods.includes(method)) {
+          count++;
+        }
+      }
+    }
+    return count;
   }
 }

@@ -36,9 +36,6 @@ Telemetry collection is on by default. To opt out, please add the global option 
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 
-## Extensibility Model
-
-Teams Toolkit CLI depends on [fx-core](/packages/fx-core) and [api](/packages/api) packages. [fx-core](/packages/fx-core) is designed to be extensible. See [EXTENSIBILITY.md](/packages/api/EXTENSIBILITY.md) for more information.
 
 ## Contributing
 

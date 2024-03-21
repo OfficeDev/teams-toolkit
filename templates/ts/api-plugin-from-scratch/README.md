@@ -1,8 +1,8 @@
-# Overview of API Plugin from New API Template
+# Overview of the Copilot Plugin template
 
-## Build an API Plugin from a new API with Azure Functions
+## Build a Copilot Plugin from a new API with Azure Functions
 
-This app template allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:
+This app template allows Microsoft Copilot for Microsoft 365 to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.
@@ -16,6 +16,7 @@ This app template allows Teams to interact directly with third-party data, apps,
 > - [Node.js](https://nodejs.org/), supported versions: 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli)
+> - [Copilot for Microsoft 365 license](https://learn.microsoft.com/microsoft-365-copilot/extensibility/prerequisites#prerequisites)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
@@ -30,16 +31,17 @@ This app template allows Teams to interact directly with third-party data, apps,
 | `appPackage` | Templates for the Teams application manifest, the API specification and response template for API responses |
 | `env`        | Environment files                                                                                           |
 | `infra`      | Templates for provisioning Azure resources                                                                  |
-| `src`     | The source code for the repair API                                                                          |
+| `src`        | The source code for the repair API                                                                          |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                         | Contents                                                            |
-| -------------------------------------------- | ------------------------------------------------------------------- |
-| `src/functions/repair.ts`                    | The main file of a function in Azure Functions.                     |
-| `src/repairsData.json`                       | The data source for the repair API.                                 |
-| `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API. |
-| `appPackage/ai-plugin.json`                  | The manifest file for the API plugin.                               |
+| File                                         | Contents                                                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `src/functions/repair.ts`                    | The main file of a function in Azure Functions.                                                   |
+| `src/repairsData.json`                       | The data source for the repair API.                                                               |
+| `appPackage/apiSpecificationFile/repair.yml` | A file that describes the structure and behavior of the repair API.                               |
+| `appPackage/manifest.json`                   | Teams application manifest that defines metadata for your plugin inside Microsoft Teams.          |
+| `appPackage/ai-plugin.json`                  | The manifest file for your Copilot Plugin that contains information for your API and used by LLM. |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

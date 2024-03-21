@@ -104,6 +104,8 @@ export enum TemplateNames {
   LinkUnfurling = "link-unfurling",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
   CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
+  ApiMessageExtensionSso = "api-message-extension-sso",
+  ApiPluginFromScratch = "api-plugin-from-scratch",
   AIBot = "ai-bot",
   AIAssistantBot = "ai-assistant-bot",
   CustomCopilotBasic = "custom-copilot-basic",
@@ -155,18 +157,16 @@ const Feature2TemplateName: any = {
   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
-    ApiMessageExtensionAuthOptions.none().id
-  }`]: TemplateNames.CopilotPluginFromScratch,
-  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined:${
-    ApiMessageExtensionAuthOptions.apiKey().id
-  }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]: TemplateNames.ApiPluginFromScratch,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
     ApiMessageExtensionAuthOptions.none().id
   }`]: TemplateNames.CopilotPluginFromScratch,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
     ApiMessageExtensionAuthOptions.apiKey().id
   }`]: TemplateNames.CopilotPluginFromScratchApiKey,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
+    ApiMessageExtensionAuthOptions.microsoftEntra().id
+  }`]: TemplateNames.ApiMessageExtensionSso,
   [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
   [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
@@ -358,9 +358,8 @@ class Coordinator {
         }
 
         if (
-          capability === CapabilityOptions.copilotPluginNewApi().id ||
-          (capability === CapabilityOptions.m365SearchMe().id &&
-            meArchitecture === MeArchitectureOptions.newApi().id)
+          capability === CapabilityOptions.m365SearchMe().id &&
+          meArchitecture === MeArchitectureOptions.newApi().id
         ) {
           if (isApiKeyEnabled() && apiMEAuthType) {
             feature = `${feature}:${apiMEAuthType}`;

@@ -31,6 +31,7 @@ import {
   isOfficeJSONAddinEnabled,
   isOfficeXMLAddinEnabled,
   isTdpTemplateCliTestEnabled,
+  isApiMeSSOEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -1795,8 +1796,19 @@ export class ApiMessageExtensionAuthOptions {
     };
   }
 
+  static microsoftEntra(): OptionItem {
+    return {
+      id: "microsoft-entra",
+      label: "Microsoft Entra",
+    };
+  }
+
   static all(): OptionItem[] {
-    return [ApiMessageExtensionAuthOptions.none(), ApiMessageExtensionAuthOptions.apiKey()];
+    return [
+      ApiMessageExtensionAuthOptions.none(),
+      ApiMessageExtensionAuthOptions.apiKey(),
+      ApiMessageExtensionAuthOptions.microsoftEntra(),
+    ];
   }
 }
 
@@ -1992,6 +2004,16 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
     ),
     cliDescription: "The authentication type for the API.",
     staticOptions: ApiMessageExtensionAuthOptions.all(),
+    dynamicOptions: () => {
+      const options: OptionItem[] = [ApiMessageExtensionAuthOptions.none()];
+      if (isApiKeyEnabled()) {
+        options.push(ApiMessageExtensionAuthOptions.apiKey());
+      }
+      if (isApiMeSSOEnabled()) {
+        options.push(ApiMessageExtensionAuthOptions.microsoftEntra());
+      }
+      return options;
+    },
     default: ApiMessageExtensionAuthOptions.none().id,
   };
 }
@@ -2041,7 +2063,11 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
     staticOptions: [],
     validation: {
       validFunc: (input: string[], inputs?: Inputs): string | undefined => {
-        if (input.length < 1 || input.length > 10) {
+        if (
+          input.length < 1 ||
+          (input.length > 10 &&
+            inputs?.[QuestionNames.CustomCopilotRag] != CustomCopilotRagOptions.customApi().id)
+        ) {
           return getLocalizedString(
             "core.createProjectQuestion.apiSpec.operation.invalidMessage",
             input.length,
@@ -2377,9 +2403,8 @@ export function capabilitySubTree(): IQTreeNode {
       {
         condition: (inputs: Inputs) => {
           return (
-            isApiKeyEnabled() &&
-            (inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id ||
-              inputs[QuestionNames.Capabilities] == CapabilityOptions.copilotPluginNewApi().id)
+            (isApiKeyEnabled() || isApiMeSSOEnabled()) &&
+            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id
           );
         },
         data: apiMessageExtensionAuthQuestion(),

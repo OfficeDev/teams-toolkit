@@ -39,6 +39,7 @@ import {
   ProjectType,
   ParseOptions,
   AdaptiveCardGenerator,
+  Utils,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -52,7 +53,8 @@ import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
-import { ProgrammingLanguage } from "../../../question";
+import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
+import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -61,11 +63,15 @@ const enum telemetryProperties {
   validationStatus = "validation-status",
   validationErrors = "validation-errors",
   validationWarnings = "validation-warnings",
+  validApisCount = "valid-apis-count",
+  allApisCount = "all-apis-count",
+  isFromAddingApi = "is-from-adding-api",
 }
 
 const enum telemetryEvents {
   validateApiSpec = "validate-api-spec",
   validateOpenAiPluginManifest = "validate-openai-plugin-manifest",
+  listApis = "spec-parser-list-apis-result",
 }
 
 enum OpenAIPluginManifestErrorType {
@@ -75,6 +81,7 @@ enum OpenAIPluginManifestErrorType {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: true,
+  allowBearerTokenAuth: true,
   allowMultipleParameters: true,
   allowOauth2: true,
   projectType: ProjectType.Copilot,
@@ -174,6 +181,8 @@ export async function listOperations(
   }
 
   const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+  const isCustomApi =
+    inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 
   try {
     const allowAPIKeyAuth = isPlugin || isApiKeyEnabled();
@@ -182,8 +191,12 @@ export async function listOperations(
       apiSpecUrl as string,
       isPlugin
         ? copilotPluginParserOptions
+        : isCustomApi
+        ? {
+            projectType: ProjectType.TeamsAi,
+          }
         : {
-            allowAPIKeyAuth,
+            allowBearerTokenAuth: allowAPIKeyAuth, // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters,
           }
     );
@@ -203,7 +216,13 @@ export async function listOperations(
       return err(validationRes.errors);
     }
 
-    let operations: ListAPIResult[] = await specParser.list();
+    const listResult: ListAPIResult = await specParser.list();
+    let operations = listResult.validAPIs;
+    context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
+      [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
+      [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
+      [telemetryProperties.isFromAddingApi]: (!includeExistingAPIs).toString(),
+    });
 
     // Filter out exsiting APIs
     if (!includeExistingAPIs) {
@@ -228,7 +247,7 @@ export async function listOperations(
         }
 
         operations = operations.filter(
-          (operation: ListAPIResult) => !existingOperations.includes(operation.api)
+          (operation: ListAPIInfo) => !existingOperations.includes(operation.api)
         );
         // No extra API can be added
         if (operations.length == 0) {
@@ -257,7 +276,7 @@ export async function listOperations(
   }
 }
 
-function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
+function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
   const operationsWithSeparator: ApiOperation[] = [];
   for (const operation of operations) {
     const arr = operation.api.toUpperCase().split(" ");
@@ -270,7 +289,11 @@ function sortOperations(operations: ListAPIResult[]): ApiOperation[] {
       },
     };
 
-    if (operation.auth && operation.auth.type === "apiKey") {
+    if (
+      operation.auth &&
+      operation.auth.authScheme.type === "http" &&
+      operation.auth.authScheme.scheme === "bearer"
+    ) {
       result.data.authName = operation.auth.name;
     }
     operationsWithSeparator.push(result);
@@ -333,7 +356,8 @@ export async function listPluginExistingOperations(
     );
   }
 
-  const operations = await specParser.list();
+  const listResult = await specParser.list();
+  const operations = listResult.validAPIs;
   return operations.map((o) => o.api);
 }
 
@@ -716,10 +740,12 @@ interface SpecObject {
   pathUrl: string;
   method: string;
   item: OpenAPIV3.OperationObject;
+  auth: boolean;
 }
 
-function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
+function parseSpec(spec: OpenAPIV3.Document): [SpecObject[], boolean] {
   const res: SpecObject[] = [];
+  let needAuth = false;
 
   const paths = spec.paths;
   if (paths) {
@@ -731,10 +757,16 @@ function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
           if (method === "get" || method === "post") {
             const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
             if (operationItem) {
+              const authResult = Utils.getAuthArray(operationItem.security, spec);
+              const hasAuth = authResult.length != 0;
+              if (hasAuth) {
+                needAuth = true;
+              }
               res.push({
                 item: operationItem,
                 method: method,
                 pathUrl: pathUrl,
+                auth: hasAuth,
               });
             }
           }
@@ -743,7 +775,7 @@ function parseSpec(spec: OpenAPIV3.Document): SpecObject[] {
     }
   }
 
-  return res;
+  return [res, needAuth];
 }
 
 async function updatePromptForCustomApi(
@@ -835,6 +867,7 @@ const ActionCode = {
   javascript: `
 app.ai.action("{{operationId}}", async (context, state, parameter) => {
   const client = await api.getClient();
+  // Add authentication configuration for the client
   const path = client.paths["{{pathUrl}}"];
   if (path && path.{{method}}) {
     const result = await path.{{method}}(parameter.path, parameter.body, {
@@ -851,6 +884,7 @@ app.ai.action("{{operationId}}", async (context, state, parameter) => {
   typescript: `
 app.ai.action("{{operationId}}", async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
   const client = await api.getClient();
+  // Add authentication configuration for the client
   const path = client.paths["{{pathUrl}}"];
   if (path && path.{{method}}) {
     const result = await path.{{method}}(parameter.path, parameter.body, {
@@ -866,11 +900,23 @@ app.ai.action("{{operationId}}", async (context: TurnContext, state: Application
   `,
 };
 
+const AuthCode = {
+  javascript: {
+    actionCode: `addAuthConfig(client);`,
+    actionPlaceholder: `// Add authentication configuration for the client`,
+  },
+  typescript: {
+    actionCode: `addAuthConfig(client);`,
+    actionPlaceholder: `// Add authentication configuration for the client`,
+  },
+};
+
 async function updateCodeForCustomApi(
   specItems: SpecObject[],
   language: string,
   destinationPath: string,
-  openapiSpecFileName: string
+  openapiSpecFileName: string,
+  needAuth: boolean
 ): Promise<void> {
   if (language === ProgrammingLanguage.JS || language === ProgrammingLanguage.TS) {
     const codeTemplate =
@@ -878,10 +924,14 @@ async function updateCodeForCustomApi(
     const appFolderPath = path.join(destinationPath, "src", "app");
 
     const actionsCode = [];
+    const authCodeTemplate =
+      AuthCode[language === ProgrammingLanguage.JS ? "javascript" : "typescript"];
     for (const item of specItems) {
+      const auth = item.auth;
       const code = codeTemplate
+        .replace(authCodeTemplate.actionPlaceholder, auth ? authCodeTemplate.actionCode : "")
         .replace(/{{operationId}}/g, item.item.operationId!)
-        .replace("{{pathUrl}}", item.pathUrl)
+        .replace(/{{pathUrl}}/g, item.pathUrl)
         .replace(/{{method}}/g, item.method);
       actionsCode.push(code);
     }
@@ -911,7 +961,7 @@ export async function updateForCustomApi(
   // 1. update prompt folder
   await updatePromptForCustomApi(spec, language, chatFolder);
 
-  const specItems = parseSpec(spec);
+  const [specItems, needAuth] = parseSpec(spec);
 
   // 2. update adaptive card folder
   await updateAdaptiveCardForCustomApi(specItems, language, destinationPath);
@@ -920,5 +970,5 @@ export async function updateForCustomApi(
   await updateActionForCustomApi(specItems, language, chatFolder);
 
   // 4. update code
-  await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName);
+  await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
 }

@@ -17,7 +17,7 @@ import {
   ok,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -285,6 +285,11 @@ describe("scaffold question", () => {
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 3);
           return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
+        } else if (question.name === QuestionNames.ApiMEAuth) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions?.(inputs);
+          assert.isTrue(options?.length === 2);
+          return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
         } else if (question.name === QuestionNames.AppName) {
@@ -363,6 +368,11 @@ describe("scaffold question", () => {
           const options = await select.dynamicOptions!(inputs);
           assert.isTrue(options.length === 3);
           return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
+        } else if (question.name === QuestionNames.ApiMEAuth) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions?.(inputs);
+          assert.isTrue(options?.length === 2);
+          return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
         } else if (question.name === QuestionNames.AppName) {
@@ -386,6 +396,76 @@ describe("scaffold question", () => {
           const options = select.staticOptions;
           assert.isTrue(options.length === 2);
           return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [
+        QuestionNames.ProjectType,
+        QuestionNames.Capabilities,
+        QuestionNames.MeArchitectureType,
+        QuestionNames.ApiMEAuth,
+        QuestionNames.ProgrammingLanguage,
+        QuestionNames.Folder,
+        QuestionNames.AppName,
+      ]);
+    });
+
+    it("traverse in vscode me from new api (sso auth)", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.ApiKey]: "true",
+        [FeatureFlagName.ApiMeSSO]: "true",
+      });
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 5);
+          return ok({ type: "success", result: ProjectTypeOptions.me().id });
+        } else if (question.name === QuestionNames.Capabilities) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 3);
+          const title =
+            typeof question.title === "function" ? await question.title(inputs) : question.title;
+          assert.equal(
+            title,
+            getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
+          );
+          return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
+        } else if (question.name === QuestionNames.MeArchitectureType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 3);
+          return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
+        } else if (question.name === QuestionNames.ApiMEAuth) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions?.(inputs);
+          assert.isTrue(options?.length === 3);
+          return ok({
+            type: "success",
+            result: ApiMessageExtensionAuthOptions.microsoftEntra().id,
+          });
+        } else if (question.name === QuestionNames.ProgrammingLanguage) {
+          return ok({ type: "success", result: "javascript" });
+        } else if (question.name === QuestionNames.AppName) {
+          return ok({ type: "success", result: "test001" });
+        } else if (question.name === QuestionNames.Folder) {
+          return ok({ type: "success", result: "./" });
         }
         return ok({ type: "success", result: undefined });
       };
@@ -1491,9 +1571,6 @@ describe("scaffold question", () => {
         }
       });
       it("traverse in vscode Copilot Plugin from new API (no auth)", async () => {
-        mockedEnvRestore = mockedEnv({
-          [FeatureFlagName.ApiKey]: "true",
-        });
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -1517,11 +1594,6 @@ describe("scaffold question", () => {
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
-          } else if (question.name === QuestionNames.ApiMEAuth) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.staticOptions;
-            assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1538,62 +1610,6 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.ApiMEAuth,
-          QuestionNames.ProgrammingLanguage,
-          QuestionNames.Folder,
-          QuestionNames.AppName,
-        ]);
-      });
-
-      it("traverse in vscode Copilot Plugin from new API (key auth)", async () => {
-        mockedEnvRestore = mockedEnv({
-          [FeatureFlagName.ApiKey]: "true",
-        });
-        const inputs: Inputs = {
-          platform: Platform.VSCode,
-        };
-        const questions: string[] = [];
-        const visitor: QuestionTreeVisitor = async (
-          question: Question,
-          ui: UserInteraction,
-          inputs: Inputs,
-          step?: number,
-          totalSteps?: number
-        ) => {
-          questions.push(question.name);
-          await callFuncs(question, inputs);
-          if (question.name === QuestionNames.ProjectType) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: "copilot-plugin-type" });
-          } else if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
-          } else if (question.name === QuestionNames.ApiMEAuth) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.staticOptions;
-            assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
-          } else if (question.name === QuestionNames.ProgrammingLanguage) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
-            return ok({ type: "success", result: "typescript" });
-          } else if (question.name === QuestionNames.Folder) {
-            return ok({ type: "success", result: "./" });
-          } else if (question.name === QuestionNames.AppName) {
-            return ok({ type: "success", result: "test001" });
-          }
-          return ok({ type: "success", result: undefined });
-        };
-        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
-        assert.deepEqual(questions, [
-          QuestionNames.ProjectType,
-          QuestionNames.Capabilities,
-          QuestionNames.ApiMEAuth,
           QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,
@@ -1663,7 +1679,6 @@ describe("scaffold question", () => {
 
       it("traverse in cli", async () => {
         mockedEnvRestore = mockedEnv({
-          [FeatureFlagName.ApiKey]: "true",
           TEAMSFX_CLI_DOTNET: "false",
         });
 
@@ -1682,8 +1697,6 @@ describe("scaffold question", () => {
           await callFuncs(question, inputs);
           if (question.name === QuestionNames.Capabilities) {
             return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
-          } else if (question.name === QuestionNames.ApiMEAuth) {
-            return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.AppName) {
@@ -1697,7 +1710,6 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.ApiMEAuth,
           QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,
@@ -1824,6 +1836,245 @@ describe("scaffold question", () => {
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
           assert.isUndefined(res);
+        });
+
+        it(" validate operations successfully with Teams AI project", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            "custom-copilot-rag": "custom-copilot-rag-customApi",
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation3",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation4",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation5",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation6",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation7",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation8",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation9",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation10",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation11",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(
+            [
+              "operation1",
+              "operation2",
+              "operation3",
+              "operation4",
+              "operation5",
+              "operation6",
+              "operation7",
+              "operation8",
+              "operation9",
+              "operation10",
+              "operation11",
+            ],
+            inputs
+          );
+
+          assert.isUndefined(res);
+        });
+
+        it(" validate operations successfully due to length limitation", async () => {
+          const question = apiOperationQuestion();
+          const inputs: Inputs = {
+            platform: Platform.VSCode,
+            [QuestionNames.ApiSpecLocation]: "apispec",
+            supportedApisFromApiSpec: [
+              {
+                id: "operation1",
+                label: "operation1",
+                groupName: "1",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation2",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation3",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation4",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation5",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation6",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation7",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation8",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation9",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation10",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+              {
+                id: "operation11",
+                label: "operation2",
+                groupName: "2",
+                data: {
+                  serverUrl: "https://server1",
+                },
+              },
+            ],
+          };
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+          const res = await validationSchema.validFunc!(
+            [
+              "operation1",
+              "operation2",
+              "operation3",
+              "operation4",
+              "operation5",
+              "operation6",
+              "operation7",
+              "operation8",
+              "operation9",
+              "operation10",
+              "operation11",
+            ],
+            inputs
+          );
+
+          expect(res).to.equal(
+            "11 API(s) selected. You can select at least one and at most 10 APIs."
+          );
         });
 
         it(" validate operations with auth successfully", async () => {
@@ -2026,19 +2277,25 @@ describe("scaffold question", () => {
             errors: [],
             warnings: [{ content: "warn", type: WarningType.Unknown }],
           });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "get operation1",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "get operation1",
+                server: "https://server",
+                auth: {
+                  name: "bearerAuth",
+                  authScheme: {
+                    type: "http",
+                    scheme: "bearer",
+                  },
+                },
+                operationId: "getOperation1",
               },
-              operationId: "getOperation1",
-            },
-            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
-          ]);
+              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
           sandbox.stub(fs, "pathExists").resolves(true);
 
           const validationSchema = question.validation as FuncValidation<string>;
@@ -2049,7 +2306,7 @@ describe("scaffold question", () => {
               label: "get operation1",
               groupName: "GET",
               data: {
-                authName: "api_key",
+                authName: "bearerAuth",
                 serverUrl: "https://server",
               },
             },
@@ -2074,20 +2331,27 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "get operation1",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
-              },
-              operationId: "getOperation1",
-            },
 
-            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
-          ]);
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "get operation1",
+                server: "https://server",
+                auth: {
+                  name: "bearerAuth",
+                  authScheme: {
+                    type: "http",
+                    scheme: "bearer",
+                  },
+                },
+                operationId: "getOperation1",
+              },
+
+              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           const validationSchema = question.validation as FuncValidation<string>;
           const res = await validationSchema.validFunc!("https://www.test.com", inputs);
@@ -2097,7 +2361,7 @@ describe("scaffold question", () => {
               label: "get operation1",
               groupName: "GET",
               data: {
-                authName: "api_key",
+                authName: "bearerAuth",
                 serverUrl: "https://server",
               },
             },
@@ -2120,19 +2384,27 @@ describe("scaffold question", () => {
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(fs, "pathExists").resolves(true);
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "get operation1",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "get operation1",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
+                },
+                operationId: "getOperation1",
               },
-              operationId: "getOperation1",
-            },
-            { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
-          ]);
+              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           let err: Error | undefined = undefined;
           try {
@@ -2244,19 +2516,27 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
+
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById"]);
           sandbox.stub(fs, "pathExists").resolves(true);
@@ -2286,19 +2566,27 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox.stub(manifestUtils, "getOperationIds").returns(["getUserById", "getStoreOrder"]);
           sandbox.stub(fs, "pathExists").resolves(true);
@@ -2323,18 +2611,35 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "list")
             .onFirstCall()
-            .resolves([
-              {
-                api: "GET /user/{userId}",
-                server: "https://server",
-                operationId: "getUserById",
-              },
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-            ])
+            .resolves({
+              validAPIs: [
+                {
+                  api: "GET /user/{userId}",
+                  server: "https://server",
+                  operationId: "getUserById",
+                },
+                {
+                  api: "GET /store/order",
+                  server: "https://server2",
+                  operationId: "getStoreOrder",
+                },
+              ],
+              allAPICount: 2,
+              validAPICount: 2,
+            })
             .onSecondCall()
-            .resolves([
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-            ]);
+            .resolves({
+              validAPIs: [
+                {
+                  api: "GET /store/order",
+                  server: "https://server2",
+                  operationId: "getStoreOrder",
+                },
+              ],
+              allAPICount: 2,
+              validAPICount: 2,
+            });
+
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
           sandbox
             .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
@@ -2375,19 +2680,26 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
@@ -2416,19 +2728,27 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           const validationRes = await (question.validation as any).validFunc!("test.com", inputs);
           const additionalValidationRes = await (
@@ -2457,19 +2777,27 @@ describe("scaffold question", () => {
           sandbox
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-          sandbox.stub(SpecParser.prototype, "list").resolves([
-            {
-              api: "GET /user/{userId}",
-              server: "https://server",
-              auth: {
-                name: "api_key",
-                in: "header",
-                type: "apiKey",
+
+          sandbox.stub(SpecParser.prototype, "list").resolves({
+            validAPIs: [
+              {
+                api: "GET /user/{userId}",
+                server: "https://server",
+                auth: {
+                  name: "api_key",
+                  authScheme: {
+                    name: "api_key",
+                    in: "header",
+                    type: "apiKey",
+                  },
+                },
+                operationId: "getUserById",
               },
-              operationId: "getUserById",
-            },
-            { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
-          ]);
+              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+            ],
+            allAPICount: 2,
+            validAPICount: 2,
+          });
 
           const res = await (question.additionalValidationOnAccept as any).validFunc(
             "https://test.com/",

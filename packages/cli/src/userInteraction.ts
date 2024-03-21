@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { confirm, input, password } from "@inquirer/prompts";
+import { confirm, password } from "@inquirer/prompts";
+import { prompt } from "inquirer";
 import {
   Colors,
   ConfirmConfig,
@@ -45,7 +46,7 @@ import { cliSource } from "./constants";
 import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
 import { strings } from "./resource";
 import { getColorizedString } from "./utils";
-
+import { CustomizedSpinner } from "./spinner";
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
 
@@ -113,13 +114,16 @@ class CLIUserInteraction implements UserInteraction {
       return ok(defaultValue || "");
     }
     ScreenManager.pause();
-    const answer = await input({
-      message,
-      default: defaultValue,
-      validate,
-    });
+    const answer = await prompt([
+      {
+        type: "input",
+        name: name,
+        message: message,
+        validate: validate,
+      },
+    ]);
     ScreenManager.continue();
-    return ok(answer);
+    return ok(answer[name]);
   }
 
   async password(
@@ -431,6 +435,8 @@ class CLIUserInteraction implements UserInteraction {
     if (config.validation || config.additionalValidationOnAccept) {
       validationFunc = async (input: string) => {
         let res: string | undefined = undefined;
+        const spinner = new CustomizedSpinner();
+        spinner.start();
         if (config.validation) {
           res = await config.validation(input);
         }
@@ -438,7 +444,7 @@ class CLIUserInteraction implements UserInteraction {
         if (!res && !!config.additionalValidationOnAccept) {
           res = await config.additionalValidationOnAccept(input);
         }
-
+        spinner.stop();
         return res;
       };
     }

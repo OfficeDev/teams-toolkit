@@ -24,7 +24,7 @@ import { downloadDirectory } from "@microsoft/teamsfx-core/build/component/gener
 import createCommandHandler from "./commands/create/createCommandHandler";
 import { ProjectMetadata } from "./commands/create/types";
 import nextStepCommandHandler from "./commands/nextstep/nextstepCommandHandler";
-import { TeamsChatCommand } from "./consts";
+import { TeamsChatCommand, OfficeAddinChatCommand } from "./consts";
 import followupProvider from "./followupProvider";
 import { defaultSystemPrompt } from "./prompts";
 import { getSampleDownloadUrlInfo, verbatimCopilotInteraction } from "./utils";
@@ -38,6 +38,9 @@ import { ITelemetryMetadata, ICopilotChatResult } from "./types";
 import { Correlator } from "@microsoft/teamsfx-core";
 import { TelemetryMetadata } from "./telemetryData";
 import { localize } from "../utils/localizeUtils";
+import generatecodeCommandHandler from "./commands/generatecode/generatecodeCommandHandler";
+import officeAddinCreateCommandHandler from "./commands/create/officeAddinCreateCommandHandler";
+import officeAddinNextStepCommandHandler from "./commands/nextstep/officeAddinNextstepCommandHandler";
 
 export function chatRequestHandler(
   request: ChatRequest,
@@ -55,6 +58,24 @@ export function chatRequestHandler(
     return Correlator.run(defaultHandler, request, context, response, token);
   }
   return {};
+}
+
+export function officeAddinChatRequestHandler(
+  request: ChatRequest,
+  context: ChatContext,
+  response: ChatResponseStream,
+  token: CancellationToken
+): ProviderResult<ICopilotChatResult> {
+  followupProvider.clearFollowups();
+  if (request.command == OfficeAddinChatCommand.Create) {
+    return Correlator.run(officeAddinCreateCommandHandler, request, context, response, token);
+  } else if (request.command == OfficeAddinChatCommand.GenerateCode) {
+    return Correlator.run(generatecodeCommandHandler, request, context, response, token);
+  } else if (request.command == OfficeAddinChatCommand.NextStep) {
+    return Correlator.run(officeAddinNextStepCommandHandler, request, context, response, token);
+  } else {
+    return Correlator.run(defaultHandler, request, context, response, token);
+  }
 }
 
 async function defaultHandler(

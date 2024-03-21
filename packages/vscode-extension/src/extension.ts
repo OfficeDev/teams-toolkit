@@ -70,10 +70,12 @@ import { ExtensionSurvey } from "./utils/survey";
 import { configMgr } from "./config";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import {
+  CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
   CHAT_CREATE_SAMPLE_COMMAND_ID,
   CHAT_EXECUTE_COMMAND_ID,
   CHAT_OPENURL_COMMAND_ID,
   chatParticipantName,
+  officeAddinChatParticipantName,
 } from "./chat/consts";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -81,8 +83,11 @@ import {
   chatRequestHandler,
   openUrlCommandHandler,
   handleFeedback,
+  officeAddinChatRequestHandler,
 } from "./chat/handlers";
 import { chatExecuteCommandHandler } from "./chat/commands/nextstep/nextstepCommandHandler";
+import officeAddinCreateCommandHandler from "./chat/commands/create/officeAddinCreateCommandHandler";
+import officeAddinFollowupProvider from "./chat/officeAddinFollowupProvider";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -106,6 +111,8 @@ export async function activate(context: vscode.ExtensionContext) {
   registerInternalCommands(context);
 
   registerChatParticipant(context);
+
+  registerOfficeAddinChatParticipant(context);
 
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
@@ -400,6 +407,29 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(CHAT_CREATE_SAMPLE_COMMAND_ID, chatCreateCommandHandler),
     vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler),
     vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
+  );
+}
+
+/**
+ * Copilot Chat Participant for Office Add-in
+ */
+function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
+  const participant = vscode.chat.createChatParticipant(
+    officeAddinChatParticipantName,
+    officeAddinChatRequestHandler
+  );
+  participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
+  participant.followupProvider = officeAddinFollowupProvider;
+  participant.onDidReceiveFeedback((e) => handleFeedback(e));
+
+  context.subscriptions.push(
+    participant,
+    vscode.commands.registerCommand(
+      CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
+      officeAddinCreateCommandHandler
+    )
+    // vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler),
+    // vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
   );
 }
 

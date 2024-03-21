@@ -157,17 +157,6 @@ describe("AadAppClient", async () => {
           },
         ];
       });
-      mock
-        .onPost(`https://graph.microsoft.com/v1.0/applications`, {
-          displayName: expectedDisplayName,
-          signInAudience: "AzureADMultipleOrgs",
-        })
-        .reply(201, {
-          id: expectedObjectId,
-          displayName: expectedDisplayName,
-          signInAudience: "AzureADMultipleOrgs",
-        }); // Return response if the request body is as expected
-      mock.onAny().abortRequest(); // Fail the request if the request body is not as expected
 
       const createAadAppResult = await aadAppClient.createAadApp(
         expectedDisplayName,
@@ -188,8 +177,8 @@ describe("AadAppClient", async () => {
           201,
           {
             id: expectedObjectId,
-            displayName: expectedDisplayName,
-            signInAudience: "AzureADMultipleOrgs",
+            displayName: data.description,
+            signInAudience: data.signInAudience,
           },
         ];
       });
@@ -269,7 +258,7 @@ describe("AadAppClient", async () => {
           secretText: expectedSecretText,
         });
 
-      const result = await aadAppClient.generateClientSecret(expectedObjectId, 180, "default");
+      const result = await aadAppClient.generateClientSecret(expectedObjectId);
 
       expect(result).to.equal(expectedSecretText);
     });
@@ -282,7 +271,7 @@ describe("AadAppClient", async () => {
           const data = JSON.parse(config.data);
           expect(data.passwordCredential.endDateTime).to.not.be.undefined;
           expect(data.passwordCredential.startDateTime).to.not.be.undefined;
-          expect(data.passwordCredential.displayName).to.equal("default");
+          expect(data.passwordCredential.displayName).to.equal("test description");
 
           const endDateTime = new Date(data.passwordCredential.endDateTime);
           const startDateTime = new Date(data.passwordCredential.startDateTime);
@@ -291,12 +280,12 @@ describe("AadAppClient", async () => {
           expect(startDateTime.getTime()).to.be.closeTo(now.getTime(), 1000); // Allow a 1 second difference
 
           expect(endDateTime.getTime() - startDateTime.getTime()).to.equal(
-            180 * 24 * 60 * 60 * 1000
+            90 * 24 * 60 * 60 * 1000
           );
           return [200, { secretText: expectedSecretText }];
         });
 
-      await aadAppClient.generateClientSecret(expectedObjectId, 180, "default");
+      await aadAppClient.generateClientSecret(expectedObjectId, 90, "test description");
     });
 
     it("should throw error when request fail", async () => {
@@ -316,7 +305,7 @@ describe("AadAppClient", async () => {
         },
       });
 
-      await expect(aadAppClient.generateClientSecret(expectedObjectId, 180, "default"))
+      await expect(aadAppClient.generateClientSecret(expectedObjectId))
         .to.eventually.be.rejectedWith("Request failed with status code 404")
         .then((error) => {
           expect(error.response.data).to.deep.equal(expectedError);
@@ -336,11 +325,7 @@ describe("AadAppClient", async () => {
         debugLogs.push(log);
       });
 
-      const createSecretResult = await aadAppClient.generateClientSecret(
-        expectedObjectId,
-        180,
-        "default"
-      );
+      const createSecretResult = await aadAppClient.generateClientSecret(expectedObjectId);
       expect(debugLogs.length).to.equal(2);
       expect(debugLogs[0].includes("Sending API request")).to.be.true;
       expect(debugLogs[1].includes("Received API response")).to.be.true;

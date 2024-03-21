@@ -105,13 +105,7 @@ export class CreateAadAppDriver implements StepDriver {
               driverConstants.generateSecretErrorMessageKey
             );
           }
-          const clientSecretExpireDays = args.clientSecretExpireDays ?? 180;
-          const clientSecretDescription = args.clientSecretDescription ?? "default";
-          aadAppState.clientSecret = await aadAppClient.generateClientSecret(
-            aadAppState.objectId,
-            clientSecretExpireDays,
-            clientSecretDescription
-          );
+          aadAppState.clientSecret = await aadAppClient.generateClientSecret(aadAppState.objectId);
           outputs.set(outputEnvVarNames.get(OutputKeys.clientSecret)!, aadAppState.clientSecret);
 
           const summary = getLocalizedString(

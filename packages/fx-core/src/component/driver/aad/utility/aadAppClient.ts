@@ -100,12 +100,12 @@ export class AadAppClient {
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async generateClientSecret(
     objectId: string,
-    clientSecretExpireDays: number,
-    clientSecretDescription: string
+    clientSecretExpireDays = 180, // Recommended lifetime from Azure Portal
+    clientSecretDescription = "default"
   ): Promise<string> {
     const startDate = new Date();
     const endDate = new Date(startDate.getTime());
-    endDate.setDate(endDate.getDate() + clientSecretExpireDays); // Recommended lifetime from Azure Portal
+    endDate.setDate(endDate.getDate() + clientSecretExpireDays);
     const requestBody = {
       passwordCredential: {
         displayName: clientSecretDescription,

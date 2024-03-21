@@ -133,7 +133,7 @@ export class ProjectTypeOptions {
   static officeXMLAddin(platform?: Platform): OptionItem {
     return {
       id: "office-xml-addin-type",
-      label: `${platform === Platform.VSCode ? "$(inbox) " : ""}${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(teamsfx-m365) " : ""}${getLocalizedString(
         "core.createProjectQuestion.officeXMLAddin.mainEntry.title"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.mainEntry.detail"),

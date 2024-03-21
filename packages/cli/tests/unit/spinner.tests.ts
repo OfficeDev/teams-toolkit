@@ -44,7 +44,7 @@ describe("CustomizedSpinner", function () {
 
       spinner.stop();
 
-      expect(writeStub.lastCall.args[0]).to.equal("\x1b[?25h\n");
+      expect(writeStub.lastCall.args[0]).to.equal("\x1b[?25h");
     });
   });
 

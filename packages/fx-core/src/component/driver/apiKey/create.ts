@@ -236,6 +236,22 @@ export class CreateApiKeyDriver implements StepDriver {
       invalidParameters.push("apiSpecPath");
     }
 
+    if (
+      args.applicableToApps &&
+      args.applicableToApps !== ApiSecretRegistrationAppType.AnyApp &&
+      args.applicableToApps !== ApiSecretRegistrationAppType.SpecificApp
+    ) {
+      invalidParameters.push("applicableToApps");
+    }
+
+    if (
+      args.targetAudience &&
+      args.targetAudience !== ApiSecretRegistrationTargetAudience.AnyTenant &&
+      args.targetAudience !== ApiSecretRegistrationTargetAudience.HomeTenant
+    ) {
+      invalidParameters.push("targetAudience");
+    }
+
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
@@ -272,11 +288,20 @@ export class CreateApiKeyDriver implements StepDriver {
       return clientSecret;
     });
 
+    const targetAudience: ApiSecretRegistrationTargetAudience = args.targetAudience
+      ? (args.targetAudience as ApiSecretRegistrationTargetAudience)
+      : ApiSecretRegistrationTargetAudience.AnyTenant;
+    const applicableToApps: ApiSecretRegistrationAppType = args.applicableToApps
+      ? (args.applicableToApps as ApiSecretRegistrationAppType)
+      : ApiSecretRegistrationAppType.AnyApp;
+
     const apiKey: ApiSecretRegistration = {
       description: args.name,
       targetUrlsShouldStartWith: domain,
-      applicableToApps: ApiSecretRegistrationAppType.AnyApp,
-      targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+      applicableToApps: applicableToApps,
+      specificAppId:
+        applicableToApps === ApiSecretRegistrationAppType.SpecificApp ? args.appId : "",
+      targetAudience: targetAudience,
       clientSecrets: clientSecrets,
       manageableByUsers: [
         {

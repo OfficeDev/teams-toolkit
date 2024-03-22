@@ -16,14 +16,19 @@ import {
   Uri,
 } from "vscode";
 
-import { sampleProvider } from "@microsoft/teamsfx-core";
+import { Correlator, TelemetrySuccess, getUuid, sampleProvider } from "@microsoft/teamsfx-core";
 import {
   getSampleFileInfo,
   runWithLimitedConcurrency,
   sendRequestWithRetry,
 } from "@microsoft/teamsfx-core/build/component/generator/utils";
 
-import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
+import {
+  TelemetryTriggerFrom,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "../../../telemetry/extTelemetryEvents";
+import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { CHAT_CREATE_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
 import {
   brieflyDescribeProjectSystemPrompt,
@@ -37,95 +42,170 @@ import {
 } from "../../utils";
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
+import { TelemetryMetadata } from "../../telemetryData";
+import { ICopilotChatResult, ITelemetryMetadata } from "../../types";
+import * as util from "util";
+import { localize } from "../../../utils/localizeUtils";
+
+function sendTelemetry(property: { [key: string]: string }, telemetryMetadata: ITelemetryMetadata) {
+  const startTime = telemetryMetadata.startTime;
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChatCreate,
+    {
+      ...property,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    },
+    {
+      [TelemetryProperty.CopilotChatTokenCount]: telemetryMetadata.chatMessagesTokenCount(),
+      [TelemetryProperty.CopilotChatTimeToComplete]: Date.now() - startTime,
+    }
+  );
+}
 
 export default async function createCommandHandler(
   request: ChatRequest,
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ChatResult> {
-  const matchedResult = await matchProject(request, token);
+): Promise<ICopilotChatResult> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatCreateStart, {
+    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+  });
+  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
+
+  const matchedResult = await matchProject(request, token, telemetryMetadata);
 
   if (matchedResult.length === 0) {
     response.markdown(
-      "Sorry, I can't help with that right now. Please try to describe your app scenario.\n"
+      "No matching templates or samples found. Try a different app description or explore other templates.\n"
     );
-    return {};
+    sendTelemetry(
+      {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+      },
+      telemetryMetadata
+    );
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        correlationId: Correlator.getId(),
+      },
+    };
   }
   if (matchedResult.length === 1) {
     const firstMatch = matchedResult[0];
+    const describeProjectChatMessages = [
+      describeProjectSystemPrompt,
+      new LanguageModelChatUserMessage(
+        `The project you are looking for is '${JSON.stringify(firstMatch)}'.`
+      ),
+    ];
+    telemetryMetadata.chatMessages.push(...describeProjectChatMessages);
+
     await verbatimCopilotInteraction(
       "copilot-gpt-3.5-turbo",
-      [
-        describeProjectSystemPrompt,
-        new LanguageModelChatUserMessage(
-          `The project you are looking for is '${JSON.stringify(firstMatch)}'.`
-        ),
-      ],
+      describeProjectChatMessages,
       response,
       token
     );
     if (firstMatch.type === "sample") {
       const folder = await showFileTree(firstMatch, response);
+      const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
       response.button({
         command: CHAT_CREATE_SAMPLE_COMMAND_ID,
         arguments: [folder],
-        title: "Scaffold this sample",
+        title: sampleTitle,
       });
     } else if (firstMatch.type === "template") {
+      const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
       response.button({
         command: "fx-extension.create",
         arguments: [TelemetryTriggerFrom.CopilotChat, firstMatch.data],
-        title: "Create this template",
+        title: templateTitle,
       });
     }
 
-    return { metadata: { command: TeamsChatCommand.Create } };
+    sendTelemetry(
+      {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+      },
+      telemetryMetadata
+    );
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        correlationId: Correlator.getId(),
+      },
+    };
   } else {
     response.markdown(
-      `I found ${matchedResult.slice(0, 3).length} projects that match your description.\n`
+      `We've found ${
+        matchedResult.slice(0, 3).length
+      } projects that match your description. Take a look at them below.\n`
     );
     for (const project of matchedResult.slice(0, 3)) {
       response.markdown(`- ${project.name}: `);
+
+      const brieflyDescribeProjectChatMessages = [
+        brieflyDescribeProjectSystemPrompt,
+        new LanguageModelChatUserMessage(
+          `The project you are looking for is '${JSON.stringify(project)}'.`
+        ),
+      ];
+      telemetryMetadata.chatMessages.push(...brieflyDescribeProjectChatMessages);
+
       await verbatimCopilotInteraction(
         "copilot-gpt-3.5-turbo",
-        [
-          brieflyDescribeProjectSystemPrompt,
-          new LanguageModelChatUserMessage(
-            `The project you are looking for is '${JSON.stringify(project)}'.`
-          ),
-        ],
+        brieflyDescribeProjectChatMessages,
         response,
         token
       );
       if (project.type === "sample") {
+        const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         response.button({
           command: CHAT_CREATE_SAMPLE_COMMAND_ID,
           arguments: [project],
-          title: "Scaffold this sample",
+          title: sampleTitle,
         });
       } else if (project.type === "template") {
+        const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         response.button({
           command: "fx-extension.create",
           arguments: [TelemetryTriggerFrom.CopilotChat, project.data],
-          title: "Create this template",
+          title: templateTitle,
         });
       }
     }
-    return { metadata: { command: TeamsChatCommand.Create } };
+
+    sendTelemetry(
+      {
+        [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+      },
+      telemetryMetadata
+    );
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        correlationId: Correlator.getId(),
+      },
+    };
   }
 }
 
 async function matchProject(
   request: ChatRequest,
-  token: CancellationToken
+  token: CancellationToken,
+  telemetryMetadata: ITelemetryMetadata
 ): Promise<ProjectMetadata[]> {
   const allProjectMetadata = [...getTeamsTemplateMetadata(), ...(await getTeamsSampleMetadata())];
   const messages = [
     getProjectMatchSystemPrompt(allProjectMetadata),
     new LanguageModelChatUserMessage(request.prompt),
   ];
-  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+
+  telemetryMetadata.chatMessages.push(...messages);
+
+  const response = await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
   const matchedProjectId: string[] = [];
   if (response) {
     try {
@@ -180,7 +260,9 @@ async function showFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
 ): Promise<string> {
-  response.markdown("\nHere is the files of the sample project.");
+  response.markdown(
+    "\nWe've found a sample project that matches your description. Take a look at it below."
+  );
   const downloadUrlInfo = await getSampleDownloadUrlInfo(projectMetadata.id);
   const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
   const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;

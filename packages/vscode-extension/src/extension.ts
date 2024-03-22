@@ -80,6 +80,7 @@ import {
   chatCreateCommandHandler,
   chatRequestHandler,
   openUrlCommandHandler,
+  handleFeedback,
 } from "./chat/handlers";
 import { chatExecuteCommandHandler } from "./chat/commands/nextstep/nextstepCommandHandler";
 
@@ -392,6 +393,7 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
   const participant = vscode.chat.createChatParticipant(chatParticipantName, chatRequestHandler);
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
   participant.followupProvider = followupProvider;
+  participant.onDidReceiveFeedback((e) => handleFeedback(e));
 
   context.subscriptions.push(
     participant,

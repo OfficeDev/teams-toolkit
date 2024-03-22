@@ -447,5 +447,17 @@
     "teamstoolkit.officeAddIn.terminal.fail.tips": "couldn't complete!",
     "teamstoolkit.officeAddIn.terminal.success.tips": "completed successfully!",
     "teamstoolkit.officeAddIn.terminal.manifest.notfound":"Manifest xml file not found",
-    "teamstoolkit.officeAddIn.workspace.invalid": "Invalid workspace path"
+    "teamstoolkit.officeAddIn.workspace.invalid": "Invalid workspace path",
+    "teamstoolkit.chatParticipants.teams.description": "Ask how to develop your apps for Teams",
+    "teamstoolkit.chatParticipants.create.description": "Describe the app you want to build for Teams",
+    "teamstoolkit.chatParticipants.nextStep.description": "Describe your next step in Teams app development",
+    "teamstoolkit.chatParticipants.nextStep.whatsNext": "What should I do next?",
+    "teamstoolkit.chatParticipants.create.sample": "Scaffold this sample",
+    "teamstoolkit.chatParticipants.create.template": "Create this template",
+    "teamstoolkit.chatParticipants.create.quickPick.workspace": "Current workspace",
+    "teamstoolkit.chatParticipants.create.selectFolder.title": "Choose the location to save your project",
+    "teamstoolkit.chatParticipants.create.selectFolder.label": "Select Folder",
+    "teamstoolkit.chatParticipants.create.successfullyCreated": "Project successfully created in current workspace.",
+    "teamstoolkit.chatParticipants.create.failToCreate": "Unable to create the project.",
+    "teamstoolkit.chatParticipants.default.noConceptualAnswer": "I can only answer conceptual questions."
 }

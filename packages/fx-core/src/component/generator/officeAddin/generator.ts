@@ -182,7 +182,7 @@ export class OfficeAddinGenerator {
 // TODO: update to handle different hosts when support for them is implemented
 // TODO: handle multiple scopes
 type OfficeHost = "Outlook" | "Word" | "Excel" | "PowerPoint"; // | "OneNote" | "Project"
-async function getHost(addinManifestPath: string): Promise<OfficeHost> {
+export async function getHost(addinManifestPath: string): Promise<OfficeHost> {
   // Read add-in manifest file
   const addinManifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
     addinManifestPath
@@ -204,9 +204,6 @@ async function getHost(addinManifestPath: string): Promise<OfficeHost> {
     //   host = "Project";
     case "workbook":
       host = "Excel";
-      break;
-    default:
-      host = "Outlook";
       break;
   }
   return host;

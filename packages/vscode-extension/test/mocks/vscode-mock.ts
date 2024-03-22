@@ -173,6 +173,13 @@ mockedVSCode.commands = {
   },
 };
 
+// Setup chat APIs
+(mockedVSCode as any).lm = {
+  sendChatRequest: () => {},
+  languageModels: [],
+  onDidChangeLanguageModels: undefined as any,
+};
+
 function generateNotebookMocks() {
   const mockedObj = TypeMoq.Mock.ofType<Record<string, unknown>>();
   (mockedVSCode as any).notebook = mockedObj.object;

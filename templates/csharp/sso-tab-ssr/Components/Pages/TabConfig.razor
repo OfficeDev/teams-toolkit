@@ -18,12 +18,13 @@
     {
         if(firstRender)
         {
+            var baseUri = new Uri(NavigationManager.BaseUri);
             var settings = new TeamsInstanceSettings
             {
                 SuggestedDisplayName = "My Tab",
                 EntityId = _entityId.ToString(),
-                ContentUrl = $"{NavigationManager.BaseUri}tab",
-                WebsiteUrl = $"{NavigationManager.BaseUri}tab"
+                ContentUrl = new Uri(baseUri, "tab").ToString(),
+                WebsiteUrl = new Uri(baseUri, "tab").ToString(),
             };
 
             await MicrosoftTeams.InitializeAsync();

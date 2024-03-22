@@ -425,7 +425,7 @@ function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
     participant,
     vscode.commands.registerCommand(
       CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
-      officeAddinCreateCommandHandler
+      chatCreateCommandHandler
     )
     // vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler),
     // vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)

@@ -256,7 +256,7 @@ async function getTeamsSampleMetadata(): Promise<ProjectMetadata[]> {
   return result;
 }
 
-async function showFileTree(
+export async function showFileTree(
   projectMetadata: ProjectMetadata,
   response: ChatResponseStream
 ): Promise<string> {

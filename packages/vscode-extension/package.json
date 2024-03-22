@@ -1365,15 +1365,15 @@
       {
         "id": "officeaddin",
         "name": "officeaddin",
-        "description": "%teamstoolkit.chatParticipants.teams.description%",
+        "description": "%teamstoolkit.chatParticipants.officeaddin.description%",
         "commands": [
           {
             "name": "create",
-            "description": "%teamstoolkit.chatParticipants.create.description%"
+            "description": "%teamstoolkit.chatParticipants.officeAddinCreate.description%"
           },
           {
             "name": "generatecode",
-            "description": "%teamstoolkit.chatParticipants.create.description%"
+            "description": "%teamstoolkit.chatParticipants.officeAddinGeneratecode.description%"
           },
           {
             "name": "nextstep",

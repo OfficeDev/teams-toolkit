@@ -51,6 +51,7 @@ import { ErrorResult } from "@microsoft/m365-spec-parser";
 import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import path from "path";
 import { OpenAPIV3 } from "openapi-types";
+import { format } from "util";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -974,6 +975,11 @@ describe("formatValidationErrors", () => {
         content: "test",
       },
       {
+        type: ErrorType.SpecVersionNotSupported,
+        content: "test",
+        data: "3.1.0",
+      },
+      {
         type: ErrorType.Unknown,
         content: "unknown",
       },
@@ -994,7 +1000,10 @@ describe("formatValidationErrors", () => {
     expect(res[8].content).equals("resolveurl");
     expect(res[9].content).equals(getLocalizedString("core.common.CancelledMessage"));
     expect(res[10].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
-    expect(res[11].content).equals("unknown");
+    expect(res[11].content).equals(
+      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[11].data)
+    );
+    expect(res[12].content).equals("unknown");
   });
 });
 

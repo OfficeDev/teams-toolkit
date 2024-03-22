@@ -1,12 +1,12 @@
 {
   "account.login.azure": "Successfully signed into Azure.",
-  "account.login.azure.fail": "Failed to sign into Azure.",
+  "account.login.azure.fail": "Unable to sign into Azure.",
   "account.logout.azure": "Successfully signed out of Azure.",
-  "account.logout.azure.fail": "Failed to sign out of Azure.",
+  "account.logout.azure.fail": "Unable to sign out of Azure.",
   "account.login.m365": "Successfully signed into Microsoft 365.",
-  "account.login.m365.fail": "Failed to sign into Microsoft 365.",
+  "account.login.m365.fail": "Unable to sign into Microsoft 365.",
   "account.logout.m365": "Successfully signed out of Microsoft 365.",
-  "account.logout.m365.fail": "Failed to sign out of Microsoft 365.",
+  "account.logout.m365.fail": "Unable to sign out of Microsoft 365.",
   "account.show.azure": "Your Azure account is: %s. Your subscriptions are: %s",
   "account.show.m365": "Your Microsoft 365 account is: %s.",
   "account.show.info": "Your %s account is: %s.",
@@ -14,8 +14,8 @@
     "doctor": {
       "account": {
         "SideLoadingDisabled": "Your Microsoft 365 tenant admin hasn't enabled custom app upload permission for your account. You can't install your app to Teams!",
-        "NotSignIn": "You have not logged in to your Microsoft 365 account yet. Please use teamsapp auth login command to login to your Microsoft 365 account.",
-        "SignInSuccess": "Microsoft 365 Account (%s) is logged in and custom app upload permission is enabled."
+        "NotSignIn": "You've not signed into your Microsoft 365 account yet. Please use teamsapp auth login command to sign into your Microsoft 365 account.",
+        "SignInSuccess": "Microsoft 365 Account (%s) is signed in and custom app upload permission is enabled."
       },
       "node" : {
         "NotFound": "Cannot find Node.js. Node.js used for developing Teams apps with JavaScript or TypeScript using Teams Toolkit for Visual Studio Code. Visit https://nodejs.org to install the LTS version.",

@@ -491,6 +491,114 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(dereferenceStub);
     });
 
+    it("should return error result is project type is SME/Copilot, and OpenAPI spec version >= 3.1.0", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.1.0",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+      expect(result.errors[0].type).equal(ErrorType.SpecVersionNotSupported);
+      expect(result.errors[0].content).equal(
+        Utils.format(ConstantString.SpecVersionNotSupported, "3.1.0")
+      );
+      expect(result.errors[0].data).equal("3.1.0");
+      expect(result.status).equal(ValidationStatus.Error);
+
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return valid result is project type is Teams Ai, and OpenAPI spec version >= 3.1.0", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.1.0",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { projectType: ProjectType.TeamsAi });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
     it("should throw a SpecParserError when an error occurs", async () => {
       const specPath = "path/to/spec";
       const spec = {

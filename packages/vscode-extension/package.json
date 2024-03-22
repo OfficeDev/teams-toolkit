@@ -1348,11 +1348,31 @@
     },
     "chatParticipants": [
       {
+        "id": "teams",
         "name": "teams",
         "description": "%teamstoolkit.chatParticipants.teams.description%",
         "commands": [
           {
             "name": "create",
+            "description": "%teamstoolkit.chatParticipants.create.description%"
+          },
+          {
+            "name": "nextstep",
+            "description": "%teamstoolkit.chatParticipants.nextStep.description%"
+          }
+        ]
+      },
+      {
+        "id": "officeaddin",
+        "name": "officeaddin",
+        "description": "%teamstoolkit.chatParticipants.teams.description%",
+        "commands": [
+          {
+            "name": "create",
+            "description": "%teamstoolkit.chatParticipants.create.description%"
+          },
+          {
+            "name": "generatecode",
             "description": "%teamstoolkit.chatParticipants.create.description%"
           },
           {

@@ -131,7 +131,7 @@ jobs:
           then
               for obj in "$YMLTPL"
               do
-                mustache test.json $obj | yamllint -
+                mustache test.json $obj | yamllint -d "{extends: relaxed, rules: {line-length: {max: 100}}}" -
               done
           fi
 

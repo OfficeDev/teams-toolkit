@@ -260,6 +260,7 @@ export enum TelemetryEvent {
   // Copilot Chat
   CopilotChatStart = "copilot-chat-start",
   CopilotChat = "copilot-chat",
+  CopilotChatFeedback = "copilot-chat-feedback",
 }
 
 export enum TelemetryProperty {

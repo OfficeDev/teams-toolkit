@@ -16,19 +16,14 @@ import {
   Uri,
 } from "vscode";
 
-import { Correlator, TelemetrySuccess, getUuid, sampleProvider } from "@microsoft/teamsfx-core";
+import { sampleProvider } from "@microsoft/teamsfx-core";
 import {
   getSampleFileInfo,
   runWithLimitedConcurrency,
   sendRequestWithRetry,
 } from "@microsoft/teamsfx-core/build/component/generator/utils";
 
-import {
-  TelemetryTriggerFrom,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "../../../telemetry/extTelemetryEvents";
-import { ExtTelemetry } from "../../../telemetry/extTelemetry";
+import { TelemetryTriggerFrom, TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_CREATE_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
 import {
   brieflyDescribeProjectSystemPrompt,
@@ -42,10 +37,11 @@ import {
 } from "../../utils";
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
-import { TelemetryMetadata, sendStartTelemetry, sendTelemetry } from "../../telemetry";
-import { ICopilotChatResult, ITelemetryMetadata } from "../../types";
+import { ChatTelemetryData } from "../../telemetry";
+import { IChatTelemetryData, ICopilotChatResult } from "../../types";
 import * as util from "util";
 import { localize } from "../../../utils/localizeUtils";
+import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 
 export default async function createCommandHandler(
   request: ChatRequest,
@@ -53,20 +49,25 @@ export default async function createCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(TeamsChatCommand.Create);
-  sendStartTelemetry(TelemetryEvent.CopilotChatStart, telemetryMetadata);
+  const chatTelemetryData = ChatTelemetryData.createByCommand(TeamsChatCommand.Create);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
-  const matchedResult = await matchProject(request, token, telemetryMetadata);
+  const matchedResult = await matchProject(request, token, chatTelemetryData);
 
   if (matchedResult.length === 0) {
     response.markdown(
       "No matching templates or samples found. Try a different app description or explore other templates.\n"
     );
-    sendTelemetry(TelemetryEvent.CopilotChat, telemetryMetadata);
+    chatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      chatTelemetryData.properties,
+      chatTelemetryData.measurements
+    );
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        requestId: telemetryMetadata.requestId,
+        requestId: chatTelemetryData.requestId,
       },
     };
   }
@@ -78,7 +79,7 @@ export default async function createCommandHandler(
         `The project you are looking for is '${JSON.stringify(firstMatch)}'.`
       ),
     ];
-    telemetryMetadata.chatMessages.push(...describeProjectChatMessages);
+    chatTelemetryData.chatMessages.push(...describeProjectChatMessages);
 
     await verbatimCopilotInteraction(
       "copilot-gpt-3.5-turbo",
@@ -103,11 +104,16 @@ export default async function createCommandHandler(
       });
     }
 
-    sendTelemetry(TelemetryEvent.CopilotChat, telemetryMetadata);
+    chatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      chatTelemetryData.properties,
+      chatTelemetryData.measurements
+    );
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        requestId: telemetryMetadata.requestId,
+        requestId: chatTelemetryData.requestId,
       },
     };
   } else {
@@ -125,7 +131,7 @@ export default async function createCommandHandler(
           `The project you are looking for is '${JSON.stringify(project)}'.`
         ),
       ];
-      telemetryMetadata.chatMessages.push(...brieflyDescribeProjectChatMessages);
+      chatTelemetryData.chatMessages.push(...brieflyDescribeProjectChatMessages);
 
       await verbatimCopilotInteraction(
         "copilot-gpt-3.5-turbo",
@@ -150,11 +156,16 @@ export default async function createCommandHandler(
       }
     }
 
-    sendTelemetry(TelemetryEvent.CopilotChat, telemetryMetadata);
+    chatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      chatTelemetryData.properties,
+      chatTelemetryData.measurements
+    );
     return {
       metadata: {
         command: TeamsChatCommand.Create,
-        requestId: telemetryMetadata.requestId,
+        requestId: chatTelemetryData.requestId,
       },
     };
   }
@@ -163,7 +174,7 @@ export default async function createCommandHandler(
 async function matchProject(
   request: ChatRequest,
   token: CancellationToken,
-  telemetryMetadata: ITelemetryMetadata
+  telemetryMetadata: IChatTelemetryData
 ): Promise<ProjectMetadata[]> {
   const allProjectMetadata = [...getTeamsTemplateMetadata(), ...(await getTeamsSampleMetadata())];
   const messages = [

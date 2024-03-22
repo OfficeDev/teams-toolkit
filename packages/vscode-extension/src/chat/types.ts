@@ -3,15 +3,19 @@
 import { LanguageModelChatMessage, ChatResult } from "vscode";
 import { TeamsChatCommand } from "./consts";
 
-// metadata is used to generate telemetryData
-export interface ITelemetryMetadata {
+export interface ITelemetryData {
+  properties: { [key: string]: string };
+  measurements: { [key: string]: number };
+}
+
+export interface IChatTelemetryData {
+  telemetryData: ITelemetryData;
   chatMessages: LanguageModelChatMessage[];
-  startTime: number;
+  command: string;
   requestId: string;
-  command: TeamsChatCommand | undefined;
+  startTime: number;
 
   chatMessagesTokenCount: () => number;
-
   get properties(): { [key: string]: string };
   get measurements(): { [key: string]: number };
 }

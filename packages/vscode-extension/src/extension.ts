@@ -395,7 +395,7 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
   );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
   participant.followupProvider = followupProvider;
-  participant.onDidReceiveFeedback((e) => handleFeedback(e));
+  participant.onDidReceiveFeedback((...args) => Correlator.run(handleFeedback, ...args));
 
   context.subscriptions.push(
     participant,

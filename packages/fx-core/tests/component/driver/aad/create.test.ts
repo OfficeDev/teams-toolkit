@@ -23,6 +23,7 @@ import {
 import { UserError } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
 import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
+import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -163,6 +164,70 @@ describe("aadAppCreate", async () => {
     expect(result.summaries).includes(
       `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
     );
+  });
+
+  it("shouldd set default values for client secret expire time, description, and service management reference", async () => {
+    sinon
+      .stub(AadAppClient.prototype, "createAadApp")
+      .callsFake(async (displayName, signInAudience, serviceManagementReference) => {
+        expect(serviceManagementReference).to.be.undefined;
+        return {
+          id: expectedObjectId,
+          displayName: expectedDisplayName,
+          appId: expectedClientId,
+        } as AADApplication;
+      });
+
+    sinon
+      .stub(AadAppClient.prototype, "generateClientSecret")
+      .callsFake(async (objectId, clientSecretExpireDays, clientSecretDescription) => {
+        expect(clientSecretExpireDays).to.equal(180);
+        expect(clientSecretDescription).to.equal("default");
+        return expectedSecretText;
+      });
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
+  });
+
+  it("should use user defined client secret expire time, description, and service management reference", async () => {
+    const expectedServiceManagementReference = "00000000-0000-0000-0000-000000000000";
+    const expectedExpireTime = 90;
+    const expectedDescription = "custom";
+    sinon
+      .stub(AadAppClient.prototype, "createAadApp")
+      .callsFake(async (displayName, signInAudience, serviceManagementReference) => {
+        expect(serviceManagementReference).to.equal(expectedServiceManagementReference);
+        return {
+          id: expectedObjectId,
+          displayName: expectedDisplayName,
+          appId: expectedClientId,
+        } as AADApplication;
+      });
+
+    sinon
+      .stub(AadAppClient.prototype, "generateClientSecret")
+      .callsFake(async (objectId, clientSecretExpireDays, clientSecretDescription) => {
+        expect(clientSecretExpireDays).to.equal(expectedExpireTime);
+        expect(clientSecretDescription).to.equal(expectedDescription);
+        return expectedSecretText;
+      });
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+      clientSecretExpireDays: expectedExpireTime,
+      clientSecretDescription: expectedDescription,
+      serviceManagementReference: expectedServiceManagementReference,
+    };
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
   });
 
   it("should output to specific environment variable based on writeToEnvironmentFile declaration", async () => {

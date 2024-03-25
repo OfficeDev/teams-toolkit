@@ -48,7 +48,7 @@ async function callFunction(teamsUserCredential: TeamsUserCredential) {
 export function AzureFunctions(props: { codePath?: string; docsUrl?: string }) {
   const [needConsent, setNeedConsent] = useState(false);
   const { codePath, docsUrl } = {
-    codePath: `api/functions/${functionName}.ts`,
+    codePath: `api/src/functions/${functionName}.ts`,
     docsUrl: "https://aka.ms/teamsfx-azure-functions",
     ...props,
   };

@@ -10,6 +10,13 @@ import { AADManifest } from "../driver/aad/interface/AADManifest";
 import { getDetailedGraphPermissionMap, graphAppId, graphAppName } from "../driver/aad/permissions";
 import { TelemetryProperty } from "../../common/telemetry";
 import { actionName } from "../driver/aad/update";
+interface summary {
+  hasGraphPermission: boolean;
+  hasRole: boolean;
+  hasAdminScope: boolean;
+  scopes: string[];
+  roles: string[];
+}
 class MetadataGraphPermissionUtil {
   async parseAadManifest(
     ymlPath: string,
@@ -35,7 +42,7 @@ class MetadataGraphPermissionUtil {
     try {
       const manifestString = await fs.readFile(aadManifestPath, "utf8");
       const manifest = JSON.parse(manifestString);
-      const graphPermissionSummary = this.getPermissionSummary(manifest);
+      const graphPermissionSummary = this.summary(manifest);
       if (graphPermissionSummary) {
         props[TelemetryProperty.GraphPermission] = graphPermissionSummary.hasGraphPermission
           ? "true"
@@ -47,17 +54,19 @@ class MetadataGraphPermissionUtil {
           ? "true"
           : "false";
         props[TelemetryProperty.GraphPermissionScopes] = graphPermissionSummary.scopes.join(",");
+        props[TelemetryProperty.GraphPermissionRoles] = graphPermissionSummary.roles.join(",");
       }
     } catch (error) {
       return;
     }
   }
 
-  getPermissionSummary(manifest: AADManifest) {
+  summary(manifest: AADManifest): summary | undefined {
     let hasGraphPermission = false;
     let hasRole = false;
     let hasAdminScope = false;
     const scopes: string[] = [];
+    const roles: string[] = [];
     const graphPermissionMap = getDetailedGraphPermissionMap();
     if (!graphPermissionMap) {
       return undefined;
@@ -71,12 +80,17 @@ class MetadataGraphPermissionUtil {
         hasRole,
         hasAdminScope,
         scopes,
+        roles,
       };
     }
     hasGraphPermission = true;
     graphPermission.resourceAccess?.forEach((access) => {
       if (access.type === "Role") {
         hasRole = true;
+        const id = isUUID(access.id) ? access.id : graphPermissionMap.roles[access.id];
+        if (graphPermissionMap.roleIds[id]) {
+          roles.push(graphPermissionMap.roleIds[id].value);
+        }
       } else {
         const id = isUUID(access.id) ? access.id : graphPermissionMap.scopes[access.id];
         if (graphPermissionMap.scopeIds[id]) {
@@ -92,6 +106,7 @@ class MetadataGraphPermissionUtil {
       hasRole,
       hasAdminScope,
       scopes,
+      roles,
     };
   }
 }

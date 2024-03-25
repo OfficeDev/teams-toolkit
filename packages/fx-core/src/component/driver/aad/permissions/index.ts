@@ -53,6 +53,8 @@ export function getDetailedGraphPermissionMap(): any {
   const map: any = {};
   map.scopeIds = {};
   map.scopes = {};
+  map.roleIds = {};
+  map.roles = {};
 
   graphPermission.oauth2PermissionScopes.forEach((scope) => {
     map.scopeIds[scope.id] = {
@@ -62,6 +64,14 @@ export function getDetailedGraphPermissionMap(): any {
       type: scope.type,
     };
     map.scopes[scope.value] = scope.id;
+  });
+
+  graphPermission.appRoles.forEach((role) => {
+    map.roleIds[role.id] = {
+      // value is the scope name
+      value: role.value,
+    };
+    map.roles[role.value] = role.id;
   });
 
   loadedGraphPermissionMap = map;

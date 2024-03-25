@@ -21,6 +21,8 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.AadManifest] = "true";
   process.env[FeatureFlagName.ApiConnect] = "true";
   process.env[FeatureFlagName.DeployManifest] = "true";
+  // Force the feature to close until it needs to be released.
+  process.env[FeatureFlagName.OfficeAddin] = "false";
 }
 
 export function isCLIDotNetEnabled(): boolean {

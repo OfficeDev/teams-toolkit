@@ -6,6 +6,8 @@ import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { ConstantString } from "./constants";
 import {
+  APIMap,
+  APIValidationResult,
   AuthInfo,
   CheckParamResult,
   ErrorResult,
@@ -36,10 +38,11 @@ export class Utils {
     paramObject: OpenAPIV3.ParameterObject[],
     isCopilot: boolean
   ): CheckParamResult {
-    const paramResult = {
+    const paramResult: CheckParamResult = {
       requiredNum: 0,
       optionalNum: 0,
       isValid: true,
+      reason: [],
     };
 
     if (!paramObject) {
@@ -52,6 +55,7 @@ export class Utils {
 
       if (isCopilot && this.hasNestedObjectInSchema(schema)) {
         paramResult.isValid = false;
+        paramResult.reason.push(ErrorType.ParamsContainsNestedObject);
         continue;
       }
 
@@ -69,6 +73,7 @@ export class Utils {
       if (param.in === "header" || param.in === "cookie") {
         if (isRequiredWithoutDefault) {
           paramResult.isValid = false;
+          paramResult.reason.push(ErrorType.ParamsContainRequiredUnsupportedSchema);
         }
         continue;
       }
@@ -81,6 +86,7 @@ export class Utils {
       ) {
         if (isRequiredWithoutDefault) {
           paramResult.isValid = false;
+          paramResult.reason.push(ErrorType.ParamsContainRequiredUnsupportedSchema);
         }
         continue;
       }
@@ -102,10 +108,11 @@ export class Utils {
     isRequired = false,
     isCopilot = false
   ): CheckParamResult {
-    const paramResult = {
+    const paramResult: CheckParamResult = {
       requiredNum: 0,
       optionalNum: 0,
       isValid: true,
+      reason: [],
     };
 
     if (Object.keys(schema).length === 0) {
@@ -116,6 +123,7 @@ export class Utils {
 
     if (isCopilot && this.hasNestedObjectInSchema(schema)) {
       paramResult.isValid = false;
+      paramResult.reason = [ErrorType.RequestBodyContainsNestedObject];
       return paramResult;
     }
 
@@ -145,10 +153,12 @@ export class Utils {
         paramResult.requiredNum += result.requiredNum;
         paramResult.optionalNum += result.optionalNum;
         paramResult.isValid = paramResult.isValid && result.isValid;
+        paramResult.reason.push(...result.reason);
       }
     } else {
       if (isRequiredWithoutDefault && !isCopilot) {
         paramResult.isValid = false;
+        paramResult.reason.push(ErrorType.PostBodyContainsRequiredUnsupportedSchema);
       }
     }
     return paramResult;
@@ -179,119 +189,147 @@ export class Utils {
     path: string,
     spec: OpenAPIV3.Document,
     options: ParseOptions
-  ): boolean {
-    const pathObj = spec.paths[path] as any;
+  ): APIValidationResult {
+    const result: APIValidationResult = { isValid: true, reason: [] };
     method = method.toLocaleLowerCase();
-    if (pathObj) {
-      if (options.allowMethods?.includes(method) && pathObj[method]) {
-        const securities = pathObj[method].security;
 
-        const isTeamsAi = options.projectType === ProjectType.TeamsAi;
-        const isCopilot = options.projectType === ProjectType.Copilot;
+    if (options.allowMethods && !options.allowMethods.includes(method)) {
+      result.isValid = false;
+      result.reason.push(ErrorType.MethodNotAllowed);
+      return result;
+    }
 
-        // Teams AI project doesn't care about auth, it will use authProvider for user to implement
-        if (!isTeamsAi) {
-          const authArray = Utils.getAuthArray(securities, spec);
+    const pathObj = spec.paths[path] as any;
 
-          if (!Utils.isSupportedAuth(authArray, options)) {
-            return false;
-          }
+    if (!pathObj || !pathObj[method]) {
+      result.isValid = false;
+      result.reason.push(ErrorType.UrlPathNotExist);
+      return result;
+    }
+
+    const securities = pathObj[method].security;
+
+    const isTeamsAi = options.projectType === ProjectType.TeamsAi;
+    const isCopilot = options.projectType === ProjectType.Copilot;
+
+    // Teams AI project doesn't care about auth, it will use authProvider for user to implement
+    if (!isTeamsAi) {
+      const authArray = Utils.getAuthArray(securities, spec);
+
+      const authCheckResult = Utils.isSupportedAuth(authArray, options);
+      if (!authCheckResult.isValid) {
+        result.reason.push(...authCheckResult.reason);
+      }
+    }
+
+    const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
+    if (!options.allowMissingId && !operationObject.operationId) {
+      result.reason.push(ErrorType.MissingOperationId);
+    }
+
+    const rootServer = spec.servers && spec.servers[0];
+    const methodServer = spec.paths[path]!.servers && spec.paths[path]?.servers![0];
+    const operationServer = operationObject.servers && operationObject.servers[0];
+
+    const serverUrl = operationServer || methodServer || rootServer;
+    if (!serverUrl) {
+      result.reason.push(ErrorType.NoServerInformation);
+    } else {
+      const serverValidateResult = Utils.checkServerUrl([serverUrl]);
+      result.reason.push(...serverValidateResult.map((item) => item.type));
+    }
+
+    const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
+
+    const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
+    const requestJsonBody = requestBody?.content["application/json"];
+
+    if (!isTeamsAi && Utils.containMultipleMediaTypes(requestBody)) {
+      result.reason.push(ErrorType.PostBodyContainMultipleMediaTypes);
+    }
+
+    const { json, multipleMediaType } = Utils.getResponseJson(operationObject, isTeamsAi);
+
+    if (multipleMediaType && !isTeamsAi) {
+      result.reason.push(ErrorType.ResponseContainMultipleMediaTypes);
+    } else if (Object.keys(json).length === 0) {
+      result.reason.push(ErrorType.ResponseJsonIsEmpty);
+    }
+
+    // Teams AI project doesn't care about request parameters/body
+    if (!isTeamsAi) {
+      let requestBodyParamResult: CheckParamResult = {
+        requiredNum: 0,
+        optionalNum: 0,
+        isValid: true,
+        reason: [],
+      };
+
+      if (requestJsonBody) {
+        const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
+
+        if (isCopilot && requestBodySchema.type !== "object") {
+          result.reason.push(ErrorType.PostBodySchemaIsNotJson);
         }
 
-        const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
-        if (!options.allowMissingId && !operationObject.operationId) {
-          return false;
+        requestBodyParamResult = Utils.checkPostBody(
+          requestBodySchema,
+          requestBody.required,
+          isCopilot
+        );
+
+        if (!requestBodyParamResult.isValid && requestBodyParamResult.reason) {
+          result.reason.push(...requestBodyParamResult.reason);
         }
-        const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
+      }
 
-        const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
-        const requestJsonBody = requestBody?.content["application/json"];
+      const paramResult = Utils.checkParameters(paramObject, isCopilot);
 
-        if (!isTeamsAi && Utils.containMultipleMediaTypes(requestBody)) {
-          return false;
-        }
+      if (!paramResult.isValid && paramResult.reason) {
+        result.reason.push(...paramResult.reason);
+      }
 
-        const responseJson = Utils.getResponseJson(operationObject, isTeamsAi);
+      // Copilot support arbitrary parameters
+      if (!isCopilot && paramResult.isValid && requestBodyParamResult.isValid) {
+        const totalRequiredParams = requestBodyParamResult.requiredNum + paramResult.requiredNum;
+        const totalParams =
+          totalRequiredParams + requestBodyParamResult.optionalNum + paramResult.optionalNum;
 
-        if (Object.keys(responseJson).length === 0) {
-          return false;
-        }
-
-        // Teams AI project doesn't care about request parameters/body
-        if (isTeamsAi) {
-          return true;
-        }
-
-        let requestBodyParamResult = {
-          requiredNum: 0,
-          optionalNum: 0,
-          isValid: true,
-        };
-
-        if (requestJsonBody) {
-          const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-
-          if (isCopilot && requestBodySchema.type !== "object") {
-            return false;
-          }
-
-          requestBodyParamResult = Utils.checkPostBody(
-            requestBodySchema,
-            requestBody.required,
-            isCopilot
-          );
-        }
-
-        if (!requestBodyParamResult.isValid) {
-          return false;
-        }
-
-        const paramResult = Utils.checkParameters(paramObject, isCopilot);
-
-        if (!paramResult.isValid) {
-          return false;
-        }
-
-        // Copilot support arbitrary parameters
-        if (isCopilot) {
-          return true;
-        }
-
-        if (requestBodyParamResult.requiredNum + paramResult.requiredNum > 1) {
+        if (totalRequiredParams > 1) {
           if (
-            options.allowMultipleParameters &&
-            requestBodyParamResult.requiredNum + paramResult.requiredNum <=
-              ConstantString.SMERequiredParamsMaxNum
+            !options.allowMultipleParameters ||
+            totalRequiredParams > ConstantString.SMERequiredParamsMaxNum
           ) {
-            return true;
+            result.reason.push(ErrorType.ExceededRequiredParamsLimit);
           }
-          return false;
-        } else if (
-          requestBodyParamResult.requiredNum +
-            requestBodyParamResult.optionalNum +
-            paramResult.requiredNum +
-            paramResult.optionalNum ===
-          0
-        ) {
-          return false;
-        } else {
-          return true;
+        } else if (totalParams === 0) {
+          result.reason.push(ErrorType.NoParameter);
         }
       }
     }
 
-    return false;
+    if (result.reason.length > 0) {
+      result.isValid = false;
+    }
+
+    return result;
   }
 
-  static isSupportedAuth(authSchemeArray: AuthInfo[][], options: ParseOptions): boolean {
+  static isSupportedAuth(
+    authSchemeArray: AuthInfo[][],
+    options: ParseOptions
+  ): APIValidationResult {
     if (authSchemeArray.length === 0) {
-      return true;
+      return { isValid: true, reason: [] };
     }
 
     if (options.allowAPIKeyAuth || options.allowOauth2 || options.allowBearerTokenAuth) {
       // Currently we don't support multiple auth in one operation
       if (authSchemeArray.length > 0 && authSchemeArray.every((auths) => auths.length > 1)) {
-        return false;
+        return {
+          isValid: false,
+          reason: [ErrorType.MultipleAuthNotSupported],
+        };
       }
 
       for (const auths of authSchemeArray) {
@@ -301,13 +339,13 @@ export class Utils {
             (options.allowOauth2 && Utils.isOAuthWithAuthCodeFlow(auths[0].authScheme)) ||
             (options.allowBearerTokenAuth && Utils.isBearerTokenAuth(auths[0].authScheme))
           ) {
-            return true;
+            return { isValid: true, reason: [] };
           }
         }
       }
     }
 
-    return false;
+    return { isValid: false, reason: [ErrorType.AuthTypeIsNotSupported] };
   }
 
   static isBearerTokenAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
@@ -363,15 +401,22 @@ export class Utils {
   static getResponseJson(
     operationObject: OpenAPIV3.OperationObject | undefined,
     isTeamsAiProject = false
-  ): OpenAPIV3.MediaTypeObject {
+  ): { json: OpenAPIV3.MediaTypeObject; multipleMediaType: boolean } {
     let json: OpenAPIV3.MediaTypeObject = {};
+    let multipleMediaType = false;
 
     for (const code of ConstantString.ResponseCodeFor20X) {
       const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
 
       if (responseObject?.content?.["application/json"]) {
+        multipleMediaType = false;
         json = responseObject.content["application/json"];
-        if (!isTeamsAiProject && Utils.containMultipleMediaTypes(responseObject)) {
+        if (Utils.containMultipleMediaTypes(responseObject)) {
+          multipleMediaType = true;
+
+          if (isTeamsAiProject) {
+            break;
+          }
           json = {};
         } else {
           break;
@@ -379,7 +424,7 @@ export class Utils {
       }
     }
 
-    return json;
+    return { json, multipleMediaType };
   }
 
   static convertPathToCamelCase(path: string): string {
@@ -476,12 +521,13 @@ export class Utils {
       if (methods?.servers && methods.servers.length >= 1) {
         hasPathLevelServers = true;
         const serverErrors = Utils.checkServerUrl(methods.servers);
+
         errors.push(...serverErrors);
       }
 
       for (const method in methods) {
         const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-        if (Utils.isSupportedApi(method, path, spec, options)) {
+        if (options.allowMethods?.includes(method) && operationObject) {
           if (operationObject?.servers && operationObject.servers.length >= 1) {
             hasOperationLevelServers = true;
             const serverErrors = Utils.checkServerUrl(operationObject.servers);
@@ -490,12 +536,14 @@ export class Utils {
         }
       }
     }
+
     if (!hasTopLevelServers && !hasPathLevelServers && !hasOperationLevelServers) {
       errors.push({
         type: ErrorType.NoServerInformation,
         content: ConstantString.NoServerInformation,
       });
     }
+
     return errors;
   }
 
@@ -683,9 +731,32 @@ export class Utils {
     for (const path in paths) {
       const methods = paths[path];
       for (const method in methods) {
-        if (Utils.isSupportedApi(method, path, spec, options)) {
-          const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-          result[`${method.toUpperCase()} ${path}`] = operationObject;
+        const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
+        if (options.allowMethods?.includes(method) && operationObject) {
+          const validateResult = Utils.isSupportedApi(method, path, spec, options);
+          if (validateResult.isValid) {
+            result[`${method.toUpperCase()} ${path}`] = operationObject;
+          }
+        }
+      }
+    }
+    return result;
+  }
+
+  static listAPIs(spec: OpenAPIV3.Document, options: ParseOptions): APIMap {
+    const paths = spec.paths;
+    const result: APIMap = {};
+    for (const path in paths) {
+      const methods = paths[path];
+      for (const method in methods) {
+        const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
+        if (options.allowMethods?.includes(method) && operationObject) {
+          const validateResult = Utils.isSupportedApi(method, path, spec, options);
+          result[`${method.toUpperCase()} ${path}`] = {
+            operation: operationObject,
+            isValid: validateResult.isValid,
+            reason: validateResult.reason,
+          };
         }
       }
     }
@@ -700,6 +771,7 @@ export class Utils {
   ): ValidateResult {
     const errors: ErrorResult[] = [];
     const warnings: WarningResult[] = [];
+    const apiMap = Utils.listAPIs(spec, options);
 
     if (isSwaggerFile) {
       warnings.push({
@@ -708,7 +780,6 @@ export class Utils {
       });
     }
 
-    // Server validation
     const serverErrors = Utils.validateServer(spec, options);
     errors.push(...serverErrors);
 
@@ -725,8 +796,8 @@ export class Utils {
     }
 
     // No supported API
-    const apiMap = Utils.listSupportedAPIs(spec, options);
-    if (Object.keys(apiMap).length === 0) {
+    const validAPIs = Object.entries(apiMap).filter(([key, value]) => value.isValid);
+    if (validAPIs.length === 0) {
       errors.push({
         type: ErrorType.NoSupportedApi,
         content: ConstantString.NoSupportedApi,
@@ -736,8 +807,8 @@ export class Utils {
     // OperationId missing
     const apisMissingOperationId: string[] = [];
     for (const key in apiMap) {
-      const pathObjectItem = apiMap[key];
-      if (!pathObjectItem.operationId) {
+      const { operation, isValid, reason } = apiMap[key];
+      if (!operation.operationId) {
         apisMissingOperationId.push(key);
       }
     }

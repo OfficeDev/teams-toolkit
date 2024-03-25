@@ -22,6 +22,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/pets": {
             get: {
@@ -100,6 +105,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/user/{userId}": {
             get: {
@@ -185,6 +195,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/user/{userId}": {
             get: {
@@ -259,6 +274,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: true });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/pets": {
             get: {

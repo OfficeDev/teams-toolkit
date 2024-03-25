@@ -1655,6 +1655,15 @@ describe("SpecParser", () => {
             url: "https://server1",
           },
         ],
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+          },
+        },
         paths: {
           "/pets": {
             get: {
@@ -1710,11 +1719,50 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
+          {
+            api: "GET /pets",
+            server: "https://server1",
+            operationId: "getPetById",
+            reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
+            isValid: false,
+            auth: {
+              authScheme: {
+                in: "header",
+                name: "api_key",
+                type: "apiKey",
+              },
+              name: "api_key",
+            },
+          },
           {
             api: "GET /user/{userId}",
             server: "https://server1",
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
+          },
+          {
+            api: "POST /user/{userId}",
+            server: "https://server1",
+            operationId: "createUser",
+            reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
+            isValid: false,
+            auth: {
+              authScheme: {
+                in: "header",
+                name: "api_key",
+                type: "apiKey",
+              },
+              name: "api_key",
+            },
+          },
+          {
+            api: "POST /store/order",
+            server: "https://server1",
+            operationId: "placeOrder",
+            reason: ["response-json-is-empty", "no-parameter"],
+            isValid: false,
           },
         ],
         allAPICount: 4,
@@ -1760,15 +1808,6 @@ describe("SpecParser", () => {
                 },
               },
             },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
           },
         },
       };
@@ -1779,14 +1818,16 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
             operationId: "getUserUserId",
+            isValid: true,
+            reason: [],
           },
         ],
-        allAPICount: 3,
+        allAPICount: 1,
         validAPICount: 1,
       });
     });
@@ -1859,11 +1900,13 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server5",
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,
@@ -1930,7 +1973,7 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
@@ -1939,6 +1982,8 @@ describe("SpecParser", () => {
               name: "api_key",
             },
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,
@@ -2003,7 +2048,7 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
@@ -2015,6 +2060,8 @@ describe("SpecParser", () => {
               name: "bearerTokenAuth",
             },
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,
@@ -2137,7 +2184,7 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
@@ -2150,6 +2197,8 @@ describe("SpecParser", () => {
               name: "api_key1",
             },
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
           {
             api: "POST /user/{userId}",
@@ -2163,6 +2212,8 @@ describe("SpecParser", () => {
               name: "api_key1",
             },
             operationId: "postUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 2,
@@ -2228,11 +2279,13 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,
@@ -2244,13 +2297,12 @@ describe("SpecParser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
-        paths: {
-          "/pets": {
-            get: {
-              operationId: "getPetById",
-              security: [{ api_key: [] }],
-            },
+        servers: [
+          {
+            url: "https://server1",
           },
+        ],
+        paths: {
           "/user/{userId}": {
             get: {
               parameters: [
@@ -2279,15 +2331,6 @@ describe("SpecParser", () => {
                 },
               },
             },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
           },
         },
       };
@@ -2298,8 +2341,16 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [],
-        allAPICount: 4,
+        APIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "https://server1",
+            operationId: "getUserUserId",
+            isValid: false,
+            reason: ["missing-operation-id"],
+          },
+        ],
+        allAPICount: 1,
         validAPICount: 0,
       });
     });
@@ -2445,7 +2496,7 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
@@ -2458,6 +2509,8 @@ describe("SpecParser", () => {
               name: "api_key",
             },
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,

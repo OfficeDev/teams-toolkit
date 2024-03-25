@@ -248,7 +248,7 @@ describe("SpecParser in Browser", () => {
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const listSupportedAPIsSyp = sinon.spy(specParser.listSupportedAPIInfo);
+      const listSupportedAPIsSyp = sinon.spy(specParser as any, "listSupportedAPIs");
       let result = await specParser.listSupportedAPIInfo();
       result = await specParser.listSupportedAPIInfo();
       expect(result).to.deep.equal([

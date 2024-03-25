@@ -36,15 +36,11 @@ export class SpecFilter {
           if (!newPaths[path]) {
             newPaths[path] = { ...unResolveSpec.paths[path] };
             for (const m of ConstantString.AllOperationMethods) {
-              if (newPaths[path]?.hasOwnProperty(m)) {
-                delete (newPaths[path] as any)[m];
-              }
+              delete (newPaths[path] as any)[m];
             }
           }
 
-          if (unResolveSpec.paths[path]?.hasOwnProperty(methodName)) {
-            (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
-          }
+          (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
 
           // Add the operationId if missing
           if (!(newPaths[path] as any)[methodName].operationId) {

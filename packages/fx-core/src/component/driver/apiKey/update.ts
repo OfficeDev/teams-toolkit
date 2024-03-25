@@ -11,7 +11,6 @@ import { DriverContext } from "../interface/commonArgs";
 import { SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { logMessageKeys } from "./utility/constants";
 import { InvalidActionInputError, assembleError } from "../../../error";
-import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { AppStudioScopes } from "../teamsApp/constants";
 import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
 import {

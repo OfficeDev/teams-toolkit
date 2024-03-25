@@ -30,6 +30,9 @@ export class ConstantString {
   static readonly SwaggerNotSupported =
     "Swagger 2.0 is not supported. Please convert to OpenAPI 3.0 manually before proceeding.";
 
+  static readonly SpecVersionNotSupported =
+    "Unsupported OpenAPI version %s. Please use version 3.0.x.";
+
   static readonly MultipleAuthNotSupported =
     "Multiple authentication methods are unsupported. Ensure all selected APIs use identical authentication.";
 

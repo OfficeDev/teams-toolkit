@@ -9,8 +9,7 @@ import { checkIsOnline } from "../../commonlib/codeFlowLogin";
 import { signedIn } from "../../commonlib/common/constant";
 import { logger } from "../../commonlib/logger";
 import M365TokenProvider from "../../commonlib/m365Login";
-import * as constants from "../../constants";
-import { strings } from "../../resource";
+import { commands, strings } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 
 class AccountUtils {
@@ -37,7 +36,7 @@ class AccountUtils {
       return Promise.resolve(true);
     } else {
       if (commandType === "login") {
-        logger.outputError(`[${constants.cliSource}] Failed to sign in to Microsoft 365.`);
+        logger.outputError(strings["account.login.m365.fail"]);
       }
     }
     return Promise.resolve(result !== undefined);
@@ -70,7 +69,7 @@ class AccountUtils {
       return Promise.resolve(true);
     } else {
       if (commandType === "login") {
-        logger.outputError(`[${constants.cliSource}] Failed to sign in to Azure.`);
+        logger.outputError(strings["account.login.azure.fail"]);
       }
     }
     return Promise.resolve(result !== undefined);
@@ -86,7 +85,7 @@ export const accountUtils = new AccountUtils();
 export const accountShowCommand: CLICommand = {
   name: "list",
   aliases: ["show"],
-  description: "Display all connected Microsoft 365 and Azure accounts.",
+  description: commands["auth.show"].description,
   telemetry: {
     event: TelemetryEvent.AccountShow,
   },

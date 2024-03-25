@@ -293,9 +293,9 @@ export class WebviewPanel {
 
   private replaceRelativeImagePaths(htmlContent: string, sample: SampleConfig) {
     const urlInfo = sample.downloadUrlInfo;
-    const imageUrlBase = `https://raw.githubusercontent.com/${urlInfo.owner}/${urlInfo.repository}/${urlInfo.ref}/${urlInfo.dir}`;
+    const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/${sample.thumbnailPath}?raw=1`;
     const imageRegex = /img\s+src="([^"]+)"/gm;
-    return htmlContent.replace(imageRegex, `img src="${imageUrlBase}/$1"`);
+    return htmlContent.replace(imageRegex, `img src="${imageUrl}"`);
   }
 
   private getWebpageTitle(panelType: PanelType): string {

@@ -14,7 +14,10 @@ import {
 } from "../../../plugins/solution/util";
 import { CreateApiKeyDriver } from "../../../../src/component/driver/apiKey/create";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import { ApiSecretRegistrationAppType } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
+import {
+  ApiSecretRegistrationAppType,
+  ApiSecretRegistrationTargetAudience,
+} from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { setTools } from "../../../../src/core/globalVars";
 import { SpecParser } from "@microsoft/m365-spec-parser";
@@ -203,6 +206,54 @@ describe("CreateApiKeyDriver", () => {
     if (result.result.isOk()) {
       expect(result.result.value.size).to.equal(0);
       expect(result.summaries.length).to.equal(0);
+    }
+  });
+
+  it("happy path: create registrationid, read applicableToApps and targetAudience from input", async () => {
+    sinon.stub(AppStudioClient, "createApiKeyRegistration").callsFake(async (token, apiKey) => {
+      expect(apiKey.targetAudience).equals(ApiSecretRegistrationTargetAudience.HomeTenant);
+      expect(apiKey.specificAppId).equals("mockedAppId");
+      expect(apiKey.applicableToApps).equals(ApiSecretRegistrationAppType.SpecificApp);
+      return {
+        id: "mockedRegistrationId",
+        clientSecrets: [],
+        targetUrlsShouldStartWith: [],
+        applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+        targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+      };
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      primaryClientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
+      applicableToApps: "SpecificApp",
+      targetAudience: "HomeTenant",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
+    if (result.result.isOk()) {
+      expect(result.result.value.get(outputKeys.registrationId)).to.equal("mockedRegistrationId");
+      expect(result.summaries.length).to.equal(1);
     }
   });
 
@@ -534,6 +585,50 @@ describe("CreateApiKeyDriver", () => {
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.source).to.equal("apiKeyRegister");
+    }
+  });
+
+  it("should throw error if invalid applicableToApps and targetAudience", async () => {
+    sinon.stub(AppStudioClient, "createApiKeyRegistration").resolves({
+      id: "mockedRegistrationId",
+      clientSecrets: [],
+      targetUrlsShouldStartWith: [],
+      applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+      targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      validAPIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      primaryClientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
+      applicableToApps: "specificapp",
+      targetAudience: "hometenant",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("InvalidActionInputError");
+      expect(result.result.error.message.includes("applicableToApps")).to.be.true;
+      expect(result.result.error.message.includes("targetAudience")).to.be.true;
     }
   });
 });

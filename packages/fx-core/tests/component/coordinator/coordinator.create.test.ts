@@ -26,6 +26,7 @@ import {
   CapabilityOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
+  OfficeAddinHostOptions,
   ProjectTypeOptions,
   ScratchOptions,
 } from "../../../src/question/create";
@@ -996,6 +997,7 @@ describe("Office XML Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
@@ -1042,6 +1044,7 @@ describe("Office XML Addin", async () => {
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
     };
     const res = await coordinator.create(context, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");

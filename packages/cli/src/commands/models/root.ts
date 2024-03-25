@@ -25,11 +25,12 @@ import { teamsappPublishCommand } from "./teamsapp/publish";
 import { teamsappUpdateCommand } from "./teamsapp/update";
 import { teamsappValidateCommand } from "./teamsapp/validate";
 import { upgradeCommand } from "./upgrade";
+import { commands } from "../../resource";
 
 export const helpCommand: CLICommand = {
   name: "help",
-  description: "Show Microsoft Teams Toolkit CLI help.",
-  handler: (ctx) => {
+  description: commands.help.description,
+  handler: () => {
     const helpText = helper.formatHelp(rootCommand, undefined);
     logger.info(helpText);
     return ok(undefined);
@@ -69,37 +70,37 @@ export const rootCommand: CLICommand = {
       type: "boolean",
       name: "version",
       shortName: "v",
-      description: "Display Microsoft Teams Toolkit CLI version.",
+      description: commands.root.options.version,
     },
     {
       type: "boolean",
       name: "help",
       shortName: "h",
-      description: "Show Microsoft Teams Toolkit CLI help.",
+      description: commands.root.options.help,
     },
     {
       type: "boolean",
       name: "interactive",
       shortName: "i",
-      description: "Run the command in interactive mode.",
+      description: commands.root.options.interactive,
       default: true,
     },
     {
       type: "boolean",
       name: "debug",
-      description: "Print debug information.",
+      description: commands.root.options.debug,
       default: false,
     },
     {
       type: "boolean",
       name: "verbose",
-      description: "Print diagnostic information.",
+      description: commands.root.options.verbose,
       default: false,
     },
     {
       type: "boolean",
       name: "telemetry",
-      description: "Whether to enable telemetry.",
+      description: commands.root.options.telemetry,
       default: true,
     },
   ],

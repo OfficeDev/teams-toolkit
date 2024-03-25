@@ -2,18 +2,18 @@
 // Licensed under the MIT license.
 import { CLICommand, InputsWithProjectPath } from "@microsoft/teamsfx-api";
 import { getFxCore } from "../../activate";
-import { strings } from "../../resource";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import UI from "../../userInteraction";
 
 export const upgradeCommand: CLICommand = {
   name: "upgrade",
-  description: strings.command.upgrade.description,
+  description: commands.upgrade.description,
   options: [
     {
       name: "force",
       shortName: "f",
-      description: strings.command.upgrade.options.force,
+      description: commands.upgrade.options.force,
       type: "boolean",
       default: false,
       required: true,
@@ -34,7 +34,7 @@ export const upgradeCommand: CLICommand = {
     }
     const core = getFxCore();
     const res = await core.phantomMigrationV3(inputs);
-    if (res.isOk()) await UI.showMessage("info", strings.command.upgrade.success, false);
+    if (res.isOk()) await UI.showMessage("info", commands.upgrade.success, false);
     return res;
   },
 };

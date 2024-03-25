@@ -1,25 +1,26 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { CLICommand, LogLevel, err, ok } from "@microsoft/teamsfx-api";
+import { CLICommand, err, ok } from "@microsoft/teamsfx-api";
 import { PackageService } from "@microsoft/teamsfx-core";
 import { logger } from "../../commonlib/logger";
 import { MissingRequiredOptionError } from "../../error";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { m365utils, sideloadingServiceEndpoint } from "./m365Sideloading";
 
 export const m365UnacquireCommand: CLICommand = {
   name: "uninstall",
   aliases: ["unacquire"],
-  description: "Remove an acquired M365 App.",
+  description: commands.uninstall.description,
   options: [
     {
       name: "title-id",
-      description: "Title ID of the acquired M365 App.",
+      description: commands.uninstall.options["title-id"],
       type: "string",
     },
     {
       name: "manifest-id",
-      description: "Manifest ID of the acquired M365 App.",
+      description: commands.uninstall.options["manifest-id"],
       type: "string",
     },
   ],
@@ -38,9 +39,6 @@ export const m365UnacquireCommand: CLICommand = {
   },
   defaultInteractiveOption: false,
   handler: async (ctx) => {
-    // Command is preview, set log level to verbose
-    logger.logLevel = logger.logLevel > LogLevel.Verbose ? LogLevel.Verbose : logger.logLevel;
-    logger.warning("This command is in preview.");
     const packageService = new PackageService(sideloadingServiceEndpoint, logger);
     let titleId = ctx.optionValues["title-id"] as string;
     const manifestId = ctx.optionValues["manifest-id"] as string;

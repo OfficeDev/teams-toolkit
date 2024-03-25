@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, TeamsAppInputs, err } from "@microsoft/teamsfx-api";
 import { getFxCore } from "../../../activate";
-import { strings } from "../../../resource";
+import { commands } from "../../../resource";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
 import {
   EnvFileOption,
@@ -17,7 +17,7 @@ import { validateArgumentConflict } from "./update";
 
 export const teamsappPublishCommand: CLICommand = {
   name: "publish",
-  description: strings.command.publish.description,
+  description: commands.publish.description,
   options: [
     TeamsAppManifestFileOption,
     TeamsAppPackageOption,

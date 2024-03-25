@@ -984,6 +984,8 @@ export class FxCore {
         if (match) {
           if (match[1].startsWith("TEAMSFX_ENV=")) {
             writeStream.write(`TEAMSFX_ENV=${targetEnvName}${os.EOL}`);
+          } else if (match[1].startsWith("APP_NAME_SUFFIX=")) {
+            writeStream.write(`APP_NAME_SUFFIX=${targetEnvName}${os.EOL}`);
           } else {
             writeStream.write(`${match[1]}${os.EOL}`);
           }

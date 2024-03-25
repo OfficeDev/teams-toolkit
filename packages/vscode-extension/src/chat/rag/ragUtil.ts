@@ -1,17 +1,15 @@
-//import { lancasterStemmer } from 'lancaster-stemmer';
-//import { lancasterStemmer } from './lancasterStemmer';
-import { stemmer } from 'stemmer';
-import * as stopwords from './stop_words_english.json';
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
-export const _importDynamic = new Function('modulePath', 'return import(modulePath)');
+import { stemmer } from "./porterStemmer";
+import * as stopwords from "./stop_words_english.json";
 
 export function filterStopWords(texts: string[]): string[] {
-  return texts
-    .filter(word => !stopwords.includes(word));
+  return texts.filter((word) => !stopwords.includes(word));
 }
 
 export function keepLetters(text: string): string {
-  return text.replace(/[^a-zA-Z ]/g, '');
+  return text.replace(/[^a-zA-Z ]/g, "");
 }
 
 export function stemText(texts: string[]): string[] {
@@ -23,7 +21,7 @@ export function stemText(texts: string[]): string[] {
 //}
 
 export function prepareDiscription(text: string): string[] {
-  return stemText(filterStopWords(keepLetters(text).split(' ')));
+  return stemText(filterStopWords(keepLetters(text).split(" ")));
 }
 
 // BM25
@@ -40,12 +38,8 @@ export const getTermFrequency = (term: string, corpus: string) => {
 /** Inverse document frequency. */
 export const getIDF = (term: string, documents: string[]) => {
   // Number of relevant documents.
-  const relevantDocuments = documents.filter((document: string) =>
-    document.includes(term)
-  ).length;
-  return Math.log(
-    (documents.length - relevantDocuments + 0.5) / (relevantDocuments + 0.5) + 1
-  );
+  const relevantDocuments = documents.filter((document: string) => document.includes(term)).length;
+  return Math.log((documents.length - relevantDocuments + 0.5) / (relevantDocuments + 0.5) + 1);
 };
 
 /** Represents a document; useful when sorting results.
@@ -83,11 +77,8 @@ export function BM25(
 ): number[] | BMDocument[] {
   const b = constants && constants.b ? constants.b : 0.75;
   const k1 = constants && constants.k1 ? constants.k1 : 1.2;
-  const documentLengths = documents.map((document: string) =>
-    getWordCount(document)
-  );
-  const averageDocumentLength =
-    documentLengths.reduce((a, b) => a + b, 0) / documents.length;
+  const documentLengths = documents.map((document: string) => getWordCount(document));
+  const averageDocumentLength = documentLengths.reduce((a, b) => a + b, 0) / documents.length;
   const scores = documents.map((document: string, index: number) => {
     const score = keywords
       .map((keyword: string) => {
@@ -96,13 +87,12 @@ export function BM25(
         const documentLength = documentLengths[index];
         return (
           (inverseDocumentFrequency * (termFrequency * (k1 + 1))) /
-          (termFrequency +
-            k1 * (1 - b + (b * documentLength) / averageDocumentLength))
+          (termFrequency + k1 * (1 - b + (b * documentLength) / averageDocumentLength))
         );
       })
       .reduce((a: number, b: number) => a + b, 0);
     if (sorter) {
-      return { score, document } as BMDocument
+      return { score, document } as BMDocument;
     }
     return score;
   });

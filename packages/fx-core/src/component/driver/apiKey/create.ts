@@ -30,12 +30,8 @@ import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
 import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
 import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
 import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";
-import {
-  logMessageKeys,
-  maxDomainPerApiKey,
-  maxSecretLength,
-  minSecretLength,
-} from "./utility/constants";
+import { logMessageKeys, maxSecretLength, minSecretLength } from "./utility/constants";
+import { getDomain, loadStateFromEnv, validateDomain } from "./utility/utility";
 
 const actionName = "apiKey/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/apiKey-register";
@@ -61,7 +57,7 @@ export class CreateApiKeyDriver implements StepDriver {
         throw new OutputEnvironmentVariableUndefinedError(actionName);
       }
 
-      const state = this.loadStateFromEnv(outputEnvVarNames) as CreateApiKeyOutputs;
+      const state = loadStateFromEnv(outputEnvVarNames) as CreateApiKeyOutputs;
       const appStudioTokenRes = await context.m365TokenProvider.getAccessToken({
         scopes: AppStudioScopes,
       });
@@ -95,8 +91,8 @@ export class CreateApiKeyDriver implements StepDriver {
 
         this.validateArgs(args);
 
-        const domains = await this.getDomain(args, context);
-        this.validateDomain(domains);
+        const domains = await getDomain(args, context);
+        validateDomain(domains, actionName);
 
         const apiKey = await this.mapArgsToApiSecretRegistration(
           context.m365TokenProvider,
@@ -144,17 +140,6 @@ export class CreateApiKeyDriver implements StepDriver {
     }
   }
 
-  // Needs to validate the parameters outside of the function
-  private loadStateFromEnv(
-    outputEnvVarNames: Map<string, string>
-  ): Record<string, string | undefined> {
-    const result: Record<string, string | undefined> = {};
-    for (const [propertyName, envVarName] of outputEnvVarNames) {
-      result[propertyName] = process.env[envVarName];
-    }
-    return result;
-  }
-
   private loadClientSecret(): string | undefined {
     const clientSecret = process.env[QuestionNames.ApiSpecApiKey];
     return clientSecret;
@@ -170,44 +155,6 @@ export class CreateApiKeyDriver implements StepDriver {
     }
 
     return true;
-  }
-
-  // TODO: need to add logic to read domain from env if need to support non-lifecycle commands
-  private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<string[]> {
-    const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
-    const parser = new SpecParser(absolutePath, {
-      allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
-      allowMultipleParameters: isMultipleParametersEnabled(),
-    });
-    const listResult = await parser.list();
-    const operations = listResult.APIs.filter((value) => value.isValid);
-    const domains = operations
-      .filter((value) => {
-        const auth = value.auth;
-        return (
-          auth &&
-          auth.authScheme.type === "http" &&
-          auth.authScheme.scheme === "bearer" &&
-          auth.name === args.name
-        );
-      })
-      .map((value) => {
-        return value.server;
-      })
-      .filter((value, index, self) => {
-        return self.indexOf(value) === index;
-      });
-    return domains;
-  }
-
-  private validateDomain(domain: string[]): void {
-    if (domain.length > maxDomainPerApiKey) {
-      throw new ApiKeyDomainInvalidError(actionName);
-    }
-
-    if (domain.length === 0) {
-      throw new ApiKeyFailedToGetDomainError(actionName);
-    }
   }
 
   private validateArgs(args: CreateApiKeyArgs): void {

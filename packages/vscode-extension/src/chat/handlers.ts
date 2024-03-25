@@ -66,13 +66,13 @@ export function officeAddinChatRequestHandler(
 ): ProviderResult<ICopilotChatResult> {
   followupProvider.clearFollowups();
   if (request.command == OfficeAddinChatCommand.Create) {
-    return Correlator.run(officeAddinCreateCommandHandler, request, context, response, token);
+    return officeAddinCreateCommandHandler(request, context, response, token);
   } else if (request.command == OfficeAddinChatCommand.GenerateCode) {
-    return Correlator.run(generatecodeCommandHandler, request, context, response, token);
+    return generatecodeCommandHandler(request, context, response, token);
   } else if (request.command == OfficeAddinChatCommand.NextStep) {
-    return Correlator.run(officeAddinNextStepCommandHandler, request, context, response, token);
+    return officeAddinNextStepCommandHandler(request, context, response, token);
   } else {
-    return Correlator.run(defaultHandler, request, context, response, token);
+    return defaultHandler(request, context, response, token);
   }
 }
 

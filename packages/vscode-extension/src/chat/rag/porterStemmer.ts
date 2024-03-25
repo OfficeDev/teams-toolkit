@@ -132,14 +132,14 @@ export function stemmer(value: any) {
   }
 
   // Step 2.
-  //if ((match = step2.exec(result)) && gt0.test(match[1])) {
-  //  result = match[1] + step2list[match[2]]
-  //}
-  //
+  if ((match = step2.exec(result)) && gt0.test(match[1])) {
+    result = match[1] + step2list[match[2] as keyof typeof step2list];
+  }
+
   //// Step 3.
-  //if ((match = step3.exec(result)) && gt0.test(match[1])) {
-  //  result = match[1] + step3list[match[2]]
-  //}
+  if ((match = step3.exec(result)) && gt0.test(match[1])) {
+    result = match[1] + step3list[match[2] as keyof typeof step3list];
+  }
 
   // Step 4.
   if ((match = step4.exec(result))) {

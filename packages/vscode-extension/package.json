@@ -1348,6 +1348,7 @@
     },
     "chatParticipants": [
       {
+        "id": "ms-teams-vscode-extension.teams",
         "name": "teams",
         "description": "%teamstoolkit.chatParticipants.teams.description%",
         "commands": [

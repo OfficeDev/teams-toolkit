@@ -27,6 +27,7 @@ import { TelemetryMetadata } from "../../telemetryData";
 import { showFileTree } from "./createCommandHandler";
 import { localize } from "../../../utils/localizeUtils";
 import { CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID } from "../../consts";
+import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
 
 export default async function officeAddinCreateCommandHandler(
   request: ChatRequest,
@@ -67,7 +68,10 @@ async function matchOfficeAddinProject(
   token: CancellationToken,
   telemetryMetadata: ITelemetryMetadata
 ): Promise<ProjectMetadata | undefined> {
-  const allOfficeAddinProjectMetadata = [...(await getOfficeAddinSampleMetadata())];
+  const allOfficeAddinProjectMetadata = [
+    ...getOfficeAddinTemplateMetadata(),
+    ...(await getOfficeAddinSampleMetadata()),
+  ];
   const messages = [
     getOfficeAddinProjectMatchSystemPrompt(allOfficeAddinProjectMetadata), // TODO: Implement the getOfficeAddinProjectMatchSystemPrompt.
     new LanguageModelChatUserMessage(request.prompt),
@@ -113,12 +117,19 @@ async function getOfficeAddinSampleMetadata(): Promise<ProjectMetadata[]> {
   return result;
 }
 
-function getOfficeAddinTemplateMetadata(): ProjectMetadata {
-  return {
-    id: "template",
-    type: "template",
-    platform: "WXP",
-    name: localize("teamstoolkit.chatParticipants.create.template"),
-    description: localize("teamstoolkit.chatParticipants.create.templateDescription"),
-  };
+function getOfficeAddinTemplateMetadata(): ProjectMetadata[] {
+  return officeAddinTemplateMeatdata.map((config) => {
+    return {
+      id: config.id,
+      type: "template",
+      platform: "WXP",
+      name: config.name,
+      description: config.description,
+      data: {
+        capabilities: config["capabilities"],
+        "project-type": config["project-type"],
+        "addin-office-capability": config["addin-office-capability"],
+      },
+    };
+  });
 }

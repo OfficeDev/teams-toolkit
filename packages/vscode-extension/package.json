@@ -1524,6 +1524,7 @@
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",
+    "stemmer": "^2.0.1",
     "tmp": "^0.2.1",
     "validator": "^13.7.0",
     "vscode-tas-client": "^0.1.75"

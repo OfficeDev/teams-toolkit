@@ -4,6 +4,17 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
+### April 01, 2024
+
+#### New Features
+
+- **Word, Excel and PowerPoint Add-ins in Teams Toolkit**
+![WXP Add-in](https://github.com/OfficeDev/TeamsFx/assets/11220663/89612209-cddb-4480-a1c8-9a67e2288b00)
+Teams Toolkit now supports Microsoft Word, Excel, or PowerPoint JavaScript add-in development. This support enables developers to quickly get started and build add-ins with high productivity, featuring:
+  - A wizard in Command Palette that guides developers through creating a Word, Excel, or PowerPoint add-in project with appropriate configuration and dependencies.
+  - Templates providing sample code and UI elements for various add-in types such as task pane, content, or ribbon. Developers can customize these templates to create their own add-in projects.
+  - A side pane offering a unified and centralized experience for checking dependencies, running and debugging add-ins, managing lifecycle, leveraging utility, getting help, and providing feedback.
+
 ### March 19, 2024
 
 #### New Features

@@ -2,7 +2,7 @@
   "name": "teamsfx-template-api",
   "version": "1.0.0",
   "engines": {
-    "node": "16 || 18"
+    "node": "18 || 20"
   },
   "main": "src/functions/*.js",
   "scripts": {

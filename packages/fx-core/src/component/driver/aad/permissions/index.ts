@@ -68,7 +68,7 @@ export function getDetailedGraphPermissionMap(): any {
 
   graphPermission.appRoles.forEach((role) => {
     map.roleIds[role.id] = {
-      // value is the scope name
+      // value is the role name
       value: role.value,
     };
     map.roles[role.value] = role.id;

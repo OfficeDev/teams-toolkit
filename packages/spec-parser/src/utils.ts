@@ -796,7 +796,7 @@ export class Utils {
     }
 
     // No supported API
-    const validAPIs = Object.entries(apiMap).filter(([key, value]) => value.isValid);
+    const validAPIs = Object.entries(apiMap).filter(([, value]) => value.isValid);
     if (validAPIs.length === 0) {
       errors.push({
         type: ErrorType.NoSupportedApi,
@@ -807,7 +807,7 @@ export class Utils {
     // OperationId missing
     const apisMissingOperationId: string[] = [];
     for (const key in apiMap) {
-      const { operation, isValid, reason } = apiMap[key];
+      const { operation } = apiMap[key];
       if (!operation.operationId) {
         apisMissingOperationId.push(key);
       }

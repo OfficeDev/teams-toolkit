@@ -258,12 +258,8 @@ export enum TelemetryEvent {
   FindSimilarIssues = "find-similar-issues",
 
   // Copilot Chat
-  CopilotChatCreateStart = "copilot-chat-create-start",
-  CopilotChatCreate = "copilot-chat-create",
-  CopilotChatNextStepStart = "copilot-chat-next-step-start",
-  CopilotChatNextStep = "copilot-chat-next-step",
-  CopilotChatDefaultStart = "copilot-chat-default-start",
-  CopilotChatDefault = "copilot-chat-default",
+  CopilotChatStart = "copilot-chat-start",
+  CopilotChat = "copilot-chat",
   CopilotChatFeedback = "copilot-chat-feedback",
 }
 
@@ -365,12 +361,11 @@ export enum TelemetryProperty {
   SampleFilters = "sample-filters",
   Layout = "layout",
   // Used in ChatParticipant
-  CopilotChatTokenCount = "token-count",
-  CopilotChatTimeToRequest = "time-to-request",
-  CopilotChatTimeToFirstToken = "time-to-first-token",
-  CopilotChatTimeToComplete = "time-to-complete",
-  CopilotChatFeedbackHelpful = "helpful",
-  CopilotChatSlashCommand = "slash-command",
+  CopilotChatTokenCount = "copilot-chat-token-count",
+  CopilotChatTimeToComplete = "copilot-chat-time-to-complete",
+  CopilotChatFeedbackHelpful = "copilot-chat-helpful",
+  CopilotChatCommand = "copilot-chat-command",
+  CopilotChatRequestId = "copilot-chat-request-id",
 }
 
 export enum TelemetryMeasurements {

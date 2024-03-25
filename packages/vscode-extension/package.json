@@ -1348,7 +1348,7 @@
     },
     "chatParticipants": [
       {
-        "id": "teams",
+        "id": "ms-teams-vscode-extension.teams",
         "name": "teams",
         "description": "%teamstoolkit.chatParticipants.teams.description%",
         "commands": [
@@ -1363,7 +1363,7 @@
         ]
       },
       {
-        "id": "officeaddin",
+        "id": "ms-teams-vscode-extension.officeaddin",
         "name": "officeaddin",
         "description": "%teamstoolkit.chatParticipants.officeaddin.description%",
         "commands": [

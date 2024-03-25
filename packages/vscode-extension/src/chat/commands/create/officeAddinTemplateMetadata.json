@@ -1,0 +1,113 @@
+[
+    {
+        "id": "word-taskpane",
+        "addin-office-capability": "word",
+        "capabilities" : "taskpane",
+        "name" : "Word Taskpane",
+        "project-type": "office-addin-type",
+        "description": "This project is a Word taskpane add-in template."
+    },
+    {
+        "id": "word-sso",
+        "addin-office-capability": "word",
+        "capabilities" : "sso",
+        "name" : "Word SSO",
+        "project-type": "office-addin-type",
+        "description": "This project is a Word add-in with Single Sign On capabilities."
+    },
+    {
+        "id": "word-react",
+        "addin-office-capability": "word",
+        "capabilities" : "react",
+        "name" : "Word React",
+        "project-type": "office-addin-type",
+        "description": "This project is a Word add-in with React framework."
+    },
+    {
+        "id": "word-manifest",
+        "addin-office-capability": "word",
+        "capabilities" : "manifest",
+        "name" : "Word Manifest",
+        "project-type": "office-addin-type",
+        "description": "This project is a Word add-in with a manifest file only."
+    },
+    {
+        "id": "excel-taskpane",
+        "addin-office-capability": "excel",
+        "capabilities" : "taskpane",
+        "name" : "Excel Taskpane",
+        "project-type": "office-addin-type",
+        "description": "This project is an Excel taskpane add-in template."
+    },
+    {
+        "id": "excel-sso",
+        "addin-office-capability": "excel",
+        "capabilities" : "sso",
+        "name" : "Excel SSO",
+        "project-type": "office-addin-type",
+        "description": "This project is an Excel add-in with Single Sign On capabilities."
+    },
+    {
+        "id": "excel-react",
+        "addin-office-capability": "excel",
+        "capabilities" : "react",
+        "name" : "Excel React",
+        "project-type": "office-addin-type",
+        "description": "This project is an Excel add-in with React framework."
+    },
+    {
+        "id": "excel-manifest",
+        "addin-office-capability": "excel",
+        "capabilities" : "manifest",
+        "name" : "Excel Manifest",
+        "project-type": "office-addin-type",
+        "description": "This project is an Excel add-in with a manifest file only."
+    },
+    {
+        "id": "excel-cf",
+        "addin-office-capability": "excel",
+        "capabilities" : "cfJS",
+        "name" : "Excel Custom Functions",
+        "project-type": "office-addin-type",
+        "description": "This project is an Excel add-in leveraging Custom Functions using a JavaScript-only Runtime."
+    },{
+        "id": "excel-cf-shared",
+        "addin-office-capability": "excel",
+        "capabilities" : "cfShared",
+        "name" : "Excel Custom Functions Shared Runtime",
+        "project-type": "office-addin-type",
+        "description": "This project is an Excel add-in leveraging Custom Functions using a Shared Runtime."
+    },
+    {
+        "id": "powerpoint-taskpane",
+        "addin-office-capability": "powerpoint",
+        "capabilities" : "taskpane",
+        "name" : "Powerpoint Taskpane",
+        "project-type": "office-addin-type",
+        "description": "This project is a Powerpoint taskpane add-in template."
+    },
+    {
+        "id": "powerpoint-sso",
+        "addin-office-capability": "powerpoint",
+        "capabilities" : "sso",
+        "name" : "Powerpoint SSO",
+        "project-type": "office-addin-type",
+        "description": "This project is a Powerpoint add-in with Single Sign On capabilities."
+    },
+    {
+        "id": "powerpoint-taskpane",
+        "addin-office-capability": "powerpoint",
+        "capabilities" : "react",
+        "name" : "Powerpoint Taskpane",
+        "project-type": "office-addin-type",
+        "description": "This project is a Powerpoint add-in with React framework."
+    },
+    {
+        "id": "powerpoint-taskpane",
+        "addin-office-capability": "powerpoint",
+        "capabilities" : "manifest",
+        "name" : "Powerpoint Taskpane",
+        "project-type": "office-addin-type",
+        "description": "This project is a Powerpoint add-in with a manifest file only."
+    }
+]

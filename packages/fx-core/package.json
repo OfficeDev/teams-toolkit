@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -41,6 +41,7 @@
     "test:generator": "nyc mocha \"tests/component/generator/*.test.ts\"",
     "test:upgrade": "npx mocha \"tests/core/middleware/migration/*.test.ts\"",
     "test:officeAddinGenerator": "nyc mocha \"tests/component/generator/officeAddinGenerator.test.ts\"",
+    "test:officeXMLAddinGenerator": "nyc mocha \"tests/component/generator/officeXMLAddinGenerator.test.ts\"",
     "test:scriptDriver": "nyc mocha \"tests/component/driver/script/scriptDriver.test.ts\"",
     "test:rghelper": "nyc mocha \"tests/component/resourceGroupHelper.test.ts\"",
     "test:manifestUtil": "nyc mocha \"tests/component/resource/appManifest/manifestUtils.test.ts\"",

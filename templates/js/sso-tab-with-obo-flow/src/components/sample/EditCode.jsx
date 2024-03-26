@@ -6,8 +6,8 @@ var functionName = config.apiName || "myFunc";
 export function EditCode(props) {
   const { showFunction, tabCodeEntry, functionCodePath } = {
     showFunction: true,
-    tabCodeEntry: "tabs/src/index.jsx",
-    functionCodePath: `api/${functionName}/index.js`,
+    tabCodeEntry: "src/index.jsx",
+    functionCodePath: `api/src/functions/${functionName}.js`,
     ...props,
   };
   return (

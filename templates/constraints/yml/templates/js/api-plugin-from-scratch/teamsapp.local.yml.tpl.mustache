@@ -1,0 +1,21 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#script}} FUNC, FUNC_NAME: repair {{/script}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+
+deploy:
+{{#devToolInstall}} func, funcToolsVersion: ~4.0.5530 {{/devToolInstall}}
+
+{{#cliRunNpmCommand}} install, args: install --no-audit {{/cliRunNpmCommand}}

@@ -12,7 +12,7 @@
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
-        "@azure/functions": "^4.1.0"
+        "@azure/functions": "^4.3.0"
     },
     "devDependencies": {
         "env-cmd": "^10.1.0",

@@ -331,6 +331,8 @@ export const STATIC_TABS_TPL_EXISTING_APP: IStaticTab[] = [
 
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
 export const STATIC_TABS_MAX_ITEMS = 16;
+// Check validation result interval
+export const CEHCK_VALIDATION_RESULTS_INTERVAL_SECONDS = 60;
 
 /**
  * Language codes.

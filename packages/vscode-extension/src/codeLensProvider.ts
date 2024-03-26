@@ -643,3 +643,35 @@ export class TeamsAppYamlCodeLensProvider implements vscode.CodeLensProvider {
     }
   }
 }
+
+export class OfficeDevManifestCodeLensProvider implements vscode.CodeLensProvider {
+  manifestIdRegex = /<Id>([a-zA-Z0-9-]*)<\/Id>/g;
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    const regex = new RegExp(this.manifestIdRegex);
+    let matches;
+    while ((matches = regex.exec(text)) !== null) {
+      const match = matches[1];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+      const command = {
+        title: "🔑" + localize("teamstoolkit.codeLens.generateManifestGUID"),
+        command: "fx-extension.generateManifestGUID",
+        arguments: [match, range],
+      };
+      if (range) {
+        codeLenses.push(new vscode.CodeLens(range, command));
+      }
+    }
+    return codeLenses;
+  }
+}

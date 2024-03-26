@@ -35,6 +35,7 @@ import {
   apiSpecLocationQuestion,
 } from "./create";
 import { QuestionNames } from "./questionNames";
+import { isAsyncAppValidationEnabled } from "../common/featureFlags";
 
 export function listCollaboratorQuestionNode(): IQTreeNode {
   const selectTeamsAppNode = selectTeamsAppManifestQuestionNode();
@@ -136,6 +137,10 @@ export function validateTeamsAppQuestionNode(): IQTreeNode {
       },
       {
         condition: { equals: TeamsAppValidationOptions.package().id },
+        data: selectTeamsAppPackageQuestion(),
+      },
+      {
+        condition: { equals: TeamsAppValidationOptions.testCases().id },
         data: selectTeamsAppPackageQuestion(),
       },
     ],
@@ -360,10 +365,16 @@ function confirmManifestQuestion(isTeamsApp = true, isLocal = false): SingleSele
 }
 
 function selectTeamsAppValidationMethodQuestion(): SingleSelectQuestion {
+  const options = [TeamsAppValidationOptions.schema(), TeamsAppValidationOptions.package()];
+
+  if (isAsyncAppValidationEnabled()) {
+    options.push(TeamsAppValidationOptions.testCases());
+  }
+
   return {
     name: QuestionNames.ValidateMethod,
     title: getLocalizedString("core.selectValidateMethodQuestion.validate.selectTitle"),
-    staticOptions: [TeamsAppValidationOptions.schema(), TeamsAppValidationOptions.package()],
+    staticOptions: options,
     type: "singleSelect",
   };
 }
@@ -395,6 +406,15 @@ export class TeamsAppValidationOptions {
       label: getLocalizedString("core.selectValidateMethodQuestion.validate.appPackageOption"),
       description: getLocalizedString(
         "core.selectValidateMethodQuestion.validate.appPackageOptionDescription"
+      ),
+    };
+  }
+  static testCases(): OptionItem {
+    return {
+      id: "validateWithTestCases",
+      label: getLocalizedString("core.selectValidateMethodQuestion.validate.testCasesOption"),
+      description: getLocalizedString(
+        "core.selectValidateMethodQuestion.validate.testCasesOptionDescription"
       ),
     };
   }

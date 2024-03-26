@@ -13,6 +13,6 @@ class TabSSOApimProxyTestCase extends CaseFactory {}
 new TabSSOApimProxyTestCase(
   TemplateProjectFolder.TabSSOApimProxy,
   25191528,
-  "v-ivanchen@microsoft.com",
+  "bowen.song@microsoft.com",
   ["tab", "aad"]
 ).test();

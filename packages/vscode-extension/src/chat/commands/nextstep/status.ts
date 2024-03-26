@@ -1,20 +1,34 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import {
+  AppStudioScopes,
+  getFixedCommonProjectSettings,
+  globalStateGet,
+  globalStateUpdate,
+} from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import { glob } from "glob";
-
-import Constants from "./constants";
+import * as os from "os";
+// import AzureTokenInstance from "../../../commonlib/azureLogin";
+import { signedIn } from "../../../commonlib/common/constant";
+// import M365TokenInstance from "../../../commonlib/m365Login";
+import { CommandKey } from "../../../constants";
 import { chatExecuteCommandHandler } from "./nextstepCommandHandler";
-import { CommandRunningStatus, MachineStatus, ProjectActionStatus, WholeStatus } from "./types";
+import { MachineStatus, ProjectActionStatus, WholeStatus } from "./types";
 
-function emptyProjectStatus(): ProjectActionStatus {
+const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
+const projectStatusFilePath = os.homedir() + `/.${ConfigFolderName}/projectStates.json`;
+
+export function emptyProjectStatus(): ProjectActionStatus {
   return {
-    debug: { result: "no run", time: new Date(0) },
-    provision: { result: "no run", time: new Date(0) },
-    deploy: { result: "no run", time: new Date(0) },
-    publish: { result: "no run", time: new Date(0) },
-    openReadMe: { result: "no run", time: new Date(0) },
+    [CommandKey.DebugInTestToolFromMessage]: { result: "no run", time: new Date(0) },
+    [CommandKey.LocalDebug]: { result: "no run", time: new Date(0) },
+    [CommandKey.Provision]: { result: "no run", time: new Date(0) },
+    [CommandKey.Deploy]: { result: "no run", time: new Date(0) },
+    [CommandKey.Publish]: { result: "no run", time: new Date(0) },
+    [CommandKey.OpenReadMe]: { result: "no run", time: new Date(0) },
   };
 }
 
@@ -24,7 +38,8 @@ export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
       machineStatus: await getMachineStatus(),
     };
   } else {
-    const projectId = await getProjectId(folder);
+    const projectSettings = getFixedCommonProjectSettings(folder);
+    const projectId = projectSettings?.projectId;
     const actionStatus = (await getProjectStatus(projectId ?? folder)) ?? emptyProjectStatus();
     const codeModifiedTime = {
       source: await getFileModifiedTime(`${folder}/**/*.{ts,tsx,js,jsx}`),
@@ -46,33 +61,38 @@ export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
 }
 
 export async function getMachineStatus(): Promise<MachineStatus> {
-  const p = resolveEnvInPath(Constants.globalStatePath);
-  let firstInstalled = true;
-  if (await fs.pathExists(p)) {
-    try {
-      const content = await fs.readFile(p, "utf8");
-      const json = JSON.parse(content);
-      firstInstalled = !(json["ms-teams-vscode-extension.welcomePage.shown"] ?? false);
-    } catch (e) {
-      console.error(e);
+  const firstInstalled = !(await globalStateGet(welcomePageKey, false));
+  const preCheckTime = new Date(
+    Date.parse(
+      await globalStateGet(CommandKey.ValidateGetStartedPrerequisites, new Date(0).toString())
+    )
+  );
+  let resultOfPrerequistes: string | undefined = undefined;
+  if (Date.now() - preCheckTime.getTime() > 6 * 60 * 60 * 1000) {
+    const result = await chatExecuteCommandHandler(CommandKey.ValidateGetStartedPrerequisites);
+    resultOfPrerequistes = result.isErr() ? result.error.message : undefined;
+    if (!resultOfPrerequistes) {
+      await globalStateUpdate(CommandKey.ValidateGetStartedPrerequisites, new Date());
     }
   }
-  const result = await chatExecuteCommandHandler("fx-extension.validate-getStarted-prerequisites");
+  // const m365Status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
+  // const azureStatus = await AzureTokenInstance.getStatus();
   return {
     firstInstalled,
-    resultOfPrerequistes: result instanceof Error ? result.message : undefined,
-    m365LoggedIn: fs.existsSync(resolveEnvInPath(Constants.account.m365CachePath)),
-    azureLoggedIn: fs.existsSync(resolveEnvInPath(Constants.account.azureCachePath)),
+    resultOfPrerequistes,
+    m365LoggedIn: true,
+    azureLoggedIn: true,
+    // m365LoggedIn: m365Status.isOk() && m365Status.value.status === signedIn,
+    // azureLoggedIn: azureStatus.status === signedIn,
   };
 }
 
 export async function getProjectStatus(
   projectId: string
 ): Promise<ProjectActionStatus | undefined> {
-  const p = resolveEnvInPath(Constants.globalProjectStatePath);
-  if (await fs.pathExists(p)) {
+  if (await fs.pathExists(projectStatusFilePath)) {
     try {
-      const content = await fs.readFile(p, "utf8");
+      const content = await fs.readFile(projectStatusFilePath, "utf8");
       const json = JSON.parse(content, (_, value) => {
         const date = Date.parse(value);
         if (!isNaN(date)) {
@@ -89,22 +109,11 @@ export async function getProjectStatus(
   return undefined;
 }
 
-export async function setProjectStatus(
-  projectId: string,
-  command: string,
-  status: CommandRunningStatus
-) {
-  const projectStatus = (await getProjectStatus(projectId)) ?? emptyProjectStatus();
-  const newStatus = { ...projectStatus, [command]: status };
-  await saveProjectStatus(projectId, newStatus);
-}
-
 export async function saveProjectStatus(projectId: string, status: ProjectActionStatus) {
-  const p = resolveEnvInPath(Constants.globalProjectStatePath);
   let content = "{}";
-  if (await fs.pathExists(p)) {
+  if (await fs.pathExists(projectStatusFilePath)) {
     try {
-      content = await fs.readFile(p, "utf8");
+      content = await fs.readFile(projectStatusFilePath, "utf8");
     } catch (e) {
       console.error(e);
     }
@@ -112,28 +121,10 @@ export async function saveProjectStatus(projectId: string, status: ProjectAction
   try {
     const json = JSON.parse(content);
     json[projectId] = status;
-    await fs.writeFile(p, JSON.stringify(json, null, 2));
+    await fs.writeFile(projectStatusFilePath, JSON.stringify(json, null, 2));
   } catch (e) {
     console.error(e);
   }
-}
-
-export async function getProjectId(folder: string): Promise<string | undefined> {
-  const p = `${folder}/teamsapp.yml`;
-  if (await fs.pathExists(p)) {
-    try {
-      const content = await fs.readFile(p, "utf8");
-      const lines = content.split("\n");
-      for (const line of lines) {
-        if (line.startsWith("projectId:")) {
-          return line.split(":")[1].trim();
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  return undefined;
 }
 
 export async function getFileModifiedTime(pattern: string): Promise<Date> {
@@ -162,8 +153,4 @@ export async function getLaunchJSON(folder: string): Promise<string | undefined>
     return await fs.readFile(launchJSONPath, "utf-8");
   }
   return undefined;
-}
-
-export function resolveEnvInPath(p: string) {
-  return p.replace(/%([^%]+)%/g, (_, n) => process.env[n] as string);
 }

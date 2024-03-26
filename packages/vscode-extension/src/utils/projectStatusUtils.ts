@@ -10,7 +10,8 @@ import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 
 const projectStatusFilePath = os.homedir() + `/.${ConfigFolderName}/projectStates.json`;
 
-export const NecessaryActions: (keyof ProjectActionStatus)[] = [
+export const RecordedActions: (keyof ProjectActionStatus)[] = [
+  CommandKey.LocalDebug,
   CommandKey.Provision,
   CommandKey.Deploy,
   CommandKey.Publish,
@@ -56,7 +57,7 @@ export async function updateProjectStatus(
 ) {
   const projectSettings = getFixedCommonProjectSettings(fsPath);
   const p = projectSettings?.projectId ?? fsPath;
-  const actions = NecessaryActions.map((x) => x.toString());
+  const actions = RecordedActions.map((x) => x.toString());
   if (actions.includes(commandName)) {
     /// save project action running status
     const status = (await getProjectStatus(p)) ?? emptyProjectStatus();

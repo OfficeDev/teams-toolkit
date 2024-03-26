@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { CommandKey } from "../../../constants";
-import { NecessaryActions } from "../../../utils/projectStatusUtils";
+import { RecordedActions } from "../../../utils/projectStatusUtils";
 import { WholeStatus } from "./types";
 
 /**
@@ -40,7 +40,7 @@ export function isPrequisitesCheckSucceeded(status: WholeStatus): boolean {
 export function isDidNoActionAfterScaffolded(status: WholeStatus): boolean {
   const actionStatus = status.projectOpened?.actionStatus;
   if (actionStatus) {
-    for (const key of NecessaryActions) {
+    for (const key of RecordedActions) {
       if (actionStatus[key].result !== "no run") {
         return false;
       }

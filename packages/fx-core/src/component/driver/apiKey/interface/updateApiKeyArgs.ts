@@ -7,5 +7,5 @@ export interface UpdateApiKeyArgs {
   appId: string; // Teams app id
   apiSpecPath: string; // The location of api spec file
   applicableToApps?: string; // Which app can access the API key? Values can be "SpecificApp" or "AnyApp". Default is "AnyApp".
-  targetAudience?: string; // Which tenant can access the API key? Values can be "HomeTenant" or "AnyTenant". Default is "HomeTenant".
+  targetAudience?: string; // Which tenant can access the API key? Values can be "HomeTenant" or "AnyTenant". Default is "AnyTenant".
 }

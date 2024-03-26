@@ -36,3 +36,7 @@ export const constants = {
   aadAppPasswordDisplayName: "default",
   oauthAuthorityPrefix: "https://login.microsoftonline.com",
 };
+
+export const telemetryKeys = {
+  newAadApp: "new-aad-app",
+};

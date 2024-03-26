@@ -25,6 +25,8 @@ import { CreateAadAppOutput, OutputKeys } from "./interface/createAadAppOutput";
 import { SignInAudience } from "./interface/signInAudience";
 import { AadAppClient } from "./utility/aadAppClient";
 import { constants, descriptionMessageKeys, logMessageKeys } from "./utility/constants";
+import { WrapDriverContext } from "../util/wrapUtil";
+import { telemetryKeys } from "./utility/constants";
 
 const actionName = "aadApp/create"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/aadapp-create";
@@ -37,10 +39,19 @@ export class CreateAadAppDriver implements StepDriver {
   description = getLocalizedString(descriptionMessageKeys.create);
   readonly progressTitle = getLocalizedString("driver.aadApp.progressBar.createAadAppTitle");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateAadAppArgs,
     context: DriverContext,
+    outputEnvVarNames?: Map<string, string>
+  ): Promise<ExecutionResult> {
+    const wrapDriverContext = new WrapDriverContext(context, actionName, actionName);
+    return await this.executeInternal(args, wrapDriverContext, outputEnvVarNames);
+  }
+
+  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  private async executeInternal(
+    args: CreateAadAppArgs,
+    context: WrapDriverContext,
     outputEnvVarNames?: Map<string, string>
   ): Promise<ExecutionResult> {
     const summaries: string[] = [];
@@ -62,6 +73,7 @@ export class CreateAadAppDriver implements StepDriver {
             outputEnvVarNames.get(OutputKeys.clientId)
           )
         );
+        context.addTelemetryProperties({ [telemetryKeys.newAadApp]: "true" });
         // Create new Microsoft Entra app if no client id exists
         const signInAudience = args.signInAudience
           ? args.signInAudience
@@ -86,6 +98,7 @@ export class CreateAadAppDriver implements StepDriver {
             outputEnvVarNames.get(OutputKeys.clientId)
           )
         );
+        context.addTelemetryProperties({ [telemetryKeys.newAadApp]: "false" });
       }
 
       if (args.generateClientSecret) {

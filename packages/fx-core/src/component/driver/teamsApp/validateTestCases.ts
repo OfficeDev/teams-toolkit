@@ -166,11 +166,11 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       const failed = resultResp.validationResults?.failures?.length ?? 0;
       const skipped = resultResp.validationResults?.skipped?.length ?? 0;
       const summaryStrArr = [];
-      if (warns > 0) {
-        summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.warning", warns));
-      }
       if (failed > 0) {
         summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.failed", failed));
+      }
+      if (warns > 0) {
+        summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.warning", warns));
       }
       if (skipped > 0) {
         summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.skipped", skipped));

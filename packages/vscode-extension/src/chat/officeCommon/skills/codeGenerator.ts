@@ -162,9 +162,9 @@ export class CodeGenerator implements ISkill {
     if (scenarioSamples.size > 0) {
       const codeSnippets: string[] = [];
       scenarioSamples.forEach((sample, api) => {
-        codeSnippets.push(`- ${sample.scenario}:
+        codeSnippets.push(`- ${sample.description}:
                               \`\`\`typescript
-                              ${compressCode(sample.sample)}
+                              ${compressCode(sample.codeSample)}
                               \`\`\`\n`);
       });
 

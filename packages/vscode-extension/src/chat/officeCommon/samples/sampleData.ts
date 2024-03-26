@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 export class SampleData {
   docLink: string;
-  sample: string;
-  scenario: string;
+  codeSample: string;
+  description: string;
   name: string;
   definition: string;
   usage: string;
@@ -11,14 +11,14 @@ export class SampleData {
   constructor(
     name: string,
     docLink: string,
-    sample: string,
-    scenario: string,
+    codeSample: string,
+    description: string,
     definition: string,
     usage: string
   ) {
     this.docLink = docLink;
-    this.sample = sample;
-    this.scenario = scenario;
+    this.codeSample = codeSample;
+    this.description = description;
     this.name = name;
     this.definition = definition;
     this.usage = usage;

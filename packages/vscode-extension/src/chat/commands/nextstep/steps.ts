@@ -1,15 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { CommandKey } from "../../../constants";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../consts";
 import {
   canPreviewInTestTool,
   isAzureAccountLogin,
+  isDebugSucceededAfterSourceCodeChanged,
   isDeployedAfterSourceCodeChanged,
   isDidNoActionAfterScaffolded,
   isFirstInstalled,
   isHaveReadMe,
-  isLocalDebugSucceededAfterSourceCodeChanged as isDebugSucceededAfterSourceCodeChanged,
   isM365AccountLogin,
   isPrequisitesCheckSucceeded,
   isProjectOpened,
@@ -18,7 +19,7 @@ import {
 } from "./condition";
 import { NextStep, WholeStatus } from "./types";
 
-export const AllSteps: NextStep[] = [
+export const allSteps: () => NextStep[] = () => [
   {
     title: "Teams Toolkit",
     description: `Teams Toolkit makes it simple to get started with app development for Microsoft Teams using Visual Studio Code. You can start with a project template for a common custom app built for your org (LOB app) scenarios or from a sample. You can save setup time with automated app registration and configuration. You can run and debug your app in Teams directly from familiar tools. You can smart defaults for hosting in Azure using infrastructure-as-code and Bicep. You can create unique configurations like dev, test, and prod using the environment features.`,
@@ -28,12 +29,12 @@ export const AllSteps: NextStep[] = [
       {
         title: "Open Get-Started Page",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.openWalkThrough"],
+        arguments: [CommandKey.OpenWelcome],
       },
       {
         title: "Open Document",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.openDocument"],
+        arguments: [CommandKey.OpenDocument],
       },
     ],
     followUps: [],
@@ -50,7 +51,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Open Sample Gallery",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.openSamples"],
+        arguments: [CommandKey.OpenSamples],
       },
     ],
     followUps: [
@@ -75,7 +76,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Check Prerequisites Again",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.validate-getStarted-prerequisites"],
+        arguments: [CommandKey.ValidateGetStartedPrerequisites],
       },
     ],
     followUps: [],
@@ -108,7 +109,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Open README",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.openReadMe"],
+        arguments: [CommandKey.OpenReadMe],
       },
     ],
     followUps: [],
@@ -128,7 +129,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Preview in Test Tool",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.debugInTestToolFromMessage"],
+        arguments: [CommandKey.DebugInTestToolFromMessage],
       },
     ],
     followUps: [],
@@ -149,7 +150,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Sign in to Microsoft 365 Account",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.signinM365"],
+        arguments: [CommandKey.SigninM365],
       },
     ],
     followUps: [],
@@ -191,7 +192,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Preview in Micosoft Teams",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.localdebug"],
+        arguments: [CommandKey.LocalDebug],
       },
     ],
     followUps: [],
@@ -220,7 +221,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Open README",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.openReadMe"],
+        arguments: [CommandKey.OpenReadMe],
       },
     ],
     followUps: [],
@@ -256,7 +257,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Sign in to Azure Account",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.signinAzure"],
+        arguments: [CommandKey.SigninAzure],
       },
     ],
     followUps: [],
@@ -279,7 +280,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Provision Azure resources",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.provision"],
+        arguments: [CommandKey.Provision],
       },
     ],
     followUps: [],
@@ -301,7 +302,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Deploy to Cloud",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.deploy"],
+        arguments: [CommandKey.Deploy],
       },
     ],
     followUps: [],
@@ -323,7 +324,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Publish the App",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.publish"],
+        arguments: [CommandKey.Publish],
       },
     ],
     followUps: [],
@@ -345,7 +346,7 @@ export const AllSteps: NextStep[] = [
       {
         title: "Remote Preview",
         command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: ["fx-extension.preview"],
+        arguments: [CommandKey.Preview],
       },
     ],
     followUps: [],

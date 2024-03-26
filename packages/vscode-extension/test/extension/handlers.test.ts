@@ -2600,7 +2600,7 @@ describe("autoOpenProjectHandler", () => {
     const result = await handlers.validateGetStartedPrerequisitesHandler();
 
     chai.assert.isTrue(sendTelemetryStub.called);
-    chai.assert.equal(result, "1");
+    chai.assert.isTrue(result.isErr());
   });
 
   it("registerAccountMenuCommands() - signedinM365", async () => {

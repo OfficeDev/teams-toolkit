@@ -3,12 +3,20 @@
 
 import { commands } from "vscode";
 
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 
+import {
+  emptyProjectStatus,
+  getProjectStatus,
+  saveProjectStatus,
+} from "./chat/commands/nextstep/status";
+import { NecessaryActions } from "./chat/commands/nextstep/types";
+import { workspaceUri } from "./globalVariables";
 import treeViewManager from "./treeview/treeViewManager";
 import { localize } from "./utils/localizeUtils";
+import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 
-type CommandHandler = (args?: unknown[]) => Promise<Result<unknown, FxError>>;
+type CommandHandler = (...args: unknown[]) => Promise<Result<unknown, FxError>>;
 
 interface TeamsFxCommand {
   name: string;
@@ -75,11 +83,27 @@ class CommandController {
     });
   }
 
-  public async runCommand(commandName: string, args: unknown[]) {
+  public async runCommand(commandName: string, ...args: unknown[]) {
     const command = this.commandMap.get(commandName);
     if (command) {
-      await command.callback(args);
+      const result = await command.callback(...args);
+      const projectSettings = getFixedCommonProjectSettings(workspaceUri?.fsPath);
+      const p = projectSettings?.projectId ?? workspaceUri?.fsPath;
+      const actions = NecessaryActions.map((x) => x.toString());
+      if (p && actions.includes(commandName)) {
+        /// save project action running status
+        const status = (await getProjectStatus(p)) ?? emptyProjectStatus();
+        await saveProjectStatus(p, {
+          ...status,
+          [commandName]: {
+            result: result.isOk() ? "success" : "fail",
+            time: new Date(),
+          },
+        });
+      }
+      return result;
     }
+    return ok<unknown, FxError>(undefined);
   }
 
   public async lockedByOperation(operation: string) {

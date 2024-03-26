@@ -1,32 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FxError, Result } from "@microsoft/teamsfx-api";
+import { isValidProject } from "@microsoft/teamsfx-core";
 import {
-  ChatRequest,
-  ChatContext,
-  ChatResponseStream,
   CancellationToken,
-  ChatResult,
+  ChatContext,
   ChatFollowup,
+  ChatRequest,
+  ChatResponseStream,
   LanguageModelChatUserMessage,
-  workspace,
   commands,
 } from "vscode";
-import { getWholeStatus, setProjectStatus } from "./status";
-import { AllSteps } from "./steps";
-import { NextStep, WholeStatus } from "./types";
-import { getTeamsApps, getCopilotResponseAsString } from "../../utils";
-import { describeScenarioSystemPrompt } from "../../prompts";
+import { workspaceUri } from "../../../globalVariables";
+import { ExtTelemetry } from "../../../telemetry/extTelemetry";
+import { TelemetryEvent, TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
 import { TeamsChatCommand } from "../../consts";
 import followupProvider from "../../followupProvider";
+import { describeScenarioSystemPrompt } from "../../prompts";
 import { ChatTelemetryData } from "../../telemetry";
 import { IChatTelemetryData, ICopilotChatResult } from "../../types";
-import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
-import { localize } from "../../../utils/localizeUtils";
-
-let teamsApp: string | undefined = undefined;
-let projectId: string | undefined = undefined;
+import { getCopilotResponseAsString } from "../../utils";
+import { getWholeStatus } from "./status";
+import { allSteps } from "./steps";
+import { NextStep, WholeStatus } from "./types";
 
 export default async function nextStepCommandHandler(
   request: ChatRequest,
@@ -38,11 +35,12 @@ export default async function nextStepCommandHandler(
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   // get all Teams apps under workspace
-  const teamsApps = getTeamsApps(workspace.workspaceFolders);
-  teamsApp = (teamsApps ?? [])[0];
+  const workspace = workspaceUri?.fsPath;
+  const teamsApp = isValidProject(workspace) ? workspace : undefined;
   const status: WholeStatus = await getWholeStatus(teamsApp);
-  projectId = status.projectOpened?.projectId;
-  const steps = AllSteps.filter((s) => s.condition(status)).sort((a, b) => a.priority - b.priority);
+  const steps = allSteps()
+    .filter((s) => s.condition(status))
+    .sort((a, b) => a.priority - b.priority);
   if (steps.length > 1) {
     response.markdown("Here are the next steps you can do:\n");
   }
@@ -101,30 +99,15 @@ async function describeStep(
   return await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
 }
 
-export async function chatExecuteCommandHandler(command: string, ...args: any[]) {
-  const p = projectId ?? teamsApp;
-  const needRecord = !!p && command.startsWith("fx-extension.");
-  let c = command.replace("fx-extension.", "").trim();
-  if (c.toLocaleLowerCase().includes("debug")) {
-    c = "debug";
-  }
-  try {
-    await commands.executeCommand(command, ...args);
-    // TODO: redefine this part when merging to TTK
-    if (needRecord) {
-      await setProjectStatus(p!, c, {
-        result: "success",
-        time: new Date(),
-      });
-    }
-  } catch (e) {
-    if (needRecord) {
-      await setProjectStatus(p!, c, {
-        result: "fail",
-        time: new Date(),
-      });
-    }
-    return e;
-  }
-  return undefined;
+export async function chatExecuteCommandHandler(
+  command: string,
+  ...args: unknown[]
+): Promise<Result<unknown, FxError>> {
+  /// TODO: add response id
+  const result = await commands.executeCommand<Result<unknown, FxError>>(
+    command,
+    TelemetryTriggerFrom.CopilotChat,
+    ...args
+  );
+  return result;
 }

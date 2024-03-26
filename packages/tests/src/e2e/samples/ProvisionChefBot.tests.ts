@@ -7,11 +7,25 @@
 
 import { TemplateProjectFolder } from "../../utils/constants";
 import { CaseFactory } from "./sampleCaseFactory";
+import { Executor } from "../../utils/executor";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
 
 class ChefBotTestCase extends CaseFactory {
+  public override async onCreate(
+    appName: string,
+    testFolder: string,
+    sampleName: TemplateProjectFolder
+  ): Promise<void> {
+    await Executor.openTemplateProject(
+      appName,
+      testFolder,
+      sampleName,
+      undefined,
+      "tree/js-1.1.1/js/samples"
+    );
+  }
   public override async onAfterCreate(projectPath: string): Promise<void> {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
 
@@ -25,7 +39,5 @@ class ChefBotTestCase extends CaseFactory {
 new ChefBotTestCase(
   TemplateProjectFolder.ChefBot,
   25227103,
-  "ning.tang@microsoft.com",
-  [],
-  { skipValidate: true }
+  "ning.tang@microsoft.com"
 ).test();

@@ -239,7 +239,7 @@ jobs:
         if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ChefBot')
         uses: actions/checkout@v3
         with:
-          repository: microsoft/teams-ai/tree/js-1.1.1/js/samples
+          repository: microsoft/teams-ai
           ref: main
           path: packages/tests/src/e2e/resource
 

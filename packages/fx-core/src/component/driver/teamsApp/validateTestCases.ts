@@ -6,7 +6,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import fs from "fs-extra";
 import * as path from "path";
-import { merge } from "lodash";
+import { get, merge } from "lodash";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
@@ -166,8 +166,18 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       const failed = resultResp.validationResults?.failures?.length ?? 0;
       const skipped = resultResp.validationResults?.skipped?.length ?? 0;
       const summaryStrArr = [];
+      const errorStrArr = [];
       if (failed > 0) {
         summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.failed", failed));
+        for (const failure of resultResp.validationResults.failures) {
+          errorStrArr.push(
+            getLocalizedString(
+              "driver.teamsApp.summary.validateWithTestCases.errorMessage",
+              failure.title,
+              failure.message
+            )
+          );
+        }
       }
       if (warns > 0) {
         summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.warning", warns));
@@ -179,6 +189,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
         summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.succeed", passed));
       }
       const summaryStr = summaryStrArr.join(", ");
+      const errorStr = errorStrArr.join("\n");
 
       if (resultResp.status === AsyncAppValidationStatus.Completed) {
         if (args.showMessage && context.ui) {
@@ -200,6 +211,9 @@ export class ValidateWithTestCasesDriver implements StepDriver {
             validationStatusUrl
           )
         );
+        if (failed > 0) {
+          context.logProvider.error(errorStr);
+        }
       } else {
         if (args.showMessage && context.ui) {
           void context.ui.showMessage(

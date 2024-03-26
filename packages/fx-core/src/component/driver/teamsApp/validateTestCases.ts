@@ -175,8 +175,9 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       if (skipped > 0) {
         summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.skipped", skipped));
       }
-      // always show passed count
-      summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.succeed", passed));
+      if (passed > 0) {
+        summaryStrArr.push(getLocalizedString("driver.teamsApp.summary.validate.succeed", passed));
+      }
       const summaryStr = summaryStrArr.join(", ");
 
       if (resultResp.status === AsyncAppValidationStatus.Completed) {

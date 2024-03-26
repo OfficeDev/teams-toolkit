@@ -212,7 +212,7 @@ jobs:
           path: packages/tests/src/e2e/resource
 
       - name: Download samples(rc)
-        if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false && contains(matrix.cases, 'SignatureOutlook') == false
+        if: github.event_name == 'workflow_dispatch' && startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ProactiveMessage') == false && contains(matrix.cases, 'SignatureOutlook') == false && contains(matrix.cases, 'ChefBot') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -232,6 +232,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Office-Add-in-samples
+          ref: main
+          path: packages/tests/src/e2e/resource
+
+      - name: Download samples from ai repo
+        if: startsWith(matrix.cases, './samples/') && contains(matrix.cases, 'ChefBot')
+        uses: actions/checkout@v3
+        with:
+          repository: microsoft/teams-ai/tree/js-1.1.1/js/samples
           ref: main
           path: packages/tests/src/e2e/resource
 

@@ -626,6 +626,7 @@ export namespace AppStudioClient {
    * Submit App Validation Request (In-App) for which App Definitions are stored at TDP.
    * @param teamsAppId
    * @param appStudioToken
+   * @param timeoutSeconds
    * @returns
    */
   export async function submitAppValidationRequest(
@@ -675,6 +676,7 @@ export namespace AppStudioClient {
    * Get App validation results by provided app validation id
    * @param appValidationId
    * @param appStudioToken
+   * @param timeoutSeconds
    * @returns
    */
   export async function getAppValidationById(

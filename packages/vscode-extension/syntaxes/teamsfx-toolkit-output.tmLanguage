@@ -186,6 +186,20 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
+                        <string>constant.regexp</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>([0-9]+ skipped[,. ]+)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.validate.summary.skipped</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
                         <string>comment.line</string>
                     </dict>
                 </dict>

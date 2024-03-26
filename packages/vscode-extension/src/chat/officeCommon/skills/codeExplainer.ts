@@ -14,6 +14,11 @@ import { getCopilotResponseAsString } from "../../utils";
 export class Explainer implements ISkill {
   name: string | undefined;
   capability: string | undefined;
+
+  constructor() {
+    this.name = "Explainer";
+    this.capability = "Explain code snippet";
+  }
   public canInvoke(request: ChatRequest, spec: Spec): boolean {
     return (
       !!spec.userInput &&

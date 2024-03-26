@@ -9,14 +9,14 @@ import { Printer } from "./printer";
 export class SkillsManager {
   private static instance: SkillsManager;
   private codeGenerator: ISkill;
-  private codeExplainer: ISkill; // Add this line
-  private printer: ISkill; // Add this line
+  private codeExplainer: ISkill;
+  private printer: ISkill;
 
   private constructor() {
     // Private constructor to prevent direct instantiation
     this.codeGenerator = new CodeGenerator();
-    this.printer = new Printer(); // Add this line
-    this.codeExplainer = new Explainer(); // Add this line
+    this.printer = new Printer();
+    this.codeExplainer = new Explainer();
   }
 
   public static getInstance(): SkillsManager {

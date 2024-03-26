@@ -12,6 +12,12 @@ import { Spec } from "./spec";
 export class Printer implements ISkill {
   name: string | undefined;
   capability: string | undefined;
+
+  constructor() {
+    this.name = "printer";
+    this.capability = "Print the output in a readable format to user";
+  }
+
   public canInvoke(request: ChatRequest, spec: Spec): boolean {
     return (
       !!spec.userInput &&

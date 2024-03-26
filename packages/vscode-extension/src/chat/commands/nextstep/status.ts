@@ -1,36 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import {
-  AppStudioScopes,
   getFixedCommonProjectSettings,
   globalStateGet,
   globalStateUpdate,
 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import { glob } from "glob";
-import * as os from "os";
 // import AzureTokenInstance from "../../../commonlib/azureLogin";
-import { signedIn } from "../../../commonlib/common/constant";
 // import M365TokenInstance from "../../../commonlib/m365Login";
 import { CommandKey } from "../../../constants";
 import { chatExecuteCommandHandler } from "./nextstepCommandHandler";
-import { MachineStatus, ProjectActionStatus, WholeStatus } from "./types";
+import { MachineStatus, WholeStatus } from "./types";
+import { emptyProjectStatus, getProjectStatus } from "../../../utils/projectStatusUtils";
 
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
-const projectStatusFilePath = os.homedir() + `/.${ConfigFolderName}/projectStates.json`;
-
-export function emptyProjectStatus(): ProjectActionStatus {
-  return {
-    [CommandKey.DebugInTestToolFromMessage]: { result: "no run", time: new Date(0) },
-    [CommandKey.LocalDebug]: { result: "no run", time: new Date(0) },
-    [CommandKey.Provision]: { result: "no run", time: new Date(0) },
-    [CommandKey.Deploy]: { result: "no run", time: new Date(0) },
-    [CommandKey.Publish]: { result: "no run", time: new Date(0) },
-    [CommandKey.OpenReadMe]: { result: "no run", time: new Date(0) },
-  };
-}
 
 export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
   if (!folder) {
@@ -85,46 +70,6 @@ export async function getMachineStatus(): Promise<MachineStatus> {
     // m365LoggedIn: m365Status.isOk() && m365Status.value.status === signedIn,
     // azureLoggedIn: azureStatus.status === signedIn,
   };
-}
-
-export async function getProjectStatus(
-  projectId: string
-): Promise<ProjectActionStatus | undefined> {
-  if (await fs.pathExists(projectStatusFilePath)) {
-    try {
-      const content = await fs.readFile(projectStatusFilePath, "utf8");
-      const json = JSON.parse(content, (_, value) => {
-        const date = Date.parse(value);
-        if (!isNaN(date)) {
-          return new Date(date);
-        } else {
-          return value;
-        }
-      });
-      return json[projectId] as ProjectActionStatus;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  return undefined;
-}
-
-export async function saveProjectStatus(projectId: string, status: ProjectActionStatus) {
-  let content = "{}";
-  if (await fs.pathExists(projectStatusFilePath)) {
-    try {
-      content = await fs.readFile(projectStatusFilePath, "utf8");
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  try {
-    const json = JSON.parse(content);
-    json[projectId] = status;
-    await fs.writeFile(projectStatusFilePath, JSON.stringify(json, null, 2));
-  } catch (e) {
-    console.error(e);
-  }
 }
 
 export async function getFileModifiedTime(pattern: string): Promise<Date> {

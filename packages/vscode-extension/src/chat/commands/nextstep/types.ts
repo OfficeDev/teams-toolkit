@@ -16,17 +16,7 @@ export interface MachineStatus {
   azureLoggedIn: boolean; // if the user has logged in Azure
 }
 
-export const NecessaryActions: (keyof ProjectActionStatus)[] = [
-  CommandKey.DebugInTestToolFromMessage,
-  CommandKey.LocalDebug,
-  CommandKey.Provision,
-  CommandKey.Deploy,
-  CommandKey.Publish,
-  CommandKey.OpenReadMe,
-];
-
 export interface ProjectActionStatus {
-  [CommandKey.DebugInTestToolFromMessage]: CommandRunningStatus; // the status of last debugging
   [CommandKey.LocalDebug]: CommandRunningStatus; // the status of last debugging
   [CommandKey.Provision]: CommandRunningStatus; // the status of last provisioning
   [CommandKey.Deploy]: CommandRunningStatus; // the status of last deploying

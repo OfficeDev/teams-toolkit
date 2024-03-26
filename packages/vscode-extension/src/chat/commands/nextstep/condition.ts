@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 import { CommandKey } from "../../../constants";
-import { NecessaryActions, WholeStatus } from "./types";
+import { NecessaryActions } from "../../../utils/projectStatusUtils";
+import { WholeStatus } from "./types";
 
 /**
  * if Teams Toolkit is first installed
@@ -59,18 +60,10 @@ export function isDebugSucceededAfterSourceCodeChanged(status: WholeStatus): boo
   if (!status.projectOpened) {
     return false;
   }
-  let lastDebugStatus = status.projectOpened.actionStatus["fx-extension.localdebug"];
-  if (
-    status.projectOpened.actionStatus["fx-extension.debugInTestToolFromMessage"].time >
-      lastDebugStatus.time &&
-    status.projectOpened.actionStatus["fx-extension.debugInTestToolFromMessage"].result ===
-      "success"
-  ) {
-    lastDebugStatus = status.projectOpened.actionStatus["fx-extension.debugInTestToolFromMessage"];
-  }
   return (
-    lastDebugStatus.result === "success" &&
-    lastDebugStatus.time > status.projectOpened.codeModifiedTime.source
+    status.projectOpened.actionStatus[CommandKey.LocalDebug].result === "success" &&
+    status.projectOpened.actionStatus[CommandKey.LocalDebug].time >
+      status.projectOpened.codeModifiedTime.source
   );
 }
 

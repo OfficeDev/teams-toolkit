@@ -240,7 +240,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: microsoft/teams-ai
-          ref: js-1.1.1
+          ref: main
           path: packages/tests/src/e2e/resource
 
       - name: run test

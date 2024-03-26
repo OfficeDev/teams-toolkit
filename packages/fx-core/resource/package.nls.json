@@ -597,6 +597,8 @@
   "driver.aadApp.error.generateSecretFailed": "Cannot generate client secret.",
   "driver.aadApp.error.invalidFieldInManifest": "Field %s is missing or invalid in Microsoft Entra app manifest.",
   "driver.aadApp.error.appNameTooLong": "The name for this Microsoft Entra app is too long. The maximum length is 120.",
+  "driver.aadApp.error.credentialInvalidLifetimeAsPerAppPolicy": "The client secret lifetime exceeds the max value allowed in your tenant. Set a shorter lifetime using the clientSecretExpireDays parameter.",
+  "driver.aadApp.error.credentialTypeNotAllowedAsPerAppPolicy": "Your tenant does not allow creating client secret for Microsoft Entra app. Please create and configure the Microsoft Entra app manually.",
   "driver.aadApp.progressBar.createAadAppTitle": "Creating Microsoft Entra application...",
   "driver.aadApp.progressBar.updateAadAppTitle": "Updating Microsoft Entra application...",
   "driver.aadApp.log.startExecuteDriver": "Executing action %s",

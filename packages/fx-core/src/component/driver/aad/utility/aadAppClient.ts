@@ -19,6 +19,8 @@ import { IAADDefinition } from "../interface/IAADDefinition";
 import { SignInAudience } from "../interface/signInAudience";
 import { AadManifestHelper } from "./aadManifestHelper";
 import { aadErrorCode, constants } from "./constants";
+import { CredentialInvalidLifetimeError } from "../error/credentialInvalidLifetimeError";
+import { ClientSecretNotAllowedError } from "../error/clientSecretNotAllowedError";
 // Another implementation of src\component\resource\aadApp\graph.ts to reduce call stacks
 // It's our internal utility so make sure pass valid parameters to it instead of relying on it to handle parameter errors
 
@@ -114,18 +116,32 @@ export class AadAppClient {
       },
     };
 
-    const response = await this.axios.post(`applications/${objectId}/addPassword`, requestBody, {
-      "axios-retry": {
-        retries: this.retryNumber,
-        retryDelay: axiosRetry.exponentialDelay,
-        retryCondition: (error) =>
-          axiosRetry.isNetworkError(error) ||
-          axiosRetry.isRetryableError(error) ||
-          this.is404Error(error), // also retry 404 error since Microsoft Entra need sometime to sync created Microsoft Entra app data
-      },
-    });
+    try {
+      const response = await this.axios.post(`applications/${objectId}/addPassword`, requestBody, {
+        "axios-retry": {
+          retries: this.retryNumber,
+          retryDelay: axiosRetry.exponentialDelay,
+          retryCondition: (error) =>
+            axiosRetry.isNetworkError(error) ||
+            axiosRetry.isRetryableError(error) ||
+            this.is404Error(error), // also retry 404 error since Microsoft Entra need sometime to sync created Microsoft Entra app data
+        },
+      });
 
-    return response.data.secretText;
+      return response.data.secretText;
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response) {
+        if (
+          err.response.data?.error?.code === aadErrorCode.credentialInvalidLifetimeAsPerAppPolicy
+        ) {
+          throw new CredentialInvalidLifetimeError(AadAppClient.name);
+        }
+        if (err.response.data.error?.code === aadErrorCode.credentialTypeNotAllowedAsPerAppPolicy) {
+          throw new ClientSecretNotAllowedError(AadAppClient.name);
+        }
+      }
+      throw err;
+    }
   }
 
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])

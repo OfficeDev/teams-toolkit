@@ -17,6 +17,8 @@ import {
   DeleteOrUpdatePermissionFailedError,
   HostNameNotOnVerifiedDomainError,
 } from "../../../../src/component/driver/aad/error/aadManifestError";
+import { CredentialInvalidLifetimeError } from "../../../../src/component/driver/aad/error/credentialInvalidLifetimeError";
+import { ClientSecretNotAllowedError } from "../../../../src/component/driver/aad/error/clientSecretNotAllowedError";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -310,6 +312,56 @@ describe("AadAppClient", async () => {
         .then((error) => {
           expect(error.response.data).to.deep.equal(expectedError);
         });
+    });
+
+    it("should throw error when CredentialInvalidLifetimeAsPerAppPolicy error happens", async () => {
+      const expectedError = {
+        error: {
+          code: "CredentialInvalidLifetimeAsPerAppPolicy",
+        },
+      };
+
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
+        .reply(400, expectedError);
+
+      await expect(
+        aadAppClient.generateClientSecret(expectedObjectId)
+      ).to.eventually.be.rejected.then((err) => {
+        expect(err instanceof CredentialInvalidLifetimeError).to.be.true;
+        expect(err.source).equals("AadAppClient");
+        expect(err.name).equals("CredentialInvalidLifetime");
+        expect(err.message).equals(
+          "The client secret lifetime exceeds the max value allowed in your tenant. Set a shorter lifetime using the clientSecretExpireDays parameter."
+        );
+        expect(err.helpLink).equals("https://aka.ms/teamsfx-actions/aadapp-create");
+      });
+    });
+
+    it("should throw error when CredentialTypeNotAllowedAsPerAppPolicy error happens", async () => {
+      const expectedError = {
+        error: {
+          code: "CredentialTypeNotAllowedAsPerAppPolicy",
+        },
+      };
+
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
+        .reply(400, expectedError);
+
+      await expect(
+        aadAppClient.generateClientSecret(expectedObjectId)
+      ).to.eventually.be.rejected.then((err) => {
+        expect(err instanceof ClientSecretNotAllowedError).to.be.true;
+        expect(err.source).equals("AadAppClient");
+        expect(err.name).equals("ClientSecretNotAllowed");
+        expect(err.message).equals(
+          "Your tenant does not allow creating client secret for Microsoft Entra app. Please create and configure the Microsoft Entra app manually."
+        );
+        expect(err.helpLink).equals("https://aka.ms/teamsfx-actions/aadapp-create");
+      });
     });
 
     it("should send debug log when sending request and receiving response", async () => {

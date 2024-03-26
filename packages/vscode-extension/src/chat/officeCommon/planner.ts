@@ -15,6 +15,7 @@ import { ICopilotChatResult } from "../types";
 import { ChatTelemetryData } from "../telemetry";
 import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
+import { ExecutionResultEnum } from "./skills/executionResultEnum";
 
 export class Planner {
   private static instance: Planner;
@@ -58,19 +59,33 @@ export class Planner {
     let executed = 0;
     try {
       for (const candidate of candidates) {
-        let processed: Spec | null = null;
         while (executed < MAXIUMRUNTIME) {
           executed++;
           if (!candidate.canInvoke(request, spec)) {
             throw new Error("Internal error: the prior skill failed to produce necessary data.");
           }
-          processed = await candidate.invoke(languageModel, request, response, token, spec);
-          if (!processed) {
+          const specCopy = spec;
+          const invokeResult: ExecutionResultEnum = await candidate.invoke(
+            languageModel,
+            request,
+            response,
+            token,
+            specCopy
+          );
+          if (invokeResult == ExecutionResultEnum.Failure) {
             // kind of retry
+            // Any changes on the specCopy will be throw away by design
             continue;
           }
+          if (invokeResult == ExecutionResultEnum.Rejected) {
+            // hard stop if one of the skill reject to process the request
+            // for example, the user ask is not what we target to address
+            throw new Error(
+              `The skill "${candidate.name || "Unknown"}" is rejected to process the request.`
+            );
+          }
 
-          spec = processed;
+          spec = specCopy;
           break;
         }
 

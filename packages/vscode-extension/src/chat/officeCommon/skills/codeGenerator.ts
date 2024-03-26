@@ -14,6 +14,7 @@ import { getCodeGenerateGuidance } from "./codeGuidance";
 import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
 import { getCopilotResponseAsString } from "../../utils";
+import { ExecutionResultEnum } from "./executionResultEnum";
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -34,7 +35,7 @@ export class CodeGenerator implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<Spec | null> {
+  ): Promise<ExecutionResultEnum> {
     if (
       !!spec.appendix.host ||
       !!spec.appendix.codeTaskBreakdown ||
@@ -42,13 +43,16 @@ export class CodeGenerator implements ISkill {
     ) {
       const breakdownResult = await this.userInputBreakdownTaskAsync(request, token);
 
-      if (!breakdownResult || !breakdownResult.shouldContinue) {
-        // TODO: Add handling for this case
-        return null;
+      if (!breakdownResult) {
+        return ExecutionResultEnum.Failure;
+      }
+      if (!breakdownResult.shouldContinue) {
+        return ExecutionResultEnum.Rejected;
       }
 
       spec.appendix.host = breakdownResult.host;
       spec.appendix.codeTaskBreakdown = breakdownResult.data;
+      spec.appendix.isCustomFunction = breakdownResult.customFunctions;
     }
 
     let codeSnippet: string | null = "";
@@ -61,17 +65,25 @@ export class CodeGenerator implements ISkill {
     );
     console.timeEnd("CodeGenerator.GenerateCode");
     if (!codeSnippet) {
-      return null;
+      return ExecutionResultEnum.Failure;
     }
 
     spec.appendix.codeSnippet = codeSnippet;
     await writeLogToFile(
       `The generated code snippet: \n\`\`\`typescript\n${codeSnippet}\`\`\`\n\n\n\n`
     );
-    return spec;
+    return ExecutionResultEnum.Success;
   }
 
-  async userInputBreakdownTaskAsync(request: ChatRequest, token: CancellationToken) {
+  async userInputBreakdownTaskAsync(
+    request: ChatRequest,
+    token: CancellationToken
+  ): Promise<null | {
+    host: string;
+    shouldContinue: boolean;
+    customFunctions: boolean;
+    data: string[];
+  }> {
     const defaultSystemPrompt = `
     Role:
     You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins.
@@ -80,12 +92,14 @@ export class CodeGenerator implements ISkill {
     User ask about how to automate a certain process or accomplish a certain task using Office JavaScript Add-ins.
 
     Your task:
-    Break down the task into sub tasks could be performed by Office add-in JavaScript APIs, those steps should be only relevant to code. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field should be true.
-    Alternatively, if the user's request is not clear, and you can't make a recommendation based on the context to cover those missing information. List the missing information, and ask for clarification. Put your ask and missing information into the "data" field of the output JSON object. The "shouldContinue" field should be false.
+    You should only handle tasks about generate TypeScript code for Office Add-ins. If the user's ask is not relevate to Office Add-ins, you should reject the request, by setting the "shouldContinue" field to false. For example, if the user ask about how to automate a certain process or accomplish a certain task using VBA, you should reject the request. Another example is that if the user ask to generate web page code, or style sheet code, you should also reject the request. List your rejection reason in the "data" field of the output JSON object as a string array.
+    Meanwhile, if the user's request is not clear, and you can't make a recommendation based on the context to cover those missing information. List the missing information, and ask for clarification. Put your ask and missing information into the "data" field of the output JSON object. The "shouldContinue" field should be false.
+    Otherwise, break down the task into sub tasks could be performed by Office add-in JavaScript APIs, those steps should be only relevant to code. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field should be true.
     You must strickly follow the format of output.
 
     The format of output:
-    The output should be a JSON object, with a key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". The second key is "shouldContinue", the value is a Boolean indicates if the ask is clear or not; and another key named "data", the value of it is the list of sub tasks or missing information, and that is a string array. If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information. Beyond this JSON object, you should not add anything else to the output.
+    The output should be a JSON object, with a key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". The second key is "shouldContinue", the value is a Boolean; and the third key named "data", the value of it is the list of sub tasks or missing information, and that is a string array; the last key named "customFunctions", set value of it to be a Boolean true if the user's ask is about Office JavaScript Add-ins with custom functions on Excel, otherwise, set it to be a Boolean false.
+    If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information or reason to reject. Beyond this JSON object, you should not add anything else to the output.
 
     Think about that step by step.
     `;
@@ -103,6 +117,7 @@ export class CodeGenerator implements ISkill {
     let copilotRet = {
       host: "",
       shouldContinue: false,
+      customFunctions: false,
       data: [],
     };
 

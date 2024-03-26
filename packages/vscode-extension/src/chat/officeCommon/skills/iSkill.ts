@@ -7,6 +7,7 @@ import {
   LanguageModelChatUserMessage,
 } from "vscode";
 import { Spec } from "./spec";
+import { ExecutionResultEnum } from "./executionResultEnum";
 
 export interface ISkill {
   name: string | undefined;
@@ -18,5 +19,5 @@ export interface ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ) => Promise<Spec | null>;
+  ) => Promise<ExecutionResultEnum>;
 }

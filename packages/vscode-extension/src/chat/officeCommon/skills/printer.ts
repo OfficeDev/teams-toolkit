@@ -8,6 +8,7 @@ import {
 } from "vscode";
 import { ISkill } from "./iSkill";
 import { Spec } from "./spec";
+import { ExecutionResultEnum } from "./executionResultEnum";
 
 export class Printer implements ISkill {
   name: string | undefined;
@@ -34,7 +35,7 @@ export class Printer implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<Spec | null> {
+  ): Promise<ExecutionResultEnum> {
     const template = `
 # 1. Task Summary
 ${spec.userInput}
@@ -55,6 +56,6 @@ ${spec.appendix.codeSnippet}
 ${spec.appendix.codeExplanation}
 `;
     response.markdown(template);
-    return spec;
+    return ExecutionResultEnum.Success;
   }
 }

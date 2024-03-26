@@ -10,6 +10,7 @@ import {
 import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
 import { getCopilotResponseAsString } from "../../utils";
+import { ExecutionResultEnum } from "./executionResultEnum";
 
 export class Explainer implements ISkill {
   name: string | undefined;
@@ -34,7 +35,7 @@ export class Explainer implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<Spec | null> {
+  ): Promise<ExecutionResultEnum> {
     const systemPrompt = `
 Based on the user's input ${spec.userInput}, and the breakdown of the ask:
 - ${spec.appendix.codeTaskBreakdown.join("\n- ")}
@@ -65,11 +66,11 @@ Let's think it step by step.
     if (!copilotResponse) {
       // something wrong with the LLM output
       // however it's not a hard stop, still ok produce the output without explanation
-      return spec;
+      return ExecutionResultEnum.Failure;
     }
 
     spec.appendix.codeExplanation = copilotResponse;
 
-    return spec;
+    return ExecutionResultEnum.Success;
   }
 }

@@ -23,7 +23,7 @@ class ChefBotTestCase extends CaseFactory {
       testFolder,
       sampleName,
       undefined,
-      "js/samples/04.ai.a.teamsChefBot"
+      "js/samples"
     );
   }
   public override async onAfterCreate(projectPath: string): Promise<void> {

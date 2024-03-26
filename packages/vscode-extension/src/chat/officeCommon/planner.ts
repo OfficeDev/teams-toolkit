@@ -79,6 +79,7 @@ export class Planner {
           // So this is a hard stop
           throw new Error("Failed to process the request.");
         }
+        console.log(`Skill ${candidate.name || "unknown"} is executed.`);
       }
     } catch (error) {
       chatResult.errorDetails = {

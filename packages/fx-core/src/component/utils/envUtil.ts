@@ -136,6 +136,7 @@ class EnvUtil {
       await fs.readFile(dotEnvFilePath, { encoding: "utf8" })
     );
     this.mergeEnv(process.env, parseResult.obj);
+    globalVars.envFilePath = dotEnvFilePath;
     return ok(parseResult.obj);
   }
 

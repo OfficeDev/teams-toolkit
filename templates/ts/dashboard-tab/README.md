@@ -14,7 +14,7 @@ This template showcases an app that embeds a canvas containing multiple cards th
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
-> Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect.
+>   Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect.
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
@@ -29,7 +29,7 @@ This template showcases an app that embeds a canvas containing multiple cards th
 ## What's included in the template
 
 | Folder       | Contents                                            |
-| - | -|
+| ------------ | --------------------------------------------------- |
 | `.vscode`    | VSCode files for debugging                          |
 | `appPackage` | Templates for the Teams application manifest        |
 | `env`        | Environment files                                   |
@@ -39,7 +39,7 @@ This template showcases an app that embeds a canvas containing multiple cards th
 The following files can be customized and demonstrate an example implementation to get you started.
 
 | File                                 | Contents                                           |
-| - | -|
+| ------------------------------------ | -------------------------------------------------- |
 | `src/models/chartModel.ts`           | Data model for the chart widget                    |
 | `src/models/listModel.ts`            | Data model for the list widget                     |
 | `src/services/chartService.ts`       | A data retrive implementation for the chart widget |
@@ -54,18 +54,18 @@ The following files can be customized and demonstrate an example implementation 
 
 The following are project-related files. You generally will not need to customize these files.
 
-| File                               | Contents                                                     |
-| - | - |
-| `src/index.css`                    | The style of application entry point                         |
-| `src/index.tsx`                    | Application entry point                                      |
-| `src/internal/context.ts`          | TeamsFx Context                                              |
+| File                      | Contents                             |
+| ------------------------- | ------------------------------------ |
+| `src/index.css`           | The style of application entry point |
+| `src/index.tsx`           | Application entry point              |
+| `src/internal/context.ts` | TeamsFx Context                      |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
-| File                                 | Contents                                           |
-| - | - |
-|`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions.|
-|`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+| File                 | Contents                                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
+| `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                     |
 
 ## Extend the Dashboard template to add a new widget
 
@@ -108,8 +108,8 @@ export const getSampleData = (): SampleModel => {
 
 Create a widget file in the `src/widgets` folder. Inherit the `BaseWidget` class from `@microsoft/teamsfx-react`. The following table lists the methods that you can override to customize your widget.
 
-| Methods     | Function  |
-| - | -|
+| Methods     | Function                                                                                                                                      |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
 | `getData()` | This method is used to get the data for the widget. You can implement it to get data from the backend service or from the Microsoft Graph API |
 | `header()`  | Customize the content of the widget header                                                                                                    |
 | `body()`    | Customize the content of the widget body                                                                                                      |
@@ -189,6 +189,7 @@ override layout(): JSX.Element | undefined {
   );
 }
 ```
+
 Congratulations, you've just added your own widget! To learn more about the dashboard template, [visit the documentation](https://aka.ms/teamsfx-dashboard-new). You can find more scenarios like:
 
 - [Customize the widget](https://aka.ms/teamsfx-dashboard-new#customize-the-widget)

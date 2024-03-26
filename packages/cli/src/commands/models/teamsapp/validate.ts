@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, TeamsAppInputs, err } from "@microsoft/teamsfx-api";
 import { getFxCore } from "../../../activate";
+import { commands } from "../../../resource";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
 import {
   EnvFileOption,
@@ -16,7 +17,7 @@ import { validateArgumentConflict } from "./update";
 
 export const teamsappValidateCommand: CLICommand = {
   name: "validate",
-  description: "Validate the Microsoft Teams app using manifest schema or validation rules.",
+  description: commands.validate.description,
   options: [
     TeamsAppManifestFileOption,
     TeamsAppPackageOption,

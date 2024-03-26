@@ -44,8 +44,6 @@ import {
   previewCommand,
   provisionCommand,
   publishCommand,
-  updateAadAppCommand,
-  updateTeamsAppCommand,
   upgradeCommand,
   validateCommand,
 } from "../../src/commands/models";
@@ -264,6 +262,18 @@ describe("CLI commands", () => {
       const ctx: CLIContext = {
         command: { ...deployCommand, fullName: "teamsfx" },
         optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await deployCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+    it("success for customized yaml path", async () => {
+      sandbox.stub(FxCore.prototype, "deployArtifacts").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...deployCommand, fullName: "teamsfx" },
+        optionValues: { "config-file-path": "fakePath" },
         globalOptionValues: {},
         argumentValues: [],
         telemetryProperties: {},
@@ -522,24 +532,6 @@ describe("CLI commands", () => {
       assert.isTrue(res.isErr());
     });
   });
-  describe("updateAadAppCommand", async () => {
-    it("success", async () => {
-      sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
-      const ctx: CLIContext = {
-        command: { ...updateAadAppCommand, fullName: "teamsfx" },
-        optionValues: {
-          env: "local",
-          projectPath: "./",
-          "manifest-file-path": "./aad.manifest.json",
-        },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await updateAadAppCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-  });
   describe("entraAppUpdateCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "deployAadManifest").resolves(ok(undefined));
@@ -556,36 +548,6 @@ describe("CLI commands", () => {
       };
       const res = await entraAppUpdateCommand.handler!(ctx);
       assert.isTrue(res.isOk());
-    });
-  });
-  describe("updateTeamsAppCommand", async () => {
-    it("success", async () => {
-      sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
-      const ctx: CLIContext = {
-        command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
-        optionValues: { env: "local" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await updateTeamsAppCommand.handler!(ctx);
-      assert.isTrue(res.isOk());
-    });
-
-    it("MissingRequiredOptionError", async () => {
-      sandbox.stub(FxCore.prototype, "deployTeamsManifest").resolves(ok(undefined));
-      const ctx: CLIContext = {
-        command: { ...updateTeamsAppCommand, fullName: "teamsfx" },
-        optionValues: { "manifest-path": "fakePath", projectPath: "./" },
-        globalOptionValues: {},
-        argumentValues: [],
-        telemetryProperties: {},
-      };
-      const res = await updateTeamsAppCommand.handler!(ctx);
-      assert.isTrue(res.isErr());
-      if (res.isErr()) {
-        assert.equal(res.error.name, MissingRequiredOptionError.name);
-      }
     });
   });
   describe("upgradeCommand", async () => {
@@ -1322,7 +1284,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and custom app upload permission is enabled");
+        assert.include(account, "is signed in and custom app upload permission is enabled");
       });
       it("checkM365Account - error", async () => {
         sandbox.stub(M365TokenProvider, "getStatus").resolves(err(new UserCancelError()));
@@ -1331,7 +1293,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "You have not logged in");
+        assert.include(account, "You've not signed into your Microsoft 365 account yet.");
       });
       it("checkM365Account - error2", async () => {
         sandbox.stub(M365TokenProvider, "getStatus").rejects(new Error("test"));
@@ -1366,7 +1328,7 @@ describe("CLI read-only commands", () => {
         const accountRes = await checker.checkM365Account();
         assert.isTrue(accountRes.isOk());
         const account = (accountRes as any).value;
-        assert.include(account, "is logged in and custom app upload permission is enabled");
+        assert.include(account, "is signed in and custom app upload permission is enabled");
       });
 
       it("checkM365Account - no custom app upload permission", async () => {

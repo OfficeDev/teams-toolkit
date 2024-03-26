@@ -45,7 +45,7 @@ import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
 import { signedIn, signedOut } from "../../src/commonlib/common/constant";
 import { VsCodeLogProvider } from "../../src/commonlib/log";
-import M365TokenInstance from "../../src/commonlib/m365Login";
+import M365TokenInstance, { M365Login } from "../../src/commonlib/m365Login";
 import { DeveloperPortalHomeLink, GlobalKey } from "../../src/constants";
 import { PanelType } from "../../src/controls/PanelType";
 import { WebviewPanel } from "../../src/controls/webviewPanel";
@@ -1070,12 +1070,14 @@ describe("handlers", () => {
 
   it("signOutAzure", async () => {
     Object.setPrototypeOf(AzureAccountManager, sandbox.stub());
-    const signOut = sandbox.stub(AzureAccountManager.getInstance(), "signout");
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
     await handlers.signOutAzure(false);
 
-    sandbox.assert.calledOnce(signOut);
+    sandbox.assert.calledOnce(showMessageStub);
   });
 
   describe("decryptSecret", function () {
@@ -2227,7 +2229,9 @@ describe("handlers", () => {
     });
 
     it("cmpAccountsHandler", async () => {
-      const AzureSignOutStub = sandbox.stub(AzureAccountManager.prototype, "signout");
+      const showMessageStub = sandbox
+        .stub(vscode.window, "showInformationMessage")
+        .resolves(undefined);
       const M365SignOutStub = sandbox.stub(M365TokenInstance, "signout");
       sandbox
         .stub(M365TokenInstance, "getStatus")
@@ -2235,9 +2239,13 @@ describe("handlers", () => {
       sandbox
         .stub(AzureAccountManager.prototype, "getStatus")
         .resolves({ status: "SignedIn", accountInfo: { upn: "test.email.com" } });
+      let changeSelectionCallback: (e: readonly vscode.QuickPickItem[]) => any = () => {};
       const stubQuickPick = {
         items: [],
-        onDidChangeSelection: () => {
+        onDidChangeSelection: (
+          _changeSelectionCallback: (e: readonly vscode.QuickPickItem[]) => any
+        ) => {
+          changeSelectionCallback = _changeSelectionCallback;
           return {
             dispose: () => {},
           };
@@ -2248,19 +2256,23 @@ describe("handlers", () => {
           };
         },
         show: () => {},
+        hide: () => {},
         onDidAccept: () => {},
       };
+      const hideStub = sandbox.stub(stubQuickPick, "hide");
       sandbox.stub(vscode.window, "createQuickPick").returns(stubQuickPick as any);
       sandbox.stub(extension.VS_CODE_UI, "selectOption").resolves(ok({ result: "unknown" } as any));
 
       await handlers.cmpAccountsHandler([]);
+      changeSelectionCallback([stubQuickPick.items[1]]);
 
       for (const i of stubQuickPick.items) {
         await (i as any).function();
       }
 
-      chai.assert.isTrue(AzureSignOutStub.calledOnce);
+      chai.assert.isTrue(showMessageStub.calledTwice);
       chai.assert.isTrue(M365SignOutStub.calledOnce);
+      chai.assert.isTrue(hideStub.calledOnce);
     });
 
     it("updatePreviewManifest", async () => {
@@ -2600,7 +2612,7 @@ describe("autoOpenProjectHandler", () => {
     const result = await handlers.validateGetStartedPrerequisitesHandler();
 
     chai.assert.isTrue(sendTelemetryStub.called);
-    chai.assert.equal(result, "1");
+    chai.assert.isTrue(result.isErr());
   });
 
   it("registerAccountMenuCommands() - signedinM365", async () => {
@@ -2634,13 +2646,15 @@ describe("autoOpenProjectHandler", () => {
         };
       });
     sandbox.stub(vscode.extensions, "getExtension");
-    const signoutStub = sandbox.stub(AzureAccountManager.prototype, "signout");
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
 
     await handlers.registerAccountMenuCommands({
       subscriptions: [],
     } as unknown as vscode.ExtensionContext);
 
-    chai.assert.isTrue(signoutStub.called);
+    chai.assert.isTrue(showMessageStub.called);
   });
 
   it("registerAccountMenuCommands() - error", async () => {
@@ -2648,15 +2662,13 @@ describe("autoOpenProjectHandler", () => {
     sandbox
       .stub(vscode.commands, "registerCommand")
       .callsFake((command: string, callback: (...args: any[]) => any) => {
-        callback({ contextValue: "signedinAzure" }).then(() => {});
+        callback({ contextValue: "signedinM365" }).then(() => {});
         return {
           dispose: () => {},
         };
       });
     sandbox.stub(vscode.extensions, "getExtension");
-    const signoutStub = sandbox
-      .stub(AzureAccountManager.prototype, "signout")
-      .throws(new UserCancelError());
+    const signoutStub = sandbox.stub(M365Login.prototype, "signout").throws(new UserCancelError());
 
     await handlers.registerAccountMenuCommands({
       subscriptions: [],

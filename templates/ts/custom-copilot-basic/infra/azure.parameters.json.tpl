@@ -21,7 +21,10 @@
       "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
     },
     "azureOpenAIEndpoint": {
-      "value": "${{SECRET_AZURE_OPENAI_ENDPOINT}}"
+      "value": "${{AZURE_OPENAI_ENDPOINT}}"
+    },
+    "azureOpenAIDeploymentName": {
+      "value": "${{AZURE_OPENAI_DEPLOYMENT_NAME}}"
     },
     {{/useAzureOpenAI}}
     "webAppSKU": {

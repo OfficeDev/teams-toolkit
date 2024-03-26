@@ -8,7 +8,7 @@ import {
   LanguageModelChatMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { compressCode } from "../Utils";
+import { compressCode, writeLogToFile } from "../Utils";
 import { SampleProvider } from "../samples/sampleProvider";
 import { getCodeGenerateGuidance } from "./codeGuidance";
 import { ISkill } from "./iSkill"; // Add the missing import statement
@@ -25,7 +25,7 @@ export class CodeGenerator implements ISkill {
   }
 
   public canInvoke(request: ChatRequest, spec: Spec): boolean {
-    return !!request.prompt && request.prompt.length > 0;
+    return !!request.prompt && request.prompt.length > 0 && !!spec;
   }
 
   public async invoke(
@@ -52,28 +52,22 @@ export class CodeGenerator implements ISkill {
     }
 
     let codeSnippet: string | null = "";
-    // performance.mark(`CodeGenerator.GenerateCode: start.`);
+    console.time("CodeGenerator.GenerateCode");
     codeSnippet = await this.generateCode(
       request,
       token,
       spec.appendix.host,
       spec.appendix.codeTaskBreakdown
     );
-    // performance.mark(`CodeGenerator.GenerateCode: end.`);
-    // const codegenMeasureResult = performance.measure(
-    //   `CodeGenerator.GenerateCode`,
-    //   `CodeGenerator.GenerateCode: start.`,
-    //   `CodeGenerator.GenerateCode: end.`
-    // );
-    // console.debug(
-    //   `CodeGenerator.GenerateCode spend ${Math.ceil(codegenMeasureResult.duration / 1000)}s`
-    // );
-
+    console.timeEnd("CodeGenerator.GenerateCode");
     if (!codeSnippet) {
       return null;
     }
 
     spec.appendix.codeSnippet = codeSnippet;
+    await writeLogToFile(
+      `The generated code snippet: \n\`\`\`typescript\n${codeSnippet}\`\`\`\n\n\n\n`
+    );
     return spec;
   }
 
@@ -129,24 +123,26 @@ export class CodeGenerator implements ISkill {
     subTasks: string[]
   ) {
     let defaultSystemPrompt = `
-    Your role:
-    You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on JavaScript, CSS, HTML, popular algorithm, and Office Add-ins API.
+The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
-    Context:
-    The user ask is: ${request.prompt}. And that could be broken down into a few steps:
-    ${subTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}
+# Your role:
+You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on JavaScript, CSS, HTML, popular algorithm, and Office Add-ins API. You should help the user to automate a certain process or accomplish a certain task using Office JavaScript Add-ins.
 
-    Your tasks:
-    Follow those steps write code to accomplish the user's ask. Your must follow the coding rule.
+# Context:
+The user ask could be broken down into a few steps able to be accomplished by Office Add-ins JavaScript APIs. You have the list of steps.:
+${subTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}
 
-    ${getCodeGenerateGuidance(host)}
+# Your tasks:
+**Implement all mentioned step with code**, while follow the coding rule.
 
-    Format of output:
-    You must strickly follow the format of output. The output will only contains code without any explanation on the code or generate process. Beyond that, nothing else should be included in the output.
-    - The code surrounded by a pair of triple backticks, and must follow with a string "typescript". For example:
-    \`\`\`typescript
-    // The code snippet
-    \`\`\`
+${getCodeGenerateGuidance(host)}
+
+# Format of output:
+**You must strickly follow the format of output**. The output will only contains code without any explanation on the code or generate process. Beyond that, nothing else should be included in the output.
+- The code surrounded by a pair of triple backticks, and must follow with a string "typescript". For example:
+\`\`\`typescript
+// The code snippet
+\`\`\`
 
     `;
 
@@ -182,11 +178,9 @@ export class CodeGenerator implements ISkill {
       new LanguageModelChatUserMessage(defaultSystemPrompt),
       new LanguageModelChatUserMessage(request.prompt),
     ];
-    const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-3.5-turbo",
-      messages,
-      token
-    );
+    // The GPT-4 model is significantly slower than GPT-3.5-turbo, but also significantly more accurate
+    // In order to avoid waste more time on the correct, I believe using GPT-4 is a better choice
+    const copilotResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
 
     // extract the code snippet and the api list out
     const codeSnippetRet = copilotResponse.match(/```typescript([\s\S]*?)```/);

@@ -6,13 +6,8 @@
  */
 "use strict";
 
-import { FxError, Result, Warning, err, ok } from "@microsoft/teamsfx-api";
-import {
-  FileNotFoundError,
-  fetchManifestList,
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core";
+import { FxError, Result, Warning, ok } from "@microsoft/teamsfx-api";
+import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
@@ -91,6 +86,12 @@ export async function openReportIssues(args?: any[]): Promise<Result<boolean, Fx
   return VS_CODE_UI.openUrl("https://github.com/OfficeDev/office-js/issues");
 }
 
+export async function openScriptLabLink(args?: any[]): Promise<Result<boolean, FxError>> {
+  return VS_CODE_UI.openUrl(
+    "https://learn.microsoft.com/office/dev/add-ins/overview/explore-with-script-lab"
+  );
+}
+
 export function validateOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {
   const terminal = OfficeDevTerminal.getInstance();
   terminal.show();
@@ -136,35 +137,6 @@ export function generateManifestGUID(args?: any[]): Promise<Result<null, FxError
   const terminal = OfficeDevTerminal.getInstance();
   terminal.show();
   terminal.sendText(triggerGenerateGUID);
-  return Promise.resolve(ok(null));
-}
-
-export function editOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {
-  const workspacePath = globalVariables.workspaceUri?.fsPath;
-  if (!workspacePath) {
-    void VS_CODE_UI.showMessage(
-      "error",
-      localize("teamstoolkit.officeAddIn.workspace.invalid"),
-      false
-    );
-    return Promise.resolve(err(new FileNotFoundError("editManifest", "workspace")));
-  }
-
-  const manifestList = fetchManifestList(workspacePath);
-  if (!manifestList || manifestList.length == 0) {
-    void VS_CODE_UI.showMessage(
-      "error",
-      localize("teamstoolkit.officeAddIn.terminal.manifest.notfound"),
-      false
-    );
-    return Promise.resolve(err(new FileNotFoundError("editManifest", "workspace")));
-  }
-
-  // open the first manifest xml under the workspace folder
-  const manifestPath = path.join(workspacePath, manifestList[0]);
-  const manifestFileUri = vscode.Uri.file(manifestPath);
-
-  void vscode.window.showTextDocument(manifestFileUri, { viewColumn: vscode.ViewColumn.One });
   return Promise.resolve(ok(null));
 }
 

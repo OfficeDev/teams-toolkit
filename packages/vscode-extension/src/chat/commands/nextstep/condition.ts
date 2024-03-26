@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { WholeStatus } from "./types";
+import { CommandKey } from "../../../constants";
+import { NecessaryActions, WholeStatus } from "./types";
 
 /**
  * if Teams Toolkit is first installed
@@ -38,8 +39,8 @@ export function isPrequisitesCheckSucceeded(status: WholeStatus): boolean {
 export function isDidNoActionAfterScaffolded(status: WholeStatus): boolean {
   const actionStatus = status.projectOpened?.actionStatus;
   if (actionStatus) {
-    for (const key of ["debug", "provision", "deploy", "publish", "openReadMe"]) {
-      if ((actionStatus as any)[key]?.result !== "no run") {
+    for (const key of NecessaryActions) {
+      if (actionStatus[key].result !== "no run") {
         return false;
       }
     }
@@ -50,14 +51,26 @@ export function isDidNoActionAfterScaffolded(status: WholeStatus): boolean {
 
 /**
  * if the source code is modified after the last debug succeeded
+ * TODO: refine this logic to use task provider to check
  * @param status
  * @returns
  */
-export function isLocalDebugSucceededAfterSourceCodeChanged(status: WholeStatus): boolean {
+export function isDebugSucceededAfterSourceCodeChanged(status: WholeStatus): boolean {
+  if (!status.projectOpened) {
+    return false;
+  }
+  let lastDebugStatus = status.projectOpened.actionStatus["fx-extension.localdebug"];
+  if (
+    status.projectOpened.actionStatus["fx-extension.debugInTestToolFromMessage"].time >
+      lastDebugStatus.time &&
+    status.projectOpened.actionStatus["fx-extension.debugInTestToolFromMessage"].result ===
+      "success"
+  ) {
+    lastDebugStatus = status.projectOpened.actionStatus["fx-extension.debugInTestToolFromMessage"];
+  }
   return (
-    !!status.projectOpened &&
-    status.projectOpened.actionStatus.debug.result === "success" &&
-    status.projectOpened.actionStatus.debug.time > status.projectOpened.codeModifiedTime.source
+    lastDebugStatus.result === "success" &&
+    lastDebugStatus.time > status.projectOpened.codeModifiedTime.source
   );
 }
 
@@ -91,8 +104,9 @@ export function isM365AccountLogin(status: WholeStatus): boolean {
 export function isProvisionedSucceededAfterInfraCodeChanged(status: WholeStatus): boolean {
   return (
     !!status.projectOpened &&
-    status.projectOpened.actionStatus.provision.result === "success" &&
-    status.projectOpened.actionStatus.provision.time > status.projectOpened.codeModifiedTime.infra
+    status.projectOpened.actionStatus[CommandKey.Provision].result === "success" &&
+    status.projectOpened.actionStatus[CommandKey.Provision].time >
+      status.projectOpened.codeModifiedTime.infra
   );
 }
 
@@ -113,8 +127,9 @@ export function isAzureAccountLogin(status: WholeStatus): boolean {
 export function isDeployedAfterSourceCodeChanged(status: WholeStatus): boolean {
   return (
     !!status.projectOpened &&
-    status.projectOpened.actionStatus.deploy.result === "success" &&
-    status.projectOpened.actionStatus.deploy.time > status.projectOpened.codeModifiedTime.infra
+    status.projectOpened.actionStatus[CommandKey.Deploy].result === "success" &&
+    status.projectOpened.actionStatus[CommandKey.Deploy].time >
+      status.projectOpened.codeModifiedTime.infra
   );
 }
 
@@ -124,7 +139,10 @@ export function isDeployedAfterSourceCodeChanged(status: WholeStatus): boolean {
  * @returns
  */
 export function isPublishedSucceededBefore(status: WholeStatus): boolean {
-  return !!status.projectOpened && status.projectOpened.actionStatus.publish.result === "success";
+  return (
+    !!status.projectOpened &&
+    status.projectOpened.actionStatus[CommandKey.Publish].result === "success"
+  );
 }
 
 /**

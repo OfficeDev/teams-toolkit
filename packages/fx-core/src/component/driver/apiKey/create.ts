@@ -176,13 +176,20 @@ export class CreateApiKeyDriver implements StepDriver {
   private async getDomain(args: CreateApiKeyArgs, context: DriverContext): Promise<string[]> {
     const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
     const parser = new SpecParser(absolutePath, {
-      allowAPIKeyAuth: isApiKeyEnabled(),
+      allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
       allowMultipleParameters: isMultipleParametersEnabled(),
     });
-    const operations = await parser.list();
+    const listResult = await parser.list();
+    const operations = listResult.validAPIs;
     const domains = operations
       .filter((value) => {
-        return value.auth?.type === "apiKey" && value.auth?.name === args.name;
+        const auth = value.auth;
+        return (
+          auth &&
+          auth.authScheme.type === "http" &&
+          auth.authScheme.scheme === "bearer" &&
+          auth.name === args.name
+        );
       })
       .map((value) => {
         return value.server;
@@ -229,6 +236,22 @@ export class CreateApiKeyDriver implements StepDriver {
       invalidParameters.push("apiSpecPath");
     }
 
+    if (
+      args.applicableToApps &&
+      args.applicableToApps !== ApiSecretRegistrationAppType.AnyApp &&
+      args.applicableToApps !== ApiSecretRegistrationAppType.SpecificApp
+    ) {
+      invalidParameters.push("applicableToApps");
+    }
+
+    if (
+      args.targetAudience &&
+      args.targetAudience !== ApiSecretRegistrationTargetAudience.AnyTenant &&
+      args.targetAudience !== ApiSecretRegistrationTargetAudience.HomeTenant
+    ) {
+      invalidParameters.push("targetAudience");
+    }
+
     if (invalidParameters.length > 0) {
       throw new InvalidActionInputError(actionName, invalidParameters, helpLink);
     }
@@ -265,12 +288,20 @@ export class CreateApiKeyDriver implements StepDriver {
       return clientSecret;
     });
 
+    const targetAudience: ApiSecretRegistrationTargetAudience = args.targetAudience
+      ? (args.targetAudience as ApiSecretRegistrationTargetAudience)
+      : ApiSecretRegistrationTargetAudience.AnyTenant;
+    const applicableToApps: ApiSecretRegistrationAppType = args.applicableToApps
+      ? (args.applicableToApps as ApiSecretRegistrationAppType)
+      : ApiSecretRegistrationAppType.AnyApp;
+
     const apiKey: ApiSecretRegistration = {
       description: args.name,
       targetUrlsShouldStartWith: domain,
-      applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
-      specificAppId: args.appId,
-      targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+      applicableToApps: applicableToApps,
+      specificAppId:
+        applicableToApps === ApiSecretRegistrationAppType.SpecificApp ? args.appId : "",
+      targetAudience: targetAudience,
       clientSecrets: clientSecrets,
       manageableByUsers: [
         {

@@ -50,7 +50,17 @@ provision:
   # Generate runtime appsettings to JSON file
   - uses: file/createOrUpdateJsonFile
     with:
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      target: ../appsettings.Development.json
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      target: ../{{appName}}/appsettings.Development.json
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
+{{^isNewProjectTypeEnabled}}
       target: ./appsettings.Development.json
+{{/isNewProjectTypeEnabled}}
       content:
         TeamsFx:
           Authentication:
@@ -106,6 +116,7 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+{{^isNewProjectTypeEnabled}}
 
   # Create or update debug profile in lauchsettings file
   - uses: file/createOrUpdateJsonFile
@@ -140,3 +151,4 @@ provision:
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"
+{{/isNewProjectTypeEnabled}}

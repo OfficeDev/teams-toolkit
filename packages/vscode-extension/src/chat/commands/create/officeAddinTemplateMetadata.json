@@ -5,31 +5,7 @@
         "capabilities" : "taskpane",
         "name" : "Word Taskpane",
         "project-type": "office-addin-type",
-        "description": "This project is a Word taskpane add-in template."
-    },
-    {
-        "id": "word-sso",
-        "addin-office-capability": "word",
-        "capabilities" : "sso",
-        "name" : "Word SSO",
-        "project-type": "office-addin-type",
-        "description": "This project is a Word add-in with Single Sign On capabilities."
-    },
-    {
-        "id": "word-react",
-        "addin-office-capability": "word",
-        "capabilities" : "react",
-        "name" : "Word React",
-        "project-type": "office-addin-type",
-        "description": "This project is a Word add-in with React framework."
-    },
-    {
-        "id": "word-manifest",
-        "addin-office-capability": "word",
-        "capabilities" : "manifest",
-        "name" : "Word Manifest",
-        "project-type": "office-addin-type",
-        "description": "This project is a Word add-in with a manifest file only."
+        "description": "This project is a Word Hello World add-in template."
     },
     {
         "id": "excel-taskpane",
@@ -37,31 +13,7 @@
         "capabilities" : "taskpane",
         "name" : "Excel Taskpane",
         "project-type": "office-addin-type",
-        "description": "This project is an Excel taskpane add-in template."
-    },
-    {
-        "id": "excel-sso",
-        "addin-office-capability": "excel",
-        "capabilities" : "sso",
-        "name" : "Excel SSO",
-        "project-type": "office-addin-type",
-        "description": "This project is an Excel add-in with Single Sign On capabilities."
-    },
-    {
-        "id": "excel-react",
-        "addin-office-capability": "excel",
-        "capabilities" : "react",
-        "name" : "Excel React",
-        "project-type": "office-addin-type",
-        "description": "This project is an Excel add-in with React framework."
-    },
-    {
-        "id": "excel-manifest",
-        "addin-office-capability": "excel",
-        "capabilities" : "manifest",
-        "name" : "Excel Manifest",
-        "project-type": "office-addin-type",
-        "description": "This project is an Excel add-in with a manifest file only."
+        "description": "This project is an Excel Hello World add-in template."
     },
     {
         "id": "excel-cf",
@@ -85,30 +37,6 @@
         "capabilities" : "taskpane",
         "name" : "Powerpoint Taskpane",
         "project-type": "office-addin-type",
-        "description": "This project is a Powerpoint taskpane add-in template."
-    },
-    {
-        "id": "powerpoint-sso",
-        "addin-office-capability": "powerpoint",
-        "capabilities" : "sso",
-        "name" : "Powerpoint SSO",
-        "project-type": "office-addin-type",
-        "description": "This project is a Powerpoint add-in with Single Sign On capabilities."
-    },
-    {
-        "id": "powerpoint-taskpane",
-        "addin-office-capability": "powerpoint",
-        "capabilities" : "react",
-        "name" : "Powerpoint Taskpane",
-        "project-type": "office-addin-type",
-        "description": "This project is a Powerpoint add-in with React framework."
-    },
-    {
-        "id": "powerpoint-taskpane",
-        "addin-office-capability": "powerpoint",
-        "capabilities" : "manifest",
-        "name" : "Powerpoint Taskpane",
-        "project-type": "office-addin-type",
-        "description": "This project is a Powerpoint add-in with a manifest file only."
+        "description": "This project is a Powerpoint Hello World add-in template."
     }
 ]

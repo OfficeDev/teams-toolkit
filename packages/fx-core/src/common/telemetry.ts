@@ -56,6 +56,10 @@ export enum TelemetryProperty {
   GraphPermissionHasRole = "graph-permission-has-role",
   GraphPermissionHasAdminScope = "graph-permission-has-admin-scope",
   GraphPermissionScopes = "graph-permission-scopes",
+  GraphPermissionRoles = "graph-permission-roles",
+  RscApplication = "rsc-application",
+  RscDelegated = "rsc-delegated",
+
   AadManifest = "aad-manifest",
 }
 

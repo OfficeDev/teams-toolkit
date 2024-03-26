@@ -9,11 +9,11 @@ const { Application, ActionPlanner, OpenAIModel, PromptManager } = require("@mic
 const model = new OpenAIModel({
   {{#useOpenAI}}
   apiKey: config.openAIKey,
-  defaultModel: "gpt-3.5-turbo",
+  defaultModel: config.openAIModelName,
   {{/useOpenAI}}
   {{#useAzureOpenAI}}
   azureApiKey: config.azureOpenAIKey,
-  azureDefaultDeployment: "gpt-35-turbo",
+  azureDefaultDeployment: config.azureOpenAIDeploymentName,
   azureEndpoint: config.azureOpenAIEndpoint,
   {{/useAzureOpenAI}}
 

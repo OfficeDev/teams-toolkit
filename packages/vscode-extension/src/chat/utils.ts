@@ -1,15 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  CancellationToken,
-  ChatResponseStream,
-  LanguageModelChatMessage,
-  WorkspaceFolder,
-  lm,
-} from "vscode";
+import { CancellationToken, ChatResponseStream, LanguageModelChatMessage, lm } from "vscode";
 
-import { isValidProjectV3, sampleProvider } from "@microsoft/teamsfx-core";
+import { sampleProvider } from "@microsoft/teamsfx-core";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
 import { Tokenizer } from "./tokenizer";
 
@@ -45,11 +39,6 @@ export async function getSampleDownloadUrlInfo(sampleId: string) {
     throw new Error("Sample not found");
   }
   return sample.downloadUrlInfo;
-}
-
-export function getTeamsApps(folders?: readonly WorkspaceFolder[]): string[] | undefined {
-  const teamsApps = folders?.map((folder) => folder.uri.fsPath).filter((p) => isValidProjectV3(p));
-  return teamsApps;
 }
 
 // count message token for GPT3.5 and GPT4 message

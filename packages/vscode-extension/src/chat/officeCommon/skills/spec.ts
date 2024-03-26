@@ -11,6 +11,7 @@ export class Spec {
     codeSnippet: string;
     codeExplanation: string;
     codeTaskBreakdown: string[];
+    isCustomFunction: boolean;
   };
 
   constructor(userInput: string) {
@@ -19,6 +20,12 @@ export class Spec {
     this.sections = [];
     this.inspires = [];
     this.resources = [];
-    this.appendix = { host: "", codeSnippet: "", codeExplanation: "", codeTaskBreakdown: [] };
+    this.appendix = {
+      host: "",
+      codeSnippet: "",
+      codeExplanation: "",
+      codeTaskBreakdown: [],
+      isCustomFunction: false,
+    };
   }
 }

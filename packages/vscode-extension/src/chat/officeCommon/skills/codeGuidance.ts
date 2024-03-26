@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 export function getCodeGenerateGuidance(host: string) {
   return `
-  Coding rules:
+  # Coding rules:
     - Code must be TypeScript compabible with ES2015.
     - Include type declarations in variable declaration, function return declaration, function argument declaration.
     - Use async/await over .then for Promise.

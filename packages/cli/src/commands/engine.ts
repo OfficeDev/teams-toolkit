@@ -611,6 +611,7 @@ class CLIEngine {
     }
     if (fxError) {
       this.printError(fxError);
+      process.exit(1);
     }
   }
 

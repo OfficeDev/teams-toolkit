@@ -37,6 +37,17 @@ provision:
     writeToEnvironmentFile:
       registrationId: APIKEY_REGISTRATION_ID
 
+  # Update API KEY
+  - uses: apiKey/update
+    with:
+      # Name of the API Key
+      name: apiKey      
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      registrationId: ${{APIKEY_REGISTRATION_ID}}
+
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
     with:

@@ -279,7 +279,7 @@ type SampleFileInfo = {
   sha: string;
 };
 
-async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): Promise<any> {
+export async function getSampleFileInfo(urlInfo: SampleUrlInfo, retryLimits: number): Promise<any> {
   const fileInfoUrl = `https://api.github.com/repos/${urlInfo.owner}/${urlInfo.repository}/git/trees/${urlInfo.ref}?recursive=1`;
   const fileInfo = (
     await sendRequestWithRetry(async () => {

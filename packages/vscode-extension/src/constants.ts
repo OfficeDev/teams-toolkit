@@ -31,6 +31,22 @@ export enum GlobalKey {
   AutoInstallDependency = "teamsToolkit:autoInstallDependency",
 }
 
+export enum CommandKey {
+  OpenWelcome = "fx-extension.openWelcome",
+  OpenDocument = "fx-extension.openDocument",
+  OpenSamples = "fx-extension.openSamples",
+  ValidateGetStartedPrerequisites = "fx-extension.validate-getStarted-prerequisites",
+  OpenReadMe = "fx-extension.openReadMe",
+  DebugInTestToolFromMessage = "fx-extension.debugInTestToolFromMessage",
+  SigninM365 = "fx-extension.signinM365",
+  LocalDebug = "fx-extension.localdebug",
+  SigninAzure = "fx-extension.signinAzure",
+  Provision = "fx-extension.provision",
+  Deploy = "fx-extension.deploy",
+  Publish = "fx-extension.publish",
+  Preview = "fx-extension.preview",
+}
+
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;
 
 export const PublishAppLearnMoreLink =

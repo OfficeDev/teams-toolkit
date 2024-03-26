@@ -1,24 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { LanguageModelChatMessage, ChatResult } from "vscode";
+import { OfficeAddinChatCommand, TeamsChatCommand } from "./consts";
 
-// metadata is used to generate telemetryData
-export interface ITelemetryMetadata {
+export interface ITelemetryData {
+  properties: { [key: string]: string };
+  measurements: { [key: string]: number };
+}
+
+export interface IChatTelemetryData {
+  telemetryData: ITelemetryData;
   chatMessages: LanguageModelChatMessage[];
+  command: string;
+  requestId: string;
   startTime: number;
-  // time to start make chat request
-  requestStartTime?: number;
-  // time to receive the first stream from LLM
-  firstTokenTime?: number;
 
   chatMessagesTokenCount: () => number;
+  get properties(): { [key: string]: string };
+  get measurements(): { [key: string]: number };
 }
 
 export interface ICopilotChatResultMetadata {
-  readonly command?: string;
-  readonly correlationId?: string;
+  readonly command: TeamsChatCommand | OfficeAddinChatCommand | undefined;
+  readonly requestId: string;
 }
 
 export interface ICopilotChatResult extends ChatResult {
-  metadata?: Partial<ICopilotChatResultMetadata>;
+  readonly metadata?: ICopilotChatResultMetadata;
 }

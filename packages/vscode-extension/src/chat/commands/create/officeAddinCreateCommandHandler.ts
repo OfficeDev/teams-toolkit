@@ -13,7 +13,7 @@ import { Correlator } from "@microsoft/teamsfx-core";
 import { OfficeAddinChatCommand } from "../../consts";
 import { defaultSystemPrompt } from "../../prompts";
 import { getCopilotResponseAsString } from "../../utils";
-import { ICopilotChatResult, ITelemetryMetadata } from "../../types";
+import { IChatTelemetryData, ICopilotChatResult } from "../../types";
 import { ProjectMetadata } from "./types";
 import { sampleProvider } from "@microsoft/teamsfx-core";
 import { getOfficeAddinProjectMatchSystemPrompt } from "../../officeAddinPrompts";
@@ -23,10 +23,10 @@ import {
   TelemetryProperty,
 } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryMetadata } from "../../telemetryData";
+import { ChatTelemetryData } from "../../telemetry";
 import { showFileTree } from "./createCommandHandler";
 import { localize } from "../../../utils/localizeUtils";
-import { CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID } from "../../consts";
+import { CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
 import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
 
 export default async function officeAddinCreateCommandHandler(
@@ -35,12 +35,10 @@ export default async function officeAddinCreateCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatCreateStart, {
-    [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
-  });
-  const telemetryMetadata: ITelemetryMetadata = new TelemetryMetadata(Date.now());
+  const chatTelemetryData = ChatTelemetryData.createByCommand(TeamsChatCommand.Create);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
-  const matchedResult = await matchOfficeAddinProject(request, token, telemetryMetadata);
+  const matchedResult = await matchOfficeAddinProject(request, token, chatTelemetryData);
   if (matchedResult) {
     const folder = await showFileTree(matchedResult, response);
     const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
@@ -57,8 +55,8 @@ export default async function officeAddinCreateCommandHandler(
   await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
   return {
     metadata: {
-      command: OfficeAddinChatCommand.Create,
-      correlationId: Correlator.getId(),
+      command: TeamsChatCommand.Create,
+      requestId: chatTelemetryData.requestId,
     },
   };
 }
@@ -66,7 +64,7 @@ export default async function officeAddinCreateCommandHandler(
 async function matchOfficeAddinProject(
   request: ChatRequest,
   token: CancellationToken,
-  telemetryMetadata: ITelemetryMetadata
+  telemetryMetadata: IChatTelemetryData
 ): Promise<ProjectMetadata | undefined> {
   const allOfficeAddinProjectMetadata = [
     ...getOfficeAddinTemplateMetadata(),

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ChatFollowup, Command } from "vscode";
+import { CommandKey } from "../../../constants";
 
 export interface CommandRunningStatus {
   result: "success" | "fail" | "no run";
@@ -15,13 +16,22 @@ export interface MachineStatus {
   azureLoggedIn: boolean; // if the user has logged in Azure
 }
 
-export interface ProjectActionStatus {
-  debug: CommandRunningStatus; // the status of last debugging
-  provision: CommandRunningStatus; // the status of last provisioning
-  deploy: CommandRunningStatus; // the status of last deploying
-  publish: CommandRunningStatus; // the status of last publishing
+export const NecessaryActions: (keyof ProjectActionStatus)[] = [
+  CommandKey.DebugInTestToolFromMessage,
+  CommandKey.LocalDebug,
+  CommandKey.Provision,
+  CommandKey.Deploy,
+  CommandKey.Publish,
+  CommandKey.OpenReadMe,
+];
 
-  openReadMe: CommandRunningStatus; // the status of last showing/summarizing readme
+export interface ProjectActionStatus {
+  [CommandKey.DebugInTestToolFromMessage]: CommandRunningStatus; // the status of last debugging
+  [CommandKey.LocalDebug]: CommandRunningStatus; // the status of last debugging
+  [CommandKey.Provision]: CommandRunningStatus; // the status of last provisioning
+  [CommandKey.Deploy]: CommandRunningStatus; // the status of last deploying
+  [CommandKey.Publish]: CommandRunningStatus; // the status of last publishing
+  [CommandKey.OpenReadMe]: CommandRunningStatus; // the status of last showing/summarizing readme
 }
 
 export interface WholeStatus {

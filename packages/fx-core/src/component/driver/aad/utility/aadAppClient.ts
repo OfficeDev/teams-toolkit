@@ -136,7 +136,9 @@ export class AadAppClient {
         ) {
           throw new CredentialInvalidLifetimeError(AadAppClient.name);
         }
-        if (err.response.data.error?.code === aadErrorCode.credentialTypeNotAllowedAsPerAppPolicy) {
+        if (
+          err.response.data?.error?.code === aadErrorCode.credentialTypeNotAllowedAsPerAppPolicy
+        ) {
           throw new ClientSecretNotAllowedError(AadAppClient.name);
         }
       }

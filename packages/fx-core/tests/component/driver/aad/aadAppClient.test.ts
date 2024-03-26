@@ -333,7 +333,7 @@ describe("AadAppClient", async () => {
         expect(err.source).equals("AadAppClient");
         expect(err.name).equals("CredentialInvalidLifetime");
         expect(err.message).equals(
-          "The client secret lifetime exceeds the max value allowed in your tenant. Set a shorter lifetime using the clientSecretExpireDays parameter."
+          "The client secret lifetime is too long for your tenant. Use a shorter value with the clientSecretExpireDays parameter."
         );
         expect(err.helpLink).equals("https://aka.ms/teamsfx-actions/aadapp-create");
       });
@@ -358,7 +358,7 @@ describe("AadAppClient", async () => {
         expect(err.source).equals("AadAppClient");
         expect(err.name).equals("ClientSecretNotAllowed");
         expect(err.message).equals(
-          "Your tenant does not allow creating client secret for Microsoft Entra app. Please create and configure the Microsoft Entra app manually."
+          "Your tenant doesn't allow creating a client secret for Microsoft Entra app. Create and configure the app manually."
         );
         expect(err.helpLink).equals("https://aka.ms/teamsfx-actions/aadapp-create");
       });

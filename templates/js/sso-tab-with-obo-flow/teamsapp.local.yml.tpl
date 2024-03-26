@@ -106,14 +106,12 @@ deploy:
       func:
         version: ~4.0.5455
         symlinkDir: ./devTools/func
-      dotnet: true
     # Write the information of installed development tool(s) into environment
     # file for the specified environment variable(s).
     writeToEnvironmentFile:
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
       funcPath: FUNC_PATH
-      dotnetPath: DOTNET_PATH
 
   # Run npm command
   - uses: cli/runNpmCommand

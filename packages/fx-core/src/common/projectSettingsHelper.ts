@@ -5,6 +5,11 @@ import fs from "fs-extra";
 import * as path from "path";
 import { MetadataV3 } from "./versionMetadata";
 
+export enum OfficeManifestType {
+  XmlAddIn,
+  MetaOsAddIn,
+}
+
 export function validateProjectSettings(projectSettings: any): string | undefined {
   if (!projectSettings) return "empty projectSettings";
   if (!projectSettings.solutionSettings) return undefined;
@@ -58,9 +63,14 @@ export function isValidProject(workspacePath?: string): boolean {
 }
 
 export function isValidOfficeAddInProject(workspacePath?: string): boolean {
-  const manifestList = fetchManifestList(workspacePath);
+  const xmlManifestList = fetchManifestList(workspacePath, OfficeManifestType.XmlAddIn);
+  const metaOsManifestList = fetchManifestList(workspacePath, OfficeManifestType.MetaOsAddIn);
   try {
-    if (manifestList && manifestList.length > 0) {
+    if (
+      xmlManifestList &&
+      xmlManifestList.length > 0 &&
+      (!metaOsManifestList || metaOsManifestList.length == 0)
+    ) {
       return true;
     } else {
       return false;
@@ -70,21 +80,38 @@ export function isValidOfficeAddInProject(workspacePath?: string): boolean {
   }
 }
 
-export function fetchManifestList(workspacePath?: string): string[] | undefined {
+export function fetchManifestList(
+  workspacePath?: string,
+  officeManifestType?: OfficeManifestType
+): string[] | undefined {
   if (!workspacePath) return undefined;
   const list = fs.readdirSync(workspacePath);
-  const manifestList = list.filter((fileName) => isOfficeAddInManifest(fileName));
+  const manifestList = list.filter((fileName) =>
+    officeManifestType == OfficeManifestType.XmlAddIn
+      ? isOfficeXmlAddInManifest(fileName)
+      : isOfficeMetaOsAddInManifest(fileName)
+  );
   return manifestList;
 }
 
-export function isOfficeAddInManifest(inputFileName: string): boolean {
+export function isOfficeXmlAddInManifest(inputFileName: string): boolean {
   return (
     inputFileName.toLocaleLowerCase().indexOf("manifest") != -1 &&
     inputFileName.toLocaleLowerCase().endsWith(".xml")
   );
 }
 
+export function isOfficeMetaOsAddInManifest(inputFileName: string): boolean {
+  return (
+    inputFileName.toLocaleLowerCase().indexOf("manifest") != -1 &&
+    inputFileName.toLocaleLowerCase().endsWith(".json")
+  );
+}
+
 export function isValidProjectV3(workspacePath: string): boolean {
+  if (isValidOfficeAddInProject(workspacePath)) {
+    return false;
+  }
   const ymlFilePath = path.join(workspacePath, MetadataV3.configFile);
   const localYmlPath = path.join(workspacePath, MetadataV3.localConfigFile);
   if (fs.pathExistsSync(ymlFilePath) || fs.pathExistsSync(localYmlPath)) {

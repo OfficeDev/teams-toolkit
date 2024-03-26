@@ -523,4 +523,20 @@ describe("serverConnections", () => {
     assert.isFalse(res.isOk());
     assert.match(res._unsafeUnwrapErr().message, /MockError/);
   });
+
+  it("listPluginApiSpecs fail", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(err("error"));
+    sandbox.replace(connection["core"], "listPluginApiSpecs", fake);
+    const res = await connection.listPluginApiSpecs({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isErr());
+  });
+
+  it("listPluginApiSpecsRequest", async () => {
+    const connection = new ServerConnection(msgConn);
+    const fake = sandbox.fake.resolves(ok(undefined));
+    sandbox.replace(connection["core"], "listPluginApiSpecs", fake);
+    const res = await connection.listPluginApiSpecs({} as Inputs, {} as CancellationToken);
+    assert.isTrue(res.isOk());
+  });
 });

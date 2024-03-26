@@ -15,17 +15,15 @@ class AiBotTestCase extends CaseFactory {
   public override async onAfterCreate(projectPath: string): Promise<void> {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
     const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
-    const SECRET_OPENAI_API_KEY = "SECRET_OPENAI_API_KEY=MY_OPENAI_API_KEY";
-    const SECRET_AZURE_OPENAI_API_KEY =
-      "SECRET_AZURE_OPENAI_API_KEY=MY_SECRET_AZURE_OPENAI_API_KEY";
-    const SECRET_AZURE_OPENAI_ENDPOINT =
-      "SECRET_AZURE_OPENAI_ENDPOINT=MY_SECRET_AZURE_OPENAI_ENDPOINT";
+    const AZURE_OPENAI_ENDPOINT = "AZURE_OPENAI_ENDPOINT=https://test.com";
+    const SECRET_AZURE_OPENAI_API_KEY = "SECRET_AZURE_OPENAI_API_KEY=fake";
+    const AZURE_OPENAI_DEPLOYMENT_NAME = "AZURE_OPENAI_DEPLOYMENT_NAME=fake";
     const KEY =
       SECRET_AZURE_OPENAI_API_KEY +
       "\n" +
-      SECRET_AZURE_OPENAI_ENDPOINT +
+      AZURE_OPENAI_ENDPOINT +
       "\n" +
-      SECRET_OPENAI_API_KEY;
+      AZURE_OPENAI_DEPLOYMENT_NAME;
     fs.writeFileSync(userFile, KEY);
     console.log(`add key ${KEY} to .env.dev.user file`);
   }
@@ -34,7 +32,7 @@ class AiBotTestCase extends CaseFactory {
 new AiBotTestCase(
   Capability.AiBot,
   24808531,
-  "v-ivanchen@microsoft.com",
+  "qidon@microsoft.com",
   ["bot"],
   {}
 ).test();

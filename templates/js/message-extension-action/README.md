@@ -18,35 +18,35 @@ This app template implements action command that allows you to present your user
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-5. To trigger the action command, you can click the `...` under compose message area, click `...`-> `More actions` beside a message, or @ your message extension app from the command box.
+5. To trigger the action command, you can click the `...` under compose message area to find your message extension.
 
 **Congratulations**! You are running an application that can share information in rich format by creating an Adaptive Card in Teams.
 
-![action-ME](https://github.com/OfficeDev/TeamsFx/assets/11220663/4af867b1-0b4b-4665-ac43-badf56106d84)
+![action-ME](https://github.com/OfficeDev/TeamsFx/assets/25220706/378ea4d7-9332-4aec-9f85-59891d086b80)
 
 ## What's included in the template
 
-| Folder       | Contents                                            |
-| - | - |
-| `.vscode/`    | VSCode files for debugging                          |
-| `appPackage/` | Templates for the Teams application manifest        |
-| `env/`        | Environment files                                   |
-| `infra/`      | Templates for provisioning Azure resources          |
-| `src/` | The source code for the action application |
+| Folder        | Contents                                     |
+| ------------- | -------------------------------------------- |
+| `.vscode/`    | VSCode files for debugging                   |
+| `appPackage/` | Templates for the Teams application manifest |
+| `env/`        | Environment files                            |
+| `infra/`      | Templates for provisioning Azure resources   |
+| `src/`        | The source code for the action application   |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                 | Contents                                           |
-| - | - |
-|`src/actionApp.js`| Handles the business logic for this app template to collect form input and process data.|
-|`src/index.js`| `index.js` is used to setup and configure the Message Extension.|
+| File               | Contents                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| `src/actionApp.js` | Handles the business logic for this app template to collect form input and process data. |
+| `src/index.js`     | `index.js` is used to setup and configure the Message Extension.                         |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
-| File                                 | Contents                                           |
-| - | - |
-|`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
-|`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+| File                 | Contents                                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
+| `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                     |
 
 ## Extend the template
 
@@ -62,5 +62,6 @@ Following documentation will help you to extend the template.
 - [Collaborate on app development](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration)
 - [Set up the CI/CD pipeline](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
 - [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
-- [Develop with Teams Toolkit CLI](https://aka.ms/teamsfx-cli/debug)
+- [Develop with Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli/debug)
 - [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)
+

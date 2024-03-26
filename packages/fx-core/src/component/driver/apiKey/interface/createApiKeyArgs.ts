@@ -7,4 +7,6 @@ export interface CreateApiKeyArgs {
   primaryClientSecret?: string; // The primary api secret
   secondaryClientSecret?: string; // The secondary api secret
   apiSpecPath: string; // The location of api spec file
+  applicableToApps?: string; // What app can access the api key. Values can be "SpecificApp" or "AnyApp". Default is "AnyApp".
+  targetAudience?: string; // What tenant can access the api key. Values can be "HomeTenant" or "AnyTenant". Default is "HomeTenant".
 }

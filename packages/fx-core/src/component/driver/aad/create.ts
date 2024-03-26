@@ -66,7 +66,11 @@ export class CreateAadAppDriver implements StepDriver {
         const signInAudience = args.signInAudience
           ? args.signInAudience
           : SignInAudience.AzureADMyOrg;
-        const aadApp = await aadAppClient.createAadApp(args.name, signInAudience);
+        const aadApp = await aadAppClient.createAadApp(
+          args.name,
+          signInAudience,
+          args.serviceManagementReference
+        );
         aadAppState.clientId = aadApp.appId!;
         aadAppState.objectId = aadApp.id!;
         await this.setAadEndpointInfo(context.m365TokenProvider, aadAppState);
@@ -101,7 +105,14 @@ export class CreateAadAppDriver implements StepDriver {
               driverConstants.generateSecretErrorMessageKey
             );
           }
-          aadAppState.clientSecret = await aadAppClient.generateClientSecret(aadAppState.objectId);
+
+          const clientSecretExpireDays = args.clientSecretExpireDays ?? 180; // Recommended lifetime from Azure Portal
+          const clientSecretDescription = args.clientSecretDescription ?? "default";
+          aadAppState.clientSecret = await aadAppClient.generateClientSecret(
+            aadAppState.objectId,
+            clientSecretExpireDays,
+            clientSecretDescription
+          );
           outputs.set(outputEnvVarNames.get(OutputKeys.clientSecret)!, aadAppState.clientSecret);
 
           const summary = getLocalizedString(

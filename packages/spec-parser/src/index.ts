@@ -15,6 +15,7 @@ export {
   ValidateResult,
   ParseOptions,
   AdaptiveCard,
+  ProjectType,
 } from "./interfaces";
 
 export { ConstantString } from "./constants";

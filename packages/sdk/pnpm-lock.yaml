@@ -299,12 +299,6 @@ packages:
     dependencies:
       tslib: 2.3.1
 
-  /@azure/abort-controller@2.0.0:
-    resolution: {integrity: sha512-RP/mR/WJchR+g+nQFJGOec+nzeN/VvjlwbinccoqfhTsTHbb8X5+mLDp48kHT0ueyum0BNSwGm0kX0UZuIqTGg==}
-    engines: {node: '>=18.0.0'}
-    dependencies:
-      tslib: 2.3.1
-
   /@azure/core-auth@1.4.0:
     resolution: {integrity: sha512-HFrcTgmuSuukRf/EdPmqBrc5l6Q5Uu+2TbuhaKbgaCpP2TfAeiNaQPAadxO+CYBRHGUzIDteMAjFspFLDLnKVQ==}
     engines: {node: '>=12.0.0'}
@@ -344,7 +338,7 @@ packages:
       '@azure/abort-controller': 1.1.0
       '@azure/core-auth': 1.4.0
       '@azure/core-tracing': 1.0.0-preview.13
-      '@azure/core-util': 1.7.0
+      '@azure/core-util': 1.6.1
       '@azure/logger': 1.0.4
       '@types/node-fetch': 2.6.11
       '@types/tunnel': 0.0.3
@@ -410,13 +404,6 @@ packages:
       '@azure/abort-controller': 1.1.0
       tslib: 2.3.1
 
-  /@azure/core-util@1.7.0:
-    resolution: {integrity: sha512-Zq2i3QO6k9DA8vnm29mYM4G8IE9u1mhF1GUabVEqPNX8Lj833gdxQ2NAFxt2BZsfAL+e9cT8SyVN7dFVJ/Hf0g==}
-    engines: {node: '>=18.0.0'}
-    dependencies:
-      '@azure/abort-controller': 2.0.0
-      tslib: 2.3.1
-
   /@azure/identity@2.0.1(supports-color@9.4.0):
     resolution: {integrity: sha512-gdGGuLKlKIQaf2RefA84keoBfmWfiAntbW2SzcdKvwLSGzsio/qkyY3sYUpXRz/sqLDxguuimgZukp7TPgwIlg==}
     engines: {node: '>=12.0.0'}
@@ -451,7 +438,7 @@ packages:
       '@azure/core-client': 1.7.3(supports-color@9.4.0)
       '@azure/core-rest-pipeline': 1.13.0(supports-color@9.4.0)
       '@azure/core-tracing': 1.0.1
-      '@azure/core-util': 1.7.0
+      '@azure/core-util': 1.6.1
       '@azure/logger': 1.0.4
       '@azure/msal-browser': 2.38.3
       '@azure/msal-common': 7.6.0
@@ -1689,7 +1676,7 @@ packages:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
     dependencies:
-      debug: 4.3.2(supports-color@9.4.0)
+      debug: 4.3.4(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -2526,6 +2513,7 @@ packages:
     dependencies:
       ms: 2.1.2
       supports-color: 9.4.0
+    dev: true
 
   /debug@4.3.3(supports-color@8.1.1):
     resolution: {integrity: sha512-/zxw5+vh1Tfv+4Qn7a5nsbcJKPaSvCDhojn6FEl9vupwK2VCSDtEiEtqr8DFtzYFOdz63LBkxec7DYuc2jon6Q==}
@@ -3209,7 +3197,7 @@ packages:
     engines: {node: '>= 10.17.0'}
     hasBin: true
     dependencies:
-      debug: 4.3.2(supports-color@9.4.0)
+      debug: 4.3.4(supports-color@9.4.0)
       get-stream: 5.2.0
       yauzl: 2.10.0
     optionalDependencies:
@@ -3783,7 +3771,7 @@ packages:
     engines: {node: '>= 6'}
     dependencies:
       agent-base: 6.0.2(supports-color@9.4.0)
-      debug: 4.3.2(supports-color@9.4.0)
+      debug: 4.3.4(supports-color@9.4.0)
     transitivePeerDependencies:
       - supports-color
     dev: true

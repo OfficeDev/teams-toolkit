@@ -27,12 +27,12 @@ describe("OfficeDevTreeViewManager", () => {
 
     const utilityTreeView = officeDevTreeViewManager.getTreeView("teamsfx-officedev-utility");
     chai.assert.isDefined(utilityTreeView);
-    chai.assert.equal((utilityTreeView as any).commands.length, 4);
+    chai.assert.equal((utilityTreeView as any).commands.length, 2);
 
     const helpAndFeedbackTreeView = officeDevTreeViewManager.getTreeView(
       "teamsfx-officedev-help-and-feedback"
     );
     chai.assert.isDefined(helpAndFeedbackTreeView);
-    chai.assert.equal((helpAndFeedbackTreeView as any).commands.length, 3);
+    chai.assert.equal((helpAndFeedbackTreeView as any).commands.length, 4);
   });
 });

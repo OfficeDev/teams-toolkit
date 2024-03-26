@@ -12,20 +12,19 @@ import {
   assembleError,
   getSideloadingStatus,
 } from "@microsoft/teamsfx-core";
-import { getFxCore } from "../../../activate";
-// import * as constants from "../../../cmds/preview/constants";
 import * as util from "util";
+import { getFxCore } from "../../../activate";
 import { DoneText, TextType, WarningText, colorize } from "../../../colorize";
 import { signedOut } from "../../../commonlib/common/constant";
 import { logger } from "../../../commonlib/logger";
 import M365TokenInstance from "../../../commonlib/m365Login";
 import { cliSource } from "../../../constants";
-import { strings } from "../../../resource";
+import { commands, strings } from "../../../resource";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
 
 export const teamsappDoctorCommand: CLICommand = {
   name: "doctor",
-  description: "Prerequiste checker for building Microsoft Teams apps.",
+  description: commands.doctor.description,
   options: [],
   telemetry: {
     event: TelemetryEvent.Doctor,

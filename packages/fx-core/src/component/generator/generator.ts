@@ -35,7 +35,7 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
-import { enableTestToolByDefault } from "../../common/featureFlags";
+import { enableTestToolByDefault, isNewProjectTypeEnabled } from "../../common/featureFlags";
 import { Utils } from "@microsoft/m365-spec-parser";
 
 export class Generator {
@@ -43,6 +43,7 @@ export class Generator {
     appName: string,
     safeProjectNameFromVS?: string,
     targetFramework?: string,
+    placeProjectFileInSolutionDir?: boolean,
     apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string },
     llmServiceData?: {
       llmService?: string;
@@ -61,17 +62,21 @@ export class Generator {
       appName: appName,
       ProjectName: appName,
       TargetFramework: targetFramework ?? "net8.0",
+      PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
       ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
-      useOpenAI: llmServiceData?.llmService === "llm-service-openAI" ? "true" : "",
-      useAzureOpenAI: llmServiceData?.llmService === "llm-service-azureOpenAI" ? "true" : "",
+      useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",
+      useAzureOpenAI: llmServiceData?.llmService === "llm-service-azure-openai" ? "true" : "",
       openAIKey: llmServiceData?.openAIKey ?? "",
       azureOpenAIKey: llmServiceData?.azureOpenAIKey ?? "",
       azureOpenAIEndpoint: llmServiceData?.azureOpenAIEndpoint ?? "",
+      isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
+      NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
+      NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",
     };
   }
   @hooks([

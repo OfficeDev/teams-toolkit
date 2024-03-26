@@ -5,12 +5,13 @@ import { envUtil, isValidProjectV3 } from "@microsoft/teamsfx-core";
 import os from "os";
 import { WorkspaceNotSupported } from "../../cmds/preview/errors";
 import { logger } from "../../commonlib/logger";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 
 export const envListCommand: CLICommand = {
   name: "list",
-  description: "List all environments.",
+  description: commands["env.list"].description,
   options: [ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.GrantPermission,

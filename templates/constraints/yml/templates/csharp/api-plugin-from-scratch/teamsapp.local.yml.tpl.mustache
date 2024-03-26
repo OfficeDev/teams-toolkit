@@ -1,0 +1,27 @@
+{{#header}} version: 1.1.0 {{/header}}
+
+provision:
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#script}} COPILOT {{/script}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+
+{{#fileCreateOrUpdateJsonFile}}
+{
+  "profileName": "Microsoft Teams (browser):",
+  "commandLineArgs": "\"host start --port 5130 --pause-on-error\"",
+  "launchUrl": "\"https://teams.microsoft.com?appTenantId=${{TEAMS_APP_TENANT_ID}}&login_hint=${{TEAMSFX_M365_USER_NAME}}\"",
+  "launchSettings": true,
+  "hotReload": true
+}
+{{/fileCreateOrUpdateJsonFile}}
+

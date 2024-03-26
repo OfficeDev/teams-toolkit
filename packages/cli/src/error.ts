@@ -9,7 +9,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import * as constants from "./constants";
-import { strings } from "./resource";
+import { errors as strings } from "./resource";
 import * as util from "util";
 import { helper } from "./commands/helper";
 

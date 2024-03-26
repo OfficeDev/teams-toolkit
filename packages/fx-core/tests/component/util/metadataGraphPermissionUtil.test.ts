@@ -1,35 +1,17 @@
-import { err, FxError, LogProvider, ok, Result } from "@microsoft/teamsfx-api";
+import { ok } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import sinon from "sinon";
 import fs from "fs-extra";
-import {
-  DriverInstance,
-  ExecutionResult,
-  ProjectModel,
-} from "../../../src/component/configManager/interface";
+import { ExecutionResult, ProjectModel } from "../../../src/component/configManager/interface";
 import { DriverContext } from "../../../src/component/driver/interface/commonArgs";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools } from "../../core/utils";
-import { ExecutionResult as DriverResult } from "../../../src/component/driver/interface/stepDriver";
 import { metadataGraphPermissionUtil } from "../../../src/component/utils/metadataGraphPermssion";
 import { TelemetryProperty } from "../../../src/common/telemetry";
 import { graphAppId } from "../../../src/component/driver/aad/permissions";
 import * as permission from "../../../src/component/driver/aad/permissions";
-
-function mockedResolveDriverInstances(log: LogProvider): Result<DriverInstance[], FxError> {
-  return ok([
-    {
-      uses: "arm/deploy",
-      with: undefined,
-      instance: {
-        execute: async (args: unknown, context: DriverContext): Promise<DriverResult> => {
-          return { result: ok(new Map<string, string>()), summaries: [] };
-        },
-      },
-    },
-  ]);
-}
+import { mockedResolveDriverInstances } from "../coordinator/coordinator.test";
 
 describe("metadata graph permission util", () => {
   const manifestContent = `
@@ -44,7 +26,11 @@ describe("metadata graph permission util", () => {
                 {
                     "id": "User.Read",
                     "type": "Scope"
-                }
+                },
+                {
+                  "id": "User.Read.All",
+                  "type": "Role"
+              }
             ]
         }
     ]
@@ -91,9 +77,10 @@ describe("metadata graph permission util", () => {
     let props: any = {};
     await metadataGraphPermissionUtil.parseAadManifest(ymlPath, mockProjectModel, props);
     assert(props[TelemetryProperty.GraphPermission] === "true");
-    assert(props[TelemetryProperty.GraphPermissionHasRole] === "false");
+    assert(props[TelemetryProperty.GraphPermissionHasRole] === "true");
     assert(props[TelemetryProperty.GraphPermissionHasAdminScope] === "false");
     assert(props[TelemetryProperty.GraphPermissionScopes] === "User.Read");
+    assert(props[TelemetryProperty.GraphPermissionRoles] === "User.Read.All");
     assert(props[TelemetryProperty.AadManifest] === "true");
 
     // no aad manifest path in aad/update action
@@ -102,9 +89,10 @@ describe("metadata graph permission util", () => {
     props = {};
     await metadataGraphPermissionUtil.parseAadManifest(ymlPath, model, props);
     assert(props[TelemetryProperty.GraphPermission] === "true");
-    assert(props[TelemetryProperty.GraphPermissionHasRole] === "false");
+    assert(props[TelemetryProperty.GraphPermissionHasRole] === "true");
     assert(props[TelemetryProperty.GraphPermissionHasAdminScope] === "false");
     assert(props[TelemetryProperty.GraphPermissionScopes] === "User.Read");
+    assert(props[TelemetryProperty.GraphPermissionRoles] === "User.Read.All");
     assert(props[TelemetryProperty.AadManifest] === "true");
   });
 
@@ -122,21 +110,21 @@ describe("metadata graph permission util", () => {
   it("getPermissionSummary no graph permission map", async () => {
     sandbox.stub(permission, "getDetailedGraphPermissionMap").returns(null);
     const manifest = JSON.parse(manifestContent);
-    const res = metadataGraphPermissionUtil.getPermissionSummary(manifest);
+    const res = metadataGraphPermissionUtil.summary(manifest);
     assert(res === undefined);
   });
 
   it("getPermissionSummary no graph permission", async () => {
     const manifest = JSON.parse(manifestContent);
     manifest.requiredResourceAccess = [];
-    const res: any = metadataGraphPermissionUtil.getPermissionSummary(manifest);
+    const res: any = metadataGraphPermissionUtil.summary(manifest);
     assert(res["hasGraphPermission"] === false);
   });
 
   it("getPermissionSummary graph permission is uuid", async () => {
     const manifest = JSON.parse(manifestContent);
     manifest.requiredResourceAccess[0].resourceAppId = graphAppId;
-    const res = metadataGraphPermissionUtil.getPermissionSummary(manifest);
+    const res = metadataGraphPermissionUtil.summary(manifest);
     assert(res !== undefined);
   });
 
@@ -152,7 +140,7 @@ describe("metadata graph permission util", () => {
         type: "Scope",
       }
     );
-    const res: any = metadataGraphPermissionUtil.getPermissionSummary(manifest);
+    const res: any = metadataGraphPermissionUtil.summary(manifest);
     assert(res["hasRole"] === true);
     assert(res["hasAdminScope"] === true);
     assert(res["hasGraphPermission"] === true);

@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.22.6",
+  "version": "0.22.7",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -40,6 +40,7 @@
     "@types/sinon": "^9.0.10",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
+    "chai": "4.3.4",
     "chai-as-promised": "^7.1.1",
     "chai-spies": "^1.0.0",
     "copyfiles": "^2.4.1",

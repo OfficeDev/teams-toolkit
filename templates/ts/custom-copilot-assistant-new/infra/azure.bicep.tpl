@@ -20,6 +20,9 @@ param azureOpenAIKey string
 
 @secure()
 param azureOpenAIEndpoint string
+
+@secure()
+param azureOpenAIDeploymentName string
 {{/useAzureOpenAI}}
 
 param webAppSKU string

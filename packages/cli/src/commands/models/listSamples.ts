@@ -4,18 +4,19 @@ import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import chalk from "chalk";
 import Table from "cli-table3";
 import { logger } from "../../commonlib/logger";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { Sample, getTemplates } from "../../utils";
 import { ListFormatOption, ShowDescriptionOption } from "../common";
 
 export const listSamplesCommand: CLICommand = {
   name: "samples",
-  description: "List available Microsoft Teams application samples.",
+  description: commands["list.samples"].description,
   options: [
     {
       name: "tag",
       shortName: "t",
-      description: "Specifies the tag to filter the samples.",
+      description: commands["list.samples"].options.tag,
       type: "string",
     },
     ListFormatOption,

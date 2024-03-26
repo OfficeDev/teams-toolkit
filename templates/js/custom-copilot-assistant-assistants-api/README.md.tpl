@@ -1,19 +1,19 @@
-# Overview of the AI Assistant Bot template
+# Overview of the AI Agent template
 
 This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview).
-It showcases how to build an intelligent chat bot in Teams capable of helping users accomplish specific tasks using natural language right in the Teams conversations, such as solving a math problem, call functions to get city weather, etc.
+It showcases how to build an AI agent in Teams capable of helping users accomplish specific tasks using natural language right in the Teams conversations, such as solving a math problem, call functions to get city weather, etc.
 
-- [Overview of the AI Assistant Bot template](#overview-of-the-ai-assistant-bot-template)
-  - [Get started with the AI Assistant Bot template](#get-started-with-the-ai-assistant-bot-template)
+- [Overview of the AI Agent template](#overview-of-the-ai-agent-template)
+  - [Get started with the AI Agent template](#get-started-with-the-ai-agent-template)
   - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Assistant Bot template with more AI capabilities](#extend-the-ai-assistant-bot-template-with-more-ai-capabilities)
+  - [Extend the AI Agent template with more AI capabilities](#extend-the-ai-agent-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)
 
-## Get started with the AI Assistant Bot template
+## Get started with the AI Agent template
 
 > **Prerequisites**
 >
-> To run the AI Assistant Bot template in your local dev machine, you will need:
+> To run the AI Agent template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 {{^enableTestToolByDefault}}
@@ -48,7 +48,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
-   SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
+   OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
 
 **If you already have an Assistant created**
@@ -56,7 +56,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 1. Fill in both OpenAI API Key and the created Assistant ID into `env/.env.*.user`
    ```
    SECRET_OPENAI_API_KEY=<your-openai-api-key>
-   SECRET_OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
+   OPENAI_ASSISTANT_ID=<your-openai-assistant-id>
    ```
 
 ### Run Teams Bot locally
@@ -68,7 +68,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
 
-![ai assistant bot in Teams App Test Tool](https://github.com/OfficeDev/TeamsFx/assets/15644078/90868166-115b-4394-a0d2-272bd985d0aa)
+![AI Agent in Teams App Test Tool](https://github.com/OfficeDev/TeamsFx/assets/37978464/e3b458f3-5e74-460d-9df2-bf77ed8d9c54)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't yet.
@@ -78,7 +78,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![ai assistant bot in Teams](https://github.com/OfficeDev/TeamsFx/assets/37978464/ccff0457-726a-486b-9247-c7f53e0a80ab)
+![AI Agent in Teams](https://github.com/OfficeDev/TeamsFx/assets/37978464/fd1cf673-e7d8-4826-9cac-e9481a74ee1e)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template
@@ -99,7 +99,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/adapter.js`| Sets up the bot adapter.|
 |`src/config.js`| Defines the environment variables.|
 |`src/creator.js`| One-time tool to create OpenAI Assistant.|
-|`src/app/app.js`| Handles business logics for the AI Assistant Bot.|
+|`src/app/app.js`| Handles business logics for the AI Agent.|
 |`src/app/messages.js`| Defines the message activity handlers.|
 |`src/app/actions.js`| Defines the AI actions.|
 
@@ -111,9 +111,11 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Assistant Bot template with more AI capabilities
+## Extend the AI Agent template with more AI capabilities
 
-You can follow [AI assistant bot in Teams](https://aka.ms/teamsfx-ai-assistant-bot) to extend the AI Assistant Bot template with more AI capabilities.
+You can follow [Build an AI Agent in Teams](https://aka.ms/teamsfx-ai-agent) to extend the AI Agent template with more AI capabilities, like:
+- [Customize assistant creation](https://aka.ms/teamsfx-ai-agent#customize-assistant-creation)
+- [Add functions](https://aka.ms/teamsfx-ai-agent#add-functions-with-assistants-api)
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

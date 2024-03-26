@@ -5,7 +5,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import fs from "fs-extra";
 import path from "path";
-import { ErrorType, WarningResult } from "./interfaces";
+import { AuthInfo, ErrorType, ParseOptions, ProjectType, WarningResult } from "./interfaces";
 import { Utils } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
@@ -24,7 +24,8 @@ export class ManifestUpdater {
     manifestPath: string,
     outputSpecPath: string,
     apiPluginFilePath: string,
-    spec: OpenAPIV3.Document
+    spec: OpenAPIV3.Document,
+    options: ParseOptions
   ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
@@ -37,7 +38,7 @@ export class ManifestUpdater {
     ManifestUpdater.updateManifestDescription(manifest, spec);
 
     const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
-    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(spec, specRelativePath);
+    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(spec, specRelativePath, options);
 
     return [manifest, apiPlugin];
   }
@@ -78,7 +79,8 @@ export class ManifestUpdater {
 
   static generatePluginManifestSchema(
     spec: OpenAPIV3.Document,
-    specRelativePath: string
+    specRelativePath: string,
+    options: ParseOptions
   ): PluginManifestSchema {
     const functions: FunctionObject[] = [];
     const functionNames: string[] = [];
@@ -90,7 +92,7 @@ export class ManifestUpdater {
       if (pathItem) {
         const operations = pathItem;
         for (const method in operations) {
-          if (ConstantString.AllOperationMethods.includes(method)) {
+          if (options.allowMethods!.includes(method)) {
             const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
             if (operationItem) {
               const operationId = operationItem.operationId!;
@@ -98,7 +100,7 @@ export class ManifestUpdater {
               const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
               const requestBody = operationItem.requestBody as OpenAPIV3.ParameterObject;
 
-              const parameters: FunctionParameters = {
+              const parameters: Required<FunctionParameters> = {
                 type: "object",
                 properties: {},
                 required: [],
@@ -110,18 +112,18 @@ export class ManifestUpdater {
 
                   const schema = param.schema as OpenAPIV3.SchemaObject;
 
-                  parameters.properties![param.name] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
+                  parameters.properties[param.name] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
                     schema,
                     method,
                     pathUrl
                   );
 
                   if (param.required) {
-                    parameters.required!.push(param.name);
+                    parameters.required.push(param.name);
                   }
 
-                  if (!parameters.properties![param.name].description) {
-                    parameters.properties![param.name].description = param.description ?? "";
+                  if (!parameters.properties[param.name].description) {
+                    parameters.properties[param.name].description = param.description ?? "";
                   }
                 }
               }
@@ -132,12 +134,12 @@ export class ManifestUpdater {
 
                 if (requestBodySchema.type === "object") {
                   if (requestBodySchema.required) {
-                    parameters.required!.push(...requestBodySchema.required);
+                    parameters.required.push(...requestBodySchema.required);
                   }
 
                   for (const property in requestBodySchema.properties) {
                     const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
-                    parameters.properties![property] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
+                    parameters.properties[property] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
                       schema,
                       method,
                       pathUrl
@@ -195,57 +197,69 @@ export class ManifestUpdater {
   static async updateManifest(
     manifestPath: string,
     outputSpecPath: string,
-    adaptiveCardFolder: string,
     spec: OpenAPIV3.Document,
-    allowMultipleParameters: boolean,
-    auth?: OpenAPIV3.SecuritySchemeObject,
-    isMe?: boolean
+    options: ParseOptions,
+    adaptiveCardFolder?: string,
+    authInfo?: AuthInfo
   ): Promise<[TeamsAppManifest, WarningResult[]]> {
     try {
       const originalManifest: TeamsAppManifest = await fs.readJSON(manifestPath);
       const updatedPart: any = {};
-      const [commands, warnings] = await ManifestUpdater.generateCommands(
-        spec,
-        adaptiveCardFolder,
-        manifestPath,
-        allowMultipleParameters
-      );
-      const composeExtension: IComposeExtension = {
-        composeExtensionType: "apiBased",
-        apiSpecificationFile: ManifestUpdater.getRelativePath(manifestPath, outputSpecPath),
-        commands: commands,
-      };
+      updatedPart.composeExtensions = [];
+      let warnings: WarningResult[] = [];
 
-      if (auth) {
-        if (Utils.isAPIKeyAuth(auth)) {
-          auth = auth as OpenAPIV3.ApiKeySecurityScheme;
-          const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
-            `${auth.name}_${ConstantString.RegistrationIdPostfix}`
-          );
-          (composeExtension as any).authorization = {
-            authType: "apiSecretServiceAuth",
-            apiSecretServiceAuthConfiguration: {
-              apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
-            },
-          };
-        } else if (Utils.isBearerTokenAuth(auth)) {
-          (composeExtension as any).authorization = {
-            authType: "microsoftEntra",
-            microsoftEntraConfiguration: {
-              supportsSingleSignOn: true,
-            },
-          };
+      if (options.projectType === ProjectType.SME) {
+        const updateResult = await ManifestUpdater.generateCommands(
+          spec,
+          manifestPath,
+          options,
+          adaptiveCardFolder
+        );
+        const commands = updateResult[0];
+        warnings = updateResult[1];
 
-          updatedPart.webApplicationInfo = {
-            id: "${{AAD_APP_CLIENT_ID}}",
-            resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
-          };
+        const composeExtension: IComposeExtension = {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: ManifestUpdater.getRelativePath(manifestPath, outputSpecPath),
+          commands: commands,
+        };
+
+        if (authInfo) {
+          const auth = authInfo.authScheme;
+          if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
+            const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
+              `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+            );
+            (composeExtension as any).authorization = {
+              authType: "apiSecretServiceAuth",
+              apiSecretServiceAuthConfiguration: {
+                apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
+              },
+            };
+          } else if (Utils.isOAuthWithAuthCodeFlow(auth)) {
+            const safeOAuth2RegistrationId = Utils.getSafeRegistrationIdEnvName(
+              `${authInfo.name}_${ConstantString.OAuthRegistrationIdPostFix}`
+            );
+
+            (composeExtension as any).authorization = {
+              authType: "oAuth2.0",
+              oAuthConfiguration: {
+                oauthConfigurationId: `\${{${safeOAuth2RegistrationId}}}`,
+              },
+            };
+
+            updatedPart.webApplicationInfo = {
+              id: "${{AAD_APP_CLIENT_ID}}",
+              resource: "api://${{DOMAIN}}/${{AAD_APP_CLIENT_ID}}",
+            };
+          }
         }
+
+        updatedPart.composeExtensions = [composeExtension];
       }
 
       updatedPart.description = originalManifest.description;
       ManifestUpdater.updateManifestDescription(updatedPart, spec);
-      updatedPart.composeExtensions = isMe === undefined || isMe === true ? [composeExtension] : [];
 
       const updatedManifest = { ...originalManifest, ...updatedPart };
 
@@ -257,9 +271,9 @@ export class ManifestUpdater {
 
   static async generateCommands(
     spec: OpenAPIV3.Document,
-    adaptiveCardFolder: string,
     manifestPath: string,
-    allowMultipleParameters: boolean
+    options: ParseOptions,
+    adaptiveCardFolder?: string
   ): Promise<[IMessagingExtensionCommand[], WarningResult[]]> {
     const paths = spec.paths;
     const commands: IMessagingExtensionCommand[] = [];
@@ -272,18 +286,17 @@ export class ManifestUpdater {
 
           // Currently only support GET and POST method
           for (const method in operations) {
-            if (method === ConstantString.PostMethod || method === ConstantString.GetMethod) {
-              const operationItem = operations[method];
+            if (options.allowMethods?.includes(method)) {
+              const operationItem = (operations as any)[method];
               if (operationItem) {
-                const [command, warning] = Utils.parseApiInfo(
-                  operationItem,
-                  allowMultipleParameters
-                );
+                const [command, warning] = Utils.parseApiInfo(operationItem, options);
 
-                const adaptiveCardPath = path.join(adaptiveCardFolder, command.id + ".json");
-                command.apiResponseRenderingTemplateFile = (await fs.pathExists(adaptiveCardPath))
-                  ? ManifestUpdater.getRelativePath(manifestPath, adaptiveCardPath)
-                  : "";
+                if (adaptiveCardFolder) {
+                  const adaptiveCardPath = path.join(adaptiveCardFolder, command.id + ".json");
+                  command.apiResponseRenderingTemplateFile = (await fs.pathExists(adaptiveCardPath))
+                    ? ManifestUpdater.getRelativePath(manifestPath, adaptiveCardPath)
+                    : "";
+                }
 
                 if (warning) {
                   warnings.push(warning);

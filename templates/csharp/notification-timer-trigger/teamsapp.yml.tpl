@@ -82,7 +82,15 @@ provision:
 deploy:
   - uses: cli/runDotnetCommand
     with:
-      args: publish --configuration Release
+      args: publish --configuration Release {{ProjectName}}.csproj
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      workingDirectory: ..
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      workingDirectory: ../{{ProjectName}}
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
   # Deploy your application to Azure Functions using the zip deploy feature.
   # For additional details, see at https://aka.ms/zip-deploy-to-azure-functions
   - uses: azureFunctions/zipDeploy
@@ -94,3 +102,11 @@ deploy:
       # You can replace it with your existing Azure Resource id
       # or add it to your environment variable file.
       resourceId: ${{BOT_AZURE_FUNCTION_APP_RESOURCE_ID}}
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      workingDirectory: ..
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      workingDirectory: ../{{ProjectName}}
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}

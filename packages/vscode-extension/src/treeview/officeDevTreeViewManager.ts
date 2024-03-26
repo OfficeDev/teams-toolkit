@@ -144,27 +144,14 @@ class OfficeDevTreeViewManager {
         }
       ),
       new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.editManifestTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.editManifestDescription"),
-        "fx-extension.editManifest",
+        localize("teamstoolkit.commandsTreeViewProvider.scriptLabTitle"),
+        localize("teamstoolkit.commandsTreeViewProvider.scriptLabDescription"),
+        "fx-extension.openSciptLabLink",
         undefined,
-        { name: "note", custom: false }
-      ),
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.generateManifestGUIDTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.generateManifestGUIDDescription"),
-        "fx-extension.generateManifestGUID",
-        undefined,
-        { name: "gripper", custom: false }
-      ),
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.officeAddIn.officePartnerCenterTitle"),
-        localize(
-          "teamstoolkit.commandsTreeViewProvider.officeAddIn.officePartnerCenterDescription"
-        ),
-        "fx-extension.officePartnerCenter",
-        undefined,
-        { name: "unfold", custom: false }
+        {
+          name: "symbol-function",
+          custom: false,
+        }
       ),
     ];
 
@@ -186,6 +173,15 @@ class OfficeDevTreeViewManager {
         "fx-extension.openGetStarted",
         undefined,
         { name: "symbol-event", custom: false }
+      ),
+      new TreeViewCommand(
+        localize("teamstoolkit.commandsTreeViewProvider.officeAddIn.officePartnerCenterTitle"),
+        localize(
+          "teamstoolkit.commandsTreeViewProvider.officeAddIn.officePartnerCenterDescription"
+        ),
+        "fx-extension.officePartnerCenter",
+        undefined,
+        { name: "unfold", custom: false }
       ),
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.reportIssuesTitle"),

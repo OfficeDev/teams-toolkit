@@ -14,16 +14,20 @@ provision:
     writeToEnvironmentFile: 
       teamsAppId: TEAMS_APP_ID
 
-  # Create or reuse an existing Azure Active Directory application for bot.
-  - uses: botAadApp/create
+  # Create or reuse an existing Microsoft Entra application for bot.
+  - uses: aadApp/create
     with:
-      # The Azure Active Directory application's display name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      # The Microsoft Entra application's display name
+      name: {{appName}}${{APP_NAME_SUFFIX}}
+      generateClientSecret: true
+      signInAudience: AzureADMultipleOrgs
     writeToEnvironmentFile:
-      # The Azure Active Directory application's client id created for bot.
-      botId: BOT_ID
-      # The Azure Active Directory application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD 
+      # The Microsoft Entra application's client id created for bot.
+      clientId: BOT_ID
+      # The Microsoft Entra application's client secret created for bot.
+      clientSecret: SECRET_BOT_PASSWORD
+      # The Microsoft Entra application's object id created for bot.
+      objectId: BOT_OBJECT_ID
 
   # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create

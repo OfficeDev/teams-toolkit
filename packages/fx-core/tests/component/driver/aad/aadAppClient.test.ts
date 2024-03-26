@@ -146,14 +146,47 @@ describe("AadAppClient", async () => {
 
     it("should use input signInAudience", async () => {
       const mock = new MockAdapter(axiosInstance);
-      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply(201, {
-        id: expectedObjectId,
-        displayName: expectedDisplayName,
-        signInAudience: "AzureADMultipleOrgs",
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply((config) => {
+        const data = JSON.parse(config.data);
+        return [
+          201,
+          {
+            id: expectedObjectId,
+            displayName: expectedDisplayName,
+            signInAudience: data.signInAudience,
+          },
+        ];
       });
+
       const createAadAppResult = await aadAppClient.createAadApp(
         expectedDisplayName,
         SignInAudience.AzureADMultipleOrgs
+      );
+
+      expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
+      expect(createAadAppResult.id).to.equal(expectedObjectId);
+      expect(createAadAppResult.signInAudience).to.equal("AzureADMultipleOrgs");
+    });
+
+    it("should use input serviceManagementReference", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply((config) => {
+        const data = JSON.parse(config.data);
+        expect(data.serviceManagementReference).to.equal("00000000-0000-0000-0000-000000000000");
+        return [
+          201,
+          {
+            id: expectedObjectId,
+            displayName: data.displayName,
+            signInAudience: data.signInAudience,
+          },
+        ];
+      });
+
+      const createAadAppResult = await aadAppClient.createAadApp(
+        expectedDisplayName,
+        SignInAudience.AzureADMultipleOrgs,
+        "00000000-0000-0000-0000-000000000000"
       );
 
       expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
@@ -230,7 +263,7 @@ describe("AadAppClient", async () => {
       expect(result).to.equal(expectedSecretText);
     });
 
-    it("should set secret lifetime to 180 days", async () => {
+    it("should set secret lifetime and description based on user input", async () => {
       const mock = new MockAdapter(axiosInstance);
       mock
         .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
@@ -238,6 +271,7 @@ describe("AadAppClient", async () => {
           const data = JSON.parse(config.data);
           expect(data.passwordCredential.endDateTime).to.not.be.undefined;
           expect(data.passwordCredential.startDateTime).to.not.be.undefined;
+          expect(data.passwordCredential.displayName).to.equal("test description");
 
           const endDateTime = new Date(data.passwordCredential.endDateTime);
           const startDateTime = new Date(data.passwordCredential.startDateTime);
@@ -246,12 +280,12 @@ describe("AadAppClient", async () => {
           expect(startDateTime.getTime()).to.be.closeTo(now.getTime(), 1000); // Allow a 1 second difference
 
           expect(endDateTime.getTime() - startDateTime.getTime()).to.equal(
-            180 * 24 * 60 * 60 * 1000
+            90 * 24 * 60 * 60 * 1000
           );
           return [200, { secretText: expectedSecretText }];
         });
 
-      await aadAppClient.generateClientSecret(expectedObjectId);
+      await aadAppClient.generateClientSecret(expectedObjectId, 90, "test description");
     });
 
     it("should throw error when request fail", async () => {

@@ -83,6 +83,11 @@ describe("envUtils", () => {
         assert.isTrue(e instanceof MissingRequiredFileError);
       }
     });
+    it("happy path for customized yaml path", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_CONFIG_FILE_PATH: "./customized.yml" });
+      const res1 = pathUtils.getYmlFilePath(".", "dev");
+      assert.equal(res1, "./customized.yml");
+    });
   });
 
   describe("pathUtils.getEnvFolderPath", () => {

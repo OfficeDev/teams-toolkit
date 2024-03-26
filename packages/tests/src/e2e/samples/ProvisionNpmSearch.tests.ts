@@ -13,6 +13,6 @@ class NpmSearchTestCase extends CaseFactory {}
 new NpmSearchTestCase(
   TemplateProjectFolder.NpmSearch,
   15277471,
-  "v-ivanchen@microsoft.com",
+  "qidon@microsoft.com",
   ["bot"]
 ).test();

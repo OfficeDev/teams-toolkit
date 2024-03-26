@@ -332,7 +332,7 @@ export class CodeFlowLogin {
             }
           })
           .catch(async (error) => {
-            VsCodeLogInstance.error(
+            VsCodeLogInstance.debug(
               "[Login] " +
                 stringUtil.format(
                   localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),
@@ -385,7 +385,7 @@ export class CodeFlowLogin {
           return err(LoginCodeFlowError(new Error("No token response.")));
         }
       } catch (error) {
-        VsCodeLogInstance.error(
+        VsCodeLogInstance.debug(
           "[Login] " +
             stringUtil.format(
               localize("teamstoolkit.codeFlowLogin.silentAcquireToken"),

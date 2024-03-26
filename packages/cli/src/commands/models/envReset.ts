@@ -2,12 +2,13 @@
 // Licensed under the MIT license.
 import { CLICommand, ok } from "@microsoft/teamsfx-api";
 import { envUtil } from "@microsoft/teamsfx-core";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { EnvFileOption, EnvOption, IgnoreKeysOption, ProjectFolderOption } from "../common";
 
 export const envResetCommand: CLICommand = {
   name: "reset",
-  description: "Reset environment file.",
+  description: commands["env.reset"].description,
   options: [EnvOption, EnvFileOption, IgnoreKeysOption, ProjectFolderOption],
   telemetry: {
     event: TelemetryEvent.ResetEnvironment,

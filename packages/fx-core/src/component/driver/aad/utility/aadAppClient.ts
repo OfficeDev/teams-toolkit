@@ -78,12 +78,14 @@ export class AadAppClient {
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
   public async createAadApp(
     displayName: string,
-    signInAudience = SignInAudience.AzureADMyOrg
+    signInAudience: SignInAudience = SignInAudience.AzureADMyOrg,
+    serviceManagementReference?: string
   ): Promise<AADApplication> {
     const requestBody: IAADDefinition = {
       displayName: displayName,
       signInAudience: signInAudience,
-    }; // Create a Microsoft Entra app without setting anything
+      serviceManagementReference: serviceManagementReference,
+    }; // Create a Microsoft Entra app and optionally set service tree id
 
     const response = await this.axios.post("applications", requestBody);
 
@@ -96,13 +98,17 @@ export class AadAppClient {
   }
 
   @hooks([ErrorContextMW({ source: "Graph", component: "AadAppClient" })])
-  public async generateClientSecret(objectId: string): Promise<string> {
+  public async generateClientSecret(
+    objectId: string,
+    clientSecretExpireDays = 180, // Recommended lifetime from Azure Portal
+    clientSecretDescription = "default"
+  ): Promise<string> {
     const startDate = new Date();
     const endDate = new Date(startDate.getTime());
-    endDate.setDate(endDate.getDate() + 180); // Recommended lifetime from Azure Portal
+    endDate.setDate(endDate.getDate() + clientSecretExpireDays);
     const requestBody = {
       passwordCredential: {
-        displayName: constants.aadAppPasswordDisplayName,
+        displayName: clientSecretDescription,
         endDateTime: endDate.toISOString(),
         startDateTime: startDate.toISOString(),
       },

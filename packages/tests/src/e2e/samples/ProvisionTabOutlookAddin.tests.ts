@@ -13,5 +13,5 @@ class OutlookTabTestCase extends CaseFactory {}
 new OutlookTabTestCase(
   TemplateProjectFolder.OutlookTab,
   24132142,
-  "v-ivanchen@microsoft.com"
+  "huajiezhang@microsoft.com"
 ).test();

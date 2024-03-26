@@ -27,6 +27,7 @@ import {
   CopilotPluginCodeLensProvider,
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
+  OfficeDevManifestCodeLensProvider,
   PermissionsJsonFileCodeLensProvider,
   ProjectSettingsCodeLensProvider,
   TeamsAppYamlCodeLensProvider,
@@ -200,6 +201,9 @@ function activateTeamsFxRegistration(context: vscode.ExtensionContext) {
 function activateOfficeDevRegistration(context: vscode.ExtensionContext) {
   registerOfficeDevMenuCommands(context);
   officeDevTreeViewManager.registerOfficeDevTreeViews(context);
+  if (vscode.workspace.isTrusted) {
+    registerOfficeDevCodeLensProviders(context);
+  }
 }
 
 /**
@@ -396,6 +400,12 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler),
     vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
   );
+
+  const generateManifestGUID = vscode.commands.registerCommand(
+    "fx-extension.generateManifestGUID",
+    () => Correlator.run(officeDevHandlers.generateManifestGUID)
+  );
+  context.subscriptions.push(generateManifestGUID);
 }
 
 function registerTreeViewCommandsInDevelopment(context: vscode.ExtensionContext) {
@@ -760,22 +770,11 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validateManifest);
 
-  const openManifestCmd = vscode.commands.registerCommand("fx-extension.editManifest", (...args) =>
-    Correlator.run(officeDevHandlers.editOfficeAddInManifest, args)
+  const openScriptLabLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openSciptLabLink",
+    (...args) => Correlator.run(officeDevHandlers.openScriptLabLink, args)
   );
-  context.subscriptions.push(openManifestCmd);
-
-  const generateManifestGUID = vscode.commands.registerCommand(
-    "fx-extension.generateManifestGUID",
-    () => Correlator.run(officeDevHandlers.generateManifestGUID)
-  );
-  context.subscriptions.push(generateManifestGUID);
-
-  const openOfficePartnerCenterLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.officePartnerCenter",
-    (...args) => Correlator.run(officeDevHandlers.openOfficePartnerCenterHandler, args)
-  );
-  context.subscriptions.push(openOfficePartnerCenterLinkCmd);
+  context.subscriptions.push(openScriptLabLinkCmd);
 
   // help and feedback
   const openHelpFeedbackLinkCmd = vscode.commands.registerCommand(
@@ -795,6 +794,12 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(officeDevHandlers.openGetStartedLinkHandler, args)
   );
   context.subscriptions.push(openGetStartedLinkCmd);
+
+  const openOfficePartnerCenterLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.officePartnerCenter",
+    (...args) => Correlator.run(officeDevHandlers.openOfficePartnerCenterHandler, args)
+  );
+  context.subscriptions.push(openOfficePartnerCenterLinkCmd);
 
   const reportIssueCmd = vscode.commands.registerCommand(
     "fx-extension.openOfficeDevReportIssues",
@@ -1010,6 +1015,21 @@ function registerCodelensAndHoverProviders(context: vscode.ExtensionContext) {
   };
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(yamlFileSelector, yamlCodelensProvider)
+  );
+}
+
+function registerOfficeDevCodeLensProviders(context: vscode.ExtensionContext) {
+  const officeDevManifestCodeLensProvider = new OfficeDevManifestCodeLensProvider();
+  const manifestFileSelector = {
+    language: "xml",
+    scheme: "file",
+    pattern: `**/manifest*.xml`,
+  };
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      manifestFileSelector,
+      officeDevManifestCodeLensProvider
+    )
   );
 }
 

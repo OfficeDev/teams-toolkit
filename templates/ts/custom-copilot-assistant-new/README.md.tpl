@@ -1,19 +1,19 @@
-# Overview of the AI Assistant Bot template
+# Overview of the AI Agent template
 
 This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library).
-It showcases how to build an intelligent chat bot in Teams capable of chatting with users and helping users accomplish a specific task using natural language right in the Teams conversations, such as managing tasks.
+It showcases how to build an AI agent in Teams capable of chatting with users and helping users accomplish a specific task using natural language right in the Teams conversations, such as managing tasks.
 
-- [Overview of the AI Assistant Bot template](#overview-of-the-ai-assistant-bot-template)
-  - [Get started with the AI Assistant Bot template](#get-started-with-the-ai-assistant-bot-template)
+- [Overview of the AI Agent template](#overview-of-the-ai-agent-template)
+  - [Get started with the AI Agent template](#get-started-with-the-ai-agent-template)
   - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Assistant Bot template with more AI capabilities](#extend-the-ai-assistant-bot-template-with-more-ai-capabilities)
+  - [Extend the AI Agent template with more AI capabilities](#extend-the-ai-agent-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)
 
-## Get started with the AI Assistant Bot template
+## Get started with the AI Agent template
 
 > **Prerequisites**
 >
-> To run the AI Assistant Bot template in your local dev machine, you will need:
+> To run the AI Agent template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 {{^enableTestToolByDefault}}
@@ -33,15 +33,14 @@ It showcases how to build an intelligent chat bot in Teams capable of chatting w
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
-1. In `src/app/app.ts`, update `azureDefaultDeployment` to your own model deployment name.
+1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>`, endpoint `AZURE_OPENAI_ENDPOINT=<your-endpoint>`, and deployment name `AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>`.
 {{/useAzureOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 1. You can send any message to get a response from the bot.
 
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
 
-![ai assistant bot](https://github.com/OfficeDev/TeamsFx/assets/9698542/9bd22201-8fda-4252-a0b3-79531c963e5e)
+![AI Agent](https://github.com/OfficeDev/TeamsFx/assets/37978464/053218b7-cb17-4db4-9b8a-50ca04c1cb55)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't yet.
@@ -49,8 +48,7 @@ It showcases how to build an intelligent chat bot in Teams capable of chatting w
 1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>` and endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>`.
-1. In `src/app/app.ts`, update `azureDefaultDeployment` to your own model deployment name.
+1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>`, endpoint `AZURE_OPENAI_ENDPOINT=<your-endpoint>`, and deployment name `AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>`.
 {{/useAzureOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
@@ -58,7 +56,7 @@ It showcases how to build an intelligent chat bot in Teams capable of chatting w
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![ai assistant bot](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
+![AI Agent](https://github.com/OfficeDev/TeamsFx/assets/37978464/4e64c733-ee01-4938-8be1-9de0195b7244)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template
@@ -82,7 +80,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/prompts/planner/config.json`| Configures the prompt.|
 |`src/prompts/planner/actions.json`| Defines the actions.|
 |`src/app/turnState.ts`| Defines the app turn state.|
-|`src/app/app.ts`| Handles business logics for the AI Assistant Bot.|
+|`src/app/app.ts`| Handles business logics for the AI Agent.|
 |`src/app/messages.ts`| Defines the message activity handlers.|
 |`src/app/actions.ts`| Defines the AI actions.|
 
@@ -94,9 +92,10 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Assistant Bot template with more AI capabilities
+## Extend the AI Agent template with more AI capabilities
 
-You can follow [AI assistant bot in Teams](https://aka.ms/teamsfx-ai-assistant-bot) to extend the AI Assistant Bot template with more AI capabilities.
+You can follow [Build an AI Agent in Teams](https://aka.ms/teamsfx-ai-agent) to extend the AI Agent template with more AI capabilities, like:
+- [Add functions](https://aka.ms/teamsfx-ai-agent#add-functions-build-new)
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

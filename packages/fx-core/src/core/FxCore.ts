@@ -66,6 +66,7 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { ValidateWithTestCasesArgs } from "../component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
 import { teamsappMgr } from "../component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import {
@@ -74,11 +75,13 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../component/driver/teamsApp/validateTestCases";
 import { SSO } from "../component/feature/sso";
 import {
   ErrorResult,
   OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
+  copilotPluginParserOptions,
   generateScaffoldingSummary,
   listOperations,
   listPluginExistingOperations,
@@ -107,7 +110,11 @@ import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ValidateTeamsAppInputs } from "../question";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
-import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
+import {
+  HubTypes,
+  isAadMainifestContainsPlaceholder,
+  TeamsAppValidationOptions,
+} from "../question/other";
 import { QuestionNames } from "../question/questionNames";
 import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { CallbackRegistry } from "./callback";
@@ -128,6 +135,7 @@ import {
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import "../component/feature/sso";
+import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -504,6 +512,8 @@ export class FxCore {
   async validateApplication(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
     if (inputs["manifest-path"]) {
       return await this.validateManifest(inputs);
+    } else if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.testCases().id) {
+      return await this.validateWithTestCases(inputs);
     } else {
       return await this.validateAppPackage(inputs);
     }
@@ -546,6 +556,22 @@ export class FxCore {
       showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+    return (await driver.execute(args, context)).result;
+  }
+
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "validateWithTestCases", reset: true }),
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+  ])
+  async validateWithTestCases(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
+    const context: DriverContext = createDriverContext(inputs);
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: inputs["app-package-file-path"] as string,
+      showMessage: true,
+      showProgressBar: true,
+    };
+    const driver: ValidateWithTestCasesDriver = Container.get("teamsApp/validateWithTestCases");
     return (await driver.execute(args, context)).result;
   }
   /**
@@ -958,6 +984,8 @@ export class FxCore {
         if (match) {
           if (match[1].startsWith("TEAMSFX_ENV=")) {
             writeStream.write(`TEAMSFX_ENV=${targetEnvName}${os.EOL}`);
+          } else if (match[1].startsWith("APP_NAME_SUFFIX=")) {
+            writeStream.write(`APP_NAME_SUFFIX=${targetEnvName}${os.EOL}`);
           } else {
             writeStream.write(`${match[1]}${os.EOL}`);
           }
@@ -1232,12 +1260,18 @@ export class FxCore {
     }
 
     // Merge existing operations in manifest.json
-    const specParser = new SpecParser(url, {
-      allowAPIKeyAuth: isApiKeyEnabled(),
-      allowMultipleParameters: isMultipleParametersEnabled(),
-    });
+    const specParser = new SpecParser(
+      url,
+      isPlugin
+        ? copilotPluginParserOptions
+        : {
+            allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
+            allowMultipleParameters: isMultipleParametersEnabled(),
+          }
+    );
 
-    const apiResultList = await specParser.list();
+    const listResult = await specParser.list();
+    const apiResultList = listResult.validAPIs;
 
     let existingOperations: string[];
     let outputAPISpecPath: string;
@@ -1277,7 +1311,11 @@ export class FxCore {
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
           if (operation) {
-            if (operation.auth && operation.auth.type === "apiKey") {
+            if (
+              operation.auth &&
+              operation.auth.authScheme.type === "http" &&
+              operation.auth.authScheme.scheme === "bearer"
+            ) {
               authNames.add(operation.auth.name);
               serverUrls.add(operation.server);
             }
@@ -1308,12 +1346,29 @@ export class FxCore {
         }
       }
 
-      const generateResult = await specParser.generate(
-        manifestPath,
-        operations,
-        outputAPISpecPath,
-        adaptiveCardFolder
-      );
+      let generateResult;
+      if (!isPlugin) {
+        generateResult = await specParser.generate(
+          manifestPath,
+          operations,
+          outputAPISpecPath,
+          adaptiveCardFolder
+        );
+      } else {
+        const pluginPathRes = await manifestUtils.getPluginFilePath(
+          manifestRes.value,
+          manifestPath
+        );
+        if (pluginPathRes.isErr()) {
+          return err(pluginPathRes.error);
+        }
+        generateResult = await specParser.generateForCopilot(
+          manifestPath,
+          operations,
+          outputAPISpecPath,
+          pluginPathRes.value
+        );
+      }
 
       // Send SpecParser.generate() warnings
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
@@ -1349,6 +1404,31 @@ export class FxCore {
     );
     void context.userInteraction.showMessage("info", message, false);
     return ok(undefined);
+  }
+
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "copilotPluginListApiSpecs" }),
+    ErrorHandlerMW,
+  ])
+  async listPluginApiSpecs(inputs: Inputs): Promise<Result<string[], FxError>> {
+    try {
+      const manifestPath = inputs[QuestionNames.ManifestPath];
+      const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+      if (manifestRes.isErr()) {
+        return err(manifestRes.error);
+      }
+      const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+        manifestRes.value,
+        manifestPath
+      );
+      if (res.isOk()) {
+        return ok(res.value);
+      } else {
+        return err(res.error);
+      }
+    } catch (error) {
+      return err(error as FxError);
+    }
   }
 
   @hooks([

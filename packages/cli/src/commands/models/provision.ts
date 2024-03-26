@@ -1,28 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { CLICommand, CLIContext, InputsWithProjectPath } from "@microsoft/teamsfx-api";
-import { getFxCore } from "../../activate";
-import { strings } from "../../resource";
-import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
-import { EnvOption, IgnoreLoadEnvOption, ProjectFolderOption } from "../common";
 import { CoreQuestionNames } from "@microsoft/teamsfx-core";
 import { newResourceGroupOption } from "@microsoft/teamsfx-core/build/question/other";
+import { getFxCore } from "../../activate";
+import { commands } from "../../resource";
+import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
+import { EnvOption, IgnoreLoadEnvOption, ProjectFolderOption } from "../common";
 
 export const provisionCommand: CLICommand = {
   name: "provision",
-  description: strings.command.provision.description,
+  description: commands.provision.description,
   options: [
     EnvOption,
     ProjectFolderOption,
     {
       name: "resource-group",
-      description: "Specifies resource group name.",
+      description: commands.provision.options["resource-group"],
       type: "string",
       hidden: true,
     },
     {
       name: "region",
-      description: "Specifies resource group region.",
+      description: commands.provision.options.region,
       type: "string",
       hidden: true,
     },

@@ -72,4 +72,5 @@ export interface IAADDefinition {
   requiredResourceAccess?: RequiredResourceAccess[];
   passwordCredentials?: PasswordCredential[];
   spa?: Spa;
+  serviceManagementReference?: string;
 }

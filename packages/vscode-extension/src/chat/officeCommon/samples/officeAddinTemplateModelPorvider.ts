@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import axios from "axios";
-//import { DocumentMetadata } from "../../rag/rag";
+import { BM25, DocumentWithmetadata } from "../../rag/BM25";
 import { SampleData } from "./sampleData";
 
 export type WXPAppName = "Word" | "Excel" | "PowerPoint";
@@ -9,26 +9,23 @@ export type WXPAppName = "Word" | "Excel" | "PowerPoint";
 const sampleDirectoryUrl =
   "https://api.github.com/repos/OfficeDev/Office-agentsamples/contents/scenario-samples/";
 
-export class OfficeAddinSampleDownloader {
-  private static instance: OfficeAddinSampleDownloader;
+export class OfficeAddinTemplateModelPorvider {
+  private static instance: OfficeAddinTemplateModelPorvider;
 
-  private samples: { [x: string]: SampleData[] } = {};
+  private bm25Models: { [x: string]: BM25 } = {};
 
   private constructor() {
     // Private constructor to prevent direct instantiation
   }
 
-  public static getInstance(): OfficeAddinSampleDownloader {
-    if (!OfficeAddinSampleDownloader.instance) {
-      OfficeAddinSampleDownloader.instance = new OfficeAddinSampleDownloader();
+  public static getInstance(): OfficeAddinTemplateModelPorvider {
+    if (!OfficeAddinTemplateModelPorvider.instance) {
+      OfficeAddinTemplateModelPorvider.instance = new OfficeAddinTemplateModelPorvider();
     }
-    return OfficeAddinSampleDownloader.instance;
+    return OfficeAddinTemplateModelPorvider.instance;
   }
 
-  public async getSamples(name: WXPAppName): Promise<SampleData[]> {
-    if (this.samples[name]) {
-      return this.samples[name];
-    }
+  private async getSamples(name: WXPAppName): Promise<SampleData[]> {
     const returnData: SampleData[] = [];
     const fullUrl = sampleDirectoryUrl + name;
     const directoryResponse = await axios.get(fullUrl, {
@@ -88,10 +85,23 @@ export class OfficeAddinSampleDownloader {
           }
         }
       }
-      if (returnData.length > 0) {
-        this.samples[name] = returnData;
-      }
     }
     return returnData;
+  }
+
+  public async getBM25Model(name: WXPAppName): Promise<BM25> {
+    if (this.bm25Models[name]) {
+      return this.bm25Models[name];
+    }
+    const samples = await this.getSamples(name);
+    const documents: DocumentWithmetadata[] = samples.map((sample) => {
+      return {
+        documentText: sample.description,
+        metadata: sample,
+      };
+    });
+    const bm25 = new BM25(documents);
+    this.bm25Models[name] = bm25;
+    return bm25;
   }
 }

@@ -6,9 +6,10 @@ import {
   LanguageModelChatMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { OfficeAddinSampleDownloader, WXPAppName } from "./officeAddinSampleDownloader";
+import { BM25, BMDocument } from "../../rag/BM25";
+import { OfficeAddinTemplateModelPorvider, WXPAppName } from "./officeAddinTemplateModelPorvider";
 import { SampleData } from "./sampleData";
-import { prepareExamples, searchTopKByqueryAndDocs } from "../../rag/rag";
+import { prepareDiscription } from "../../rag/ragUtil";
 
 export class SampleProvider {
   private static instance: SampleProvider;
@@ -31,23 +32,19 @@ export class SampleProvider {
     scenario: string,
     k: number
   ): Promise<Map<string, SampleData>> {
-    const sampleCollection: SampleData[] =
-      await OfficeAddinSampleDownloader.getInstance().getSamples(host as WXPAppName);
-    const [cleanDocs, docsWithMetadata] = prepareExamples(sampleCollection);
-    // Todo: adjust the threshold
-    const matchedDocs = searchTopKByqueryAndDocs(
-      scenario,
-      cleanDocs,
-      docsWithMetadata,
-      k,
-      0.8 /*threshold*/
+    const bm25: BM25 = await OfficeAddinTemplateModelPorvider.getInstance().getBM25Model(
+      host as WXPAppName
     );
+    const query = prepareDiscription(scenario);
+    const documents: BMDocument[] = bm25.search(query, k);
 
     const samples: Map<string, SampleData> = new Map<string, SampleData>();
-    for (const sampleData of matchedDocs as SampleData[]) {
-      samples.set(sampleData.name, sampleData);
+    for (const doc of documents) {
+      if (doc.document.metadata) {
+        const sampleData = doc.document.metadata as SampleData;
+        samples.set(sampleData.name, sampleData);
+      }
     }
-
     return new Promise<Map<string, SampleData>>((resolve, reject) => {
       resolve(samples);
     });

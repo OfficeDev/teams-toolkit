@@ -180,7 +180,7 @@ export class CreateApiKeyDriver implements StepDriver {
       allowMultipleParameters: isMultipleParametersEnabled(),
     });
     const listResult = await parser.list();
-    const operations = listResult.validAPIs;
+    const operations = listResult.APIs.filter((value) => value.isValid);
     const domains = operations
       .filter((value) => {
         const auth = value.auth;

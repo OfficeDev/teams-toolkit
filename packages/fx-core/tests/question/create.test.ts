@@ -2278,7 +2278,7 @@ describe("scaffold question", () => {
             warnings: [{ content: "warn", type: WarningType.Unknown }],
           });
           sandbox.stub(SpecParser.prototype, "list").resolves({
-            validAPIs: [
+            APIs: [
               {
                 api: "get operation1",
                 server: "https://server",
@@ -2290,8 +2290,16 @@ describe("scaffold question", () => {
                   },
                 },
                 operationId: "getOperation1",
+                isValid: true,
+                reason: [],
               },
-              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+              {
+                api: "get operation2",
+                server: "https://server2",
+                operationId: "getOperation2",
+                isValid: true,
+                reason: [],
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2333,7 +2341,7 @@ describe("scaffold question", () => {
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
 
           sandbox.stub(SpecParser.prototype, "list").resolves({
-            validAPIs: [
+            APIs: [
               {
                 api: "get operation1",
                 server: "https://server",
@@ -2345,9 +2353,17 @@ describe("scaffold question", () => {
                   },
                 },
                 operationId: "getOperation1",
+                isValid: true,
+                reason: [],
               },
 
-              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+              {
+                api: "get operation2",
+                server: "https://server2",
+                operationId: "getOperation2",
+                isValid: true,
+                reason: [],
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2386,7 +2402,7 @@ describe("scaffold question", () => {
           sandbox.stub(fs, "pathExists").resolves(true);
 
           sandbox.stub(SpecParser.prototype, "list").resolves({
-            validAPIs: [
+            APIs: [
               {
                 api: "get operation1",
                 server: "https://server",
@@ -2399,8 +2415,16 @@ describe("scaffold question", () => {
                   },
                 },
                 operationId: "getOperation1",
+                isValid: true,
+                reason: [],
               },
-              { api: "get operation2", server: "https://server2", operationId: "getOperation2" },
+              {
+                api: "get operation2",
+                server: "https://server2",
+                operationId: "getOperation2",
+                isValid: true,
+                reason: [],
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2517,7 +2541,7 @@ describe("scaffold question", () => {
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(SpecParser.prototype, "list").resolves({
-            validAPIs: [
+            APIs: [
               {
                 api: "GET /user/{userId}",
                 server: "https://server",
@@ -2530,8 +2554,16 @@ describe("scaffold question", () => {
                   },
                 },
                 operationId: "getUserById",
+                isValid: true,
+                reason: [],
               },
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+              {
+                api: "GET /store/order",
+                server: "https://server2",
+                operationId: "getStoreOrder",
+                isValid: true,
+                reason: [],
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2568,7 +2600,7 @@ describe("scaffold question", () => {
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
 
           sandbox.stub(SpecParser.prototype, "list").resolves({
-            validAPIs: [
+            APIs: [
               {
                 api: "GET /user/{userId}",
                 server: "https://server",
@@ -2581,8 +2613,16 @@ describe("scaffold question", () => {
                   },
                 },
                 operationId: "getUserById",
+                isValid: true,
+                reason: [],
               },
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+              {
+                api: "GET /store/order",
+                server: "https://server2",
+                operationId: "getStoreOrder",
+                isValid: true,
+                reason: [],
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2612,16 +2652,20 @@ describe("scaffold question", () => {
             .stub(SpecParser.prototype, "list")
             .onFirstCall()
             .resolves({
-              validAPIs: [
+              APIs: [
                 {
                   api: "GET /user/{userId}",
                   server: "https://server",
                   operationId: "getUserById",
+                  isValid: true,
+                  reason: [],
                 },
                 {
                   api: "GET /store/order",
                   server: "https://server2",
                   operationId: "getStoreOrder",
+                  isValid: true,
+                  reason: [],
                 },
               ],
               allAPICount: 2,
@@ -2629,15 +2673,17 @@ describe("scaffold question", () => {
             })
             .onSecondCall()
             .resolves({
-              validAPIs: [
+              APIs: [
                 {
                   api: "GET /store/order",
                   server: "https://server2",
                   operationId: "getStoreOrder",
+                  isValid: true,
+                  reason: [],
                 },
               ],
-              allAPICount: 2,
-              validAPICount: 2,
+              allAPICount: 1,
+              validAPICount: 1,
             });
 
           sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok({} as any));
@@ -2681,7 +2727,7 @@ describe("scaffold question", () => {
             .stub(SpecParser.prototype, "validate")
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
           sandbox.stub(SpecParser.prototype, "list").resolves({
-            validAPIs: [
+            APIs: [
               {
                 api: "GET /user/{userId}",
                 server: "https://server",
@@ -2694,8 +2740,16 @@ describe("scaffold question", () => {
                   },
                 },
                 operationId: "getUserById",
+                isValid: true,
+                reason: [],
               },
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+              {
+                api: "GET /store/order",
+                server: "https://server2",
+                operationId: "getStoreOrder",
+                isValid: true,
+                reason: [],
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2730,7 +2784,7 @@ describe("scaffold question", () => {
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
 
           sandbox.stub(SpecParser.prototype, "list").resolves({
-            validAPIs: [
+            APIs: [
               {
                 api: "GET /user/{userId}",
                 server: "https://server",
@@ -2743,8 +2797,16 @@ describe("scaffold question", () => {
                   },
                 },
                 operationId: "getUserById",
+                isValid: true,
+                reason: [],
               },
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+              {
+                api: "GET /store/order",
+                server: "https://server2",
+                operationId: "getStoreOrder",
+                isValid: true,
+                reason: [],
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2779,7 +2841,7 @@ describe("scaffold question", () => {
             .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
 
           sandbox.stub(SpecParser.prototype, "list").resolves({
-            validAPIs: [
+            APIs: [
               {
                 api: "GET /user/{userId}",
                 server: "https://server",
@@ -2792,8 +2854,16 @@ describe("scaffold question", () => {
                   },
                 },
                 operationId: "getUserById",
+                isValid: true,
+                reason: [],
               },
-              { api: "GET /store/order", server: "https://server2", operationId: "getStoreOrder" },
+              {
+                api: "GET /store/order",
+                server: "https://server2",
+                operationId: "getStoreOrder",
+                isValid: true,
+                reason: [],
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,

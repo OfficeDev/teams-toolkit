@@ -561,6 +561,7 @@ export class CapabilityOptions {
       if (isOutlookAddin || isOfficeXMLAddinForOutlook) {
         items.push(CapabilityOptions.outlookAddinImport());
       } else if (isOfficeAddin) {
+        items.push(CapabilityOptions.officeContentAddin());
         items.push(CapabilityOptions.officeAddinImport());
       }
     } else {

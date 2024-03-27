@@ -73,16 +73,16 @@ async function matchOfficeAddinProject(
     ...(await getOfficeAddinSampleMetadata()),
   ];
   const messages = [
-    getOfficeAddinProjectMatchSystemPrompt(allOfficeAddinProjectMetadata), // TODO: Implement the getOfficeAddinProjectMatchSystemPrompt.
+    getOfficeAddinProjectMatchSystemPrompt(allOfficeAddinProjectMetadata),
     new LanguageModelChatUserMessage(request.prompt),
   ];
-  const response = await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
+  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   let matchedProjectId: string;
   if (response) {
     try {
       const responseJson = JSON.parse(response);
-      if (responseJson && responseJson.app) {
-        matchedProjectId = responseJson.app;
+      if (responseJson && responseJson.addin) {
+        matchedProjectId = responseJson.addin;
       }
     } catch (e) {}
   }

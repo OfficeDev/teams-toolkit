@@ -4,36 +4,32 @@ import { localize } from "../utils/localizeUtils";
 import { ProjectMetadata } from "./commands/create/types";
 import * as vscode from "vscode";
 
-// TODO: Add prompts to match WXP samples.
 export function getOfficeAddinProjectMatchSystemPrompt(projectMetadata: ProjectMetadata[]) {
-  const appsDescription = projectMetadata
-    .map((config) => `'${config.id}' (${config.description})`)
-    .join(", ");
-  const examples = [
-    {
-      user: "an word add-in to help improve writing",
-      addin: "Word-Add-in-WritingAssistant",
-    },
-    {
-      user: "an add-in to send emails in excel",
-      addin: "Excel-Add-in-Mail-Merge",
-    },
-    {
-      user: "use shape api in excel to build dashboard",
-      addin: "Excel-Add-in-ShapeAPI-Dashboard",
-    },
-  ];
-  const exampleDescription = examples
-    .map(
-      (example, index) =>
-        `${index + 1}. User asks: ${example.user}, return { "addin": ${example.addin}}.`
-    )
-    .join(" ");
-  return new vscode.LanguageModelChatSystemMessage(
-    `- You are an expert in determining which of the following apps the user is interested in.
-    - The apps are: ${appsDescription}. Your job is to determine which app would most help the user based on their query. Choose at most three of the available apps as the best matched app. Only respond with a JSON object containing the app you choose. Do not respond in a conversational tone, only JSON.
-  `
-  );
+  const addinDescription = projectMetadata
+    .map((config) => `'${config.id}' : ${config.description}`)
+    .join("\n");
+
+  const addinMatchPrompt = `
+    **Instructions:**
+    Given a user's input, compare it against the following predefined list of Office JavaScript add-in with {id : description} format. If the input aligns closely with one of the descriptions, return the most aligned id. If there is no close alignment, return empty string.
+
+    **Predefined add-in:**
+    ${addinDescription}
+
+    **User Input:**
+    "a word addin that can help me manage my team's tasks and deadlines within my documents."
+
+    **Response Logic:**
+    - If the input contains keywords or phrases that match closely with the descriptions (e.g., "manage tasks," "deadlines"), identify the most relevant add-in id.
+    - If the input is vague or does not contain specific keywords of scenarios that match the descriptions, return empty string.
+    - Only return "word-taskpane", "powerpoint-taskpane", "excel-taskpane" if user just want a simple hello world addin.
+
+    **Response:**
+    - the response must strictly follow the JSON format below
+    { "addin": id }
+  `;
+
+  return new vscode.LanguageModelChatSystemMessage(addinMatchPrompt);
 }
 
 export const defaultOfficeAddinSystemPrompt = () => {
@@ -43,7 +39,7 @@ export const defaultOfficeAddinSystemPrompt = () => {
 
   return new vscode.LanguageModelChatSystemMessage(
     `You are an expert in Office JavaScript addin development. Your job is to answer general conceputal question related with Office JavaScript Add-in development. Folow the <Instructions> and think step by step.
-  
+
     <Instructions>
     1. Check whether user's query is a conceptual quesion. Check some samaples of conceptual questions in "Conceptual Sample" tag.
     2. If it is a conceptual question, provide your answers. 

@@ -35,10 +35,17 @@ export class ManifestUpdater {
       },
     ];
 
+    const appName = this.removeEnvs(manifest.name.short);
+
     ManifestUpdater.updateManifestDescription(manifest, spec);
 
     const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
-    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(spec, specRelativePath, options);
+    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(
+      spec,
+      specRelativePath,
+      appName,
+      options
+    );
 
     return [manifest, apiPlugin];
   }
@@ -80,6 +87,7 @@ export class ManifestUpdater {
   static generatePluginManifestSchema(
     spec: OpenAPIV3.Document,
     specRelativePath: string,
+    appName: string,
     options: ParseOptions
   ): PluginManifestSchema {
     const functions: FunctionObject[] = [];
@@ -174,7 +182,7 @@ export class ManifestUpdater {
 
     const apiPlugin: PluginManifestSchema = {
       schema_version: "v2",
-      name_for_human: spec.info.title,
+      name_for_human: appName,
       description_for_human: spec.info.description ?? "<Please add description of the plugin>",
       functions: functions,
       runtimes: [
@@ -316,5 +324,15 @@ export class ManifestUpdater {
   static getRelativePath(from: string, to: string): string {
     const relativePath = path.relative(path.dirname(from), to);
     return path.normalize(relativePath).replace(/\\/g, "/");
+  }
+
+  static removeEnvs(str: string): string {
+    const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
+    const matches = placeHolderReg.exec(str);
+    let newStr = str;
+    if (matches != null) {
+      newStr = newStr.replace(matches[0], "");
+    }
+    return newStr;
   }
 }

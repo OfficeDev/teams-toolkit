@@ -70,6 +70,7 @@ export class projectCreator implements ISkill {
       "programming-language": "javascript",
       folder: tempFolder,
       "app-name": tempAppName,
+      isFromCodeGen: true,
     };
     await vscode.commands.executeCommand(
       CHAT_EXECUTE_COMMAND_ID,

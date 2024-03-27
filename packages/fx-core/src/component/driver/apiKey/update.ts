@@ -68,13 +68,16 @@ export class UpdateApiKeyDriver implements StepDriver {
       }
 
       // If there is difference, ask user to confirm the update
-      const userConfirm = await context.ui!.confirm!({
-        name: "confirm-update-api-key",
-        title: getLocalizedString("driver.apiKey.confirm.update", diffMsgs.join(",\n")),
-        default: true,
-      });
-      if (userConfirm.isErr()) {
-        throw userConfirm.error;
+      // Skip confirm if only targetUrlsShouldStartWith is different when the url contains devtunnel
+      if (!this.shouldSkipConfirm(diffMsgs, getApiKeyRes.targetUrlsShouldStartWith, domain)) {
+        const userConfirm = await context.ui!.confirm!({
+          name: "confirm-update-api-key",
+          title: getLocalizedString("driver.apiKey.confirm.update", diffMsgs.join(",\n")),
+          default: true,
+        });
+        if (userConfirm.isErr()) {
+          throw userConfirm.error;
+        }
       }
 
       const apiKey = this.mapArgsToApiSecretRegistration(args, domain);
@@ -84,6 +87,11 @@ export class UpdateApiKeyDriver implements StepDriver {
         args.registrationId
       );
 
+      await context.ui!.showMessage(
+        "info",
+        getLocalizedString("driver.apiKey.info.update", diffMsgs.join(",\n")),
+        false
+      );
       const summary = getLocalizedString(logMessageKeys.successUpdateApiKey);
       context.logProvider?.info(summary);
       summaries.push(summary);
@@ -218,5 +226,16 @@ export class UpdateApiKeyDriver implements StepDriver {
     };
 
     return apiKey;
+  }
+
+  // Should skip confirm box if only targetUrlsShouldStartWith is different and the url contains devtunnel
+  private shouldSkipConfirm(diffMsgs: string[], getDomain: string[], domain: string[]): boolean {
+    return (
+      diffMsgs.length === 1 &&
+      diffMsgs[0].includes("targetUrlsShouldStartWith") &&
+      getDomain.length === domain.length &&
+      getDomain.every((value) => value.includes("devtunnel")) &&
+      domain.every((value) => value.includes("devtunnel"))
+    );
   }
 }

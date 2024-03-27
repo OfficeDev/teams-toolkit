@@ -17,6 +17,87 @@ import { Spec } from "./spec";
 import { getCopilotResponseAsString } from "../../utils";
 import { ExecutionResultEnum } from "./executionResultEnum";
 
+const excelSystemPrompt = ``;
+const cfSystemPrompt = `
+The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+
+There're some references help you to understand some key concepts, read it and repeat by yourself, before start to generate code.
+# References:
+## Understanding the difference between a Custom Functions and the normal TypeScript/JavaScript function:
+In the context of Office Excel Custom Functions, there are several differences compared to normal JavaScript/TypeScript functions:
+## Metadata 
+Custom Functions require metadata that specifies the function name, parameters, return value, etc. This metadata is used by Excel to properly use the function.
+
+## Async Pattern
+Custom Functions can be asynchronous, but they must follow a specific pattern. They should return a Promise object, and Excel will wait for the Promise to resolve to get the result.
+
+## Streaming Pattern
+For streaming Custom Functions, they must follow a specific pattern. They should take a handler parameter (typically the last parameter), and call the handler.setResult method to update the cell value.
+
+## Error Handling
+To return an error from a Custom Function, you should throw an OfficeExtension.Error object with a specific error code.
+
+## Limited API Access
+Custom Functions can only call a subset of the Office JavaScript API that is specifically designed for Custom Functions.
+
+## Stateless
+Custom Functions are stateless, meaning they don't retain information between function calls. Each call to a function has separate memory and computation.
+
+## Cancellation
+Custom Functions should handle cancellation requests from Excel. When Excel cancels a function call, it rejects the Promise with an "OfficeExtension.Error" object that has the error code "OfficeExtension.ErrorCodes.generalException".
+
+## Example of a Custom Function:
+\`\`\`typescript
+/**
+ * Returns the second highest value in a matrixed range of values.
+ * @customfunction
+ * @param {number[][]} values Multiple ranges of values.
+ */
+function secondHighest(values) {
+  let highest = values[0][0],
+    secondHighest = values[0][0];
+  for (let i = 0; i < values.length; i++) {
+    for (let j = 0; j < values[i].length; j++) {
+      if (values[i][j] >= highest) {
+        secondHighest = highest;
+        highest = values[i][j];
+      } else if (values[i][j] >= secondHighest) {
+        secondHighest = values[i][j];
+      }
+    }
+  }
+  return secondHighest;
+}
+\`\`\`
+The @customfunction tag in the JSDoc comment is used to indicate that this is a Custom Function. The @param and @returns tags are used to specify the parameters and return value. It's important to follow this pattern when creating Custom Functions in Excel.
+
+## Invocation parameter
+Every custom function is automatically passed an invocation argument as the last input parameter, even if it's not explicitly declared. This invocation parameter corresponds to the Invocation object. The Invocation object can be used to retrieve additional context, such as the address of the cell that invoked your custom function. To access the Invocation object, you must declare invocation as the last parameter in your custom function.
+The following sample shows how to use the invocation parameter to return the address of the cell that invoked your custom function. This sample uses the address property of the Invocation object. To access the Invocation object, first declare CustomFunctions.Invocation as a parameter in your JSDoc. Next, declare @requiresAddress in your JSDoc to access the address property of the Invocation object. Finally, within the function, retrieve and then return the address property.
+\`\`\`typescript
+/**
+ * Return the address of the cell that invoked the custom function. 
+ * @customfunction
+ * @param {number} first First parameter.
+ * @param {number} second Second parameter.
+ * @param {CustomFunctions.Invocation} invocation Invocation object. 
+ * @requiresAddress 
+ */
+function getAddress(first, second, invocation) {
+  const address = invocation.address;
+  return address;
+}
+\`\`\`
+
+So once you understand the concept of Custom Functions, you should make sure:
+- The JSDoc comment is correctly added to the function.
+- The function must return a value.
+- The invocation parameter is correctly added to the function.
+- The function follows the asynchronous pattern if necessary.
+- The function follows the streaming pattern if necessary.
+- Although that is not forbidden, but you should explicitly state in your code that the function must avoid using the Office JavaScript API.
+`;
+
 export class CodeGenerator implements ISkill {
   name: string;
   capability: string;
@@ -63,6 +144,7 @@ export class CodeGenerator implements ISkill {
       request,
       token,
       spec.appendix.host,
+      spec.appendix.isCustomFunction,
       spec.appendix.codeTaskBreakdown
     );
     console.timeEnd("CodeGenerator.GenerateCode");
@@ -151,6 +233,7 @@ export class CodeGenerator implements ISkill {
     request: ChatRequest,
     token: CancellationToken,
     host: string,
+    isCustomFunctions: boolean,
     subTasks: string[]
   ) {
     const userPrompt = `
@@ -167,12 +250,6 @@ It could be broken down into a few steps able to be accomplished by Office Add-i
 ${subTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}
 
 # Your tasks:
-Implement **all** mentioned step with **TypeScript code** and **Office JavaScript Add-ins API**.
-    `;
-    let defaultSystemPrompt = `
-The following content written using Markdown syntax, using "Bold" style to highlight the key information.
-
-# Your tasks:
 Implement **all** mentioned step with **TypeScript code** and **Office JavaScript Add-ins API**, while **follow the coding rule**.
 
 ${getCodeGenerateGuidance(host)}
@@ -184,7 +261,21 @@ ${getCodeGenerateGuidance(host)}
 // The code snippet
 \`\`\`
 
+Let's think step by step.
     `;
+    let defaultSystemPrompt;
+    switch (host) {
+      case "Excel":
+        if (!isCustomFunctions) {
+          defaultSystemPrompt = excelSystemPrompt;
+        } else {
+          defaultSystemPrompt = cfSystemPrompt;
+        }
+        break;
+      default:
+        defaultSystemPrompt = "";
+        break;
+    }
 
     // Then let's query if any code examples relevant to the user's ask that we can put as examples
     const scenarioSamples =

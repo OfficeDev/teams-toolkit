@@ -22,7 +22,7 @@
         "description": "This project is an Excel add-in leveraging Custom Functions using a JavaScript-only Runtime."
     },
     {
-        "id": "excel-cf-shared",
+        "id": "excel-cfshared",
         "addin-host": "excel",
         "name" : "Excel Custom Functions Shared Runtime",
         "project-type": "office-xml-addin-type",

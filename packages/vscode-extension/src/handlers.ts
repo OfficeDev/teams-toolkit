@@ -470,11 +470,15 @@ export function debugInTestToolHandler(source: "treeview" | "message") {
   };
 }
 
-export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+export async function treeViewPreviewHandler(...args: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.TreeViewPreviewStart,
+    getTriggerFromProperty(args)
+  );
   const properties: { [key: string]: string } = {};
 
   try {
+    const env = args[1]?.identifier as string;
     const inputs = getSystemInputs();
     inputs.env = env;
     properties[TelemetryProperty.Env] = env;

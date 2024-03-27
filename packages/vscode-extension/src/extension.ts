@@ -81,12 +81,12 @@ import {
 import followupProvider from "./chat/followupProvider";
 import {
   chatCreateCommandHandler,
+  chatExecuteCommandHandler,
   chatRequestHandler,
   openUrlCommandHandler,
   handleFeedback,
   officeAddinChatRequestHandler,
 } from "./chat/handlers";
-import { chatExecuteCommandHandler } from "./chat/commands/nextstep/nextstepCommandHandler";
 import { CommandKey as CommandKeys } from "./constants";
 
 export let VS_CODE_UI: VsCodeUI;
@@ -232,7 +232,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   // Create a new Teams app
   registerInCommandController(
     context,
-    "fx-extension.create",
+    CommandKeys.Create,
     handlers.createNewProjectHandler,
     "createProject"
   );
@@ -549,13 +549,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  const preview = vscode.commands.registerCommand(
-    "fx-extension.preview",
-    async (node: Record<string, string>) => {
-      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
-    }
-  );
-  context.subscriptions.push(preview);
+  registerInCommandController(context, CommandKeys.Preview, handlers.treeViewPreviewHandler);
 
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
 
@@ -720,13 +714,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openSubscriptionInPortal);
 
-  const previewWithIcon = vscode.commands.registerCommand(
+  registerInCommandController(
+    context,
     "fx-extension.previewWithIcon",
-    async (node: Record<string, string>) => {
-      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
-    }
+    handlers.treeViewPreviewHandler
   );
-  context.subscriptions.push(previewWithIcon);
 
   const refreshEnvironment = vscode.commands.registerCommand(
     "fx-extension.refreshEnvironment",
@@ -1143,9 +1135,12 @@ function registerInCommandController(
   runningLabelKey?: string
 ) {
   commandController.registerCommand(name, callback, runningLabelKey);
-  const command = vscode.commands.registerCommand(name, (...args) =>
-    Correlator.run(runCommand, name, ...args)
-  );
+  const command = vscode.commands.registerCommand(name, (...args) => {
+    if (args[1] === TelemetryTriggerFrom.CopilotChat) {
+      return Correlator.runWithId(args[0], runCommand, name, ...args.slice(1));
+    }
+    return Correlator.run(runCommand, name, ...args);
+  });
   context.subscriptions.push(command);
 }
 

@@ -5,7 +5,6 @@ import * as crypto from "crypto";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
-
 import {
   ChatRequest,
   ChatResponseStream,
@@ -20,6 +19,8 @@ import { ExecutionResultEnum } from "./executionResultEnum";
 import { fileTreeAdd } from "../../commands/create/createCommandHandler";
 import { Inputs, Platform, Stage } from "@microsoft/teamsfx-api";
 import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
+import { CHAT_EXECUTE_COMMAND_ID } from "../../consts";
+import { CommandKey } from "../../../constants";
 
 export class projectCreator implements ISkill {
   name: string | undefined;
@@ -71,7 +72,8 @@ export class projectCreator implements ISkill {
       "app-name": tempAppName,
     };
     await vscode.commands.executeCommand(
-      "fx-extension.create",
+      CHAT_EXECUTE_COMMAND_ID,
+      CommandKey.Create,
       TelemetryTriggerFrom.CopilotChat,
       createInputs
     );

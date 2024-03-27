@@ -29,9 +29,14 @@ import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { ChatTelemetryData } from "../../telemetry";
 import { showFileTree } from "./createCommandHandler";
 import { localize } from "../../../utils/localizeUtils";
-import { CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
+import {
+  CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
+  TeamsChatCommand,
+  CHAT_EXECUTE_COMMAND_ID,
+} from "../../consts";
 import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
 import { Planner } from "../../officeCommon/planner";
+import { CommandKey } from "../../../constants";
 
 export default async function officeAddinCreateCommandHandler(
   request: ChatRequest,
@@ -68,8 +73,8 @@ export default async function officeAddinCreateCommandHandler(
     } else if (matchedResult.type === "template") {
       const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
       response.button({
-        command: "fx-extension.create",
-        arguments: [TelemetryTriggerFrom.CopilotChat, matchedResult.data],
+        command: CHAT_EXECUTE_COMMAND_ID,
+        arguments: [CommandKey.Create, chatTelemetryData.requestId, matchedResult.data],
         title: templateTitle,
       });
     }

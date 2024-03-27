@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
 import {
   AppStudioScopes,
   getFixedCommonProjectSettings,
@@ -10,27 +9,16 @@ import {
 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import { glob } from "glob";
-import * as os from "os";
-// import AzureTokenInstance from "../../../commonlib/azureLogin";
+import { AzureAccountManager } from "../../../commonlib/azureLogin";
 import { signedIn } from "../../../commonlib/common/constant";
-// import M365TokenInstance from "../../../commonlib/m365Login";
+import { M365Login } from "../../../commonlib/m365Login";
 import { CommandKey } from "../../../constants";
-import { chatExecuteCommandHandler } from "./nextstepCommandHandler";
-import { MachineStatus, ProjectActionStatus, WholeStatus } from "./types";
+import { validateGetStartedPrerequisitesHandler } from "../../../handlers";
+import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
+import { getProjectStatus } from "../../../utils/projectStatusUtils";
+import { MachineStatus, WholeStatus } from "./types";
 
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
-const projectStatusFilePath = os.homedir() + `/.${ConfigFolderName}/projectStates.json`;
-
-export function emptyProjectStatus(): ProjectActionStatus {
-  return {
-    [CommandKey.DebugInTestToolFromMessage]: { result: "no run", time: new Date(0) },
-    [CommandKey.LocalDebug]: { result: "no run", time: new Date(0) },
-    [CommandKey.Provision]: { result: "no run", time: new Date(0) },
-    [CommandKey.Deploy]: { result: "no run", time: new Date(0) },
-    [CommandKey.Publish]: { result: "no run", time: new Date(0) },
-    [CommandKey.OpenReadMe]: { result: "no run", time: new Date(0) },
-  };
-}
 
 export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
   if (!folder) {
@@ -40,10 +28,10 @@ export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
   } else {
     const projectSettings = getFixedCommonProjectSettings(folder);
     const projectId = projectSettings?.projectId;
-    const actionStatus = (await getProjectStatus(projectId ?? folder)) ?? emptyProjectStatus();
+    const actionStatus = await getProjectStatus(projectId ?? folder);
     const codeModifiedTime = {
-      source: await getFileModifiedTime(`${folder}/**/*.{ts,tsx,js,jsx}`),
-      infra: await getFileModifiedTime(`${folder}/infra/**/*`),
+      source: await getFileModifiedTime(`${folder.split("\\").join("/")}/**/*.{ts,tsx,js,jsx}`),
+      infra: await getFileModifiedTime(`${folder.split("\\").join("/")}/infra/**/*`),
     };
 
     return {
@@ -69,66 +57,24 @@ export async function getMachineStatus(): Promise<MachineStatus> {
   );
   let resultOfPrerequistes: string | undefined = undefined;
   if (Date.now() - preCheckTime.getTime() > 6 * 60 * 60 * 1000) {
-    const result = await chatExecuteCommandHandler(CommandKey.ValidateGetStartedPrerequisites);
+    const result = await validateGetStartedPrerequisitesHandler(TelemetryTriggerFrom.CopilotChat);
     resultOfPrerequistes = result.isErr() ? result.error.message : undefined;
     if (!resultOfPrerequistes) {
       await globalStateUpdate(CommandKey.ValidateGetStartedPrerequisites, new Date());
     }
   }
-  // const m365Status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-  // const azureStatus = await AzureTokenInstance.getStatus();
+  const m365Status = await M365Login.getInstance().getStatus({ scopes: AppStudioScopes });
+  const azureStatus = await AzureAccountManager.getInstance().getStatus();
   return {
     firstInstalled,
     resultOfPrerequistes,
-    m365LoggedIn: true,
-    azureLoggedIn: true,
-    // m365LoggedIn: m365Status.isOk() && m365Status.value.status === signedIn,
-    // azureLoggedIn: azureStatus.status === signedIn,
+    m365LoggedIn: m365Status.isOk() && m365Status.value.status === signedIn,
+    azureLoggedIn: azureStatus.status === signedIn,
   };
 }
 
-export async function getProjectStatus(
-  projectId: string
-): Promise<ProjectActionStatus | undefined> {
-  if (await fs.pathExists(projectStatusFilePath)) {
-    try {
-      const content = await fs.readFile(projectStatusFilePath, "utf8");
-      const json = JSON.parse(content, (_, value) => {
-        const date = Date.parse(value);
-        if (!isNaN(date)) {
-          return new Date(date);
-        } else {
-          return value;
-        }
-      });
-      return json[projectId] as ProjectActionStatus;
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  return undefined;
-}
-
-export async function saveProjectStatus(projectId: string, status: ProjectActionStatus) {
-  let content = "{}";
-  if (await fs.pathExists(projectStatusFilePath)) {
-    try {
-      content = await fs.readFile(projectStatusFilePath, "utf8");
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  try {
-    const json = JSON.parse(content);
-    json[projectId] = status;
-    await fs.writeFile(projectStatusFilePath, JSON.stringify(json, null, 2));
-  } catch (e) {
-    console.error(e);
-  }
-}
-
 export async function getFileModifiedTime(pattern: string): Promise<Date> {
-  const files = glob.sync(pattern);
+  const files = await glob(pattern, { ignore: "node_modules/**" });
   let lastModifiedTime = new Date(0);
   for (const file of files) {
     const stat = await fs.stat(file);

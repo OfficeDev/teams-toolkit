@@ -18,6 +18,7 @@ import {
 } from "vscode";
 
 import { downloadDirectory } from "@microsoft/teamsfx-core/build/component/generator/utils";
+import * as uuid from "uuid";
 
 import createCommandHandler from "./commands/create/createCommandHandler";
 import { ProjectMetadata } from "./commands/create/types";
@@ -39,6 +40,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import generatecodeCommandHandler from "./commands/generatecode/generatecodeCommandHandler";
 import officeAddinCreateCommandHandler from "./commands/create/officeAddinCreateCommandHandler";
 import officeAddinNextStepCommandHandler from "./commands/nextstep/officeAddinNextstepCommandHandler";
+import { FxError, Result } from "@microsoft/teamsfx-api";
 
 export function chatRequestHandler(
   request: ChatRequest,
@@ -146,6 +148,32 @@ export async function chatCreateCommandHandler(folderOrSample: string | ProjectM
     console.error("Error copying files:", error);
     void window.showErrorMessage(localize("teamstoolkit.chatParticipants.create.failToCreate"));
   }
+}
+
+export async function chatExecuteCommandHandler(
+  command: string,
+  requestId: string,
+  ...args: unknown[]
+): Promise<Result<unknown, FxError>> {
+  const chatTelemetryData = ChatTelemetryData.get(requestId);
+  const correlationId = uuid.v4();
+  if (chatTelemetryData) {
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChatClickButton,
+      {
+        ...chatTelemetryData.properties,
+        [TelemetryProperty.CopilotChatRunCommandId]: command,
+        [TelemetryProperty.CorrelationId]: correlationId,
+      },
+      chatTelemetryData.measurements
+    );
+  }
+  return await commands.executeCommand<Result<unknown, FxError>>(
+    command,
+    correlationId,
+    TelemetryTriggerFrom.CopilotChat,
+    ...args
+  );
 }
 
 export async function openUrlCommandHandler(url: string) {

@@ -809,7 +809,7 @@
   "driver.apiKey.log.skipUpdateApiKey": "Skip updating API key as the same property exists.",
   "driver.apiKey.log.successUpdateApiKey": "API key updated successfully!",
   "driver.apiKey.confirm.update": "The following parameters will be updated:\n%s\nDo you want to continue?",
-  "driver.apiKey.info.update": "API key updated successfully! The following parameters have be updated:\n%s",
+  "driver.apiKey.info.update": "API key updated successfully! The following parameters have been updated:\n%s",
   "driver.apiKey.log.startExecuteDriver": "Executing action %s",
   "driver.apiKey.log.skipCreateApiKey": "Environment variable %s exists. Skip creating API key.",
   "driver.apiKey.log.apiKeyNotFound": "Environment variable %s exists but failed to retrieve API key from Developer Portal. Check manually if API key exists.",

@@ -1627,7 +1627,7 @@
           "type": "object",
           "additionalProperties": false,
           "description": "Parameters for this action",
-          "required": ["name", "appId", "apiSpecPath"],
+          "required": ["name", "appId", "apiSpecPath", "registrationId"],
           "properties": {
             "name": {
               "type": "string",
@@ -1640,6 +1640,10 @@
             "apiSpecPath": {
               "type": "string",
               "description": "The path of API specification file."
+            },
+            "registrationId": {
+              "type": "string",
+              "description": "The registration id of API key."
             },
             "applicableToApps": {
               "type": "string",

@@ -7,7 +7,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import fs from "fs-extra";
 import * as path from "path";
-import { get, merge } from "lodash";
+import { merge } from "lodash";
 import { StepDriver, ExecutionResult } from "../interface/stepDriver";
 import { DriverContext } from "../interface/commonArgs";
 import { WrapDriverContext } from "../util/wrapUtil";
@@ -60,10 +60,6 @@ export class ValidateWithTestCasesDriver implements StepDriver {
     const result = this.validateArgs(args);
     if (result.isErr()) {
       return err(result.error);
-    }
-
-    if (args.showMessage) {
-      return ok(new Map());
     }
     let appPackagePath = args.appPackagePath;
     if (!path.isAbsolute(appPackagePath)) {

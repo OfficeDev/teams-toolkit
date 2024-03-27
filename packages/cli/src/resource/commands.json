@@ -158,7 +158,7 @@
     "success": "Upgrade project successfully."
   },
   "validate": {
-    "description": "Validate the Microsoft Teams app using manifest schema, validation rules or test cases."
+    "description": "Validate the Microsoft Teams app using manifest schema, validation rules, or test cases."
   }
 }
 

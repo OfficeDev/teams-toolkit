@@ -8,7 +8,7 @@ import {
   LanguageModelChatMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { compressCode, writeLogToFile } from "../Utils";
+import { compressCode, correctPropertyLoadSpelling, writeLogToFile } from "../Utils";
 import { SampleProvider } from "../samples/sampleProvider";
 import { getCodeGenerateGuidance } from "./codeGuidance";
 import { ISkill } from "./iSkill"; // Add the missing import statement
@@ -194,6 +194,6 @@ ${getCodeGenerateGuidance(host)}
       return null;
     }
 
-    return codeSnippetRet[1].trim();
+    return correctPropertyLoadSpelling(codeSnippetRet[1].trim());
   }
 }

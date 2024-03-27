@@ -14,7 +14,10 @@ import {
 } from "../../../plugins/solution/util";
 import { CreateApiKeyDriver } from "../../../../src/component/driver/apiKey/create";
 import { AppStudioClient } from "../../../../src/component/driver/teamsApp/clients/appStudioClient";
-import { ApiSecretRegistrationAppType } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
+import {
+  ApiSecretRegistrationAppType,
+  ApiSecretRegistrationTargetAudience,
+} from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import { SystemError, err } from "@microsoft/teamsfx-api";
 import { setTools } from "../../../../src/core/globalVars";
 import { SpecParser } from "@microsoft/m365-spec-parser";
@@ -64,7 +67,7 @@ describe("CreateApiKeyDriver", () => {
       applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -76,6 +79,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -105,7 +110,7 @@ describe("CreateApiKeyDriver", () => {
     });
 
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -117,6 +122,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -147,7 +154,7 @@ describe("CreateApiKeyDriver", () => {
     });
 
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -159,6 +166,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -203,6 +212,56 @@ describe("CreateApiKeyDriver", () => {
     if (result.result.isOk()) {
       expect(result.result.value.size).to.equal(0);
       expect(result.summaries.length).to.equal(0);
+    }
+  });
+
+  it("happy path: create registrationid, read applicableToApps and targetAudience from input", async () => {
+    sinon.stub(AppStudioClient, "createApiKeyRegistration").callsFake(async (token, apiKey) => {
+      expect(apiKey.targetAudience).equals(ApiSecretRegistrationTargetAudience.HomeTenant);
+      expect(apiKey.specificAppId).equals("mockedAppId");
+      expect(apiKey.applicableToApps).equals(ApiSecretRegistrationAppType.SpecificApp);
+      return {
+        id: "mockedRegistrationId",
+        clientSecrets: [],
+        targetUrlsShouldStartWith: [],
+        applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+        targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+      };
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      primaryClientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
+      applicableToApps: "SpecificApp",
+      targetAudience: "HomeTenant",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
+    if (result.result.isOk()) {
+      expect(result.result.value.get(outputKeys.registrationId)).to.equal("mockedRegistrationId");
+      expect(result.summaries.length).to.equal(1);
     }
   });
 
@@ -349,7 +408,7 @@ describe("CreateApiKeyDriver", () => {
     };
 
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -361,6 +420,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api",
@@ -373,6 +434,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 2,
@@ -395,7 +458,7 @@ describe("CreateApiKeyDriver", () => {
     };
     sinon
       .stub(SpecParser.prototype, "list")
-      .resolves({ validAPIs: [], validAPICount: 0, allAPICount: 1 });
+      .resolves({ APIs: [], validAPICount: 0, allAPICount: 1 });
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
@@ -411,11 +474,13 @@ describe("CreateApiKeyDriver", () => {
       apiSpecPath: "mockedPath",
     };
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
           operationId: "get",
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 1,
@@ -436,7 +501,7 @@ describe("CreateApiKeyDriver", () => {
       apiSpecPath: "mockedPath",
     };
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api1",
           server: "https://test",
@@ -448,6 +513,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api2",
@@ -460,6 +527,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "basic",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api3",
@@ -473,6 +542,8 @@ describe("CreateApiKeyDriver", () => {
               name: "test1",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 3,
@@ -491,7 +562,7 @@ describe("CreateApiKeyDriver", () => {
       .throws(new SystemError("source", "name", "message"));
 
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -503,6 +574,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -534,6 +607,52 @@ describe("CreateApiKeyDriver", () => {
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
       expect(result.result.error.source).to.equal("apiKeyRegister");
+    }
+  });
+
+  it("should throw error if invalid applicableToApps and targetAudience", async () => {
+    sinon.stub(AppStudioClient, "createApiKeyRegistration").resolves({
+      id: "mockedRegistrationId",
+      clientSecrets: [],
+      targetUrlsShouldStartWith: [],
+      applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+      targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      primaryClientSecret: "mockedClientSecret",
+      apiSpecPath: "mockedPath",
+      applicableToApps: "specificapp",
+      targetAudience: "hometenant",
+    };
+    const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isErr()).to.be.true;
+    if (result.result.isErr()) {
+      expect(result.result.error.name).to.equal("InvalidActionInputError");
+      expect(result.result.error.message.includes("applicableToApps")).to.be.true;
+      expect(result.result.error.message.includes("targetAudience")).to.be.true;
     }
   });
 });

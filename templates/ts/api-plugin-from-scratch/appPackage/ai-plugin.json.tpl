@@ -1,6 +1,6 @@
 {
   "schema_version": "v2",
-  "name_for_human": "Repair Search Plugin",
+  "name_for_human": "{{appName}}",
   "description_for_human": "Track your repair records",
   "description_for_model": "Plugin for searching a repair list, you can search by who's assigned to the repair.",
   "functions": [

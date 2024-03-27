@@ -10,6 +10,7 @@ import fs from "fs-extra";
 import path from "path";
 import {
   APIInfo,
+  APIMap,
   AuthInfo,
   ErrorType,
   GenerateResult,
@@ -37,7 +38,7 @@ export class SpecParser {
   public readonly parser: SwaggerParser;
   public readonly options: Required<ParseOptions>;
 
-  private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
+  private apiMap: APIMap | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
   private isSwaggerFile: boolean | undefined;
@@ -134,20 +135,24 @@ export class SpecParser {
     try {
       await this.loadSpec();
       const spec = this.spec!;
-      const apiMap = this.getAllSupportedAPIs(spec);
+      const apiMap = this.getAPIs(spec);
       const result: ListAPIResult = {
-        validAPIs: [],
+        APIs: [],
         allAPICount: 0,
         validAPICount: 0,
       };
       for (const apiKey in apiMap) {
+        const { operation, isValid, reason } = apiMap[apiKey];
+        const [method, path] = apiKey.split(" ");
+
         const apiResult: ListAPIInfo = {
           api: "",
           server: "",
           operationId: "",
+          isValid: isValid,
+          reason: reason,
         };
-        const [method, path] = apiKey.split(" ");
-        const operation = apiMap[apiKey];
+
         const rootServer = spec.servers && spec.servers[0];
         const methodServer = spec.paths[path]!.servers && spec.paths[path]?.servers![0];
         const operationServer = operation.servers && operation.servers[0];
@@ -178,11 +183,11 @@ export class SpecParser {
         }
 
         apiResult.api = apiKey;
-        result.validAPIs.push(apiResult);
+        result.APIs.push(apiResult);
       }
 
-      result.allAPICount = Utils.getAllAPICount(spec);
-      result.validAPICount = result.validAPIs.length;
+      result.allAPICount = result.APIs.length;
+      result.validAPICount = result.APIs.filter((api) => api.isValid).length;
 
       return result;
     } catch (err) {
@@ -311,8 +316,8 @@ export class SpecParser {
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
 
-      const authSet: Set<AuthInfo> = new Set();
       let hasMultipleAuth = false;
+      let authInfo: AuthInfo | undefined = undefined;
 
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
@@ -321,8 +326,10 @@ export class SpecParser {
           const authArray = Utils.getAuthArray(operation.security, newSpec);
 
           if (authArray && authArray.length > 0) {
-            authSet.add(authArray[0][0]);
-            if (authSet.size > 1) {
+            const currentAuth = authArray[0][0];
+            if (!authInfo) {
+              authInfo = authArray[0][0];
+            } else if (authInfo.name !== currentAuth.name) {
               hasMultipleAuth = true;
               break;
             }
@@ -378,7 +385,6 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const authInfo = Array.from(authSet)[0];
       const [updatedManifest, warnings] = await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
@@ -416,13 +422,11 @@ export class SpecParser {
     }
   }
 
-  private getAllSupportedAPIs(spec: OpenAPIV3.Document): {
-    [key: string]: OpenAPIV3.OperationObject;
-  } {
+  private getAPIs(spec: OpenAPIV3.Document): APIMap {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = Utils.listSupportedAPIs(spec, this.options);
+    const result = Utils.listAPIs(spec, this.options);
     this.apiMap = result;
     return result;
   }

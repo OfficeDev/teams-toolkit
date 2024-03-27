@@ -1271,7 +1271,7 @@ export class FxCore {
     );
 
     const listResult = await specParser.list();
-    const apiResultList = listResult.validAPIs;
+    const apiResultList = listResult.APIs.filter((value) => value.isValid);
 
     let existingOperations: string[];
     let outputAPISpecPath: string;

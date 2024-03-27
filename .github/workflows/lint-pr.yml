@@ -28,16 +28,17 @@ jobs:
         with:
           script: |
             const AZDO_TICKET_REGEX = 'https:\/\/(dev\.azure\.com\/msazure|msazure\.visualstudio\.com)\/Microsoft%20Teams%20Extensibility';
+            const AZDO_TICKET_REGEX_WXP = 'https:\/\/office\.visualstudio\.com\/OC';
             const pullRequest = context.payload.pull_request;
             if(pullRequest.title.startsWith("feat")) {
               const body = pullRequest.body;
-              const match = body?.match(AZDO_TICKET_REGEX);
+              const match = body?.match(AZDO_TICKET_REGEX) || body?.match(AZDO_TICKET_REGEX_WXP);
               if(!match) {
                 core.setFailed("Feat PR should contains AZDO tickets");
               }
             } else if(pullRequest.title.startsWith("fix")) {
               const body = pullRequest.body;
-              const match = body?.match(AZDO_TICKET_REGEX);
+              const match = body?.match(AZDO_TICKET_REGEX) || body?.match(AZDO_TICKET_REGEX_WXP);
               if(!match && !body) {
                 core.setFailed("Fix PR should contains AZDO tickets or descrptions");
               }
@@ -131,7 +132,7 @@ jobs:
           then
               for obj in "$YMLTPL"
               do
-                mustache test.json $obj | yamllint -
+                mustache test.json $obj | yamllint -d "{extends: relaxed, rules: {line-length: {max: 100}}}" -
               done
           fi
 

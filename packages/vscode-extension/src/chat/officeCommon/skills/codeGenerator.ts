@@ -6,6 +6,7 @@ import {
   ChatRequest,
   ChatResponseStream,
   LanguageModelChatMessage,
+  LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
 import { compressCode, correctPropertyLoadSpelling, writeLogToFile } from "../Utils";
@@ -14,6 +15,88 @@ import { getCodeGenerateGuidance } from "./codeGuidance";
 import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
 import { getCopilotResponseAsString } from "../../utils";
+import { ExecutionResultEnum } from "./executionResultEnum";
+
+const excelSystemPrompt = ``;
+const cfSystemPrompt = `
+The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+
+There're some references help you to understand some key concepts, read it and repeat by yourself, before start to generate code.
+# References:
+## Understanding the difference between a Custom Functions and the normal TypeScript/JavaScript function:
+In the context of Office Excel Custom Functions, there are several differences compared to normal JavaScript/TypeScript functions:
+## Metadata 
+Custom Functions require metadata that specifies the function name, parameters, return value, etc. This metadata is used by Excel to properly use the function.
+
+## Async Pattern
+Custom Functions can be asynchronous, but they must follow a specific pattern. They should return a Promise object, and Excel will wait for the Promise to resolve to get the result.
+
+## Streaming Pattern
+For streaming Custom Functions, they must follow a specific pattern. They should take a handler parameter (typically the last parameter), and call the handler.setResult method to update the cell value.
+
+## Error Handling
+To return an error from a Custom Function, you should throw an OfficeExtension.Error object with a specific error code.
+
+## Limited API Access
+Custom Functions can only call a subset of the Office JavaScript API that is specifically designed for Custom Functions.
+
+## Stateless
+Custom Functions are stateless, meaning they don't retain information between function calls. Each call to a function has separate memory and computation.
+
+## Cancellation
+Custom Functions should handle cancellation requests from Excel. When Excel cancels a function call, it rejects the Promise with an "OfficeExtension.Error" object that has the error code "OfficeExtension.ErrorCodes.generalException".
+
+## Example of a Custom Function:
+\`\`\`typescript
+/**
+ * Returns the second highest value in a matrixed range of values.
+ * @customfunction
+ * @param {number[][]} values Multiple ranges of values.
+ */
+function secondHighest(values) {
+  let highest = values[0][0],
+    secondHighest = values[0][0];
+  for (let i = 0; i < values.length; i++) {
+    for (let j = 0; j < values[i].length; j++) {
+      if (values[i][j] >= highest) {
+        secondHighest = highest;
+        highest = values[i][j];
+      } else if (values[i][j] >= secondHighest) {
+        secondHighest = values[i][j];
+      }
+    }
+  }
+  return secondHighest;
+}
+\`\`\`
+The @customfunction tag in the JSDoc comment is used to indicate that this is a Custom Function. The @param and @returns tags are used to specify the parameters and return value. It's important to follow this pattern when creating Custom Functions in Excel.
+
+## Invocation parameter
+Every custom function is automatically passed an invocation argument as the last input parameter, even if it's not explicitly declared. This invocation parameter corresponds to the Invocation object. The Invocation object can be used to retrieve additional context, such as the address of the cell that invoked your custom function. To access the Invocation object, you must declare invocation as the last parameter in your custom function.
+The following sample shows how to use the invocation parameter to return the address of the cell that invoked your custom function. This sample uses the address property of the Invocation object. To access the Invocation object, first declare CustomFunctions.Invocation as a parameter in your JSDoc. Next, declare @requiresAddress in your JSDoc to access the address property of the Invocation object. Finally, within the function, retrieve and then return the address property.
+\`\`\`typescript
+/**
+ * Return the address of the cell that invoked the custom function. 
+ * @customfunction
+ * @param {number} first First parameter.
+ * @param {number} second Second parameter.
+ * @param {CustomFunctions.Invocation} invocation Invocation object. 
+ * @requiresAddress 
+ */
+function getAddress(first, second, invocation) {
+  const address = invocation.address;
+  return address;
+}
+\`\`\`
+
+So once you understand the concept of Custom Functions, you should make sure:
+- The JSDoc comment is correctly added to the function.
+- The function must return a value.
+- The invocation parameter is correctly added to the function.
+- The function follows the asynchronous pattern if necessary.
+- The function follows the streaming pattern if necessary.
+- Although that is not forbidden, but you should explicitly state in your code that the function must avoid using the Office JavaScript API.
+`;
 
 export class CodeGenerator implements ISkill {
   name: string;
@@ -34,7 +117,7 @@ export class CodeGenerator implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<Spec | null> {
+  ): Promise<ExecutionResultEnum> {
     if (
       !!spec.appendix.host ||
       !!spec.appendix.codeTaskBreakdown ||
@@ -42,13 +125,17 @@ export class CodeGenerator implements ISkill {
     ) {
       const breakdownResult = await this.userInputBreakdownTaskAsync(request, token);
 
-      if (!breakdownResult || !breakdownResult.shouldContinue) {
-        // TODO: Add handling for this case
-        return null;
+      if (!breakdownResult) {
+        return ExecutionResultEnum.Failure;
+      }
+      if (!breakdownResult.shouldContinue) {
+        spec.sections = breakdownResult.data;
+        return ExecutionResultEnum.Rejected;
       }
 
       spec.appendix.host = breakdownResult.host;
       spec.appendix.codeTaskBreakdown = breakdownResult.data;
+      spec.appendix.isCustomFunction = breakdownResult.customFunctions;
     }
 
     let codeSnippet: string | null = "";
@@ -57,43 +144,68 @@ export class CodeGenerator implements ISkill {
       request,
       token,
       spec.appendix.host,
+      spec.appendix.isCustomFunction,
       spec.appendix.codeTaskBreakdown
     );
     console.timeEnd("CodeGenerator.GenerateCode");
     if (!codeSnippet) {
-      return null;
+      return ExecutionResultEnum.Failure;
     }
 
     spec.appendix.codeSnippet = codeSnippet;
     await writeLogToFile(
       `The generated code snippet: \n\`\`\`typescript\n${codeSnippet}\`\`\`\n\n\n\n`
     );
-    return spec;
+    return ExecutionResultEnum.Success;
   }
 
-  async userInputBreakdownTaskAsync(request: ChatRequest, token: CancellationToken) {
+  async userInputBreakdownTaskAsync(
+    request: ChatRequest,
+    token: CancellationToken
+  ): Promise<null | {
+    host: string;
+    shouldContinue: boolean;
+    customFunctions: boolean;
+    data: string[];
+  }> {
+    const userPrompt = `
+    Assume this is a ask: "${request.prompt}". I need you help to analyze it, and give me your suggestion. Follow the guidance below:
+    - If the ask is not able agent support fo Excel, Word, or PowerPoint, you should reject it because today this agent only support those Office host applications. And give the reason to reject the ask.
+    - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
+    - Otherwise, please think about if you can process the ask. 
+      - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
+      - If you can process the ask, you should break down the ask into sub steps that could be performed by Office Add-ins JavaScript APIs. Each step should be actions accomplished by using **code**. Emphasize the "Bold" part in the title.
+    return the result in a JSON object.
+
+    Think about that step by step.
+    `;
     const defaultSystemPrompt = `
-    Role:
-    You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins.
+    The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
-    Context:
-    User ask about how to automate a certain process or accomplish a certain task using Office JavaScript Add-ins.
+    #Role:
+    You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
-    Your task:
-    Break down the task into sub tasks could be performed by Office add-in JavaScript APIs, those steps should be only relevant to code. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field should be true.
-    Alternatively, if the user's request is not clear, and you can't make a recommendation based on the context to cover those missing information. List the missing information, and ask for clarification. Put your ask and missing information into the "data" field of the output JSON object. The "shouldContinue" field should be false.
+    #Your tasks:
+    Repeat the user's ask, and then give your suggestion based on the user's ask. Follow the guidance below:
+    If you suggested to accept the ask. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be true.
+    If you suggested to reject the ask, put the reason to reject into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be false.
     You must strickly follow the format of output.
 
-    The format of output:
-    The output should be a JSON object, with a key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". The second key is "shouldContinue", the value is a Boolean indicates if the ask is clear or not; and another key named "data", the value of it is the list of sub tasks or missing information, and that is a string array. If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information. Beyond this JSON object, you should not add anything else to the output.
+    #The format of output:
+    The output should be just a **JSON object**. You should not add anything else to the output
+    - The first key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". 
+    - The second key is "shouldContinue", the value is a Boolean.
+    - The third key named "data", the value of it is the list of sub tasks or rejection reason, and that is a string array.
+    - The last key named "customFunctions", set value of it to be a Boolean true if the user's ask is about Office JavaScript Add-ins with custom functions on Excel. Otherwise, set it to be a Boolean false.
+    If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information or reason to reject. **Beyond this JSON object, you should not add anything else to the output**.
 
     Think about that step by step.
     `;
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(defaultSystemPrompt),
-      new LanguageModelChatUserMessage(request.prompt),
+      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatUserMessage(userPrompt),
     ];
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo",
@@ -103,6 +215,7 @@ export class CodeGenerator implements ISkill {
     let copilotRet = {
       host: "",
       shouldContinue: false,
+      customFunctions: false,
       data: [],
     };
 
@@ -120,20 +233,24 @@ export class CodeGenerator implements ISkill {
     request: ChatRequest,
     token: CancellationToken,
     host: string,
+    isCustomFunctions: boolean,
     subTasks: string[]
   ) {
-    let defaultSystemPrompt = `
+    const userPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
 # Your role:
 You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on JavaScript, CSS, HTML, popular algorithm, and Office Add-ins API. You should help the user to automate a certain process or accomplish a certain task using Office JavaScript Add-ins.
 
 # Context:
-The user ask could be broken down into a few steps able to be accomplished by Office Add-ins JavaScript APIs. You have the list of steps.:
+This is the ask need your help to generate the code for this request:
+- ${request.prompt}. 
+The request is about Office Add-ins, and it is relevant to the Office application "${host}".
+It could be broken down into a few steps able to be accomplished by Office Add-ins JavaScript APIs. You have the list of steps.:
 ${subTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}
 
 # Your tasks:
-**Implement all mentioned step with code**, while follow the coding rule.
+Implement **all** mentioned step with **TypeScript code** and **Office JavaScript Add-ins API**, while **follow the coding rule**.
 
 ${getCodeGenerateGuidance(host)}
 
@@ -144,7 +261,21 @@ ${getCodeGenerateGuidance(host)}
 // The code snippet
 \`\`\`
 
+Let's think step by step.
     `;
+    let defaultSystemPrompt;
+    switch (host) {
+      case "Excel":
+        if (!isCustomFunctions) {
+          defaultSystemPrompt = excelSystemPrompt;
+        } else {
+          defaultSystemPrompt = cfSystemPrompt;
+        }
+        break;
+      default:
+        defaultSystemPrompt = "";
+        break;
+    }
 
     // Then let's query if any code examples relevant to the user's ask that we can put as examples
     const scenarioSamples =
@@ -175,8 +306,8 @@ ${getCodeGenerateGuidance(host)}
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(defaultSystemPrompt),
-      new LanguageModelChatUserMessage(request.prompt),
+      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatUserMessage(userPrompt),
     ];
     // The GPT-4 model is significantly slower than GPT-3.5-turbo, but also significantly more accurate
     // In order to avoid waste more time on the correct, I believe using GPT-4 is a better choice

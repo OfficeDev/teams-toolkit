@@ -826,6 +826,52 @@ describe("teamsApp/validateWithTestCases", async () => {
     chai.assert(result.isOk());
   });
 
+  it("Happy path - CLI", async () => {
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    sinon.stub(AppStudioClient, "submitAppValidationRequest").resolves({
+      status: AsyncAppValidationStatus.Created,
+      appValidationId: "fakeId",
+    });
+
+    sinon.stub(AppStudioClient, "getAppValidationById").resolves({
+      status: AsyncAppValidationStatus.Completed,
+      appValidationId: "fakeId",
+      appId: "fakeAppId",
+      appVersion: "1.0.0",
+      manifestVersion: "1.16",
+      validationResults: {
+        failures: [],
+        warnings: [],
+        successes: [],
+        skipped: [],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: "fakepath",
+      showMessage: true,
+      showProgressBar: true,
+    };
+
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
+    chai.assert(result.isOk());
+  });
+
   it("CLI - succeed", async () => {
     sinon.stub(ValidateWithTestCasesDriver.prototype, "validate").resolves(ok(new Map()));
     const result = await teamsappMgr.validateTeamsApp({

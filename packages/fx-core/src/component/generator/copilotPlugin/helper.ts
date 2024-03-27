@@ -217,7 +217,7 @@ export async function listOperations(
     }
 
     const listResult: ListAPIResult = await specParser.list();
-    let operations = listResult.validAPIs;
+    let operations = listResult.APIs.filter((value) => value.isValid);
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
       [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
       [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
@@ -357,7 +357,7 @@ export async function listPluginExistingOperations(
   }
 
   const listResult = await specParser.list();
-  const operations = listResult.validAPIs;
+  const operations = listResult.APIs.filter((value) => value.isValid);
   return operations.map((o) => o.api);
 }
 

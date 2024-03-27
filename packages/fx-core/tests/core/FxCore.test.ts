@@ -1668,9 +1668,21 @@ describe("copilotPlugin", async () => {
       },
     ];
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -1706,9 +1718,21 @@ describe("copilotPlugin", async () => {
       },
     ];
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -1749,9 +1773,21 @@ describe("copilotPlugin", async () => {
       },
     ];
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -1792,9 +1828,21 @@ describe("copilotPlugin", async () => {
       },
     ];
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -1844,7 +1892,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server",
@@ -1856,6 +1904,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -1868,6 +1918,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -1913,7 +1965,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -1925,6 +1977,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -1937,6 +1991,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -1982,7 +2038,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -1994,6 +2050,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2006,6 +2064,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2057,7 +2117,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2069,6 +2129,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2081,6 +2143,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2141,7 +2205,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2153,6 +2217,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2165,6 +2231,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2234,7 +2302,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2246,6 +2314,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2258,6 +2328,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2367,7 +2439,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2379,6 +2451,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2391,6 +2465,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2471,7 +2547,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2483,6 +2559,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2495,6 +2573,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2615,7 +2695,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2627,6 +2707,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2639,6 +2721,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2754,7 +2838,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2766,6 +2850,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2778,6 +2864,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2896,7 +2984,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2908,6 +2996,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2920,6 +3010,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -3027,7 +3119,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -3039,6 +3131,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -3051,6 +3145,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -3173,9 +3269,21 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -3407,7 +3515,7 @@ describe("copilotPlugin", async () => {
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
     sinon
       .stub(SpecParser.prototype, "list")
-      .resolves({ validAPIs: [], allAPICount: 0, validAPICount: 0 });
+      .resolves({ APIs: [], allAPICount: 0, validAPICount: 0 });
 
     try {
       await core.copilotPluginListOperations(inputs as any);
@@ -3433,7 +3541,7 @@ describe("copilotPlugin", async () => {
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
     sinon
       .stub(SpecParser.prototype, "list")
-      .resolves({ validAPIs: [], allAPICount: 0, validAPICount: 0 });
+      .resolves({ APIs: [], allAPICount: 0, validAPICount: 0 });
 
     try {
       await core.copilotPluginListOperations(inputs as any);

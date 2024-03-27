@@ -182,10 +182,9 @@ function projectTypeQuestion(): SingleSelectQuestion {
     ProjectTypeOptions.bot(Platform.CLI),
     ProjectTypeOptions.tab(Platform.CLI),
     ProjectTypeOptions.me(Platform.CLI),
-    isOfficeXMLAddinEnabled()
-      ? ProjectTypeOptions.officeXMLAddin(Platform.CLI)
-      : ProjectTypeOptions.outlookAddin(Platform.CLI),
+    ProjectTypeOptions.officeXMLAddin(Platform.CLI),
     ProjectTypeOptions.officeAddin(Platform.CLI),
+    ProjectTypeOptions.outlookAddin(Platform.CLI),
   ];
   return {
     name: QuestionNames.ProjectType,

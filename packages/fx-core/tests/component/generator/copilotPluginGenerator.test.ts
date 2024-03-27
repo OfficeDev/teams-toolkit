@@ -1031,7 +1031,7 @@ describe("listPluginExistingOperations", () => {
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
     sandbox.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api1",
           server: "https://test",
@@ -1043,6 +1043,8 @@ describe("listPluginExistingOperations", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -1606,7 +1608,7 @@ describe("listOperations", async () => {
     });
     sandbox
       .stub(SpecParser.prototype, "list")
-      .resolves({ validAPIs: [], allAPICount: 1, validAPICount: 0 });
+      .resolves({ APIs: [], allAPICount: 1, validAPICount: 0 });
 
     const res = await CopilotPluginHelper.listOperations(
       context,

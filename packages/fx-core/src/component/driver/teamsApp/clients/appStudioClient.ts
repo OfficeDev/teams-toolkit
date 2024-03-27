@@ -37,7 +37,10 @@ import {
   CheckSideloadingPermissionFailedError,
   DeveloperPortalAPIFailedError,
 } from "../../../../error/teamsApp";
-import { ApiSecretRegistration } from "../interfaces/ApiSecretRegistration";
+import {
+  ApiSecretRegistration,
+  ApiSecretRegistrationUpdate,
+} from "../interfaces/ApiSecretRegistration";
 import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 import { AsyncAppValidationResponse } from "../interfaces/AsyncAppValidationResponse";
 import { AsyncAppValidationResultsResponse } from "../interfaces/AsyncAppValidationResultsResponse";
@@ -813,6 +816,26 @@ export namespace AppStudioClient {
       return response?.data;
     } catch (e) {
       const error = wrapException(e, APP_STUDIO_API_NAMES.GET_API_KEY);
+      throw error;
+    }
+  }
+
+  export async function updateApiKeyRegistration(
+    appStudioToken: string,
+    apiKeyRegistration: ApiSecretRegistrationUpdate,
+    apiKeyRegistrationId: string
+  ): Promise<ApiSecretRegistrationUpdate> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.patch(
+          `/api/v1.0/apiSecretRegistrations/${apiKeyRegistrationId}`,
+          apiKeyRegistration
+        )
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.UPDATE_API_KEY);
       throw error;
     }
   }

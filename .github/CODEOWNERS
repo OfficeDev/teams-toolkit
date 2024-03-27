@@ -37,16 +37,16 @@
 /packages/cli/src/commands/models/m365LaunchInfo.ts @swatDong @kuojianlu @kimizhu
 /packages/cli/src/commands/models/m365Sideloading.ts @swatDong @kuojianlu @kimizhu
 /packages/cli/src/commands/models/m365Unacquire.ts @swatDong @kuojianlu @kimizhu
-/packages/cli/src/commands/models/package.ts @nliu-ms @jayzhang
+/packages/cli/src/commands/models/package.ts @nliu-ms @jayzhang @anchenyi
 /packages/cli/src/commands/models/permission.ts @KennethBWSong @SLdragon
 /packages/cli/src/commands/models/permissionGrant.ts @KennethBWSong @SLdragon
 /packages/cli/src/commands/models/permissionStatus.ts @KennethBWSong @SLdragon
 /packages/cli/src/commands/models/preview.ts @swatDong @kuojianlu @kimizhu
-/packages/cli/src/commands/models/publish.ts @nliu-ms @jayzhang
+/packages/cli/src/commands/models/publish.ts @nliu-ms @jayzhang @anchenyi
 /packages/cli/src/commands/models/entraAppUpdate.ts @KennethBWSong @xzf0587 @blackchoey
-/packages/cli/src/commands/models/teamsapp @nliu-ms @jayzhang
+/packages/cli/src/commands/models/teamsapp @nliu-ms @jayzhang @anchenyi
 /packages/cli/src/commands/models/upgrade.ts @xzf0587 @blackchoey
-/packages/cli/src/commands/models/validate.ts @nliu-ms @jayzhang
+/packages/cli/src/commands/models/validate.ts @nliu-ms @jayzhang @anchenyi
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
 /packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish
@@ -139,7 +139,7 @@
 /packages/fx-core/src/component/driver/script/npmBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 /packages/fx-core/src/component/driver/script/npxBuildDriver.ts @Siglud @Yukun-dong @JerryYangKai @eriolchan
 /packages/fx-core/src/component/driver/script/scriptDriver.ts @jayzhang @Siglud
-/packages/fx-core/src/component/driver/teamsApp @nliu-ms @jayzhang
+/packages/fx-core/src/component/driver/teamsApp @nliu-ms @jayzhang @anchenyi
 /packages/fx-core/src/component/driver/util/utils.ts @blackchoey @xzf0587
 /packages/fx-core/src/component/feature/collaboration.ts @KennethBWSong @SLdragon
 /packages/fx-core/src/component/feature/createAuthFiles.ts @KennethBWSong @xzf0587
@@ -150,7 +150,6 @@
 /packages/fx-core/src/component/generator/officeXMLAddin @jayzhang @tecton
 /packages/fx-core/src/component/generator/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms
 /packages/fx-core/src/component/resource/aadApp @KennethBWSong @SLdragon
-/packages/fx-core/src/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
 /packages/fx-core/src/component/resource/botService @kimizhu @swatDong @kuojianlu
 /packages/fx-core/src/core @jayzhang @LongOddCode @jayzhang @nliu-ms @xzf0587 @hund030
 /packages/fx-core/src/core/middleware/projectMigrationV3 @xzf0587 @frankqianms @blackchoey
@@ -163,7 +162,7 @@
 /packages/fx-core/src/ui @jayzhang @yuqizhou77 @tecton
 /packages/fx-core/templates/core/v3Migration @xzf0587 @frankqianms @blackchoey
 /packages/fx-core/templates/plugins/resource/aad/ @KennethBWSong @xzf0587
-/packages/fx-core/templates/plugins/resource/appstudio @nliu-ms
+/packages/fx-core/templates/plugins/resource/appstudio @nliu-ms @anchenyi
 /packages/fx-core/test/component @jayzhang @xzf0587 @hund030 @LongOddCode
 /packages/fx-core/tests/common/deps-checker @qinezh @a1exwang @kimizhu @swatDong @XiaofuHuang
 /packages/fx-core/tests/common/featureFlags.test.ts @jayzhang @xzf0587 @LongOddCode
@@ -190,7 +189,7 @@
 /packages/fx-core/tests/component/driver/middleware/updateProgress.test.ts @tecton @jayzhang @LongOddCode
 /packages/fx-core/tests/component/driver/script @Siglud @Yukun-dong @JerryYangKai @eriolchan
 /packages/fx-core/tests/component/driver/script/scriptDriver.test.ts @jayzhang @LongOddCode
-/packages/fx-core/tests/component/driver/teamsApp @nliu-ms @jayzhang @yuqizhou77
+/packages/fx-core/tests/component/driver/teamsApp @nliu-ms @jayzhang @yuqizhou77 @anchenyi
 /packages/fx-core/tests/component/driver/util/utils.test.ts @blackchoey @xzf0587
 /packages/fx-core/tests/component/envUtil.test.ts @jayzhang @xzf0587 @LongOddCode
 /packages/fx-core/tests/component/error @jayzhang @xzf0587 @LongOddCode
@@ -201,7 +200,7 @@
 /packages/fx-core/tests/component/generator/officeXMLAddinGenerator.test.ts @jayzhang @tecton
 /packages/fx-core/tests/component/generator/spfxGenerator.test.ts @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/jsonUtils.test.ts @jayzhang @xzf0587 @LongOddCode
-/packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft
+/packages/fx-core/tests/component/resource/appManifest @nliu-ms @jayzhang @HuihuiWu-Microsoft @anchenyi
 /packages/fx-core/tests/component/resource/botService @kimizhu @swatDong @kuojianlu
 /packages/fx-core/tests/component/util/azureAccountMock.ts @Siglud @xiaolang124
 /packages/fx-core/tests/component/util/azureResourceOperation.test.ts @Siglud @Yukun-dong
@@ -217,7 +216,7 @@
 /packages/fx-core/tests/core/middleware/migration @xzf0587 @frankqianms @blackchoey
 /packages/fx-core/tests/core/middleware/projectVersionChecker.test.ts @xzf0587 @frankqianms @blackchoey
 /packages/fx-core/tests/core/middleware/testAssets @xzf0587 @frankqianms @blackchoey
-/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang @yuqizhou77
+/packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang @yuqizhou77 @anchenyi
 /packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/question @jayzhang @xzf0587 @LongOddCode @yuqizhou77 @tecton
 /packages/fx-core/tests/samples/sampleV3 @xzf0587 @wenytang-ms @frankqianms @blackchoey
@@ -225,7 +224,7 @@
 /packages/fx-core/tsconfig.json @xzf0587 @LongOddCode
 /packages/fx-core/webpack.config.js @jayzhang @xzf0587 @LongOddCode
 
-/packages/manifest/ @jayzhang @nliu-ms
+/packages/manifest/ @jayzhang @nliu-ms @anchenyi
 
 /packages/sdk @tecton @blackchoey @SLdragon @wenytang-ms @yiqing-zhao
 

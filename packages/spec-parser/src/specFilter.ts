@@ -22,24 +22,32 @@ export class SpecFilter {
         const [method, path] = filterItem.split(" ");
         const methodName = method.toLowerCase();
 
-        if (!Utils.isSupportedApi(methodName, path, resolvedSpec, options)) {
-          continue;
-        }
-
-        if (!newPaths[path]) {
-          newPaths[path] = { ...unResolveSpec.paths[path] };
-          for (const m of ConstantString.AllOperationMethods) {
-            delete (newPaths[path] as any)[m];
+        const pathObj = resolvedSpec.paths?.[path] as any;
+        if (
+          ConstantString.AllOperationMethods.includes(methodName) &&
+          pathObj &&
+          pathObj[methodName]
+        ) {
+          const validateResult = Utils.isSupportedApi(methodName, path, resolvedSpec, options);
+          if (!validateResult.isValid) {
+            continue;
           }
-        }
 
-        (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
+          if (!newPaths[path]) {
+            newPaths[path] = { ...unResolveSpec.paths[path] };
+            for (const m of ConstantString.AllOperationMethods) {
+              delete (newPaths[path] as any)[m];
+            }
+          }
 
-        // Add the operationId if missing
-        if (!(newPaths[path] as any)[methodName].operationId) {
-          (newPaths[path] as any)[
-            methodName
-          ].operationId = `${methodName}${Utils.convertPathToCamelCase(path)}`;
+          (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
+
+          // Add the operationId if missing
+          if (!(newPaths[path] as any)[methodName].operationId) {
+            (newPaths[path] as any)[
+              methodName
+            ].operationId = `${methodName}${Utils.convertPathToCamelCase(path)}`;
+          }
         }
       }
 

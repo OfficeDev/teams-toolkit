@@ -5,8 +5,8 @@
       "resourceBaseName": {
         "value": "tab${{RESOURCE_SUFFIX}}"
       },
-      "staticWebAppSku": {
-        "value": "Free"
+      "storageSku": {
+        "value": "Standard_LRS"
       }
     }
   }

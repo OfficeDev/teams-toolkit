@@ -20,9 +20,6 @@ class Doc:
 class AzureAISearchDataSourceOptions:
     name: str
     indexName: str
-    azureOpenAIApiKey: str
-    azureOpenAIEndpoint: str
-    azureOpenAIEmbeddingDeployment: str
     azureAISearchApiKey: str
     azureAISearchEndpoint: str
 

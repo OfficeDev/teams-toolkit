@@ -15,12 +15,12 @@
         "outline": "outline.png"
     },
     "name": {
-        "short": "AISearch-py${{APP_NAME_SUFFIX}}",
-        "full": "full name for AISearch-py"
+        "short": "{{appName}}${{APP_NAME_SUFFIX}}",
+        "full": "full name for {{appName}}"
     },
     "description": {
-        "short": "short description for AISearch-py",
-        "full": "full description for AISearch-py"
+        "short": "short description for {{appName}}",
+        "full": "full description for {{appName}}"
     },
     "accentColor": "#FFFFFF",
     "bots": [

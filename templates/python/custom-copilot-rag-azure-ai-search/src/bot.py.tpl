@@ -33,6 +33,7 @@ ApplicationTurnState = TurnState[ConversationState]
 # Create AI components
 model: OpenAIModel
 
+{{#useAzureOpenAI}}
 model = OpenAIModel(
     AzureOpenAIModelOptions(
         api_key=config.AZURE_OPENAI_API_KEY,
@@ -40,6 +41,15 @@ model = OpenAIModel(
         endpoint=config.AZURE_OPENAI_ENDPOINT,
     )
 )
+{{/useAzureOpenAI}}    
+{{#useOpenAI}}
+model = OpenAIModel(
+    OpenAIModelOptions(
+        api_key=config.OPENAI_API_KEY,
+        default_model=config.OPENAI_MODEL_NAME,
+    )
+)
+{{/useOpenAI}}
     
 prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/src/prompts"))
 
@@ -48,9 +58,6 @@ prompts.add_data_source(
         AzureAISearchDataSourceOptions(
             name='azure-ai-search',
             indexName='contoso-electronics',
-            azureOpenAIApiKey=config.AZURE_OPENAI_API_KEY,
-            azureOpenAIEndpoint=config.AZURE_OPENAI_ENDPOINT,
-            azureOpenAIEmbeddingDeployment=config.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME,
             azureAISearchApiKey=config.AZURE_SEARCH_KEY,
             azureAISearchEndpoint=config.AZURE_SEARCH_ENDPOINT,
         )
@@ -75,42 +82,6 @@ bot_app = Application[ApplicationTurnState](
 @bot_app.conversation_update("membersAdded")
 async def on_members_added(context: TurnContext, state: TurnState):
     await context.send_activity("How can I help you today?")
-
-# @bot_app.ai.action(ActionTypes.SAY_COMMAND)
-# async def format_response(context: TurnContext, state: TurnState, data):
-#     add_tag = False
-#     in_code_block = False
-#     output = []
-#     response = data.response.split('\n')
-#     for line in response:
-#         if line.startswith('```'):
-#             if not in_code_block:
-#                 add_tag = True
-#                 in_code_block = True
-#             else:
-#                 output[-1] += '</pre>'
-#                 add_tag = False
-#                 in_code_block = False
-#         elif add_tag:
-#             output.append(f"<pre>{line}")
-#             add_tag = False
-#         else:
-#             output.append(line)
-
-#     formatted_response = '\n'.join(output)
-#     await context.send_activity(formatted_response)
-
-#     return ''
-
-@bot_app.ai.action(ActionTypes.FLAGGED_INPUT)
-async def flag_input(context: TurnContext, _state: ApplicationTurnState, data):
-    await context.send_activity(f"I'm sorry your message was flagged: {json.dumps(data)}")
-    return ActionTypes.STOP
-    
-@bot_app.ai.action(ActionTypes.FLAGGED_OUTPUT)
-async def flag_output(context: TurnContext, _state: ApplicationTurnState, data):
-    await context.send_activity(f"I'm not allowed to talk about such things.")
-    return ActionTypes.STOP
 
 @bot_app.error
 async def on_error(context: TurnContext, error: Exception):

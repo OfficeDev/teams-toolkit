@@ -11,6 +11,7 @@
     "botAadAppClientSecret": {
       "value": "${{SECRET_BOT_PASSWORD}}"
     },
+    {{#useAzureOpenAI}}
     "azureOpenaiKey": {
       "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
     },
@@ -23,6 +24,12 @@
     "azureOpenaiEmbeddingDeployment" : {
       "value": "${{AZURE_OPENAI_EMBEDDING_DEPLOYMENT}}"
     },
+    {{/useAzureOpenAI}}
+    {{#useOpenAI}}
+    "openaiKey": {
+      "value": "${{SECRET_OPENAI_API_KEY}}"
+    },
+    {{/useOpenAI}}
     "azureSearchKey": {
       "value": "${{SECRET_AZURE_SEARCH_KEY}}"
     },

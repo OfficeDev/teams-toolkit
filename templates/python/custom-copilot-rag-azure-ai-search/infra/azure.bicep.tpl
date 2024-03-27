@@ -10,12 +10,22 @@ param botAadAppClientId string
 @description('Required by Bot Framework package in your bot project')
 param botAadAppClientSecret string
 
+{{#useAzureOpenAI}}
 @secure()
 @description('Required in your bot project to access Azure OpenAI service. You can get it from Azure Portal > OpenAI > Keys > Key1 > Resource Management > Endpoint')  
 param azureOpenaiKey string
 param azureOpenaiModelDeploymentName string
 param azureOpenaiEndpoint string
 param azureOpenaiEmbeddingDeployment string
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+@secure()
+@description('Required in your bot project to access OpenAI service. You can get it from OpenAI > API > API Key')
+param openaiKey string
+{{/useOpenAI}}
+
+@secure()
+@description('Required in your bot project to access Azure Search service. You can get it from Azure Portal > Azure Search > Keys > Admin Key')
 param azureSearchKey string
 param azureSearchEndpoint string
 
@@ -71,6 +81,7 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'BOT_PASSWORD'
           value: botAadAppClientSecret
         }
+        {{#useAzureOpenAI}}
         {
           name: 'AZURE_OPENAI_API_KEY'
           value: azureOpenaiKey
@@ -87,6 +98,13 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'AZURE_OPENAI_EMBEDDING_DEPLOYMENT'
           value: azureOpenaiEmbeddingDeployment
         }
+        {{/useAzureOpenAI}}
+        {{#useOpenAI}}
+        {
+          name: 'OPENAI_API_KEY'
+          value: openaiKey
+        }
+        {{/useOpenAI}}
         {
           name: 'AZURE_SEARCH_KEY'
           value: azureSearchKey

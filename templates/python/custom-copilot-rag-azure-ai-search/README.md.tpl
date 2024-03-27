@@ -19,16 +19,50 @@ The app template is built using the Teams AI library, which provides the capabil
 > - [Python](https://www.python.org/), version 3.8 to 3.11.
 > - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher.
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) latest version or [Teams Toolkit CLI](https://aka.ms/teamsfx-cli).
+{{#useAzureOpenAI}}
 > - An account with [Azure OpenAI](https://aka.ms/oai/access).
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+> - An account with [OpenAI](https://platform.openai.com/).
+{{/useOpenAI}}
 > - An [Azure Search service](https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search).
+{{^enableTestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts).
+{{/enableTestToolByDefault}}
+{{#enableTestToolByDefault}}
+> - [Node.js](https://nodejs.org/) (supported versions: 16, 18) for local debug in Test Tool.
+{{/enableTestToolByDefault}}
 
 ### Configurations
 1. First, Open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `requirements.txt` as dependencies to install when creating the virtual environment.
-1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME`, endpoint `AZURE_OPENAI_ENDPOINT` and embedding deployment name `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`.
+{{#enableTestToolByDefault}}
+{{#useAzureOpenAI}}
+1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME`, endpoint `AZURE_OPENAI_ENDPOINT` and embedding deployment name `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`.
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
+1. In this template, default model name is `gpt-3.5-turbo` and default embedding model name is `text-embedding-ada-002`. If you want to use different models from OpenAI, fill in your model names in [src/config.py](./src/config.py).
+{{/useOpenAI}}
 1. In file *env/.env.local.user*, fill in your Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT`.
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+{{#useAzureOpenAI}}
+1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME`, endpoint `AZURE_OPENAI_ENDPOINT` and embedding deployment name `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`.
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
+1. In this template, default model name is `gpt-3.5-turbo` and default embedding model name is `text-embedding-ada-002`. If you want to use different models from OpenAI, fill in your model names in [src/config.py](./src/config.py).
+{{/useOpenAI}}
+1. In file *env/.env.local.user*, fill in your Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT`.
+{{/enableTestToolByDefault}}
 
 ### Setting up index and documents
+{{^enableTestToolByDefault}}
+1. Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT` are loaded from *env/.env.local.user*. Please make sure you have already configured them.
+{{/enableTestToolByDefault}}
+{{#enableTestToolByDefault}}
+1. Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT` are loaded from *env/.env.testtool.user*. Please make sure you have already configured them.
+{{/enableTestToolByDefault}}
 1. Use command `python -m src.indexers.setup` to create index and upload documents in `src/files`.
 1. You will see the following information indicated the success of setup:
     ```
@@ -40,8 +74,13 @@ The app template is built using the Teams AI library, which provides the capabil
 
 ### Conversation with bot
 1. Select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
+{{/enableTestToolByDefault}}
+{{#enableTestToolByDefault}}
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+{{/enableTestToolByDefault}}
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
 1. You will receive a welcome message from the bot, or send any message to get a response.
 

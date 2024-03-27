@@ -1,12 +1,10 @@
 import argparse
 import asyncio
+import os
 
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient
-
-from .data import get_doc_data
-
 from azure.search.documents.indexes.models import (
     SearchIndex,
     SimpleField,
@@ -19,9 +17,15 @@ from azure.search.documents.indexes.models import (
     VectorSearchProfile,
     HnswAlgorithmConfiguration
 )
+from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions, AzureOpenAIEmbeddings, AzureOpenAIEmbeddingsOptions
 from time import sleep
 
+from .data import get_doc_data
 from ..AzureAISearchDataSource import Doc
+
+from dotenv import load_dotenv
+
+load_dotenv(f'{os.getcwd()}/env/.env.testtool.user')
 
 async def upsert_documents(client: SearchClient, documents: list[Doc]):
     return client.merge_or_upload_documents(documents)
@@ -58,18 +62,18 @@ async def setup(search_api_key, search_api_endpoint):
 
     search_client = SearchClient(search_api_endpoint, index, credentials)
 
-    data = await get_doc_data()
+    embeddings = AzureOpenAIEmbeddings(AzureOpenAIEmbeddingsOptions(
+            azure_api_key=os.getenv('SECRET_AZURE_OPENAI_API_KEY'),
+            azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
+            azure_deployment=os.getenv('AZURE_OPENAI_EMBEDDING_DEPLOYMENT')
+        ))
+    data = await get_doc_data(embeddings=embeddings)
     await upsert_documents(search_client, data)
 
     print("Upload new documents succeeded. If they do not exist, wait for several seconds...")
     
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Setup Azure Search')
-    parser.add_argument('--key', required=True, help='Azure Search API key')
-    parser.add_argument('--endpoint', required=True, help='Azure Search API endpoint')
-    args = parser.parse_args()
-
-    asyncio.run(setup(args.key, args.endpoint))
-
-    print("setup finished")
+search_api_key = os.getenv('SECRET_AZURE_SEARCH_KEY')
+search_api_endpoint = os.getenv('AZURE_SEARCH_ENDPOINT')
+asyncio.run(setup(search_api_key, search_api_endpoint))
+print("setup finished")
 

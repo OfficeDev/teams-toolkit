@@ -186,7 +186,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        manifest.composeExtensions[0].apiSpecificationFile,
+        path.relative(appDirectory, apiSpecificationFile),
         apiSpecificationFile,
         TelemetryPropertyKey.customizedOpenAPIKeys,
         context
@@ -226,7 +226,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        manifest.plugins[0].pluginFile,
+        path.relative(appDirectory, pluginFile),
         pluginFile,
         TelemetryPropertyKey.customizedAIPluginKeys,
         context

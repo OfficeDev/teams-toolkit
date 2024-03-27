@@ -14,7 +14,7 @@ export class ScriptTimeoutError extends UserError {
     const errorOptions: UserErrorOptions = {
       source: "script",
       name: "ScriptTimeoutError",
-      message: getDefaultString(key, cmd),
+      message: getDefaultString(key, ""), //the script content maybe contains securit data that should not be reported in telemetry
       displayMessage: getLocalizedString(key, cmd),
       error: error,
       categories: [ErrorCategory.External],
@@ -32,8 +32,8 @@ export class ScriptExecutionError extends UserError {
     const errorOptions: UserErrorOptions = {
       source: "script",
       name: "ScriptExecutionError",
-      message: getDefaultString(key, script, message),
-      displayMessage: getLocalizedString(key, script, message),
+      message: getDefaultString(key, "", message),
+      displayMessage: getLocalizedString(key, script, message), //the script content maybe contains securit data that should not be reported in telemetry
       error: error,
       categories: [ErrorCategory.External],
     };

@@ -446,21 +446,21 @@ export class Utils {
     }
   }
 
-  static resolveServerUrl(url: string): string {
+  static resolveEnv(str: string): string {
     const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
-    let matches = placeHolderReg.exec(url);
-    let newUrl = url;
+    let matches = placeHolderReg.exec(str);
+    let newStr = str;
     while (matches != null) {
       const envVar = matches[1];
       const envVal = process.env[envVar];
       if (!envVal) {
         throw new Error(Utils.format(ConstantString.ResolveServerUrlFailed, envVar));
       } else {
-        newUrl = newUrl.replace(matches[0], envVal);
+        newStr = newStr.replace(matches[0], envVal);
       }
-      matches = placeHolderReg.exec(url);
+      matches = placeHolderReg.exec(str);
     }
-    return newUrl;
+    return newStr;
   }
 
   static checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[] {
@@ -468,7 +468,7 @@ export class Utils {
 
     let serverUrl;
     try {
-      serverUrl = Utils.resolveServerUrl(servers[0].url);
+      serverUrl = Utils.resolveEnv(servers[0].url);
     } catch (err) {
       errors.push({
         type: ErrorType.ResolveServerUrlFailed,

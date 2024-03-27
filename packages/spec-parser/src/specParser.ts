@@ -165,7 +165,7 @@ export class SpecParser {
           );
         }
 
-        apiResult.server = Utils.resolveServerUrl(serverUrl.url);
+        apiResult.server = Utils.resolveEnv(serverUrl.url);
 
         let operationId = operation.operationId;
         if (!operationId) {

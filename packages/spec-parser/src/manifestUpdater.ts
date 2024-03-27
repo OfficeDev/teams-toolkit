@@ -35,10 +35,19 @@ export class ManifestUpdater {
       },
     ];
 
+    const appName = Utils.resolveEnv(manifest.name.short);
+    const description = Utils.resolveEnv(manifest.description.full ?? manifest.description.short);
+
     ManifestUpdater.updateManifestDescription(manifest, spec);
 
     const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
-    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(spec, specRelativePath, options);
+    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(
+      spec,
+      specRelativePath,
+      appName,
+      description,
+      options
+    );
 
     return [manifest, apiPlugin];
   }
@@ -80,6 +89,8 @@ export class ManifestUpdater {
   static generatePluginManifestSchema(
     spec: OpenAPIV3.Document,
     specRelativePath: string,
+    appName: string,
+    description: string,
     options: ParseOptions
   ): PluginManifestSchema {
     const functions: FunctionObject[] = [];
@@ -174,8 +185,8 @@ export class ManifestUpdater {
 
     const apiPlugin: PluginManifestSchema = {
       schema_version: "v2",
-      name_for_human: spec.info.title,
-      description_for_human: spec.info.description ?? "<Please add description of the plugin>",
+      name_for_human: appName,
+      description_for_human: description,
       functions: functions,
       runtimes: [
         {

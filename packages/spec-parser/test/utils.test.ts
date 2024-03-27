@@ -3517,7 +3517,7 @@ describe("utils", () => {
       process.env.OPENAPI_SERVER_URL = "https://localhost:3000/api";
       const url = "${{OPENAPI_SERVER_URL}}";
       const expectedUrl = "https://localhost:3000/api";
-      const resolvedUrl = Utils.resolveServerUrl(url);
+      const resolvedUrl = Utils.resolveEnv(url);
       assert.strictEqual(resolvedUrl, expectedUrl);
     });
 
@@ -3526,7 +3526,7 @@ describe("utils", () => {
       const url = "${{OPENAPI_SERVER_URL}}";
       const expectedUrl = "https://localhost:3000/api";
       assert.throws(
-        () => Utils.resolveServerUrl(url),
+        () => Utils.resolveEnv(url),
         Error,
         Utils.format(ConstantString.ResolveServerUrlFailed, "OPENAPI_SERVER_URL")
       );
@@ -3537,7 +3537,7 @@ describe("utils", () => {
       process.env.API_PORT = "3000";
       const url = "http://${{API_HOST}}:${{API_PORT}}/api";
       const expectedUrl = "http://localhost:3000/api";
-      const resolvedUrl = Utils.resolveServerUrl(url);
+      const resolvedUrl = Utils.resolveEnv(url);
       assert.strictEqual(resolvedUrl, expectedUrl);
     });
 
@@ -3546,7 +3546,7 @@ describe("utils", () => {
       process.env.API_HOST = "localhost";
       const url = "http://${{API_HOST}}:${{API_PORT}}/api";
       assert.throws(
-        () => Utils.resolveServerUrl(url),
+        () => Utils.resolveEnv(url),
         Error,
         Utils.format(ConstantString.ResolveServerUrlFailed, "API_PORT")
       );

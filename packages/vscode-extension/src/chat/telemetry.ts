@@ -13,6 +13,8 @@ import {
 } from "../telemetry/extTelemetryEvents";
 
 export class ChatTelemetryData implements IChatTelemetryData {
+  public static requestData: { [key: string]: ChatTelemetryData } = {};
+
   telemetryData: ITelemetryData;
   chatMessages: LanguageModelChatMessage[] = [];
   command: string;
@@ -40,12 +42,18 @@ export class ChatTelemetryData implements IChatTelemetryData {
     telemetryData.properties[TelemetryProperty.TriggerFrom] = TelemetryTriggerFrom.CopilotChat;
     telemetryData.properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.telemetryData = telemetryData;
+
+    ChatTelemetryData.requestData[requestId] = this;
   }
 
   static createByCommand(command: string) {
     const requestId = getUuid();
     const startTime = Date.now();
     return new ChatTelemetryData(command, requestId, startTime);
+  }
+
+  static get(requestId: string): ChatTelemetryData | undefined {
+    return ChatTelemetryData.requestData[requestId];
   }
 
   chatMessagesTokenCount(): number {

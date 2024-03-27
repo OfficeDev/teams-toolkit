@@ -13,8 +13,9 @@ import { AzureAccountManager } from "../../../commonlib/azureLogin";
 import { signedIn } from "../../../commonlib/common/constant";
 import { M365Login } from "../../../commonlib/m365Login";
 import { CommandKey } from "../../../constants";
+import { validateGetStartedPrerequisitesHandler } from "../../../handlers";
+import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
 import { getProjectStatus } from "../../../utils/projectStatusUtils";
-import { chatExecuteCommandHandler } from "./nextstepCommandHandler";
 import { MachineStatus, WholeStatus } from "./types";
 
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
@@ -56,7 +57,7 @@ export async function getMachineStatus(): Promise<MachineStatus> {
   );
   let resultOfPrerequistes: string | undefined = undefined;
   if (Date.now() - preCheckTime.getTime() > 6 * 60 * 60 * 1000) {
-    const result = await chatExecuteCommandHandler(CommandKey.ValidateGetStartedPrerequisites);
+    const result = await validateGetStartedPrerequisitesHandler(TelemetryTriggerFrom.CopilotChat);
     resultOfPrerequistes = result.isErr() ? result.error.message : undefined;
     if (!resultOfPrerequistes) {
       await globalStateUpdate(CommandKey.ValidateGetStartedPrerequisites, new Date());

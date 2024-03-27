@@ -210,7 +210,6 @@ export class CreateAppPackageDriver implements StepDriver {
               return err(checkExistenceRes.error);
             }
             const dir = path.dirname(command.apiResponseRenderingTemplateFile);
-            console.log("card: " + dir);
             this.addFileInZip(zip, dir, adaptiveCardFile);
           }
         }
@@ -381,15 +380,15 @@ export class CreateAppPackageDriver implements StepDriver {
     if (expandedEnvVarResult.isErr()) {
       return err(expandedEnvVarResult.error);
     }
-    const openAPIContent = expandedEnvVarResult.value;
+    const content = expandedEnvVarResult.value;
 
     const attr = await fs.stat(filePath);
-    zip.addFile(entryName, Buffer.from(openAPIContent), "", attr.mode);
+    zip.addFile(entryName, Buffer.from(content), "", attr.mode);
 
     return ok(undefined);
   }
 
-  private addFileInZip(zip: AdmZip, dir: string, filePath: string) {
-    zip.addLocalFile(filePath, dir === "." ? "" : dir);
+  private addFileInZip(zip: AdmZip, zipPath: string, filePath: string) {
+    zip.addLocalFile(filePath, zipPath === "." ? "" : zipPath);
   }
 }

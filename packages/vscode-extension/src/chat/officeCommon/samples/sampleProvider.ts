@@ -9,7 +9,10 @@ import {
 import { BM25, BMDocument } from "../../rag/BM25";
 import { OfficeAddinTemplateModelPorvider, WXPAppName } from "./officeAddinTemplateModelPorvider";
 import { SampleData } from "./sampleData";
-import { prepareDiscription } from "../../rag/ragUtil";
+import { filterStopWords } from "../../rag/ragUtil";
+
+// TODO: adjust the score threshold
+const scoreThreshold = 2;
 
 export class SampleProvider {
   private static instance: SampleProvider;
@@ -32,17 +35,19 @@ export class SampleProvider {
     scenario: string,
     k: number
   ): Promise<Map<string, SampleData>> {
-    const bm25: BM25 = await OfficeAddinTemplateModelPorvider.getInstance().getBM25Model(
+    const samples: Map<string, SampleData> = new Map<string, SampleData>();
+    const bm25: BM25 | null = await OfficeAddinTemplateModelPorvider.getInstance().getBM25Model(
       host as WXPAppName
     );
-    const query = prepareDiscription(scenario);
-    const documents: BMDocument[] = bm25.search(query, k);
+    if (bm25) {
+      const query = filterStopWords(scenario.toLowerCase().split(" "));
+      const documents: BMDocument[] = bm25.search(query, k);
 
-    const samples: Map<string, SampleData> = new Map<string, SampleData>();
-    for (const doc of documents) {
-      if (doc.document.metadata) {
-        const sampleData = doc.document.metadata as SampleData;
-        samples.set(sampleData.name, sampleData);
+      for (const doc of documents) {
+        if (doc.score >= scoreThreshold && doc.document.metadata) {
+          const sampleData = doc.document.metadata as SampleData;
+          samples.set(sampleData.name, sampleData);
+        }
       }
     }
     return new Promise<Map<string, SampleData>>((resolve, reject) => {

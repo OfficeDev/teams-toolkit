@@ -71,7 +71,7 @@ describe("UpdateApiKeyDriver", () => {
       targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -83,6 +83,8 @@ describe("UpdateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api2",
@@ -95,6 +97,8 @@ describe("UpdateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -136,7 +140,7 @@ describe("UpdateApiKeyDriver", () => {
       targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -148,6 +152,8 @@ describe("UpdateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api2",
@@ -160,6 +166,8 @@ describe("UpdateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -191,7 +199,7 @@ describe("UpdateApiKeyDriver", () => {
       targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -203,6 +211,8 @@ describe("UpdateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api2",
@@ -215,6 +225,8 @@ describe("UpdateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -328,7 +340,7 @@ describe("UpdateApiKeyDriver", () => {
   it("should throw error when unhandled error", async () => {
     sinon.stub(MockedM365Provider.prototype, "getAccessToken").throws(new Error("unhandled error"));
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -340,6 +352,8 @@ describe("UpdateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api2",
@@ -352,6 +366,8 @@ describe("UpdateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,

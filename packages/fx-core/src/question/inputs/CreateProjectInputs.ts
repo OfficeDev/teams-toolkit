@@ -34,6 +34,7 @@ export interface CreateProjectInputs extends Inputs {
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
     | "custom-copilot-basic"
+    | "custom-copilot-rag"
     | "custom-copilot-agent"
     | "message-extension"
     | "BotAndMessageExtension"
@@ -80,6 +81,8 @@ export interface CreateProjectInputs extends Inputs {
   "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
+  /** @description Chat With Your Data */
+  "custom-copilot-rag"?: "custom-copilot-rag-azureAISearch";
   /** @description Programming Language */
   "programming-language"?: "javascript" | "typescript" | "csharp" | "python";
   /** @description Service for Large Language Model (LLM) */

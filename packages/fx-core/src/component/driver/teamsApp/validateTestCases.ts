@@ -61,6 +61,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
     if (result.isErr()) {
       return err(result.error);
     }
+
     let appPackagePath = args.appPackagePath;
     if (!path.isAbsolute(appPackagePath)) {
       appPackagePath = path.join(context.projectPath, appPackagePath);
@@ -118,7 +119,7 @@ export class ValidateWithTestCasesDriver implements StepDriver {
    * @param response
    * @param teamsAppId
    */
-  private async runningBackgroundJob(
+  public async runningBackgroundJob(
     args: ValidateWithTestCasesArgs,
     context: WrapDriverContext,
     appStudioToken: string,

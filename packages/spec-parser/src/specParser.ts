@@ -316,8 +316,8 @@ export class SpecParser {
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
 
-      const authSet: Set<AuthInfo> = new Set();
       let hasMultipleAuth = false;
+      let authInfo: AuthInfo | undefined = undefined;
 
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
@@ -326,8 +326,10 @@ export class SpecParser {
           const authArray = Utils.getAuthArray(operation.security, newSpec);
 
           if (authArray && authArray.length > 0) {
-            authSet.add(authArray[0][0]);
-            if (authSet.size > 1) {
+            const currentAuth = authArray[0][0];
+            if (!authInfo) {
+              authInfo = authArray[0][0];
+            } else if (authInfo.name !== currentAuth.name) {
               hasMultipleAuth = true;
               break;
             }
@@ -383,7 +385,6 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const authInfo = Array.from(authSet)[0];
       const [updatedManifest, warnings] = await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,

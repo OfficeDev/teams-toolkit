@@ -760,10 +760,58 @@ describe("teamsApp/validateWithTestCases", async () => {
       appVersion: "1.0.0",
       manifestVersion: "1.16",
       validationResults: {
-        failures: [],
-        warnings: [],
-        successes: [],
-        skipped: [],
+        successes: [
+          {
+            title: "Validation_Success_Example",
+            message: "Success validation example message.",
+            artifacts: {
+              filePath: "fakePath",
+              docsUrl: "https://docs.microsoft.com",
+              policyNumber: "123",
+              policyLinkUrl: "https://docs.microsoft.com",
+              recommendation: "fakeRecommendation",
+            },
+          },
+        ],
+        warnings: [
+          {
+            title: "Validation_Warning_Example",
+            message: "Warning validation example message.",
+            artifacts: {
+              filePath: "fakePath",
+              docsUrl: "https://docs.microsoft.com",
+              policyNumber: "123",
+              policyLinkUrl: "https://docs.microsoft.com",
+              recommendation: "fakeRecommendation",
+            },
+          },
+        ],
+        failures: [
+          {
+            title: "Validation_Failure_Example",
+            message: "Failure validation example message.",
+            artifacts: {
+              filePath: "fakePath",
+              docsUrl: "https://docs.microsoft.com",
+              policyNumber: "123",
+              policyLinkUrl: "https://docs.microsoft.com",
+              recommendation: "fakeRecommendation",
+            },
+          },
+        ],
+        skipped: [
+          {
+            title: "Validation_Skipped_Example",
+            message: "Skipped validation example message.",
+            artifacts: {
+              filePath: "fakePath",
+              docsUrl: "https://docs.microsoft.com",
+              policyNumber: "123",
+              policyLinkUrl: "https://docs.microsoft.com",
+              recommendation: "fakeRecommendation",
+            },
+          },
+        ],
       },
       createdAt: new Date(),
       updatedAt: new Date(),

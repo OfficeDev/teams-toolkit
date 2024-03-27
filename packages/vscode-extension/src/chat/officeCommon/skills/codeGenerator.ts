@@ -6,6 +6,7 @@ import {
   ChatRequest,
   ChatResponseStream,
   LanguageModelChatMessage,
+  LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
 import { compressCode, writeLogToFile } from "../Utils";
@@ -47,6 +48,7 @@ export class CodeGenerator implements ISkill {
         return ExecutionResultEnum.Failure;
       }
       if (!breakdownResult.shouldContinue) {
+        spec.sections = breakdownResult.data;
         return ExecutionResultEnum.Rejected;
       }
 
@@ -84,30 +86,44 @@ export class CodeGenerator implements ISkill {
     customFunctions: boolean;
     data: string[];
   }> {
+    const userPrompt = `
+    Assume this is a ask: "${request.prompt}". I need you help to analyze it, and give me your suggestion. Follow the guidance below:
+    - If the ask is not able agent support fo Excel, Word, or PowerPoint, you should reject it because today this agent only support those Office host applications. And give the reason to reject the ask.
+    - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
+    - Otherwise, please think about if you can process the ask. 
+      - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
+      - If you can process the ask, you should break down the ask into sub steps that could be performed by Office Add-ins JavaScript APIs. Each step should be actions accomplished by using **code**. Emphasize the "Bold" part in the title.
+    return the result in a JSON object.
+
+    Think about that step by step.
+    `;
     const defaultSystemPrompt = `
-    Role:
-    You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins.
+    The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
-    Context:
-    User ask about how to automate a certain process or accomplish a certain task using Office JavaScript Add-ins.
+    #Role:
+    You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
-    Your task:
-    You should only handle tasks about generate TypeScript code for Office Add-ins. If the user's ask is not relevate to Office Add-ins, you should reject the request, by setting the "shouldContinue" field to false. For example, if the user ask about how to automate a certain process or accomplish a certain task using VBA, you should reject the request. Another example is that if the user ask to generate web page code, or style sheet code, you should also reject the request. List your rejection reason in the "data" field of the output JSON object as a string array.
-    Meanwhile, if the user's request is not clear, and you can't make a recommendation based on the context to cover those missing information. List the missing information, and ask for clarification. Put your ask and missing information into the "data" field of the output JSON object. The "shouldContinue" field should be false.
-    Otherwise, break down the task into sub tasks could be performed by Office add-in JavaScript APIs, those steps should be only relevant to code. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field should be true.
+    #Your tasks:
+    Repeat the user's ask, and then give your suggestion based on the user's ask. Follow the guidance below:
+    If you suggested to accept the ask. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be true.
+    If you suggested to reject the ask, put the reason to reject into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be false.
     You must strickly follow the format of output.
 
-    The format of output:
-    The output should be a JSON object, with a key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". The second key is "shouldContinue", the value is a Boolean; and the third key named "data", the value of it is the list of sub tasks or missing information, and that is a string array; the last key named "customFunctions", set value of it to be a Boolean true if the user's ask is about Office JavaScript Add-ins with custom functions on Excel, otherwise, set it to be a Boolean false.
-    If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information or reason to reject. Beyond this JSON object, you should not add anything else to the output.
+    #The format of output:
+    The output should be just a **JSON object**. You should not add anything else to the output
+    - The first key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". 
+    - The second key is "shouldContinue", the value is a Boolean.
+    - The third key named "data", the value of it is the list of sub tasks or rejection reason, and that is a string array.
+    - The last key named "customFunctions", set value of it to be a Boolean true if the user's ask is about Office JavaScript Add-ins with custom functions on Excel. Otherwise, set it to be a Boolean false.
+    If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information or reason to reject. **Beyond this JSON object, you should not add anything else to the output**.
 
     Think about that step by step.
     `;
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(defaultSystemPrompt),
-      new LanguageModelChatUserMessage(request.prompt),
+      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatUserMessage(userPrompt),
     ];
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo",
@@ -137,18 +153,27 @@ export class CodeGenerator implements ISkill {
     host: string,
     subTasks: string[]
   ) {
-    let defaultSystemPrompt = `
+    const userPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
 # Your role:
 You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on JavaScript, CSS, HTML, popular algorithm, and Office Add-ins API. You should help the user to automate a certain process or accomplish a certain task using Office JavaScript Add-ins.
 
 # Context:
-The user ask could be broken down into a few steps able to be accomplished by Office Add-ins JavaScript APIs. You have the list of steps.:
+This is the ask need your help to generate the code for this request:
+- ${request.prompt}. 
+The request is about Office Add-ins, and it is relevant to the Office application "${host}".
+It could be broken down into a few steps able to be accomplished by Office Add-ins JavaScript APIs. You have the list of steps.:
 ${subTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}
 
 # Your tasks:
-**Implement all mentioned step with code**, while follow the coding rule.
+Implement **all** mentioned step with **TypeScript code** and **Office JavaScript Add-ins API**.
+    `;
+    let defaultSystemPrompt = `
+The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+
+# Your tasks:
+Implement **all** mentioned step with **TypeScript code** and **Office JavaScript Add-ins API**, while **follow the coding rule**.
 
 ${getCodeGenerateGuidance(host)}
 
@@ -190,8 +215,8 @@ ${getCodeGenerateGuidance(host)}
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatUserMessage(defaultSystemPrompt),
-      new LanguageModelChatUserMessage(request.prompt),
+      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatUserMessage(userPrompt),
     ];
     // The GPT-4 model is significantly slower than GPT-3.5-turbo, but also significantly more accurate
     // In order to avoid waste more time on the correct, I believe using GPT-4 is a better choice

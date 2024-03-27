@@ -77,6 +77,10 @@ export class Planner {
             // Any changes on the specCopy will be throw away by design
             continue;
           }
+
+          // For the rejected case, spec.sections will be have reason to reject
+          // For the success case, spec.sections will be have the result
+          spec = specCopy;
           if (invokeResult == ExecutionResultEnum.Rejected) {
             // hard stop if one of the skill reject to process the request
             // for example, the user ask is not what we target to address
@@ -84,8 +88,6 @@ export class Planner {
               `The skill "${candidate.name || "Unknown"}" is rejected to process the request.`
             );
           }
-
-          spec = specCopy;
           break;
         }
 
@@ -97,9 +99,13 @@ export class Planner {
         console.log(`Skill ${candidate.name || "unknown"} is executed.`);
       }
     } catch (error) {
-      chatResult.errorDetails = {
-        message: `Failed to process the request: ${(error as Error).message}`,
-      };
+      let errorDetails = `
+I can't assist you with this request. Here are some details:
+      `;
+      spec.sections.forEach((section) => {
+        errorDetails = errorDetails.concat(`\n- ${section}`);
+      });
+      response.markdown(errorDetails);
     }
 
     return chatResult;

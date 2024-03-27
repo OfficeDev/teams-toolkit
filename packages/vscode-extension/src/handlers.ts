@@ -370,6 +370,7 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
     // from copilot chat
     inputs = { ...getSystemInputs(), ...args[1] };
   }
+  const shouldOpenFolder = !inputs?.folder;
   const result = await runCommand(Stage.create, inputs);
   if (result.isErr()) {
     return err(result.error);
@@ -377,7 +378,16 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
 
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
+  const triggerFrom = getTriggerFromProperty(args);
   // show local debug button by default
+  if (
+    isValidOfficeAddInProject(projectPathUri.fsPath) &&
+    triggerFrom?.[TelemetryProperty.TriggerFrom] === TelemetryTriggerFrom.CopilotChat &&
+    !shouldOpenFolder
+  ) {
+    return result;
+  }
+
   if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
   } else {

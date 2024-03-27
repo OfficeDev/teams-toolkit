@@ -191,3 +191,7 @@ ${apiSample}
 
   return new vscode.LanguageModelChatSystemMessage(generateCodePrompt);
 }
+
+export const describeOfficeAddinProjectSystemPrompt = new vscode.LanguageModelChatSystemMessage(
+  `You are an advisor for Office Add-in developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
+);

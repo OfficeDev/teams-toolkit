@@ -1363,8 +1363,8 @@
         ]
       },
       {
-        "id": "ms-teams-vscode-extension.officeaddin",
-        "name": "officeaddin",
+        "id": "ms-teams-vscode-extension.office",
+        "name": "office",
         "description": "%teamstoolkit.chatParticipants.officeaddin.description%",
         "commands": [
           {

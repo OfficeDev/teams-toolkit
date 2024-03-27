@@ -12,6 +12,7 @@ export class Spec {
     codeExplanation: string;
     codeTaskBreakdown: string[];
     isCustomFunction: boolean;
+    tempAppLocation: string;
   };
 
   constructor(userInput: string) {
@@ -26,6 +27,7 @@ export class Spec {
       codeExplanation: "",
       codeTaskBreakdown: [],
       isCustomFunction: false,
+      tempAppLocation: "",
     };
   }
 }

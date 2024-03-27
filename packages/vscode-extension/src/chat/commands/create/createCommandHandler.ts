@@ -285,7 +285,7 @@ async function buildFileTree(
   return root.children ?? [];
 }
 
-function fileTreeAdd(root: ChatResponseFileTree, relativePath: string) {
+export function fileTreeAdd(root: ChatResponseFileTree, relativePath: string) {
   const filename = path.basename(relativePath);
   const folderName = path.dirname(relativePath);
   const segments = path.sep === "\\" ? folderName.split("\\") : folderName.split("/");

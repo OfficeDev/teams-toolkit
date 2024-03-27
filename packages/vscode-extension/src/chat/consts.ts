@@ -5,7 +5,7 @@ import { ChatFollowup } from "vscode";
 import { localize } from "../utils/localizeUtils";
 
 export const chatParticipantName = "ms-teams-vscode-extension.teams";
-export const officeAddinChatParticipantName = "ms-teams-vscode-extension.officeaddin";
+export const officeAddinChatParticipantName = "ms-teams-vscode-extension.office";
 
 export const CHAT_CREATE_SAMPLE_COMMAND_ID = "fx-extension.chat.createSample";
 export const CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID =

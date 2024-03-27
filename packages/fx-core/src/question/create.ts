@@ -2169,8 +2169,8 @@ export class CustomCopilotRagOptions {
     return [
       CustomCopilotRagOptions.customize(),
       CustomCopilotRagOptions.azureAISearch(),
-      CustomCopilotRagOptions.customApi(),
-      CustomCopilotRagOptions.microsoft365(),
+      // CustomCopilotRagOptions.customApi(),
+      // CustomCopilotRagOptions.microsoft365(),
     ];
   }
 }
@@ -2409,7 +2409,6 @@ export function capabilitySubTree(): IQTreeNode {
         },
         data: apiMessageExtensionAuthQuestion(),
       },
-      /*
       {
         condition: (inputs: Inputs) => {
           return inputs[QuestionNames.Capabilities] == CapabilityOptions.customCopilotRag().id;
@@ -2434,7 +2433,6 @@ export function capabilitySubTree(): IQTreeNode {
           },
         ],
       },
-      */
       {
         condition: (inputs: Inputs) => {
           return (

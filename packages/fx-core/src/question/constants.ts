@@ -13,7 +13,4 @@ export const copilotPluginOptionIds = [
   copilotPluginApiSpecOptionId,
   copilotPluginOpenAIPluginOptionId,
 ];
-export const capabilitiesHavePythonOption = [
-  "custom-copilot-basic",
-  "custom-copilot-rag-azure-ai-search",
-];
+export const capabilitiesHavePythonOption = ["custom-copilot-basic", "custom-copilot-rag"];

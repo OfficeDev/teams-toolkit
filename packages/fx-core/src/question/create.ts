@@ -673,6 +673,14 @@ export class CapabilityOptions {
     };
   }
 
+  static officeContentAddin(): OptionItem {
+    return {
+      id: "office-content-addin",
+      label: getLocalizedString("core.officeContentAddin.label"),
+      detail: getLocalizedString("core.officeContentAddin.detail"),
+    };
+  }
+
   // static officeXMLAddinHostOptionItems(host: string): OptionItem[] {
   //   return getOfficeXMLAddinHostProjectOptions(host).map((x) => ({
   //     id: x.proj,

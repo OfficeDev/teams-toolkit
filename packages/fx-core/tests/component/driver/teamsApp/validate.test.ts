@@ -5,8 +5,8 @@ import "mocha";
 import * as sinon from "sinon";
 import chai from "chai";
 import fs from "fs-extra";
-import { ManifestUtil, SystemError, err } from "@microsoft/teamsfx-api";
-import * as tools from "../../../../src/common/tools";
+import { ManifestUtil, SystemError, err, ok } from "@microsoft/teamsfx-api";
+import * as commonTools from "../../../../src/common/tools";
 import { ValidateManifestDriver } from "../../../../src/component/driver/teamsApp/validate";
 import { ValidateManifestArgs } from "../../../../src/component/driver/teamsApp/interfaces/ValidateManifestArgs";
 import { IAppValidationNote } from "../../../../src/component/driver/teamsApp/interfaces/appdefinitions/IValidationResult";
@@ -25,8 +25,11 @@ import { Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { Constants } from "../../../../src/component/driver/teamsApp/constants";
 import { metadataUtil } from "../../../../src/component/utils/metadataUtil";
-import { InvalidActionInputError } from "../../../../src/error/common";
+import { InvalidActionInputError, UserCancelError } from "../../../../src/error/common";
 import { AsyncAppValidationStatus } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResponse";
+import { teamsappMgr } from "../../../../src/component/driver/teamsApp/teamsappMgr";
+import { setTools } from "../../../../src/core/globalVars";
+import { MockTools } from "../../../core/utils";
 
 describe("teamsApp/validateManifest", async () => {
   const teamsAppDriver = new ValidateManifestDriver();
@@ -657,6 +660,9 @@ describe("teamsApp/validateAppPackage", async () => {
 });
 
 describe("teamsApp/validateWithTestCases", async () => {
+  const tools = new MockTools();
+  setTools(tools);
+
   const teamsAppDriver = new ValidateWithTestCasesDriver();
 
   const mockedDriverContext: any = {
@@ -667,7 +673,7 @@ describe("teamsApp/validateWithTestCases", async () => {
   };
 
   beforeEach(() => {
-    sinon.stub(tools, "waitSeconds").resolves();
+    sinon.stub(commonTools, "waitSeconds").resolves();
   });
 
   afterEach(() => {
@@ -818,5 +824,75 @@ describe("teamsApp/validateWithTestCases", async () => {
 
     const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
     chai.assert(result.isOk());
+  });
+
+  it("Happy path - CLI", async () => {
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    sinon.stub(AppStudioClient, "submitAppValidationRequest").resolves({
+      status: AsyncAppValidationStatus.Created,
+      appValidationId: "fakeId",
+    });
+
+    sinon.stub(AppStudioClient, "getAppValidationById").resolves({
+      status: AsyncAppValidationStatus.Completed,
+      appValidationId: "fakeId",
+      appId: "fakeAppId",
+      appVersion: "1.0.0",
+      manifestVersion: "1.16",
+      validationResults: {
+        failures: [],
+        warnings: [],
+        successes: [],
+        skipped: [],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: "fakepath",
+      showMessage: true,
+      showProgressBar: true,
+    };
+
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
+    chai.assert(result.isOk());
+  });
+
+  it("CLI - succeed", async () => {
+    sinon.stub(ValidateWithTestCasesDriver.prototype, "validate").resolves(ok(new Map()));
+    const result = await teamsappMgr.validateTeamsApp({
+      projectPath: "xxx",
+      platform: Platform.CLI,
+      "package-file": "xxx",
+      "validate-method": "test-cases",
+    });
+    chai.assert(result.isOk());
+  });
+
+  it("CLI - failed", async () => {
+    sinon
+      .stub(ValidateWithTestCasesDriver.prototype, "validate")
+      .resolves(err(new UserCancelError()));
+    const result = await teamsappMgr.validateTeamsApp({
+      projectPath: "xxx",
+      platform: Platform.CLI,
+      "package-file": "xxx",
+      "validate-method": "test-cases",
+    });
+    chai.assert(result.isErr());
   });
 });

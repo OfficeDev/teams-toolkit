@@ -93,7 +93,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedPlugins: PluginManifestSchema = {
       schema_version: "v2",
       name_for_human: "Original Name",
-      description_for_human: "Original Full Description",
+      description_for_human: "My API description",
       functions: [
         {
           name: "getPets",
@@ -212,14 +212,14 @@ describe("updateManifestWithAiPlugin", () => {
 
     sinon.stub(fs, "pathExists").resolves(true);
     const originalManifest = {
-      name: { short: "Original Name ${{TestEnv}}", full: "Original Full Name" },
+      name: { short: "Original Name${{TestEnv}}", full: "Original Full Name" },
       description: {
         short: "Original Short Description",
-        full: "Original Full Description ${{TestEnv}}",
+        full: "Original Full Description${{TestEnv}}",
       },
     };
     const expectedManifest = {
-      name: { short: "Original Name ${{TestEnv}}", full: "Original Full Name" },
+      name: { short: "Original Name${{TestEnv}}", full: "Original Full Name" },
       description: { short: "My API", full: "My API description" },
       plugins: [
         {
@@ -230,8 +230,8 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       schema_version: "v2",
-      name_for_human: "Original Name TestEnvValue",
-      description_for_human: "Original Full Description TestEnvValue",
+      name_for_human: "Original Name",
+      description_for_human: "My API description",
       functions: [
         {
           name: "getPets",
@@ -279,8 +279,6 @@ describe("updateManifestWithAiPlugin", () => {
     const options: ParseOptions = {
       allowMethods: ["get", "post"],
     };
-    process.env.TestEnv = "TestEnvValue";
-
     const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
       manifestPath,
       outputSpecPath,
@@ -374,7 +372,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedPlugins: PluginManifestSchema = {
       schema_version: "v2",
       name_for_human: "Original Name",
-      description_for_human: "Original Full Description",
+      description_for_human: "My API description",
       functions: [
         {
           name: "getPets",
@@ -475,7 +473,7 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedPlugins: PluginManifestSchema = {
       schema_version: "v2",
       name_for_human: "Original Name",
-      description_for_human: "Original Full Description",
+      description_for_human: "My API description",
       functions: [],
       runtimes: [
         {

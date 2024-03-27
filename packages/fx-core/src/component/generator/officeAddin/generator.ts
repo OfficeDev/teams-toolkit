@@ -109,10 +109,11 @@ export class OfficeAddinGenerator {
         ? "wxpo" // wxpo - support word, excel, powerpoint, outlook
         : inputs[QuestionNames.OfficeAddinHost];
     const workingDir = process.cwd();
-    const importProgress = context.userInteraction.createProgressBar(
-      getLocalizedString("core.generator.officeAddin.importProject.title"),
-      3
-    );
+    const importProgressStr =
+      projectType === ProjectTypeOptions.officeAddin().id
+        ? getLocalizedString("core.generator.officeAddin.importOfficeProject.title")
+        : getLocalizedString("core.generator.officeAddin.importProject.title");
+    const importProgress = context.userInteraction.createProgressBar(importProgressStr, 3);
 
     process.chdir(addinRoot);
     try {
@@ -180,26 +181,30 @@ export class OfficeAddinGenerator {
 
 // TODO: update to handle different hosts when support for them is implemented
 // TODO: handle multiple scopes
-type OfficeHost = "Outlook"; // | "Word" | "OneNote" | "PowerPoint" | "Project" | "Excel"
-async function getHost(addinManifestPath: string): Promise<OfficeHost> {
+type OfficeHost = "Outlook" | "Word" | "Excel" | "PowerPoint"; // | "OneNote" | "Project"
+export async function getHost(addinManifestPath: string): Promise<OfficeHost> {
   // Read add-in manifest file
   const addinManifest: devPreview.DevPreviewSchema = await ManifestUtil.loadFromPath(
     addinManifestPath
   );
   let host: OfficeHost = "Outlook";
   switch (addinManifest.extensions?.[0].requirements?.scopes?.[0]) {
-    // case "document":
-    //   host = "Word";
+    case "document":
+      host = "Word";
+      break;
     case "mail":
       host = "Outlook";
+      break;
     // case "notebook":
     //   host = "OneNote";
-    // case "presentation":
-    //   host = "PowerPoint";
+    case "presentation":
+      host = "PowerPoint";
+      break;
     // case "project":
     //   host = "Project";
-    // case "workbook":
-    //   host = "Excel";
+    case "workbook":
+      host = "Excel";
+      break;
   }
   return host;
 }

@@ -1,7 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Result, FxError, ok, err, TeamsAppManifest, ManifestUtil } from "@microsoft/teamsfx-api";
+import {
+  Result,
+  FxError,
+  ok,
+  err,
+  TeamsAppManifest,
+  ManifestUtil,
+  Platform,
+  Colors,
+} from "@microsoft/teamsfx-api";
 import { hooks } from "@feathersjs/hooks/lib";
 import { Service } from "typedi";
 import fs from "fs-extra";
@@ -92,15 +101,31 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       const response: AsyncAppValidationResponse | AsyncAppValidationResultsResponse =
         await AppStudioClient.submitAppValidationRequest(manifest.id, appStudioToken);
 
-      const message = getLocalizedString(
-        "driver.teamsApp.progressBar.validateWithTestCases.step",
-        response.status,
-        `${getAppStudioEndpoint()}/apps/${manifest.id}/app-validation`
-      );
-      context.logProvider.info(message);
+      if (context.platform === Platform.CLI) {
+        const message: Array<{ content: string; color: Colors }> = [
+          {
+            content: `Validation request submitted, status: ${response.status}. View the validation result from `,
+            color: Colors.BRIGHT_WHITE,
+          },
+          {
+            content: `${getAppStudioEndpoint()}/apps/${manifest.id}/app-validation/${
+              response.appValidationId
+            }`,
+            color: Colors.BRIGHT_CYAN,
+          },
+        ];
+        context.ui?.showMessage("info", message, false);
+      } else {
+        const message = getLocalizedString(
+          "driver.teamsApp.progressBar.validateWithTestCases.step",
+          response.status,
+          `${getAppStudioEndpoint()}/apps/${manifest.id}/app-validation`
+        );
+        context.logProvider.info(message);
 
-      // Do not await the final validation result, return immediately
-      void this.runningBackgroundJob(args, context, appStudioToken, response, manifest.id);
+        // Do not await the final validation result, return immediately
+        void this.runningBackgroundJob(args, context, appStudioToken, response, manifest.id);
+      }
       return ok(new Map());
     } else {
       return err(new FileNotFoundError(actionName, "manifest.json"));

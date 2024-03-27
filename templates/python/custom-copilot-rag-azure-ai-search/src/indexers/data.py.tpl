@@ -1,7 +1,11 @@
 import os
-from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions, AzureOpenAIEmbeddings, AzureOpenAIEmbeddingsOptions  # Replace with the actual module
 
-from ..config import Config
+{{#useAzureOpenAI}}
+from teams.ai.embeddings import AzureOpenAIEmbeddings, AzureOpenAIEmbeddingsOptions
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions
+{{/useOpenAI}}
 
 async def get_doc_data(embeddings: OpenAIEmbeddings = None):
     with open(f'{os.getcwd()}/src/files/Contoso_Electronics_PerkPlus_Program.md', 'r') as file:
@@ -36,15 +40,20 @@ async def get_doc_data(embeddings: OpenAIEmbeddings = None):
 
 async def get_embedding_vector(text: str, embeddings: OpenAIEmbeddings = None):
     if not embeddings:
-        # embedding=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
-        #     api_key=Config.OPENAI_API_KEY,
-        #     model=Config.OPENAI_MODEL_DEPLOYMENT_NAME,
-        # ))
+        from ..config import Config
+        {{#useAzureOpenAI}}
         embeddings = AzureOpenAIEmbeddings(AzureOpenAIEmbeddingsOptions(
             azure_api_key=Config.AZURE_OPENAI_API_KEY,
             azure_endpoint=Config.AZURE_OPENAI_ENDPOINT,
             azure_deployment=Config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT
         ))
+        {{/useAzureOpenAI}}
+        {{#useOpenAI}}
+        embedding=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
+            api_key=Config.OPENAI_API_KEY,
+            model=Config.OPENAI_EMBEDDING_DEPLOYMENT,
+        ))
+        {{/useOpenAI}}
     
     result = await embeddings.create_embeddings(text)
     if (result.status != 'success' or not result.output):

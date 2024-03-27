@@ -17,7 +17,12 @@ from azure.search.documents.indexes.models import (
     VectorSearchProfile,
     HnswAlgorithmConfiguration
 )
-from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions, AzureOpenAIEmbeddings, AzureOpenAIEmbeddingsOptions
+{{#useAzureOpenAI}}
+from teams.ai.embeddings import AzureOpenAIEmbeddings, AzureOpenAIEmbeddingsOptions
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions
+{{/useOpenAI}}
 from time import sleep
 
 from .data import get_doc_data
@@ -25,7 +30,12 @@ from ..AzureAISearchDataSource import Doc
 
 from dotenv import load_dotenv
 
+{{#enableTestToolByDefault}}
 load_dotenv(f'{os.getcwd()}/env/.env.testtool.user')
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+load_dotenv(f'{os.getcwd()}/env/.env.local.user')
+{{/enableTestToolByDefault}}
 
 async def upsert_documents(client: SearchClient, documents: list[Doc]):
     return client.merge_or_upload_documents(documents)
@@ -62,11 +72,19 @@ async def setup(search_api_key, search_api_endpoint):
 
     search_client = SearchClient(search_api_endpoint, index, credentials)
 
+    {{#useAzureOpenAI}}
     embeddings = AzureOpenAIEmbeddings(AzureOpenAIEmbeddingsOptions(
-            azure_api_key=os.getenv('SECRET_AZURE_OPENAI_API_KEY'),
-            azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
-            azure_deployment=os.getenv('AZURE_OPENAI_EMBEDDING_DEPLOYMENT')
-        ))
+        azure_api_key=os.getenv('SECRET_AZURE_OPENAI_API_KEY'),
+        azure_endpoint=os.getenv('AZURE_OPENAI_ENDPOINT'),
+        azure_deployment=os.getenv('AZURE_OPENAI_EMBEDDING_DEPLOYMENT')
+    ))
+    {{/useAzureOpenAI}}
+    {{#useOpenAI}}
+    embedding=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
+        api_key=os.getenv('SECRET_OPENAI_API_KEY'),
+        model=os.getenv('OPENAI_EMBEDDING_DEPLOYMENT')
+    ))
+    {{/useOpenAI}}
     data = await get_doc_data(embeddings=embeddings)
     await upsert_documents(search_client, data)
 

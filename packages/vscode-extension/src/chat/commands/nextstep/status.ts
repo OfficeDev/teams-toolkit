@@ -2,18 +2,20 @@
 // Licensed under the MIT license.
 
 import {
+  AppStudioScopes,
   getFixedCommonProjectSettings,
   globalStateGet,
   globalStateUpdate,
 } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import { glob } from "glob";
-// import AzureTokenInstance from "../../../commonlib/azureLogin";
-// import M365TokenInstance from "../../../commonlib/m365Login";
+import { AzureAccountManager } from "../../../commonlib/azureLogin";
+import { signedIn } from "../../../commonlib/common/constant";
+import { M365Login } from "../../../commonlib/m365Login";
 import { CommandKey } from "../../../constants";
+import { getProjectStatus } from "../../../utils/projectStatusUtils";
 import { chatExecuteCommandHandler } from "./nextstepCommandHandler";
 import { MachineStatus, WholeStatus } from "./types";
-import { emptyProjectStatus, getProjectStatus } from "../../../utils/projectStatusUtils";
 
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
 
@@ -25,10 +27,10 @@ export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
   } else {
     const projectSettings = getFixedCommonProjectSettings(folder);
     const projectId = projectSettings?.projectId;
-    const actionStatus = (await getProjectStatus(projectId ?? folder)) ?? emptyProjectStatus();
+    const actionStatus = await getProjectStatus(projectId ?? folder);
     const codeModifiedTime = {
-      source: await getFileModifiedTime(`${folder}/**/*.{ts,tsx,js,jsx}`),
-      infra: await getFileModifiedTime(`${folder}/infra/**/*`),
+      source: await getFileModifiedTime(`${folder.split("\\").join("/")}/**/*.{ts,tsx,js,jsx}`),
+      infra: await getFileModifiedTime(`${folder.split("\\").join("/")}/infra/**/*`),
     };
 
     return {
@@ -60,20 +62,18 @@ export async function getMachineStatus(): Promise<MachineStatus> {
       await globalStateUpdate(CommandKey.ValidateGetStartedPrerequisites, new Date());
     }
   }
-  // const m365Status = await M365TokenInstance.getStatus({ scopes: AppStudioScopes });
-  // const azureStatus = await AzureTokenInstance.getStatus();
+  const m365Status = await M365Login.getInstance().getStatus({ scopes: AppStudioScopes });
+  const azureStatus = await AzureAccountManager.getInstance().getStatus();
   return {
     firstInstalled,
     resultOfPrerequistes,
-    m365LoggedIn: true,
-    azureLoggedIn: true,
-    // m365LoggedIn: m365Status.isOk() && m365Status.value.status === signedIn,
-    // azureLoggedIn: azureStatus.status === signedIn,
+    m365LoggedIn: m365Status.isOk() && m365Status.value.status === signedIn,
+    azureLoggedIn: azureStatus.status === signedIn,
   };
 }
 
 export async function getFileModifiedTime(pattern: string): Promise<Date> {
-  const files = glob.sync(pattern);
+  const files = await glob(pattern, { ignore: "node_modules/**" });
   let lastModifiedTime = new Date(0);
   for (const file of files) {
     const stat = await fs.stat(file);

@@ -94,7 +94,8 @@ export async function sendDebugAllEvent(
     await updateProjectStatus(
       globalVariables.workspaceUri.fsPath,
       CommandKey.LocalDebug,
-      error ? err(error) : ok(undefined)
+      error ? err(error) : ok(undefined),
+      true
     );
   }
 

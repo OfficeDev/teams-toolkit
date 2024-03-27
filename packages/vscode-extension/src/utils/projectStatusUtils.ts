@@ -11,7 +11,6 @@ import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 const projectStatusFilePath = os.homedir() + `/.${ConfigFolderName}/projectStates.json`;
 
 export const RecordedActions: (keyof ProjectActionStatus)[] = [
-  CommandKey.LocalDebug,
   CommandKey.Provision,
   CommandKey.Deploy,
   CommandKey.Publish,
@@ -28,9 +27,8 @@ export function emptyProjectStatus(): ProjectActionStatus {
   };
 }
 
-export async function getProjectStatus(
-  projectId: string
-): Promise<ProjectActionStatus | undefined> {
+export async function getProjectStatus(projectId: string): Promise<ProjectActionStatus> {
+  let status = emptyProjectStatus();
   if (await fs.pathExists(projectStatusFilePath)) {
     try {
       const content = await fs.readFile(projectStatusFilePath, "utf8");
@@ -42,39 +40,39 @@ export async function getProjectStatus(
           return value;
         }
       });
-      return json[projectId] as ProjectActionStatus;
+      status = { ...status, ...json[projectId] };
     } catch (e) {
       console.error(e);
     }
   }
-  return undefined;
+  return status;
 }
 
 export async function updateProjectStatus(
   fsPath: string,
   commandName: string,
-  result: Result<unknown, Error>
+  result: Result<unknown, Error>,
+  forced = false
 ) {
   const projectSettings = getFixedCommonProjectSettings(fsPath);
   const p = projectSettings?.projectId ?? fsPath;
   const actions = RecordedActions.map((x) => x.toString());
-  if (actions.includes(commandName)) {
+  if (actions.includes(commandName) || forced) {
     /// save project action running status
-    const status = (await getProjectStatus(p)) ?? emptyProjectStatus();
+    const status = await getProjectStatus(p);
     status[commandName as keyof ProjectActionStatus] = {
       result: result.isOk() ? "success" : "fail",
       time: new Date(),
     };
-    let content = "{}";
+    let json: any = {};
     if (await fs.pathExists(projectStatusFilePath)) {
       try {
-        content = await fs.readFile(projectStatusFilePath, "utf8");
+        json = JSON.parse(await fs.readFile(projectStatusFilePath, "utf8"));
       } catch (e) {
         console.error(e);
       }
     }
     try {
-      const json = JSON.parse(content);
       json[p] = status;
       await fs.writeFile(projectStatusFilePath, JSON.stringify(json, null, 2));
     } catch (e) {

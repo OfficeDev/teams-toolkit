@@ -348,10 +348,13 @@ export class CreateAppPackageDriver implements StepDriver {
             return err(checkExistenceRes.error);
           }
 
-          console.log(specFile);
+          const entryName = path.relative(appDirectory, specFile);
+
           const addFileWithVariableRes = await this.addFileWithVariable(
             zip,
-            path.relative(appDirectory, specFile).replace(/\\/g, "/"),
+            pluginFile.includes("/") || runtime.spec.url.includes("/")
+              ? entryName.replace(/\\/g, "/")
+              : entryName,
             specFile,
             TelemetryPropertyKey.customizedOpenAPIKeys,
             context

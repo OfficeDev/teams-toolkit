@@ -2,7 +2,15 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Colors, FxError, Result, err, ok, PluginManifestSchema } from "@microsoft/teamsfx-api";
+import {
+  Colors,
+  FxError,
+  Result,
+  err,
+  ok,
+  PluginManifestSchema,
+  TeamsAppManifest,
+} from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import * as path from "path";
@@ -236,7 +244,12 @@ export class CreateAppPackageDriver implements StepDriver {
         return err(addFileWithVariableRes.error);
       }
 
-      const addFilesRes = await this.addPluginRelatedFiles(zip, pluginFile, appDirectory, context);
+      const addFilesRes = await this.addPluginRelatedFiles(
+        zip,
+        manifest.plugins[0].pluginFile,
+        appDirectory,
+        context
+      );
       if (addFilesRes.isErr()) {
         return err(addFilesRes.error);
       }
@@ -332,17 +345,18 @@ export class CreateAppPackageDriver implements StepDriver {
     appDirectory: string,
     context: WrapDriverContext
   ): Promise<Result<undefined, FxError>> {
+    const pluginFilePath = path.join(appDirectory, pluginFile);
     let pluginContent;
     try {
-      pluginContent = (await fs.readJSON(pluginFile)) as PluginManifestSchema;
+      pluginContent = (await fs.readJSON(pluginFilePath)) as PluginManifestSchema;
     } catch (e) {
-      return err(new JSONSyntaxError(pluginFile, e, actionName));
+      return err(new JSONSyntaxError(pluginFilePath, e, actionName));
     }
     const runtimes = pluginContent.runtimes;
     if (runtimes && runtimes.length > 0) {
       for (const runtime of runtimes) {
         if (runtime.type === "OpenApi" && runtime.spec?.url) {
-          const specFile = path.resolve(path.dirname(pluginFile), runtime.spec.url);
+          const specFile = path.resolve(path.dirname(pluginFilePath), runtime.spec.url);
           // add openapi spec
           const checkExistenceRes = await this.validateReferencedFile(specFile, appDirectory);
           if (checkExistenceRes.isErr()) {
@@ -350,7 +364,7 @@ export class CreateAppPackageDriver implements StepDriver {
           }
 
           const entryName = path.relative(appDirectory, specFile);
-          const useForwardSlash = pluginFile.includes("/") || runtime.spec.url.includes("/");
+          const useForwardSlash = pluginFile.concat(runtime.spec.url).includes("/");
 
           const addFileWithVariableRes = await this.addFileWithVariable(
             zip,

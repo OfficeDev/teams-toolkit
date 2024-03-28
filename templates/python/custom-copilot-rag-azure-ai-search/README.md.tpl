@@ -110,18 +110,18 @@ The following files can be customized and demonstrate an example implementation 
 |`src/bot.py`| Handles business logics for the AI Search Bot.|
 |`src/config.py`| Defines the environment variables.|
 |`src/app.py`| Main module of the AI Search Bot, hosts a aiohttp api server for the app.|
-|`src/AzureAISearchDataSource.py`| Handles data search logics.|
-|`src/indexers/data.py`| Fetches data and creates embedding vectors for data.|
-|`src/files/*.md`| Raw text data source.|
+|`src/azure_ai_search_data_source.py.py`| Handles data search logics.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
 
-The following files are scripts that help you to prepare or clean data source in Azure Search.
+The following files are scripts and raw texts that help you to prepare or clean data source in Azure Search.
 
 | File                                 | Contents                                           |
 | - | - |
-|`setup.py`| A script to create index and upload documents.|
-|`delete.py`| A script to delete index and documents.|
+|`src/indexers/get_data.py`| Fetches data and creates embedding vectors.|
+|`src/indexers/data/*.md`| Raw text data source.|
+|`src/indexers/setup.py`| A script to create index and upload documents.|
+|`src/indexers/delete.py`| A script to delete index and documents.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

@@ -23,7 +23,7 @@ from teams.ai.embeddings import AzureOpenAIEmbeddings, AzureOpenAIEmbeddingsOpti
 from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions
 {{/useOpenAI}}
 
-from data import get_doc_data
+from get_data import get_doc_data
 
 from dotenv import load_dotenv
 

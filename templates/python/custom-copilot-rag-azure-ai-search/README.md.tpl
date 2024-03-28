@@ -34,7 +34,7 @@ The app template is built using the Teams AI library, which provides the capabil
 {{/enableTestToolByDefault}}
 
 ### Configurations
-1. First, Open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `requirements.txt` as dependencies to install when creating the virtual environment.
+1. First, Open the command box and enter `Python: Create Environment` to create and activate your desired virtual environment. Remember to select `src/requirements.txt` as dependencies to install when creating the virtual environment.
 {{#enableTestToolByDefault}}
 {{#useAzureOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY`, deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME`, endpoint `AZURE_OPENAI_ENDPOINT` and embedding deployment name `AZURE_OPENAI_EMBEDDING_DEPLOYMENT`.

@@ -47,3 +47,5 @@ export const BaseTokensPerMessage = 3;
  * Since gpt-3.5-turbo-0613 each name costs 1 token
  */
 export const BaseTokensPerName = 1;
+
+export const IsChatParticipantEnabled = true;

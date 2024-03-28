@@ -9,10 +9,10 @@ import {
 import { BM25, BMDocument } from "../../rag/BM25";
 import { OfficeAddinTemplateModelPorvider, WXPAppName } from "./officeAddinTemplateModelPorvider";
 import { SampleData } from "./sampleData";
-import { filterStopWords } from "../../rag/ragUtil";
+import { prepareDiscription } from "../../rag/ragUtil";
 
 // TODO: adjust the score threshold
-const scoreThreshold = 2;
+const scoreThreshold = 0.5;
 
 export class SampleProvider {
   private static instance: SampleProvider;
@@ -40,7 +40,7 @@ export class SampleProvider {
       host as WXPAppName
     );
     if (bm25) {
-      const query = filterStopWords(scenario.toLowerCase().split(" "));
+      const query = prepareDiscription(scenario.toLowerCase());
       const documents: BMDocument[] = bm25.search(query, k);
 
       for (const doc of documents) {

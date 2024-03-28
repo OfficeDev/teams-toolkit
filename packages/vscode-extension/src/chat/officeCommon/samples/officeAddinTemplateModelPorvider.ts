@@ -3,7 +3,7 @@
 import axios from "axios";
 import { BM25, DocumentWithmetadata } from "../../rag/BM25";
 import { SampleData } from "./sampleData";
-import { filterStopWords } from "../../rag/ragUtil";
+import { prepareDiscription } from "../../rag/ragUtil";
 
 export type WXPAppName = "Word" | "Excel" | "PowerPoint";
 
@@ -106,7 +106,7 @@ export class OfficeAddinTemplateModelPorvider {
     }
     const documents: DocumentWithmetadata[] = samples.map((sample) => {
       return {
-        documentText: filterStopWords(sample.description.toLowerCase().split(" ")).join(" "),
+        documentText: prepareDiscription(sample.description.toLowerCase()).join(" "),
         metadata: sample,
       };
     });

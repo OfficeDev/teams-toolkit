@@ -12,6 +12,10 @@ export class Spec {
     codeExplanation: string;
     codeTaskBreakdown: string[];
     isCustomFunction: boolean;
+    telemetryData: {
+      properties: { [key: string]: string };
+      measurements: { [key: string]: number };
+    };
     tempAppLocation: string;
   };
 
@@ -27,6 +31,10 @@ export class Spec {
       codeExplanation: "",
       codeTaskBreakdown: [],
       isCustomFunction: false,
+      telemetryData: {
+        properties: {},
+        measurements: {},
+      },
       tempAppLocation: "",
     };
   }

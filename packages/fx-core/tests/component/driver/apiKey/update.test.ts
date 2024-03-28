@@ -189,6 +189,64 @@ describe("UpdateApiKeyDriver", () => {
     }
   });
 
+  it("happy path: should not show confirm when only devtunnel url is different", async () => {
+    sinon.stub(AppStudioClient, "updateApiKeyRegistration").resolves({
+      description: "test",
+      targetUrlsShouldStartWith: ["https://test2.asse.devtunnels.ms"],
+      applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+      targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+    });
+    sinon.stub(AppStudioClient, "getApiKeyRegistrationById").resolves({
+      id: "test",
+      description: "test",
+      clientSecrets: [],
+      targetUrlsShouldStartWith: ["https://test.asse.devtunnels.ms"],
+      applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+      targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
+    });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "https://test2.asse.devtunnels.ms",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    const confirmStub = sinon
+      .stub(mockedDriverContext.ui, "confirm")
+      .resolves(ok({ type: "success", value: true }));
+
+    const args: UpdateApiKeyArgs = {
+      name: "test",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      targetAudience: "AnyTenant",
+      applicableToApps: "AnyApp",
+      registrationId: "mockedRegistrationId",
+    };
+
+    const result = await updateApiKeyDriver.execute(args, mockedDriverContext);
+    expect(result.result.isOk()).to.be.true;
+    if (result.result.isOk()) {
+      expect(result.result.value.size).to.equal(0);
+      expect(result.summaries.length).to.equal(1);
+    }
+    expect(confirmStub.notCalled).to.be.true;
+  });
+
   it("should throw error when user canel", async () => {
     sinon.stub(AppStudioClient, "getApiKeyRegistrationById").resolves({
       id: "mockedRegistrationId",

@@ -6,6 +6,7 @@ from teams.ai.embeddings import OpenAIEmbeddings, AzureOpenAIEmbeddings
 from teams.state.memory import Memory
 from teams.state.state import TurnContext
 from teams.ai.tokenizers import Tokenizer
+from teams.ai.data_sources import DataSource
 
 from src.indexers.data import get_embedding_vector
 
@@ -23,16 +24,11 @@ class AzureAISearchDataSourceOptions:
     azureAISearchApiKey: str
     azureAISearchEndpoint: str
 
-from abc import ABC, abstractmethod
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 import json
 
-class DataSource(ABC):
-    @abstractmethod
-    async def render_data(self):
-        pass
-    
+@dataclass
 class Result:
     def __init__(self, output, length, too_long):
         self.output = output
@@ -48,8 +44,11 @@ class AzureAISearchDataSource(DataSource):
             options.indexName,
             AzureKeyCredential(options.azureAISearchApiKey)
         )
+        
+    def name(self):
+        return self.name
 
-    async def render_data(self, _context: TurnContext, memory: Memory, tokenizer: Tokenizer, maxTokens):
+    async def render_data(self, _context: TurnContext, memory: Memory, tokenizer: Tokenizer, maxTokens: int):
         query = memory.get('temp.input')
         embedding = await get_embedding_vector(query)
         vector_query = VectorizedQuery(vector=embedding, k_nearest_neighbors=2, fields="descriptionVector")

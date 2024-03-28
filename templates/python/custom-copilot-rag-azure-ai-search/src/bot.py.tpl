@@ -20,16 +20,6 @@ from .config import Config
 
 config = Config()
 
-class ConversationState:
-    pass
-
-T = TypeVar('T')
-
-class TurnState(Generic[T]):
-    pass
-
-ApplicationTurnState = TurnState[ConversationState]
-
 # Create AI components
 model: OpenAIModel
 
@@ -70,7 +60,7 @@ planner = ActionPlanner(
 
 # Define storage and application
 storage = MemoryStorage()
-bot_app = Application[ApplicationTurnState](
+bot_app = Application[TurnState](
     ApplicationOptions(
         bot_app_id=config.APP_ID,
         storage=storage,

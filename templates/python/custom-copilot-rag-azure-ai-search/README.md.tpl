@@ -116,7 +116,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
 
-The following files help you to prepare or clean data source in Azure Search.
+The following files are scripts that help you to prepare or clean data source in Azure Search.
 
 | File                                 | Contents                                           |
 | - | - |

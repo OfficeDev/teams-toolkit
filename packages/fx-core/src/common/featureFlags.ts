@@ -84,6 +84,10 @@ export function isApiMeSSOEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiMeSSO, false);
 }
 
+export function isChatParticipantEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.ChatParticipant, false);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Notes for Office Addin Feature flags:
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false

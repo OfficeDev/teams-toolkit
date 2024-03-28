@@ -1,0 +1,17 @@
+  # Update API KEY
+  - uses: apiKey/update
+    with:
+      # The registration id of API key
+      registrationId: {{ApiSpecAuthRegistrationIdEnvName}}
+      # Name of the API Key
+      name: {{ApiSpecAuthName}}
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      {{#apiSpecPath}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{apiSpecPath}}}
+      {{/apiSpecPath}}
+    # Write the registration information of API Key into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
+      registrationId: {{ApiSpecAuthRegistrationIdEnvName}}

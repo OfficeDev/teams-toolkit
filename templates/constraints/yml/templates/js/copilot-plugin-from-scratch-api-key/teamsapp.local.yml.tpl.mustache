@@ -1,4 +1,4 @@
-{{#header}} version: v1.4 {{/header}}
+{{#header}} version: v1.5 {{/header}}
 
 provision:
 {{#teamsAppCreate}} {{/teamsAppCreate}}
@@ -6,6 +6,8 @@ provision:
 {{#script}} FUNC, FUNC_NAME: repair {{/script}}
 
 {{#apiKeyRegister}}ApiSpecAuthName: x-api-key, primaryClientSecret: ${{SECRET_API_KEY}}, apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml, ApiSpecAuthRegistrationIdEnvName: X_API_KEY_REGISTRATION_ID{{/apiKeyRegister}}
+
+{{#apiKeyUpdate}}ApiSpecAuthName: x-api-key, apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml, ApiSpecAuthRegistrationIdEnvName: X_API_KEY_REGISTRATION_ID{{/apiKeyUpdate}}
 
 {{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 

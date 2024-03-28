@@ -86,7 +86,12 @@ The app template is built using the Teams AI library, which provides the capabil
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
-![alt text](image.png)
+{{#enableTestToolByDefault}}
+![alt text](https://github.com/OfficeDev/TeamsFx/assets/109947924/3e0de761-b4c8-4ae2-9ede-8e9922e54765)
+{{/enableTestToolByDefault}}
+{{^enableTestToolByDefault}}
+![alt text](https://github.com/OfficeDev/TeamsFx/assets/109947924/2c17e3e8-09c1-42b6-b47a-ac4234343883)
+{{/enableTestToolByDefault}}
 
 ## What's included in the template
 

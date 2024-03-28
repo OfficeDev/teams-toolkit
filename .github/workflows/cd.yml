@@ -188,6 +188,23 @@ jobs:
           git add packages/fx-core/src/common/m365/serviceConstant.ts
           git commit -m "build: replace sideloading placeholders"
 
+      - name: disable chat participant in package.json
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJson('[\"rc\", \"stable\"]'), github.event.inputs.preid) }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: contributes.chatParticipants
+          value: '[]'
+
+      - name: disable chat participant environment variable
+        if: ${{ github.event_name == 'workflow_dispatch' && contains(fromJson('[\"rc\", \"stable\"]'), github.event.inputs.preid) }}
+        run: bash .github/scripts/chat-participant-disabled.sh
+
+      - name: commit change on local
+        run: |
+          git add ./packages/vscode-extension/package.json ./packages/vscode-extension/src/chat/consts.ts
+          git commit -m "build: disable chat participant"
+
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
         uses: jossef/action-set-json-field@v1

@@ -63,14 +63,14 @@ The app template is built using the Teams AI library, which provides the capabil
 {{#enableTestToolByDefault}}
 1. Azure Search key `SECRET_AZURE_SEARCH_KEY` and endpoint `AZURE_SEARCH_ENDPOINT` are loaded from *env/.env.testtool.user*. Please make sure you have already configured them.
 {{/enableTestToolByDefault}}
-1. Use command `python -m src.indexers.setup` to create index and upload documents in `src/files`.
+1. Use command `python -m setup` to create index and upload documents in `src/files`.
 1. You will see the following information indicated the success of setup:
     ```
     Create index succeeded. If it does not exist, wait for 5 seconds...
     Upload new documents succeeded. If they do not exist, wait for several seconds...
     setup finished
     ```
-1. Once you're done using the sample it's good practice to delete the index. You can do so with the command `python -m src.indexers.delete`.
+1. Once you're done using the sample it's good practice to delete the index. You can do so with the command `python -m delete`.
 
 ### Conversation with bot
 1. Select the Teams Toolkit icon on the left in the VS Code toolbar.
@@ -111,10 +111,17 @@ The following files can be customized and demonstrate an example implementation 
 |`src/config.py`| Defines the environment variables.|
 |`src/app.py`| Main module of the AI Search Bot, hosts a aiohttp api server for the app.|
 |`src/AzureAISearchDataSource.py`| Handles data search logics.|
-|`src/indexers/*.py`| Defines functions of creating, deleting, uploading, fetching indexes and documents.|
+|`src/indexers/data.py`| Fetches data and creates embedding vectors for data.|
 |`src/files/*.md`| Raw text data source.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
+
+The following files help you to prepare or clean data source in Azure Search.
+
+| File                                 | Contents                                           |
+| - | - |
+|`setup.py`| A script to create index and upload documents.|
+|`delete.py`| A script to delete index and documents.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 

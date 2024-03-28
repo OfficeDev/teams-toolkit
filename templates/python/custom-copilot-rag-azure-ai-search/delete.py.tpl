@@ -1,4 +1,3 @@
-import argparse
 import os
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes import SearchIndexClient

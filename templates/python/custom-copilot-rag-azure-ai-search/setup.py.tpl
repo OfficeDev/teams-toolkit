@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import os
 
@@ -25,8 +24,8 @@ from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions
 {{/useOpenAI}}
 from time import sleep
 
-from .data import get_doc_data
-from ..AzureAISearchDataSource import Doc
+from src.indexers.data import get_doc_data
+from src.AzureAISearchDataSource import Doc
 
 from dotenv import load_dotenv
 

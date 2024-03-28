@@ -1,5 +1,7 @@
 import asyncio
 import os
+from dataclasses import dataclass
+from typing import List, Optional
 
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient

@@ -24,7 +24,7 @@ async def on_messages(req: web.Request) -> web.Response:
 app = web.Application(middlewares=[aiohttp_error_middleware])
 app.add_routes(routes)
 
-from .config import Config
+from config import Config
 
 if __name__ == "__main__":
     web.run_app(app, host="localhost", port=Config.PORT)

@@ -85,7 +85,7 @@ deploy:
   - uses: azureAppService/zipDeploy
     with:
       # Deploy base folder
-      artifactFolder: ./
+      artifactFolder: ./src
       # Ignore file location, leave blank will ignore nothing
       ignoreFile: .webappignore
       # The resource id of the cloud resource to be deployed to.

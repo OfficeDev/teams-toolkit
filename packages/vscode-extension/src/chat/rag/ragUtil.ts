@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { stemmer } from "./porterStemmer";
+import { stemmer } from "./porter2Stemmer";
 import * as stopwords from "./stop_words_english.json";
 
 export function filterStopWords(texts: string[]): string[] {
@@ -16,12 +16,14 @@ export function stemText(texts: string[]): string[] {
   return texts.map(stemmer);
 }
 
-//export function lancasterStemText(texts: string[]): string[] {
-//  return texts.map(word => lancasterStemmer(word, {}));
-//}
-
 export function prepareDiscription(text: string): string[] {
-  return stemText(filterStopWords(keepLetters(text).split(" ")));
+  return stemText(
+    filterStopWords(
+      keepLetters(text)
+        .split(" ")
+        .filter((word) => word.length > 0)
+    )
+  );
 }
 
 // BM25

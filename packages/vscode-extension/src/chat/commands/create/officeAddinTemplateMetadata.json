@@ -21,7 +21,7 @@
         "capabilities" : "cfJS",
         "name" : "Excel Custom Functions",
         "project-type": "office-addin-type",
-        "description": "This project is an Excel add-in leveraging Custom Functions using a JavaScript-only Runtime."
+        "description": "This project is an Excel add-in leveraging Custom Functions using a JavaScript only Runtime."
     },
     {
         "id": "excel-cf-shared",

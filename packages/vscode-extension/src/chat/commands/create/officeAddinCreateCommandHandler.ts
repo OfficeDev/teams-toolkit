@@ -29,7 +29,7 @@ import { localize } from "../../../utils/localizeUtils";
 import { CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
 import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
 import { BM25, BMDocument, DocumentWithmetadata } from "../../rag/BM25";
-import { filterStopWords } from "../../rag/ragUtil";
+import { prepareDiscription } from "../../rag/ragUtil";
 
 export default async function officeAddinCreateCommandHandler(
   request: ChatRequest,
@@ -143,18 +143,18 @@ async function matchOfficeAddinProjectByBM25(
   ];
   const documents: DocumentWithmetadata[] = allOfficeAddinProjectMetadata.map((sample) => {
     return {
-      documentText: filterStopWords(sample.description.toLowerCase().split(" ")).join(" "),
+      documentText: prepareDiscription(sample.description.toLowerCase()).join(" "),
       metadata: sample,
     };
   });
 
   const bm25 = new BM25(documents);
-  const query = filterStopWords(request.prompt.toLowerCase().split(" "));
+  const query = prepareDiscription(request.prompt.toLowerCase());
 
   // at most match one sample or template
-  const matchedDocuments: BMDocument[] = bm25.search(query, 1);
+  const matchedDocuments: BMDocument[] = bm25.search(query, 3);
 
-  // adust score when more samples added
+  // adjust score when more samples added
   if (matchedDocuments.length === 1 && matchedDocuments[0].score > 1) {
     return matchedDocuments[0].document.metadata as ProjectMetadata;
   }

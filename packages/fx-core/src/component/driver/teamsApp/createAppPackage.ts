@@ -25,6 +25,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
+import { normalizePath } from "./utils/utils";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -349,12 +350,11 @@ export class CreateAppPackageDriver implements StepDriver {
           }
 
           const entryName = path.relative(appDirectory, specFile);
+          const useForwardSlash = pluginFile.includes("/") || runtime.spec.url.includes("/");
 
           const addFileWithVariableRes = await this.addFileWithVariable(
             zip,
-            pluginFile.includes("/") || runtime.spec.url.includes("/")
-              ? entryName.replace(/\\/g, "/")
-              : entryName,
+            normalizePath(entryName, useForwardSlash),
             specFile,
             TelemetryPropertyKey.customizedOpenAPIKeys,
             context

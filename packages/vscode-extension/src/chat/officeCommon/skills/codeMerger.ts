@@ -41,13 +41,13 @@ export class CodeMerger implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<ExecutionResultEnum> {
+  ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
     response.button({
       command: CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
       arguments: [spec.appendix.tempAppLocation],
       title: sampleTitle,
     });
-    return ExecutionResultEnum.Success;
+    return { result: ExecutionResultEnum.Success, spec: spec };
   }
 }

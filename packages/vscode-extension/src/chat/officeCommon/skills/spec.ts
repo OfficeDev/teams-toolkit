@@ -1,5 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+import { deepClone } from "../Utils";
+
+// Licensed under the MIT license.
 export class Spec {
   public userInput: string;
   public taskSummary: string;
@@ -37,5 +41,15 @@ export class Spec {
       },
       tempAppLocation: "",
     };
+  }
+
+  public clone(other: Spec): Spec {
+    this.userInput = other.userInput;
+    this.taskSummary = other.taskSummary;
+    this.sections = other.sections;
+    this.inspires = other.inspires;
+    this.resources = other.resources;
+    this.appendix = deepClone(other.appendix);
+    return this;
   }
 }

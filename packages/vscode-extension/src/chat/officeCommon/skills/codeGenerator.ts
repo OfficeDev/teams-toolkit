@@ -130,7 +130,7 @@ export class CodeGenerator implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<ExecutionResultEnum> {
+  ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     if (
       !!spec.appendix.host ||
       !!spec.appendix.codeTaskBreakdown ||
@@ -151,12 +151,12 @@ export class CodeGenerator implements ISkill {
         spec.appendix.telemetryData.measurements[
           MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
         ] += 1;
-        return ExecutionResultEnum.Failure;
+        return { result: ExecutionResultEnum.Failure, spec: spec };
       }
       if (!breakdownResult.shouldContinue) {
         // Reject will make the whole request rejected
         spec.sections = breakdownResult.data;
-        return ExecutionResultEnum.Rejected;
+        return { result: ExecutionResultEnum.Rejected, spec: spec };
       }
 
       spec.appendix.host = breakdownResult.host;
@@ -190,12 +190,12 @@ export class CodeGenerator implements ISkill {
     console.log(`Code generation took ${duration} seconds.`);
     if (!codeSnippet) {
       spec.appendix.telemetryData.properties[PropertySystemCodeGenResult] = "false";
-      return ExecutionResultEnum.Failure;
+      return { result: ExecutionResultEnum.Failure, spec: spec };
     }
 
     spec.appendix.telemetryData.properties[PropertySystemCodeGenResult] = "true";
     spec.appendix.codeSnippet = codeSnippet;
-    return ExecutionResultEnum.Success;
+    return { result: ExecutionResultEnum.Success, spec: spec };
   }
 
   async userInputBreakdownTaskAsync(

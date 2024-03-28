@@ -284,7 +284,7 @@ Let's think step by step.
         token,
         host,
         request.prompt,
-        1
+        2 // Get top 2 most relevant samples for now
       );
     if (scenarioSamples.size > 0) {
       const codeSnippets: string[] = [];

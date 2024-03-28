@@ -12,6 +12,6 @@ teamsapp.local.yml
 teamsapp.testtool.yml
 .gitignore
 
-src/indexers/setup.py
-src/indexers/delete.py
+setup.py
+delete.py
 src/files/

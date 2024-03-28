@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { excelJsApiDocs } from "./Excel_ObjsWithAPIs";
+import { excelJsApiDocs } from "./excelAPILists";
 import { BM25, BMDocument, prepareDiscription } from "./ragUtil";
-import { wordJsApiDocs } from "./word_docs";
+import { wordJsApiDocs } from "./wordAPILists";
 
 export type DocumentMetadata = {
   description: string;

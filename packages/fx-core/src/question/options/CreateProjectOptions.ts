@@ -147,17 +147,18 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: ["none", "api-key", "microsoft-entra"],
   },
   {
+    name: "custom-copilot-rag",
+    type: "string",
+    description: "Chat With Your Data",
+    default: "custom-copilot-rag-customize",
+    choices: ["custom-copilot-rag-azureAISearch"],
+  },
+  {
     name: "custom-copilot-agent",
     type: "string",
     description: "AI Agent",
     default: "custom-copilot-agent-new",
     choices: ["custom-copilot-agent-new", "custom-copilot-agent-assistants-api"],
-  },
-  {
-    name: "custom-copilot-rag",
-    type: "string",
-    description: "Chat With Your Data",
-    choices: ["custom-copilot-rag-azureAISearch"],
   },
   {
     name: "programming-language",

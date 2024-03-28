@@ -79,10 +79,10 @@ export interface CreateProjectInputs extends Inputs {
   "api-operation"?: string[];
   /** @description Authentication Type */
   "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
-  /** @description AI Agent */
-  "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Chat With Your Data */
   "custom-copilot-rag"?: "custom-copilot-rag-azureAISearch";
+  /** @description AI Agent */
+  "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */
   "programming-language"?: "javascript" | "typescript" | "csharp" | "python";
   /** @description Service for Large Language Model (LLM) */

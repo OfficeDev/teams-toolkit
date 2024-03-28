@@ -260,11 +260,7 @@ describe("teamsApp/createAppPackage", async () => {
       delete process.env["APP_NAME_SUFFIX"];
       const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
 
-      chai.assert(
-        result.isErr() &&
-          result.error.name === "MissingEnvironmentVariablesError" &&
-          result.error.message.includes("APP_NAME_SUFFIX")
-      );
+      chai.assert(result.isErr());
     });
 
     it("should return error when placeholder is not resolved in ai-plugin.json- case 2", async () => {

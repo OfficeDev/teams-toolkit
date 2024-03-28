@@ -3403,7 +3403,7 @@ describe("scaffold question", () => {
         const capabilities = CapabilityOptions.officeAddinDynamicCapabilities(
           ProjectTypeOptions.officeAddin().id
         );
-        assert.equal(capabilities.length, 2);
+        assert.equal(capabilities.length, 3);
       });
       it("should return correct capabilities for office xml addin with outlook host", () => {
         const capabilities = CapabilityOptions.officeAddinDynamicCapabilities(

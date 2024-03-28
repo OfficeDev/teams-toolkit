@@ -561,6 +561,7 @@ export class CapabilityOptions {
       if (isOutlookAddin || isOfficeXMLAddinForOutlook) {
         items.push(CapabilityOptions.outlookAddinImport());
       } else if (isOfficeAddin) {
+        items.push(CapabilityOptions.officeContentAddin());
         items.push(CapabilityOptions.officeAddinImport());
       }
     } else {
@@ -670,6 +671,14 @@ export class CapabilityOptions {
       description: getLocalizedString(
         "core.createProjectQuestion.option.description.previewOnWindow"
       ),
+    };
+  }
+
+  static officeContentAddin(): OptionItem {
+    return {
+      id: "office-content-addin",
+      label: getLocalizedString("core.officeContentAddin.label"),
+      detail: getLocalizedString("core.officeContentAddin.detail"),
     };
   }
 

@@ -35,7 +35,7 @@ export class Explainer implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<ExecutionResultEnum> {
+  ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const systemPrompt = `
 Based on the user's input ${spec.userInput}, and the breakdown of the ask:
 - ${spec.appendix.codeTaskBreakdown.join("\n- ")}
@@ -66,11 +66,11 @@ Let's think it step by step.
     if (!copilotResponse) {
       // something wrong with the LLM output
       // however it's not a hard stop, still ok produce the output without explanation
-      return ExecutionResultEnum.Failure;
+      return { result: ExecutionResultEnum.Failure, spec: spec };
     }
 
     spec.appendix.codeExplanation = copilotResponse;
 
-    return ExecutionResultEnum.Success;
+    return { result: ExecutionResultEnum.Success, spec: spec };
   }
 }

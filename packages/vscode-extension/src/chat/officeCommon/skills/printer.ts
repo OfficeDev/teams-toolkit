@@ -35,7 +35,7 @@ export class Printer implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<ExecutionResultEnum> {
+  ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const template = `
 # 1. Task Summary
 ${spec.userInput}
@@ -56,6 +56,6 @@ ${spec.appendix.codeSnippet}
 ${spec.appendix.codeExplanation}
 `;
     response.markdown(template);
-    return ExecutionResultEnum.Success;
+    return { result: ExecutionResultEnum.Success, spec: spec };
   }
 }

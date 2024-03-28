@@ -47,13 +47,13 @@ export class projectCreator implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<ExecutionResultEnum> {
+  ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
     const tempAppName = `office-addin-${crypto.randomBytes(8).toString("hex")}`;
     const nodes = await this.buildProjectFromSpec(spec, tempFolder, tempAppName);
     response.filetree(nodes, Uri.file(path.join(tempFolder, tempAppName)));
     spec.appendix.tempAppLocation = path.join(tempFolder, tempAppName);
-    return ExecutionResultEnum.Success;
+    return { result: ExecutionResultEnum.Success, spec: spec };
   }
 
   private async buildProjectFromSpec(

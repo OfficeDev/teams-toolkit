@@ -55,7 +55,7 @@ class AzureAISearchDataSource(DataSource):
         vector_query = VectorizedQuery(vector=embedding, k_nearest_neighbors=2, fields="descriptionVector")
 
         if not query:
-            return {'output': '', 'length': 0, 'tooLong': False}
+            return Result('', 0, False)
 
         selectedFields = [
             'docTitle',

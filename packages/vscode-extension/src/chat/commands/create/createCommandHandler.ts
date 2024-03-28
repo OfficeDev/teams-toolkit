@@ -23,8 +23,12 @@ import {
   sendRequestWithRetry,
 } from "@microsoft/teamsfx-core/build/component/generator/utils";
 
-import { TelemetryTriggerFrom, TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
-import { CHAT_CREATE_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
+import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
+import {
+  CHAT_CREATE_SAMPLE_COMMAND_ID,
+  CHAT_EXECUTE_COMMAND_ID,
+  TeamsChatCommand,
+} from "../../consts";
 import {
   brieflyDescribeProjectSystemPrompt,
   describeProjectSystemPrompt,
@@ -42,6 +46,7 @@ import { IChatTelemetryData, ICopilotChatResult } from "../../types";
 import * as util from "util";
 import { localize } from "../../../utils/localizeUtils";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
+import { CommandKey } from "../../../constants";
 
 export default async function createCommandHandler(
   request: ChatRequest,
@@ -98,8 +103,8 @@ export default async function createCommandHandler(
     } else if (firstMatch.type === "template") {
       const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
       response.button({
-        command: "fx-extension.create",
-        arguments: [TelemetryTriggerFrom.CopilotChat, firstMatch.data],
+        command: CHAT_EXECUTE_COMMAND_ID,
+        arguments: [CommandKey.Create, chatTelemetryData.requestId, firstMatch.data],
         title: templateTitle,
       });
     }
@@ -149,8 +154,8 @@ export default async function createCommandHandler(
       } else if (project.type === "template") {
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         response.button({
-          command: "fx-extension.create",
-          arguments: [TelemetryTriggerFrom.CopilotChat, project.data],
+          command: CHAT_EXECUTE_COMMAND_ID,
+          arguments: [CommandKey.Create, chatTelemetryData.requestId, project.data],
           title: templateTitle,
         });
       }
@@ -285,7 +290,7 @@ async function buildFileTree(
   return root.children ?? [];
 }
 
-function fileTreeAdd(root: ChatResponseFileTree, relativePath: string) {
+export function fileTreeAdd(root: ChatResponseFileTree, relativePath: string) {
   const filename = path.basename(relativePath);
   const folderName = path.dirname(relativePath);
   const segments = path.sep === "\\" ? folderName.split("\\") : folderName.split("/");

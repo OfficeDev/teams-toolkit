@@ -12,11 +12,14 @@ import { Correlator } from "@microsoft/teamsfx-core";
 
 import { OfficeAddinChatCommand } from "../../consts";
 import { defaultSystemPrompt } from "../../prompts";
-import { getCopilotResponseAsString } from "../../utils";
+import { getCopilotResponseAsString, verbatimCopilotInteraction } from "../../utils";
 import { IChatTelemetryData, ICopilotChatResult } from "../../types";
 import { ProjectMetadata } from "./types";
 import { sampleProvider } from "@microsoft/teamsfx-core";
-import { getOfficeAddinProjectMatchSystemPrompt } from "../../officeAddinPrompts";
+import {
+  describeOfficeAddinProjectSystemPrompt,
+  getOfficeAddinProjectMatchSystemPrompt,
+} from "../../officeAddinPrompts";
 import {
   TelemetryTriggerFrom,
   TelemetryEvent,
@@ -26,8 +29,14 @@ import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { ChatTelemetryData } from "../../telemetry";
 import { showFileTree } from "./createCommandHandler";
 import { localize } from "../../../utils/localizeUtils";
-import { CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID, TeamsChatCommand } from "../../consts";
+import {
+  CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
+  TeamsChatCommand,
+  CHAT_EXECUTE_COMMAND_ID,
+} from "../../consts";
 import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
+import { Planner } from "../../officeCommon/planner";
+import { CommandKey } from "../../../constants";
 
 export default async function officeAddinCreateCommandHandler(
   request: ChatRequest,
@@ -37,18 +46,47 @@ export default async function officeAddinCreateCommandHandler(
 ): Promise<ICopilotChatResult> {
   const chatTelemetryData = ChatTelemetryData.createByCommand(TeamsChatCommand.Create);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
-
   const matchedResult = await matchOfficeAddinProject(request, token, chatTelemetryData);
   if (matchedResult) {
-    const folder = await showFileTree(matchedResult, response);
-    const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
-    response.button({
-      command: CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
-      arguments: [folder],
-      title: sampleTitle,
-    });
+    const describeProjectChatMessages = [
+      describeOfficeAddinProjectSystemPrompt,
+      new LanguageModelChatUserMessage(
+        `The project you are looking for is '${JSON.stringify(matchedResult)}'.`
+      ),
+    ];
+    chatTelemetryData.chatMessages.push(...describeProjectChatMessages);
+
+    await verbatimCopilotInteraction(
+      "copilot-gpt-3.5-turbo",
+      describeProjectChatMessages,
+      response,
+      token
+    );
+    if (matchedResult.type === "sample") {
+      const folder = await showFileTree(matchedResult, response);
+      const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
+      response.button({
+        command: CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
+        arguments: [folder],
+        title: sampleTitle,
+      });
+    } else if (matchedResult.type === "template") {
+      const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
+      response.button({
+        command: CHAT_EXECUTE_COMMAND_ID,
+        arguments: [CommandKey.Create, chatTelemetryData.requestId, matchedResult.data],
+        title: templateTitle,
+      });
+    }
   } else {
     // TODO: If the match fails, generate the code.
+    return await Planner.getInstance().processRequest(
+      new LanguageModelChatUserMessage(request.prompt),
+      request,
+      response,
+      token,
+      OfficeAddinChatCommand.Create
+    );
   }
 
   const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
@@ -124,9 +162,9 @@ function getOfficeAddinTemplateMetadata(): ProjectMetadata[] {
       name: config.name,
       description: config.description,
       data: {
-        capabilities: config["capabilities"],
+        capabilities: config.id,
         "project-type": config["project-type"],
-        "addin-office-capability": config["addin-office-capability"],
+        "addin-host": config["addin-host"],
       },
     };
   });

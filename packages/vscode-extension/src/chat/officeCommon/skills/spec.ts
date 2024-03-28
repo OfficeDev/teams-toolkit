@@ -16,6 +16,7 @@ export class Spec {
       properties: { [key: string]: string };
       measurements: { [key: string]: number };
     };
+    tempAppLocation: string;
   };
 
   constructor(userInput: string) {
@@ -34,6 +35,7 @@ export class Spec {
         properties: {},
         measurements: {},
       },
+      tempAppLocation: "",
     };
   }
 }

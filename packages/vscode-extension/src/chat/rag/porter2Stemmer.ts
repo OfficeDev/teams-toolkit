@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-const vowel = "[aeiouy]";
 const doubleRegex = /(bb|dd|ff|gg|mm|nn|pp|rr|tt)$/;
-const validLiEnding = /[cdeghkmnrt]$/;
-const regR1 = /[aeiouy][^aeiouy](.*)$/;
 const ruleS2: Record<string, string> = {
   ational: "ate",
   ation: "ate",
@@ -25,10 +21,8 @@ const ruleS2: Record<string, string> = {
   iveness: "ive",
   biliti: "ble",
   bli: "ble",
-  //"logi": "log",
   fulli: "ful",
   lessli: "less",
-  //"li": ""
 };
 
 const ruleS3: Record<string, string> = {
@@ -131,8 +125,6 @@ export function stemmer(value: string): string {
   }
 
   //If the word has two letters or less, leave it as it is.
-  let yFound = false;
-
   const word = value.toLowerCase();
   if (word.length < 3) {
     return word;
@@ -149,8 +141,6 @@ export function stemmer(value: string): string {
   }
   const regY = /([aeiouy])y/g;
   value = value.replace(regY, "$1Y");
-
-  yFound = value.includes("Y");
 
   //step 0 Search for the longest among the suffixes, ' 's 's'
   value = value.replace(/'s'$/, "");

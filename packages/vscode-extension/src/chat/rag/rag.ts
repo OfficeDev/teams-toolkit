@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { excelJsApiDocs } from "./excelAPILists";
-import { BM25, BMDocument, prepareDiscription } from "./ragUtil";
-import { wordJsApiDocs } from "./wordAPILists";
+import { prepareDiscription } from "./ragUtil";
 
 export type DocumentMetadata = {
   description: string;
@@ -63,6 +62,7 @@ export function prepareExamples(
 //  return steps;
 //}
 
+/*
 function splitStep(step: string): string[] {
   return step
     .replace(/[^a-zA-Z0-9 ]/g, "")
@@ -113,3 +113,4 @@ export function searchTopKByqueryAndDocs(
   });
   return matchedDocs;
 }
+*/

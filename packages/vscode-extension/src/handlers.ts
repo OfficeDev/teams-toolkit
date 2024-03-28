@@ -370,10 +370,20 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
     // from copilot chat
     inputs = { ...getSystemInputs(), ...args[1] };
   }
+  // Leverage the existing implementation for creating an Office XML add-in project.
+  const originalXMLFestureFlag = process.env.TEAMSFX_OFFICE_XML_ADDIN;
+  if (
+    getTriggerFromProperty(args)["trigger-from"] === TelemetryTriggerFrom.CopilotChat &&
+    inputs?.["project-type"] === "office-xml-addin-type"
+  ) {
+    process.env.TEAMSFX_OFFICE_XML_ADDIN = "true";
+  }
   const result = await runCommand(Stage.create, inputs);
   if (result.isErr()) {
+    process.env.TEAMSFX_OFFICE_XML_ADDIN = originalXMLFestureFlag;
     return err(result.error);
   }
+  process.env.TEAMSFX_OFFICE_XML_ADDIN = originalXMLFestureFlag;
 
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);

@@ -8,7 +8,7 @@ import { normalizePath } from "../../../../src/component/driver/teamsApp/utils/u
 describe("utils", async () => {
   it("normalizePath: should use forward slash", () => {
     const res = normalizePath("resources\\test.yaml", true);
-    expect(res).equal("resources/test/yaml");
+    expect(res).equal("resources/test.yaml");
   });
 
   it("normalizePath: no need to convert", () => {

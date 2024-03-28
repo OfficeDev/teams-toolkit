@@ -54,6 +54,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "BotAndMessageExtension",
       "TabNonSsoAndBot",
       "json-taskpane",
+      "office-content-addin",
       "word-taskpane",
       "word-sso",
       "word-react",
@@ -195,7 +196,6 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     shortName: "f",
     description: "Framework for WXP extension.",
-    default: "default",
     choices: ["default", "react"],
   },
   {

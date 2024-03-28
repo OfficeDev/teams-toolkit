@@ -19,7 +19,8 @@ export interface CreateProjectInputs extends Inputs {
     | "tab-type"
     | "me-type"
     | "office-xml-addin-type"
-    | "office-addin-type";
+    | "office-addin-type"
+    | "outlook-addin-type";
   /** @description Select to Create an Outlook, Word, Excel, or PowerPoint Add-in */
   "addin-host"?: "outlook" | "word" | "excel" | "powerpoint";
   /** @description Capabilities */

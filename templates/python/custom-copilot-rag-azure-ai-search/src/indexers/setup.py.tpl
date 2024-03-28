@@ -22,10 +22,8 @@ from teams.ai.embeddings import AzureOpenAIEmbeddings, AzureOpenAIEmbeddingsOpti
 {{#useOpenAI}}
 from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions
 {{/useOpenAI}}
-from time import sleep
 
-from src.indexers.data import get_doc_data
-from src.AzureAISearchDataSource import Doc
+from data import get_doc_data
 
 from dotenv import load_dotenv
 
@@ -35,6 +33,13 @@ load_dotenv(f'{os.getcwd()}/env/.env.testtool.user')
 {{^enableTestToolByDefault}}
 load_dotenv(f'{os.getcwd()}/env/.env.local.user')
 {{/enableTestToolByDefault}}
+
+@dataclass
+class Doc:
+    docId: Optional[str] = None
+    docTitle: Optional[str] = None
+    description: Optional[str] = None
+    descriptionVector: Optional[List[float]] = None
 
 async def upsert_documents(client: SearchClient, documents: list[Doc]):
     return client.merge_or_upload_documents(documents)

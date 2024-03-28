@@ -8,7 +8,7 @@ from http import HTTPStatus
 from aiohttp import web
 from botbuilder.core.integration import aiohttp_error_middleware
 
-from .bot import bot_app
+from bot import bot_app
 
 routes = web.RouteTableDef()
 

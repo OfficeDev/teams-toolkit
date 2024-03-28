@@ -2,13 +2,39 @@ from dataclasses import dataclass
 from typing import Optional, List
 from azure.search.documents.indexes.models import _edm as EDM
 from azure.search.documents.models import VectorQuery, VectorizedQuery
-from teams.ai.embeddings import OpenAIEmbeddings, AzureOpenAIEmbeddings
+{{#useAzureOpenAI}}
+from teams.ai.embeddings import AzureOpenAIEmbeddings, AzureOpenAIEmbeddingsOptions
+{{/useAzureOpenAI}}
+{{#useOpenAI}}
+from teams.ai.embeddings import OpenAIEmbeddings, OpenAIEmbeddingsOptions
+{{/useOpenAI}}
 from teams.state.memory import Memory
 from teams.state.state import TurnContext
 from teams.ai.tokenizers import Tokenizer
 from teams.ai.data_sources import DataSource
 
-from src.indexers.data import get_embedding_vector
+from config import Config
+
+async def get_embedding_vector(text: str):
+    {{#useAzureOpenAI}}
+    embeddings = AzureOpenAIEmbeddings(AzureOpenAIEmbeddingsOptions(
+        azure_api_key=Config.AZURE_OPENAI_API_KEY,
+        azure_endpoint=Config.AZURE_OPENAI_ENDPOINT,
+        azure_deployment=Config.AZURE_OPENAI_EMBEDDING_DEPLOYMENT
+    ))
+    {{/useAzureOpenAI}}
+    {{#useOpenAI}}
+    embedding=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
+        api_key=Config.OPENAI_API_KEY,
+        model=Config.OPENAI_EMBEDDING_DEPLOYMENT,
+    ))
+    {{/useOpenAI}}
+    
+    result = await embeddings.create_embeddings(text)
+    if (result.status != 'success' or not result.output):
+        raise Exception(f"Failed to generate embeddings for description: {text}")
+    
+    return result.output[0]
 
 @dataclass
 class Doc:

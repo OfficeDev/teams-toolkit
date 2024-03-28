@@ -15,8 +15,8 @@ from teams.ai.prompts import PromptManager, PromptManagerOptions
 from teams.ai.actions import ActionTypes
 from teams.state import TurnState
 
-from .AzureAISearchDataSource import AzureAISearchDataSource, AzureAISearchDataSourceOptions
-from .config import Config
+from azure_ai_search_data_source import AzureAISearchDataSource, AzureAISearchDataSourceOptions
+from config import Config
 
 config = Config()
 

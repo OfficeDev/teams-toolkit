@@ -291,7 +291,7 @@ Let's think step by step.
       scenarioSamples.forEach((sample, api) => {
         codeSnippets.push(`- ${sample.description}:
                               \`\`\`typescript
-                              ${compressCode(sample.codeSample)}
+                              ${sample.codeSample}
                               \`\`\`\n`);
       });
 

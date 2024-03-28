@@ -59,7 +59,7 @@ export function isMultipleParametersEnabled(): boolean {
 }
 
 export function isOfficeXMLAddinEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.OfficeXMLAddin, true);
+  return isFeatureFlagEnabled(FeatureFlagName.OfficeXMLAddin, false);
 }
 
 export function isOfficeJSONAddinEnabled(): boolean {

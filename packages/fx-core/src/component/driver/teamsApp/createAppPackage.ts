@@ -25,6 +25,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
+import { normalizePath } from "./utils/utils";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -186,7 +187,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        path.relative(appDirectory, apiSpecificationFile),
+        manifest.composeExtensions[0].apiSpecificationFile,
         apiSpecificationFile,
         TelemetryPropertyKey.customizedOpenAPIKeys,
         context
@@ -226,7 +227,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        path.relative(appDirectory, pluginFile),
+        manifest.plugins[0].pluginFile,
         pluginFile,
         TelemetryPropertyKey.customizedAIPluginKeys,
         context
@@ -235,7 +236,12 @@ export class CreateAppPackageDriver implements StepDriver {
         return err(addFileWithVariableRes.error);
       }
 
-      const addFilesRes = await this.addPluginRelatedFiles(zip, pluginFile, appDirectory, context);
+      const addFilesRes = await this.addPluginRelatedFiles(
+        zip,
+        manifest.plugins[0].pluginFile,
+        appDirectory,
+        context
+      );
       if (addFilesRes.isErr()) {
         return err(addFilesRes.error);
       }
@@ -331,26 +337,30 @@ export class CreateAppPackageDriver implements StepDriver {
     appDirectory: string,
     context: WrapDriverContext
   ): Promise<Result<undefined, FxError>> {
+    const pluginFilePath = path.join(appDirectory, pluginFile);
     let pluginContent;
     try {
-      pluginContent = (await fs.readJSON(pluginFile)) as PluginManifestSchema;
+      pluginContent = (await fs.readJSON(pluginFilePath)) as PluginManifestSchema;
     } catch (e) {
-      return err(new JSONSyntaxError(pluginFile, e, actionName));
+      return err(new JSONSyntaxError(pluginFilePath, e, actionName));
     }
     const runtimes = pluginContent.runtimes;
     if (runtimes && runtimes.length > 0) {
       for (const runtime of runtimes) {
         if (runtime.type === "OpenApi" && runtime.spec?.url) {
-          const specFile = path.resolve(path.dirname(pluginFile), runtime.spec.url);
+          const specFile = path.resolve(path.dirname(pluginFilePath), runtime.spec.url);
           // add openapi spec
           const checkExistenceRes = await this.validateReferencedFile(specFile, appDirectory);
           if (checkExistenceRes.isErr()) {
             return err(checkExistenceRes.error);
           }
 
+          const entryName = path.relative(appDirectory, specFile);
+          const useForwardSlash = pluginFile.concat(runtime.spec.url).includes("/");
+
           const addFileWithVariableRes = await this.addFileWithVariable(
             zip,
-            path.relative(appDirectory, specFile),
+            normalizePath(entryName, useForwardSlash),
             specFile,
             TelemetryPropertyKey.customizedOpenAPIKeys,
             context

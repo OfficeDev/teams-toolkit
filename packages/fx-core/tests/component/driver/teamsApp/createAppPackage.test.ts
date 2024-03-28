@@ -16,7 +16,7 @@ import {
 import { FileNotFoundError, JSONSyntaxError } from "../../../../src/error/common";
 import { FeatureFlagName } from "../../../../src/common/constants";
 import { manifestUtils } from "../../../../src/component/driver/teamsApp/utils/ManifestUtils";
-import { ok, Platform, TeamsAppManifest } from "@microsoft/teamsfx-api";
+import { ok, Platform, PluginManifestSchema, TeamsAppManifest } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../../src/error/teamsApp";
 
@@ -230,7 +230,7 @@ describe("teamsApp/createAppPackage", async () => {
       }
     });
 
-    it("should return error when placeholder is not resolved in ai-plugin.json", async () => {
+    it("should return error when placeholder is not resolved in ai-plugin.json - case 1", async () => {
       const args: CreateAppPackageArgs = {
         manifestPath:
           "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
@@ -242,6 +242,57 @@ describe("teamsApp/createAppPackage", async () => {
       sinon.stub(fs, "pathExists").callsFake((filePath) => {
         return true;
       });
+
+      const manifest = new TeamsAppManifest();
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      manifest.plugins = [
+        {
+          pluginFile: "resources/ai-plugin.json",
+        },
+      ];
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+      delete process.env["APP_NAME_SUFFIX"];
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+
+      chai.assert(
+        result.isErr() &&
+          result.error.name === "MissingEnvironmentVariablesError" &&
+          result.error.message.includes("APP_NAME_SUFFIX")
+      );
+    });
+
+    it("should return error when placeholder is not resolved in ai-plugin.json- case 2", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+      sinon.stub(fs, "pathExists").callsFake((filePath) => {
+        return true;
+      });
+
+      const pluginJson: PluginManifestSchema = {
+        name_for_human: "test",
+        schema_version: "v2",
+        description_for_human: "test",
+        runtimes: [
+          {
+            type: "OpenApi",
+            auth: { type: "none" },
+            spec: { url: "test\\openai.yml" },
+          },
+        ],
+      };
+      sinon.stub(fs, "readJSON").resolves(pluginJson);
 
       const manifest = new TeamsAppManifest();
       manifest.icons = {

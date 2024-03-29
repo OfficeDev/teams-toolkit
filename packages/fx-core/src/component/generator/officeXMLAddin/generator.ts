@@ -8,14 +8,14 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import { Context, FxError, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
 import * as childProcess from "child_process";
-import _ from "lodash";
+import _, { merge } from "lodash";
 import { OfficeAddinManifest } from "office-addin-manifest";
 import { join } from "path";
 import { promisify } from "util";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { assembleError } from "../../../error";
 import { QuestionNames } from "../../../question/questionNames";
-import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { ActionExecutionMW, ActionContext } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { HelperMethods } from "../officeAddin/helperMethods";
 import { getOfficeAddinTemplateConfig } from "./projectConfig";
@@ -24,6 +24,14 @@ import { convertToLangKey } from "../utils";
 const COMPONENT_NAME = "office-xml-addin";
 const TELEMETRY_EVENT = "generate";
 const TEMPLATE_BASE = "office-xml-addin";
+const TEMPLATE_COMMON_NAME = "office-xml-addin-common";
+const TEMPLATE_COMMON_LANG = "common";
+
+const enum OfficeXMLAddinTelemetryProperties {
+  host = "office-xml-addin-host",
+  project = "office-xml-addin-project",
+  lang = "office-xml-addin-lang",
+}
 
 /**
  * project-type=office-xml-addin-type addin-host!==outlook
@@ -40,7 +48,8 @@ export class OfficeXMLAddinGenerator {
   static async generate(
     context: Context,
     inputs: Inputs,
-    destinationPath: string
+    destinationPath: string,
+    actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     const host = inputs[QuestionNames.OfficeAddinHost] as string;
     const capability = inputs[QuestionNames.Capabilities];
@@ -50,14 +59,20 @@ export class OfficeXMLAddinGenerator {
     const langKey = convertToLangKey(lang);
     const appName = inputs[QuestionNames.AppName] as string;
     const projectType = inputs[QuestionNames.ProjectType];
-    const templteConfig = getOfficeAddinTemplateConfig(projectType, host);
-    const templateName = templteConfig[capability].localTemplate;
-    const projectLink = templteConfig[capability].framework["default"][lang];
+    const templateConfig = getOfficeAddinTemplateConfig(projectType, host);
+    const templateName = templateConfig[capability].localTemplate;
+    const projectLink = templateConfig[capability].framework["default"][lang];
     const workingDir = process.cwd();
     const progressBar = context.userInteraction.createProgressBar(
       getLocalizedString("core.createProjectQuestion.officeXMLAddin.bar.title"),
       1
     );
+
+    merge(actionContext?.telemetryProps, {
+      [OfficeXMLAddinTelemetryProperties.host]: host,
+      [OfficeXMLAddinTelemetryProperties.project]: capability,
+      [OfficeXMLAddinTelemetryProperties.lang]: lang,
+    });
 
     try {
       process.chdir(destinationPath);
@@ -87,7 +102,7 @@ export class OfficeXMLAddinGenerator {
           langKey
         );
         if (getManifestOnlyProjectTemplateRes.isErr())
-          return err(getManifestOnlyProjectTemplateRes.error);
+          throw err(getManifestOnlyProjectTemplateRes.error);
       }
 
       // -> Common Step: Copy the README (or with manifest for manifest-only proj)
@@ -97,7 +112,7 @@ export class OfficeXMLAddinGenerator {
         `${TEMPLATE_BASE}-${templateName}`,
         langKey
       );
-      if (getReadmeTemplateRes.isErr()) return err(getReadmeTemplateRes.error);
+      if (getReadmeTemplateRes.isErr()) throw err(getReadmeTemplateRes.error);
 
       // -> Common Step: Modify the Manifest
       await OfficeAddinManifest.modifyManifestFile(
@@ -105,6 +120,15 @@ export class OfficeXMLAddinGenerator {
         "random",
         `${appName}`
       );
+
+      // -> Common Step: Generate OfficeXMLAddin specific `teamsapp.yml`
+      const generateOfficeYMLRes = await Generator.generateTemplate(
+        context,
+        destinationPath,
+        TEMPLATE_COMMON_NAME,
+        TEMPLATE_COMMON_LANG
+      );
+      if (generateOfficeYMLRes.isErr()) throw err(generateOfficeYMLRes.error);
 
       process.chdir(workingDir);
       await progressBar.end(true, true);

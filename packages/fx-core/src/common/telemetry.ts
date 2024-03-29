@@ -6,6 +6,7 @@ import { TelemetryConstants } from "../component/constants";
 import { TOOLS, globalVars } from "../core/globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
 import { assign } from "lodash";
+import { ProjectType } from "@microsoft/m365-spec-parser";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -140,6 +141,7 @@ export enum ProjectTypeProps {
   TeamsManifestCapabilities = "manifest-capabilities",
   TeamsJs = "teams-js",
   Lauguages = "languages",
+  OfficeAddinProjectType = "office-addin-project-type",
 }
 
 export enum TelemetrySuccess {
@@ -235,8 +237,8 @@ export function fillInTelemetryPropsForFxError(
   props[TelemetryConstants.properties.errorCode] =
     props[TelemetryConstants.properties.errorCode] || errorCode;
   props[TelemetryConstants.properties.errorType] = errorType;
-  props[TelemetryConstants.properties.errorMessage] = error.message;
-  props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
+  // props[TelemetryConstants.properties.errorMessage] = error.message;  // error-message is retired
+  // props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
   props[TelemetryConstants.properties.errorName] = error.name;
 
   // append global context properties
@@ -248,12 +250,12 @@ export function fillInTelemetryPropsForFxError(
     props[TelemetryConstants.properties.errorInnerCode] = error.innerError["code"];
   }
 
-  if (error.innerError) {
-    props[TelemetryConstants.properties.innerError] = JSON.stringify(
-      error.innerError,
-      Object.getOwnPropertyNames(error.innerError)
-    );
-  }
+  // if (error.innerError) {  // inner-error is retired
+  //   props[TelemetryConstants.properties.innerError] = JSON.stringify(
+  //     error.innerError,
+  //     Object.getOwnPropertyNames(error.innerError)
+  //   );
+  // }
 
   if (error.categories) {
     props[TelemetryConstants.properties.errorCat] = error.categories.join("|");
@@ -280,6 +282,7 @@ export function fillinProjectTypeProperties(
     [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
     [ProjectTypeProps.TeamsManifestCapabilities]:
       projectTypeRes.manifestCapabilities?.join(",") || "",
+    [ProjectTypeProps.OfficeAddinProjectType]: projectTypeRes.officeAddinProjectType || "",
   };
   assign(props, newProps);
 }

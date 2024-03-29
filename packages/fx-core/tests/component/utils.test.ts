@@ -277,7 +277,6 @@ describe("TeamsFxTelemetryReporter", () => {
             success: "no",
             "error-code": "source.name",
             "error-type": "user",
-            "error-message": "message",
           });
           reporterCalled = true;
         });
@@ -299,7 +298,6 @@ describe("TeamsFxTelemetryReporter", () => {
             success: "no",
             "error-code": "my error code",
             "error-type": "user",
-            "error-message": "message",
             "my-property": "value",
           });
           reporterCalled = true;
@@ -322,7 +320,6 @@ describe("TeamsFxTelemetryReporter", () => {
         .stub(mockedTelemetryReporter, "sendTelemetryErrorEvent")
         .callsFake((eventName, properties, measurements, errorProps) => {
           expect(errorProps).include("test");
-          expect(errorProps).include("error-message");
           reporterCalled = true;
         });
 

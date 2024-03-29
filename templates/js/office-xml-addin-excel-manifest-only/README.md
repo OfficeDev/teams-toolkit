@@ -13,18 +13,9 @@ The add-in project that you've created contains sample code for a basic task pan
 
 - The `./manifest.xml` file in the root directory of the project defines the settings and capabilities of the add-in.
 
-
-## Edit the manifest
-
-You can edit the manifest file by either of the following ways:
-
-- From Visual Studio Code: open Teams Toolkit extension side bar and click *`Edit Manifest`*.
-- Directly edit and modify the content in `./manifest.xml`.
-
-
 ## Validate manifest
 
 You can check whether your manifest file is valid by either of the following ways:
 
-- From Visual Studio Code: open Teams Toolkit extension side bar and click *`Validate Manifest`*.
+- From Visual Studio Code: open Teams Toolkit extension sidebar and click *`Validate Manifest`*.
 - From Terminal: run the command `npx --yes office-addin-manifest validate manifest.xml`

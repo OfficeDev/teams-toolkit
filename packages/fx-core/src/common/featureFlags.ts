@@ -21,6 +21,8 @@ export function initializePreviewFeatureFlags(): void {
   process.env[FeatureFlagName.AadManifest] = "true";
   process.env[FeatureFlagName.ApiConnect] = "true";
   process.env[FeatureFlagName.DeployManifest] = "true";
+  // Force the feature to close until it needs to be released.
+  process.env[FeatureFlagName.OfficeAddin] = "false";
 }
 
 export function isCLIDotNetEnabled(): boolean {
@@ -60,6 +62,10 @@ export function isOfficeXMLAddinEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.OfficeXMLAddin, false);
 }
 
+export function isOfficeJSONAddinEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
+}
+
 export function isTeamsFxRebrandingEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TeamsFxRebranding, false);
 }
@@ -76,10 +82,6 @@ export function isNewProjectTypeEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
 }
 
-export function isOfficeJSONAddinEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
-}
-
 export function isApiMeSSOEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiMeSSO, false);
 }
@@ -89,7 +91,7 @@ export function isApiMeSSOEnabled(): boolean {
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false
 //   1.1 project-type option: `outlook-addin-type`
 //   1.2 addin-host: not show but use `outlook` internally
-//   1.3 capabilities options: [`jason-taskpane`, `outlook-addin-import`]
+//   1.3 capabilities options: [`json-taskpane`, `outlook-addin-import`]
 //   1.4 programming-language options: [`typescript`] (skip in UI)
 //   1.5 office-addin-framework-type: not show question but use `default_old` internally
 //   1.6 generator class: OfficeAddinGenerator
@@ -105,7 +107,9 @@ export function isApiMeSSOEnabled(): boolean {
 //   2.4 programming-language options:
 //     if (addin-host == `outlook`) then [`typescript`] (skip in UI)
 //     else two options: [`typescript`, `javascript`]
-//   2.5 office-addin-framework-type options: not show but use `default` internally
+//   2.5 office-addin-framework-type options:
+//      if (word excel and powerpoint) use `default` internally
+//      else if (outlook) use `default_old` internally
 //   2.6 generator class:
 //     if (addin-host == `outlook`) then OfficeAddinGenerator
 //     else OfficeXMLAddinGenerator
@@ -113,7 +117,7 @@ export function isApiMeSSOEnabled(): boolean {
 //     if (addin-host == `outlook`) config.json.json-taskpane.default.[programming-language]
 //     else config[addin-host].[capabilities].default.[programming-language]
 // Case 3: TEAMSFX_OFFICE_ADDIN = true AND TEAMSFX_OFFICE_XML_ADDIN = true
-//     3.1 project-type option: `office-addin-type`
+//   3.1 project-type option: `office-addin-type`
 //   3.2 addin-host: not show but will use `wxpo` internally
 //   3.3 capabilities options: [`json-taskpane`, `office-addin-import`]
 //   3.4 programming-language options: [`typescript`, `javascript`]
@@ -123,7 +127,7 @@ export function isApiMeSSOEnabled(): boolean {
 // case 4: TEAMSFX_OFFICE_ADDIN = true AND TEAMSFX_OFFICE_XML_ADDIN = fasle
 //   4.1 project-type option: `office-addin-type`
 //   4.2 addin-host: not show but will use `wxpo` internally
-//   4.3 capabilities options: [`jason-taskpane`, `office-addin-import`]
+//   4.3 capabilities options: [`json-taskpane`, `office-addin-import`]
 //   4.4 programming-language options: [`typescript`, `javascript`]
 //   4.5 office-addin-framework-type options: [`default`, `react`]
 //   4.6 generator class: OfficeAddinGenerator

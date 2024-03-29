@@ -123,7 +123,7 @@ export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
       localTemplate: "excel-react",
       ...CommonProjectConfig.react,
     },
-    "excel-cfshared": {
+    "excel-custom-functions-shared": {
       title: "core.createProjectQuestion.officeXMLAddin.excel.cf.shared.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.cf.shared.detail",
       localTemplate: "excel-cf",
@@ -134,7 +134,7 @@ export const OfficeAddinProjectConfig: IOfficeAddinProjectConfig = {
         },
       },
     },
-    "excel-cfjs": {
+    "excel-custom-functions-js": {
       title: "core.createProjectQuestion.officeXMLAddin.excel.cf.js.title",
       detail: "core.createProjectQuestion.officeXMLAddin.excel.cf.js.detail",
       localTemplate: "excel-cf",

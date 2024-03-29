@@ -47,7 +47,10 @@ import {
   OpenAIPluginManifestHelper,
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
-import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
+import {
+  OfficeAddinProjectConfig,
+  getOfficeAddinTemplateConfig,
+} from "../component/generator/officeXMLAddin/projectConfig";
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
 import { Constants } from "../component/generator/spfx/utils/constants";
@@ -131,7 +134,7 @@ export class ProjectTypeOptions {
   static officeXMLAddin(platform?: Platform): OptionItem {
     return {
       id: "office-xml-addin-type",
-      label: `${platform === Platform.VSCode ? "$(inbox) " : ""}${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(teamsfx-m365) " : ""}${getLocalizedString(
         "core.createProjectQuestion.officeXMLAddin.mainEntry.title"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.mainEntry.detail"),
@@ -182,10 +185,9 @@ function projectTypeQuestion(): SingleSelectQuestion {
     ProjectTypeOptions.bot(Platform.CLI),
     ProjectTypeOptions.tab(Platform.CLI),
     ProjectTypeOptions.me(Platform.CLI),
-    isOfficeXMLAddinEnabled()
-      ? ProjectTypeOptions.officeXMLAddin(Platform.CLI)
-      : ProjectTypeOptions.outlookAddin(Platform.CLI),
+    ProjectTypeOptions.officeXMLAddin(Platform.CLI),
     ProjectTypeOptions.officeAddin(Platform.CLI),
+    ProjectTypeOptions.outlookAddin(Platform.CLI),
   ];
   return {
     name: QuestionNames.ProjectType,
@@ -1411,10 +1413,14 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     ) {
       return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
     }
-    return [
-      { id: ProgrammingLanguage.TS, label: "TypeScript" },
-      { id: ProgrammingLanguage.JS, label: "JavaScript" },
-    ];
+    const officeXMLAddinLangConfig = getOfficeAddinTemplateConfig(projectType, host)[capabilities]
+      .framework["default"];
+    const officeXMLAddinLangOptions = [];
+    if (!!officeXMLAddinLangConfig.typescript)
+      officeXMLAddinLangOptions.push({ id: ProgrammingLanguage.TS, label: "TypeScript" });
+    if (!!officeXMLAddinLangConfig.javascript)
+      officeXMLAddinLangOptions.push({ id: ProgrammingLanguage.JS, label: "JavaScript" });
+    return officeXMLAddinLangOptions;
   }
 
   if (capabilities === CapabilityOptions.SPFxTab().id) {

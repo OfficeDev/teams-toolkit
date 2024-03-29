@@ -1087,17 +1087,20 @@ export async function validateReactOutlookTab(
 
         if (popup && !popup?.isClosed()) {
           await popup
-            .click('button:has-text("Reload")', {
-              timeout: Timeout.playwrightConsentPageReload,
-            })
-            .catch(() => {});
+          .click('button:has-text("Reload")', {
+            timeout: Timeout.playwrightConsentPageReload,
+          })
+          .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
         }
         if (popup && !popup?.isClosed()) {
           await popup.close();
           throw "popup not close."
         }
       });
+      await page.waitForTimeout(Timeout.shortTimeLoading);
 
       console.log("verify function info");
       const backendElement = await frame?.waitForSelector(

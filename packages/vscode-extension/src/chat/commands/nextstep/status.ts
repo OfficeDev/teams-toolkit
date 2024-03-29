@@ -33,6 +33,7 @@ export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
       source: await getFileModifiedTime(`${folder.split("\\").join("/")}/**/*.{ts,tsx,js,jsx}`),
       infra: await getFileModifiedTime(`${folder.split("\\").join("/")}/infra/**/*`),
     };
+    const nodeModulesExist = await fs.pathExists(`${folder}/node_modules`);
 
     return {
       machineStatus: await getMachineStatus(),
@@ -43,6 +44,7 @@ export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
         readmeContent: await getREADME(folder),
         actionStatus,
         launchJSONContent: await getLaunchJSON(folder),
+        nodeModulesExist: nodeModulesExist,
       },
     };
   }

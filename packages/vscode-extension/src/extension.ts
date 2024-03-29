@@ -445,6 +445,9 @@ function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
       chatCreateCommandHandler
+    ),
+    vscode.commands.registerCommand("fx-extension.openOfficeDevDocument", (...args) =>
+      Correlator.run(officeDevHandlers.openDocumentHandler, args)
     )
     // vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler)
     // vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
@@ -818,11 +821,7 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openHelpFeedbackLinkCmd);
 
-  const openOfficeDevDocumentLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.openOfficeDevDocument",
-    (...args) => Correlator.run(officeDevHandlers.openDocumentHandler, args)
-  );
-  context.subscriptions.push(openOfficeDevDocumentLinkCmd);
+  // fx-extension.openOfficeDevDocument is registered in registerOfficeDevRegistration
 
   const openGetStartedLinkCmd = vscode.commands.registerCommand(
     "fx-extension.openGetStarted",
@@ -1111,9 +1110,7 @@ async function runBackgroundAsyncTasks(
   const releaseNote = new ReleaseNote(context);
   await releaseNote.show();
 
-  if (!isOfficeAddInProject) {
-    await openWelcomePageAfterExtensionInstallation();
-  }
+  await openWelcomePageAfterExtensionInstallation();
 
   if (isTeamsFxProject) {
     await runTeamsFxBackgroundTasks();

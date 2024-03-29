@@ -80,7 +80,7 @@ export default async function nextStepCommandHandler(
   };
 }
 
-async function describeStep(
+export async function describeStep(
   step: NextStep,
   token: CancellationToken,
   telemetryMetadata: IChatTelemetryData

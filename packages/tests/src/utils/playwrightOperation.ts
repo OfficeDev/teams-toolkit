@@ -1015,10 +1015,6 @@ export async function validateReactTab(
         console.log("after popup");
 
         if (popup && !popup?.isClosed()) {
-          await popup.screenshot({
-            path: getPlaywrightScreenshotPath("popup_before"),
-            fullPage: true,
-          });
           await popup
           .click('button:has-text("Reload")', {
             timeout: Timeout.playwrightConsentPageReload,
@@ -1027,10 +1023,6 @@ export async function validateReactTab(
           console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
           await page.waitForTimeout(Timeout.shortTimeLoading);
-          await popup.screenshot({
-            path: getPlaywrightScreenshotPath("popup_after"),
-            fullPage: true,
-          });
         }
         if (popup && !popup?.isClosed()) {
           await popup.close();
@@ -1100,6 +1092,10 @@ export async function validateReactOutlookTab(
             })
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
+        }
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close."
         }
       });
 

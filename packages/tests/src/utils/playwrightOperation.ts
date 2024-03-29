@@ -1015,14 +1015,17 @@ export async function validateReactTab(
         console.log("after popup");
 
         if (popup && !popup?.isClosed()) {
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
           await page.waitForTimeout(Timeout.shortTimeLoading);
         }
-        try {
-          console.log("closing popup...");
-          await popup?.close();
-        } catch (error) {
-          console.log("no need to close popup.");
+        if(popup && !popup?.isClosed()) {
+          console.log("function authority failed!");
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("popup"),
+            fullPage: true,
+          });
+          throw "function authority failed!";
         }
       });
       await page.waitForTimeout(Timeout.shortTimeLoading);

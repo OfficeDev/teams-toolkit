@@ -106,7 +106,10 @@ export class ValidateWithTestCasesDriver implements StepDriver {
       );
       if (existingValidationResponse.appValidations) {
         for (const validation of existingValidationResponse.appValidations) {
-          if (validation.status === AsyncAppValidationStatus.InProgress) {
+          if (
+            validation.status === AsyncAppValidationStatus.InProgress ||
+            validation.status === AsyncAppValidationStatus.Created
+          ) {
             if (context.platform === Platform.CLI) {
               const message: Array<{ content: string; color: Colors }> = [
                 {

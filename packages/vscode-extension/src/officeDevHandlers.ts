@@ -236,12 +236,14 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
   if (autoInstallDependency) {
-    void popupOfficeAddInDependenciesMessage();
+    if (!isManifestOnlyAddin(globalVariables.workspaceUri?.fsPath ?? ""))
+      void popupOfficeAddInDependenciesMessage();
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
   }
   if (
     globalVariables.isOfficeAddInProject &&
-    !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "")
+    !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "") &&
+    !isManifestOnlyAddin(globalVariables.workspaceUri?.fsPath ?? "")
   ) {
     void popupOfficeAddInDependenciesMessage();
   }
@@ -250,4 +252,9 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
 export function checkOfficeAddInInstalled(directory: string): boolean {
   const nodeModulesExists = fs.existsSync(path.join(directory, "node_modules"));
   return nodeModulesExists;
+}
+
+export function isManifestOnlyAddin(directory: string): boolean {
+  const srcPath = path.join(directory, "src");
+  return !fs.existsSync(srcPath);
 }

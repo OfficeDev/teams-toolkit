@@ -594,7 +594,7 @@ export class CapabilityOptions {
   static customCopilots(): OptionItem[] {
     return [
       CapabilityOptions.customCopilotBasic(),
-      // CapabilityOptions.customCopilotRag(),
+      CapabilityOptions.customCopilotRag(),
       CapabilityOptions.customCopilotAssistant(),
     ];
   }
@@ -2182,10 +2182,10 @@ export class CustomCopilotRagOptions {
 
   static all(): OptionItem[] {
     return [
-      CustomCopilotRagOptions.customize(),
+      // CustomCopilotRagOptions.customize(),
       CustomCopilotRagOptions.azureAISearch(),
-      CustomCopilotRagOptions.customApi(),
-      CustomCopilotRagOptions.microsoft365(),
+      // CustomCopilotRagOptions.customApi(),
+      // CustomCopilotRagOptions.microsoft365(),
     ];
   }
 }
@@ -2424,7 +2424,6 @@ export function capabilitySubTree(): IQTreeNode {
         },
         data: apiMessageExtensionAuthQuestion(),
       },
-      /*
       {
         condition: (inputs: Inputs) => {
           return inputs[QuestionNames.Capabilities] == CapabilityOptions.customCopilotRag().id;
@@ -2449,7 +2448,6 @@ export function capabilitySubTree(): IQTreeNode {
           },
         ],
       },
-      */
       {
         condition: (inputs: Inputs) => {
           return (

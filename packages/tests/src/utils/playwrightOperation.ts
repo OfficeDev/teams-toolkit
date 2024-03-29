@@ -1022,8 +1022,14 @@ export async function validateReactTab(
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
+        try {
+          console.log("closing popup...");
+          await popup?.close();
+        } catch (error) {
+          console.log("no need to close popup.");
+        }
       });
-
+      await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("verify function info");
       const backendElement = await frame?.waitForSelector(
         'pre:has-text("receivedHTTPRequestBody")'

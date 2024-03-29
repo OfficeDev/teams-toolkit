@@ -4,19 +4,23 @@ import {
   CancellationToken,
   ChatRequest,
   ChatResponseStream,
+  LanguageModelChatMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { ISkill } from "./iSkill";
+import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
+import { getCopilotResponseAsString } from "../../utils";
 import { ExecutionResultEnum } from "./executionResultEnum";
+import { CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID } from "../../consts";
+import { localize } from "../../../utils/localizeUtils";
 
-export class Printer implements ISkill {
+export class CodeMerger implements ISkill {
   name: string | undefined;
   capability: string | undefined;
 
   constructor() {
-    this.name = "printer";
-    this.capability = "Print the output in a readable format to user";
+    this.name = "Code Merger";
+    this.capability = "Merge code snippets into the generated template";
   }
 
   public canInvoke(request: ChatRequest, spec: Spec): boolean {
@@ -24,7 +28,9 @@ export class Printer implements ISkill {
       !!spec.userInput &&
       !!spec.appendix.codeSnippet &&
       !!spec.appendix.codeTaskBreakdown &&
-      spec.appendix.codeTaskBreakdown.length > 0
+      spec.appendix.codeTaskBreakdown.length > 0 &&
+      !!spec.appendix.tempAppLocation &&
+      spec.appendix.tempAppLocation.length > 0
     );
   }
 
@@ -36,26 +42,12 @@ export class Printer implements ISkill {
     token: CancellationToken,
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
-    const template = `
-# 1. Task Summary
-${spec.userInput}
-
-# 2. Task Breakdown
-You're looking for a code snippet for Office ${
-      spec.appendix.host
-    }, we break down the task into smaller, manageable steps. This helps to clarify the task and make it easier to tackle. Here's how we break down a task:
-- ${spec.appendix.codeTaskBreakdown.join("\n- ")}
-
-# 3. The output
-The following TypeScript code snippet is generated based on the task breakdown. You can copy and paste it into your project, and modify it as needed.
-## 3.1 TypeScript Code Snippets
-\`\`\`typescript
-${spec.appendix.codeSnippet}
-\`\`\`
-## 3.2 Code Explanation
-${spec.appendix.codeExplanation}
-`;
-    response.markdown(template);
+    const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
+    response.button({
+      command: CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
+      arguments: [spec.appendix.tempAppLocation],
+      title: sampleTitle,
+    });
     return { result: ExecutionResultEnum.Success, spec: spec };
   }
 }

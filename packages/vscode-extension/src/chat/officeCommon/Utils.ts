@@ -64,3 +64,7 @@ export function correctPropertyLoadSpelling(codeSnippet: string): string {
 
   return correctedLoadString;
 }
+
+export function deepClone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}

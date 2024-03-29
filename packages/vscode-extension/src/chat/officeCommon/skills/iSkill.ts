@@ -19,5 +19,5 @@ export interface ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ) => Promise<ExecutionResultEnum>;
+  ) => Promise<{ result: ExecutionResultEnum; spec: Spec }>;
 }

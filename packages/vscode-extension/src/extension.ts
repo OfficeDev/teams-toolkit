@@ -63,7 +63,12 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
-import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
+import {
+  FeatureFlags,
+  delay,
+  hasAdaptiveCardInWorkspace,
+  isM365Project,
+} from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
@@ -75,18 +80,19 @@ import {
   CHAT_CREATE_SAMPLE_COMMAND_ID,
   CHAT_EXECUTE_COMMAND_ID,
   CHAT_OPENURL_COMMAND_ID,
+  IsChatParticipantEnabled,
   chatParticipantName,
   officeAddinChatParticipantName,
 } from "./chat/consts";
 import followupProvider from "./chat/followupProvider";
 import {
   chatCreateCommandHandler,
+  chatExecuteCommandHandler,
   chatRequestHandler,
   openUrlCommandHandler,
   handleFeedback,
   officeAddinChatRequestHandler,
 } from "./chat/handlers";
-import { chatExecuteCommandHandler } from "./chat/commands/nextstep/nextstepCommandHandler";
 import { CommandKey as CommandKeys } from "./constants";
 
 export let VS_CODE_UI: VsCodeUI;
@@ -130,6 +136,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+
+  // control whether to show chat participant entries
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isChatParticipantEnabled",
+    IsChatParticipantEnabled
+  );
+
+  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -232,7 +247,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   // Create a new Teams app
   registerInCommandController(
     context,
-    "fx-extension.create",
+    CommandKeys.Create,
     handlers.createNewProjectHandler,
     "createProject"
   );
@@ -549,13 +564,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  const preview = vscode.commands.registerCommand(
-    "fx-extension.preview",
-    async (node: Record<string, string>) => {
-      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
-    }
-  );
-  context.subscriptions.push(preview);
+  registerInCommandController(context, CommandKeys.Preview, handlers.treeViewPreviewHandler);
 
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
 
@@ -720,13 +729,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openSubscriptionInPortal);
 
-  const previewWithIcon = vscode.commands.registerCommand(
+  registerInCommandController(
+    context,
     "fx-extension.previewWithIcon",
-    async (node: Record<string, string>) => {
-      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
-    }
+    handlers.treeViewPreviewHandler
   );
-  context.subscriptions.push(previewWithIcon);
 
   const refreshEnvironment = vscode.commands.registerCommand(
     "fx-extension.refreshEnvironment",
@@ -1143,9 +1150,12 @@ function registerInCommandController(
   runningLabelKey?: string
 ) {
   commandController.registerCommand(name, callback, runningLabelKey);
-  const command = vscode.commands.registerCommand(name, (...args) =>
-    Correlator.run(runCommand, name, ...args)
-  );
+  const command = vscode.commands.registerCommand(name, (...args) => {
+    if (args[1] === TelemetryTriggerFrom.CopilotChat) {
+      return Correlator.runWithId(args[0], runCommand, name, ...args.slice(1));
+    }
+    return Correlator.run(runCommand, name, ...args);
+  });
   context.subscriptions.push(command);
 }
 

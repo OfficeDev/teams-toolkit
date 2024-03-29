@@ -370,13 +370,27 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
     // from copilot chat
     inputs = { ...getSystemInputs(), ...args[1] };
   }
+  // Leverage the existing implementation for creating an Office XML add-in project.
+  const originalXMLFestureFlag = process.env.TEAMSFX_OFFICE_XML_ADDIN;
+  if (
+    getTriggerFromProperty(args)["trigger-from"] === TelemetryTriggerFrom.CopilotChat &&
+    inputs?.["project-type"] === "office-xml-addin-type"
+  ) {
+    process.env.TEAMSFX_OFFICE_XML_ADDIN = "true";
+  }
   const result = await runCommand(Stage.create, inputs);
   if (result.isErr()) {
+    process.env.TEAMSFX_OFFICE_XML_ADDIN = originalXMLFestureFlag;
     return err(result.error);
   }
+  process.env.TEAMSFX_OFFICE_XML_ADDIN = originalXMLFestureFlag;
 
   const res = result.value as CreateProjectResult;
   const projectPathUri = Uri.file(res.projectPath);
+  // If it is triggered in @office /create for code gen, then do no open the temp folder.
+  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.isFromCodeGen) {
+    return result;
+  }
   // show local debug button by default
   if (isValidOfficeAddInProject(projectPathUri.fsPath)) {
     await openOfficeDevFolder(projectPathUri, true, res.warnings, args);
@@ -460,11 +474,15 @@ export function debugInTestToolHandler(source: "treeview" | "message") {
   };
 }
 
-export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+export async function treeViewPreviewHandler(...args: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.TreeViewPreviewStart,
+    getTriggerFromProperty(args)
+  );
   const properties: { [key: string]: string } = {};
 
   try {
+    const env = args[1]?.identifier as string;
     const inputs = getSystemInputs();
     inputs.env = env;
     properties[TelemetryProperty.Env] = env;

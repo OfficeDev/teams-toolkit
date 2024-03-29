@@ -16,8 +16,19 @@ import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
 import { getCopilotResponseAsString } from "../../utils";
 import { ExecutionResultEnum } from "./executionResultEnum";
+import {
+  MeasurementCodeGenAttemptCount,
+  MeasurementCodeGenExecutionTimeInTotalSec,
+  MeasurementScenarioBasedSampleMatchedCount,
+  PropertySystemCodeGenIsCustomFunction,
+  PropertySystemCodeGenResult,
+  PropertySystemCodeGenTargetedOfficeHostApplication,
+  MeasurementSystemCodegenTaskBreakdownAttemptFailedCount,
+} from "../telemetryConsts";
 
-const excelSystemPrompt = ``;
+const excelSystemPrompt = `
+The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+`;
 const cfSystemPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
@@ -96,6 +107,8 @@ So once you understand the concept of Custom Functions, you should make sure:
 - The function follows the asynchronous pattern if necessary.
 - The function follows the streaming pattern if necessary.
 - Although that is not forbidden, but you should explicitly state in your code that the function must avoid using the Office JavaScript API.
+
+Let's think step by step.
 `;
 
 export class CodeGenerator implements ISkill {
@@ -117,7 +130,7 @@ export class CodeGenerator implements ISkill {
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
-  ): Promise<ExecutionResultEnum> {
+  ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     if (
       !!spec.appendix.host ||
       !!spec.appendix.codeTaskBreakdown ||
@@ -126,11 +139,24 @@ export class CodeGenerator implements ISkill {
       const breakdownResult = await this.userInputBreakdownTaskAsync(request, token);
 
       if (!breakdownResult) {
-        return ExecutionResultEnum.Failure;
+        if (
+          !spec.appendix.telemetryData.measurements[
+            MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
+          ]
+        ) {
+          spec.appendix.telemetryData.measurements[
+            MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
+          ] = 0;
+        }
+        spec.appendix.telemetryData.measurements[
+          MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
+        ] += 1;
+        return { result: ExecutionResultEnum.Failure, spec: spec };
       }
       if (!breakdownResult.shouldContinue) {
+        // Reject will make the whole request rejected
         spec.sections = breakdownResult.data;
-        return ExecutionResultEnum.Rejected;
+        return { result: ExecutionResultEnum.Rejected, spec: spec };
       }
 
       spec.appendix.host = breakdownResult.host;
@@ -138,25 +164,38 @@ export class CodeGenerator implements ISkill {
       spec.appendix.isCustomFunction = breakdownResult.customFunctions;
     }
 
+    if (!spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount]) {
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] = 0;
+    }
+    spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] += 1;
     let codeSnippet: string | null = "";
-    console.time("CodeGenerator.GenerateCode");
+    const t0 = performance.now();
     codeSnippet = await this.generateCode(
       request,
       token,
       spec.appendix.host,
       spec.appendix.isCustomFunction,
-      spec.appendix.codeTaskBreakdown
+      spec.appendix.codeTaskBreakdown,
+      spec
     );
-    console.timeEnd("CodeGenerator.GenerateCode");
+    const t1 = performance.now();
+    const duration = (t1 - t0) / 1000;
+    if (!spec.appendix.telemetryData.measurements[MeasurementCodeGenExecutionTimeInTotalSec]) {
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenExecutionTimeInTotalSec] =
+        duration;
+    } else {
+      spec.appendix.telemetryData.measurements[MeasurementCodeGenExecutionTimeInTotalSec] +=
+        duration;
+    }
+    console.log(`Code generation took ${duration} seconds.`);
     if (!codeSnippet) {
-      return ExecutionResultEnum.Failure;
+      spec.appendix.telemetryData.properties[PropertySystemCodeGenResult] = "false";
+      return { result: ExecutionResultEnum.Failure, spec: spec };
     }
 
+    spec.appendix.telemetryData.properties[PropertySystemCodeGenResult] = "true";
     spec.appendix.codeSnippet = codeSnippet;
-    await writeLogToFile(
-      `The generated code snippet: \n\`\`\`typescript\n${codeSnippet}\`\`\`\n\n\n\n`
-    );
-    return ExecutionResultEnum.Success;
+    return { result: ExecutionResultEnum.Success, spec: spec };
   }
 
   async userInputBreakdownTaskAsync(
@@ -170,7 +209,8 @@ export class CodeGenerator implements ISkill {
   }> {
     const userPrompt = `
     Assume this is a ask: "${request.prompt}". I need you help to analyze it, and give me your suggestion. Follow the guidance below:
-    - If the ask is not able agent support fo Excel, Word, or PowerPoint, you should reject it because today this agent only support those Office host applications. And give the reason to reject the ask.
+    - If the ask is not relevant to Microsoft Excel, Microsoft Word, or Microsoft PowerPoint, you should reject it because today this agent only support offer assistant to those Office host applications. And give the reason to reject the ask.
+    - If the ask is not about automating a certain process or accomplishing a certain task using Office JavaScript Add-ins, you should reject it. And give the reason to reject the ask.
     - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
     - Otherwise, please think about if you can process the ask. 
       - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
@@ -234,7 +274,8 @@ export class CodeGenerator implements ISkill {
     token: CancellationToken,
     host: string,
     isCustomFunctions: boolean,
-    subTasks: string[]
+    subTasks: string[],
+    spec: Spec
   ) {
     const userPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
@@ -246,11 +287,11 @@ You're a professional and senior Office JavaScript Add-ins developer with a lot 
 This is the ask need your help to generate the code for this request:
 - ${request.prompt}. 
 The request is about Office Add-ins, and it is relevant to the Office application "${host}".
-It could be broken down into a few steps able to be accomplished by Office Add-ins JavaScript APIs. You have the list of steps.:
+It could be broken down into a few steps able to be accomplished by Office Add-ins JavaScript APIs. **Read through the those steps, repeat by yourself**. Make sure you understand that before go to the task. You have the list of steps.:
 ${subTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}
 
 # Your tasks:
-Implement **all** mentioned step with **TypeScript code** and **Office JavaScript Add-ins API**, while **follow the coding rule**.
+Implement **all** steps with **TypeScript code** and **Office JavaScript Add-ins API**, while **follow the coding rule**.
 
 ${getCodeGenerateGuidance(host)}
 
@@ -263,13 +304,22 @@ ${getCodeGenerateGuidance(host)}
 
 Let's think step by step.
     `;
-    let defaultSystemPrompt;
+    spec.appendix.telemetryData.properties[PropertySystemCodeGenTargetedOfficeHostApplication] =
+      host;
+    spec.appendix.telemetryData.properties[PropertySystemCodeGenIsCustomFunction] =
+      isCustomFunctions.toString();
+    let defaultSystemPrompt = `
+    The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+
+    # There're some samples relevant to the your's ask, you can read it and repeat by yourself, before start to generate code.
+    `;
+    let referenceUserPrompt = "";
     switch (host) {
       case "Excel":
         if (!isCustomFunctions) {
-          defaultSystemPrompt = excelSystemPrompt;
+          referenceUserPrompt = excelSystemPrompt;
         } else {
-          defaultSystemPrompt = cfSystemPrompt;
+          referenceUserPrompt = cfSystemPrompt;
         }
         break;
       default:
@@ -296,20 +346,22 @@ Let's think step by step.
       });
 
       if (codeSnippets.length > 0) {
-        defaultSystemPrompt = defaultSystemPrompt.concat(
-          `\n\nCode samples:\n${codeSnippets.join("\n")}\n`
-        );
+        defaultSystemPrompt = defaultSystemPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
       }
     }
-
-    defaultSystemPrompt.concat(`\n\nLet's think step by step.`);
+    if (!spec.appendix.telemetryData.measurements[MeasurementScenarioBasedSampleMatchedCount]) {
+      spec.appendix.telemetryData.measurements[MeasurementScenarioBasedSampleMatchedCount] = 0;
+    }
+    spec.appendix.telemetryData.measurements[MeasurementScenarioBasedSampleMatchedCount] +=
+      scenarioSamples.size > 0 ? 1 : 0;
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      new LanguageModelChatUserMessage(referenceUserPrompt),
       new LanguageModelChatUserMessage(userPrompt),
     ];
-    // The GPT-4 model is significantly slower than GPT-3.5-turbo, but also significantly more accurate
+    // The "copilot-gpt-4" model is significantly slower than "copilot-gpt-3.5-turbo", but also significantly more accurate
     // In order to avoid waste more time on the correct, I believe using GPT-4 is a better choice
     const copilotResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
 

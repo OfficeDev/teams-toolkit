@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result } from "@microsoft/teamsfx-api";
 import { isValidProject } from "@microsoft/teamsfx-core";
 import {
   CancellationToken,
@@ -10,11 +9,10 @@ import {
   ChatRequest,
   ChatResponseStream,
   LanguageModelChatUserMessage,
-  commands,
 } from "vscode";
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryEvent, TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
+import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { TeamsChatCommand } from "../../consts";
 import followupProvider from "../../followupProvider";
 import { describeScenarioSystemPrompt } from "../../prompts";
@@ -57,6 +55,7 @@ export default async function nextStepCommandHandler(
       response.markdown(`${title}: ${stepDescription}\n`);
     }
     s.commands.forEach((c) => {
+      c.arguments?.splice(1, 0, chatTelemetryData.requestId);
       response.button(c);
     });
   }
@@ -97,17 +96,4 @@ async function describeStep(
 
   telemetryMetadata.chatMessages.push(...messages);
   return await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
-}
-
-export async function chatExecuteCommandHandler(
-  command: string,
-  ...args: unknown[]
-): Promise<Result<unknown, FxError>> {
-  /// TODO: add response id
-  const result = await commands.executeCommand<Result<unknown, FxError>>(
-    command,
-    TelemetryTriggerFrom.CopilotChat,
-    ...args
-  );
-  return result;
 }

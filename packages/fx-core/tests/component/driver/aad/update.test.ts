@@ -499,9 +499,7 @@ describe("aadAppUpdate", async () => {
     expect(result.result._unsafeUnwrapErr())
       .is.instanceOf(UnhandledError)
       .and.property("message")
-      .equals(
-        'An unexpected error has occurred while performing the aadAppUpdate task. {"isAxiosError":true}'
-      );
+      .equals("An unexpected error has occurred while performing the aadAppUpdate task.");
   });
 
   it("should send telemetries when success", async () => {

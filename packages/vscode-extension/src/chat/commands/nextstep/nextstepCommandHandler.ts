@@ -13,7 +13,7 @@ import {
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
-import { TeamsChatCommand } from "../../consts";
+import { TeamsChatCommand, chatParticipantId } from "../../consts";
 import followupProvider from "../../followupProvider";
 import { describeScenarioSystemPrompt } from "../../prompts";
 import { ChatTelemetryData } from "../../telemetry";
@@ -29,7 +29,11 @@ export default async function nextStepCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand(TeamsChatCommand.NextStep);
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    chatParticipantId,
+    TeamsChatCommand.NextStep,
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   // get all Teams apps under workspace

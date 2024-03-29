@@ -41,7 +41,7 @@ model = OpenAIModel(
 )
 {{/useOpenAI}}
     
-prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/src/prompts"))
+prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/prompts"))
 
 prompts.add_data_source(
     AzureAISearchDataSource(

@@ -50,7 +50,7 @@
             "type": "debugpy",
             "program": "${workspaceFolder}/src/app.py",
             "request": "launch",
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/src/",
             "console": "integratedTerminal",
         },
         {

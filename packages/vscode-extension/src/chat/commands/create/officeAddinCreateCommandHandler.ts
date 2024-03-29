@@ -12,7 +12,11 @@ import { Correlator } from "@microsoft/teamsfx-core";
 
 import { OfficeAddinChatCommand } from "../../consts";
 import { defaultSystemPrompt } from "../../prompts";
-import { getCopilotResponseAsString, verbatimCopilotInteraction } from "../../utils";
+import {
+  getCopilotResponseAsString,
+  verbatimCopilotInteraction,
+  isInputHarmful,
+} from "../../utils";
 import { IChatTelemetryData, ICopilotChatResult } from "../../types";
 import { ProjectMetadata } from "./types";
 import { sampleProvider } from "@microsoft/teamsfx-core";
@@ -40,7 +44,6 @@ import { prepareDiscription } from "../../rag/ragUtil";
 import { Planner } from "../../officeCommon/planner";
 import { CommandKey } from "../../../constants";
 
-
 export default async function officeAddinCreateCommandHandler(
   request: ChatRequest,
   context: ChatContext,
@@ -49,51 +52,53 @@ export default async function officeAddinCreateCommandHandler(
 ): Promise<ICopilotChatResult> {
   const chatTelemetryData = ChatTelemetryData.createByCommand(TeamsChatCommand.Create);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
-  const matchedResult = await matchOfficeAddinProject(request, token, chatTelemetryData);
-  if (matchedResult) {
-    const describeProjectChatMessages = [
-      describeOfficeAddinProjectSystemPrompt,
-      new LanguageModelChatUserMessage(
-        `The project you are looking for is '${JSON.stringify(matchedResult)}'.`
-      ),
-    ];
-    chatTelemetryData.chatMessages.push(...describeProjectChatMessages);
+  const isHarmful = await isInputHarmful(request, token);
+  if (!isHarmful) {
+    const matchedResult = await matchOfficeAddinProject(request, token, chatTelemetryData);
+    if (matchedResult) {
+      const describeProjectChatMessages = [
+        describeOfficeAddinProjectSystemPrompt,
+        new LanguageModelChatUserMessage(
+          `The project you are looking for is '${JSON.stringify(matchedResult)}'.`
+        ),
+      ];
+      chatTelemetryData.chatMessages.push(...describeProjectChatMessages);
 
-    await verbatimCopilotInteraction(
-      "copilot-gpt-3.5-turbo",
-      describeProjectChatMessages,
-      response,
-      token
-    );
-    if (matchedResult.type === "sample") {
-      const folder = await showFileTree(matchedResult, response);
-      const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
-      response.button({
-        command: CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
-        arguments: [folder],
-        title: sampleTitle,
-      });
-    } else if (matchedResult.type === "template") {
-      const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
-      response.button({
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.Create, chatTelemetryData.requestId, matchedResult.data],
-        title: templateTitle,
-      });
+      await verbatimCopilotInteraction(
+        "copilot-gpt-3.5-turbo",
+        describeProjectChatMessages,
+        response,
+        token
+      );
+      if (matchedResult.type === "sample") {
+        const folder = await showFileTree(matchedResult, response);
+        const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
+        response.button({
+          command: CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
+          arguments: [folder],
+          title: sampleTitle,
+        });
+      } else if (matchedResult.type === "template") {
+        const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
+        response.button({
+          command: CHAT_EXECUTE_COMMAND_ID,
+          arguments: [CommandKey.Create, chatTelemetryData.requestId, matchedResult.data],
+          title: templateTitle,
+        });
+      }
+    } else {
+      // TODO: If the match fails, generate the code.
+      return await Planner.getInstance().processRequest(
+        new LanguageModelChatUserMessage(request.prompt),
+        request,
+        response,
+        token,
+        OfficeAddinChatCommand.Create
+      );
     }
   } else {
-    // TODO: If the match fails, generate the code.
-    return await Planner.getInstance().processRequest(
-      new LanguageModelChatUserMessage(request.prompt),
-      request,
-      response,
-      token,
-      OfficeAddinChatCommand.Create
-    );
+    response.markdown(localize("teamstoolkit.chatParticipants.officeaddin.harmfulInputResponse"));
   }
-
-  const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
-  await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
   return {
     metadata: {
       command: TeamsChatCommand.Create,

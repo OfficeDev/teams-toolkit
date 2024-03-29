@@ -41,6 +41,7 @@ import generatecodeCommandHandler from "./commands/generatecode/generatecodeComm
 import officeAddinCreateCommandHandler from "./commands/create/officeAddinCreateCommandHandler";
 import officeAddinNextStepCommandHandler from "./commands/nextstep/officeAddinNextstepCommandHandler";
 import { FxError, Result } from "@microsoft/teamsfx-api";
+import { defaultOfficeAddinSystemPrompt } from "./officeAddinPrompts";
 
 export function chatRequestHandler(
   request: ChatRequest,
@@ -74,7 +75,7 @@ export function officeAddinChatRequestHandler(
   } else if (request.command == OfficeAddinChatCommand.NextStep) {
     return officeAddinNextStepCommandHandler(request, context, response, token);
   } else {
-    return defaultHandler(request, context, response, token);
+    return officeAddinDefaultHandler(request, context, response, token);
   }
 }
 
@@ -88,6 +89,30 @@ async function defaultHandler(
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
+  chatTelemetryData.chatMessages.push(...messages);
+  await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
+
+  chatTelemetryData.markComplete();
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChat,
+    chatTelemetryData.properties,
+    chatTelemetryData.measurements
+  );
+  return { metadata: { command: undefined, requestId: chatTelemetryData.requestId } };
+}
+
+async function officeAddinDefaultHandler(
+  request: ChatRequest,
+  context: ChatContext,
+  response: ChatResponseStream,
+  token: CancellationToken
+): Promise<ICopilotChatResult> {
+  const chatTelemetryData = ChatTelemetryData.createByCommand("");
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
+  const messages = [
+    defaultOfficeAddinSystemPrompt(),
+    new LanguageModelChatUserMessage(request.prompt),
+  ];
   chatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 

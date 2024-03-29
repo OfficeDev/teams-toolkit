@@ -95,21 +95,13 @@ class ResourceGroupHelper {
           new CreateResourceGroupError(
             resourceGroupName,
             subscriptionId,
-            `illegal response: ${JSON.stringify(response)}`
+            new Error("illegal response: response.name === undefined")
           )
         );
       }
       return ok(response.name);
     } catch (e: any) {
-      delete e["request"];
-      return err(
-        new CreateResourceGroupError(
-          resourceGroupName,
-          subscriptionId,
-          e.message || JSON.stringify(e),
-          e
-        )
-      );
+      return err(new CreateResourceGroupError(resourceGroupName, subscriptionId, e));
     }
   }
 
@@ -121,14 +113,8 @@ class ResourceGroupHelper {
       const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
       return ok(!!checkRes.body);
     } catch (e: any) {
-      delete e["request"];
       return err(
-        new CheckResourceGroupExistenceError(
-          resourceGroupName,
-          rmClient.subscriptionId,
-          e.message || JSON.stringify(e),
-          e
-        )
+        new CheckResourceGroupExistenceError(resourceGroupName, rmClient.subscriptionId, e)
       );
     }
   }
@@ -147,15 +133,7 @@ class ResourceGroupHelper {
         });
       } else return ok(undefined);
     } catch (e: any) {
-      delete e["request"];
-      return err(
-        new GetResourceGroupError(
-          resourceGroupName,
-          rmClient.subscriptionId,
-          e.message || JSON.stringify(e),
-          e
-        )
-      );
+      return err(new GetResourceGroupError(resourceGroupName, rmClient.subscriptionId, e));
     }
   }
 
@@ -172,10 +150,7 @@ class ResourceGroupHelper {
       } while (!result.done);
       return ok(results);
     } catch (e: any) {
-      delete e["request"];
-      return err(
-        new ListResourceGroupsError(rmClient.subscriptionId, e.message || JSON.stringify(e), e)
-      );
+      return err(new ListResourceGroupsError(rmClient.subscriptionId, e));
     }
   }
 
@@ -205,20 +180,13 @@ class ResourceGroupHelper {
         return err(
           new ListResourceGroupLocationsError(
             rmClient.subscriptionId,
-            "No available locations found!"
+            new Error("No available locations found!")
           )
         );
       }
       return ok(rgLocations);
     } catch (e: any) {
-      delete e["request"];
-      return err(
-        new ListResourceGroupLocationsError(
-          rmClient.subscriptionId,
-          e.message || JSON.stringify(e),
-          e
-        )
-      );
+      return err(new ListResourceGroupLocationsError(rmClient.subscriptionId, e));
     }
   }
 

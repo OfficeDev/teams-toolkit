@@ -1064,11 +1064,11 @@ export class FxCore {
     lifecycleName: string
   ): Promise<Result<undefined, FxError>> {
     if (!inputs.projectPath) {
-      return err(InvalidInputError("invalid projectPath", inputs));
+      return err(InvalidInputError("missing projectPath"));
     }
     const projectPath = inputs.projectPath;
     if (!inputs.env) {
-      return err(InvalidInputError("invalid env", inputs));
+      return err(InvalidInputError("missing env"));
     }
     const env = inputs.env;
     const lifecycleName_: LifecycleName = lifecycleName as LifecycleName;

@@ -180,7 +180,7 @@ export class UnhandledError extends SystemError {
     const option: SystemErrorOptions = {
       source: camelCase(source) || "unknown",
       error: e,
-      message: getDefaultString("error.common.UnhandledError", source, errJson),
+      message: getDefaultString("error.common.UnhandledError", source, ""),
       displayMessage: getLocalizedString(
         "error.common.UnhandledError",
         source,
@@ -339,12 +339,8 @@ export class AccessGithubError extends UserError {
     super({
       source: source,
       name: "AccessGithubError",
-      message: getDefaultString(
-        messageKey,
-        url,
-        error.message || JSON.stringify(error, Object.getOwnPropertyNames(error))
-      ),
-      displayMessage: getLocalizedString(messageKey, url, error.message),
+      message: getDefaultString(messageKey, url),
+      displayMessage: getLocalizedString(messageKey, url),
       error: error,
       categories: [ErrorCategory.External],
     });

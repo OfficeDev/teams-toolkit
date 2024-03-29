@@ -100,13 +100,13 @@ export class ResourceGroupNotExistError extends UserError {
  * Create resource group error
  */
 export class CreateResourceGroupError extends UserError {
-  constructor(resourceGroupName: string, subscriptionId: string, message: string, error?: any) {
+  constructor(resourceGroupName: string, subscriptionId: string, error?: any) {
     const key = "error.azure.CreateResourceGroupError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "CreateResourceGroupError",
-      message: getDefaultString(key, resourceGroupName, subscriptionId, message),
-      displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId, message),
+      message: getDefaultString(key, resourceGroupName, subscriptionId),
+      displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId),
       categories: [ErrorCategory.External],
       error: error,
     };
@@ -118,13 +118,13 @@ export class CreateResourceGroupError extends UserError {
  * Check resource group existence error
  */
 export class CheckResourceGroupExistenceError extends UserError {
-  constructor(resourceGroupName: string, subscriptionId: string, message: string, error?: any) {
+  constructor(resourceGroupName: string, subscriptionId: string, error?: any) {
     const key = "error.azure.CheckResourceGroupExistenceError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "CheckResourceGroupExistenceError",
-      message: getDefaultString(key, resourceGroupName, subscriptionId, message),
-      displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId, message),
+      message: getDefaultString(key, resourceGroupName, subscriptionId),
+      displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId),
       categories: [ErrorCategory.External],
       error: error,
     };
@@ -136,13 +136,13 @@ export class CheckResourceGroupExistenceError extends UserError {
  * List resource groups error
  */
 export class ListResourceGroupsError extends UserError {
-  constructor(subscriptionId: string, message: string, error?: any) {
+  constructor(subscriptionId: string, error?: any) {
     const key = "error.azure.ListResourceGroupsError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "ListResourceGroupsError",
-      message: getDefaultString(key, subscriptionId, message),
-      displayMessage: getLocalizedString(key, subscriptionId, message),
+      message: getDefaultString(key, subscriptionId),
+      displayMessage: getLocalizedString(key, subscriptionId),
       categories: [ErrorCategory.External],
       error: error,
     };
@@ -154,13 +154,13 @@ export class ListResourceGroupsError extends UserError {
  * Get resource group error
  */
 export class GetResourceGroupError extends UserError {
-  constructor(resourceGroupName: string, subscriptionId: string, message: string, error?: any) {
+  constructor(resourceGroupName: string, subscriptionId: string, error?: any) {
     const key = "error.azure.GetResourceGroupError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "GetResourceGroupError",
-      message: getDefaultString(key, resourceGroupName, subscriptionId, message),
-      displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId, message),
+      message: getDefaultString(key, resourceGroupName, subscriptionId),
+      displayMessage: getLocalizedString(key, resourceGroupName, subscriptionId),
       categories: [ErrorCategory.External],
       error: error,
     };
@@ -172,13 +172,13 @@ export class GetResourceGroupError extends UserError {
  * List resource group locations error
  */
 export class ListResourceGroupLocationsError extends UserError {
-  constructor(subscriptionId: string, message: string, error?: any) {
+  constructor(subscriptionId: string, error?: any) {
     const key = "error.azure.ListResourceGroupLocationsError";
     const errorOptions: UserErrorOptions = {
       source: "coordinator",
       name: "ListResourceGroupLocationsError",
-      message: getDefaultString(key, subscriptionId, message),
-      displayMessage: getLocalizedString(key, subscriptionId, message),
+      message: getDefaultString(key, subscriptionId),
+      displayMessage: getLocalizedString(key, subscriptionId),
       categories: [ErrorCategory.External],
       error: error,
     };

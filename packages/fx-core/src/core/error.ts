@@ -36,8 +36,8 @@ export class NoProjectOpenedError extends UserError {
   }
 }
 
-export function InvalidInputError(reason: string, inputs?: Inputs): UserError {
-  const txt = inputs ? `${reason}, inputs: ${JSON.stringify(inputs)}` : reason;
+export function InvalidInputError(reason: string): UserError {
+  const txt = reason;
   return new UserError(
     CoreSource,
     "InvalidInput",

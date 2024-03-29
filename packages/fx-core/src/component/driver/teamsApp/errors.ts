@@ -85,47 +85,11 @@ export class AppStudioError {
     ],
   };
 
-  public static readonly CheckPermissionFailedError = {
-    name: "CheckPermissionFailed",
-    message: (error: any): [string, string] => [
-      getDefaultString("error.appstudio.checkPermissionFailed", error.message),
-      getLocalizedString("error.appstudio.checkPermissionFailed", error.message),
-    ],
-  };
-
-  public static readonly GrantPermissionFailedError = {
-    name: "GrantPermissionFailed",
-    message: (errorMessage: string, id?: string): [string, string] => [
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `${Constants.PERMISSIONS.name}: ${id}. ` +
-        getDefaultString("error.appstudio.grantPermissionFailed", errorMessage),
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      `${Constants.PERMISSIONS.name}: ${id}. ` +
-        getLocalizedString("error.appstudio.grantPermissionFailed", errorMessage),
-    ],
-  };
-
-  public static readonly ListCollaboratorFailedError = {
-    name: "ListCollaboratorFailedError",
-    message: (error: any): [string, string] => [
-      getDefaultString("error.appstudio.listCollaboratorFailed", error.message),
-      getLocalizedString("error.appstudio.listCollaboratorFailed", error.message),
-    ],
-  };
-
   public static readonly UpdateManifestWithInvalidAppError = {
     name: "UpdateManifestWithInvalidAppError",
     message: (appId: string): [string, string] => [
       getDefaultString("error.appstudio.updateManifestInvalidApp", appId),
       getLocalizedString("error.appstudio.updateManifestInvalidApp", appId),
-    ],
-  };
-
-  public static readonly InvalidCapabilityError = {
-    name: "InvalidCapabilityError",
-    message: (capability: string): [string, string] => [
-      getDefaultString("error.appstudio.invalidCapability", capability),
-      getLocalizedString("error.appstudio.invalidCapability", capability),
     ],
   };
 

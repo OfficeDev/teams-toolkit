@@ -944,7 +944,7 @@ describe("teamsApp/validateWithTestCases", async () => {
     );
   });
 
-  it("Duplicate validations - Inprogress", async () => {
+  it("Duplicate validations - InProgress", async () => {
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").callsFake(async () => {
       const zip = new AdmZip();

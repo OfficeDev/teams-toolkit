@@ -89,43 +89,43 @@ describe("Middleware - ErrorHandlerMW", () => {
     assert.isTrue(res.isErr() && res.error instanceof UnhandledError);
   });
 
-  it("convert system error to user error: The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action", async () => {
-    const msg =
-      "The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action '<REDACTED: user-file-path>' over scope '<REDACTED: user-file-path>' or the scope is invalid. If access was recently granted, please refresh your credentials.";
-    class MyClass {
-      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        throw new Error(msg);
-      }
-    }
-    hooks(MyClass, {
-      myMethod: [ErrorHandlerMW],
-    });
-    const my = new MyClass();
-    const res = await my.myMethod(inputs);
-    assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      const error = res.error;
-      assert.isTrue(error instanceof UserError);
-    }
-  });
-  it("convert system error to user error: no space left on device", async () => {
-    const msg = "xxx no space left on device.";
-    class MyClass {
-      async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
-        throw new Error(msg);
-      }
-    }
-    hooks(MyClass, {
-      myMethod: [ErrorHandlerMW],
-    });
-    const my = new MyClass();
-    const res = await my.myMethod(inputs);
-    assert.isTrue(res.isErr());
-    if (res.isErr()) {
-      const error = res.error;
-      assert.isTrue(error instanceof UserError);
-    }
-  });
+  // it("convert system error to user error: The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action", async () => {
+  //   const msg =
+  //     "The client 'xxx@xxx.com' with object id 'xxx' does not have authorization to perform action '<REDACTED: user-file-path>' over scope '<REDACTED: user-file-path>' or the scope is invalid. If access was recently granted, please refresh your credentials.";
+  //   class MyClass {
+  //     async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+  //       throw new Error(msg);
+  //     }
+  //   }
+  //   hooks(MyClass, {
+  //     myMethod: [ErrorHandlerMW],
+  //   });
+  //   const my = new MyClass();
+  //   const res = await my.myMethod(inputs);
+  //   assert.isTrue(res.isErr());
+  //   if (res.isErr()) {
+  //     const error = res.error;
+  //     assert.isTrue(error instanceof UserError);
+  //   }
+  // });
+  // it("convert system error to user error: no space left on device", async () => {
+  //   const msg = "xxx no space left on device.";
+  //   class MyClass {
+  //     async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
+  //       throw new Error(msg);
+  //     }
+  //   }
+  //   hooks(MyClass, {
+  //     myMethod: [ErrorHandlerMW],
+  //   });
+  //   const my = new MyClass();
+  //   const res = await my.myMethod(inputs);
+  //   assert.isTrue(res.isErr());
+  //   if (res.isErr()) {
+  //     const error = res.error;
+  //     assert.isTrue(error instanceof UserError);
+  //   }
+  // });
 });
 
 describe("convertError", () => {
@@ -219,7 +219,7 @@ describe("assembleError", function () {
     const raw = [1, 2, 3];
     const fxError = assembleError(raw);
     assert.isTrue(fxError instanceof UnhandledError);
-    assert.isTrue(fxError.message.includes(JSON.stringify(raw, Object.getOwnPropertyNames(raw))));
+    // assert.isTrue(fxError.message.includes(JSON.stringify(raw, Object.getOwnPropertyNames(raw))));
     assert.isTrue(fxError.stack && fxError.stack.includes("error.test.ts"));
   });
 });

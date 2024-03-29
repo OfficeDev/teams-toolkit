@@ -21,6 +21,7 @@ import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
 import SampleFilter from "./sampleFilter";
 import SampleListItem from "./sampleListItem";
+import { IsChatParticipantEnabled } from "../../chat/consts";
 
 export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
   private samples: SampleInfo[] = [];
@@ -61,18 +62,25 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         </div>
         <div className="title">
           <h1>Samples</h1>
-          <h3>
-            Explore our sample gallery filled with solutions that work seamlessly with Teams
-            Toolkit. You can also{" "}
-            <Link
-              onClick={() => {
-                this.onInvokeTeamsAgent();
-              }}
-            >
-              start with Github Copilot
-            </Link>
-            .
-          </h3>
+          {IsChatParticipantEnabled ? (
+            <h3>
+              Explore our sample gallery filled with solutions that work seamlessly with Teams
+              Toolkit. You can also{" "}
+              <Link
+                onClick={() => {
+                  this.onInvokeTeamsAgent();
+                }}
+              >
+                start with Github Copilot
+              </Link>
+              .
+            </h3>
+          ) : (
+            <h3>
+              Explore our sample gallery filled with solutions that work seamlessly with Teams
+              Toolkit.
+            </h3>
+          )}
         </div>
       </div>
     );

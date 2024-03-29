@@ -32,6 +32,7 @@ import {
   isOfficeXMLAddinEnabled,
   isTdpTemplateCliTestEnabled,
   isApiMeSSOEnabled,
+  isChatParticipantEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -239,7 +240,11 @@ function projectTypeQuestion(): SingleSelectQuestion {
         );
       }
 
-      if (inputs.platform === Platform.VSCode && !inputs.teamsAppFromTdp) {
+      if (
+        inputs.platform === Platform.VSCode &&
+        isChatParticipantEnabled() &&
+        !inputs.teamsAppFromTdp
+      ) {
         staticOptions.push(ProjectTypeOptions.startWithGithubCopilot());
       }
       return staticOptions;

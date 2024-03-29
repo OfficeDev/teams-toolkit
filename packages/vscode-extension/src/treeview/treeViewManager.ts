@@ -3,7 +3,7 @@
 import * as vscode from "vscode";
 
 import { TreeCategory } from "@microsoft/teamsfx-api";
-import { manifestUtils } from "@microsoft/teamsfx-core";
+import { isChatParticipantEnabled, manifestUtils } from "@microsoft/teamsfx-core";
 
 import { isSPFxProject, workspaceUri } from "../globalVariables";
 import { localize } from "../utils/localizeUtils";
@@ -54,16 +54,27 @@ class TreeViewManager {
       isTeamsApp = manifestUtils.getCapabilities(manifestRes.value).length > 0;
     }
 
+    const developmentTreeviewProvider = this.getTreeView(
+      "teamsfx-development"
+    ) as CommandsTreeViewProvider;
+    const developmentCommands = developmentTreeviewProvider.getCommands();
+
+    let developmentRefreshedCommands = this.getDevelopmentCommands();
     if (removeProjectRelatedCommands) {
-      const developmentTreeviewProvider = this.getTreeView(
-        "teamsfx-development"
-      ) as CommandsTreeViewProvider;
-      const developmentCommands = developmentTreeviewProvider.getCommands();
-      developmentCommands.splice(0);
-      developmentCommands.push(...this.getDevelopmentCommands());
-      developmentCommands.splice(3);
-      developmentTreeviewProvider.refresh();
+      const commandsToKeep = [
+        "fx-extension.create",
+        "fx-extension.openSamples",
+        "fx-extension.selectTutorials",
+        "fx-extension.invokeChat",
+      ];
+      developmentRefreshedCommands = developmentRefreshedCommands.filter(
+        (command) => command.commandId && commandsToKeep.includes(command.commandId)
+      );
     }
+    developmentCommands.splice(0);
+    developmentCommands.push(...developmentRefreshedCommands);
+    developmentTreeviewProvider.refresh();
+
     const utilityTreeviewProvider = this.getTreeView("teamsfx-utility") as CommandsTreeViewProvider;
     const utilityCommands = utilityTreeviewProvider.getCommands();
     utilityCommands.splice(0);
@@ -178,7 +189,7 @@ class TreeViewManager {
   }
 
   private getDevelopmentCommands(): TreeViewCommand[] {
-    return [
+    const treeviewCommands = [
       new TreeViewCommand(
         localize("teamstoolkit.commandsTreeViewProvider.createProjectTitle"),
         localize("teamstoolkit.commandsTreeViewProvider.createProjectDescription"),
@@ -220,14 +231,20 @@ class TreeViewManager {
         undefined,
         { name: "debug-alt", custom: false }
       ),
-      new TreeViewCommand(
-        localize("teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle"),
-        localize("teamstoolkit.commandsTreeViewProvider.getCopilotHelpDescription"),
-        "fx-extension.invokeChat",
-        undefined,
-        { name: "comment-discussion", custom: false }
-      ),
+      ...(isChatParticipantEnabled()
+        ? [
+            new TreeViewCommand(
+              localize("teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle"),
+              localize("teamstoolkit.commandsTreeViewProvider.getCopilotHelpDescription"),
+              "fx-extension.invokeChat",
+              undefined,
+              { name: "comment-discussion", custom: false }
+            ),
+          ]
+        : []),
     ];
+
+    return treeviewCommands;
   }
 
   private getUtilityCommands(): TreeViewCommand[] {

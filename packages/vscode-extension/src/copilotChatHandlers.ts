@@ -116,7 +116,8 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
   ExtTelemetry.sendTelemetryEvent(eventName, triggerFromProperty);
 
   const query =
-    triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.TreeView
+    triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.TreeView ||
+    triggerFromProperty["trigger-from"] === TelemetryTriggerFrom.CommandPalette
       ? "@teams"
       : "@teams /create";
   let res;
@@ -157,7 +158,7 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
           localize("teamstoolkit.handlers.verifyCopilotExtensionError"),
           localize("teamstoolkit.handlers.verifyCopilotExtensionError")
         );
-        VsCodeLogInstance.error(`Cannot start Teams Agent due to ${error.message}`);
+        VsCodeLogInstance.error(error.message);
         res = err(error);
       }
     } else {

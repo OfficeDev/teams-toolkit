@@ -100,6 +100,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
+        [FeatureFlagName.ChatParticipant]: "false",
       });
     });
     afterEach(() => {
@@ -153,7 +154,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.bot().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -207,7 +208,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           assert.isFalse((options[2] as OptionItem).detail?.includes("Copilot"));
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
@@ -267,7 +268,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -350,7 +351,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -434,77 +435,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
-          return ok({ type: "success", result: ProjectTypeOptions.me().id });
-        } else if (question.name === QuestionNames.Capabilities) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 3);
-          const title =
-            typeof question.title === "function" ? await question.title(inputs) : question.title;
-          assert.equal(
-            title,
-            getLocalizedString("core.createProjectQuestion.projectType.messageExtension.title")
-          );
-          return ok({ type: "success", result: CapabilityOptions.m365SearchMe().id });
-        } else if (question.name === QuestionNames.MeArchitectureType) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 3);
-          return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
-        } else if (question.name === QuestionNames.ApiMEAuth) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions?.(inputs);
-          assert.isTrue(options?.length === 3);
-          return ok({
-            type: "success",
-            result: ApiMessageExtensionAuthOptions.microsoftEntra().id,
-          });
-        } else if (question.name === QuestionNames.ProgrammingLanguage) {
-          return ok({ type: "success", result: "javascript" });
-        } else if (question.name === QuestionNames.AppName) {
-          return ok({ type: "success", result: "test001" });
-        } else if (question.name === QuestionNames.Folder) {
-          return ok({ type: "success", result: "./" });
-        }
-        return ok({ type: "success", result: undefined });
-      };
-      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
-      assert.deepEqual(questions, [
-        QuestionNames.ProjectType,
-        QuestionNames.Capabilities,
-        QuestionNames.MeArchitectureType,
-        QuestionNames.ApiMEAuth,
-        QuestionNames.ProgrammingLanguage,
-        QuestionNames.Folder,
-        QuestionNames.AppName,
-      ]);
-    });
-
-    it("traverse in vscode me from new api (sso auth)", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.ApiKey]: "true",
-        [FeatureFlagName.ApiMeSSO]: "true",
-      });
-      const inputs: Inputs = {
-        platform: Platform.VSCode,
-      };
-      const questions: string[] = [];
-      const visitor: QuestionTreeVisitor = async (
-        question: Question,
-        ui: UserInteraction,
-        inputs: Inputs,
-        step?: number,
-        totalSteps?: number
-      ) => {
-        questions.push(question.name);
-
-        await callFuncs(question, inputs);
-
-        if (question.name === QuestionNames.ProjectType) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -570,7 +501,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -633,7 +564,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.outlookAddin().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -683,7 +614,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.officeXMLAddin().id });
         } else if (question.name === QuestionNames.OfficeAddinHost) {
           const select = question as SingleSelectQuestion;
@@ -757,7 +688,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.officeAddin().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -809,11 +740,10 @@ describe("scaffold question", () => {
       ) => {
         questions.push(question.name);
         await callFuncs(question, inputs);
-
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.tab().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -876,7 +806,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           return ok({ type: "success", result: ProjectTypeOptions.tab().id });
         } else if (question.name === QuestionNames.Capabilities) {
           const select = question as SingleSelectQuestion;
@@ -1196,7 +1126,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
+            assert.isTrue(options.length === 5);
             return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1251,7 +1181,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
+            assert.isTrue(options.length === 5);
             return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1315,7 +1245,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
+            assert.isTrue(options.length === 5);
             return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1378,7 +1308,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
+            assert.isTrue(options.length === 5);
             return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1452,7 +1382,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
+            assert.isTrue(options.length === 5);
             return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1516,7 +1446,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
+            assert.isTrue(options.length === 5);
             return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1577,7 +1507,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
+            assert.isTrue(options.length === 5);
             return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1658,7 +1588,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 7);
+            assert.isTrue(options.length === 6);
             return ok({ type: "success", result: "copilot-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -1706,7 +1636,7 @@ describe("scaffold question", () => {
           if (question.name === QuestionNames.ProjectType) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 7);
+            assert.isTrue(options.length === 6);
             return ok({ type: "success", result: "copilot-plugin-type" });
           } else if (question.name === QuestionNames.Capabilities) {
             const select = question as SingleSelectQuestion;
@@ -3083,6 +3013,49 @@ describe("scaffold question", () => {
     });
   });
 
+  describe("createProjectQuestionNode if chatParticipant is enabled", async () => {
+    const ui = new MockUserInteraction();
+    let mockedEnvRestore: RestoreFn = () => {};
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "false",
+        [FeatureFlagName.SampleConfigBranch]: "dev",
+        [FeatureFlagName.ChatParticipant]: "true",
+      });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+
+    it("chat with Copilot Chat", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 6);
+          return ok({ type: "success", result: ProjectTypeOptions.startWithGithubCopilot().id });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [QuestionNames.ProjectType]);
+    });
+  });
   describe("getLanguageOptions", () => {
     let mockedEnvRestore: RestoreFn = () => {};
 
@@ -3432,6 +3405,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "true",
         [FeatureFlagName.ApiCopilotPlugin]: "false",
+        [FeatureFlagName.ChatParticipant]: "false",
       });
     });
 
@@ -3457,7 +3431,7 @@ describe("scaffold question", () => {
         if (question.name === QuestionNames.ProjectType) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions!(inputs);
-          assert.isTrue(options.length === 6);
+          assert.isTrue(options.length === 5);
           assert.isTrue((options[3] as OptionItem).detail?.includes("Copilot"));
           return ok({ type: "success", result: ProjectTypeOptions.me().id });
         } else if (question.name === QuestionNames.Capabilities) {

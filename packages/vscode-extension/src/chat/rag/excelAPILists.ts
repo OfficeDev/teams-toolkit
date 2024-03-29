@@ -4536,8 +4536,8 @@ export const excelJsApiDocs = [
         kind: "Method",
         signature: "Excel.Comment.delete() => void",
         examples: [
-          'workbook.comments.getItemByCell("MyWorksheet!A2").delete();',
-          'workbook.comments.getItemByCell("Comments!A2").delete();',
+          'workbook.comments.getItemByCell("MyWorksheet!A2:A2").delete();',
+          'workbook.comments.getItemByCell("Comments!A2:A2").delete();',
         ],
       },
       {
@@ -4592,8 +4592,8 @@ export const excelJsApiDocs = [
         signature:
           "Excel.CommentCollection.add(cellAddress: string | Excel.Range, content: string | Excel.CommentRichContent, contentType?: Excel.ContentType): Excel.Comment",
         examples: [
-          'comments.add("MyWorksheet!A2", "TODO: add data.");',
-          'workbook.comments.add("MyWorksheet!A1", commentBody, Excel.ContentType.mention);',
+          'comments.add("MyWorksheet!A2:A2", "TODO: add data.");',
+          'workbook.comments.add("MyWorksheet!A1:A1", commentBody, Excel.ContentType.mention);',
           'activeWorksheet.comments.add("A2", "TODO: add data.");',
           'activeWorksheet.comments.add("A1", commentBody, Excel.ContentType.mention);',
         ],
@@ -4631,10 +4631,10 @@ export const excelJsApiDocs = [
         signature:
           "Excel.CommentCollection.getItemByCell(cellAddress: string | Excel.Range) => Excel.Comment",
         examples: [
-          'workbook.comments.getItemByCell("MyWorksheet!A2").delete();',
-          'let comment = workbook.comments.getItemByCell("MyWorksheet!A2");',
-          'workbook.comments.getItemByCell("Comments!A2").delete();',
-          'const comment = workbook.comments.getItemByCell("Comments!A2");',
+          'workbook.comments.getItemByCell("MyWorksheet!A2:A2").delete();',
+          'let comment = workbook.comments.getItemByCell("MyWorksheet!A2:A2");',
+          'workbook.comments.getItemByCell("Comments!A2:A2").delete();',
+          'const comment = workbook.comments.getItemByCell("Comments!A2:A2");',
         ],
       },
       {
@@ -13449,7 +13449,7 @@ export const excelJsApiDocs = [
         examples: [
           'activeWorksheet.pivotTables.add("Farm Sales", "A1:E21", "A22");',
           'workbook.worksheets.getItem("PivotWorksheet").pivotTables.add("Farm Sales", rangeToAnalyze, rangeToPlacePivot);',
-          'workbook.pivotTables.add("Farm Sales", "DataWorksheet!A1:E21", "PivotWorksheet!A2");',
+          'workbook.pivotTables.add("Farm Sales", "DataWorksheet!A1:E21", "PivotWorksheet!A2:A2");',
           'workbook.worksheets.getItem("Pivot").pivotTables.add("Farm Sales", rangeToAnalyze, rangeToPlacePivot);',
         ],
       },
@@ -19715,12 +19715,12 @@ export const excelJsApiDocs = [
         examples: [
           "let comments = workbook.comments;",
           "let comment = workbook.comments.getItemAt(0);",
-          'workbook.comments.getItemByCell("MyWorksheet!A2").delete();',
+          'workbook.comments.getItemByCell("MyWorksheet!A2:A2").delete();',
           "workbook.comments.getItemAt(0).resolved = true;",
-          'let comment = workbook.comments.getItemByCell("MyWorksheet!A2");',
-          'workbook.comments.add("MyWorksheet!A1", commentBody, Excel.ContentType.mention);',
-          'workbook.comments.getItemByCell("Comments!A2").delete();',
-          'const comment = workbook.comments.getItemByCell("Comments!A2");',
+          'let comment = workbook.comments.getItemByCell("MyWorksheet!A2:A2");',
+          'workbook.comments.add("MyWorksheet!A1:A1", commentBody, Excel.ContentType.mention);',
+          'workbook.comments.getItemByCell("Comments!A2:A2").delete();',
+          'const comment = workbook.comments.getItemByCell("Comments!A2:A2");',
         ],
       },
       {
@@ -19785,7 +19785,7 @@ export const excelJsApiDocs = [
         kind: "Property",
         signature: "Excel.Workbook.pivotTables: Excel.PivotTableCollection",
         examples: [
-          'workbook.pivotTables.add("Farm Sales", "DataWorksheet!A1:E21", "PivotWorksheet!A2");',
+          'workbook.pivotTables.add("Farm Sales", "DataWorksheet!A1:E21", "PivotWorksheet!A2:A2");',
         ],
       },
       {

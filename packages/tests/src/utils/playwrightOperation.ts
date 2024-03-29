@@ -1015,12 +1015,8 @@ export async function validateReactTab(
         console.log("after popup");
 
         if (popup && !popup?.isClosed()) {
-          await popup
-            .click('button:has-text("Reload")', {
-              timeout: Timeout.playwrightConsentPageReload,
-            })
-            .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
         }
         try {
           console.log("closing popup...");

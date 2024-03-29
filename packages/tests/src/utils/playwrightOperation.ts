@@ -1015,17 +1015,26 @@ export async function validateReactTab(
         console.log("after popup");
 
         if (popup && !popup?.isClosed()) {
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("popup_before"),
+            fullPage: true,
+          });
+          await popup
+          .click('button:has-text("Reload")', {
+            timeout: Timeout.playwrightConsentPageReload,
+          })
+          .catch(() => {});
           console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
           await page.waitForTimeout(Timeout.shortTimeLoading);
-        }
-        if(popup && !popup?.isClosed()) {
-          console.log("function authority failed!");
           await popup.screenshot({
-            path: getPlaywrightScreenshotPath("popup"),
+            path: getPlaywrightScreenshotPath("popup_after"),
             fullPage: true,
           });
-          throw "function authority failed!";
+        }
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close."
         }
       });
       await page.waitForTimeout(Timeout.shortTimeLoading);

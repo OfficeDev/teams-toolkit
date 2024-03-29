@@ -22,7 +22,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "addin-host",
     type: "string",
-    description: "Select to create an Outlook, Word, Excel, or PowerPoint Add-in",
+    description: "Select to Create an Outlook, Word, Excel, or PowerPoint Add-in",
     choices: ["outlook", "word", "excel", "powerpoint"],
   },
   {
@@ -60,8 +60,8 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "excel-taskpane",
       "excel-sso",
       "excel-react",
-      "excel-cfshared",
-      "excel-cfjs",
+      "excel-custom-functions-shared",
+      "excel-custom-functions-js",
       "excel-manifest",
       "powerpoint-taskpane",
       "powerpoint-sso",

@@ -16,10 +16,14 @@ You can use this repository as a sample to base your own custom functions projec
 
 ## Run and Debug Excel Add-in
 
+Before run and start the debug, make sure that:
+1. Close all opened Office Application windows.
+2. Click the *`Check and Install Dependencies`* in Teams Toolkit extension sidebar.
+
 You can run and debug this project by either of the following ways:
 
 - By hitting the `F5` key in Visual Studio Code.
-- By clicking the *`Preview Your Add-in`* in Teams Toolkit extension side bar.
+- By clicking the *`Preview Your Add-in`* in Teams Toolkit extension sidebar.
 - By running with command `npm run start` in the terminal.
 
 ## Debugging custom functions
@@ -35,20 +39,11 @@ The add-in project that you've created contains sample code for a basic task pan
 - The `./src/taskpane/taskpane.css` file contains the CSS that's applied to content in the task pane.
 - The `./src/taskpane/taskpane.ts` file contains the Office JavaScript API code that facilitates interaction between the task pane and the Excel application.
 
-
-## Edit the manifest
-
-You can edit the manifest file by either of the following ways:
-
-- From Visual Studio Code: open Teams Toolkit extension side bar and click *`Edit Manifest`*.
-- Directly edit and modify the content in `./manifest.xml`.
-
-
 ## Validate manifest
 
 You can check whether your manifest file is valid by either of the following ways:
 
-- From Visual Studio Code: open Teams Toolkit extension side bar and click *`Validate Manifest`*.
+- From Visual Studio Code: open Teams Toolkit extension sidebar and click *`Validate Manifest`*.
 - From Terminal: run the command `npx --yes office-addin-manifest validate manifest.xml`
 
 ## Additional resources

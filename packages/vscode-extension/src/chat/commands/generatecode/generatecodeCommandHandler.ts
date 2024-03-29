@@ -7,7 +7,7 @@ import {
   CancellationToken,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { OfficeAddinChatCommand } from "../../consts";
+import { OfficeAddinChatCommand, officeAddinChatParticipantId } from "../../consts";
 import { ICopilotChatResult } from "../../types";
 import { Planner } from "../../officeCommon/planner";
 import { isInputHarmful } from "../../utils";
@@ -23,7 +23,11 @@ export default async function generatecodeCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand(OfficeAddinChatCommand.Create);
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    officeAddinChatParticipantId,
+    OfficeAddinChatCommand.GenerateCode,
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
   const isHarmful = await isInputHarmful(request, token);
   if (!isHarmful) {

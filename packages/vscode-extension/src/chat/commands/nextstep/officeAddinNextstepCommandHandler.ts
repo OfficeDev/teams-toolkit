@@ -6,12 +6,12 @@ import {
   ChatContext,
   ChatFollowup,
   ChatRequest,
-  ChatResponseStream
+  ChatResponseStream,
 } from "vscode";
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
-import { OfficeAddinChatCommand } from "../../consts";
+import { OfficeAddinChatCommand, officeAddinChatParticipantId } from "../../consts";
 import followupProvider from "../../followupProvider";
 import { ChatTelemetryData } from "../../telemetry";
 import { ICopilotChatResult } from "../../types";
@@ -26,7 +26,11 @@ export default async function officeAddinNextStepCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand(OfficeAddinChatCommand.NextStep);
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    officeAddinChatParticipantId,
+    OfficeAddinChatCommand.NextStep,
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   const workspace = workspaceUri?.fsPath;

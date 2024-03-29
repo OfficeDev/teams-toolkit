@@ -23,7 +23,12 @@ import * as uuid from "uuid";
 import createCommandHandler from "./commands/create/createCommandHandler";
 import { ProjectMetadata } from "./commands/create/types";
 import nextStepCommandHandler from "./commands/nextstep/nextstepCommandHandler";
-import { TeamsChatCommand, OfficeAddinChatCommand } from "./consts";
+import {
+  TeamsChatCommand,
+  chatParticipantId,
+  OfficeAddinChatCommand,
+  officeAddinChatParticipantId,
+} from "./consts";
 import followupProvider from "./followupProvider";
 import { defaultSystemPrompt } from "./prompts";
 import { getSampleDownloadUrlInfo, verbatimCopilotInteraction } from "./utils";
@@ -85,7 +90,11 @@ async function defaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand("");
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    chatParticipantId,
+    "",
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
@@ -107,7 +116,11 @@ async function officeAddinDefaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand("");
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    officeAddinChatParticipantId,
+    "",
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
   const messages = [
     defaultOfficeAddinSystemPrompt(),

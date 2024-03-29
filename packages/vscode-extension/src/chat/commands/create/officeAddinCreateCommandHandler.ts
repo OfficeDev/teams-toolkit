@@ -10,7 +10,7 @@ import {
 
 import { Correlator } from "@microsoft/teamsfx-core";
 
-import { OfficeAddinChatCommand } from "../../consts";
+import { OfficeAddinChatCommand, officeAddinChatParticipantId } from "../../consts";
 import { defaultSystemPrompt } from "../../prompts";
 import {
   getCopilotResponseAsString,
@@ -50,7 +50,11 @@ export default async function officeAddinCreateCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand(TeamsChatCommand.Create);
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    officeAddinChatParticipantId,
+    OfficeAddinChatCommand.Create,
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
   const isHarmful = await isInputHarmful(request, token);
   if (!isHarmful) {

@@ -7,7 +7,7 @@ import {
   LanguageModelChatUserMessage,
 } from "vscode";
 
-import { OfficeAddinChatCommand } from "../consts";
+import { OfficeAddinChatCommand, officeAddinChatParticipantId } from "../consts";
 import { ISkill } from "./skills/iSkill";
 import { SkillsManager } from "./skills/skillsManager";
 import { Spec } from "./skills/spec";
@@ -48,7 +48,11 @@ export class Planner {
     command: OfficeAddinChatCommand
   ): Promise<ICopilotChatResult> {
     const candidates: ISkill[] = SkillsManager.getInstance().getCapableSkills(command);
-    const chatTelemetryData = ChatTelemetryData.createByCommand(command);
+    const chatTelemetryData = ChatTelemetryData.createByParticipant(
+      officeAddinChatParticipantId,
+      command,
+      request.location
+    );
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
     const t0 = performance.now();
     token.onCancellationRequested(() => {

@@ -11,6 +11,9 @@ import { OfficeAddinTemplateModelPorvider, WXPAppName } from "./officeAddinTempl
 import { SampleData } from "./sampleData";
 import { prepareDiscription } from "../../rag/ragUtil";
 
+// TODO: adjust the score threshold
+const scoreThreshold = 0.5;
+
 export class SampleProvider {
   private static instance: SampleProvider;
 
@@ -33,21 +36,19 @@ export class SampleProvider {
     k: number
   ): Promise<Map<string, SampleData>> {
     const samples: Map<string, SampleData> = new Map<string, SampleData>();
-    try {
-      const bm25: BM25 = await OfficeAddinTemplateModelPorvider.getInstance().getBM25Model(
-        host as WXPAppName
-      );
-      const query = prepareDiscription(scenario);
+    const bm25: BM25 | null = await OfficeAddinTemplateModelPorvider.getInstance().getBM25Model(
+      host as WXPAppName
+    );
+    if (bm25) {
+      const query = prepareDiscription(scenario.toLowerCase());
       const documents: BMDocument[] = bm25.search(query, k);
 
       for (const doc of documents) {
-        if (doc.document.metadata) {
+        if (doc.score >= scoreThreshold && doc.document.metadata) {
           const sampleData = doc.document.metadata as SampleData;
           samples.set(sampleData.name, sampleData);
         }
       }
-    } catch (error) {
-      console.error(`Failed to fetch BM25 model.`);
     }
     return new Promise<Map<string, SampleData>>((resolve, reject) => {
       resolve(samples);

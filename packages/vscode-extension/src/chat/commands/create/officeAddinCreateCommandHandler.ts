@@ -35,8 +35,11 @@ import {
   CHAT_EXECUTE_COMMAND_ID,
 } from "../../consts";
 import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
+import { BM25, BMDocument, DocumentWithmetadata } from "../../rag/BM25";
+import { prepareDiscription } from "../../rag/ragUtil";
 import { Planner } from "../../officeCommon/planner";
 import { CommandKey } from "../../../constants";
+
 
 export default async function officeAddinCreateCommandHandler(
   request: ChatRequest,
@@ -109,16 +112,16 @@ async function matchOfficeAddinProject(
     ...(await getOfficeAddinSampleMetadata()),
   ];
   const messages = [
-    getOfficeAddinProjectMatchSystemPrompt(allOfficeAddinProjectMetadata), // TODO: Implement the getOfficeAddinProjectMatchSystemPrompt.
+    getOfficeAddinProjectMatchSystemPrompt(allOfficeAddinProjectMetadata),
     new LanguageModelChatUserMessage(request.prompt),
   ];
-  const response = await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
+  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   let matchedProjectId: string;
   if (response) {
     try {
       const responseJson = JSON.parse(response);
-      if (responseJson && responseJson.app) {
-        matchedProjectId = responseJson.app;
+      if (responseJson && responseJson.addin) {
+        matchedProjectId = responseJson.addin;
       }
     } catch (e) {}
   }
@@ -168,4 +171,32 @@ function getOfficeAddinTemplateMetadata(): ProjectMetadata[] {
       },
     };
   });
+}
+
+async function matchOfficeAddinProjectByBM25(
+  request: ChatRequest
+): Promise<ProjectMetadata | undefined> {
+  const allOfficeAddinProjectMetadata = [
+    ...getOfficeAddinTemplateMetadata(),
+    ...(await getOfficeAddinSampleMetadata()),
+  ];
+  const documents: DocumentWithmetadata[] = allOfficeAddinProjectMetadata.map((sample) => {
+    return {
+      documentText: prepareDiscription(sample.description.toLowerCase()).join(" "),
+      metadata: sample,
+    };
+  });
+
+  const bm25 = new BM25(documents);
+  const query = prepareDiscription(request.prompt.toLowerCase());
+
+  // at most match one sample or template
+  const matchedDocuments: BMDocument[] = bm25.search(query, 3);
+
+  // adjust score when more samples added
+  if (matchedDocuments.length === 1 && matchedDocuments[0].score > 1) {
+    return matchedDocuments[0].document.metadata as ProjectMetadata;
+  }
+
+  return undefined;
 }

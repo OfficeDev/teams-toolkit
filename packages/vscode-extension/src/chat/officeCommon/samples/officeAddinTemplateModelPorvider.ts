@@ -3,6 +3,7 @@
 import axios from "axios";
 import { BM25, DocumentWithmetadata } from "../../rag/BM25";
 import { SampleData } from "./sampleData";
+import { prepareDiscription } from "../../rag/ragUtil";
 
 export type WXPAppName = "Word" | "Excel" | "PowerPoint";
 
@@ -28,12 +29,18 @@ export class OfficeAddinTemplateModelPorvider {
   private async getSamples(name: WXPAppName): Promise<SampleData[]> {
     const returnData: SampleData[] = [];
     const fullUrl = sampleDirectoryUrl + name;
-    const directoryResponse = await axios.get(fullUrl, {
-      headers: {
-        Accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    });
+    let directoryResponse = null;
+    try {
+      directoryResponse = await axios.get(fullUrl, {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      });
+    } catch (e) {
+      console.log(e);
+      return returnData;
+    }
     if (directoryResponse && directoryResponse.data && directoryResponse.data.length > 0) {
       const dataMap: {
         [x: string]: { Templates: [{ Description: string; SampleCodes: string }] } | null;
@@ -89,14 +96,17 @@ export class OfficeAddinTemplateModelPorvider {
     return returnData;
   }
 
-  public async getBM25Model(name: WXPAppName): Promise<BM25> {
+  public async getBM25Model(name: WXPAppName): Promise<BM25 | null> {
     if (this.bm25Models[name]) {
       return this.bm25Models[name];
     }
     const samples = await this.getSamples(name);
+    if (samples.length === 0) {
+      return null;
+    }
     const documents: DocumentWithmetadata[] = samples.map((sample) => {
       return {
-        documentText: sample.description,
+        documentText: prepareDiscription(sample.description.toLowerCase()).join(" "),
         metadata: sample,
       };
     });

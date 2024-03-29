@@ -9,7 +9,7 @@ import {
   LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { compressCode } from "../Utils";
+import { compressCode, correctPropertyLoadSpelling, writeLogToFile } from "../Utils";
 import { SampleProvider } from "../samples/sampleProvider";
 import { getCodeGenerateGuidance } from "./codeGuidance";
 import { ISkill } from "./iSkill"; // Add the missing import statement
@@ -334,14 +334,14 @@ Let's think step by step.
         token,
         host,
         request.prompt,
-        1
+        2 // Get top 2 most relevant samples for now
       );
     if (scenarioSamples.size > 0) {
       const codeSnippets: string[] = [];
       scenarioSamples.forEach((sample, api) => {
         codeSnippets.push(`- ${sample.description}:
                               \`\`\`typescript
-                              ${compressCode(sample.codeSample)}
+                              ${sample.codeSample}
                               \`\`\`\n`);
       });
 
@@ -377,6 +377,6 @@ Let's think step by step.
       return null;
     }
 
-    return codeSnippetRet[1].trim();
+    return correctPropertyLoadSpelling(codeSnippetRet[1].trim());
   }
 }

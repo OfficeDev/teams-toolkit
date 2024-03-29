@@ -1,22 +1,25 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { isValidOfficeAddInProject } from "@microsoft/teamsfx-core";
 import {
-  ChatRequest,
-  ChatContext,
-  ChatResponseStream,
   CancellationToken,
-  LanguageModelChatUserMessage,
+  ChatContext,
+  ChatFollowup,
+  ChatRequest,
+  ChatResponseStream
 } from "vscode";
-import { ICopilotChatResult } from "../../types";
-import { OfficeAddinChatCommand } from "../../consts";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { getCopilotResponseAsString } from "../../utils";
-import { defaultSystemPrompt } from "../../prompts";
-import { ChatTelemetryData } from "../../telemetry";
+import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
+import { OfficeAddinChatCommand } from "../../consts";
+import followupProvider from "../../followupProvider";
+import { ChatTelemetryData } from "../../telemetry";
+import { ICopilotChatResult } from "../../types";
+import { describeStep } from "./nextstepCommandHandler";
+import { officeAddinSteps } from "./officeAddinSteps";
+import { getWholeStatus } from "./status";
+import { WholeStatus } from "./types";
 
-//TODO: Implement the function.
 export default async function officeAddinNextStepCommandHandler(
   request: ChatRequest,
   context: ChatContext,
@@ -26,8 +29,44 @@ export default async function officeAddinNextStepCommandHandler(
   const chatTelemetryData = ChatTelemetryData.createByCommand(OfficeAddinChatCommand.NextStep);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
-  const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
-  await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
+  const workspace = workspaceUri?.fsPath;
+  const officeAddInApp = isValidOfficeAddInProject(workspace) ? workspace : undefined;
+  const status: WholeStatus = await getWholeStatus(officeAddInApp);
+  const steps = officeAddinSteps()
+    .filter((s) => s.condition(status))
+    .sort((a, b) => a.priority - b.priority);
+  if (steps.length > 1) {
+    response.markdown("Here are the next steps you can do:\n");
+  }
+  for (let index = 0; index < Math.min(3, steps.length); index++) {
+    const s = steps[index];
+    if (s.description instanceof Function) {
+      s.description = s.description(status);
+    }
+    const stepDescription = await describeStep(s, token, chatTelemetryData);
+    const title = s.docLink ? `[${s.title}](${s.docLink})` : s.title;
+    if (steps.length > 1) {
+      response.markdown(`${index + 1}. ${title}: ${stepDescription}\n`);
+    } else {
+      response.markdown(`${title}: ${stepDescription}\n`);
+    }
+    s.commands.forEach((c) => {
+      response.button(c);
+    });
+  }
+  const followUps: ChatFollowup[] = [];
+  steps.forEach((s) => {
+    followUps.push(...s.followUps);
+  });
+  followupProvider.addFollowups(followUps);
+
+  chatTelemetryData.markComplete();
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChat,
+    chatTelemetryData.properties,
+    chatTelemetryData.measurements
+  );
+
   return {
     metadata: {
       command: OfficeAddinChatCommand.NextStep,

@@ -80,7 +80,7 @@ import {
   CHAT_EXECUTE_COMMAND_ID,
   CHAT_OPENURL_COMMAND_ID,
   IsChatParticipantEnabled,
-  chatParticipantName,
+  chatParticipantId,
 } from "./chat/consts";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -402,7 +402,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
  * Copilot Chat Participant
  */
 function registerChatParticipant(context: vscode.ExtensionContext) {
-  const participant = vscode.chat.createChatParticipant(chatParticipantName, (...args) =>
+  const participant = vscode.chat.createChatParticipant(chatParticipantId, (...args) =>
     Correlator.run(chatRequestHandler, ...args)
   );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");

@@ -28,6 +28,7 @@ import {
   CHAT_CREATE_SAMPLE_COMMAND_ID,
   CHAT_EXECUTE_COMMAND_ID,
   TeamsChatCommand,
+  chatParticipantId,
 } from "../../consts";
 import {
   brieflyDescribeProjectSystemPrompt,
@@ -54,7 +55,11 @@ export default async function createCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand(TeamsChatCommand.Create);
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    chatParticipantId,
+    TeamsChatCommand.Create,
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   const matchedResult = await matchProject(request, token, chatTelemetryData);

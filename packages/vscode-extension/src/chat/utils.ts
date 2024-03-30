@@ -8,11 +8,12 @@ import {
   LanguageModelChatMessage,
   LanguageModelChatUserMessage,
   lm,
+  LanguageModelChatAssistantMessage,
 } from "vscode";
 
 import { sampleProvider } from "@microsoft/teamsfx-core";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
-import { isInputHarmfulSystemPrompt } from "./officeAddinPrompts";
+import { isInputHarmfulSystemPrompt, isOutputHarmfulSystemPrompt } from "./officeAddinPrompts";
 import { Tokenizer } from "./tokenizer";
 
 export async function verbatimCopilotInteraction(
@@ -79,29 +80,27 @@ export async function isInputHarmful(
   request: ChatRequest,
   token: CancellationToken
 ): Promise<boolean> {
-  const newUserMessage = `
-  Determines whether the user's input: "${request.prompt}" falls into one of the following type of inputs based on the Responsible AI principles:
-  | Type | Threshold |
-  | -------- | -------- |
-  | Harmful  | 10%  |
-  | Hate & Fairness  | 10%  |
-  | Sexism  | 50%  |
-  | Harassment  | 10%  |
-  | Sexual  | 50%  |
-  | Offensive  | 50%  |
-  | Racist  | 10%  |
-  | Discriminatory  | 10%  |
-  | Insulting  | 50%  |
-  | Propensity for violence  | 10%  |
-  | Illegal  | 50%  |
-  | Jail-breaking  | 10%  |
-  | Self-harm  | 20%  |
-  | Copyright-infringing  | 10%  |
-  | Stereotyping  | 10%  |
+  const isHarmfulMessage = [
+    isInputHarmfulSystemPrompt,
+    new LanguageModelChatUserMessage(request.prompt),
+  ];
+  const isHarmfulResponse = await getCopilotResponseAsString(
+    "copilot-gpt-3.5-turbo",
+    isHarmfulMessage,
+    token
+  );
+  return isHarmfulResponse.toLowerCase().includes("yes");
+}
 
-  Evaluate each type independently and give out your confidence level. If the level is greater or equal to the threshold, respond "yes". Otherwise, respond "no".
-  `;
-  const messages = [new LanguageModelChatUserMessage(newUserMessage)];
-  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
-  return response.toLowerCase().includes("yes");
+export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
+  const isHarmfulMessage = [
+    isOutputHarmfulSystemPrompt,
+    new LanguageModelChatAssistantMessage(output),
+  ];
+  const isHarmfulResponse = await getCopilotResponseAsString(
+    "copilot-gpt-3.5-turbo",
+    isHarmfulMessage,
+    token
+  );
+  return isHarmfulResponse.toLowerCase().includes("yes");
 }

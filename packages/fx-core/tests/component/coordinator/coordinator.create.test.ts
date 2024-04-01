@@ -885,15 +885,20 @@ describe("coordinator create", () => {
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
+  let mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.OfficeXMLAddin]: "false",
+    });
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("should scaffold taskpane successfully", async () => {
@@ -1054,15 +1059,20 @@ describe("Office XML Addin", async () => {
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
+  let mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.OfficeXMLAddin]: "false",
+    });
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("should scaffold taskpane successfully", async () => {

@@ -62,15 +62,15 @@ namespace {{SafeProjectName}}
         */
         private bool IsApiKeyValid(HttpRequestData req)
         {
-            // Try to get the value of the 'x-api-key' header from the request.
+            // Try to get the value of the 'Authorization' header from the request.
             // If the header is not present, return false.
-            if (!req.Headers.TryGetValues("x-api-key", out var apiKeyValue))
+            if (!req.Headers.TryGetValues("Authorization", out var authValue))
             {
                 return false;
             }
 
-            // Get the first value of the 'x-api-key' header.
-            var apiKey = apiKeyValue.FirstOrDefault();
+            // Get the api key value from the 'Authorization' header.
+            var apiKey = authValue.FirstOrDefault().Replace("Bearer", "").Trim();
 
             // Get the API key from the configuration.
             var configApiKey = _configuration["API_KEY"];

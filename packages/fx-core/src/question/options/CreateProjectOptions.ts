@@ -22,7 +22,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
   {
     name: "addin-host",
     type: "string",
-    description: "Select to create an Outlook, Word, Excel, or PowerPoint Add-in",
+    description: "Select to Create an Outlook, Word, Excel, or PowerPoint Add-in",
     choices: ["outlook", "word", "excel", "powerpoint"],
   },
   {
@@ -48,6 +48,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "copilot-plugin-new-api",
       "copilot-plugin-existing-api",
       "custom-copilot-basic",
+      "custom-copilot-rag",
       "custom-copilot-agent",
       "message-extension",
       "BotAndMessageExtension",
@@ -60,8 +61,8 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "excel-taskpane",
       "excel-sso",
       "excel-react",
-      "excel-cfshared",
-      "excel-cfjs",
+      "excel-custom-functions-shared",
+      "excel-custom-functions-js",
       "excel-manifest",
       "powerpoint-taskpane",
       "powerpoint-sso",
@@ -144,6 +145,13 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "The authentication type for the API.",
     default: "none",
     choices: ["none", "api-key", "microsoft-entra"],
+  },
+  {
+    name: "custom-copilot-rag",
+    type: "string",
+    description: "Chat With Your Data",
+    default: "custom-copilot-rag-customize",
+    choices: ["custom-copilot-rag-azureAISearch"],
   },
   {
     name: "custom-copilot-agent",

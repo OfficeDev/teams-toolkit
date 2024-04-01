@@ -144,6 +144,7 @@ export class FeatureFlags {
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly DevelopCopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
+  static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

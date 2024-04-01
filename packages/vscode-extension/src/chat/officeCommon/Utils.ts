@@ -50,6 +50,21 @@ export async function writeLogToFile(log: string): Promise<void> {
   await fs.appendFileSync(filePath, log);
 }
 
+export function correctPropertyLoadSpelling(codeSnippet: string): string {
+  // chart.load("name, chartType, height, width"); // correct
+  // chart.load(["name", "chartType", "height", "width"]); // correct
+  // chart.load("name", "chartType", "height", "width"); // wrong
+  // chart.load(["name, chartType, height, width"]); // wrong
+
+  const regex = /\.load\(["'](.*?)["']\)/g;
+  const correctedLoadString: string = codeSnippet.replace(regex, (match, group1) => {
+    const params: string = group1.replace(/['"`]/g, "");
+    return `.load("${params}")`;
+  });
+
+  return correctedLoadString;
+}
+
 export function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
 }

@@ -61,12 +61,11 @@ export class projectCreator implements ISkill {
     tempFolder: string,
     tempAppName: string
   ): Promise<ChatResponseFileTree[]> {
+    const host = spec.appendix.host.toLowerCase();
     const createInputs = {
-      capabilities: spec.appendix.isCustomFunction
-        ? "excel-cfshared"
-        : `${spec.appendix.host}-taskpane`,
+      capabilities: spec.appendix.isCustomFunction ? "excel-cfshared" : `${host}-taskpane`,
       "project-type": "office-xml-addin-type",
-      "addin-host": spec.appendix.host.toLowerCase(),
+      "addin-host": host,
       "programming-language": "javascript",
       folder: tempFolder,
       "app-name": tempAppName,

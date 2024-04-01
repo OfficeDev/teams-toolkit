@@ -15,6 +15,7 @@ export const RecordedActions: (keyof ProjectActionStatus)[] = [
   CommandKey.Deploy,
   CommandKey.Publish,
   CommandKey.OpenReadMe,
+  CommandKey.LocalDebug,
 ];
 
 export function emptyProjectStatus(): ProjectActionStatus {

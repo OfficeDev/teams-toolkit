@@ -46,6 +46,10 @@ export enum CommandKey {
   Deploy = "fx-extension.deploy",
   Publish = "fx-extension.publish",
   Preview = "fx-extension.preview",
+  installDependency = "fx-extension.installDependency",
+  publishToAppSource = "fx-extension.publishToAppSource",
+  openDeployLink = "fx-extension.officeDevDeploy",
+  openOfficeDevDocument = "fx-extension.openOfficeDevDocument",
 }
 
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;

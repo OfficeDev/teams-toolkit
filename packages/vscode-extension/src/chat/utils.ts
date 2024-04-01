@@ -1,10 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CancellationToken, ChatResponseStream, LanguageModelChatMessage, lm } from "vscode";
+import {
+  ChatRequest,
+  CancellationToken,
+  ChatResponseStream,
+  LanguageModelChatMessage,
+  LanguageModelChatUserMessage,
+  lm,
+  LanguageModelChatAssistantMessage,
+} from "vscode";
 
 import { sampleProvider } from "@microsoft/teamsfx-core";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
+import { isInputHarmfulSystemPrompt, isOutputHarmfulSystemPrompt } from "./officeAddinPrompts";
 import { Tokenizer } from "./tokenizer";
 
 export async function verbatimCopilotInteraction(
@@ -65,4 +74,33 @@ export function countMessagesTokens(messages: LanguageModelChatMessage[]): numbe
   }
   numTokens += BaseTokensPerCompletion;
   return numTokens;
+}
+
+export async function isInputHarmful(
+  request: ChatRequest,
+  token: CancellationToken
+): Promise<boolean> {
+  const isHarmfulMessage = [
+    isInputHarmfulSystemPrompt,
+    new LanguageModelChatUserMessage(request.prompt),
+  ];
+  const isHarmfulResponse = await getCopilotResponseAsString(
+    "copilot-gpt-3.5-turbo",
+    isHarmfulMessage,
+    token
+  );
+  return isHarmfulResponse.toLowerCase().includes("yes");
+}
+
+export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
+  const isHarmfulMessage = [
+    isOutputHarmfulSystemPrompt,
+    new LanguageModelChatAssistantMessage(output),
+  ];
+  const isHarmfulResponse = await getCopilotResponseAsString(
+    "copilot-gpt-3.5-turbo",
+    isHarmfulMessage,
+    token
+  );
+  return isHarmfulResponse.toLowerCase().includes("yes");
 }

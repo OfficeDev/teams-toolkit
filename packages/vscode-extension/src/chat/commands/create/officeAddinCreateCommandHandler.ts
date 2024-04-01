@@ -10,9 +10,13 @@ import {
 
 import { Correlator } from "@microsoft/teamsfx-core";
 
-import { OfficeAddinChatCommand } from "../../consts";
+import { OfficeAddinChatCommand, officeAddinChatParticipantId } from "../../consts";
 import { defaultSystemPrompt } from "../../prompts";
-import { getCopilotResponseAsString, verbatimCopilotInteraction } from "../../utils";
+import {
+  getCopilotResponseAsString,
+  verbatimCopilotInteraction,
+  isInputHarmful,
+} from "../../utils";
 import { IChatTelemetryData, ICopilotChatResult } from "../../types";
 import { ProjectMetadata } from "./types";
 import { sampleProvider } from "@microsoft/teamsfx-core";
@@ -35,6 +39,8 @@ import {
   CHAT_EXECUTE_COMMAND_ID,
 } from "../../consts";
 import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
+import { BM25, BMDocument, DocumentWithmetadata } from "../../rag/BM25";
+import { prepareDiscription } from "../../rag/ragUtil";
 import { Planner } from "../../officeCommon/planner";
 import { CommandKey } from "../../../constants";
 
@@ -44,53 +50,59 @@ export default async function officeAddinCreateCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand(TeamsChatCommand.Create);
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    officeAddinChatParticipantId,
+    OfficeAddinChatCommand.Create,
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
-  const matchedResult = await matchOfficeAddinProject(request, token, chatTelemetryData);
-  if (matchedResult) {
-    const describeProjectChatMessages = [
-      describeOfficeAddinProjectSystemPrompt,
-      new LanguageModelChatUserMessage(
-        `The project you are looking for is '${JSON.stringify(matchedResult)}'.`
-      ),
-    ];
-    chatTelemetryData.chatMessages.push(...describeProjectChatMessages);
+  const isHarmful = await isInputHarmful(request, token);
+  if (!isHarmful) {
+    const matchedResult = await matchOfficeAddinProject(request, token, chatTelemetryData);
+    if (matchedResult) {
+      const describeProjectChatMessages = [
+        describeOfficeAddinProjectSystemPrompt,
+        new LanguageModelChatUserMessage(
+          `The project you are looking for is '${JSON.stringify(matchedResult)}'.`
+        ),
+      ];
+      chatTelemetryData.chatMessages.push(...describeProjectChatMessages);
 
-    await verbatimCopilotInteraction(
-      "copilot-gpt-3.5-turbo",
-      describeProjectChatMessages,
-      response,
-      token
-    );
-    if (matchedResult.type === "sample") {
-      const folder = await showFileTree(matchedResult, response);
-      const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
-      response.button({
-        command: CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
-        arguments: [folder],
-        title: sampleTitle,
-      });
-    } else if (matchedResult.type === "template") {
-      const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
-      response.button({
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.Create, chatTelemetryData.requestId, matchedResult.data],
-        title: templateTitle,
-      });
+      await verbatimCopilotInteraction(
+        "copilot-gpt-3.5-turbo",
+        describeProjectChatMessages,
+        response,
+        token
+      );
+      if (matchedResult.type === "sample") {
+        const folder = await showFileTree(matchedResult, response);
+        const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
+        response.button({
+          command: CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
+          arguments: [folder],
+          title: sampleTitle,
+        });
+      } else if (matchedResult.type === "template") {
+        const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
+        response.button({
+          command: CHAT_EXECUTE_COMMAND_ID,
+          arguments: [CommandKey.Create, chatTelemetryData.requestId, matchedResult.data],
+          title: templateTitle,
+        });
+      }
+    } else {
+      // TODO: If the match fails, generate the code.
+      return await Planner.getInstance().processRequest(
+        new LanguageModelChatUserMessage(request.prompt),
+        request,
+        response,
+        token,
+        OfficeAddinChatCommand.Create
+      );
     }
   } else {
-    // TODO: If the match fails, generate the code.
-    return await Planner.getInstance().processRequest(
-      new LanguageModelChatUserMessage(request.prompt),
-      request,
-      response,
-      token,
-      OfficeAddinChatCommand.Create
-    );
+    response.markdown(localize("teamstoolkit.chatParticipants.officeaddin.harmfulInputResponse"));
   }
-
-  const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
-  await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
   return {
     metadata: {
       command: TeamsChatCommand.Create,
@@ -109,16 +121,16 @@ async function matchOfficeAddinProject(
     ...(await getOfficeAddinSampleMetadata()),
   ];
   const messages = [
-    getOfficeAddinProjectMatchSystemPrompt(allOfficeAddinProjectMetadata), // TODO: Implement the getOfficeAddinProjectMatchSystemPrompt.
+    getOfficeAddinProjectMatchSystemPrompt(allOfficeAddinProjectMetadata),
     new LanguageModelChatUserMessage(request.prompt),
   ];
-  const response = await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
+  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   let matchedProjectId: string;
   if (response) {
     try {
       const responseJson = JSON.parse(response);
-      if (responseJson && responseJson.app) {
-        matchedProjectId = responseJson.app;
+      if (responseJson && responseJson.addin) {
+        matchedProjectId = responseJson.addin;
       }
     } catch (e) {}
   }
@@ -168,4 +180,32 @@ function getOfficeAddinTemplateMetadata(): ProjectMetadata[] {
       },
     };
   });
+}
+
+async function matchOfficeAddinProjectByBM25(
+  request: ChatRequest
+): Promise<ProjectMetadata | undefined> {
+  const allOfficeAddinProjectMetadata = [
+    ...getOfficeAddinTemplateMetadata(),
+    ...(await getOfficeAddinSampleMetadata()),
+  ];
+  const documents: DocumentWithmetadata[] = allOfficeAddinProjectMetadata.map((sample) => {
+    return {
+      documentText: prepareDiscription(sample.description.toLowerCase()).join(" "),
+      metadata: sample,
+    };
+  });
+
+  const bm25 = new BM25(documents);
+  const query = prepareDiscription(request.prompt.toLowerCase());
+
+  // at most match one sample or template
+  const matchedDocuments: BMDocument[] = bm25.search(query, 3);
+
+  // adjust score when more samples added
+  if (matchedDocuments.length === 1 && matchedDocuments[0].score > 1) {
+    return matchedDocuments[0].document.metadata as ProjectMetadata;
+  }
+
+  return undefined;
 }

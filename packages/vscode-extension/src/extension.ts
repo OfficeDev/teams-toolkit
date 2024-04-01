@@ -63,7 +63,12 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
-import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
+import {
+  FeatureFlags,
+  delay,
+  hasAdaptiveCardInWorkspace,
+  isM365Project,
+} from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
@@ -75,8 +80,9 @@ import {
   CHAT_CREATE_SAMPLE_COMMAND_ID,
   CHAT_EXECUTE_COMMAND_ID,
   CHAT_OPENURL_COMMAND_ID,
-  chatParticipantName,
-  officeAddinChatParticipantName,
+  IsChatParticipantEnabled,
+  officeAddinChatParticipantId,
+  chatParticipantId,
 } from "./chat/consts";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -130,6 +136,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+
+  // control whether to show chat participant entries
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isChatParticipantEnabled",
+    IsChatParticipantEnabled
+  );
+
+  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -392,7 +407,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
  * Copilot Chat Participant
  */
 function registerChatParticipant(context: vscode.ExtensionContext) {
-  const participant = vscode.chat.createChatParticipant(chatParticipantName, (...args) =>
+  const participant = vscode.chat.createChatParticipant(chatParticipantId, (...args) =>
     Correlator.run(chatRequestHandler, ...args)
   );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
@@ -418,7 +433,7 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
  */
 function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
   const participant = vscode.chat.createChatParticipant(
-    officeAddinChatParticipantName,
+    officeAddinChatParticipantId,
     officeAddinChatRequestHandler
   );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
@@ -430,6 +445,9 @@ function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
       chatCreateCommandHandler
+    ),
+    vscode.commands.registerCommand("fx-extension.openOfficeDevDocument", (...args) =>
+      Correlator.run(officeDevHandlers.openDocumentHandler, args)
     )
     // vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler)
     // vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
@@ -803,11 +821,7 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openHelpFeedbackLinkCmd);
 
-  const openOfficeDevDocumentLinkCmd = vscode.commands.registerCommand(
-    "fx-extension.openOfficeDevDocument",
-    (...args) => Correlator.run(officeDevHandlers.openDocumentHandler, args)
-  );
-  context.subscriptions.push(openOfficeDevDocumentLinkCmd);
+  // fx-extension.openOfficeDevDocument is registered in registerOfficeDevRegistration
 
   const openGetStartedLinkCmd = vscode.commands.registerCommand(
     "fx-extension.openGetStarted",
@@ -1096,9 +1110,7 @@ async function runBackgroundAsyncTasks(
   const releaseNote = new ReleaseNote(context);
   await releaseNote.show();
 
-  if (!isOfficeAddInProject) {
-    await openWelcomePageAfterExtensionInstallation();
-  }
+  await openWelcomePageAfterExtensionInstallation();
 
   if (isTeamsFxProject) {
     await runTeamsFxBackgroundTasks();

@@ -9,6 +9,7 @@ import {
 import { ISkill } from "./iSkill";
 import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
+import { isOutputHarmful } from "../../utils";
 
 export class Printer implements ISkill {
   name: string | undefined;
@@ -36,6 +37,22 @@ export class Printer implements ISkill {
     token: CancellationToken,
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
+    const isSummaryHarmful = await isOutputHarmful(spec.userInput, token);
+    const isTaskBreakdownHarmful = await isOutputHarmful(
+      spec.appendix.codeTaskBreakdown.join("\n- "),
+      token
+    );
+    const isCodeSnippetHarmful = await isOutputHarmful(spec.appendix.codeSnippet, token);
+    const isCodeExplanationHarmful = await isOutputHarmful(spec.appendix.codeExplanation, token);
+    if (
+      isSummaryHarmful ||
+      isTaskBreakdownHarmful ||
+      isCodeSnippetHarmful ||
+      isCodeExplanationHarmful
+    ) {
+      response.markdown("The response is filtered by Responsible AI service.");
+      return { result: ExecutionResultEnum.Failure, spec: spec };
+    }
     const template = `
 # 1. Task Summary
 ${spec.userInput}

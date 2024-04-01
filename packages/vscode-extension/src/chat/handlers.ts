@@ -23,7 +23,12 @@ import * as uuid from "uuid";
 import createCommandHandler from "./commands/create/createCommandHandler";
 import { ProjectMetadata } from "./commands/create/types";
 import nextStepCommandHandler from "./commands/nextstep/nextstepCommandHandler";
-import { TeamsChatCommand, OfficeAddinChatCommand } from "./consts";
+import {
+  TeamsChatCommand,
+  chatParticipantId,
+  OfficeAddinChatCommand,
+  officeAddinChatParticipantId,
+} from "./consts";
 import followupProvider from "./followupProvider";
 import { defaultSystemPrompt } from "./prompts";
 import { getSampleDownloadUrlInfo, verbatimCopilotInteraction } from "./utils";
@@ -41,6 +46,7 @@ import generatecodeCommandHandler from "./commands/generatecode/generatecodeComm
 import officeAddinCreateCommandHandler from "./commands/create/officeAddinCreateCommandHandler";
 import officeAddinNextStepCommandHandler from "./commands/nextstep/officeAddinNextstepCommandHandler";
 import { FxError, Result } from "@microsoft/teamsfx-api";
+import { defaultOfficeAddinSystemPrompt } from "./officeAddinPrompts";
 
 export function chatRequestHandler(
   request: ChatRequest,
@@ -74,7 +80,7 @@ export function officeAddinChatRequestHandler(
   } else if (request.command == OfficeAddinChatCommand.NextStep) {
     return officeAddinNextStepCommandHandler(request, context, response, token);
   } else {
-    return defaultHandler(request, context, response, token);
+    return officeAddinDefaultHandler(request, context, response, token);
   }
 }
 
@@ -84,10 +90,42 @@ async function defaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByCommand("");
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    chatParticipantId,
+    "",
+    request.location
+  );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   const messages = [defaultSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
+  chatTelemetryData.chatMessages.push(...messages);
+  await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
+
+  chatTelemetryData.markComplete();
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChat,
+    chatTelemetryData.properties,
+    chatTelemetryData.measurements
+  );
+  return { metadata: { command: undefined, requestId: chatTelemetryData.requestId } };
+}
+
+async function officeAddinDefaultHandler(
+  request: ChatRequest,
+  context: ChatContext,
+  response: ChatResponseStream,
+  token: CancellationToken
+): Promise<ICopilotChatResult> {
+  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+    officeAddinChatParticipantId,
+    "",
+    request.location
+  );
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
+  const messages = [
+    defaultOfficeAddinSystemPrompt(),
+    new LanguageModelChatUserMessage(request.prompt),
+  ];
   chatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 

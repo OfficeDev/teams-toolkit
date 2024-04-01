@@ -4,7 +4,7 @@
 import { ChatFollowup } from "vscode";
 import { localize } from "../utils/localizeUtils";
 
-export const chatParticipantName = "ms-teams-vscode-extension.teams";
+export const chatParticipantId = "ms-teams-vscode-extension.teams";
 
 export const CHAT_CREATE_SAMPLE_COMMAND_ID = "fx-extension.chat.createSample";
 export const CHAT_EXECUTE_COMMAND_ID = "fx-extension.chat.executeCommand";
@@ -37,3 +37,5 @@ export const BaseTokensPerMessage = 3;
  * Since gpt-3.5-turbo-0613 each name costs 1 token
  */
 export const BaseTokensPerName = 1;
+
+export const IsChatParticipantEnabled = true;

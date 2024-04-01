@@ -63,7 +63,12 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
-import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
+import {
+  FeatureFlags,
+  delay,
+  hasAdaptiveCardInWorkspace,
+  isM365Project,
+} from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
@@ -74,7 +79,8 @@ import {
   CHAT_CREATE_SAMPLE_COMMAND_ID,
   CHAT_EXECUTE_COMMAND_ID,
   CHAT_OPENURL_COMMAND_ID,
-  chatParticipantName,
+  IsChatParticipantEnabled,
+  chatParticipantId,
 } from "./chat/consts";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -125,6 +131,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+
+  // control whether to show chat participant entries
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isChatParticipantEnabled",
+    IsChatParticipantEnabled
+  );
+
+  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -387,7 +402,7 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
  * Copilot Chat Participant
  */
 function registerChatParticipant(context: vscode.ExtensionContext) {
-  const participant = vscode.chat.createChatParticipant(chatParticipantName, (...args) =>
+  const participant = vscode.chat.createChatParticipant(chatParticipantId, (...args) =>
     Correlator.run(chatRequestHandler, ...args)
   );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");

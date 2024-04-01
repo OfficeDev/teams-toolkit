@@ -368,6 +368,8 @@ export enum TelemetryProperty {
   CopilotChatCommand = "copilot-chat-command",
   CopilotChatRequestId = "copilot-chat-request-id",
   CopilotChatRunCommandId = "copilot-chat-run-command-id", // the id of clicked button in the response
+  CopilotChatParticipantId = "copilot-chat-participant-id",
+  CopilotChatLocation = "copilot-chat-location",
 }
 
 export enum TelemetryMeasurements {

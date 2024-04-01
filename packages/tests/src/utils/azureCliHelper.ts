@@ -109,7 +109,7 @@ export class AzSqlHelper {
   }
 
   static async login() {
-    const command = `az login --allow-no-subscriptions -u ${Env["azureAccountName"]} -p ${Env["azureAccountPassword"]}`;
+    const command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
     const { success } = await Executor.execute(command, process.cwd());
     if (!success) {
       console.error(`Failed to login`);
@@ -244,7 +244,7 @@ export class AzServiceBusHelper {
   }
 
   static async login() {
-    const command = `az login --allow-no-subscriptions -u ${Env["azureAccountName"]} -p ${Env["azureAccountPassword"]}`;
+    const command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
     const { success } = await Executor.execute(command, process.cwd());
     if (!success) {
       console.error(`Failed to login`);

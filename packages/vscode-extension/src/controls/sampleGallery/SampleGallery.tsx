@@ -6,7 +6,7 @@ import "./SampleGallery.scss";
 import Fuse from "fuse.js";
 import * as React from "react";
 
-import { Icon } from "@fluentui/react";
+import { Icon, Link } from "@fluentui/react";
 
 import { GlobalKey } from "../../constants";
 import {
@@ -21,6 +21,7 @@ import SampleCard from "./sampleCard";
 import SampleDetailPage from "./sampleDetailPage";
 import SampleFilter from "./sampleFilter";
 import SampleListItem from "./sampleListItem";
+import { IsChatParticipantEnabled } from "../../chat/consts";
 
 export default class SampleGallery extends React.Component<unknown, SampleGalleryState> {
   private samples: SampleInfo[] = [];
@@ -61,10 +62,25 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
         </div>
         <div className="title">
           <h1>Samples</h1>
-          <h3>
-            Explore our sample gallery filled with solutions that work seamlessly with Teams
-            Toolkit.
-          </h3>
+          {IsChatParticipantEnabled ? (
+            <h3>
+              Explore our sample gallery filled with solutions that work seamlessly with Teams
+              Toolkit. Or you can also{" "}
+              <Link
+                onClick={() => {
+                  this.onInvokeTeamsAgent();
+                }}
+              >
+                use Github Copilot
+              </Link>{" "}
+              and get step-by-step instructions to create your Teams app.
+            </h3>
+          ) : (
+            <h3>
+              Explore our sample gallery filled with solutions that work seamlessly with Teams
+              Toolkit.
+            </h3>
+          )}
         </div>
       </div>
     );
@@ -349,6 +365,12 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
       data: {
         version: sample.minimumToolkitVersion,
       },
+    });
+  };
+
+  private onInvokeTeamsAgent = () => {
+    vscode.postMessage({
+      command: Commands.InvokeTeamsAgent,
     });
   };
 }

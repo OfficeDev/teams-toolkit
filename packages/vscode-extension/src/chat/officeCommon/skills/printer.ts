@@ -10,6 +10,7 @@ import { ISkill } from "./iSkill";
 import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
 import { isOutputHarmful } from "../../utils";
+import { index } from "../../../../test/mocks/vsc/arrays";
 
 export class Printer implements ISkill {
   name: string | undefined;
@@ -38,18 +39,17 @@ export class Printer implements ISkill {
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const isSummaryHarmful = await isOutputHarmful(spec.userInput, token);
-    const isTaskBreakdownHarmful = await isOutputHarmful(
-      spec.appendix.codeTaskBreakdown.join("\n- "),
-      token
-    );
-    const isCodeSnippetHarmful = await isOutputHarmful(spec.appendix.codeSnippet, token);
-    const isCodeExplanationHarmful = await isOutputHarmful(spec.appendix.codeExplanation, token);
-    if (
-      isSummaryHarmful ||
-      isTaskBreakdownHarmful ||
-      isCodeSnippetHarmful ||
-      isCodeExplanationHarmful
-    ) {
+    // Truncate the code snippet for post-validation for the token limitation.
+    const codes = spec.appendix.codeSnippet.split(" ");
+    let isCodeSnippetHarmful = false;
+    for (let index = 0; index < codes.length; index += 100) {
+      const truncatedCode = codes.slice(index, index + 200).join(" ");
+      isCodeSnippetHarmful = await isOutputHarmful(truncatedCode, token);
+      if (isCodeSnippetHarmful) {
+        break;
+      }
+    }
+    if (isSummaryHarmful || isCodeSnippetHarmful) {
       response.markdown("The response is filtered by Responsible AI service.");
       return { result: ExecutionResultEnum.Failure, spec: spec };
     }

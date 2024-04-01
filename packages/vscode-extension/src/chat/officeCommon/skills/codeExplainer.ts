@@ -40,7 +40,7 @@ export class Explainer implements ISkill {
 Based on the user's input ${spec.userInput}, and the breakdown of the ask:
 - ${spec.appendix.codeTaskBreakdown.join("\n- ")}
 
-As output, you shou'd only provide the explanation for the code snippet, not the code snippet itself. The output should be in the format of Markdown.
+As output, you should only provide a very general short brief for the code snippet, not the code snippet itself. The output should be in the format of Markdown.
 `;
 
     const userPrompt = `

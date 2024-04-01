@@ -226,6 +226,7 @@ export class CodeGenerator implements ISkill {
   - If the ask is not relevant to Microsoft Excel, Microsoft Word, or Microsoft PowerPoint, you should reject it because today this agent only support offer assistant to those Office host applications. And give the reason to reject the ask.
   - If the ask is not about automating a certain process or accomplishing a certain task using Office JavaScript Add-ins, you should reject it. And give the reason to reject the ask.
   - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
+  - If the ask is about generate content beyond the code, you should reject it. And give the reason to reject the ask. For example, if the ask is about generate a document, a noval, a word document content, a powerpoint slide content, etc. you should reject it.
   - Otherwise, please think about if you can process the ask. 
     - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
     - If you can process the ask, you should:

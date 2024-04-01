@@ -145,10 +145,7 @@ export class SampledebugContext extends TestContext {
 
   public async openResourceFolder(): Promise<void> {
     console.log("start to open project: ", this.sampleName);
-    const oldPath = path.resolve(
-      this.repoPath,
-      this.originSample
-    );
+    const oldPath = path.resolve(this.repoPath, this.originSample);
     // move old sample to project path
     await fs.mkdir(this.projectPath);
     try {
@@ -383,25 +380,37 @@ export class SampledebugContext extends TestContext {
   public async prepareDebug(tool: "npm" | "yarn"): Promise<void> {
     {
       console.log(`executor command: npm install yarn`);
-      const { success, stderr, stdout } = await Executor.execute(`npm install yarn --force`, this.projectPath);
+      const { stderr, stdout } = await Executor.execute(
+        `npm install yarn --force`,
+        this.projectPath
+      );
       console.log("stdout: ", stdout);
       console.log("stderr: ", stderr);
     }
     {
       console.log(`executor command: corepack enable`);
-      const { success, stderr, stdout } = await Executor.execute(`corepack enable`, this.projectPath);
+      const { stderr, stdout } = await Executor.execute(
+        `corepack enable`,
+        this.projectPath
+      );
       console.log("stdout: ", stdout);
       console.log("stderr: ", stderr);
     }
     {
       console.log(`executor command: ${tool} install`);
-      const { success, stderr, stdout } = await Executor.execute(`${tool} install`, this.projectPath);
+      const { stderr, stdout } = await Executor.execute(
+        `${tool} install`,
+        this.projectPath
+      );
       console.log("stdout: ", stdout);
       console.log("stderr: ", stderr);
     }
     {
       console.log(`executor command: ${tool} build`);
-      const { success, stderr, stdout } = await Executor.execute(`${tool} build`, this.projectPath);
+      const { stderr, stdout } = await Executor.execute(
+        `${tool} build`,
+        this.projectPath
+      );
       console.log("stdout: ", stdout);
       console.log("stderr: ", stderr);
     }

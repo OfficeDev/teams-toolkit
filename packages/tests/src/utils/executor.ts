@@ -469,7 +469,7 @@ export class Executor {
     } catch (error) {
       console.log("read file error", error);
       console.log("create .env.local file");
-      fs.writeFileSync(envFile, ''); 
+      fs.writeFileSync(envFile, "");
     }
     const domainRegex = /Connect via browser: https:\/\/(\S+)/;
     const endpointRegex = /Connect via browser: (\S+)/;

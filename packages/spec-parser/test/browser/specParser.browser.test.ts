@@ -22,6 +22,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/pets": {
             get: {
@@ -100,6 +105,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/user/{userId}": {
             get: {
@@ -170,13 +180,13 @@ describe("SpecParser in Browser", () => {
               title: "UserId",
               description: "User Id",
             },
+            {
+              name: "name",
+              title: "Name",
+              description: "User Name",
+            },
           ],
           description: "Get user by user id, balabala",
-          warning: {
-            type: WarningType.OperationOnlyContainsOptionalParam,
-            content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getUserById"),
-            data: "getUserById",
-          },
         },
       ]);
     });
@@ -185,6 +195,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/user/{userId}": {
             get: {
@@ -233,7 +248,7 @@ describe("SpecParser in Browser", () => {
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const listSupportedAPIsSyp = sinon.spy(Utils, "listSupportedAPIs");
+      const listSupportedAPIsSyp = sinon.spy(specParser as any, "listSupportedAPIs");
       let result = await specParser.listSupportedAPIInfo();
       result = await specParser.listSupportedAPIInfo();
       expect(result).to.deep.equal([
@@ -259,6 +274,11 @@ describe("SpecParser in Browser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: true });
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/pets": {
             get: {

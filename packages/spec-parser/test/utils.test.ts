@@ -70,6 +70,11 @@ describe("utils", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -110,14 +115,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if have no operationId with allowMissingId is false", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -158,14 +168,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.MissingOperationId]);
     });
 
     it("should return true if method is POST, path is valid, and no required parameters", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -220,14 +236,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if method is POST, path is valid, parameter is supported and only one required param in parameters but contains auth", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         components: {
           securitySchemes: {
             api_key: {
@@ -301,14 +322,106 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.AuthTypeIsNotSupported]);
+    });
+
+    it("should return true if allowBearerTokenAuth is true and contains bearer token auth", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        components: {
+          securitySchemes: {
+            bearer_token1: {
+              type: "http",
+              scheme: "bearer",
+            },
+            bearer_token2: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+        },
+        paths: {
+          "/users": {
+            post: {
+              security: [
+                {
+                  bearer_token2: [],
+                },
+              ],
+              parameters: [
+                {
+                  in: "query",
+                  required: false,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowBearerTokenAuth: true,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return true if allowAPIKeyAuth is true and contains apiKey auth", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         components: {
           securitySchemes: {
             api_key: {
@@ -383,14 +496,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if allowAPIKeyAuth is true but contains multiple apiKey auth", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         components: {
           securitySchemes: {
             api_key: {
@@ -465,14 +583,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.MultipleAuthNotSupported]);
     });
 
     it("should return true if allowOauth2 is true and contains aad auth", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         components: {
           securitySchemes: {
             oauth: {
@@ -550,14 +674,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if allowAPIKeyAuth is true, allowOauth2 is false, but contain oauth", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         components: {
           securitySchemes: {
             api_key: {
@@ -640,14 +769,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.AuthTypeIsNotSupported]);
     });
 
     it("should return false if allowAPIKeyAuth is true, allowOauth2 is true, but not auth code flow", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         components: {
           securitySchemes: {
             api_key: {
@@ -729,14 +864,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.AuthTypeIsNotSupported]);
     });
 
     it("should return true if allowAPIKeyAuth is true, allowOauth2 is true, but not auth code flow for teams ai project", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         components: {
           securitySchemes: {
             api_key: {
@@ -818,14 +959,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return true if method is POST, path is valid, parameter is supported and only one required param in parameters", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -881,14 +1027,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if method is POST, path is valid, parameter is supported and both postBody and parameters contains required param", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -944,14 +1095,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.ExceededRequiredParamsLimit]);
     });
 
     it("should return true if method is POST, path is valid, parameter is supported and both postBody and parameters contains multiple required param for copilot", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1007,14 +1164,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should support multiple required parameters", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1069,14 +1231,19 @@ describe("utils", () => {
         projectType: ProjectType.SME,
         allowMethods: ["get", "post"],
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should not support multiple required parameters count larger than 5", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1140,14 +1307,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.ExceededRequiredParamsLimit]);
     });
 
     it("should support multiple required parameters count larger than 5 for teams ai project", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1211,14 +1384,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should not support multiple required parameters count larger than 5 for copilot", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1282,14 +1460,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if method is POST, but requestBody contains unsupported parameter and required", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1348,14 +1531,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.PostBodyContainsRequiredUnsupportedSchema]);
     });
 
     it("should return true if method is POST, but requestBody contains unsupported parameter and required but has default value", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1415,14 +1604,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
-    it("should return false if method is POST, but parameters contain nested object", () => {
+    it("should return false if method is POST, parameters contain nested object, and request body is not json", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1485,14 +1679,24 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      expect(reason).to.have.members([
+        ErrorType.ParamsContainsNestedObject,
+        ErrorType.PostBodySchemaIsNotJson,
+      ]);
+      expect(reason.length).equals(2);
     });
 
     it("should return false if method is POST, but requestBody contain nested object", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1553,14 +1757,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.RequestBodyContainsNestedObject]);
     });
 
     it("should return true if method is POST, path is valid, parameter is supported and only one required param in postBody", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -1601,14 +1811,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if method is GET, path is valid, parameter is supported, but response is empty", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -1649,14 +1864,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.ResponseJsonIsEmpty]);
     });
 
     it("should return false if method is not GET or POST", () => {
       const method = "PUT";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -1696,14 +1917,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.MethodNotAllowed]);
     });
 
     it("should return false if path is not valid", () => {
       const method = "GET";
       const path = "/invalid";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -1743,14 +1970,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.UrlPathNotExist]);
     });
 
     it("should return false if parameter is not supported and required", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -1791,14 +2024,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.ParamsContainRequiredUnsupportedSchema]);
     });
 
-    it("should ignore unsupported schema type with default value", () => {
+    it("should return false due to ignore unsupported schema type with default value", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -1839,14 +2078,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.NoParameter]);
     });
 
     it("should return false if parameter is in header and required", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -1887,14 +2132,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.ParamsContainRequiredUnsupportedSchema]);
     });
 
     it("should return true if parameter is in header and required for copilot", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -1939,14 +2190,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if there is no parameters", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -1976,14 +2232,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.NoParameter]);
     });
 
     it("should return true if there is no parameters for copilot", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -2013,14 +2275,19 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if parameters is null", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -2049,14 +2316,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.NoParameter]);
     });
 
     it("should return false if has parameters but no 20X response", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -2091,14 +2364,23 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+
+      // NoParameter because object is not supported and there is no required parameters
+      expect(reason).to.have.members([ErrorType.NoParameter, ErrorType.ResponseJsonIsEmpty]);
+      expect(reason.length).equals(2);
     });
 
     it("should return false if method is POST, but request body contains media type other than application/json", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -2164,14 +2446,23 @@ describe("utils", () => {
         projectType: ProjectType.SME,
         allowMethods: ["get", "post"],
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [
+        ErrorType.PostBodyContainMultipleMediaTypes,
+        ErrorType.ExceededRequiredParamsLimit,
+      ]);
     });
 
     it("should return true if method is POST, and request body contains media type other than application/json for teams ai project", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -2237,14 +2528,19 @@ describe("utils", () => {
         projectType: ProjectType.TeamsAi,
         allowMethods: ["get", "post"],
       };
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
 
     it("should return false if method is POST, and request body schema is not object", () => {
       const method = "POST";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             post: {
@@ -2287,14 +2583,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.PostBodySchemaIsNotJson]);
     });
 
     it("should return false if method is GET, but response body contains media type other than application/json", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -2345,14 +2647,20 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, false);
+      const { isValid, reason } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, false);
+      assert.deepEqual(reason, [ErrorType.ResponseContainMultipleMediaTypes]);
     });
 
     it("should return true if method is GET, and response body contains media type other than application/json for teams ai project", () => {
       const method = "GET";
       const path = "/users";
       const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
         paths: {
           "/users": {
             get: {
@@ -2393,7 +2701,6 @@ describe("utils", () => {
           },
         },
       };
-
       const options: ParseOptions = {
         allowMissingId: true,
         allowAPIKeyAuth: false,
@@ -2403,8 +2710,8 @@ describe("utils", () => {
         allowMethods: ["get", "post"],
       };
 
-      const result = Utils.isSupportedApi(method, path, spec as any, options);
-      assert.strictEqual(result, true);
+      const { isValid } = Utils.isSupportedApi(method, path, spec as any, options);
+      assert.strictEqual(isValid, true);
     });
   });
 
@@ -2720,7 +3027,7 @@ describe("utils", () => {
       ]);
     });
 
-    it("should return an error if there is no server information in supported apis", () => {
+    it("should return an error if protocol is not supported ", () => {
       const spec = {
         paths: {
           "/api": {
@@ -2743,8 +3050,9 @@ describe("utils", () => {
       const errors = Utils.validateServer(spec as any, options);
       assert.deepStrictEqual(errors, [
         {
-          type: ErrorType.NoServerInformation,
-          content: ConstantString.NoServerInformation,
+          type: ErrorType.UrlProtocolNotSupported,
+          content: Utils.format(ConstantString.UrlProtocolNotSupported, "ftp"),
+          data: "ftp",
         },
       ]);
     });
@@ -2968,8 +3276,9 @@ describe("utils", () => {
   describe("getResponseJson", () => {
     it("should return an empty object if no JSON response is defined", () => {
       const operationObject = {};
-      const json = Utils.getResponseJson(operationObject);
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({});
+      expect(multipleMediaType).to.be.false;
     });
 
     it("should return the JSON response for status code 200", () => {
@@ -2989,7 +3298,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = Utils.getResponseJson(operationObject);
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -2998,6 +3307,7 @@ describe("utils", () => {
           },
         },
       });
+      expect(multipleMediaType).to.be.false;
     });
 
     it("should return empty JSON response for status code 200 with multiple media type", () => {
@@ -3025,8 +3335,9 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = Utils.getResponseJson(operationObject);
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({});
+      expect(multipleMediaType).to.be.true;
     });
 
     it("should return JSON response for status code 200 with multiple media type when it is teams ai project", () => {
@@ -3054,7 +3365,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = Utils.getResponseJson(operationObject, true);
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject, true);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -3063,6 +3374,7 @@ describe("utils", () => {
           },
         },
       });
+      expect(multipleMediaType).to.be.true;
     });
 
     it("should return the JSON response for status code 201", () => {
@@ -3082,7 +3394,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = Utils.getResponseJson(operationObject);
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -3091,6 +3403,8 @@ describe("utils", () => {
           },
         },
       });
+
+      expect(multipleMediaType).to.be.false;
     });
 
     it("should return the JSON response for the default status code", () => {
@@ -3110,7 +3424,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = Utils.getResponseJson(operationObject);
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -3119,6 +3433,7 @@ describe("utils", () => {
           },
         },
       });
+      expect(multipleMediaType).to.be.false;
     });
 
     it("should return the JSON response for the 200 status code", () => {
@@ -3150,7 +3465,7 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = Utils.getResponseJson(operationObject);
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({
         schema: {
           type: "object",
@@ -3159,6 +3474,7 @@ describe("utils", () => {
           },
         },
       });
+      expect(multipleMediaType).to.be.false;
     });
 
     it("should return an empty object if all JSON responses are undefined", () => {
@@ -3190,8 +3506,9 @@ describe("utils", () => {
           },
         },
       } as any;
-      const json = Utils.getResponseJson(operationObject);
+      const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
       expect(json).to.deep.equal({});
+      expect(multipleMediaType).to.be.false;
     });
   });
 
@@ -3200,7 +3517,7 @@ describe("utils", () => {
       process.env.OPENAPI_SERVER_URL = "https://localhost:3000/api";
       const url = "${{OPENAPI_SERVER_URL}}";
       const expectedUrl = "https://localhost:3000/api";
-      const resolvedUrl = Utils.resolveServerUrl(url);
+      const resolvedUrl = Utils.resolveEnv(url);
       assert.strictEqual(resolvedUrl, expectedUrl);
     });
 
@@ -3209,7 +3526,7 @@ describe("utils", () => {
       const url = "${{OPENAPI_SERVER_URL}}";
       const expectedUrl = "https://localhost:3000/api";
       assert.throws(
-        () => Utils.resolveServerUrl(url),
+        () => Utils.resolveEnv(url),
         Error,
         Utils.format(ConstantString.ResolveServerUrlFailed, "OPENAPI_SERVER_URL")
       );
@@ -3220,7 +3537,7 @@ describe("utils", () => {
       process.env.API_PORT = "3000";
       const url = "http://${{API_HOST}}:${{API_PORT}}/api";
       const expectedUrl = "http://localhost:3000/api";
-      const resolvedUrl = Utils.resolveServerUrl(url);
+      const resolvedUrl = Utils.resolveEnv(url);
       assert.strictEqual(resolvedUrl, expectedUrl);
     });
 
@@ -3229,7 +3546,7 @@ describe("utils", () => {
       process.env.API_HOST = "localhost";
       const url = "http://${{API_HOST}}:${{API_PORT}}/api";
       assert.throws(
-        () => Utils.resolveServerUrl(url),
+        () => Utils.resolveEnv(url),
         Error,
         Utils.format(ConstantString.ResolveServerUrlFailed, "API_PORT")
       );

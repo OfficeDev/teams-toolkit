@@ -14,9 +14,15 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Teams Toolkit: select runtime for your app */
   runtime?: "node" | "dotnet";
   /** @description New Project */
-  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type" | "office-addin-type";
-  /** @description Select to create an Outlook, Word, Excel, or PowerPoint Add-in */
-  "addin-office-capability"?: "outlook-addin-type" | "word" | "excel" | "powerpoint";
+  "project-type"?:
+    | "bot-type"
+    | "tab-type"
+    | "me-type"
+    | "office-xml-addin-type"
+    | "office-addin-type"
+    | "outlook-addin-type";
+  /** @description Select to Create an Outlook, Word, Excel, or PowerPoint Add-in */
+  "addin-host"?: "outlook" | "word" | "excel" | "powerpoint";
   /** @description Capabilities */
   capabilities?:
     | "bot"
@@ -34,11 +40,26 @@ export interface CreateProjectInputs extends Inputs {
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
     | "custom-copilot-basic"
+    | "custom-copilot-rag"
     | "custom-copilot-agent"
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
-    | "taskpane";
+    | "json-taskpane"
+    | "word-taskpane"
+    | "word-sso"
+    | "word-react"
+    | "word-manifest"
+    | "excel-taskpane"
+    | "excel-sso"
+    | "excel-react"
+    | "excel-custom-functions-shared"
+    | "excel-custom-functions-js"
+    | "excel-manifest"
+    | "powerpoint-taskpane"
+    | "powerpoint-sso"
+    | "powerpoint-react"
+    | "powerpoint-manifest";
   /** @description Select triggers */
   "bot-host-type-trigger"?:
     | "http-restify"
@@ -56,8 +77,6 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
-  /** @description Add-in Host */
-  "addin-host"?: string;
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
   /** @description OpenAPI Description Document */
@@ -65,7 +84,9 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Select Operation(s) Teams Can Interact with */
   "api-operation"?: string[];
   /** @description Authentication Type */
-  "api-me-auth"?: "none" | "api-key";
+  "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
+  /** @description Chat With Your Data */
+  "custom-copilot-rag"?: "custom-copilot-rag-azureAISearch";
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */

@@ -26,6 +26,7 @@ import {
   CapabilityOptions,
   CustomCopilotRagOptions,
   MeArchitectureOptions,
+  OfficeAddinHostOptions,
   ProjectTypeOptions,
   ScratchOptions,
 } from "../../../src/question/create";
@@ -884,15 +885,20 @@ describe("coordinator create", () => {
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
+  let mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.OfficeXMLAddin]: "false",
+    });
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("should scaffold taskpane successfully", async () => {
@@ -996,6 +1002,7 @@ describe("Office XML Addin", async () => {
       platform: Platform.VSCode,
       folder: ".",
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
     };
@@ -1042,6 +1049,7 @@ describe("Office XML Addin", async () => {
       [QuestionNames.Scratch]: ScratchOptions.yes().id,
       [QuestionNames.AppName]: randomAppName(),
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
     };
     const res = await coordinator.create(context, inputs);
     assert.isTrue(res.isErr() && res.error.name === "mockedError");
@@ -1051,15 +1059,20 @@ describe("Office XML Addin", async () => {
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
+  let mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
+    mockedEnvRestore = mockedEnv({
+      [FeatureFlagName.OfficeXMLAddin]: "false",
+    });
   });
 
   afterEach(() => {
     sandbox.restore();
+    mockedEnvRestore();
   });
 
   it("should scaffold taskpane successfully", async () => {

@@ -210,3 +210,7 @@ export class RetryHandler {
     }
   }
 }
+
+export function normalizePath(path: string, useForwardSlash: boolean): string {
+  return useForwardSlash ? path.replace(/\\/g, "/") : path;
+}

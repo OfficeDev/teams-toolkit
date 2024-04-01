@@ -5,12 +5,13 @@ import { CapabilityOptions } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import Table from "cli-table3";
 import { logger } from "../../commonlib/logger";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ListFormatOption } from "../common";
 
 export const listTemplatesCommand: CLICommand = {
   name: "templates",
-  description: "List available Microsoft Teams application templates.",
+  description: commands["list.templates"].description,
   options: [ListFormatOption],
   defaultInteractiveOption: false,
   handler: (ctx) => {

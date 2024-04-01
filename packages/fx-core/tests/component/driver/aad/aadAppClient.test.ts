@@ -17,6 +17,8 @@ import {
   DeleteOrUpdatePermissionFailedError,
   HostNameNotOnVerifiedDomainError,
 } from "../../../../src/component/driver/aad/error/aadManifestError";
+import { CredentialInvalidLifetimeError } from "../../../../src/component/driver/aad/error/credentialInvalidLifetimeError";
+import { ClientSecretNotAllowedError } from "../../../../src/component/driver/aad/error/clientSecretNotAllowedError";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -146,14 +148,47 @@ describe("AadAppClient", async () => {
 
     it("should use input signInAudience", async () => {
       const mock = new MockAdapter(axiosInstance);
-      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply(201, {
-        id: expectedObjectId,
-        displayName: expectedDisplayName,
-        signInAudience: "AzureADMultipleOrgs",
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply((config) => {
+        const data = JSON.parse(config.data);
+        return [
+          201,
+          {
+            id: expectedObjectId,
+            displayName: expectedDisplayName,
+            signInAudience: data.signInAudience,
+          },
+        ];
       });
+
       const createAadAppResult = await aadAppClient.createAadApp(
         expectedDisplayName,
         SignInAudience.AzureADMultipleOrgs
+      );
+
+      expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
+      expect(createAadAppResult.id).to.equal(expectedObjectId);
+      expect(createAadAppResult.signInAudience).to.equal("AzureADMultipleOrgs");
+    });
+
+    it("should use input serviceManagementReference", async () => {
+      const mock = new MockAdapter(axiosInstance);
+      mock.onPost(`https://graph.microsoft.com/v1.0/applications`).reply((config) => {
+        const data = JSON.parse(config.data);
+        expect(data.serviceManagementReference).to.equal("00000000-0000-0000-0000-000000000000");
+        return [
+          201,
+          {
+            id: expectedObjectId,
+            displayName: data.displayName,
+            signInAudience: data.signInAudience,
+          },
+        ];
+      });
+
+      const createAadAppResult = await aadAppClient.createAadApp(
+        expectedDisplayName,
+        SignInAudience.AzureADMultipleOrgs,
+        "00000000-0000-0000-0000-000000000000"
       );
 
       expect(createAadAppResult.displayName).to.equal(expectedDisplayName);
@@ -230,7 +265,7 @@ describe("AadAppClient", async () => {
       expect(result).to.equal(expectedSecretText);
     });
 
-    it("should set secret lifetime to 180 days", async () => {
+    it("should set secret lifetime and description based on user input", async () => {
       const mock = new MockAdapter(axiosInstance);
       mock
         .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
@@ -238,6 +273,7 @@ describe("AadAppClient", async () => {
           const data = JSON.parse(config.data);
           expect(data.passwordCredential.endDateTime).to.not.be.undefined;
           expect(data.passwordCredential.startDateTime).to.not.be.undefined;
+          expect(data.passwordCredential.displayName).to.equal("test description");
 
           const endDateTime = new Date(data.passwordCredential.endDateTime);
           const startDateTime = new Date(data.passwordCredential.startDateTime);
@@ -246,12 +282,12 @@ describe("AadAppClient", async () => {
           expect(startDateTime.getTime()).to.be.closeTo(now.getTime(), 1000); // Allow a 1 second difference
 
           expect(endDateTime.getTime() - startDateTime.getTime()).to.equal(
-            180 * 24 * 60 * 60 * 1000
+            90 * 24 * 60 * 60 * 1000
           );
           return [200, { secretText: expectedSecretText }];
         });
 
-      await aadAppClient.generateClientSecret(expectedObjectId);
+      await aadAppClient.generateClientSecret(expectedObjectId, 90, "test description");
     });
 
     it("should throw error when request fail", async () => {
@@ -276,6 +312,56 @@ describe("AadAppClient", async () => {
         .then((error) => {
           expect(error.response.data).to.deep.equal(expectedError);
         });
+    });
+
+    it("should throw error when CredentialInvalidLifetimeAsPerAppPolicy error happens", async () => {
+      const expectedError = {
+        error: {
+          code: "CredentialInvalidLifetimeAsPerAppPolicy",
+        },
+      };
+
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
+        .reply(400, expectedError);
+
+      await expect(
+        aadAppClient.generateClientSecret(expectedObjectId)
+      ).to.eventually.be.rejected.then((err) => {
+        expect(err instanceof CredentialInvalidLifetimeError).to.be.true;
+        expect(err.source).equals("AadAppClient");
+        expect(err.name).equals("CredentialInvalidLifetime");
+        expect(err.message).equals(
+          "The client secret lifetime is too long for your tenant. Use a shorter value with the clientSecretExpireDays parameter."
+        );
+        expect(err.helpLink).equals("https://aka.ms/teamsfx-actions/aadapp-create");
+      });
+    });
+
+    it("should throw error when CredentialTypeNotAllowedAsPerAppPolicy error happens", async () => {
+      const expectedError = {
+        error: {
+          code: "CredentialTypeNotAllowedAsPerAppPolicy",
+        },
+      };
+
+      const mock = new MockAdapter(axiosInstance);
+      mock
+        .onPost(`https://graph.microsoft.com/v1.0/applications/${expectedObjectId}/addPassword`)
+        .reply(400, expectedError);
+
+      await expect(
+        aadAppClient.generateClientSecret(expectedObjectId)
+      ).to.eventually.be.rejected.then((err) => {
+        expect(err instanceof ClientSecretNotAllowedError).to.be.true;
+        expect(err.source).equals("AadAppClient");
+        expect(err.name).equals("ClientSecretNotAllowed");
+        expect(err.message).equals(
+          "Your tenant doesn't allow creating a client secret for Microsoft Entra app. Create and configure the app manually."
+        );
+        expect(err.helpLink).equals("https://aka.ms/teamsfx-actions/aadapp-create");
+      });
     });
 
     it("should send debug log when sending request and receiving response", async () => {

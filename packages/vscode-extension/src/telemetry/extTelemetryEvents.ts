@@ -256,6 +256,13 @@ export enum TelemetryEvent {
   ShowScaffoldingWarningSummaryError = "show-scaffolding-warning-summary-error",
 
   FindSimilarIssues = "find-similar-issues",
+
+  //Office add-in related
+  validateAddInManifest = "validate-addin-manifest",
+  installAddInDependencies = "install-addin-dependencies",
+  stopAddInDebug = "stop-office-addin-debug",
+  generateAddInGUID = "generate-addin-guid",
+  openNewOfficeAddInProject = "open-new-office-addin-project",
 }
 
 export enum TelemetryProperty {

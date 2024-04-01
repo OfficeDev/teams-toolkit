@@ -11,7 +11,6 @@ import {
   ParseOptions,
   ValidateResult,
   ValidationStatus,
-  Parameter,
   ListAPIResult,
   ProjectType,
 } from "./interfaces";
@@ -37,6 +36,7 @@ export class SpecParser {
     allowSwagger: false,
     allowAPIKeyAuth: false,
     allowMultipleParameters: false,
+    allowBearerTokenAuth: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
     projectType: ProjectType.SME,
@@ -109,20 +109,16 @@ export class SpecParser {
           continue;
         }
 
-        const [command, warning] = Utils.parseApiInfo(pathObjectItem, this.options);
+        const command = Utils.parseApiInfo(pathObjectItem, this.options);
 
         const apiInfo: APIInfo = {
           method: method,
           path: path,
           title: command.title,
           id: operationId,
-          parameters: command.parameters! as Parameter[],
+          parameters: command.parameters!,
           description: command.description!,
         };
-
-        if (warning) {
-          apiInfo.warning = warning;
-        }
 
         apiInfos.push(apiInfo);
       }
@@ -209,8 +205,31 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = Utils.listSupportedAPIs(spec, this.options);
+    const result = this.listSupportedAPIs(spec, this.options);
     this.apiMap = result;
+    return result;
+  }
+
+  private listSupportedAPIs(
+    spec: OpenAPIV3.Document,
+    options: ParseOptions
+  ): {
+    [key: string]: OpenAPIV3.OperationObject;
+  } {
+    const paths = spec.paths;
+    const result: { [key: string]: OpenAPIV3.OperationObject } = {};
+    for (const path in paths) {
+      const methods = paths[path];
+      for (const method in methods) {
+        const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
+        if (options.allowMethods?.includes(method) && operationObject) {
+          const validateResult = Utils.isSupportedApi(method, path, spec, options);
+          if (validateResult.isValid) {
+            result[`${method.toUpperCase()} ${path}`] = operationObject;
+          }
+        }
+      }
+    }
     return result;
   }
 }

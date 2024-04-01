@@ -209,6 +209,11 @@ export async function initPage(
           popup.waitForNavigation(),
         ]);
         await popup.click("input.button[type='submit'][value='Accept']");
+        try {
+          await popup?.close();
+        } catch (error) {
+          console.log("popup is closed");
+        }
       }
     } else {
       await addBtn?.click();
@@ -358,6 +363,11 @@ export async function reopenPage(
             popup.waitForNavigation(),
           ]);
           await popup.click("input.button[type='submit'][value='Accept']");
+          try {
+            await popup?.close();
+          } catch (error) {
+            console.log("popup is closed");
+          }
         }
       } else {
         await addBtn?.click();
@@ -1010,10 +1020,16 @@ export async function validateReactTab(
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+        }
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
         }
       });
-
+      await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("verify function info");
       const backendElement = await frame?.waitForSelector(
         'pre:has-text("receivedHTTPRequestBody")'
@@ -1075,9 +1091,16 @@ export async function validateReactOutlookTab(
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+        }
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
         }
       });
+      await page.waitForTimeout(Timeout.shortTimeLoading);
 
       console.log("verify function info");
       const backendElement = await frame?.waitForSelector(
@@ -2257,6 +2280,11 @@ export async function validateGraphConnector(
       page.waitForTimeout(1000);
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);
+      await page.screenshot({
+        path: getPlaywrightScreenshotPath("error"),
+        fullPage: true,
+      });
+      throw e;
     }
 
     await page.waitForTimeout(Timeout.shortTimeLoading);

@@ -92,7 +92,145 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       schema_version: "v2",
-      name_for_human: "My API",
+      name_for_human: "Original Name",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "getPets",
+          description: "Returns all pets from the system that the user has access to",
+          parameters: {
+            type: "object",
+            properties: {
+              limit: {
+                type: "integer",
+                description: "Maximum number of pets to return",
+              },
+            },
+            required: ["limit"],
+          },
+        },
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+          parameters: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the pet",
+              },
+            },
+          },
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "none",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["getPets", "createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
+  it("should update the plugin json correctly when contains env in name and description", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          get: {
+            operationId: "getPets",
+            summary: "Get all pets",
+            description: "Returns all pets from the system that the user has access to",
+            parameters: [
+              {
+                name: "limit",
+                description: "Maximum number of pets to return",
+                required: true,
+                schema: {
+                  type: "integer",
+                },
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name${{TestEnv}}", full: "Original Full Name" },
+      description: {
+        short: "Original Short Description",
+        full: "Original Full Description${{TestEnv}}",
+      },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name${{TestEnv}}", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      plugins: [
+        {
+          pluginFile: "ai-plugin.json",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2",
+      name_for_human: "Original Name",
       description_for_human: "My API description",
       functions: [
         {
@@ -233,7 +371,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       schema_version: "v2",
-      name_for_human: "My API",
+      name_for_human: "Original Name",
       description_for_human: "My API description",
       functions: [
         {
@@ -334,7 +472,7 @@ describe("updateManifestWithAiPlugin", () => {
 
     const expectedPlugins: PluginManifestSchema = {
       schema_version: "v2",
-      name_for_human: "My API",
+      name_for_human: "Original Name",
       description_for_human: "My API description",
       functions: [],
       runtimes: [
@@ -347,146 +485,6 @@ describe("updateManifestWithAiPlugin", () => {
             url: "spec/outputSpec.yaml",
           },
           run_for_functions: [],
-        },
-      ],
-    };
-    sinon.stub(fs, "readJSON").resolves(originalManifest);
-    const options: ParseOptions = {
-      allowMethods: ["get", "post"],
-    };
-    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
-      manifestPath,
-      outputSpecPath,
-      pluginFilePath,
-      spec,
-      options
-    );
-
-    expect(manifest).to.deep.equal(expectedManifest);
-    expect(apiPlugin).to.deep.equal(expectedPlugins);
-  });
-
-  it("should truncate if title is long", async () => {
-    const spec: any = {
-      openapi: "3.0.2",
-      info: {
-        title:
-          "long title long title long title long title long title long title long title long title long title long title long title long title",
-        description: "This is the description",
-      },
-      servers: [
-        {
-          url: "/v3",
-        },
-      ],
-      paths: {
-        "/pets": {
-          get: {
-            operationId: "getPets",
-            summary: "Get all pets",
-            description: "Returns all pets from the system that the user has access to",
-            parameters: [
-              {
-                name: "limit",
-                description: "Maximum number of pets to return",
-                required: true,
-                schema: {
-                  type: "integer",
-                },
-              },
-            ],
-          },
-          post: {
-            operationId: "createPet",
-            summary: "Create a pet",
-            description: "Create a new pet in the store",
-            requestBody: {
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                    required: ["name"],
-                    properties: {
-                      name: {
-                        type: "string",
-                        description: "Name of the pet",
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    };
-    const manifestPath = "/path/to/your/manifest.json";
-    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
-    const pluginFilePath = "/path/to/your/ai-plugin.json";
-
-    sinon.stub(fs, "pathExists").resolves(true);
-    const originalManifest = {
-      name: { short: "Original Name", full: "Original Full Name" },
-      description: { short: "Original Short Description", full: "Original Full Description" },
-    };
-    const expectedManifest = {
-      name: { short: "Original Name", full: "Original Full Name" },
-      description: {
-        short: "long title long title long title long title long title long title long title lon",
-        full: "This is the description",
-      },
-      plugins: [
-        {
-          pluginFile: "ai-plugin.json",
-        },
-      ],
-    };
-
-    const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
-      name_for_human:
-        "long title long title long title long title long title long title long title long title long title long title long title long title",
-      description_for_human: "This is the description",
-      functions: [
-        {
-          name: "getPets",
-          description: "Returns all pets from the system that the user has access to",
-          parameters: {
-            type: "object",
-            properties: {
-              limit: {
-                type: "integer",
-                description: "Maximum number of pets to return",
-              },
-            },
-            required: ["limit"],
-          },
-        },
-        {
-          name: "createPet",
-          description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-            },
-          },
-        },
-      ],
-      runtimes: [
-        {
-          type: "OpenApi",
-          auth: {
-            type: "none",
-          },
-          spec: {
-            url: "spec/outputSpec.yaml",
-          },
-          run_for_functions: ["getPets", "createPet"],
         },
       ],
     };
@@ -733,7 +731,12 @@ describe("manifestUpdater", () => {
               description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
-                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+                {
+                  name: "limit",
+                  title: "Limit",
+                  description: "Maximum number of pets to return",
+                  isRequired: true,
+                },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
@@ -743,7 +746,9 @@ describe("manifestUpdater", () => {
               title: "Create a pet",
               description: "Create a new pet in the store",
               id: "createPet",
-              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              parameters: [
+                { name: "name", title: "Name", description: "Name of the pet", isRequired: true },
+              ],
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
             },
           ],
@@ -864,25 +869,35 @@ describe("manifestUpdater", () => {
                   title: "Limit",
                   description: "Maximum number of pets to return",
                   inputType: "number",
+                  isRequired: true,
                 },
-                { name: "name", title: "Name", description: "Pet Name", inputType: "text" },
+                {
+                  name: "name",
+                  title: "Name",
+                  description: "Pet Name",
+                  inputType: "text",
+                  isRequired: true,
+                },
                 {
                   name: "id",
                   title: "Id",
                   description: "Pet Id",
                   inputType: "number",
+                  isRequired: true,
                 },
                 {
                   name: "other1",
                   title: "Other1",
                   description: "Other Property1",
                   inputType: "toggle",
+                  isRequired: true,
                 },
                 {
                   name: "other2",
                   title: "Other2",
                   description: "Other Property2",
                   inputType: "choiceset",
+                  isRequired: true,
                   choices: [
                     {
                       title: "enum1",
@@ -1005,8 +1020,15 @@ describe("manifestUpdater", () => {
                   title: "Id",
                   description: "Pet Id",
                   inputType: "number",
+                  isRequired: true,
                 },
-                { name: "name", title: "Name", description: "Pet Name", inputType: "text" },
+                {
+                  name: "name",
+                  title: "Name",
+                  description: "Pet Name",
+                  inputType: "text",
+                  isRequired: true,
+                },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
             },
@@ -1120,7 +1142,13 @@ describe("manifestUpdater", () => {
     );
 
     expect(result).to.deep.equal(expectedManifest);
-    expect(warnings).to.deep.equal([]);
+    expect(warnings).to.deep.equal([
+      {
+        type: WarningType.OperationOnlyContainsOptionalParam,
+        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
+        data: "getPets",
+      },
+    ]);
   });
 
   it("should contain auth property in manifest if pass the api key auth", async () => {
@@ -1154,7 +1182,12 @@ describe("manifestUpdater", () => {
               description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
-                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+                {
+                  name: "limit",
+                  title: "Limit",
+                  description: "Maximum number of pets to return",
+                  isRequired: true,
+                },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
@@ -1164,7 +1197,9 @@ describe("manifestUpdater", () => {
               title: "Create a pet",
               description: "Create a new pet in the store",
               id: "createPet",
-              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              parameters: [
+                { name: "name", title: "Name", description: "Name of the pet", isRequired: true },
+              ],
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
             },
           ],
@@ -1173,7 +1208,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const apiKeyAuth: AuthInfo = {
-      authSchema: {
+      authScheme: {
         type: "apiKey" as const,
         name: "api_key_name",
         in: "header",
@@ -1193,6 +1228,88 @@ describe("manifestUpdater", () => {
       options,
       adaptiveCardFolder,
       apiKeyAuth
+    );
+
+    expect(result).to.deep.equal(expectedManifest);
+    expect(warnings).to.deep.equal([]);
+  });
+
+  it("should contain auth property in manifest if pass the bearer token auth", async () => {
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const adaptiveCardFolder = "/path/to/your/adaptiveCards";
+    sinon.stub(fs, "pathExists").resolves(true);
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+      composeExtensions: [],
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: spec.info.title, full: spec.info.description },
+      composeExtensions: [
+        {
+          composeExtensionType: "apiBased",
+          apiSpecificationFile: "spec/outputSpec.yaml",
+          authorization: {
+            authType: "apiSecretServiceAuth",
+            apiSecretServiceAuthConfiguration: {
+              apiSecretRegistrationId: "${{BEARER_TOKEN_AUTH_REGISTRATION_ID}}",
+            },
+          },
+          commands: [
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Get all pets",
+              description: "Returns all pets from the system that the user has access to",
+              id: "getPets",
+              parameters: [
+                {
+                  name: "limit",
+                  title: "Limit",
+                  description: "Maximum number of pets to return",
+                  isRequired: true,
+                },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
+            },
+            {
+              context: ["compose"],
+              type: "query",
+              title: "Create a pet",
+              description: "Create a new pet in the store",
+              id: "createPet",
+              parameters: [
+                { name: "name", title: "Name", description: "Name of the pet", isRequired: true },
+              ],
+              apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
+            },
+          ],
+        },
+      ],
+    };
+    const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
+    const bearerTokenAuth: AuthInfo = {
+      authScheme: {
+        type: "http" as const,
+        scheme: "bearer",
+      },
+      name: "bearer_token_auth",
+    };
+    const options: ParseOptions = {
+      allowMultipleParameters: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
+    const [result, warnings] = await ManifestUpdater.updateManifest(
+      manifestPath,
+      outputSpecPath,
+      spec,
+      options,
+      adaptiveCardFolder,
+      bearerTokenAuth
     );
 
     expect(result).to.deep.equal(expectedManifest);
@@ -1230,7 +1347,12 @@ describe("manifestUpdater", () => {
               description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
-                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+                {
+                  name: "limit",
+                  title: "Limit",
+                  description: "Maximum number of pets to return",
+                  isRequired: true,
+                },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
@@ -1240,7 +1362,9 @@ describe("manifestUpdater", () => {
               title: "Create a pet",
               description: "Create a new pet in the store",
               id: "createPet",
-              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              parameters: [
+                { name: "name", title: "Name", description: "Name of the pet", isRequired: true },
+              ],
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
             },
           ],
@@ -1253,7 +1377,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const oauth2: AuthInfo = {
-      authSchema: {
+      authScheme: {
         type: "oauth2",
         flows: {
           authorizationCode: {
@@ -1312,7 +1436,12 @@ describe("manifestUpdater", () => {
               description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
-                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+                {
+                  name: "limit",
+                  title: "Limit",
+                  description: "Maximum number of pets to return",
+                  isRequired: true,
+                },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
@@ -1322,7 +1451,9 @@ describe("manifestUpdater", () => {
               title: "Create a pet",
               description: "Create a new pet in the store",
               id: "createPet",
-              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              parameters: [
+                { name: "name", title: "Name", description: "Name of the pet", isRequired: true },
+              ],
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
             },
           ],
@@ -1331,7 +1462,7 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const basicAuth: AuthInfo = {
-      authSchema: {
+      authScheme: {
         type: "http" as const,
         scheme: "basic",
       },
@@ -1386,7 +1517,12 @@ describe("manifestUpdater", () => {
               description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
-                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+                {
+                  name: "limit",
+                  title: "Limit",
+                  description: "Maximum number of pets to return",
+                  isRequired: true,
+                },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
@@ -1396,7 +1532,9 @@ describe("manifestUpdater", () => {
               title: "Create a pet",
               description: "Create a new pet in the store",
               id: "createPet",
-              parameters: [{ name: "name", title: "Name", description: "Name of the pet" }],
+              parameters: [
+                { name: "name", title: "Name", description: "Name of the pet", isRequired: true },
+              ],
               apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
             },
           ],
@@ -1405,10 +1543,10 @@ describe("manifestUpdater", () => {
     };
     const readJSONStub = sinon.stub(fs, "readJSON").resolves(originalManifest);
     const apiKeyAuth: AuthInfo = {
-      authSchema: {
-        type: "apiKey" as const,
-        name: "key_name",
-        in: "header",
+      authScheme: {
+        type: "http" as const,
+        scheme: "bearer",
+        bearerFormat: "JWT",
       },
       name: "*api-key_auth",
     };
@@ -1588,6 +1726,7 @@ describe("manifestUpdater", () => {
                   description: "Maximum number of pets to return",
                   name: "limit",
                   title: "Limit",
+                  isRequired: true,
                 },
               ],
               title: "Get all pets",
@@ -1603,6 +1742,7 @@ describe("manifestUpdater", () => {
                   description: "Name of the pet",
                   name: "name",
                   title: "Name",
+                  isRequired: true,
                 },
               ],
               title: "Create a pet",
@@ -1662,7 +1802,12 @@ describe("manifestUpdater", () => {
               description: "Returns all pets from the system that the user has access to",
               id: "getPets",
               parameters: [
-                { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+                {
+                  name: "limit",
+                  title: "Limit",
+                  description: "Maximum number of pets to return",
+                  isRequired: true,
+                },
               ],
               apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
             },
@@ -1676,6 +1821,7 @@ describe("manifestUpdater", () => {
                   description: "Name of the pet",
                   name: "name",
                   title: "Name",
+                  isRequired: true,
                 },
               ],
               title: "Create a pet",
@@ -1833,7 +1979,12 @@ describe("generateCommands", () => {
         id: "getPets",
         description: "",
         parameters: [
-          { name: "limit", title: "Limit", description: "Maximum number of pets to return" },
+          {
+            name: "limit",
+            title: "Limit",
+            description: "Maximum number of pets to return",
+            isRequired: true,
+          },
         ],
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
@@ -1848,6 +1999,7 @@ describe("generateCommands", () => {
             description: "Name of the pet",
             name: "name",
             title: "Name",
+            isRequired: true,
           },
         ],
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",
@@ -1858,7 +2010,9 @@ describe("generateCommands", () => {
         title: "Get a pet by ID",
         description: "",
         id: "getPetById",
-        parameters: [{ name: "id", title: "Id", description: "ID of the pet to retrieve" }],
+        parameters: [
+          { name: "id", title: "Id", description: "ID of the pet to retrieve", isRequired: true },
+        ],
         apiResponseRenderingTemplateFile: "adaptiveCards/getPetById.json",
       },
       {
@@ -1867,7 +2021,9 @@ describe("generateCommands", () => {
         description: "",
         title: "Get all pets owned by an owner",
         id: "getOwnerPets",
-        parameters: [{ name: "ownerId", title: "OwnerId", description: "ID of the owner" }],
+        parameters: [
+          { name: "ownerId", title: "OwnerId", description: "ID of the owner", isRequired: true },
+        ],
         apiResponseRenderingTemplateFile: "adaptiveCards/getOwnerPets.json",
       },
     ];
@@ -1924,6 +2080,7 @@ describe("generateCommands", () => {
             title: "LongLimitlongLimitlongLimitlongL",
             description:
               "Long maximum number of pets to return. Long maximum number of pets to return. Long maximum number of pets to return. Long maximu",
+            isRequired: true,
           },
         ],
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
@@ -2092,7 +2249,13 @@ describe("generateCommands", () => {
         type: "query",
       },
     ]);
-    expect(warnings).to.deep.equal([]);
+    expect(warnings).to.deep.equal([
+      {
+        type: WarningType.OperationOnlyContainsOptionalParam,
+        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
+        data: "createPet",
+      },
+    ]);
   });
 
   it("should not show warning for each GET/POST operation in the spec if only contains 1 optional parameters", async () => {
@@ -2169,7 +2332,18 @@ describe("generateCommands", () => {
         type: "query",
       },
     ]);
-    expect(warnings).to.deep.equal([]);
+    expect(warnings).to.deep.equal([
+      {
+        type: WarningType.OperationOnlyContainsOptionalParam,
+        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "getPets"),
+        data: "getPets",
+      },
+      {
+        type: WarningType.OperationOnlyContainsOptionalParam,
+        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, "createPet"),
+        data: "createPet",
+      },
+    ]);
   });
 
   it("should only generate commands for GET operation with required parameter", async () => {
@@ -2196,7 +2370,7 @@ describe("generateCommands", () => {
         title: "Get all pets",
         description: "",
         id: "getPets",
-        parameters: [{ name: "id", title: "Id", description: "ID of the pet" }],
+        parameters: [{ name: "id", title: "Id", description: "ID of the pet", isRequired: true }],
         apiResponseRenderingTemplateFile: "adaptiveCards/getPets.json",
       },
     ];
@@ -2316,6 +2490,7 @@ describe("generateCommands", () => {
             description: "Name of the pet",
             name: "requestBody",
             title: "RequestBody",
+            isRequired: true,
           },
         ],
         apiResponseRenderingTemplateFile: "adaptiveCards/createPet.json",

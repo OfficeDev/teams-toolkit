@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
+import { SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -41,8 +42,8 @@ import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
 import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
+import { AppStudioScopes } from "../common/tools";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
@@ -55,6 +56,7 @@ import {
 import { coordinator } from "../component/coordinator";
 import { UpdateAadAppArgs } from "../component/driver/aad/interface/updateAadAppArgs";
 import { UpdateAadAppDriver } from "../component/driver/aad/update";
+import { AadAppClient } from "../component/driver/aad/utility/aadAppClient";
 import { buildAadManifest } from "../component/driver/aad/utility/buildAadManifest";
 import { AddWebPartDriver } from "../component/driver/add/addWebPart";
 import { AddWebPartArgs } from "../component/driver/add/interface/AddWebPartArgs";
@@ -69,6 +71,7 @@ import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/Va
 import { ValidateWithTestCasesArgs } from "../component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
 import { teamsappMgr } from "../component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 import {
   containsUnsupportedFeature,
   getFeaturesFromAppDefinition,
@@ -76,6 +79,7 @@ import {
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
 import { ValidateWithTestCasesDriver } from "../component/driver/teamsApp/validateTestCases";
+import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
   ErrorResult,
@@ -91,6 +95,7 @@ import {
 } from "../component/generator/copilotPlugin/helper";
 import { EnvLoaderMW, EnvWriterMW } from "../component/middleware/envMW";
 import { QuestionMW } from "../component/middleware/questionMW";
+import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
 import { createContextV3, createDriverContext } from "../component/utils";
 import { expandEnvironmentVariable } from "../component/utils/common";
 import { envUtil } from "../component/utils/envUtil";
@@ -110,14 +115,14 @@ import {
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
 import { ValidateTeamsAppInputs } from "../question";
+import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
 import {
   HubTypes,
-  isAadMainifestContainsPlaceholder,
   TeamsAppValidationOptions,
+  isAadMainifestContainsPlaceholder,
 } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
-import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { CallbackRegistry } from "./callback";
 import {
   CollaborationUtil,
@@ -140,11 +145,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import "../component/feature/sso";
-import { AppStudioClient } from "../component/driver/teamsApp/clients/appStudioClient";
-import { AppStudioClient as BotAppStudioClient } from "../component/resource/botService/appStudio/appStudioClient";
-import { AppStudioScopes } from "../common/tools";
-import { AadAppClient } from "../component/driver/aad/utility/aadAppClient";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -1074,6 +1074,8 @@ export class FxCore {
         if (match) {
           if (match[1].startsWith("TEAMSFX_ENV=")) {
             writeStream.write(`TEAMSFX_ENV=${targetEnvName}${os.EOL}`);
+          } else if (match[1].startsWith("APP_NAME_SUFFIX=")) {
+            writeStream.write(`APP_NAME_SUFFIX=${targetEnvName}${os.EOL}`);
           } else {
             writeStream.write(`${match[1]}${os.EOL}`);
           }
@@ -1353,12 +1355,13 @@ export class FxCore {
       isPlugin
         ? copilotPluginParserOptions
         : {
-            allowAPIKeyAuth: isApiKeyEnabled(),
+            allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: isMultipleParametersEnabled(),
           }
     );
 
-    const apiResultList = await specParser.list();
+    const listResult = await specParser.list();
+    const apiResultList = listResult.APIs.filter((value) => value.isValid);
 
     let existingOperations: string[];
     let outputAPISpecPath: string;
@@ -1398,7 +1401,11 @@ export class FxCore {
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
           if (operation) {
-            if (operation.auth && operation.auth.type === "apiKey") {
+            if (
+              operation.auth &&
+              operation.auth.authScheme.type === "http" &&
+              operation.auth.authScheme.scheme === "bearer"
+            ) {
               authNames.add(operation.auth.name);
               serverUrls.add(operation.server);
             }
@@ -1429,12 +1436,29 @@ export class FxCore {
         }
       }
 
-      const generateResult = await specParser.generate(
-        manifestPath,
-        operations,
-        outputAPISpecPath,
-        adaptiveCardFolder
-      );
+      let generateResult;
+      if (!isPlugin) {
+        generateResult = await specParser.generate(
+          manifestPath,
+          operations,
+          outputAPISpecPath,
+          adaptiveCardFolder
+        );
+      } else {
+        const pluginPathRes = await manifestUtils.getPluginFilePath(
+          manifestRes.value,
+          manifestPath
+        );
+        if (pluginPathRes.isErr()) {
+          return err(pluginPathRes.error);
+        }
+        generateResult = await specParser.generateForCopilot(
+          manifestPath,
+          operations,
+          outputAPISpecPath,
+          pluginPathRes.value
+        );
+      }
 
       // Send SpecParser.generate() warnings
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
@@ -1470,6 +1494,31 @@ export class FxCore {
     );
     void context.userInteraction.showMessage("info", message, false);
     return ok(undefined);
+  }
+
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "copilotPluginListApiSpecs" }),
+    ErrorHandlerMW,
+  ])
+  async listPluginApiSpecs(inputs: Inputs): Promise<Result<string[], FxError>> {
+    try {
+      const manifestPath = inputs[QuestionNames.ManifestPath];
+      const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+      if (manifestRes.isErr()) {
+        return err(manifestRes.error);
+      }
+      const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+        manifestRes.value,
+        manifestPath
+      );
+      if (res.isOk()) {
+        return ok(res.value);
+      } else {
+        return err(res.error);
+      }
+    } catch (error) {
+      return err(error as FxError);
+    }
   }
 
   @hooks([

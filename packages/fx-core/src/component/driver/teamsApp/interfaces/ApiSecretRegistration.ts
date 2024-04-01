@@ -30,6 +30,27 @@ export interface ApiSecretRegistration {
   manageableByUsers?: ApiSecretRegistrationUser[];
 }
 
+export interface ApiSecretRegistrationUpdate {
+  /**
+   * Max 128 characters
+   */
+  description?: string;
+  /**
+   * Currently max length 1
+   */
+  targetUrlsShouldStartWith: string[];
+  /**
+   * Teams app Id associated with the ApiSecretRegistration, should be required if applicableToApps === "SpecificType"
+   */
+  specificAppId?: string;
+  applicableToApps?: ApiSecretRegistrationAppType;
+  /**
+   * Default to be "HomeTenant"
+   */
+  targetAudience?: ApiSecretRegistrationTargetAudience;
+  manageableByUsers?: ApiSecretRegistrationUser[];
+}
+
 export enum ApiSecretRegistrationAppType {
   SpecificApp = "SpecificApp",
   AnyApp = "AnyApp",

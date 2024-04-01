@@ -281,6 +281,10 @@ export interface IParameter {
    */
   inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
   /**
+   * Indicates whether this parameter is required or not. By default, it is not.
+   */
+  isRequired?: boolean;
+  /**
    * Title of the parameter.
    */
   title: string;

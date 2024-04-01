@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as prompts from "@inquirer/prompts";
+import inquirer from "inquirer";
 import {
   Colors,
   LogLevel,
@@ -373,7 +374,7 @@ describe("User Interaction Tests", function () {
     });
     it("interactive", async () => {
       sandbox.stub(UI, "interactive").value(true);
-      sandbox.stub(prompts, "input").resolves("abc");
+      sandbox.stub(inquirer, "prompt").resolves({ test: "abc" });
       const result = await UI.input("test", "Input the password", "default string");
       expect(result.isOk() ? result.value : result.error).equals("abc");
     });

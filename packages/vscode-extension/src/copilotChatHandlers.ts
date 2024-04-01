@@ -17,6 +17,7 @@ import { getTriggerFromProperty } from "./utils/commonUtils";
 import { localize } from "./utils/localizeUtils";
 import { UserCancelError, sleep } from "@microsoft/vscode-ui";
 import { showOutputChannel } from "./handlers";
+import { InstallCopilotChatLink } from "./constants";
 
 const githubCopilotChatExtensionId = "github.copilot-chat";
 
@@ -39,8 +40,8 @@ async function openGithubCopilotChat(query: string): Promise<Result<null, FxErro
     const error = new SystemError(
       eventName,
       "openCopilotError",
-      localize("teamstoolkit.handlers.chatTeamsAgentError"),
-      localize("teamstoolkit.handlers.chatTeamsAgentError")
+      util.format(localize("teamstoolkit.handlers.chatTeamsAgentError", query)),
+      util.format(localize("teamstoolkit.handlers.chatTeamsAgentError", query))
     );
     VsCodeLogInstance.error(error.message);
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error);
@@ -95,8 +96,8 @@ export async function installGithubCopilotChatExtension(
     const error = new SystemError(
       eventName,
       "InstallCopilotError",
-      localize("teamstoolkit.handlers.installCopilotError"),
-      localize("teamstoolkit.handlers.installCopilotError")
+      util.format(localize("teamstoolkit.handlers.installCopilotError", InstallCopilotChatLink)),
+      util.format(localize("teamstoolkit.handlers.installCopilotError", InstallCopilotChatLink))
     );
     VsCodeLogInstance.error(error.message);
     ExtTelemetry.sendTelemetryErrorEvent(eventName, error, telemetryProperties);
@@ -127,7 +128,11 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
     res = await openGithubCopilotChat(query);
   } else {
     VsCodeLogInstance.info(
-      util.format(localize("teamstoolkit.handlers.installExtension.output"), "Github Copilot Chat")
+      util.format(
+        localize("teamstoolkit.handlers.installExtension.output"),
+        "Github Copilot Chat",
+        InstallCopilotChatLink
+      )
     );
     showOutputChannel();
 
@@ -155,8 +160,12 @@ export async function invokeTeamsAgent(args?: any[]): Promise<Result<null, FxErr
         const error = new SystemError(
           eventName,
           "CannotVerifyGithubCopilotChat",
-          localize("teamstoolkit.handlers.verifyCopilotExtensionError"),
-          localize("teamstoolkit.handlers.verifyCopilotExtensionError")
+          util.format(
+            localize("teamstoolkit.handlers.verifyCopilotExtensionError", InstallCopilotChatLink)
+          ),
+          util.format(
+            localize("teamstoolkit.handlers.verifyCopilotExtensionError", InstallCopilotChatLink)
+          )
         );
         VsCodeLogInstance.error(error.message);
         res = err(error);

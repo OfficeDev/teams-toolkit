@@ -71,6 +71,7 @@ import { MockCore } from "../mocks/mockCore";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
 import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
+import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -956,6 +957,7 @@ describe("handlers", () => {
   });
 
   it("openWelcomeHandler", async () => {
+    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(false);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -965,6 +967,20 @@ describe("handlers", () => {
       executeCommands,
       "workbench.action.openWalkthrough",
       "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
+    );
+  });
+
+  it("openWelcomeHandler with chat", async () => {
+    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(true);
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.openWelcomeHandler();
+
+    sandbox.assert.calledOnceWithExactly(
+      executeCommands,
+      "workbench.action.openWalkthrough",
+      "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
     );
   });
 

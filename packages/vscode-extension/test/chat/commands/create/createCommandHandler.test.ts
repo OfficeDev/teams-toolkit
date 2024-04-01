@@ -28,7 +28,9 @@ describe("chat create command", () => {
       sandbox.stub(chatTelemetryDataMock, "measurements").get(function getterFn() {
         return undefined;
       });
-      sandbox.stub(telemetry.ChatTelemetryData, "createByCommand").returns(chatTelemetryDataMock);
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const matchProjectStub = sandbox.stub(helper, "matchProject").resolves([]);
 
@@ -58,7 +60,9 @@ describe("chat create command", () => {
         return undefined;
       });
       chatTelemetryDataMock.chatMessages = [];
-      sandbox.stub(telemetry.ChatTelemetryData, "createByCommand").returns(chatTelemetryDataMock);
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const fakedSample = {
         id: "test-sample",
@@ -94,7 +98,9 @@ describe("chat create command", () => {
         return undefined;
       });
       chatTelemetryDataMock.chatMessages = [];
-      sandbox.stub(telemetry.ChatTelemetryData, "createByCommand").returns(chatTelemetryDataMock);
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const fakedSample = {
         id: "test-template",
@@ -130,7 +136,9 @@ describe("chat create command", () => {
         return undefined;
       });
       chatTelemetryDataMock.chatMessages = [];
-      sandbox.stub(telemetry.ChatTelemetryData, "createByCommand").returns(chatTelemetryDataMock);
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const fakedSamples = [
         {

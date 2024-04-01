@@ -45,7 +45,9 @@ describe("chat create helper", () => {
         };
       });
       chatTelemetryDataMock.chatMessages = [];
-      sandbox.stub(telemetry.ChatTelemetryData, "createByCommand").returns(chatTelemetryDataMock);
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(util, "getCopilotResponseAsString").resolves('{"app":["test1"]}');
 

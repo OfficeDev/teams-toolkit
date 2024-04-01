@@ -109,7 +109,7 @@ export class AzSqlHelper {
   }
 
   static async login() {
-    const command = `az login --service-principal -u ${Env["AZURE_CLIENT_ID"]} -p ${Env["AZURE_CLIENT_SECRET"]} -t ${Env["azureTenantId"]}`;
+    const command = `az login -u ${Env["azureAccountName"]} -p ${Env["azureAccountPassword"]}`;
     const { success } = await Executor.execute(command, process.cwd());
     if (!success) {
       console.error(`Failed to login`);
@@ -244,7 +244,7 @@ export class AzServiceBusHelper {
   }
 
   static async login() {
-    const command = `az login --service-principal -u ${Env["AZURE_CLIENT_ID"]} -p ${Env["AZURE_CLIENT_SECRET"]} -t ${Env["azureTenantId"]}`;
+    const command = `az login -u ${Env["azureAccountName"]} -p ${Env["azureAccountPassword"]}`;
     const { success } = await Executor.execute(command, process.cwd());
     if (!success) {
       console.error(`Failed to login`);

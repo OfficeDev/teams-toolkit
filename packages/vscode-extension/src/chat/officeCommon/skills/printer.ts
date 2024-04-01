@@ -38,41 +38,26 @@ export class Printer implements ISkill {
     token: CancellationToken,
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
-    const isSummaryHarmful = await isOutputHarmful(spec.userInput, token);
-    // Truncate the code snippet for post-validation for the token limitation.
-    const codes = spec.appendix.codeSnippet.split(" ");
-    let isCodeSnippetHarmful = false;
-    for (let index = 0; index < codes.length; index += 100) {
-      const truncatedCode = codes.slice(index, index + 200).join(" ");
-      isCodeSnippetHarmful = await isOutputHarmful(truncatedCode, token);
-      if (isCodeSnippetHarmful) {
-        break;
-      }
-    }
-    if (isSummaryHarmful || isCodeSnippetHarmful) {
-      response.markdown("The response is filtered by Responsible AI service.");
-      return { result: ExecutionResultEnum.Failure, spec: spec };
-    }
     const template = `
 # 1. Task Summary
 ${spec.userInput}
 
-# 2. Task Breakdown
-You're looking for a code snippet for Office ${
-      spec.appendix.host
-    }, we break down the task into smaller, manageable steps. This helps to clarify the task and make it easier to tackle. Here's how we break down a task:
-- ${spec.appendix.codeTaskBreakdown.join("\n- ")}
-
-# 3. The output
+# 2. The output
 The following TypeScript code snippet is generated based on the task breakdown. You can copy and paste it into your project, and modify it as needed.
-## 3.1 TypeScript Code Snippets
+## 2.1 TypeScript Code Snippets
 \`\`\`typescript
 ${spec.appendix.codeSnippet}
 \`\`\`
-## 3.2 Code Explanation
+## 2.2 Code Explanation
 ${spec.appendix.codeExplanation}
 `;
-    response.markdown(template);
-    return { result: ExecutionResultEnum.Success, spec: spec };
+    const isHarmful = await isOutputHarmful(template, token);
+    if (isHarmful) {
+      response.markdown("The response is filtered by Responsible AI service.");
+      return { result: ExecutionResultEnum.Failure, spec: spec };
+    } else {
+      response.markdown(template);
+      return { result: ExecutionResultEnum.Success, spec: spec };
+    }
   }
 }

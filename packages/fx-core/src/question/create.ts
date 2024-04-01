@@ -47,7 +47,10 @@ import {
   OpenAIPluginManifestHelper,
   listOperations,
 } from "../component/generator/copilotPlugin/helper";
-import { OfficeAddinProjectConfig } from "../component/generator/officeXMLAddin/projectConfig";
+import {
+  OfficeAddinProjectConfig,
+  getOfficeAddinTemplateConfig,
+} from "../component/generator/officeXMLAddin/projectConfig";
 import { DevEnvironmentSetupError } from "../component/generator/spfx/error";
 import { SPFxGenerator } from "../component/generator/spfx/spfxGenerator";
 import { Constants } from "../component/generator/spfx/utils/constants";
@@ -131,7 +134,7 @@ export class ProjectTypeOptions {
   static officeXMLAddin(platform?: Platform): OptionItem {
     return {
       id: "office-xml-addin-type",
-      label: `${platform === Platform.VSCode ? "$(inbox) " : ""}${getLocalizedString(
+      label: `${platform === Platform.VSCode ? "$(teamsfx-m365) " : ""}${getLocalizedString(
         "core.createProjectQuestion.officeXMLAddin.mainEntry.title"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.mainEntry.detail"),
@@ -591,7 +594,7 @@ export class CapabilityOptions {
   static customCopilots(): OptionItem[] {
     return [
       CapabilityOptions.customCopilotBasic(),
-      // CapabilityOptions.customCopilotRag(),
+      CapabilityOptions.customCopilotRag(),
       CapabilityOptions.customCopilotAssistant(),
     ];
   }
@@ -1419,10 +1422,14 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     ) {
       return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
     }
-    return [
-      { id: ProgrammingLanguage.TS, label: "TypeScript" },
-      { id: ProgrammingLanguage.JS, label: "JavaScript" },
-    ];
+    const officeXMLAddinLangConfig = getOfficeAddinTemplateConfig(projectType, host)[capabilities]
+      .framework["default"];
+    const officeXMLAddinLangOptions = [];
+    if (!!officeXMLAddinLangConfig.typescript)
+      officeXMLAddinLangOptions.push({ id: ProgrammingLanguage.TS, label: "TypeScript" });
+    if (!!officeXMLAddinLangConfig.javascript)
+      officeXMLAddinLangOptions.push({ id: ProgrammingLanguage.JS, label: "JavaScript" });
+    return officeXMLAddinLangOptions;
   }
 
   if (capabilities === CapabilityOptions.SPFxTab().id) {
@@ -2175,10 +2182,10 @@ export class CustomCopilotRagOptions {
 
   static all(): OptionItem[] {
     return [
-      CustomCopilotRagOptions.customize(),
+      // CustomCopilotRagOptions.customize(),
       CustomCopilotRagOptions.azureAISearch(),
-      CustomCopilotRagOptions.customApi(),
-      CustomCopilotRagOptions.microsoft365(),
+      // CustomCopilotRagOptions.customApi(),
+      // CustomCopilotRagOptions.microsoft365(),
     ];
   }
 }
@@ -2417,7 +2424,6 @@ export function capabilitySubTree(): IQTreeNode {
         },
         data: apiMessageExtensionAuthQuestion(),
       },
-      /*
       {
         condition: (inputs: Inputs) => {
           return inputs[QuestionNames.Capabilities] == CapabilityOptions.customCopilotRag().id;
@@ -2442,7 +2448,6 @@ export function capabilitySubTree(): IQTreeNode {
           },
         ],
       },
-      */
       {
         condition: (inputs: Inputs) => {
           return (

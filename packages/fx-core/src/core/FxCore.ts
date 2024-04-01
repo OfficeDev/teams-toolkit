@@ -43,7 +43,7 @@ import { ListCollaboratorResult, PermissionsResult } from "../common/permissionI
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
 import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
-import { AppStudioScopes } from "../common/tools";
+import { AppStudioScopes, GraphScopes } from "../common/tools";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
 import { YamlParser } from "../component/configManager/parser";
@@ -265,56 +265,65 @@ export class FxCore {
     let botId;
     let aadClientId;
     let m365TitleId;
-    for (const action of projectModel.provision?.driverDefs ?? []) {
-      if (action.uses === "teamsApp/create") {
-        const keyName = action.writeToEnvironmentFile?.teamsAppId || "TEAMS_APP_ID";
-        teamsAppId = process.env[keyName];
-      } else if (action.uses === "botAadApp/create") {
-        const keyName = action.writeToEnvironmentFile?.botId || "BOT_ID";
-        botId = process.env[keyName];
-      } else if (action.uses === "aadApp/create") {
-        const keyName = action.writeToEnvironmentFile?.clientId || "AAD_APP_CLIENT_ID";
-        aadClientId = process.env[keyName];
-      } else if (action.uses === "teamsApp/extendToM365") {
-        const keyName = action.writeToEnvironmentFile?.titleId || "M365_TITLE_ID";
-        m365TitleId = process.env[keyName];
-      }
+    // for (const action of projectModel.provision?.driverDefs ?? []) {
+    //   if (action.uses === "teamsApp/create") {
+    //     const keyName = action.writeToEnvironmentFile?.teamsAppId || "TEAMS_APP_ID";
+    //     teamsAppId = process.env[keyName];
+    //   } else if (action.uses === "botAadApp/create") {
+    //     const keyName = action.writeToEnvironmentFile?.botId || "BOT_ID";
+    //     botId = process.env[keyName];
+    //   } else if (action.uses === "aadApp/create") {
+    //     const keyName = action.writeToEnvironmentFile?.clientId || "AAD_APP_CLIENT_ID";
+    //     aadClientId = process.env[keyName];
+    //   } else if (action.uses === "teamsApp/extendToM365") {
+    //     const keyName = action.writeToEnvironmentFile?.titleId || "M365_TITLE_ID";
+    //     m365TitleId = process.env[keyName];
+    //   }
+    // }
+    // if (teamsAppId) {
+    // delete teams app in tdp
+    // const appStudioTokenRes = await m365TokenProvider.getAccessToken({
+    //   scopes: AppStudioScopes,
+    // });
+    // if (appStudioTokenRes.isErr()) {
+    //   return err(appStudioTokenRes.error);
+    // }
+    // const token = appStudioTokenRes.value;
+    // await AppStudioClient.deleteApp(teamsAppId, token, TOOLS.logProvider);
+    // TODO uninstall Teams app
+    const userInfoRes = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
+    if (userInfoRes.isErr()) {
+      return err(userInfoRes.error);
     }
-    if (teamsAppId) {
-      // delete teams app in tdp
-      // const appStudioTokenRes = await m365TokenProvider.getAccessToken({
-      //   scopes: AppStudioScopes,
-      // });
-      // if (appStudioTokenRes.isErr()) {
-      //   return err(appStudioTokenRes.error);
-      // }
-      // const token = appStudioTokenRes.value;
-      // await AppStudioClient.deleteApp(teamsAppId, token, TOOLS.logProvider);
-      // TODO uninstall Teams app
-      const userInfoRes = await CollaborationUtil.getCurrentUserInfo(m365TokenProvider);
-      if (userInfoRes.isErr()) {
-        return err(userInfoRes.error);
-      }
-      const uid = userInfoRes.value.aadId;
-      const aadClient = new AadAppClient(m365TokenProvider, TOOLS.logProvider);
-      if (m365TitleId) {
-        //TODO uninstall M365 app
-      }
+    const uid = userInfoRes.value.aadId;
+    console.log(uid);
+    const aadClient = new AadAppClient(m365TokenProvider, TOOLS.logProvider);
+    const tokenResponse = await m365TokenProvider.getAccessToken({
+      scopes: ["TeamsAppInstallation.ReadWriteSelfForUser"],
+    });
+    if (tokenResponse.isErr()) {
+      throw tokenResponse.error;
     }
-    if (botId) {
-      // delete bot reg in tdp
-      const appStudioTokenRes = await TOOLS.tokenProvider.m365TokenProvider.getAccessToken({
-        scopes: AppStudioScopes,
-      });
-      if (appStudioTokenRes.isErr()) {
-        return err(appStudioTokenRes.error);
-      }
-      const token = appStudioTokenRes.value;
-      await BotAppStudioClient.deleteBot(token, botId);
+    const token = tokenResponse.value;
+    console.log(token);
+    if (m365TitleId) {
+      //TODO uninstall M365 app
     }
-    if (aadClientId) {
-      // delete aad app
-    }
+    // }
+    // if (botId) {
+    //   // delete bot reg in tdp
+    //   const appStudioTokenRes = await TOOLS.tokenProvider.m365TokenProvider.getAccessToken({
+    //     scopes: AppStudioScopes,
+    //   });
+    //   if (appStudioTokenRes.isErr()) {
+    //     return err(appStudioTokenRes.error);
+    //   }
+    //   const token = appStudioTokenRes.value;
+    //   await BotAppStudioClient.deleteBot(token, botId);
+    // }
+    // if (aadClientId) {
+    //   // delete aad app
+    // }
     return ok(undefined);
   }
 

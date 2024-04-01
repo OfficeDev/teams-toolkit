@@ -10,7 +10,7 @@
       "name": "Launch new command (non-interactive)",
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}/cli.js",
-      "args": ["clean", "--env", "dev", "-f", "C:\\Users\\zhjay\\TeamsApps\\huajietestcliclean032201"],
+      "args": ["clean", "--env", "dev", "-f", "C:\\Users\\zhjay\\TeamsApps\\huajieclicleantest040101"],
       "outFiles": [
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",

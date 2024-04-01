@@ -84,12 +84,7 @@ export async function isInputHarmful(
     isInputHarmfulSystemPrompt,
     new LanguageModelChatUserMessage(request.prompt),
   ];
-  const isHarmfulResponse = await getCopilotResponseAsString(
-    "copilot-gpt-3.5-turbo",
-    isHarmfulMessage,
-    token
-  );
-  return isHarmfulResponse.toLowerCase().includes("yes");
+  return isMessageHarmful(isHarmfulMessage, token);
 }
 
 export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
@@ -97,10 +92,25 @@ export async function isOutputHarmful(output: string, token: CancellationToken):
     isOutputHarmfulSystemPrompt,
     new LanguageModelChatAssistantMessage(output),
   ];
-  const isHarmfulResponse = await getCopilotResponseAsString(
-    "copilot-gpt-3.5-turbo",
-    isHarmfulMessage,
-    token
-  );
-  return isHarmfulResponse.toLowerCase().includes("yes");
+  return isMessageHarmful(isHarmfulMessage, token);
+}
+
+async function isMessageHarmful(
+  isHarmfulMessage: LanguageModelChatMessage[],
+  token: CancellationToken
+) {
+  async function getIsHarmfulResponseAsync() {
+    const isHarmfulResponse = await getCopilotResponseAsString(
+      "copilot-gpt-3.5-turbo",
+      isHarmfulMessage,
+      token
+    );
+    return isHarmfulResponse.toLowerCase().includes("yes");
+  }
+  const promises = Array(5)
+    .fill(null)
+    .map(() => getIsHarmfulResponseAsync());
+  const results = await Promise.all(promises);
+  const isHarmful = results.filter((result) => result === true).length > 2;
+  return isHarmful;
 }

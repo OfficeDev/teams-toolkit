@@ -67,8 +67,7 @@ export class AzSqlHelper {
   public async createSql() {
     // login
     console.log(`Logging in...`);
-    const { success: loginSuccess } = await AzSqlHelper.login();
-    if (!loginSuccess) return;
+    await AzSqlHelper.login();
 
     // create resource group
     console.log("Creating resource group: ", this.resourceGroupName, "...");
@@ -109,11 +108,7 @@ export class AzSqlHelper {
 
   static async login() {
     const command = `az login -u '${Env["azureAccountName"]}' -p '${Env["azureAccountPassword"]}'`;
-    const { success } = await Executor.execute(command, process.cwd());
-    if (!success) {
-      console.error(`Failed to login`);
-      return { success: false };
-    }
+    await Executor.execute(command, process.cwd());
     // set subscription
     const subscription = Env["azureSubscriptionId"];
     const setSubscriptionCommand = `az account set --subscription ${subscription}`;

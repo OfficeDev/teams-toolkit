@@ -5,7 +5,10 @@ export function getCodeGenerateGuidance(host: string) {
   # Coding rules:
     - Code must be TypeScript compabible with ES2015.
     - Include type declarations in variable declaration, function return declaration, function argument declaration.
+    - Add rich comments to explain the code.
     - Use async/await over .then for Promise.
+    - An async function must return a Promise.
+    - Must await for async function.
     - Use try-catch over .catch for Promise.
     - Use "fetch" over "XMLHttpRequest".
     - Don't use enum const. Like "Sunny", "Rainy", "Cloudy", or 0, 1, 2. Use enum instead.

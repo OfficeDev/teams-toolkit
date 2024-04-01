@@ -9,10 +9,9 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  reRunProvision,
-  runDeploy,
   setSkuNameToB1,
+  provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -75,12 +74,13 @@ describe("Remote debug Tests", function () {
       await createNewProject("tabnsso", appName);
       await setSkuNameToB1(projectPath);
       await driver.sleep(Timeout.shortTimeWait);
-      await runProvision(appName);
+      await provisionProject(appName, projectPath);
       await clearNotifications();
       await cleanUpResourceGroup(appName, "dev");
       await createResourceGroup(appName, "dev");
-      await reRunProvision();
-      await runDeploy();
+      // rerun provision
+      await provisionProject(appName, projectPath, false);
+      await deployProject(projectPath);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

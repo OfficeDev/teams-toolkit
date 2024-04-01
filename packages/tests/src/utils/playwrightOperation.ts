@@ -2274,9 +2274,12 @@ export async function validateGraphConnector(
             .catch(() => {});
           await popup.click("input.button[type='submit'][value='Accept']");
         }
-
-        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
+        }
       });
+      await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       page.waitForTimeout(1000);
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);

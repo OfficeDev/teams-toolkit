@@ -76,9 +76,13 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Extend the AI Search bot template with more AI capabilities
 
-You can follow [Build an AI Search bot in Teams](https://aka.ms) to extend the AI Agent template with more AI capabilities, like:
-- [Add functions](https://aka.ms)
-- TODO update teamsfx wiki and update this link
+You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the Basic AI Chatbot template with more AI capabilities, like:
+- [Customize prompt](https://aka.ms/teamsfx-basic-ai-chatbot#customize-prompt)
+- [Customize user input](https://aka.ms/teamsfx-basic-ai-chatbot#customize-user-input)
+- [Customize conversation history](https://aka.ms/teamsfx-basic-ai-chatbot#customize-conversation-history)
+- [Customize model type](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-type)
+- [Customize model parameters](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-parameters)
+- [Handle messages with image](https://aka.ms/teamsfx-basic-ai-chatbot#handle-messages-with-image)
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "packages/vscode-extension"
+		},
+		{
+			"path": "packages/cli"
+		}
+	],
+	"settings": {}
+}

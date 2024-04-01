@@ -59,6 +59,6 @@ new ChefBotTestCase(
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
   {
     debug: "cli",
-    testRootFolder: path.resolve(os.homedir(), "resourse"), // fix yarn error
+    testRootFolder: "./resourse/js/samples", // fix yarn error
   }
 ).test();

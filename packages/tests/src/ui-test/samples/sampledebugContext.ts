@@ -143,14 +143,14 @@ export class SampledebugContext extends TestContext {
     console.log("start to open project: ", this.sampleName);
     // two repos have different sample path
     const oldPath = path.resolve(
-      this.testRootFolder == "./resource/samples"
-        ? "./resource/samples"
-        : "./resource",
+      this.testRootFolder,
       this.originSample
     );
     // move old sample to project path
     await fs.mkdir(this.projectPath);
     try {
+      console.log("oldPath: ", oldPath);
+      console.log("newPath: ", this.projectPath);
       await fs.copy(oldPath, this.projectPath);
       await openExistingProject(this.projectPath);
       console.log(

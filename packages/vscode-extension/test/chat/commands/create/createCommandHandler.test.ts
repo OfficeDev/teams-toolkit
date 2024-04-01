@@ -165,7 +165,7 @@ describe("chat create command", () => {
       );
       chai.assert.isTrue(showFileTreeStub.notCalled);
       chai.assert.isTrue(response.markdown.calledThrice);
-      chai.assert.isTrue(response.button.calledThrice);
+      chai.assert.isTrue(response.button.calledTwice);
     });
   });
 });

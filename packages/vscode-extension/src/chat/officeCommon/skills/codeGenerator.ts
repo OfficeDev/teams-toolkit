@@ -28,11 +28,13 @@ import {
 
 const excelSystemPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+
+Let's think step by step.
 `;
 const cfSystemPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
-There're some references help you to understand some key concepts, read it and repeat by yourself, before start to generate code.
+There're some references help you to understand The Office JavaScript API Custom Functions, read it and repeat by yourself, Make sure you understand before process the user's prompt. 
 # References:
 ## Understanding the difference between a Custom Functions and the normal TypeScript/JavaScript function:
 In the context of Office Excel Custom Functions, there are several differences compared to normal JavaScript/TypeScript functions:
@@ -131,11 +133,13 @@ export class CodeGenerator implements ISkill {
     token: CancellationToken,
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
+    const t0 = performance.now();
     if (
       !!spec.appendix.host ||
       !!spec.appendix.codeTaskBreakdown ||
       (spec.appendix.codeTaskBreakdown as string[]).length == 0
     ) {
+      response.progress("Identify code-generation scenarios...");
       const breakdownResult = await this.userInputBreakdownTaskAsync(request, token);
 
       if (!breakdownResult) {
@@ -162,14 +166,23 @@ export class CodeGenerator implements ISkill {
       spec.appendix.host = breakdownResult.host;
       spec.appendix.codeTaskBreakdown = breakdownResult.data;
       spec.appendix.isCustomFunction = breakdownResult.customFunctions;
+      spec.appendix.complexity = breakdownResult.complexity;
     }
 
     if (!spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount]) {
       spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] = 0;
     }
     spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] += 1;
+    let progressMessageStr = "generating code...";
+    if (spec.appendix.complexity >= 50) {
+      progressMessageStr =
+        "This is a task with high complexity, may take a little bit longer..." + progressMessageStr;
+    } else {
+      progressMessageStr =
+        "We should be able to generate the code in a short while..." + progressMessageStr;
+    }
+    response.progress(progressMessageStr);
     let codeSnippet: string | null = "";
-    const t0 = performance.now();
     codeSnippet = await this.generateCode(
       request,
       token,
@@ -206,41 +219,54 @@ export class CodeGenerator implements ISkill {
     shouldContinue: boolean;
     customFunctions: boolean;
     data: string[];
+    complexity: number;
   }> {
     const userPrompt = `
-    Assume this is a ask: "${request.prompt}". I need you help to analyze it, and give me your suggestion. Follow the guidance below:
-    - If the ask is not relevant to Microsoft Excel, Microsoft Word, or Microsoft PowerPoint, you should reject it because today this agent only support offer assistant to those Office host applications. And give the reason to reject the ask.
-    - If the ask is not about automating a certain process or accomplishing a certain task using Office JavaScript Add-ins, you should reject it. And give the reason to reject the ask.
-    - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
-    - Otherwise, please think about if you can process the ask. 
-      - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
-      - If you can process the ask, you should break down the ask into sub steps that could be performed by Office Add-ins JavaScript APIs. Each step should be actions accomplished by using **code**. Emphasize the "Bold" part in the title.
-    return the result in a JSON object.
+  Assume this is a ask: "${request.prompt}". I need you help to analyze it, and give me your suggestion. Follow the guidance below:
+  - If the ask is not relevant to Microsoft Excel, Microsoft Word, or Microsoft PowerPoint, you should reject it because today this agent only support offer assistant to those Office host applications. And give the reason to reject the ask.
+  - If the ask is not about automating a certain process or accomplishing a certain task using Office JavaScript Add-ins, you should reject it. And give the reason to reject the ask.
+  - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
+  - Otherwise, please think about if you can process the ask. 
+    - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
+    - If you can process the ask, you should:
+      - Break it down into several steps, for each step that can be automated through code, design a TypeScript function. 
+        - bypass the "generate other functions or generate add-ins" step.
+        - List the function name as an item of markdown list. Then, explain the function in details. 
+          - Including suggestions on the name of function, the parameters, the return value, and the TypeScript type of them. 
+          - Then the detailed logic of the function, what operations it will be perform, and what Office JavaScript Add-ins API should be used inside of, etc. Describe all the details of logic as detailed as possible.
+      - If user's ask is **NOT** about Office JavaScript Add-ins with custom functions, then descript a entry function in plain text, includes all any functions should be called in what order, and what the entry function should return. The entry function **must** named as "main", and takes no parameters, declared as 'async function'.
+      
+  **Return the result in the JSON object describe in the format of output section below**.
 
-    Think about that step by step.
-    `;
+  Think about that step by step.
+  `;
     const defaultSystemPrompt = `
-    The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+  The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
-    #Role:
-    You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
+  #Role:
+  You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
-    #Your tasks:
-    Repeat the user's ask, and then give your suggestion based on the user's ask. Follow the guidance below:
-    If you suggested to accept the ask. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be true.
-    If you suggested to reject the ask, put the reason to reject into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be false.
-    You must strickly follow the format of output.
+  #Your tasks:
+  Repeat the user's ask, and then give your suggestion based on the user's ask. Follow the guidance below:
+  If you suggested to accept the ask. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be true.
+  If you suggested to reject the ask, put the reason to reject into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be false.
+  You must strickly follow the format of output.
 
-    #The format of output:
-    The output should be just a **JSON object**. You should not add anything else to the output
-    - The first key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". 
-    - The second key is "shouldContinue", the value is a Boolean.
-    - The third key named "data", the value of it is the list of sub tasks or rejection reason, and that is a string array.
-    - The last key named "customFunctions", set value of it to be a Boolean true if the user's ask is about Office JavaScript Add-ins with custom functions on Excel. Otherwise, set it to be a Boolean false.
-    If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information or reason to reject. **Beyond this JSON object, you should not add anything else to the output**.
+  #The format of output:
+  The output should be just a **JSON object**. You should not add anything else to the output
+  - The first key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". 
+  - The second key is "shouldContinue", the value is a Boolean.
+  - The third key named "data", the value of it is the list of sub tasks or rejection reason, and that is a string array.
+  - The fourth key named "complexity", the value of it is a number to indicate the complexity of the user's ask. The number should be between 1 to 100, 1 means the ask is very simple, 100 means the ask is very complex. This is the rule to calculate the complexity:
+    - If there's no interaction with Office JavaScript Add-ins API, set the score range from very simple to simple. If maps to score, that coulld be (1, 25).
+    - If there's a few interaction (less than 2) with Office JavaScript Add-ins API, set the score range from simple to medium. If maps to score, that coulld be (26, 50).
+    - If there's several interaction (more than 2, less than 5) with Office JavaScript Add-ins API, set the score range from medium to complex. If maps to score, that coulld be (51, 75).
+    - If there's many interaction (more than 5) with Office JavaScript Add-ins API, set the score range from complex to very complex. If maps to score, that coulld be (76, 100).
+  - The last key named "customFunctions", set value of it to be a Boolean true if the user's ask is about Office JavaScript Add-ins with custom functions on Excel. Otherwise, set it to be a Boolean false.
+  If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information or reason to reject. **Beyond this JSON object, you should not add anything else to the output**.
 
-    Think about that step by step.
-    `;
+  Think about that step by step.
+  `;
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
@@ -248,7 +274,7 @@ export class CodeGenerator implements ISkill {
       new LanguageModelChatUserMessage(userPrompt),
     ];
     const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-3.5-turbo",
+      "copilot-gpt-3.5-turbo", // "copilot-gpt-3.5-turbo", // "copilot-gpt-4",
       messages,
       token
     );
@@ -256,11 +282,19 @@ export class CodeGenerator implements ISkill {
       host: "",
       shouldContinue: false,
       customFunctions: false,
+      complexity: 0,
       data: [],
     };
 
     try {
-      copilotRet = JSON.parse(copilotResponse.trim());
+      const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
+      if (!codeSnippetRet) {
+        // try if the LLM already give a json object
+        copilotRet = JSON.parse(copilotResponse.trim());
+      } else {
+        copilotRet = JSON.parse(codeSnippetRet[1].trim());
+      }
+      console.log(`The complexity score: ${copilotRet.complexity}`);
     } catch (error) {
       console.error("[User task breakdown] Failed to parse the response from Copilot:", error);
       return null;
@@ -274,7 +308,7 @@ export class CodeGenerator implements ISkill {
     token: CancellationToken,
     host: string,
     isCustomFunctions: boolean,
-    subTasks: string[],
+    suggestedFunction: string[],
     spec: Spec
   ) {
     const userPrompt = `
@@ -284,14 +318,13 @@ The following content written using Markdown syntax, using "Bold" style to highl
 You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on JavaScript, CSS, HTML, popular algorithm, and Office Add-ins API. You should help the user to automate a certain process or accomplish a certain task using Office JavaScript Add-ins.
 
 # Context:
-This is the ask need your help to generate the code for this request:
-- ${request.prompt}. 
-The request is about Office Add-ins, and it is relevant to the Office application "${host}".
-It could be broken down into a few steps able to be accomplished by Office Add-ins JavaScript APIs. **Read through the those steps, repeat by yourself**. Make sure you understand that before go to the task. You have the list of steps.:
-${subTasks.map((task, index) => `${index + 1}. ${task}`).join("\n")}
+This is the ask need your help to generate the code for this request: ${request.prompt}.
+- The request is about Office Add-ins, and it is relevant to the Office application "${host}".
+- It's a suggested list of functions with their purpose and perhaps details. **Read through those descriptions, and repeat by yourself**. Make sure you understand that before go to the task:
+${suggestedFunction.map((task) => `- ${task}`).join("\n")}
 
 # Your tasks:
-Implement **all** steps with **TypeScript code** and **Office JavaScript Add-ins API**, while **follow the coding rule**.
+Generate code according to the user's ask, the generated code **MUST** include implementations of those functions listed above, and not limited to this. Code write in **TypeScript code** and **Office JavaScript Add-ins API**, while **follow the coding rule**. Do not generate code to invoke the "main" function or "entry" function if that function generated.
 
 ${getCodeGenerateGuidance(host)}
 
@@ -357,13 +390,15 @@ Let's think step by step.
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
+      new LanguageModelChatSystemMessage(referenceUserPrompt),
       new LanguageModelChatSystemMessage(defaultSystemPrompt),
-      new LanguageModelChatUserMessage(referenceUserPrompt),
       new LanguageModelChatUserMessage(userPrompt),
     ];
-    // The "copilot-gpt-4" model is significantly slower than "copilot-gpt-3.5-turbo", but also significantly more accurate
-    // In order to avoid waste more time on the correct, I believe using GPT-4 is a better choice
-    const copilotResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+    const copilotResponse = await getCopilotResponseAsString(
+      spec.appendix.complexity >= 50 ? "copilot-gpt-4" : "copilot-gpt-3.5-turbo",
+      messages,
+      token
+    );
 
     // extract the code snippet and the api list out
     const codeSnippetRet = copilotResponse.match(/```typescript([\s\S]*?)```/);

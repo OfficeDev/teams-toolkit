@@ -21,6 +21,7 @@ export const MeasurementSystemCodegenTaskBreakdownAttemptFailedCount =
 export const MeasurementCommandExcutionTimeSec = "CommandExcutionTimeSec";
 export const MeasurementCodeGenExecutionTimeInTotalSec = "CodeGenExecutionTimeInTotalSec";
 export const MeasurementCodeGenAttemptCount = "CodeGenAttemptCount";
+export const MeasurementUserInputBrokenDownSubTasksCount = "UserInputBrokenDownSubTasksCount";
 export const MeasurementSelfReflectionExecutionTimeInTotalSec =
   "SelfReflectionExecutionTimeInTotalSec";
 export const MeasurementScenarioBasedSampleMatchedCount = "ScenarioBasedSampleMatchedCount";

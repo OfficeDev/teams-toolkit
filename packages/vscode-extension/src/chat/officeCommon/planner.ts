@@ -129,7 +129,11 @@ I can't assist you with this request. Here are some details:
       spec.appendix.telemetryData.measurements
     );
     chatTelemetryData.markComplete();
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChat, chatTelemetryData.properties);
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      chatTelemetryData.properties,
+      chatTelemetryData.measurements
+    );
 
     return chatResult;
   }

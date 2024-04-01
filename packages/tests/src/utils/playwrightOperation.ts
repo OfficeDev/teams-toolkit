@@ -80,7 +80,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.ChefBot]: async () => {
-    await startDebugging();
+    await startDebugging("Debug (Chrome)");
   },
   [TemplateProject.GraphConnectorBot]: async () => {
     await startDebugging();

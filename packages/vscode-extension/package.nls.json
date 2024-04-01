@@ -470,5 +470,5 @@
     "teamstoolkit.chatParticipants.create.selectFolder.label": "Select Folder",
     "teamstoolkit.chatParticipants.create.successfullyCreated": "Project successfully created in current workspace.",
     "teamstoolkit.chatParticipants.create.failToCreate": "Unable to create the project.",
-    "teamstoolkit.chatParticipants.default.noConceptualAnswer": "I can only answer conceptual questions."
+    "teamstoolkit.chatParticipants.default.noConceptualAnswer": "This is a procedural question, @teams can only answer questions regarding descriptions or concepts for now. You could try these commands or learn more from [Teams Toolkit documentation](https://learn.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals).\n\n • /create: Use this command to find relevant templates or samples to build your Teams app as per your description. E.g. @teams /create create an AI assistant bot that can complete common tasks.\n\n • /nextstep: Use this command to move to the next step at any stage of your Teams app development.xxx"
 }

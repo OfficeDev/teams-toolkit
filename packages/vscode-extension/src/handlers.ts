@@ -1957,7 +1957,6 @@ export async function cmpAccountsHandler(args: any[]) {
   quickPick.onDidChangeSelection((selection) => {
     if (selection[0]) {
       (selection[0] as VscQuickPickItem).function().catch(console.error);
-      quickPick.hide();
     }
   });
   quickPick.onDidHide(() => quickPick.dispose());
@@ -2266,9 +2265,10 @@ export async function signOutAzure(isFromTreeView: boolean) {
       : TelemetryTriggerFrom.CommandPalette,
     [TelemetryProperty.AccountType]: AccountType.Azure,
   });
-  await vscode.window.showInformationMessage(
-    localize("teamstoolkit.commands.azureAccount.signOutHelp")
-  );
+  const result = await AzureAccountManager.signout();
+  if (result) {
+    accountTreeViewProviderInstance.azureAccountNode.setSignedOut();
+  }
 }
 
 export async function signOutM365(isFromTreeView: boolean) {

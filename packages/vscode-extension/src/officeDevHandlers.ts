@@ -7,7 +7,11 @@
 "use strict";
 
 import { FxError, Result, Warning, ok } from "@microsoft/teamsfx-api";
-import { globalStateGet, globalStateUpdate } from "@microsoft/teamsfx-core";
+import {
+  globalStateGet,
+  globalStateUpdate,
+  isManifestOnlyOfficeAddinProject,
+} from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
@@ -236,14 +240,14 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
     await globalStateUpdate(GlobalKey.OpenSampleReadMe, false);
   }
   if (autoInstallDependency) {
-    if (!isManifestOnlyAddin(globalVariables.workspaceUri?.fsPath ?? ""))
+    if (!isManifestOnlyOfficeAddinProject(globalVariables.workspaceUri?.fsPath ?? ""))
       void popupOfficeAddInDependenciesMessage();
     await globalStateUpdate(GlobalKey.AutoInstallDependency, false);
   }
   if (
     globalVariables.isOfficeAddInProject &&
     !checkOfficeAddInInstalled(globalVariables.workspaceUri?.fsPath ?? "") &&
-    !isManifestOnlyAddin(globalVariables.workspaceUri?.fsPath ?? "")
+    !isManifestOnlyOfficeAddinProject(globalVariables.workspaceUri?.fsPath ?? "")
   ) {
     void popupOfficeAddInDependenciesMessage();
   }
@@ -252,9 +256,4 @@ export async function autoOpenOfficeDevProjectHandler(): Promise<void> {
 export function checkOfficeAddInInstalled(directory: string): boolean {
   const nodeModulesExists = fs.existsSync(path.join(directory, "node_modules"));
   return nodeModulesExists;
-}
-
-export function isManifestOnlyAddin(directory: string): boolean {
-  const srcPath = path.join(directory, "src");
-  return !fs.existsSync(srcPath);
 }

@@ -860,6 +860,16 @@
         "command": "fx-extension.openOfficeDevHelpFeedbackLink",
         "title": "%teamstoolkit.commands.feedbackLink.title%",
         "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.localdebug",
+        "title": "%teamstoolkit.commandsTreeViewProvider.officeDevLocalDebugTitle%",
+        "enablement": "fx-extension.isOfficeAddIn && !fx-extension.isManifestOnlyOfficeAddIn"
+      },
+      {
+        "command": "fx-extension.stopDebugging",
+        "title": "%teamstoolkit.commandsTreeViewProvider.officeAddIn.stopDebugTitle%",
+        "enablement": "fx-extension.isOfficeAddIn && !fx-extension.isManifestOnlyOfficeAddIn"
       }
     ],
     "taskDefinitions": [

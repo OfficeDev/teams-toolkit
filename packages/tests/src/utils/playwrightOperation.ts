@@ -80,7 +80,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.ChefBot]: async () => {
-    await startDebugging();
+    await startDebugging("Debug (Chrome)");
   },
   [TemplateProject.GraphConnectorBot]: async () => {
     await startDebugging();
@@ -1020,10 +1020,16 @@ export async function validateReactTab(
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+        }
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
         }
       });
-
+      await page.waitForTimeout(Timeout.shortTimeLoading);
       console.log("verify function info");
       const backendElement = await frame?.waitForSelector(
         'pre:has-text("receivedHTTPRequestBody")'
@@ -1085,9 +1091,16 @@ export async function validateReactOutlookTab(
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+        }
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
         }
       });
+      await page.waitForTimeout(Timeout.shortTimeLoading);
 
       console.log("verify function info");
       const backendElement = await frame?.waitForSelector(

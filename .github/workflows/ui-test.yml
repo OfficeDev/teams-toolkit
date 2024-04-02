@@ -358,7 +358,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false && contains(matrix.test-case, 'chef-bot') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -370,6 +370,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
+          ref: main
+          path: ./packages/tests/resource
+
+      - name: Download samples chef bot
+        if: contains(matrix.test-case, 'chef-bot')
+        uses: actions/checkout@v3
+        with:
+          repository: microsoft/teams-ai
           ref: main
           path: ./packages/tests/resource
 

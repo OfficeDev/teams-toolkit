@@ -754,7 +754,8 @@ describe("teamsApp/validateWithTestCases", async () => {
     chai.assert(result.isErr());
   });
 
-  it("Invalid Validation Result Response - Null Details", async () => {
+  it("Invalid validation result response - Null details", async () => {
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves(undefined);
     const mockSubmitValidationResponse: AsyncAppValidationResponse = {
       status: AsyncAppValidationStatus.Created,
       appValidationId: "fakeId",
@@ -796,7 +797,7 @@ describe("teamsApp/validateWithTestCases", async () => {
     );
   });
 
-  it("Invalid Validation Result Response - Null Validation Results", async () => {
+  it("Invalid validation result response - Null validation results", async () => {
     const mockSubmitValidationResponse: AsyncAppValidationResponse = {
       status: AsyncAppValidationStatus.Created,
       appValidationId: "fakeId",
@@ -833,7 +834,29 @@ describe("teamsApp/validateWithTestCases", async () => {
     );
   });
 
-  it("Valid Validation Result Response", async () => {
+  it("Valid validation result response", async () => {
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves({
+      appValidations: [
+        {
+          id: "fakeId",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Completed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "fakeId2",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Aborted,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
     const mockSubmitValidationResponse: AsyncAppValidationResponse = {
       status: AsyncAppValidationStatus.Created,
       appValidationId: "fakeId",
@@ -843,8 +866,7 @@ describe("teamsApp/validateWithTestCases", async () => {
       showMessage: true,
       showProgressBar: true,
     };
-
-    const invalidValidationResultResponseJson: any = {
+    sinon.stub(AppStudioClient, "getAppValidationById").resolves({
       status: AsyncAppValidationStatus.Completed,
       appValidationId: "fakeId",
       appId: "fakeAppId",
@@ -906,11 +928,7 @@ describe("teamsApp/validateWithTestCases", async () => {
       },
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
-    const invalidValidationResultResponse: AsyncAppValidationResultsResponse = <
-      AsyncAppValidationResultsResponse
-    >invalidValidationResultResponseJson;
-    sinon.stub(AppStudioClient, "getAppValidationById").resolves(invalidValidationResultResponse);
+    });
     await teamsAppDriver.runningBackgroundJob(
       args,
       mockedDriverContext,
@@ -926,6 +944,199 @@ describe("teamsApp/validateWithTestCases", async () => {
     );
   });
 
+  it("Duplicate validations - InProgress", async () => {
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves({
+      appValidations: [
+        {
+          id: "fakeId",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Completed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "fakeId2",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.InProgress,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
+    sinon.stub(AppStudioClient, "submitAppValidationRequest").throws("should not be called");
+    sinon.stub(AppStudioClient, "getAppValidationById").throws("should not be called");
+
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: "fakepath",
+      showMessage: true,
+      showProgressBar: true,
+    };
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isOk());
+  });
+
+  it("Duplicate validations - Created", async () => {
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves({
+      appValidations: [
+        {
+          id: "fakeId",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Completed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "fakeId2",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Created,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
+    sinon.stub(AppStudioClient, "submitAppValidationRequest").throws("should not be called");
+    sinon.stub(AppStudioClient, "getAppValidationById").throws("should not be called");
+
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: "fakepath",
+      showMessage: true,
+      showProgressBar: true,
+    };
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isOk());
+  });
+
+  it("Duplicate validations - CLI", async () => {
+    const mockedCliDriverContext = {
+      ...mockedDriverContext,
+      platform: Platform.CLI,
+    };
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves({
+      appValidations: [
+        {
+          id: "fakeId",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Completed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "fakeId2",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.InProgress,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
+    sinon.stub(AppStudioClient, "submitAppValidationRequest").throws("should not be called");
+    sinon.stub(AppStudioClient, "getAppValidationById").throws("should not be called");
+
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: "fakepath",
+      showMessage: true,
+      showProgressBar: true,
+    };
+
+    const result = (await teamsAppDriver.execute(args, mockedCliDriverContext)).result;
+    chai.assert(result.isOk());
+  });
+
+  it("Invalid list validation response", async () => {
+    sinon.stub(fs, "pathExists").resolves(true);
+    sinon.stub(fs, "readFile").callsFake(async () => {
+      const zip = new AdmZip();
+      zip.addFile(Constants.MANIFEST_FILE, Buffer.from(JSON.stringify(new TeamsAppManifest())));
+      const archivedFile = zip.toBuffer();
+      return archivedFile;
+    });
+    sinon.stub(metadataUtil, "parseManifest");
+
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves({});
+    sinon.stub(AppStudioClient, "submitAppValidationRequest").resolves({
+      status: AsyncAppValidationStatus.Created,
+      appValidationId: "fakeId",
+    });
+
+    sinon.stub(AppStudioClient, "getAppValidationById").resolves({
+      status: AsyncAppValidationStatus.Completed,
+      appValidationId: "fakeId",
+      appId: "fakeAppId",
+      appVersion: "1.0.0",
+      manifestVersion: "1.16",
+      validationResults: {
+        successes: [
+          {
+            title: "Validation_Success_Example",
+            message: "Success validation example message.",
+            artifacts: {
+              filePath: "fakePath",
+              docsUrl: "https://docs.microsoft.com",
+              policyNumber: "123",
+              policyLinkUrl: "https://docs.microsoft.com",
+              recommendation: "fakeRecommendation",
+            },
+          },
+        ],
+        warnings: [],
+        failures: [],
+        skipped: [],
+      },
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: "fakepath",
+      showMessage: true,
+      showProgressBar: true,
+    };
+
+    const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+    chai.assert(result.isOk());
+  });
+
   it("Happy path", async () => {
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").callsFake(async () => {
@@ -936,6 +1147,28 @@ describe("teamsApp/validateWithTestCases", async () => {
     });
     sinon.stub(metadataUtil, "parseManifest");
 
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves({
+      appValidations: [
+        {
+          id: "fakeId",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Completed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "fakeId2",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Aborted,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
     sinon.stub(AppStudioClient, "submitAppValidationRequest").resolves({
       status: AsyncAppValidationStatus.Created,
       appValidationId: "fakeId",
@@ -1025,6 +1258,28 @@ describe("teamsApp/validateWithTestCases", async () => {
     });
     sinon.stub(metadataUtil, "parseManifest");
 
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves({
+      appValidations: [
+        {
+          id: "fakeId",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Completed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "fakeId2",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Aborted,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
     sinon.stub(AppStudioClient, "submitAppValidationRequest").resolves({
       status: AsyncAppValidationStatus.Created,
       appValidationId: "fakeId",
@@ -1071,6 +1326,28 @@ describe("teamsApp/validateWithTestCases", async () => {
     });
     sinon.stub(metadataUtil, "parseManifest");
 
+    sinon.stub(AppStudioClient, "getAppValidationRequestList").resolves({
+      appValidations: [
+        {
+          id: "fakeId",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Completed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          id: "fakeId2",
+          appId: "fakeAppId",
+          appVersion: "1.0.0",
+          manifestVersion: "1.16",
+          status: AsyncAppValidationStatus.Aborted,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ],
+    });
     sinon.stub(AppStudioClient, "submitAppValidationRequest").resolves({
       status: AsyncAppValidationStatus.Created,
       appValidationId: "fakeId",

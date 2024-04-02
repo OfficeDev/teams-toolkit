@@ -21,7 +21,7 @@ export interface CreateProjectInputs extends Inputs {
     | "office-xml-addin-type"
     | "office-addin-type"
     | "outlook-addin-type";
-  /** @description Select to create an Outlook, Word, Excel, or PowerPoint Add-in */
+  /** @description Select to Create an Outlook, Word, Excel, or PowerPoint Add-in */
   "addin-host"?: "outlook" | "word" | "excel" | "powerpoint";
   /** @description Capabilities */
   capabilities?:
@@ -46,6 +46,7 @@ export interface CreateProjectInputs extends Inputs {
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
     | "json-taskpane"
+    | "office-content-addin"
     | "word-taskpane"
     | "word-sso"
     | "word-react"

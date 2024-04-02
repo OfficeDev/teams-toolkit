@@ -31,6 +31,7 @@ import {
   cleanUpLocalProject,
   cleanUpResourceGroup,
 } from "../../utils/cleanHelper";
+import { Executor } from "../../utils/executor";
 
 export class SampledebugContext extends TestContext {
   public readonly appName: string;
@@ -41,15 +42,18 @@ export class SampledebugContext extends TestContext {
   public env: "dev" | "local" = "dev";
   public originSample: TemplateProjectFolder;
   public rgName: string;
+  public readonly repoPath: string;
 
   constructor(
     sampleName: TemplateProject,
     originSample: TemplateProjectFolder,
-    testRootFolder = "./resource"
+    testRootFolder = "./resource",
+    repoPath = "./resource"
   ) {
     super(sampleName);
     this.sampleName = sampleName;
     this.originSample = originSample;
+    this.repoPath = repoPath;
     if (sampleName.length >= 20) {
       this.appName = getSampleAppName(
         sampleName
@@ -141,16 +145,12 @@ export class SampledebugContext extends TestContext {
 
   public async openResourceFolder(): Promise<void> {
     console.log("start to open project: ", this.sampleName);
-    // two repos have different sample path
-    const oldPath = path.resolve(
-      this.testRootFolder == "./resource/samples"
-        ? "./resource/samples"
-        : "./resource",
-      this.originSample
-    );
+    const oldPath = path.resolve(this.repoPath, this.originSample);
     // move old sample to project path
     await fs.mkdir(this.projectPath);
     try {
+      console.log("oldPath: ", oldPath);
+      console.log("newPath: ", this.projectPath);
       await fs.copy(oldPath, this.projectPath);
       await openExistingProject(this.projectPath);
       console.log(
@@ -160,6 +160,7 @@ export class SampledebugContext extends TestContext {
         this.projectPath
       );
     } catch (error) {
+      console.log(error);
       throw new Error(`Failed to open project: ${this.sampleName}`);
     }
   }
@@ -373,6 +374,45 @@ export class SampledebugContext extends TestContext {
       fs.writeFileSync(envPath, newEnvFileContent);
     } catch (error) {
       console.log('Failed to edit ".env" file.');
+    }
+  }
+
+  public async prepareDebug(tool: "npm" | "yarn"): Promise<void> {
+    {
+      console.log(`executor command: npm install yarn`);
+      const { stderr, stdout } = await Executor.execute(
+        `npm install yarn --force`,
+        this.projectPath
+      );
+      console.log("stdout: ", stdout);
+      console.log("stderr: ", stderr);
+    }
+    {
+      console.log(`executor command: corepack enable`);
+      const { stderr, stdout } = await Executor.execute(
+        `corepack enable`,
+        this.projectPath
+      );
+      console.log("stdout: ", stdout);
+      console.log("stderr: ", stderr);
+    }
+    {
+      console.log(`executor command: ${tool} install`);
+      const { stderr, stdout } = await Executor.execute(
+        `${tool} install`,
+        this.projectPath
+      );
+      console.log("stdout: ", stdout);
+      console.log("stderr: ", stderr);
+    }
+    {
+      console.log(`executor command: ${tool} build`);
+      const { stderr, stdout } = await Executor.execute(
+        `${tool} build`,
+        this.projectPath
+      );
+      console.log("stdout: ", stdout);
+      console.log("stderr: ", stderr);
     }
   }
 }

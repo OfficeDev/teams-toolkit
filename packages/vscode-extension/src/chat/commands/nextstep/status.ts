@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
 import { CommandKey } from "../../../constants";
 import { validateGetStartedPrerequisitesHandler } from "../../../handlers";
 import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";

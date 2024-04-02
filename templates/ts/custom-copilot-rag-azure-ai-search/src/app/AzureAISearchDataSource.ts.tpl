@@ -65,7 +65,7 @@ export interface AzureAISearchDataSourceOptions {
 }
 
 /**
- * A data source that searches through a local directory of files for a given query.
+ * A data source that searches through Azure AI search.
  */
 export class AzureAISearchDataSource implements DataSource {
     /**

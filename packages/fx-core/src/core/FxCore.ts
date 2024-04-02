@@ -25,6 +25,7 @@ import {
   Tools,
   err,
   ok,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
@@ -1252,6 +1253,7 @@ export class FxCore {
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
     const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+    const context = createContextV3();
 
     // Get API spec file path from manifest
     const manifestRes = await manifestUtils._readAppManifest(manifestPath);
@@ -1276,15 +1278,15 @@ export class FxCore {
     let existingOperations: string[];
     let outputAPISpecPath: string;
     if (isPlugin) {
+      if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
+        return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
+      }
+      outputAPISpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
       existingOperations = await listPluginExistingOperations(
         manifestRes.value,
         manifestPath,
         inputs[QuestionNames.DestinationApiSpecFilePath]
       );
-      if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
-        return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
-      }
-      outputAPISpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
     } else {
       const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
       existingOperations = apiResultList
@@ -1301,8 +1303,6 @@ export class FxCore {
       AppPackageFolderName,
       ResponseTemplatesFolderName
     );
-
-    const context = createContextV3();
 
     try {
       if (isApiKeyEnabled()) {
@@ -1448,10 +1448,8 @@ export class FxCore {
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginListOperations" }),
     ErrorHandlerMW,
   ])
-  async copilotPluginListOperations(
-    inputs: Inputs
-  ): Promise<Result<ApiOperation[], ErrorResult[]>> {
-    return await listOperations(
+  async copilotPluginListOperations(inputs: Inputs): Promise<Result<ApiOperation[], FxError>> {
+    const res = await listOperations(
       createContextV3(),
       inputs.manifest,
       inputs.apiSpecUrl,
@@ -1459,6 +1457,12 @@ export class FxCore {
       inputs.includeExistingAPIs,
       inputs.shouldLogWarning
     );
+    if (res.isErr()) {
+      const msg = res.error.map((e) => e.content).join("\n");
+      return err(new UserError("FxCore", "ListOpenAPISpecOperationsError", msg, msg));
+    } else {
+      return ok(res.value);
+    }
   }
 
   /**

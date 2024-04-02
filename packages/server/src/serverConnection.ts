@@ -479,13 +479,8 @@ export default class ServerConnection implements IServerConnection {
       (inputs) => this.core.copilotPluginListOperations(inputs),
       inputs
     );
-    if (res.isErr()) {
-      const msg = res.error.map((e) => e.content).join("\n");
-      return standardizeResult(
-        err(new UserError("Fx-VS", "ListOpenAPISpecOperationsError", msg, msg))
-      );
-    }
-    return standardizeResult(ok(res.value));
+
+    return standardizeResult(res);
   }
 
   public async checkAndInstallTestTool(

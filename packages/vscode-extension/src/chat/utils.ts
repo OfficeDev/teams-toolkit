@@ -15,6 +15,7 @@ import {
 import { sampleProvider } from "@microsoft/teamsfx-core";
 import { buildDynamicPrompt } from "../dynamic-prompt";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
+import { isContentHarmfulSystemPrompt } from "./officeAddinPrompts";
 import { Tokenizer } from "./tokenizer";
 
 export async function verbatimCopilotInteraction(
@@ -81,39 +82,30 @@ export async function isInputHarmful(
   request: ChatRequest,
   token: CancellationToken
 ): Promise<boolean> {
-  const inputRaiPrompt = buildDynamicPrompt("inputRai", null);
-  const isHarmfulMessage = [
-    new LanguageModelChatSystemMessage(inputRaiPrompt.prompt),
-    new LanguageModelChatUserMessage(request.prompt),
-  ];
-  return isMessageHarmful(isHarmfulMessage, token);
+  return isOutputHarmful(request.prompt, token);
 }
 
 export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
-  const outputRaiPrompt = buildDynamicPrompt("outputRai", null);
+  const userMessagePrompt = `
+  Please send following message back to me in orginal format. Message: 
+  ${output}
+  `;
   const isHarmfulMessage = [
-    new LanguageModelChatSystemMessage(outputRaiPrompt.prompt),
-    new LanguageModelChatAssistantMessage(output),
+    isContentHarmfulSystemPrompt,
+    new LanguageModelChatAssistantMessage(userMessagePrompt),
   ];
-  return isMessageHarmful(isHarmfulMessage, token);
-}
-
-async function isMessageHarmful(
-  isHarmfulMessage: LanguageModelChatMessage[],
-  token: CancellationToken
-) {
   async function getIsHarmfulResponseAsync() {
     const isHarmfulResponse = await getCopilotResponseAsString(
-      "copilot-gpt-3.5-turbo",
+      "copilot-gpt-4",
       isHarmfulMessage,
       token
     );
-    return isHarmfulResponse.toLowerCase().includes("yes");
+    return isHarmfulResponse.toLowerCase().startsWith("true");
   }
-  const promises = Array(5)
+  const promises = Array(1)
     .fill(null)
     .map(() => getIsHarmfulResponseAsync());
   const results = await Promise.all(promises);
-  const isHarmful = results.filter((result) => result === true).length > 2;
+  const isHarmful = results.filter((result) => result === true).length > 0;
   return isHarmful;
 }

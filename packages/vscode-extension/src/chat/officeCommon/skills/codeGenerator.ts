@@ -27,9 +27,6 @@ import {
 } from "../telemetryConsts";
 
 const excelSystemPrompt = `
-The following content written using Markdown syntax, using "Bold" style to highlight the key information.
-
-Let's think step by step.
 `;
 const cfSystemPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
@@ -176,10 +173,10 @@ export class CodeGenerator implements ISkill {
     let progressMessageStr = "generating code...";
     if (spec.appendix.complexity >= 50) {
       progressMessageStr =
-        "This is a task with high complexity, may take a little bit longer..." + progressMessageStr;
+        progressMessageStr + "This is a task with high complexity, may take a little bit longer...";
     } else {
       progressMessageStr =
-        "We should be able to generate the code in a short while..." + progressMessageStr;
+        progressMessageStr + "We should be able to generate the code in a short while...";
     }
     response.progress(progressMessageStr);
     let codeSnippet: string | null = "";
@@ -230,12 +227,16 @@ export class CodeGenerator implements ISkill {
   - Otherwise, please think about if you can process the ask. 
     - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
     - If you can process the ask, you should:
-      - Break it down into several steps, for each step that can be automated through code, design a TypeScript function. 
+      - Break it down into several steps, for each step that can be automated through code, design a TypeScript function.
+        - bypass the step "create a new Office Add-ins project" or "create a new Excel workbook" or "create a new Word document" or "create a new PowerPoint presentation".
+        - bypass the step "save the workbook" or "save the document" or "save the presentation".
         - bypass the "generate other functions or generate add-ins" step.
         - List the function name as an item of markdown list. Then, explain the function in details. 
           - Including suggestions on the name of function, the parameters, the return value, and the TypeScript type of them. 
           - Then the detailed logic of the function, what operations it will be perform, and what Office JavaScript Add-ins API should be used inside of, etc. Describe all the details of logic as detailed as possible.
-      - If user's ask is **NOT** about Office JavaScript Add-ins with custom functions, then descript a entry function in plain text, includes all any functions should be called in what order, and what the entry function should return. The entry function **must** named as "main", and takes no parameters, declared as 'async function'.
+      - Add a entry function description in plain text, includes all any functions should be called in what order, and what the entry function should return. The entry function **must** named as "main", and takes no parameters, declared as 'async function'. 
+        - If user's ask is about custom functions, don't generate the main entry function.
+      - Don't generate the code to invoke the "main" function or "entry" function.
       
   **Return the result in the JSON object describe in the format of output section below**.
 
@@ -288,6 +289,9 @@ export class CodeGenerator implements ISkill {
     };
 
     try {
+      if (!copilotResponse) {
+        return null; // The response is empty
+      }
       const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
       if (!codeSnippetRet) {
         // try if the LLM already give a json object

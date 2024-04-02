@@ -31,6 +31,10 @@ export interface AzureAISearchDataSourceOptions {
      * OpenAI API key.
      */
     apiKey: string;
+    /**
+     * OpenAI model to use for generating embeddings.
+     */
+    openAIEmbeddingModelName: string;
     {{/useOpenAI}}
     {{#useAzureOpenAI}}
     /**
@@ -175,9 +179,9 @@ export class AzureAISearchDataSource implements DataSource {
         {{#useOpenAI}}
         const embeddings = new OpenAIEmbeddings({
             apiKey: this.options.apiKey,
-            model: 'text-embedding-ada-002'
+            model: this.options.openAIEmbeddingModelName,
         });
-        const result = await embeddings.createEmbeddings('text-embedding-ada-002', text);
+        const result = await embeddings.createEmbeddings(this.options.openAIEmbeddingModelName, text);
         {{/useOpenAI}}
         {{#useAzureOpenAI}}
         const embeddings = new OpenAIEmbeddings({

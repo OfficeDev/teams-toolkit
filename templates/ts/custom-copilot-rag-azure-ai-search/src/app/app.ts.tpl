@@ -40,6 +40,7 @@ planner.prompts.addDataSource(
     azureAISearchEndpoint: config.azureSearchEndpoint!,
     {{#useOpenAI}}
     apiKey: config.openAIKey!,
+    openAIEmbeddingModelName: config.openAIEmbeddingModelName!,
     {{/useOpenAI}}
     {{#useAzureOpenAI}}
     azureOpenAIApiKey: config.azureOpenAIKey!,

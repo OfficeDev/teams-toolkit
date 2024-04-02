@@ -11,6 +11,7 @@ import {
 } from '@azure/search-documents';
 import { MyDocument } from '../app/AzureAISearchDataSource';
 import { OpenAIEmbeddings } from '@microsoft/teams-ai';
+import config from '../config';
 
 export const WAIT_TIME = 4000;
 
@@ -114,9 +115,9 @@ export async function getEmbeddingVector(text: string): Promise<number[]> {
     {{#useOpenAI}}
     const embeddings = new OpenAIEmbeddings({
         apiKey: process.env.SECRET_OPENAI_API_KEY!,
-        model: 'text-embedding-ada-002'
+        model: config.openAIEmbeddingModelName
     });
-    const result = await embeddings.createEmbeddings('text-embedding-ada-002', text);
+    const result = await embeddings.createEmbeddings(config.openAIEmbeddingModelName, text);
     {{/useOpenAI}}
     {{#useAzureOpenAI}}
     const embeddings = new OpenAIEmbeddings({

@@ -4,6 +4,7 @@ const config = {
   {{#useOpenAI}}
   openAIKey: process.env.OPENAI_API_KEY,
   openAIModelName: "gpt-3.5-turbo",
+  openAIEmbeddingModelName: "text-embedding-ada-002",
   {{/useOpenAI}}
   {{#useAzureOpenAI}}
   azureOpenAIKey: process.env.AZURE_OPENAI_API_KEY,

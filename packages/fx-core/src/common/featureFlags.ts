@@ -50,6 +50,10 @@ export function enableTestToolByDefault(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
 }
 
+export function enableMETestToolByDefault(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.METestTool, true);
+}
+
 export function isApiKeyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
 }

@@ -2,16 +2,18 @@
 // Licensed under the MIT license.
 
 import {
-  ChatRequest,
   CancellationToken,
+  ChatRequest,
   ChatResponseStream,
+  LanguageModelChatAssistantMessage,
   LanguageModelChatMessage,
+  LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
   lm,
-  LanguageModelChatAssistantMessage,
 } from "vscode";
 
 import { sampleProvider } from "@microsoft/teamsfx-core";
+import { buildDynamicPrompt } from "../dynamic-prompt";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
 import { isContentHarmfulSystemPrompt } from "./officeAddinPrompts";
 import { Tokenizer } from "./tokenizer";

@@ -13,7 +13,7 @@ import {
 import { workspaceUri } from "../../../globalVariables";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
-import { TeamsChatCommand, chatParticipantId } from "../../consts";
+import { CHAT_EXECUTE_COMMAND_ID, TeamsChatCommand, chatParticipantId } from "../../consts";
 import followupProvider from "../../followupProvider";
 import { describeScenarioSystemPrompt } from "../../prompts";
 import { ChatTelemetryData } from "../../telemetry";
@@ -36,7 +36,25 @@ export default async function nextStepCommandHandler(
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
-  // get all Teams apps under workspace
+  if (request.prompt) {
+    response.markdown(`
+This command provides guidance on your next steps based on your workspace.
+
+E.g. If you're unsure what to do after creating a project, simply ask Copilot by using @teams/nextstep.`);
+    chatTelemetryData.markComplete("unsupportedPrompt");
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      chatTelemetryData.properties,
+      chatTelemetryData.measurements
+    );
+    return {
+      metadata: {
+        command: TeamsChatCommand.NextStep,
+        requestId: chatTelemetryData.requestId,
+      },
+    };
+  }
+
   const workspace = workspaceUri?.fsPath;
   const teamsApp = isValidProject(workspace) ? workspace : undefined;
   const status: WholeStatus = await getWholeStatus(teamsApp);
@@ -59,7 +77,9 @@ export default async function nextStepCommandHandler(
       response.markdown(`${title}: ${stepDescription}\n`);
     }
     s.commands.forEach((c) => {
-      c.arguments?.splice(1, 0, chatTelemetryData.requestId);
+      if (c.command === CHAT_EXECUTE_COMMAND_ID) {
+        c.arguments!.splice(1, 0, chatTelemetryData.requestId);
+      }
       response.button(c);
     });
   }

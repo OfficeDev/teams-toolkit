@@ -34,7 +34,7 @@ export function getOfficeAddinProjectMatchSystemPrompt(projectMetadata: ProjectM
 
 export const defaultOfficeAddinSystemPrompt = () => {
   const defaultNoCodeProjectGeneration = localize(
-    "teamstoolkit.chatParticipants.default.noConceptualAnswer"
+    "teamstoolkit.chatParticipants.officeAddIn.default.noConceptualAnswer"
   );
 
   return new vscode.LanguageModelChatSystemMessage(

@@ -1,21 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AppStudioScopes,
-  getFixedCommonProjectSettings,
-  globalStateGet,
-  globalStateUpdate,
-} from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
-import { glob } from "glob";
-import { AzureAccountManager } from "../../../commonlib/azureLogin";
-import { signedIn } from "../../../commonlib/common/constant";
-import { M365Login } from "../../../commonlib/m365Login";
 import { CommandKey } from "../../../constants";
 import { validateGetStartedPrerequisitesHandler } from "../../../handlers";
 import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
-import { getProjectStatus } from "../../../utils/projectStatusUtils";
+import {
+  getFileModifiedTime,
+  getLaunchJSON,
+  getProjectStatus,
+  getREADME,
+} from "../../../utils/projectStatusUtils";
+import {
+  checkCredential,
+  getFixedCommonProjectSettings,
+  globalStateGet,
+  globalStateUpdate,
+} from "./helper";
 import { MachineStatus, WholeStatus } from "./types";
 
 const welcomePageKey = "ms-teams-vscode-extension.welcomePage.shown";
@@ -65,40 +66,9 @@ export async function getMachineStatus(): Promise<MachineStatus> {
       await globalStateUpdate(CommandKey.ValidateGetStartedPrerequisites, new Date());
     }
   }
-  const m365Status = await M365Login.getInstance().getStatus({ scopes: AppStudioScopes });
-  const azureStatus = await AzureAccountManager.getInstance().getStatus();
   return {
     firstInstalled,
     resultOfPrerequistes,
-    m365LoggedIn: m365Status.isOk() && m365Status.value.status === signedIn,
-    azureLoggedIn: azureStatus.status === signedIn,
+    ...(await checkCredential()),
   };
-}
-
-export async function getFileModifiedTime(pattern: string): Promise<Date> {
-  const files = await glob(pattern, { ignore: "node_modules/**" });
-  let lastModifiedTime = new Date(0);
-  for (const file of files) {
-    const stat = await fs.stat(file);
-    if (stat.mtime > lastModifiedTime) {
-      lastModifiedTime = stat.mtime;
-    }
-  }
-  return lastModifiedTime;
-}
-
-export async function getREADME(folder: string): Promise<string | undefined> {
-  const readmePath = `${folder}/README.md`;
-  if (await fs.pathExists(readmePath)) {
-    return await fs.readFile(readmePath, "utf-8");
-  }
-  return undefined;
-}
-
-export async function getLaunchJSON(folder: string): Promise<string | undefined> {
-  const launchJSONPath = `${folder}/.vscode/launch.json`;
-  if (await fs.pathExists(launchJSONPath)) {
-    return await fs.readFile(launchJSONPath, "utf-8");
-  }
-  return undefined;
 }

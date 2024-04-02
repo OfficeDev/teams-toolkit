@@ -71,6 +71,7 @@ import { MockCore } from "../mocks/mockCore";
 import VsCodeLogInstance from "../../src/commonlib/log";
 import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
 import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
+import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -307,6 +308,32 @@ describe("handlers", () => {
       chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       sinon.restore();
       clock.restore();
+    });
+
+    it("createNewProjectHandler - invoke Copilot", async () => {
+      const mockCore = new MockCore();
+      sinon
+        .stub(mockCore, "createProject")
+        .resolves(ok({ projectPath: "", shouldInvokeTeamsAgent: true }));
+      sinon.stub(handlers, "core").value(mockCore);
+      const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(globalVariables, "checkIsSPFx").returns(false);
+      sandbox.stub(vscode.extensions, "getExtension").returns({ name: "github.copilot" } as any);
+      const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand").resolves();
+
+      await handlers.createNewProjectHandler();
+
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)
+      );
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProject)
+      );
+      chai.assert.equal(executeCommandStub.callCount, 2);
+      chai.assert.equal(executeCommandStub.args[0][0], "workbench.panel.chat.view.copilot.focus");
+      chai.assert.equal(executeCommandStub.args[1][0], "workbench.action.chat.open");
+      sinon.restore();
     });
 
     it("provisionHandler()", async () => {
@@ -930,6 +957,7 @@ describe("handlers", () => {
   });
 
   it("openWelcomeHandler", async () => {
+    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(false);
     const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
 
@@ -939,6 +967,20 @@ describe("handlers", () => {
       executeCommands,
       "workbench.action.openWalkthrough",
       "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
+    );
+  });
+
+  it("openWelcomeHandler with chat", async () => {
+    sandbox.stub(featureFlags, "isChatParticipantEnabled").returns(true);
+    const executeCommands = sandbox.stub(vscode.commands, "executeCommand");
+    const sendTelemetryEvent = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.openWelcomeHandler();
+
+    sandbox.assert.calledOnceWithExactly(
+      executeCommands,
+      "workbench.action.openWalkthrough",
+      "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
     );
   });
 

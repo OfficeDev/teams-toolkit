@@ -20,7 +20,6 @@ export class Spec {
       properties: { [key: string]: string };
       measurements: { [key: string]: number };
     };
-    tempAppLocation: string;
     complexity: number;
   };
 
@@ -40,7 +39,6 @@ export class Spec {
         properties: {},
         measurements: {},
       },
-      tempAppLocation: "",
       complexity: 0,
     };
   }

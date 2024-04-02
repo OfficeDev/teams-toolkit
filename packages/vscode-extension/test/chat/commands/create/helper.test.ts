@@ -1,0 +1,113 @@
+import { sampleProvider } from "@microsoft/teamsfx-core";
+import * as generatorUtils from "@microsoft/teamsfx-core/build/component/generator/utils";
+import axios from "axios";
+import * as chai from "chai";
+import * as chaiPromised from "chai-as-promised";
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as sinon from "sinon";
+import * as tmp from "tmp";
+import * as vscode from "vscode";
+import * as helper from "../../../../src/chat/commands/create/helper";
+import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
+import * as telemetry from "../../../../src/chat/telemetry";
+import * as util from "../../../../src/chat/utils";
+import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
+import { CancellationToken } from "../../../mocks/vsc";
+
+chai.use(chaiPromised);
+
+describe("chat create helper", () => {
+  const sandbox = sinon.createSandbox();
+
+  describe("matchProject()", () => {
+    afterEach(async () => {
+      sandbox.restore();
+    });
+
+    it("has matched sample project", async () => {
+      const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      sandbox.stub(chatTelemetryDataMock, "properties").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(chatTelemetryDataMock, "measurements").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(sampleProvider, "SampleCollection").get(function getterFn() {
+        return {
+          samples: [
+            {
+              id: "test1",
+              title: "test1",
+              fullDescription: "test1",
+            },
+          ],
+        };
+      });
+      chatTelemetryDataMock.chatMessages = [];
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      sandbox.stub(util, "getCopilotResponseAsString").resolves('{"app":["test1"]}');
+
+      const token = new CancellationToken();
+      const result = await helper.matchProject(
+        { prompt: "test" } as vscode.ChatRequest,
+        token,
+        chatTelemetryDataMock
+      );
+      chai.assert.strictEqual(result.length, 1);
+      chai.assert.strictEqual(result[0].id, "test1");
+    });
+  });
+
+  describe("showFileTree()", () => {
+    afterEach(async () => {
+      sandbox.restore();
+    });
+
+    it("calls filetree API", async () => {
+      sandbox.stub(util, "getSampleDownloadUrlInfo").resolves({
+        owner: "test",
+        repository: "testRepo",
+        ref: "testRef",
+        dir: "testDir",
+      });
+      sandbox.stub(generatorUtils, "getSampleFileInfo").resolves({
+        samplePaths: ["test"],
+        fileUrlPrefix: "https://test.com/",
+      });
+      sandbox.stub(tmp, "dirSync").returns({
+        name: "tempDir",
+      } as unknown as tmp.DirResult);
+      sandbox.stub(axios, "get").callsFake(async (url: string, config) => {
+        if (url === "https://test.com/test") {
+          return { data: "testData", status: 200 };
+        } else {
+          throw new Error("Invalid URL");
+        }
+      });
+      sandbox.stub(fs, "ensureFile");
+      sandbox.stub(fs, "writeFile");
+
+      const projectMetadata = {
+        id: "test1",
+        type: "sample",
+        platform: "Teams",
+        name: "test1",
+        description: "test1",
+      } as ProjectMetadata;
+      const response = {
+        markdown: sandbox.stub(),
+        filetree: sandbox.stub(),
+      };
+      const result = await helper.showFileTree(
+        projectMetadata,
+        response as unknown as vscode.ChatResponseStream
+      );
+      chai.assert.isTrue(response.filetree.calledOnce);
+      chai.assert.strictEqual(result, path.join("tempDir", "testDir"));
+    });
+  });
+});

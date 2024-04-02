@@ -136,8 +136,18 @@
         "enablement": "fx-extension.initialized"
       },
       {
+        "view": "teamsfx-empty-project-with-chat",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-with-chat.content%",
+        "enablement": "fx-extension.initialized"
+      },
+      {
         "view": "teamsfx-empty-project-new-user",
         "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user.content%",
+        "enablement": "fx-extension.initialized"
+      },
+      {
+        "view": "teamsfx-empty-project-new-user-with-chat",
+        "contents": "%teamstoolkit.viewsWelcome.teamsfx-empty-project-new-user-with-chat.content%",
         "enablement": "fx-extension.initialized"
       },
       {
@@ -204,12 +214,22 @@
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn"
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled"
+        },
+        {
+          "id": "teamsfx-empty-project-with-chat",
+          "name": "Teams Toolkit",
+          "when": "!fx-extension.isTeamsFx && !fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled"
         },
         {
           "id": "teamsfx-empty-project-new-user",
           "name": "Teams Toolkit",
-          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn"
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && !fx-extension.isChatParticipantEnabled"
+        },
+        {
+          "id": "teamsfx-empty-project-new-user-with-chat",
+          "name": "Teams Toolkit",
+          "when": "!fx-extension.isTeamsFx && fx-extension.isNewUser && !fx-extension.isOfficeAddIn && fx-extension.isChatParticipantEnabled"
         },
         {
           "id": "teamsfx-officedev-development",
@@ -867,6 +887,12 @@
         "command": "fx-extension.openOfficeDevHelpFeedbackLink",
         "title": "%teamstoolkit.commands.feedbackLink.title%",
         "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.invokeChat",
+        "title": "%teamstoolkit.commandsTreeViewProvider.getCopilotHelpTitle%",
+        "category": "Teams",
+        "enablement": "fx-extension.isChatParticipantEnabled"
       }
     ],
     "taskDefinitions": [
@@ -1323,7 +1349,69 @@
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
             }
           }
-        ]
+        ],
+        "when": "!fx-extension.isChatParticipantEnabled"
+      },
+      {
+        "id": "teamsToolkitGetStartedWithChat",
+        "title": "%teamstoolkit.walkthroughs.title%",
+        "description": "%teamstoolkit.walkthroughs.withChat.description%",
+        "steps": [
+          {
+            "id": "teamsToolkitEnvironment",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description%",
+            "media": {
+              "svg": "media/walkthrough/Prerequisites.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitBuildAppWithChat",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildAppWithChat.description%",
+            "media": {
+              "svg": "media/walkthrough/Create.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitCreateFreeAccount",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.description%",
+            "media": {
+              "markdown": "media/itp/itp.md"
+            }
+          },
+          {
+            "id": "teamsToolkitPreview",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description%",
+            "media": {
+              "svg": "media/walkthrough/F5.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitDeploy",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description%",
+            "media": {
+              "svg": "media/walkthrough/Deployment.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitExploreMore",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description%",
+            "media": {
+              "svg": "media/walkthrough/whatsnext.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
+            }
+          }
+        ],
+        "when": "fx-extension.isChatParticipantEnabled"
       }
     ],
     "configuration": {
@@ -1365,15 +1453,15 @@
       {
         "id": "ms-teams-vscode-extension.office",
         "name": "office",
-        "description": "%teamstoolkit.chatParticipants.officeaddin.description%",
+        "description": "%teamstoolkit.chatParticipants.officeAddIn.description%",
         "commands": [
           {
             "name": "create",
-            "description": "%teamstoolkit.chatParticipants.officeAddinCreate.description%"
+            "description": "%teamstoolkit.chatParticipants.officeAddIn.create.description%"
           },
           {
             "name": "generatecode",
-            "description": "%teamstoolkit.chatParticipants.officeAddinGeneratecode.description%"
+            "description": "%teamstoolkit.chatParticipants.officeAddIn.generateCode.description%"
           },
           {
             "name": "nextstep",
@@ -1529,7 +1617,6 @@
     "vscode-tas-client": "^0.1.75"
   },
   "extensionDependencies": [
-    "github.copilot-chat",
     "redhat.vscode-yaml"
   ],
   "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",

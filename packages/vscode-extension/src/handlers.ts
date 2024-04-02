@@ -76,6 +76,7 @@ import {
   JSONSyntaxError,
   MetadataV3,
   CapabilityOptions,
+  isChatParticipantEnabled,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -140,6 +141,7 @@ import {
   RecommendedOperations,
 } from "./debug/constants";
 import { openOfficeDevFolder } from "./officeDevHandlers";
+import { invokeTeamsAgent } from "./copilotChatHandlers";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -386,6 +388,10 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   process.env.TEAMSFX_OFFICE_XML_ADDIN = originalXMLFestureFlag;
 
   const res = result.value as CreateProjectResult;
+  if (res.shouldInvokeTeamsAgent) {
+    await invokeTeamsAgent([TelemetryTriggerFrom.CreateAppQuestionFlow]);
+    return result;
+  }
   const projectPathUri = Uri.file(res.projectPath);
   // If it is triggered in @office /create for code gen, then do no open the temp folder.
   if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.isFromCodeGen) {
@@ -1219,7 +1225,7 @@ export async function openWelcomeHandler(...args: unknown[]): Promise<Result<unk
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GetStarted, getTriggerFromProperty(args));
   const data = await vscode.commands.executeCommand(
     "workbench.action.openWalkthrough",
-    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted"
+    getWalkThroughId()
   );
   return Promise.resolve(ok(data));
 }
@@ -2852,8 +2858,8 @@ export async function openDocumentLinkHandler(args?: any[]): Promise<Result<bool
   switch (node.contextValue) {
     case "signinM365": {
       await vscode.commands.executeCommand("workbench.action.openWalkthrough", {
-        category: "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted",
-        step: "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted#teamsToolkitCreateFreeAccount",
+        category: getWalkThroughId(),
+        step: `${getWalkThroughId()}#teamsToolkitCreateFreeAccount`,
       });
       return Promise.resolve(ok(true));
     }
@@ -3124,4 +3130,10 @@ export async function scaffoldFromDeveloperPortalHandler(
 
 export async function projectVersionCheck() {
   return await core.projectVersionCheck(getSystemInputs());
+}
+
+function getWalkThroughId(): string {
+  return isChatParticipantEnabled()
+    ? "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStartedWithChat"
+    : "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitGetStarted";
 }

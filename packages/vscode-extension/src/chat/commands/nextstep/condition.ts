@@ -52,7 +52,6 @@ export function isDidNoActionAfterScaffolded(status: WholeStatus): boolean {
 
 /**
  * if the source code is modified after the last debug succeeded
- * TODO: refine this logic to use task provider to check
  * @param status
  * @returns
  */
@@ -147,7 +146,7 @@ export function isDeployedAfterSourceCodeChanged(status: WholeStatus): boolean {
     !!status.projectOpened &&
     status.projectOpened.actionStatus[CommandKey.Deploy].result === "success" &&
     status.projectOpened.actionStatus[CommandKey.Deploy].time >
-      status.projectOpened.codeModifiedTime.infra
+      status.projectOpened.codeModifiedTime.source
   );
 }
 

@@ -142,7 +142,7 @@ export class AzureAISearchDataSource implements DataSource {
             return { output: "", length: 0, tooLong: false };
         }
 
-        // Concatenate the restaurant documents (i.e json object) string into a single document
+        // Concatenate the documents string into a single document
         // until the maximum token limit is reached. This can be specified in the prompt template.
         let usedTokens = 0;
         let doc = "";

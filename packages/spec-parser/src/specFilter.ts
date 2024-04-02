@@ -7,6 +7,7 @@ import { Utils } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ErrorType, ParseOptions } from "./interfaces";
 import { ConstantString } from "./constants";
+import { ValidatorFactory } from "./validators/validatorFactory";
 
 export class SpecFilter {
   static specFilter(
@@ -28,7 +29,9 @@ export class SpecFilter {
           pathObj &&
           pathObj[methodName]
         ) {
-          const validateResult = Utils.isSupportedApi(methodName, path, resolvedSpec, options);
+          const validator = ValidatorFactory.create(resolvedSpec, options);
+          const validateResult = validator.validateAPI(methodName, path);
+
           if (!validateResult.isValid) {
             continue;
           }

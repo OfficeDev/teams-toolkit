@@ -13,10 +13,12 @@ import {
   ValidationStatus,
   ListAPIResult,
   ProjectType,
+  APIMap,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { Utils } from "./utils";
 import { ConstantString } from "./constants";
+import { ValidatorFactory } from "./validators/validatorFactory";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -26,7 +28,7 @@ export class SpecParser {
   public readonly parser: SwaggerParser;
   public readonly options: Required<ParseOptions>;
 
-  private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
+  private apiMap: APIMap | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
   private isSwaggerFile: boolean | undefined;
@@ -87,8 +89,15 @@ export class SpecParser {
           ],
         };
       }
+      const apiMap = this.getAPIs(this.spec!);
 
-      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
+      return Utils.validateSpec(
+        this.spec!,
+        this.parser,
+        apiMap,
+        !!this.isSwaggerFile,
+        this.options
+      );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -97,19 +106,24 @@ export class SpecParser {
   async listSupportedAPIInfo(): Promise<APIInfo[]> {
     try {
       await this.loadSpec();
-      const apiMap = this.getAllSupportedAPIs(this.spec!);
+      const apiMap = this.getAPIs(this.spec!);
       const apiInfos: APIInfo[] = [];
       for (const key in apiMap) {
-        const pathObjectItem = apiMap[key];
+        const { operation, isValid } = apiMap[key];
+
+        if (!isValid) {
+          continue;
+        }
+
         const [method, path] = key.split(" ");
-        const operationId = pathObjectItem.operationId;
+        const operationId = operation.operationId;
 
         // In Browser environment, this api is by default not support api without operationId
         if (!operationId) {
           continue;
         }
 
-        const command = Utils.parseApiInfo(pathObjectItem, this.options);
+        const command = Utils.parseApiInfo(operation, this.options);
 
         const apiInfo: APIInfo = {
           method: method,
@@ -199,34 +213,30 @@ export class SpecParser {
     }
   }
 
-  private getAllSupportedAPIs(spec: OpenAPIV3.Document): {
-    [key: string]: OpenAPIV3.OperationObject;
-  } {
+  private getAPIs(spec: OpenAPIV3.Document): APIMap {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = this.listSupportedAPIs(spec, this.options);
+    const result = this.listAPIs(spec);
     this.apiMap = result;
     return result;
   }
 
-  private listSupportedAPIs(
-    spec: OpenAPIV3.Document,
-    options: ParseOptions
-  ): {
-    [key: string]: OpenAPIV3.OperationObject;
-  } {
+  private listAPIs(spec: OpenAPIV3.Document): APIMap {
     const paths = spec.paths;
-    const result: { [key: string]: OpenAPIV3.OperationObject } = {};
+    const result: APIMap = {};
     for (const path in paths) {
       const methods = paths[path];
       for (const method in methods) {
         const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-        if (options.allowMethods?.includes(method) && operationObject) {
-          const validateResult = Utils.isSupportedApi(method, path, spec, options);
-          if (validateResult.isValid) {
-            result[`${method.toUpperCase()} ${path}`] = operationObject;
-          }
+        if (this.options.allowMethods?.includes(method) && operationObject) {
+          const validator = ValidatorFactory.create(spec, this.options);
+          const validateResult = validator.validateAPI(method, path);
+          result[`${method.toUpperCase()} ${path}`] = {
+            operation: operationObject,
+            isValid: validateResult.isValid,
+            reason: validateResult.reason,
+          };
         }
       }
     }

@@ -28,7 +28,7 @@ const cachePlugin = new CryptoCachePlugin(m365CacheName);
 
 const config = {
   auth: {
-    clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
+    clientId: "415830ba-8ddd-4fac-8b24-f5c150a3a59e",
     authority: "https://login.microsoftonline.com/common",
   },
   system: {

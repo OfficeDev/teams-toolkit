@@ -29,12 +29,7 @@ from get_data import get_doc_data
 
 from dotenv import load_dotenv
 
-{{#enableTestToolByDefault}}
 load_dotenv(f'{os.getcwd()}/env/.env.testtool.user')
-{{/enableTestToolByDefault}}
-{{^enableTestToolByDefault}}
-load_dotenv(f'{os.getcwd()}/env/.env.local.user')
-{{/enableTestToolByDefault}}
 
 @dataclass
 class Doc:

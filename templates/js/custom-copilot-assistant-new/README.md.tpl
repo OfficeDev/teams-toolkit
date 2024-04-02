@@ -16,9 +16,6 @@ It showcases how to build an AI agent in Teams capable of chatting with users an
 > To run the AI Agent template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
-{{^enableTestToolByDefault}}
-> - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
-{{/enableTestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 {{#useOpenAI}}
 > - An account with [OpenAI](https://platform.openai.com/)
@@ -28,7 +25,6 @@ It showcases how to build an AI agent in Teams capable of chatting with users an
 {{/useAzureOpenAI}}
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
-{{#enableTestToolByDefault}}
 {{#useOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
 {{/useOpenAI}}
@@ -41,23 +37,6 @@ It showcases how to build an AI agent in Teams capable of chatting with users an
 **Congratulations**! You are running an application that can now interact with users in Teams App Test Tool:
 
 ![AI Agent](https://github.com/OfficeDev/TeamsFx/assets/37978464/053218b7-cb17-4db4-9b8a-50ca04c1cb55)
-{{/enableTestToolByDefault}}
-{{^enableTestToolByDefault}}
-1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't yet.
-{{#useOpenAI}}
-1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
-{{/useOpenAI}}
-{{#useAzureOpenAI}}
-1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>`, endpoint `AZURE_OPENAI_ENDPOINT=<your-endpoint>`, and deployment name `AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>`.
-{{/useAzureOpenAI}}
-1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
-1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-1. You can send any message to get a response from the bot.
-
-**Congratulations**! You are running an application that can now interact with users in Teams:
-
-![AI Agent](https://github.com/OfficeDev/TeamsFx/assets/37978464/4e64c733-ee01-4938-8be1-9de0195b7244)
-{{/enableTestToolByDefault}}
 
 ## What's included in the template
 

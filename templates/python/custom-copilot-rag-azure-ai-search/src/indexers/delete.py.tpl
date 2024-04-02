@@ -4,12 +4,7 @@ from azure.search.documents.indexes import SearchIndexClient
 
 from dotenv import load_dotenv
 
-{{#enableTestToolByDefault}}
 load_dotenv(f'{os.getcwd()}/env/.env.testtool.user')
-{{/enableTestToolByDefault}}
-{{^enableTestToolByDefault}}
-load_dotenv(f'{os.getcwd()}/env/.env.local.user')
-{{/enableTestToolByDefault}}
 
 def delete_index(client: SearchIndexClient, name: str):
     client.delete_index(name)

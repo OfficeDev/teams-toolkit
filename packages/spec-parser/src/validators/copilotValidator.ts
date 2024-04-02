@@ -58,13 +58,6 @@ export class CopilotValidator extends Validator {
       result.reason.push(ErrorType.PostBodyContainMultipleMediaTypes);
     }
 
-    let requestBodyParamResult: CheckParamResult = {
-      requiredNum: 0,
-      optionalNum: 0,
-      isValid: true,
-      reason: [],
-    };
-
     if (requestJsonBody) {
       const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
 
@@ -72,7 +65,10 @@ export class CopilotValidator extends Validator {
         result.reason.push(ErrorType.PostBodySchemaIsNotJson);
       }
 
-      requestBodyParamResult = this.checkPostBodySchema(requestBodySchema, requestBody.required);
+      const requestBodyParamResult = this.checkPostBodySchema(
+        requestBodySchema,
+        requestBody.required
+      );
       result.reason.push(...requestBodyParamResult.reason);
     }
 

@@ -2,11 +2,12 @@
 // Licensed under the MIT license.
 
 import { ConfigFolderName, Result } from "@microsoft/teamsfx-api";
+import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
+import { glob } from "glob";
 import * as os from "os";
 import { ProjectActionStatus } from "../chat/commands/nextstep/types";
 import { CommandKey } from "../constants";
-import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 
 const projectStatusFilePath = os.homedir() + `/.${ConfigFolderName}/projectStates.json`;
 
@@ -79,4 +80,32 @@ export async function updateProjectStatus(
       console.error(e);
     }
   }
+}
+
+export async function getFileModifiedTime(pattern: string): Promise<Date> {
+  const files = await glob(pattern, { ignore: "node_modules/**" });
+  let lastModifiedTime = new Date(0);
+  for (const file of files) {
+    const stat = await fs.stat(file);
+    if (stat.mtime > lastModifiedTime) {
+      lastModifiedTime = stat.mtime;
+    }
+  }
+  return lastModifiedTime;
+}
+
+export async function getREADME(folder: string): Promise<string | undefined> {
+  const readmePath = `${folder}/README.md`;
+  if (await fs.pathExists(readmePath)) {
+    return await fs.readFile(readmePath, "utf-8");
+  }
+  return undefined;
+}
+
+export async function getLaunchJSON(folder: string): Promise<string | undefined> {
+  const launchJSONPath = `${folder}/.vscode/launch.json`;
+  if (await fs.pathExists(launchJSONPath)) {
+    return await fs.readFile(launchJSONPath, "utf-8");
+  }
+  return undefined;
 }

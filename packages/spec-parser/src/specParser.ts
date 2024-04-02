@@ -20,6 +20,7 @@ import {
   ProjectType,
   ValidateResult,
   ValidationStatus,
+  WarningResult,
   WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
@@ -29,6 +30,7 @@ import { Utils } from "./utils";
 import { ManifestUpdater } from "./manifestUpdater";
 import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
+import { ValidatorFactory } from "./validators/validatorFactory";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -115,7 +117,15 @@ export class SpecParser {
         }
       }
 
-      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
+      const apiMap = this.getAPIs(this.spec!);
+
+      return Utils.validateSpec(
+        this.spec!,
+        this.parser,
+        apiMap,
+        !!this.isSwaggerFile,
+        this.options
+      );
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -426,8 +436,29 @@ export class SpecParser {
     if (this.apiMap !== undefined) {
       return this.apiMap;
     }
-    const result = Utils.listAPIs(spec, this.options);
+    const result = this.listAPIs(spec, this.options);
     this.apiMap = result;
+    return result;
+  }
+
+  private listAPIs(spec: OpenAPIV3.Document, options: ParseOptions): APIMap {
+    const paths = spec.paths;
+    const result: APIMap = {};
+    for (const path in paths) {
+      const methods = paths[path];
+      for (const method in methods) {
+        const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
+        if (options.allowMethods?.includes(method) && operationObject) {
+          const validator = ValidatorFactory.create(spec, options);
+          const validateResult = validator.validateAPI(method, path);
+          result[`${method.toUpperCase()} ${path}`] = {
+            operation: operationObject,
+            isValid: validateResult.isValid,
+            reason: validateResult.reason,
+          };
+        }
+      }
+    }
     return result;
   }
 }

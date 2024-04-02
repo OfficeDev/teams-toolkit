@@ -1,3 +1,4 @@
+import { AppYmlGenerator } from "./../../src/core/middleware/utils/appYmlGenerator";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ErrorType, SpecParser, ValidationStatus, WarningType } from "@microsoft/m365-spec-parser";
@@ -55,6 +56,8 @@ import {
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
+  officeAddinFrameworkQuestion,
+  getAddinFrameworkOptions,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
@@ -3390,7 +3393,7 @@ describe("scaffold question", () => {
       });
       it("should return correct capabilities without specific host", () => {
         const capabilities = CapabilityOptions.officeAddinStaticCapabilities();
-        assert.equal(capabilities.length, 15);
+        assert.equal(capabilities.length, 16);
       });
     });
 
@@ -3584,6 +3587,21 @@ describe("scaffold question", () => {
       assert.equal(lang, "typescript");
     });
 
+    it("office content addin: should have typescript as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.officeContentAddin().id;
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.OfficeAddinFramework] = "default";
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [
+          { label: "TypeScript", id: "typescript" },
+          { label: "JavaScript", id: "javascript" },
+        ]);
+      }
+    });
+
     it("SPFxTab", async () => {
       const inputs: Inputs = {
         platform: Platform.VSCode,
@@ -3678,5 +3696,59 @@ describe("scaffold question", () => {
       const defaultV = await q.default({ platform: Platform.VSCode });
       assert.isDefined(defaultV);
     }
+  });
+
+  describe("officeAddinFrameworkQuestion", () => {
+    const question = officeAddinFrameworkQuestion();
+    it("office taskpane addin: should have default as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.Capabilities] = "json-taskpane";
+      inputs[QuestionNames.ProgrammingLanguage] = "typescript";
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [
+          { id: "default", label: "Default" },
+          { id: "react", label: "React" },
+        ]);
+      }
+    });
+
+    it("office addin import: should have default as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinImport().id;
+      inputs[QuestionNames.ProgrammingLanguage] = "typescript";
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [{ id: "default", label: "Default" }]);
+      }
+    });
+
+    it("office content addin: should have default as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.officeContentAddin().id;
+      inputs[QuestionNames.ProgrammingLanguage] = "typescript";
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [{ id: "default", label: "Default" }]);
+      }
+    });
+
+    it("outlook addin: should have default as options", async () => {
+      const inputs: Inputs = { platform: Platform.CLI };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+      inputs[QuestionNames.Capabilities] = "json-taskpane";
+      inputs[QuestionNames.ProgrammingLanguage] = "typescript";
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = await question.dynamicOptions(inputs);
+        assert.deepEqual(options, [{ id: "default", label: "Default" }]);
+      }
+    });
   });
 });

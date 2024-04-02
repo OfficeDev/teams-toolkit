@@ -3,13 +3,7 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import {
-  ParseOptions,
-  APIValidationResult,
-  ErrorType,
-  CheckParamResult,
-  ProjectType,
-} from "../interfaces";
+import { ParseOptions, APIValidationResult, ErrorType, ProjectType } from "../interfaces";
 import { Validator } from "./validator";
 import { Utils } from "../utils";
 

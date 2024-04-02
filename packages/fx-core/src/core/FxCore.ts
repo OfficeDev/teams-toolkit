@@ -299,7 +299,7 @@ export class FxCore {
     console.log(uid);
     const aadClient = new AadAppClient(m365TokenProvider, TOOLS.logProvider);
     const tokenResponse = await m365TokenProvider.getAccessToken({
-      scopes: ["TeamsAppInstallation.ReadWriteSelfForUser"],
+      scopes: ["TeamsAppInstallation.ReadWriteAndConsentForUser"],
     });
     if (tokenResponse.isErr()) {
       throw tokenResponse.error;

@@ -109,27 +109,27 @@ export class AzureAISearchDataSource implements DataSource {
      * @returns A promise that resolves to the rendered data source.
      */
     public async renderData(context: TurnContext, memory: Memory, tokenizer: Tokenizer, maxTokens: number): Promise<RenderedPromptSection<string>> {
-        const query = memory.getValue('temp.input') as string;
+        const query = memory.getValue("temp.input") as string;
         if(!query) {
-            return { output: '', length: 0, tooLong: false };
+            return { output: "", length: 0, tooLong: false };
         }
         
         const selectedFields = [
-            'docId',
-            'docTitle',
-            'description',
+            "docId",
+            "docTitle",
+            "description",
         ];
 
         // hybrid search
         const queryVector: number[] = await this.getEmbeddingVector(query);
         const searchResults = await this.searchClient.search(query, {
-            searchFields: ['docTitle', 'description'],
+            searchFields: ["docTitle", "description"],
             select: selectedFields as any,
             vectorSearchOptions: {
                 queries: [
                     {
-                        kind: 'vector',
-                        fields: ['descriptionVector'],
+                        kind: "vector",
+                        fields: ["descriptionVector"],
                         kNearestNeighborsCount: 2,
                         // The query vector is the embedding of the user's input
                         vector: queryVector
@@ -139,13 +139,13 @@ export class AzureAISearchDataSource implements DataSource {
         });
 
         if (!searchResults.results) {
-            return { output: '', length: 0, tooLong: false };
+            return { output: "", length: 0, tooLong: false };
         }
 
         // Concatenate the restaurant documents (i.e json object) string into a single document
         // until the maximum token limit is reached. This can be specified in the prompt template.
         let usedTokens = 0;
-        let doc = '';
+        let doc = "";
         for await (const result of searchResults.results) {
             const formattedResult = this.formatDocument(result.document.description);
             const tokens = tokenizer.encode(formattedResult).length;
@@ -193,7 +193,7 @@ export class AzureAISearchDataSource implements DataSource {
         const result = await embeddings.createEmbeddings(this.options.azureOpenAIEmbeddingDeploymentName, text);
         {{/useAzureOpenAI}}
 
-        if (result.status !== 'success' || !result.output) {
+        if (result.status !== "success" || !result.output) {
             throw new Error(`Failed to generate embeddings for description: ${text}`);
         }
 

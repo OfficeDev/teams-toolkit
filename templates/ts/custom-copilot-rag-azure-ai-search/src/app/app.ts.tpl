@@ -3,8 +3,7 @@ import * as path from "path";
 import config from "../config";
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
-import { Application, ActionPlanner, OpenAIModel, PromptManager } from "@microsoft/teams-ai";
-import { ApplicationTurnState } from "./turnState";
+import { Application, ActionPlanner, OpenAIModel, PromptManager, TurnState } from "@microsoft/teams-ai";
 import { AzureAISearchDataSource } from "./AzureAISearchDataSource";
 
 // Create AI components
@@ -25,7 +24,7 @@ const model = new OpenAIModel({
 const prompts = new PromptManager({
   promptsFolder: path.join(__dirname, "../prompts"),
 });
-const planner = new ActionPlanner<ApplicationTurnState>({
+const planner = new ActionPlanner<TurnState>({
   model,
   prompts,
   defaultPrompt: "chat",
@@ -52,7 +51,7 @@ planner.prompts.addDataSource(
 
 // Define storage and application
 const storage = new MemoryStorage();
-const app = new Application<ApplicationTurnState>({
+const app = new Application<TurnState>({
   storage,
   ai: {
     planner,

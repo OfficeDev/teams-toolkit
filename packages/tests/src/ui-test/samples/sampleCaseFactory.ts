@@ -122,6 +122,7 @@ export abstract class CaseFactory {
     skipDebug?: boolean;
     debug?: "cli" | "ttk";
     botFlag?: boolean;
+    repoPath?: string;
   };
 
   public constructor(
@@ -142,6 +143,7 @@ export abstract class CaseFactory {
       skipDebug?: boolean;
       debug?: "cli" | "ttk";
       botFlag?: boolean;
+      repoPath?: string;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -292,7 +294,8 @@ export abstract class CaseFactory {
         sampledebugContext = new SampledebugContext(
           sampleName,
           sampleProjectMap[sampleName],
-          options?.testRootFolder ?? "./resource"
+          options?.testRootFolder ?? "./resource",
+          options?.repoPath ?? "./resource"
         );
         await sampledebugContext.before();
         // use before middleware to process typical sample

@@ -2,18 +2,19 @@
 // Licensed under the MIT license.
 
 import {
-  ChatRequest,
   CancellationToken,
+  ChatRequest,
   ChatResponseStream,
+  LanguageModelChatAssistantMessage,
   LanguageModelChatMessage,
+  LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
   lm,
-  LanguageModelChatAssistantMessage,
 } from "vscode";
 
 import { sampleProvider } from "@microsoft/teamsfx-core";
+import { buildDynamicPrompt } from "../dynamic-prompt";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
-import { isInputHarmfulSystemPrompt, isOutputHarmfulSystemPrompt } from "./officeAddinPrompts";
 import { Tokenizer } from "./tokenizer";
 
 export async function verbatimCopilotInteraction(
@@ -80,16 +81,18 @@ export async function isInputHarmful(
   request: ChatRequest,
   token: CancellationToken
 ): Promise<boolean> {
+  const inputRaiPrompt = buildDynamicPrompt("inputRai", null);
   const isHarmfulMessage = [
-    isInputHarmfulSystemPrompt,
+    new LanguageModelChatSystemMessage(inputRaiPrompt.prompt),
     new LanguageModelChatUserMessage(request.prompt),
   ];
   return isMessageHarmful(isHarmfulMessage, token);
 }
 
 export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
+  const outputRaiPrompt = buildDynamicPrompt("outputRai", null);
   const isHarmfulMessage = [
-    isOutputHarmfulSystemPrompt,
+    new LanguageModelChatSystemMessage(outputRaiPrompt.prompt),
     new LanguageModelChatAssistantMessage(output),
   ];
   return isMessageHarmful(isHarmfulMessage, token);

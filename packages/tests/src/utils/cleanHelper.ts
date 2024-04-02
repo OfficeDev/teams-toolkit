@@ -573,7 +573,7 @@ export async function createResourceGroup(
 
 export async function createResourceGroupByName(
   name: string,
-  location = "westus"
+  location = "eastus"
 ): Promise<boolean> {
   const manager = await ResourceGroupManager.init();
   const result = await manager.createResourceGroup(name, location);

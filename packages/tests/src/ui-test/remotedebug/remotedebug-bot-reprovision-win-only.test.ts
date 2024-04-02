@@ -73,8 +73,9 @@ describe("Remote debug Tests", function () {
       await createNewProject("bot", appName);
       await provisionProject(appName, projectPath);
       await cleanUpResourceGroup(appName, "dev");
+      await createResourceGroup(appName, "dev", "westus");
       // rerun provision
-      await provisionProject(appName, projectPath);
+      await provisionProject(appName, projectPath, false);
       await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath

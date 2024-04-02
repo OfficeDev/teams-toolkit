@@ -77,7 +77,7 @@ describe("Remote debug Tests", function () {
       await provisionProject(appName, projectPath);
       await clearNotifications();
       await cleanUpResourceGroup(appName, "dev");
-      await createResourceGroup(appName, "dev");
+      await createResourceGroup(appName, "dev", "westus");
       // rerun provision
       await provisionProject(appName, projectPath, false);
       await deployProject(projectPath);

@@ -239,7 +239,7 @@ export async function runCliProvision(
   processEnv?: NodeJS.ProcessEnv
 ) {
   if (createRg) {
-    await createResourceGroup(appName, env);
+    await createResourceGroup(appName, env, "westus");
   }
   const resourceGroupName = `${appName}-${env}-rg`;
   await CliHelper.showVersion(projectPath, processEnv);

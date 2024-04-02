@@ -65,15 +65,15 @@ export default class SampleGallery extends React.Component<unknown, SampleGaller
           {IsChatParticipantEnabled ? (
             <h3>
               Explore our sample gallery filled with solutions that work seamlessly with Teams
-              Toolkit. Or you can also{" "}
+              Toolkit. Need help choosing? Let{" "}
               <Link
                 onClick={() => {
                   this.onInvokeTeamsAgent();
                 }}
               >
-                use Github Copilot
+                Github Copilot
               </Link>{" "}
-              and get step-by-step instructions to create your Teams app.
+              assists you in selecting the right sample to create your Teams app.
             </h3>
           ) : (
             <h3>

@@ -1312,18 +1312,7 @@
             "media": {
               "svg": "media/walkthrough/Create.svg",
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
-            },
-            "when": "!fx-extension.isChatParticipantEnabled"
-          },
-          {
-            "id": "teamsToolkitBuildAppWithChat",
-            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%",
-            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildAppWithChat.description%",
-            "media": {
-              "svg": "media/walkthrough/Create.svg",
-              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
-            },
-            "when": "fx-extension.isChatParticipantEnabled"
+            }
           },
           {
             "id": "teamsToolkitCreateFreeAccount",
@@ -1360,7 +1349,69 @@
               "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
             }
           }
-        ]
+        ],
+        "when": "!fx-extension.isChatParticipantEnabled"
+      },
+      {
+        "id": "teamsToolkitGetStartedWithChat",
+        "title": "%teamstoolkit.walkthroughs.title%",
+        "description": "%teamstoolkit.walkthroughs.withChat.description%",
+        "steps": [
+          {
+            "id": "teamsToolkitEnvironment",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.description%",
+            "media": {
+              "svg": "media/walkthrough/Prerequisites.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitEnvironment.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitBuildAppWithChat",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildAppWithChat.description%",
+            "media": {
+              "svg": "media/walkthrough/Create.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitBuildApp.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitCreateFreeAccount",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitCreateFreeAccount.description%",
+            "media": {
+              "markdown": "media/itp/itp.md"
+            }
+          },
+          {
+            "id": "teamsToolkitPreview",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.description%",
+            "media": {
+              "svg": "media/walkthrough/F5.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitPreview.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitDeploy",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.description%",
+            "media": {
+              "svg": "media/walkthrough/Deployment.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitDeploy.title%"
+            }
+          },
+          {
+            "id": "teamsToolkitExploreMore",
+            "title": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.title%",
+            "description": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.description%",
+            "media": {
+              "svg": "media/walkthrough/whatsnext.svg",
+              "altText": "%teamstoolkit.walkthroughs.steps.teamsToolkitExploreMore.altText%"
+            }
+          }
+        ],
+        "when": "fx-extension.isChatParticipantEnabled"
       }
     ],
     "configuration": {

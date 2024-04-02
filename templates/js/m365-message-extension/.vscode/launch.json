@@ -116,6 +116,18 @@
     ],
     "compounds": [
         {
+            "name": "Debug in Test Tool (Preview)",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App (Test Tool)",
+            "presentation": {
+                "group": "group 0: Teams App Test Tool",
+                "order": 1
+            },
+            "stopAll": true
+        },
+        {
             "name": "Debug in Teams (Edge)",
             "configurations": [
                 "Launch App in Teams (Edge)",

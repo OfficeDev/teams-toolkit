@@ -59,7 +59,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
 |`src/app/app.ts`| Handles business logics for the AI Agent.|
-|`src/app/AzureAISearchDataSource.ts`| Defines the Azure AI search data source.|
+|`src/app/azureAISearchDataSource.ts`| Defines the Azure AI search data source.|
 |`src/indexers/data/*.md`| Raw text data sources.|
 |`src/indexers/utils.ts`| Basic index tools. |
 |`src/indexers/setup.ts`| A script to create index and upload documents. |

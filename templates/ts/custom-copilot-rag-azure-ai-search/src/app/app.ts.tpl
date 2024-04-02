@@ -4,7 +4,7 @@ import config from "../config";
 
 // See https://aka.ms/teams-ai-library to learn more about the Teams AI library.
 import { Application, ActionPlanner, OpenAIModel, PromptManager, TurnState } from "@microsoft/teams-ai";
-import { AzureAISearchDataSource } from "./AzureAISearchDataSource";
+import { AzureAISearchDataSource } from "./azureAISearchDataSource";
 
 // Create AI components
 const model = new OpenAIModel({

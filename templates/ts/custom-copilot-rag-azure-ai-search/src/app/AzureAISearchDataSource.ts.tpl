@@ -1,5 +1,5 @@
 import { DataSource, Memory, OpenAIEmbeddings, RenderedPromptSection, Tokenizer } from "@microsoft/teams-ai";
-import { TurnContext } from 'botbuilder';
+import { TurnContext } from "botbuilder";
 import { AzureKeyCredential, SearchClient } from "@azure/search-documents";
 
 /**

@@ -4,6 +4,6 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>Teams App Test Tool (browser)</ActiveDebugProfile>
+    <ActiveDebugProfile>Microsoft Teams (browser)</ActiveDebugProfile>
   </PropertyGroup>
 </Project>

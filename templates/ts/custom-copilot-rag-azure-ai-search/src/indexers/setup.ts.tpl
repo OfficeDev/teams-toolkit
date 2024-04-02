@@ -1,14 +1,14 @@
-import { AzureKeyCredential, SearchClient, SearchIndexClient } from '@azure/search-documents';
-import { createIndexIfNotExists, delay, upsertDocuments, getEmbeddingVector } from './utils';
-import { MyDocument } from '../app/AzureAISearchDataSource';
-import path from 'path';
-import * as fs from 'fs';
+import { AzureKeyCredential, SearchClient, SearchIndexClient } from "@azure/search-documents";
+import { createIndexIfNotExists, delay, upsertDocuments, getEmbeddingVector } from "./utils";
+import { MyDocument } from "../app/AzureAISearchDataSource";
+import path from "path";
+import * as fs from "fs";
 
 /**
  *  Main function that creates the index and upserts the documents.
  */
 export async function main() {
-    const index = 'my-documents';
+    const index = "my-documents";
 
     if (
         !process.env.SECRET_AZURE_SEARCH_KEY ||
@@ -24,12 +24,12 @@ export async function main() {
     ) {
         {{#useOpenAI}}
         throw new Error(
-            'Missing environment variables - please check that SECRET_AZURE_SEARCH_KEY, AZURE_SEARCH_ENDPOINT and SECRET_OPENAI_API_KEY are set.'
+            "Missing environment variables - please check that SECRET_AZURE_SEARCH_KEY, AZURE_SEARCH_ENDPOINT and SECRET_OPENAI_API_KEY are set."
         );
         {{/useOpenAI}}
         {{#useAzureOpenAI}}
         throw new Error(
-            'Missing environment variables - please check that SECRET_AZURE_SEARCH_KEY, AZURE_SEARCH_ENDPOINT, SECRET_AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME are set.'
+            "Missing environment variables - please check that SECRET_AZURE_SEARCH_KEY, AZURE_SEARCH_ENDPOINT, SECRET_AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME are set."
         );
         {{/useAzureOpenAI}}
     }
@@ -45,11 +45,11 @@ export async function main() {
 
     const searchClient = new SearchClient<MyDocument>(searchApiEndpoint, index, credentials);
 
-    const filePath = path.join(__dirname, './data');
+    const filePath = path.join(__dirname, "./data");
     const files = fs.readdirSync(filePath);
     const data: MyDocument[] = [];
     for (let i=1;i<=files.length;i++) {
-        const content = fs.readFileSync(path.join(filePath, files[i-1]), 'utf-8');
+        const content = fs.readFileSync(path.join(filePath, files[i-1]), "utf-8");
         data.push({
             docId: i+"",
             docTitle: files[i-1],

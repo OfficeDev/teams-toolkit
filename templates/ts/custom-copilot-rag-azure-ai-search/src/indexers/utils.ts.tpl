@@ -8,10 +8,10 @@ import {
     KnownAnalyzerNames,
     SearchClient,
     IndexDocumentsResult
-} from '@azure/search-documents';
-import { MyDocument } from '../app/AzureAISearchDataSource';
-import { OpenAIEmbeddings } from '@microsoft/teams-ai';
-import config from '../config';
+} from "@azure/search-documents";
+import { MyDocument } from "../app/AzureAISearchDataSource";
+import { OpenAIEmbeddings } from "@microsoft/teams-ai";
+import config from "../config";
 
 export const WAIT_TIME = 4000;
 
@@ -61,43 +61,43 @@ export async function createIndexIfNotExists(client: SearchIndexClient, name: st
         name,
         fields: [
             {
-                type: 'Edm.String',
-                name: 'docId',
+                type: "Edm.String",
+                name: "docId",
                 key: true,
                 filterable: true,
                 sortable: true
             },
             {
-                type: 'Edm.String',
-                name: 'docTitle',
+                type: "Edm.String",
+                name: "docTitle",
                 searchable: true,
                 filterable: true,
                 sortable: true
             },
             {
-                type: 'Edm.String',
-                name: 'description',
+                type: "Edm.String",
+                name: "description",
                 searchable: true,
                 analyzerName: KnownAnalyzerNames.EnLucene
             },
             {
-                type: 'Collection(Edm.Single)',
-                name: 'descriptionVector',
+                type: "Collection(Edm.Single)",
+                name: "descriptionVector",
                 searchable: true,
                 vectorSearchDimensions: 1536,
-                vectorSearchProfileName: 'my-vector-config'
+                vectorSearchProfileName: "my-vector-config"
             },
         ],
         corsOptions: {
             // for browser tests
-            allowedOrigins: ['*']
+            allowedOrigins: ["*"]
         },
         vectorSearch: {
-            algorithms: [{ name: 'vector-search-algorithm', kind: 'hnsw' }],
+            algorithms: [{ name: "vector-search-algorithm", kind: "hnsw" }],
             profiles: [
                 {
-                    name: 'my-vector-config',
-                    algorithmConfigurationName: 'vector-search-algorithm'
+                    name: "my-vector-config",
+                    algorithmConfigurationName: "vector-search-algorithm"
                 }
             ]
         }
@@ -129,7 +129,7 @@ export async function getEmbeddingVector(text: string): Promise<number[]> {
     const result = await embeddings.createEmbeddings( process.env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME!, text);
     {{/useAzureOpenAI}}
 
-    if (result.status !== 'success' || !result.output) {
+    if (result.status !== "success" || !result.output) {
         throw new Error(`Failed to generate embeddings for description: ${text}`);
     }
 

@@ -724,12 +724,12 @@
       {
         "command": "fx-extension.localdebug",
         "title": "%teamstoolkit.commands.localDebug.title%",
-        "enablement": "!fx-extension.commandLocked",
+        "enablement": "!fx-extension.commandLocked && !fx-extension.isOfficeAddIn || fx-extension.isOfficeAddIn && !fx-extension.isManifestOnlyOfficeAddIn",
         "category": "Teams"
       },
       {
         "command": "fx-extension.localdebugWithIcon",
-        "title": "%teamstoolkit.commands.localDebug.title%",
+        "title": "%teamstoolkit.commands.localDebug.tiDtle%",
         "icon": "$(debug-alt)"
       },
       {
@@ -860,11 +860,6 @@
         "command": "fx-extension.openOfficeDevHelpFeedbackLink",
         "title": "%teamstoolkit.commands.feedbackLink.title%",
         "icon": "$(info)"
-      },
-      {
-        "command": "fx-extension.localdebug",
-        "title": "%teamstoolkit.commandsTreeViewProvider.officeDevLocalDebugTitle%",
-        "enablement": "fx-extension.isOfficeAddIn && !fx-extension.isManifestOnlyOfficeAddIn"
       },
       {
         "command": "fx-extension.stopDebugging",

@@ -75,6 +75,7 @@ export class projectCreator implements ISkill {
       folder: tempFolder,
       "app-name": tempAppName,
       isFromCodeGen: true,
+      isFromOfficeAddinChatParticipant: true,
     };
     await vscode.commands.executeCommand(
       CHAT_EXECUTE_COMMAND_ID,

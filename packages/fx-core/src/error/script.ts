@@ -9,13 +9,13 @@ import { ErrorCategory } from "./types";
  * Script execution timeout
  */
 export class ScriptTimeoutError extends UserError {
-  constructor(cmd: string, error?: any) {
+  constructor(error?: Error) {
     const key = "error.script.ScriptTimeoutError";
     const errorOptions: UserErrorOptions = {
       source: "script",
       name: "ScriptTimeoutError",
-      message: getDefaultString(key, ""), //the script content maybe contains securit data that should not be reported in telemetry
-      displayMessage: getLocalizedString(key, cmd),
+      message: getDefaultString(key),
+      displayMessage: getLocalizedString(key),
       error: error,
       categories: [ErrorCategory.External],
     };
@@ -27,13 +27,13 @@ export class ScriptTimeoutError extends UserError {
  * Script execution error
  */
 export class ScriptExecutionError extends UserError {
-  constructor(script: string, message: string, error?: any) {
+  constructor(error?: Error) {
     const key = "error.script.ScriptExecutionError";
     const errorOptions: UserErrorOptions = {
       source: "script",
       name: "ScriptExecutionError",
-      message: getDefaultString(key, "", message), //the script content maybe contains securit data that should not be reported in telemetry
-      displayMessage: getLocalizedString(key, script, message),
+      message: getDefaultString(key),
+      displayMessage: getLocalizedString(key),
       error: error,
       categories: [ErrorCategory.External],
     };

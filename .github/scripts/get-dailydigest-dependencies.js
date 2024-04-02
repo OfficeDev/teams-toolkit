@@ -41,6 +41,12 @@ const codeOwnerMap = new Map([
   ["notification-http-timer-trigger-isolated", "tianyuan@microsoft.com"],
   ["notification-http-trigger-isolated", "tianyuan@microsoft.com"],
   ["notification-timer-trigger-isolated", "tianyuan@microsoft.com"],
+  ["custom-copilot-assistant-assistants-api", "kuojianlu@microsoft.com"],
+  ["custom-copilot-assistant-new", "kuojianlu@microsoft.com"],
+  ["custom-copilot-basic", "kuojianlu@microsoft.com"],
+  ["custom-copilot-rag-custom-api", "kuojianlu@microsoft.com"],
+  ["api-plugin-from-scratch", "huimiao@microsoft.com"],
+  ["api-message-extension-sso", "huimiao@microsoft.com"],
 ]);
 
 async function getTemplatesDependencies() {

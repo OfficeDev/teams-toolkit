@@ -30,6 +30,6 @@ new ProactiveMessagingTestCase(
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBot],
   {
-    testRootFolder: "./resource/samples",
+    repoPath: "./resource/samples",
   }
 ).test();

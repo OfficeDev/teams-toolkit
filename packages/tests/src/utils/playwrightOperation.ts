@@ -80,7 +80,7 @@ export const debugInitMap: Record<TemplateProject, () => Promise<void>> = {
     await startDebugging();
   },
   [TemplateProject.ChefBot]: async () => {
-    await startDebugging();
+    await startDebugging("Debug (Chrome)");
   },
   [TemplateProject.GraphConnectorBot]: async () => {
     await startDebugging();
@@ -2248,7 +2248,6 @@ export async function validateGraphConnector(
     );
     const frame = await frameElementHandle?.contentFrame();
     try {
-      const startBtn = await frame?.waitForSelector('button:has-text("Start")');
       await RetryHandler.retry(async () => {
         console.log("Before popup");
         const [popup] = await Promise.all([
@@ -2262,21 +2261,41 @@ export async function validateGraphConnector(
                 .catch(() => popup)
             )
             .catch(() => {}),
-          startBtn?.click(),
+          frame?.click('button:has-text("Start")', {
+            timeout: Timeout.playwrightAddAppButton,
+            force: true,
+            noWaitAfter: true,
+            clickCount: 2,
+            delay: 10000,
+          }),
         ]);
         console.log("after popup");
 
         if (popup && !popup?.isClosed()) {
+          await popup.screenshot({
+            path: getPlaywrightScreenshotPath("popup_before"),
+            fullPage: true,
+          });
           await popup
             .click('button:has-text("Reload")', {
               timeout: Timeout.playwrightConsentPageReload,
             })
             .catch(() => {});
+          console.log("click accept button");
           await popup.click("input.button[type='submit'][value='Accept']");
+          await page.waitForTimeout(Timeout.shortTimeLoading);
+          await page.screenshot({
+            path: getPlaywrightScreenshotPath("popup_after"),
+            fullPage: true,
+          });
         }
-
-        await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
+        if (popup && !popup?.isClosed()) {
+          await popup.close();
+          throw "popup not close.";
+        }
       });
+      await page.waitForTimeout(Timeout.shortTimeLoading);
+      await frame?.waitForSelector(`div:has-text("${options?.displayName}")`);
       page.waitForTimeout(1000);
     } catch (e: any) {
       console.log(`[Command not executed successfully] ${e.message}`);

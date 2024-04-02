@@ -341,24 +341,8 @@ export async function listPluginExistingOperations(
   }
 
   const specParser = new SpecParser(apiSpecFilePath, copilotPluginParserOptions);
-  const validationRes = await specParser.validate();
-  validationRes.errors = formatValidationErrors(validationRes.errors);
-
-  if (validationRes.status === ValidationStatus.Error) {
-    const errorMessage = getLocalizedString(
-      "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
-    );
-    throw new UserError(
-      "listPluginExistingOperations",
-      invalidApiSpecErrorName,
-      errorMessage,
-      errorMessage
-    );
-  }
-
   const listResult = await specParser.list();
-  const operations = listResult.APIs.filter((value) => value.isValid);
-  return operations.map((o) => o.api);
+  return listResult.APIs.map((o) => o.api);
 }
 
 export function logValidationResults(

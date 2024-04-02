@@ -1089,34 +1089,6 @@ describe("listPluginExistingOperations", () => {
     }
     expect(hasException).to.be.true;
   });
-
-  it("invalid openapi spec", async () => {
-    sandbox
-      .stub(PluginManifestUtils.prototype, "getApiSpecFilePathFromTeamsManifest")
-      .resolves(ok(["openapi.yaml"]));
-
-    sandbox.stub(SpecParser.prototype, "validate").resolves({
-      status: ValidationStatus.Error,
-      warnings: [],
-      errors: [
-        {
-          type: ErrorType.NoServerInformation,
-          content: "content",
-        },
-      ],
-    });
-
-    let hasException = false;
-
-    try {
-      await listPluginExistingOperations(teamsManifestWithPlugin, "manifestPath", "openapi.yaml");
-    } catch (e) {
-      hasException = true;
-      expect(e.source).equal("listPluginExistingOperations");
-      expect(e.name).equal("invalid-api-spec");
-    }
-    expect(hasException).to.be.true;
-  });
 });
 
 describe("updateForCustomApi", async () => {

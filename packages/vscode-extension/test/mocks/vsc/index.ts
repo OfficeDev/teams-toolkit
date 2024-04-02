@@ -9,6 +9,7 @@ import * as vscode from "vscode";
 // export * from './range';
 // export * from './position';
 // export * from './selection';
+export * as chat from "./chat";
 export * as vscMockExtHostedTypes from "./extHostedTypes";
 export * as vscUri from "./uri";
 

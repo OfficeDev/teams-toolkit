@@ -81,9 +81,10 @@ export class ChatTelemetryData implements IChatTelemetryData {
     this.telemetryData.measurements = { ...this.telemetryData.measurements, ...measurements };
   }
 
-  markComplete() {
+  markComplete(completeType: "success" | "unsupportedPrompt" = "success") {
     if (!this.hasComplete) {
       this.telemetryData.properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
+      this.telemetryData.properties[TelemetryProperty.CopilotChatCompleteType] = completeType;
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTimeToComplete] =
         Date.now() - this.startTime;
       this.telemetryData.measurements[TelemetryProperty.CopilotChatTokenCount] =

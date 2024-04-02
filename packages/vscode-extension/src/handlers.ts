@@ -140,6 +140,7 @@ import {
   RecommendedOperations,
 } from "./debug/constants";
 import { openOfficeDevFolder } from "./officeDevHandlers";
+import { invokeTeamsAgent } from "./copilotChatHandlers";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -386,6 +387,10 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   process.env.TEAMSFX_OFFICE_XML_ADDIN = originalXMLFestureFlag;
 
   const res = result.value as CreateProjectResult;
+  if (res.shouldInvokeTeamsAgent) {
+    await invokeTeamsAgent([TelemetryTriggerFrom.CreateAppQuestionFlow]);
+    return result;
+  }
   const projectPathUri = Uri.file(res.projectPath);
   // If it is triggered in @office /create for code gen, then do no open the temp folder.
   if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.isFromCodeGen) {

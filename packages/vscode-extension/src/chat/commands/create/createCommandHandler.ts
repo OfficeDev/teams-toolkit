@@ -1,53 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import axios from "axios";
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as tmp from "tmp";
 import {
   CancellationToken,
   ChatContext,
   ChatRequest,
-  ChatResponseFileTree,
   ChatResponseStream,
-  ChatResult,
   LanguageModelChatUserMessage,
-  Uri,
 } from "vscode";
 
-import { sampleProvider } from "@microsoft/teamsfx-core";
-import {
-  getSampleFileInfo,
-  runWithLimitedConcurrency,
-  sendRequestWithRetry,
-} from "@microsoft/teamsfx-core/build/component/generator/utils";
-
+import { CommandKey } from "../../../constants";
+import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
+import { localize } from "../../../utils/localizeUtils";
 import {
   CHAT_CREATE_SAMPLE_COMMAND_ID,
   CHAT_EXECUTE_COMMAND_ID,
   TeamsChatCommand,
   chatParticipantId,
 } from "../../consts";
-import {
-  brieflyDescribeProjectSystemPrompt,
-  describeProjectSystemPrompt,
-  getProjectMatchSystemPrompt,
-} from "../../prompts";
-import {
-  getCopilotResponseAsString,
-  getSampleDownloadUrlInfo,
-  verbatimCopilotInteraction,
-} from "../../utils";
-import * as teamsTemplateMetadata from "./templateMetadata.json";
-import { ProjectMetadata } from "./types";
+import { brieflyDescribeProjectSystemPrompt, describeProjectSystemPrompt } from "../../prompts";
 import { ChatTelemetryData } from "../../telemetry";
-import { IChatTelemetryData, ICopilotChatResult } from "../../types";
-import * as util from "util";
-import { localize } from "../../../utils/localizeUtils";
-import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { CommandKey } from "../../../constants";
+import { ICopilotChatResult } from "../../types";
+import { verbatimCopilotInteraction } from "../../utils";
+import * as helper from "./helper";
 
 export default async function createCommandHandler(
   request: ChatRequest,
@@ -62,7 +38,7 @@ export default async function createCommandHandler(
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
-  const matchedResult = await matchProject(request, token, chatTelemetryData);
+  const matchedResult = await helper.matchProject(request, token, chatTelemetryData);
 
   if (matchedResult.length === 0) {
     response.markdown(
@@ -98,7 +74,7 @@ export default async function createCommandHandler(
       token
     );
     if (firstMatch.type === "sample") {
-      const folder = await showFileTree(firstMatch, response);
+      const folder = await helper.showFileTree(firstMatch, response);
       const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
       response.button({
         command: CHAT_CREATE_SAMPLE_COMMAND_ID,
@@ -179,143 +155,4 @@ export default async function createCommandHandler(
       },
     };
   }
-}
-
-async function matchProject(
-  request: ChatRequest,
-  token: CancellationToken,
-  telemetryMetadata: IChatTelemetryData
-): Promise<ProjectMetadata[]> {
-  const allProjectMetadata = [...getTeamsTemplateMetadata(), ...(await getTeamsSampleMetadata())];
-  const messages = [
-    getProjectMatchSystemPrompt(allProjectMetadata),
-    new LanguageModelChatUserMessage(request.prompt),
-  ];
-
-  telemetryMetadata.chatMessages.push(...messages);
-
-  const response = await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
-  const matchedProjectId: string[] = [];
-  if (response) {
-    try {
-      const responseJson = JSON.parse(response);
-      if (responseJson && responseJson.app) {
-        matchedProjectId.push(...(responseJson.app as string[]));
-      }
-    } catch (e) {}
-  }
-  const result: ProjectMetadata[] = [];
-  for (const id of matchedProjectId) {
-    const matchedProject = allProjectMetadata.find((config) => config.id === id);
-    if (matchedProject) {
-      result.push(matchedProject);
-    }
-  }
-  return result;
-}
-
-function getTeamsTemplateMetadata(): ProjectMetadata[] {
-  return teamsTemplateMetadata.map((config) => {
-    return {
-      id: config.id,
-      type: "template",
-      platform: "Teams",
-      name: config.name,
-      description: config.description,
-      data: {
-        capabilities: config.id,
-        "project-type": config["project-type"],
-      },
-    };
-  });
-}
-
-async function getTeamsSampleMetadata(): Promise<ProjectMetadata[]> {
-  const sampleCollection = await sampleProvider.SampleCollection;
-  const result: ProjectMetadata[] = [];
-  for (const sample of sampleCollection.samples) {
-    result.push({
-      id: sample.id,
-      type: "sample",
-      platform: "Teams",
-      name: sample.title,
-      description: sample.fullDescription,
-    });
-  }
-  return result;
-}
-
-export async function showFileTree(
-  projectMetadata: ProjectMetadata,
-  response: ChatResponseStream
-): Promise<string> {
-  response.markdown(
-    "\nWe've found a sample project that matches your description. Take a look at it below."
-  );
-  const downloadUrlInfo = await getSampleDownloadUrlInfo(projectMetadata.id);
-  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
-  const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
-  const nodes = await buildFileTree(
-    fileUrlPrefix,
-    samplePaths,
-    tempFolder,
-    downloadUrlInfo.dir,
-    2,
-    20
-  );
-  response.filetree(nodes, Uri.file(path.join(tempFolder, downloadUrlInfo.dir)));
-  return path.join(tempFolder, downloadUrlInfo.dir);
-}
-
-async function buildFileTree(
-  fileUrlPrefix: string,
-  samplePaths: string[],
-  dstPath: string,
-  relativeFolderName: string,
-  retryLimits: number,
-  concurrencyLimits: number
-): Promise<ChatResponseFileTree[]> {
-  const root: ChatResponseFileTree = {
-    name: relativeFolderName,
-    children: [],
-  };
-  const downloadCallback = async (samplePath: string) => {
-    const file = (await sendRequestWithRetry(async () => {
-      return await axios.get(fileUrlPrefix + samplePath, {
-        responseType: "arraybuffer",
-      });
-    }, retryLimits)) as unknown as any;
-    const relativePath = path.relative(`${relativeFolderName}/`, samplePath);
-    const filePath = path.join(dstPath, samplePath);
-    fileTreeAdd(root, relativePath);
-    await fs.ensureFile(filePath);
-    await fs.writeFile(filePath, Buffer.from(file.data));
-  };
-  await runWithLimitedConcurrency(samplePaths, downloadCallback, concurrencyLimits);
-  return root.children ?? [];
-}
-
-export function fileTreeAdd(root: ChatResponseFileTree, relativePath: string) {
-  const filename = path.basename(relativePath);
-  const folderName = path.dirname(relativePath);
-  const segments = path.sep === "\\" ? folderName.split("\\") : folderName.split("/");
-  let parent = root;
-  for (let i = 0; i < segments.length; i++) {
-    const segment = segments[i];
-    if (segment === ".") {
-      continue;
-    }
-    let child = parent.children?.find((child) => child.name === segment);
-    if (!child) {
-      child = {
-        name: segment,
-        children: [],
-      };
-      parent.children?.push(child);
-    }
-    parent = child;
-  }
-  parent.children?.push({
-    name: filename,
-  });
 }

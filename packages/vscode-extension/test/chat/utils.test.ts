@@ -9,11 +9,11 @@ import { CancellationToken } from "../mocks/vsc";
 chai.use(chaiPromised);
 
 describe("chat utils", () => {
-  const sanbox = sinon.createSandbox();
+  const sandbox = sinon.createSandbox();
 
   describe("verbatimCopilotInteraction()", () => {
     afterEach(async () => {
-      sanbox.restore();
+      sandbox.restore();
     });
 
     it("outputs result from LLM", async () => {
@@ -21,11 +21,11 @@ describe("chat utils", () => {
         yield "result";
       })();
       const token = new CancellationToken();
-      sanbox.stub(vscode.lm, "sendChatRequest").resolves({
+      sandbox.stub(vscode.lm, "sendChatRequest").resolves({
         stream: asyncIterator,
       });
       const response = {
-        markdown: sanbox.stub(),
+        markdown: sandbox.stub(),
       };
 
       await utils.verbatimCopilotInteraction(
@@ -40,7 +40,7 @@ describe("chat utils", () => {
 
   describe("getCopilotResponseAsString()", () => {
     afterEach(async () => {
-      sanbox.restore();
+      sandbox.restore();
     });
 
     it("returns result as string from LLM", async () => {
@@ -48,11 +48,11 @@ describe("chat utils", () => {
         yield "result";
       })();
       const token = new CancellationToken();
-      sanbox.stub(vscode.lm, "sendChatRequest").resolves({
+      sandbox.stub(vscode.lm, "sendChatRequest").resolves({
         stream: asyncIterator,
       });
       const response = {
-        markdown: sanbox.stub(),
+        markdown: sandbox.stub(),
       };
 
       const result = await utils.getCopilotResponseAsString("copilot-gpt-3.5-turbo", [], token);
@@ -62,7 +62,7 @@ describe("chat utils", () => {
 
   describe("getSampleDownloadUrlInfo()", () => {
     afterEach(async () => {
-      sanbox.restore();
+      sandbox.restore();
     });
 
     it("returns download Url", async () => {

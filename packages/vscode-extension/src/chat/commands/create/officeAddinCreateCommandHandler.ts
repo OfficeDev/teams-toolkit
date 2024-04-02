@@ -31,7 +31,7 @@ import {
 } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { ChatTelemetryData } from "../../telemetry";
-import { showFileTree } from "./createCommandHandler";
+import { showFileTree } from "./helper";
 import { localize } from "../../../utils/localizeUtils";
 import {
   CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
@@ -101,7 +101,7 @@ export default async function officeAddinCreateCommandHandler(
       );
     }
   } else {
-    response.markdown(localize("teamstoolkit.chatParticipants.officeaddin.harmfulInputResponse"));
+    response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
   }
   return {
     metadata: {

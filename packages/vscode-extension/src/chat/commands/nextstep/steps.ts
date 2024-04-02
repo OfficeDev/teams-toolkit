@@ -67,9 +67,8 @@ export const allSteps: () => NextStep[] = () => [
   {
     title: "Prerequisites",
     description: (status: WholeStatus) =>
-      `Ensure the following requirements are met before you start building your Teams app. It seems you met the prerequisites error: ${
-        status.machineStatus.resultOfPrerequistes || ""
-      }. You can fix it and try again.`,
+      `Ensure the following requirements are met before you start building your Teams app. It seems you met the prerequisites error: ${status
+        .machineStatus.resultOfPrerequistes!}. You can fix it and try again.`,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites",
     commands: [

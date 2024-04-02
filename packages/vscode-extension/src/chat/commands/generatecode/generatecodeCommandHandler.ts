@@ -39,7 +39,7 @@ export default async function generatecodeCommandHandler(
       OfficeAddinChatCommand.GenerateCode
     );
   } else {
-    response.markdown(localize("teamstoolkit.chatParticipants.officeaddin.harmfulInputResponse"));
+    response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
     return {
       metadata: {
         command: OfficeAddinChatCommand.GenerateCode,

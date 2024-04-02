@@ -257,6 +257,8 @@ export enum TelemetryEvent {
 
   FindSimilarIssues = "find-similar-issues",
 
+  InvokeTeamsAgent = "invoke-teams-agent",
+
   // Copilot Chat
   CopilotChatStart = "copilot-chat-start",
   CopilotChat = "copilot-chat",
@@ -370,6 +372,7 @@ export enum TelemetryProperty {
   CopilotChatRunCommandId = "copilot-chat-run-command-id", // the id of clicked button in the response
   CopilotChatParticipantId = "copilot-chat-participant-id",
   CopilotChatLocation = "copilot-chat-location",
+  CopilotChatCompleteType = "copilot-chat-complete-type",
 }
 
 export enum TelemetryMeasurements {
@@ -401,6 +404,7 @@ export enum TelemetryTriggerFrom {
   SampleGallery = "SampleGallery",
   SampleDetailPage = "SampleDetailPage",
   CopilotChat = "CopilotChat",
+  CreateAppQuestionFlow = "CreateAppQuestionFlow",
   Other = "Other",
   Auto = "Auto",
   Unknow = "Unknow",

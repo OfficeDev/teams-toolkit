@@ -16,7 +16,7 @@ import {
 import { ISkill } from "./iSkill";
 import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
-import { fileTreeAdd } from "../../commands/create/createCommandHandler";
+import { fileTreeAdd } from "../../commands/create/helper";
 import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID, CHAT_EXECUTE_COMMAND_ID } from "../../consts";
 import { CommandKey } from "../../../constants";

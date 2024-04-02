@@ -232,7 +232,8 @@ function projectTypeQuestion(): SingleSelectQuestion {
         }
       } else {
         staticOptions.push(
-          isOfficeXMLAddinEnabled() && !isOfficeJSONAddinEnabled()
+          (isOfficeXMLAddinEnabled() && !isOfficeJSONAddinEnabled()) ||
+            inputs.isFromOfficeAddinChatParticipant
             ? ProjectTypeOptions.officeXMLAddin(inputs.platform)
             : isOfficeJSONAddinEnabled()
             ? ProjectTypeOptions.officeAddin(inputs.platform)

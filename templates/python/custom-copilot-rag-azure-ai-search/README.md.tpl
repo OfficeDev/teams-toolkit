@@ -131,9 +131,15 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Search Bot template with more AI capabilities
+## Extend the Basic AI Chatbot template with more AI capabilities
 
-You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Search Bot template with more AI capabilities.
+You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the Basic AI Chatbot template with more AI capabilities, like:
+- [Customize prompt](https://aka.ms/teamsfx-basic-ai-chatbot#customize-prompt)
+- [Customize user input](https://aka.ms/teamsfx-basic-ai-chatbot#customize-user-input)
+- [Customize conversation history](https://aka.ms/teamsfx-basic-ai-chatbot#customize-conversation-history)
+- [Customize model type](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-type)
+- [Customize model parameters](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-parameters)
+- [Handle messages with image](https://aka.ms/teamsfx-basic-ai-chatbot#handle-messages-with-image)
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

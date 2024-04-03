@@ -277,7 +277,6 @@
 /templates/**/custom-copilot-assistant-assistants-api @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /templates/**/custom-copilot-assistant-new @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /templates/**/custom-copilot-basic @kimizhu @swatDong @kuojianlu @XiaofuHuang
-/templates/**/custom-copilot-rag-azure-ai-search @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /templates/**/dashboard-tab @hund030 @eriolchan @huimiu
 /templates/**/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/default-bot-message-extension @yuqizhou77
@@ -317,4 +316,5 @@
 /templates/python/* @adashen @blackchoey @frankqianms 
 /templates/python/custom-copilot-basic @frankqianms @blackchoey
 /templates/python/custom-copilot-rag-azure-ai-search @frankqianms @blackchoey
+/templates/python/custom-copilot-rag-customize @frankqianms @blackchoey
 /templates/scripts @hund030 @eriolchan @huimiu

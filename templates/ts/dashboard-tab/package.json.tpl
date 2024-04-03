@@ -18,7 +18,7 @@
         "react-scripts": "^5.0.1"
     },
     "devDependencies": {
-        "@types/node": "^14.0.0",
+        "@types/node": "^16.0.0",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
         "@types/react-router-dom": "^5.3.3",

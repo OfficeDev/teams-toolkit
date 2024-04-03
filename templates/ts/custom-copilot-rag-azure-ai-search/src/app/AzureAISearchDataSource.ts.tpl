@@ -171,7 +171,7 @@ export class AzureAISearchDataSource implements DataSource {
     }
 
     /**
-     * Uses Azure OpenAI to generate embeddings for the user's input.
+     * Generate embeddings for the user's input.
      * @param {string} text - The user's input.
      * @returns {Promise<number[]>} The embedding vector for the user's input.
      */

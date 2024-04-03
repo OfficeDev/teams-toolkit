@@ -1,6 +1,6 @@
 # Overview of the Basic RAG Bot template
 
-This template showcases a bot app that responds to user questions like an AI assistant according to data from local files. This enables your users to talk with the AI assistant in Teams to find information.
+It showcases how to build an basic RAG bot in Teams capable of chatting with users but with context provided by customize data source.
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 
@@ -91,7 +91,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/bot.py`| Handles business logics for the Basic RAG Bot.|
 |`src/config.py`| Defines the environment variables.|
 |`src/app.py`| Main module of the Basic RAG Bot, hosts a aiohttp api server for the app.|
-|`src/local_data_source.py`| Handles local text data search logics.|
+|`src/my_data_source.py`| Handles local customized text data search logics.|
 |`src/data/*.md`| Raw text data source.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|

@@ -12,7 +12,7 @@ class Result:
     length: int
     too_long: bool
 
-class LocalDataSource(DataSource):
+class MyDataSource(DataSource):
     """
     A data source that searches through a local directory of files for a given query.
     """

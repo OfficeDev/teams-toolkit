@@ -124,7 +124,7 @@ async function matchSamples(
       projectMetadata = [...sampleExampleMetadata];
     }
   }
-  if (projectMetadata.length > 2) {
+  if (projectMetadata.length > sampleExampleMetadata.length) {
     matchedSamples.push(
       ...(await sendCopilotMatchRequest(
         getProjectMatchSystemPrompt(projectMetadata, sampleExamples),

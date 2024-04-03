@@ -11,6 +11,7 @@ import {
   ErrorResult,
   ErrorType,
   ParseOptions,
+  ProjectType,
   ValidateResult,
   ValidationStatus,
   WarningResult,
@@ -390,78 +391,6 @@ export class Utils {
     return command;
   }
 
-  static validateSpec(
-    spec: OpenAPIV3.Document,
-    parser: SwaggerParser,
-    apiMap: APIMap,
-    isSwaggerFile: boolean,
-    options: ParseOptions
-  ): ValidateResult {
-    const errors: ErrorResult[] = [];
-    const warnings: WarningResult[] = [];
-
-    if (isSwaggerFile) {
-      warnings.push({
-        type: WarningType.ConvertSwaggerToOpenAPI,
-        content: ConstantString.ConvertSwaggerToOpenAPI,
-      });
-    }
-
-    const serverErrors = Utils.validateServer(spec, options);
-    errors.push(...serverErrors);
-
-    // Remote reference not supported
-    const refPaths = parser.$refs.paths();
-
-    // refPaths [0] is the current spec file path
-    if (refPaths.length > 1) {
-      errors.push({
-        type: ErrorType.RemoteRefNotSupported,
-        content: Utils.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
-        data: refPaths,
-      });
-    }
-
-    // No supported API
-    const validAPIs = Object.entries(apiMap).filter(([, value]) => value.isValid);
-    if (validAPIs.length === 0) {
-      errors.push({
-        type: ErrorType.NoSupportedApi,
-        content: ConstantString.NoSupportedApi,
-      });
-    }
-
-    // OperationId missing
-    const apisMissingOperationId: string[] = [];
-    for (const key in apiMap) {
-      const { operation } = apiMap[key];
-      if (!operation.operationId) {
-        apisMissingOperationId.push(key);
-      }
-    }
-
-    if (apisMissingOperationId.length > 0) {
-      warnings.push({
-        type: WarningType.OperationIdMissing,
-        content: Utils.format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
-        data: apisMissingOperationId,
-      });
-    }
-
-    let status = ValidationStatus.Valid;
-    if (warnings.length > 0 && errors.length === 0) {
-      status = ValidationStatus.Warning;
-    } else if (errors.length > 0) {
-      status = ValidationStatus.Error;
-    }
-
-    return {
-      status,
-      warnings,
-      errors,
-    };
-  }
-
   static format(str: string, ...args: string[]): string {
     let index = 0;
     return str.replace(/%s/g, () => {
@@ -496,5 +425,23 @@ export class Utils {
       }
     }
     return count;
+  }
+
+  static getServerObject(
+    spec: OpenAPIV3.Document,
+    method: string,
+    path: string
+  ): OpenAPIV3.ServerObject | undefined {
+    const pathObj = spec.paths[path] as any;
+
+    const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
+
+    const rootServer = spec.servers && spec.servers[0];
+    const methodServer = spec.paths[path]!.servers && spec.paths[path]!.servers![0];
+    const operationServer = operationObject.servers && operationObject.servers[0];
+
+    const serverUrl = operationServer || methodServer || rootServer;
+
+    return serverUrl;
   }
 }

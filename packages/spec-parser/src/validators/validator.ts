@@ -9,17 +9,111 @@ import {
   ErrorType,
   CheckParamResult,
   ProjectType,
+  APIMap,
+  SpecValidationResult,
+  WarningType,
 } from "../interfaces";
 import { Utils } from "../utils";
+import { ConstantString } from "../constants";
 
 export abstract class Validator {
   projectType!: ProjectType;
   spec!: OpenAPIV3.Document;
   options!: ParseOptions;
 
-  abstract validateAPI(method: string, path: string): APIValidationResult;
+  private apiMap: APIMap | undefined;
 
-  validateMethodAndPath(method: string, path: string): APIValidationResult {
+  abstract validateAPI(method: string, path: string): APIValidationResult;
+  abstract validateSpec(): SpecValidationResult;
+
+  listAPIs(): APIMap {
+    if (this.apiMap) {
+      return this.apiMap;
+    }
+
+    const paths = this.spec.paths;
+    const result: APIMap = {};
+    for (const path in paths) {
+      const methods = paths[path];
+      for (const method in methods) {
+        const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
+        if (this.options.allowMethods?.includes(method) && operationObject) {
+          const validateResult = this.validateAPI(method, path);
+          result[`${method.toUpperCase()} ${path}`] = {
+            operation: operationObject,
+            isValid: validateResult.isValid,
+            reason: validateResult.reason,
+          };
+        }
+      }
+    }
+
+    this.apiMap = result;
+    return result;
+  }
+
+  protected validateSpecVersion(): SpecValidationResult {
+    const result: SpecValidationResult = { errors: [], warnings: [] };
+
+    if (this.spec.openapi >= "3.1.0") {
+      result.errors.push({
+        type: ErrorType.SpecVersionNotSupported,
+        content: Utils.format(ConstantString.SpecVersionNotSupported, this.spec.openapi),
+        data: this.spec.openapi,
+      });
+    }
+
+    return result;
+  }
+
+  protected validateSpecServer(): SpecValidationResult {
+    const result: SpecValidationResult = { errors: [], warnings: [] };
+    const serverErrors = Utils.validateServer(this.spec, this.options);
+    result.errors.push(...serverErrors);
+    return result;
+  }
+
+  protected validateSpecNoSupportAPI(): SpecValidationResult {
+    const result: SpecValidationResult = { errors: [], warnings: [] };
+
+    const apiMap = this.listAPIs();
+
+    const validAPIs = Object.entries(apiMap).filter(([, value]) => value.isValid);
+    if (validAPIs.length === 0) {
+      result.errors.push({
+        type: ErrorType.NoSupportedApi,
+        content: ConstantString.NoSupportedApi,
+      });
+    }
+
+    return result;
+  }
+
+  protected validateSpecOperationId(): SpecValidationResult {
+    const result: SpecValidationResult = { errors: [], warnings: [] };
+    const apiMap = this.listAPIs();
+
+    // OperationId missing
+    const apisMissingOperationId: string[] = [];
+    for (const key in apiMap) {
+      const { operation } = apiMap[key];
+      if (!operation.operationId) {
+        apisMissingOperationId.push(key);
+      }
+    }
+
+    if (apisMissingOperationId.length > 0) {
+      result.warnings.push({
+        type: WarningType.OperationIdMissing,
+        content: Utils.format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
+        data: apisMissingOperationId,
+      });
+    }
+
+    return result;
+  }
+
+  protected validateMethodAndPath(method: string, path: string): APIValidationResult {
     const result: APIValidationResult = { isValid: true, reason: [] };
 
     if (this.options.allowMethods && !this.options.allowMethods.includes(method)) {
@@ -39,7 +133,7 @@ export abstract class Validator {
     return result;
   }
 
-  validateResponse(method: string, path: string): APIValidationResult {
+  protected validateResponse(method: string, path: string): APIValidationResult {
     const result: APIValidationResult = { isValid: true, reason: [] };
 
     const operationObject = (this.spec.paths[path] as any)[method] as OpenAPIV3.OperationObject;
@@ -57,30 +151,22 @@ export abstract class Validator {
     return result;
   }
 
-  validateServer(method: string, path: string): APIValidationResult {
-    const pathObj = this.spec.paths[path] as any;
-
+  protected validateServer(method: string, path: string): APIValidationResult {
     const result: APIValidationResult = { isValid: true, reason: [] };
-    const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
-
-    const rootServer = this.spec.servers && this.spec.servers[0];
-    const methodServer = this.spec.paths[path]!.servers && this.spec.paths[path]!.servers![0];
-    const operationServer = operationObject.servers && operationObject.servers[0];
-
-    const serverUrl = operationServer || methodServer || rootServer;
-    if (!serverUrl) {
+    const serverObj = Utils.getServerObject(this.spec, method, path);
+    if (!serverObj) {
       // should contain server URL
       result.reason.push(ErrorType.NoServerInformation);
     } else {
       // server url should be absolute url with https protocol
-      const serverValidateResult = Utils.checkServerUrl([serverUrl]);
+      const serverValidateResult = Utils.checkServerUrl([serverObj]);
       result.reason.push(...serverValidateResult.map((item) => item.type));
     }
 
     return result;
   }
 
-  validateAuth(method: string, path: string): APIValidationResult {
+  protected validateAuth(method: string, path: string): APIValidationResult {
     const pathObj = this.spec.paths[path] as any;
     const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
 
@@ -120,7 +206,10 @@ export abstract class Validator {
     return { isValid: false, reason: [ErrorType.AuthTypeIsNotSupported] };
   }
 
-  checkPostBodySchema(schema: OpenAPIV3.SchemaObject, isRequired = false): CheckParamResult {
+  protected checkPostBodySchema(
+    schema: OpenAPIV3.SchemaObject,
+    isRequired = false
+  ): CheckParamResult {
     const paramResult: CheckParamResult = {
       requiredNum: 0,
       optionalNum: 0,
@@ -177,7 +266,7 @@ export abstract class Validator {
     return paramResult;
   }
 
-  checkParamSchema(paramObject: OpenAPIV3.ParameterObject[]): CheckParamResult {
+  protected checkParamSchema(paramObject: OpenAPIV3.ParameterObject[]): CheckParamResult {
     const paramResult: CheckParamResult = {
       requiredNum: 0,
       optionalNum: 0,

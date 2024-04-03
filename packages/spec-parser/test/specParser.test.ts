@@ -18,6 +18,8 @@ import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
 import { Utils } from "../src/utils";
 import jsyaml from "js-yaml";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { Validator } from "../src/validators/validator";
+import { SMEValidator } from "../src/validators/smeValidator";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -645,7 +647,7 @@ describe("SpecParser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(SMEValidator.prototype, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");
@@ -1830,18 +1832,10 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /pets",
-            server: "https://server1",
+            server: "",
             operationId: "getPetById",
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
-            auth: {
-              authScheme: {
-                in: "header",
-                name: "api_key",
-                type: "apiKey",
-              },
-              name: "api_key",
-            },
           },
           {
             api: "GET /user/{userId}",
@@ -1852,22 +1846,14 @@ describe("SpecParser", () => {
           },
           {
             api: "POST /user/{userId}",
-            server: "https://server1",
+            server: "",
             operationId: "createUser",
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
-            auth: {
-              authScheme: {
-                in: "header",
-                name: "api_key",
-                type: "apiKey",
-              },
-              name: "api_key",
-            },
           },
           {
             api: "POST /store/order",
-            server: "https://server1",
+            server: "",
             operationId: "placeOrder",
             reason: ["response-json-is-empty", "no-parameter"],
             isValid: false,
@@ -2452,7 +2438,7 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /user/{userId}",
-            server: "https://server1",
+            server: "",
             operationId: "getUserUserId",
             isValid: false,
             reason: ["missing-operation-id"],
@@ -2517,15 +2503,6 @@ describe("SpecParser", () => {
                 },
               },
             },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
           },
         },
       };
@@ -2533,13 +2510,28 @@ describe("SpecParser", () => {
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      try {
-        await specParser.list();
-        expect.fail("Expected an error to be thrown");
-      } catch (err) {
-        expect((err as SpecParserError).message).contain(ConstantString.NoServerInformation);
-        expect((err as SpecParserError).errorType).to.equal(ErrorType.NoServerInformation);
-      }
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal({
+        APIs: [
+          {
+            api: "GET /pets",
+            server: "",
+            operationId: "getPetById",
+            isValid: false,
+            reason: ["no-server-information", "response-json-is-empty", "no-parameter"],
+          },
+          {
+            api: "GET /user/{userId}",
+            server: "",
+            operationId: "getUserUserId",
+            isValid: false,
+            reason: ["no-server-information"],
+          },
+        ],
+        allAPICount: 2,
+        validAPICount: 0,
+      });
     });
 
     it("should return correct domain when domain contains placeholder", async () => {

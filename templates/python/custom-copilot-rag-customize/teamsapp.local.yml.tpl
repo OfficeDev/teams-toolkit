@@ -8,7 +8,7 @@ provision:
   - uses: teamsApp/create
     with:
       # Teams app name
-      name: {{appName}}-${{TEAMSFX_ENV}}
+      name: {{appName}}${{TEAMSFX_ENV}}
     # Write the information of created resources into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile: 
@@ -33,7 +33,7 @@ provision:
   - uses: botFramework/create
     with:
       botId: ${{BOT_ID}}
-      name: {{appName}}
+      name: basicSearch
       messagingEndpoint: ${{BOT_ENDPOINT}}/api/messages
       description: ""
       channels:
@@ -74,14 +74,11 @@ deploy:
       envs:
         BOT_ID: ${{BOT_ID}}
         BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        {{#useOpenAI}}
+        OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}
+        {{/useOpenAI}}
         {{#useAzureOpenAI}}
         AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}
         AZURE_OPENAI_MODEL_DEPLOYMENT_NAME: ${{AZURE_OPENAI_MODEL_DEPLOYMENT_NAME}}
         AZURE_OPENAI_ENDPOINT: ${{AZURE_OPENAI_ENDPOINT}}
-        AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${{AZURE_OPENAI_EMBEDDING_DEPLOYMENT}}
         {{/useAzureOpenAI}}
-        {{#useOpenAI}}
-        OPENAI_API_KEY: ${{SECRET_OPENAI_API_KEY}}
-        {{/useOpenAI}}
-        AZURE_SEARCH_KEY: ${{SECRET_AZURE_SEARCH_KEY}}
-        AZURE_SEARCH_ENDPOINT: ${{AZURE_SEARCH_ENDPOINT}}

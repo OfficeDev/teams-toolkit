@@ -152,7 +152,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     description: "Chat With Your Data",
     default: "custom-copilot-rag-customize",
-    choices: ["custom-copilot-rag-azureAISearch"],
+    choices: ["custom-copilot-rag-customize", "custom-copilot-rag-azureAISearch"],
   },
   {
     name: "custom-copilot-agent",

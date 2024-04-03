@@ -158,6 +158,7 @@ jobs:
         run: |
           pnpm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
+          echo "Testplan id is $testplanid"
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact

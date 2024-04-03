@@ -1,13 +1,13 @@
-/**
- * @author Helly Zhang <v-helzha@microsoft.com>
- */
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import * as path from "path";
 import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -73,8 +73,8 @@ describe("Remote debug Tests", function () {
       await createNewProject("functimernoti", appName, "TypeScript");
       validateFileExist(projectPath, "src/httpTrigger.ts");
       validateFileExist(projectPath, "src/timerTrigger.ts");
-      await runProvision(appName);
-      await runDeploy(Timeout.botDeploy);
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

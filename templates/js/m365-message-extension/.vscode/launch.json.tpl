@@ -122,7 +122,12 @@
             ],
             "preLaunchTask": "Start Teams App (Test Tool)",
             "presentation": {
+{{#enableMETestToolByDefault}}
                 "group": "group 0: Teams App Test Tool",
+{{/enableMETestToolByDefault}}
+{{^enableMETestToolByDefault}}
+                "group": "group 3: Teams App Test Tool",
+{{/enableMETestToolByDefault}}
                 "order": 1
             },
             "stopAll": true

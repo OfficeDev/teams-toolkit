@@ -10,7 +10,7 @@ from teams.ai.planners import ActionPlanner, ActionPlannerOptions
 from teams.ai.prompts import PromptManager, PromptManagerOptions
 from teams.state import TurnState
 
-from local_data_source import LocalAISearchDataSource
+from local_data_source import localDataSource
 
 from config import Config
 
@@ -39,9 +39,8 @@ model = OpenAIModel(
     
 prompts = PromptManager(PromptManagerOptions(prompts_folder=f"{os.getcwd()}/prompts"))
 
-localAISearchDataSource = LocalAISearchDataSource('local-ai-search')
-localAISearchDataSource.init()
-prompts.add_data_source(localAISearchDataSource)
+local_data_source = localDataSource('local-search')
+prompts.add_data_source(local_data_source)
 
 planner = ActionPlanner(
     ActionPlannerOptions(model=model, prompts=prompts, default_prompt="chat")

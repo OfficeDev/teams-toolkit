@@ -316,5 +316,4 @@
 /templates/python/* @adashen @blackchoey @frankqianms 
 /templates/python/custom-copilot-basic @frankqianms @blackchoey
 /templates/python/custom-copilot-rag-azure-ai-search @frankqianms @blackchoey
-/templates/python/custom-copilot-rag-customize @frankqianms @blackchoey
 /templates/scripts @hund030 @eriolchan @huimiu

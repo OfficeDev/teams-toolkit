@@ -8,27 +8,22 @@ from teams.state.memory import Memory
 
 @dataclass
 class Result:
-    def __init__(self, output, length, too_long):
-        self.output = output
-        self.length = length
-        self.too_long = too_long
+    output: str
+    length: int
+    too_long: bool
 
-class LocalAISearchDataSource(DataSource):
+class LocalDataSource(DataSource):
     """
     A data source that searches through a local directory of files for a given query.
     """
 
     def __init__(self, name):
         """
-        Creates a new instance of the LocalAISearchDataSource instance.
-        """
-        self.name = name
-        self._data = []
-
-    def init(self):
-        """
+        Creates a new instance of the LocalDataSource instance.
         Initializes the data source.
         """
+        self.name = name
+        
         filePath = os.path.join(os.path.dirname(__file__), 'data')
         files = os.listdir(filePath)
         self._data = [open(os.path.join(filePath, file), 'r').read() for file in files]
@@ -45,19 +40,20 @@ class LocalAISearchDataSource(DataSource):
         if not query:
             return Result('', 0, False)
         
+        result=''
         # Text search
         for data in self._data:
             if query in data:
-                return Result(self.formatDocument(data), len(data), False)
+                result += data
         # Key word search
         if 'history' in query.lower() or 'company' in query.lower():
-            return Result(self.formatDocument(self._data[0]), len(self._data[0]), False)
-        if 'perksplus' in query.lower():
-            return Result(self.formatDocument(self._data[1]), len(self._data[1]), False)
+            result += self._data[0]
+        if 'perksplus' in query.lower() or 'program' in query.lower():
+            result += self._data[1]
         if 'northwind' in query.lower() or 'health' in query.lower():
-            return Result(self.formatDocument(self._data[2]), len(self._data[2]), False)
-        
-        return Result('', 0, False)
+            result += self._data[2]
+       
+        return Result(self.formatDocument(result), len(result), False) if result!='' else Result('', 0, False)
 
     def formatDocument(self, result):
         """

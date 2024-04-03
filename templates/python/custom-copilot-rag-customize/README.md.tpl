@@ -1,6 +1,6 @@
 # Overview of the Basic RAG Bot template
 
-This template showcases a bot app that responds to user questions like an AI assistant according to data from Azure Search. This enables your users to talk with the AI assistant in Teams to find information.
+This template showcases a bot app that responds to user questions like an AI assistant according to data from local files. This enables your users to talk with the AI assistant in Teams to find information.
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
 

@@ -29,7 +29,6 @@ export class SampleProvider {
   }
 
   public async getTopKMostRelevantScenarioSampleCodes(
-    request: ChatRequest,
     token: CancellationToken,
     host: string,
     scenario: string,

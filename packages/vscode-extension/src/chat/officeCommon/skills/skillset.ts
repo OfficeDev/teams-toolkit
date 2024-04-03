@@ -24,7 +24,7 @@ export class SkillSet implements ISkill {
     this.retriableTimes = retriableTimes ?? 1;
   }
 
-  public canInvoke(request: ChatRequest, spec: Spec): boolean {
+  public canInvoke(spec: Spec): boolean {
     if (!this.skills) {
       return false;
     }
@@ -34,7 +34,6 @@ export class SkillSet implements ISkill {
   // eslint-disable-next-line @typescript-eslint/require-await
   public async invoke(
     languageModel: LanguageModelChatUserMessage,
-    request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
@@ -50,12 +49,12 @@ export class SkillSet implements ISkill {
       let isSuccessed = true;
 
       for (const skill of this.skills) {
-        if (!skill.canInvoke(request, specCopy)) {
+        if (!skill.canInvoke(specCopy)) {
           isSuccessed = false;
           continue;
         }
         const { result: result, spec: newSpec }: { result: ExecutionResultEnum; spec: Spec } =
-          await skill.invoke(languageModel, request, response, token, specCopy);
+          await skill.invoke(languageModel, response, token, specCopy);
         if (result === ExecutionResultEnum.Rejected) {
           // We want to keep the telemetry data anyway
           return { result: result, spec: newSpec };

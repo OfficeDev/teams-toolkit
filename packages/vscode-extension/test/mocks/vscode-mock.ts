@@ -105,6 +105,7 @@ mockedVSCode.Task = vscodeMocks.vscMockExtHostedTypes.Task;
 mockedVSCode.TaskRevealKind = vscodeMocks.vscMockExtHostedTypes.TaskRevealKind;
 mockedVSCode.LanguageModelChatSystemMessage = vscodeMocks.chat.LanguageModelChatSystemMessage;
 mockedVSCode.LanguageModelChatUserMessage = vscodeMocks.chat.LanguageModelChatUserMessage;
+mockedVSCode.ChatLocation = vscodeMocks.chat.ChatLocation;
 (mockedVSCode as any).version = "test";
 
 // Setup window APIs

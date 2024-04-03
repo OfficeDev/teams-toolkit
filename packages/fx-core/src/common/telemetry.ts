@@ -290,3 +290,13 @@ export function fillinProjectTypeProperties(
   };
   assign(props, newProps);
 }
+
+export function extractMethodNamesFromErrorStack(stack: string): string {
+  const methodNamesRegex = /at\s([\w.<>\[\]\s]+)\s\(/g;
+  let match;
+  const methodNames: string[] = [];
+  while ((match = methodNamesRegex.exec(stack)) !== null) {
+    methodNames.push(match[1]);
+  }
+  return methodNames.join(" | ");
+}

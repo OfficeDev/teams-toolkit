@@ -38,7 +38,7 @@ export class ManifestUpdater {
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
     manifest.plugins = [
       {
-        pluginFile: apiPluginRelativePath,
+        file: apiPluginRelativePath,
         id: ConstantString.DefaultPluginId,
       },
     ];

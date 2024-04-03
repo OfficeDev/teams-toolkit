@@ -2,10 +2,6 @@
 env/.env.*.user
 env/.env.local
 .localConfigs
-.localConfigs.testTool
-.notification.localstore.json
-.notification.testtoolstore.json
-/devTools
 appPackage/build
 
 # dependencies

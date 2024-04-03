@@ -312,8 +312,7 @@ export abstract class CaseFactory {
       });
 
       it(
-        `[auto] ${
-          env === "local" ? env : "remote"
+        `[auto] ${env === "local" ? env : "remote"
         } debug for Sample ${sampleName}`,
         {
           testPlanCaseId,
@@ -364,17 +363,8 @@ export abstract class CaseFactory {
                 }
               },
               dev: async () => {
-                await runProvision(
-                  sampledebugContext.appName,
-                  env,
-                  false,
-                  options?.type === "spfx"
-                );
-                try {
-                  await runDeploy(Timeout.tabDeploy);
-                } catch (error) {
-                  await reRunDeploy(Timeout.tabDeploy);
-                }
+                await Executor.provision(sampledebugContext.projectPath);
+                await Executor.deploy(sampledebugContext.projectPath);
               },
             };
 

@@ -1201,7 +1201,7 @@ describe("scaffold question", () => {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 3);
-            return ok({ type: "success", result: "typescript" });
+            return ok({ type: "success", result: "python" });
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
@@ -1223,12 +1223,12 @@ describe("scaffold question", () => {
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
           QuestionNames.CustomCopilotRag,
-          // QuestionNames.ProgrammingLanguage,
-          // QuestionNames.LLMService,
-          // QuestionNames.AzureOpenAIKey,
-          // QuestionNames.AzureOpenAIEndpoint,
-          // QuestionNames.Folder,
-          // QuestionNames.AppName,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
         ]);
       });
 
@@ -1259,7 +1259,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.CustomCopilotRag) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 1);
+            assert.isTrue(options.length === 2);
             return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;

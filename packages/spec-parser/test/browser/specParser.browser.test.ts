@@ -248,7 +248,7 @@ describe("SpecParser in Browser", () => {
 
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      const listSupportedAPIsSyp = sinon.spy(specParser as any, "listSupportedAPIs");
+      const listAPIsSyp = sinon.spy(specParser as any, "listAPIs");
       let result = await specParser.listSupportedAPIInfo();
       result = await specParser.listSupportedAPIInfo();
       expect(result).to.deep.equal([
@@ -267,7 +267,7 @@ describe("SpecParser in Browser", () => {
           description: "Get user by user id, balabala",
         },
       ]);
-      expect(listSupportedAPIsSyp.callCount).to.equal(1);
+      expect(listAPIsSyp.callCount).to.equal(1);
     });
 
     it("should not list api without operationId with allowMissingId is true", async () => {

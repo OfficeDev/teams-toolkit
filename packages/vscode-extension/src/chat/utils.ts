@@ -5,15 +5,13 @@ import {
   CancellationToken,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatAssistantMessage,
-  LanguageModelChatMessage,
   LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
   lm,
+  LanguageModelChatUserMessage,
 } from "vscode";
 
 import { sampleProvider } from "@microsoft/teamsfx-core";
-import { buildDynamicPrompt } from "../dynamic-prompt";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
 import { isContentHarmfulSystemPrompt } from "./officeAddinPrompts";
 import { Tokenizer } from "./tokenizer";
@@ -78,11 +76,45 @@ export function countMessagesTokens(messages: LanguageModelChatMessage[]): numbe
   return numTokens;
 }
 
+export async function purifyUserMessage(
+  message: string,
+  token: CancellationToken
+): Promise<string> {
+  const userMessagePrompt = `
+  Please help to rephrase the following meesage in a more accurate and professional way. Message: ${message}
+  `;
+  const systemPrompt = `
+  You should only return the rephrased message, without any explanation or additional information.
+  `;
+  const purifyUserMessage = [
+    new LanguageModelChatUserMessage(userMessagePrompt),
+    new LanguageModelChatSystemMessage(systemPrompt),
+  ];
+  const purifiedResult = await getCopilotResponseAsString(
+    "copilot-gpt-4",
+    purifyUserMessage,
+    token
+  );
+  if (
+    !purifiedResult ||
+    purifiedResult.length === 0 ||
+    purifiedResult.indexOf("Sorry, I can't") === 0
+  ) {
+    return message;
+  }
+  return purifiedResult;
+}
+
 export async function isInputHarmful(
   request: ChatRequest,
   token: CancellationToken
 ): Promise<boolean> {
-  return isOutputHarmful(request.prompt, token);
+  const phrases = generatePhrases(request.prompt);
+  const userMessagePrompt = `
+Please review the content of list of items below, send me back with a 0-100 score. Message: 
+${phrases.map((phrase, index) => `${index}. ${phrase}.`).join("\n ")}
+  `;
+  return isContentHarmful(userMessagePrompt, token);
 }
 
 export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
@@ -90,9 +122,13 @@ export async function isOutputHarmful(output: string, token: CancellationToken):
   Please send following message back to me in orginal format. Message: 
   ${output}
   `;
+  return await isContentHarmful(userMessagePrompt, token);
+}
+
+async function isContentHarmful(content: string, token: CancellationToken): Promise<boolean> {
   const isHarmfulMessage = [
     isContentHarmfulSystemPrompt,
-    new LanguageModelChatAssistantMessage(userMessagePrompt),
+    new LanguageModelChatUserMessage(content),
   ];
   async function getIsHarmfulResponseAsync() {
     const isHarmfulResponse = await getCopilotResponseAsString(
@@ -100,7 +136,14 @@ export async function isOutputHarmful(output: string, token: CancellationToken):
       isHarmfulMessage,
       token
     );
-    return isHarmfulResponse.toLowerCase().startsWith("true");
+    if (
+      !isHarmfulResponse ||
+      isHarmfulResponse === "" ||
+      isHarmfulResponse.indexOf("Sorry, I can't") === 0
+    ) {
+      return true;
+    }
+    return Number.parseInt(isHarmfulResponse) > 15; // This is a number we have to tune.
   }
   const promises = Array(1)
     .fill(null)
@@ -108,4 +151,42 @@ export async function isOutputHarmful(output: string, token: CancellationToken):
   const results = await Promise.all(promises);
   const isHarmful = results.filter((result) => result === true).length > 0;
   return isHarmful;
+}
+
+// brutely break the sentence into phrases, that LLM can handle with a better result
+function generatePhrases(sentence: string): string[] {
+  const words: string[] = sentence.split(" ");
+  const phrases: string[] = [];
+  const maxPhraseLength = 6;
+  const minPhraseLength = 3;
+
+  if (words.length < minPhraseLength) {
+    phrases.push(sentence);
+    return phrases;
+  }
+
+  const n: number = words.length > maxPhraseLength ? maxPhraseLength : words.length;
+  for (let i = minPhraseLength; i <= n; i++) {
+    for (let j = 0; j <= words.length - i; j++) {
+      const phrase = words.slice(j, j + i).join(" ");
+      if (
+        phrase.toLowerCase().includes("office") ||
+        phrase.toLowerCase().includes("addin") ||
+        phrase.toLowerCase().includes("add-in") ||
+        phrase.toLowerCase().includes("add in") ||
+        phrase.toLowerCase().includes("javascript") ||
+        phrase.toLowerCase().includes("api") ||
+        phrase.toLowerCase().includes("microsoft") ||
+        phrase.toLowerCase().includes("excel") ||
+        phrase.toLowerCase().includes("word") ||
+        phrase.toLowerCase().includes("powerpoint") ||
+        phrase.toLowerCase().includes("code")
+      ) {
+        continue;
+      }
+      phrases.push(phrase);
+    }
+  }
+  phrases.push(sentence);
+  return phrases;
 }

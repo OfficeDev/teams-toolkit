@@ -21,7 +21,7 @@ export class Printer implements ISkill {
     this.capability = "Print the output in a readable format to user";
   }
 
-  public canInvoke(request: ChatRequest, spec: Spec): boolean {
+  public canInvoke(spec: Spec): boolean {
     return (
       !!spec.userInput &&
       !!spec.appendix.codeSnippet &&
@@ -33,7 +33,6 @@ export class Printer implements ISkill {
   // eslint-disable-next-line @typescript-eslint/require-await
   public async invoke(
     languageModel: LanguageModelChatUserMessage,
-    request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec

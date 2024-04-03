@@ -20,7 +20,7 @@ export class Explainer implements ISkill {
     this.name = "Explainer";
     this.capability = "Explain code snippet";
   }
-  public canInvoke(request: ChatRequest, spec: Spec): boolean {
+  public canInvoke(spec: Spec): boolean {
     return (
       !!spec.userInput &&
       !!spec.appendix.codeSnippet &&
@@ -31,7 +31,6 @@ export class Explainer implements ISkill {
 
   public async invoke(
     languageModel: LanguageModelChatUserMessage,
-    request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec

@@ -24,7 +24,7 @@ import {
   PropertySystemRequestFailed,
   PropertySystemRequestSucceeded,
 } from "./telemetryConsts";
-import { deepClone } from "./Utils";
+import { purifyUserMessage } from "../utils";
 
 export class Planner {
   private static instance: Planner;
@@ -78,15 +78,16 @@ export class Planner {
     }
 
     // dispatcher
-    const spec = new Spec(request.prompt);
+    const purified = await purifyUserMessage(request.prompt, token);
+    const spec = new Spec(purified);
     try {
       for (let index = 0; index < candidates.length; index++) {
         const candidate = candidates[index];
-        if (!candidate.canInvoke(request, spec)) {
+        if (!candidate.canInvoke(spec)) {
           throw new Error("Internal error: the prior skill failed to produce necessary data.");
         }
         const { result: invokeResult, spec: newSpec }: { result: ExecutionResultEnum; spec: Spec } =
-          await candidate.invoke(languageModel, request, response, token, spec);
+          await candidate.invoke(languageModel, response, token, spec);
         spec.clone(newSpec);
         if (invokeResult == ExecutionResultEnum.Failure) {
           spec.appendix.telemetryData.properties[PropertySystemRequestFailed] = "true";

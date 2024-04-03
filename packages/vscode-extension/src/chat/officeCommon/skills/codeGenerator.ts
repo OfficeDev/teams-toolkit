@@ -119,13 +119,12 @@ export class CodeGenerator implements ISkill {
     this.capability = "Generate code";
   }
 
-  public canInvoke(request: ChatRequest, spec: Spec): boolean {
-    return !!request.prompt && request.prompt.length > 0 && !!spec;
+  public canInvoke(spec: Spec): boolean {
+    return !!spec && !!spec.userInput && spec.userInput.trim().length > 0;
   }
 
   public async invoke(
     languageModel: LanguageModelChatUserMessage,
-    request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec
@@ -137,8 +136,9 @@ export class CodeGenerator implements ISkill {
       (spec.appendix.codeTaskBreakdown as string[]).length == 0
     ) {
       response.progress("Identify code-generation scenarios...");
-      const breakdownResult = await this.userInputBreakdownTaskAsync(request, token);
+      const breakdownResult = await this.userInputBreakdownTaskAsync(spec, token);
 
+      console.debug(breakdownResult?.data.map((task) => `- ${task}`).join("\n"));
       if (!breakdownResult) {
         if (
           !spec.appendix.telemetryData.measurements[
@@ -181,7 +181,6 @@ export class CodeGenerator implements ISkill {
     response.progress(progressMessageStr);
     let codeSnippet: string | null = "";
     codeSnippet = await this.generateCode(
-      request,
       token,
       spec.appendix.host,
       spec.appendix.isCustomFunction,
@@ -209,7 +208,7 @@ export class CodeGenerator implements ISkill {
   }
 
   async userInputBreakdownTaskAsync(
-    request: ChatRequest,
+    spec: Spec,
     token: CancellationToken
   ): Promise<null | {
     host: string;
@@ -219,7 +218,7 @@ export class CodeGenerator implements ISkill {
     complexity: number;
   }> {
     const userPrompt = `
-  Assume this is a ask: "${request.prompt}". I need you help to analyze it, and give me your suggestion. Follow the guidance below:
+  Assume this is a ask: "${spec.userInput}". I need you help to analyze it, and give me your suggestion. Follow the guidance below:
   - If the ask is not relevant to Microsoft Excel, Microsoft Word, or Microsoft PowerPoint, you should reject it because today this agent only support offer assistant to those Office host applications. And give the reason to reject the ask.
   - If the ask is not about automating a certain process or accomplishing a certain task using Office JavaScript Add-ins, you should reject it. And give the reason to reject the ask.
   - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
@@ -234,7 +233,7 @@ export class CodeGenerator implements ISkill {
         - List the function name as an item of markdown list. Then, explain the function in details. 
           - Including suggestions on the name of function, the parameters, the return value, and the TypeScript type of them. 
           - Then the detailed logic of the function, what operations it will be perform, and what Office JavaScript Add-ins API should be used inside of, etc. Describe all the details of logic as detailed as possible.
-      - Add a entry function description in plain text, includes all any functions should be called in what order, and what the entry function should return. The entry function **must** named as "main", and takes no parameters, declared as 'async function'. 
+        - Add a entry function description into the list of steps, includes all any functions should be called in what order, and what the entry function should return. The entry function **must** named as "main", and takes no parameters, declared as 'async function'. 
         - If user's ask is about custom functions, don't generate the main entry function.
       - Don't generate the code to invoke the "main" function or "entry" function.
       
@@ -276,7 +275,7 @@ export class CodeGenerator implements ISkill {
       new LanguageModelChatUserMessage(userPrompt),
     ];
     const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-3.5-turbo", // "copilot-gpt-3.5-turbo", // "copilot-gpt-4",
+      "copilot-gpt-3.5-turbo", // "copilot-gpt-4",
       messages,
       token
     );
@@ -309,7 +308,6 @@ export class CodeGenerator implements ISkill {
   }
 
   async generateCode(
-    request: ChatRequest,
     token: CancellationToken,
     host: string,
     isCustomFunctions: boolean,
@@ -323,7 +321,7 @@ The following content written using Markdown syntax, using "Bold" style to highl
 You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on JavaScript, CSS, HTML, popular algorithm, and Office Add-ins API. You should help the user to automate a certain process or accomplish a certain task using Office JavaScript Add-ins.
 
 # Context:
-This is the ask need your help to generate the code for this request: ${request.prompt}.
+This is the ask need your help to generate the code for this request: ${spec.userInput}.
 - The request is about Office Add-ins, and it is relevant to the Office application "${host}".
 - It's a suggested list of functions with their purpose and perhaps details. **Read through those descriptions, and repeat by yourself**. Make sure you understand that before go to the task:
 ${suggestedFunction.map((task) => `- ${task}`).join("\n")}
@@ -368,10 +366,9 @@ Let's think step by step.
     // Then let's query if any code examples relevant to the user's ask that we can put as examples
     const scenarioSamples =
       await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodes(
-        request,
         token,
         host,
-        request.prompt,
+        spec.userInput,
         2 // Get top 2 most relevant samples for now
       );
     if (scenarioSamples.size > 0) {
@@ -399,11 +396,7 @@ Let's think step by step.
       new LanguageModelChatSystemMessage(defaultSystemPrompt),
       new LanguageModelChatUserMessage(userPrompt),
     ];
-    const copilotResponse = await getCopilotResponseAsString(
-      spec.appendix.complexity >= 50 ? "copilot-gpt-4" : "copilot-gpt-3.5-turbo",
-      messages,
-      token
-    );
+    const copilotResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
 
     // extract the code snippet and the api list out
     const codeSnippetRet = copilotResponse.match(/```typescript([\s\S]*?)```/);

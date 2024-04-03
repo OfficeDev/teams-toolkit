@@ -31,7 +31,7 @@ export class projectCreator implements ISkill {
     this.capability = "Create a new project template";
   }
 
-  public canInvoke(request: ChatRequest, spec: Spec): boolean {
+  public canInvoke(spec: Spec): boolean {
     return (
       !!spec.userInput &&
       !!spec.appendix.codeSnippet &&
@@ -43,7 +43,6 @@ export class projectCreator implements ISkill {
   // eslint-disable-next-line @typescript-eslint/require-await
   public async invoke(
     languageModel: LanguageModelChatAssistantMessage,
-    request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec

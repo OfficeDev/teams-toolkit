@@ -12,10 +12,9 @@ import { ExecutionResultEnum } from "./executionResultEnum";
 export interface ISkill {
   name: string | undefined;
   capability: string | undefined;
-  canInvoke: (request: ChatRequest, spec: Spec) => boolean;
+  canInvoke: (spec: Spec) => boolean;
   invoke: (
     languageModel: LanguageModelChatUserMessage,
-    request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,
     spec: Spec

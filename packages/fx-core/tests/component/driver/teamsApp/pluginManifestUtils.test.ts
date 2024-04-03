@@ -74,6 +74,7 @@ describe("pluginManifestUtils", () => {
     plugins: [
       {
         pluginFile: "resources/plugin.json",
+        id: "plugin1",
       },
     ],
   };

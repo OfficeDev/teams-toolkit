@@ -1013,6 +1013,7 @@ describe("listPluginExistingOperations", () => {
     plugins: [
       {
         pluginFile: "resources/plugin.json",
+        id: "plugin1",
       },
     ],
   };

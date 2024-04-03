@@ -25,7 +25,8 @@
   "accentColor": "#FFFFFF",
   "plugins": [
     {
-      "pluginFile": "ai-plugin.json"
+      "pluginFile": "ai-plugin.json",
+      "id": "plugin_1"
     }
   ],
   "permissions": [

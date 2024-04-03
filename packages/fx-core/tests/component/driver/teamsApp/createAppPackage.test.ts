@@ -215,6 +215,7 @@ describe("teamsApp/createAppPackage", async () => {
       manifest.plugins = [
         {
           pluginFile: "plugin.json",
+          id: "plugin1",
         },
       ];
       manifest.icons = {
@@ -251,6 +252,7 @@ describe("teamsApp/createAppPackage", async () => {
       manifest.plugins = [
         {
           pluginFile: "resources/ai-plugin.json",
+          id: "plugin1",
         },
       ];
       sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
@@ -302,6 +304,7 @@ describe("teamsApp/createAppPackage", async () => {
       manifest.plugins = [
         {
           pluginFile: "resources/ai-plugin.json",
+          id: "plugin1",
         },
       ];
       sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
@@ -339,6 +342,7 @@ describe("teamsApp/createAppPackage", async () => {
       manifest.plugins = [
         {
           pluginFile: "resources/ai-plugin.json",
+          id: "plugin1",
         },
       ];
       manifest.icons = {
@@ -370,6 +374,7 @@ describe("teamsApp/createAppPackage", async () => {
       manifest.plugins = [
         {
           pluginFile: "resources/ai-plugin.json",
+          id: "plugin1",
         },
       ];
       manifest.icons = {
@@ -695,6 +700,7 @@ describe("teamsApp/createAppPackage", async () => {
     manifest.plugins = [
       {
         pluginFile: "resources/ai-plugin.json",
+        id: "plugin1",
       },
     ];
     manifest.icons = {

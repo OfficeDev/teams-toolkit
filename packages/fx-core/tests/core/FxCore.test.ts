@@ -1715,6 +1715,7 @@ describe("copilotPlugin", async () => {
     manifest.plugins = [
       {
         pluginFile: "ai-plugin.json",
+        id: "plugin1",
       },
     ];
     const listResult: ListAPIResult = {
@@ -1770,6 +1771,7 @@ describe("copilotPlugin", async () => {
     manifest.plugins = [
       {
         pluginFile: "ai-plugin.json",
+        id: "plugin1",
       },
     ];
     const listResult: ListAPIResult = {
@@ -1825,6 +1827,7 @@ describe("copilotPlugin", async () => {
     manifest.plugins = [
       {
         pluginFile: "ai-plugin.json",
+        id: "plugin1",
       },
     ];
     const listResult: ListAPIResult = {
@@ -3384,6 +3387,7 @@ describe("copilotPlugin", async () => {
       manifest.plugins = [
         {
           pluginFile: "ai-plugin.json",
+          id: "plugin1",
         },
       ];
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
@@ -3424,6 +3428,7 @@ describe("copilotPlugin", async () => {
       manifest.plugins = [
         {
           pluginFile: "ai-plugin.json",
+          id: "plugin1",
         },
       ];
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));

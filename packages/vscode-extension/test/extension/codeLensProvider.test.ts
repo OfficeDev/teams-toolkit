@@ -322,6 +322,7 @@ describe("Api plugin CodeLensProvider", () => {
     manifest.plugins = [
       {
         pluginFile: "test.json",
+        id: "plugin1",
       },
     ];
     const openApiObject = {

@@ -86,6 +86,7 @@ describe("updateManifestWithAiPlugin", () => {
       plugins: [
         {
           pluginFile: "ai-plugin.json",
+          id: "plugin_1",
         },
       ],
     };
@@ -224,6 +225,7 @@ describe("updateManifestWithAiPlugin", () => {
       plugins: [
         {
           pluginFile: "ai-plugin.json",
+          id: "plugin_1",
         },
       ],
     };
@@ -365,6 +367,7 @@ describe("updateManifestWithAiPlugin", () => {
       plugins: [
         {
           pluginFile: "ai-plugin.json",
+          id: "plugin_1",
         },
       ],
     };
@@ -466,6 +469,7 @@ describe("updateManifestWithAiPlugin", () => {
       plugins: [
         {
           pluginFile: "ai-plugin.json",
+          id: "plugin_1",
         },
       ],
     };

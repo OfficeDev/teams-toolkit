@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch Remote in Teams (Edge)",
+            "name": "Launch Remote (Edge)",
             "type": "msedge",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
@@ -13,7 +13,7 @@
             "internalConsoleOptions": "neverOpen"
         },
         {
-            "name": "Launch Remote in Teams (Chrome)",
+            "name": "Launch Remote (Chrome)",
             "type": "chrome",
             "request": "launch",
             "url": "https://teams.microsoft.com/l/app/${{TEAMS_APP_ID}}?installAppPackage=true&webjoin=true&${account-hint}",
@@ -65,6 +65,23 @@
         }
     ],
     "compounds": [
+        {
+            "name": "Debug in Test Tool (Preview)",
+            "configurations": [
+                "Attach to Local Service"
+            ],
+            "preLaunchTask": "Start Teams App (Test Tool)",
+            "presentation": {
+{{#enableMETestToolByDefault}}
+                "group": "group 0: Teams App Test Tool",
+{{/enableMETestToolByDefault}}
+{{^enableMETestToolByDefault}}
+                "group": "group 3: Teams App Test Tool",
+{{/enableMETestToolByDefault}}
+                "order": 1
+            },
+            "stopAll": true
+        },
         {
             "name": "Debug in Teams (Edge)",
             "configurations": [

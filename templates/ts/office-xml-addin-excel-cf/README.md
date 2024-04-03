@@ -50,7 +50,7 @@ You can check whether your manifest file is valid by either of the following way
 
 - [Custom functions overview](https://learn.microsoft.com/office/dev/add-ins/excel/custom-functions-overview)
 - [Custom functions runtime](https://learn.microsoft.com/office/dev/add-ins/excel/custom-functions-runtime)
-- [Custom functions Troubleshoot](https://learn.microsoft.com/en-us/office/dev/add-ins/excel/custom-functions-troubleshooting)
+- [Custom functions troubleshoot](https://learn.microsoft.com/en-us/office/dev/add-ins/excel/custom-functions-troubleshooting)
 - [Office Add-ins documentation](https://learn.microsoft.com/office/dev/add-ins/overview/office-add-ins)
 - More Office Add-ins samples at [OfficeDev on Github](https://github.com/officedev)
 

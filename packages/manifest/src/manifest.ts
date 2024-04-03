@@ -365,7 +365,7 @@ export interface ITogetherModeScene {
 }
 
 export interface IPlugin {
-  pluginFile: string;
+  file: string;
   id: string;
 }
 

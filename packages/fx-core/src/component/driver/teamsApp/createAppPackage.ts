@@ -218,8 +218,8 @@ export class CreateAppPackageDriver implements StepDriver {
     }
 
     // API plugin
-    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].pluginFile) {
-      const pluginFile = path.resolve(appDirectory, manifest.plugins[0].pluginFile);
+    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].file) {
+      const pluginFile = path.resolve(appDirectory, manifest.plugins[0].file);
       const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
       if (checkExistenceRes.isErr()) {
         return err(checkExistenceRes.error);
@@ -227,7 +227,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
       const addFileWithVariableRes = await this.addFileWithVariable(
         zip,
-        manifest.plugins[0].pluginFile,
+        manifest.plugins[0].file,
         pluginFile,
         TelemetryPropertyKey.customizedAIPluginKeys,
         context
@@ -238,7 +238,7 @@ export class CreateAppPackageDriver implements StepDriver {
 
       const addFilesRes = await this.addPluginRelatedFiles(
         zip,
-        manifest.plugins[0].pluginFile,
+        manifest.plugins[0].file,
         appDirectory,
         context
       );

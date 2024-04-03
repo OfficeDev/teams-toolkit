@@ -214,7 +214,7 @@ describe("teamsApp/createAppPackage", async () => {
       const manifest = new TeamsAppManifest();
       manifest.plugins = [
         {
-          pluginFile: "plugin.json",
+          file: "plugin.json",
           id: "plugin1",
         },
       ];
@@ -251,7 +251,7 @@ describe("teamsApp/createAppPackage", async () => {
       };
       manifest.plugins = [
         {
-          pluginFile: "resources/ai-plugin.json",
+          file: "resources/ai-plugin.json",
           id: "plugin1",
         },
       ];
@@ -303,7 +303,7 @@ describe("teamsApp/createAppPackage", async () => {
       };
       manifest.plugins = [
         {
-          pluginFile: "resources/ai-plugin.json",
+          file: "resources/ai-plugin.json",
           id: "plugin1",
         },
       ];
@@ -341,7 +341,7 @@ describe("teamsApp/createAppPackage", async () => {
       const manifest = new TeamsAppManifest();
       manifest.plugins = [
         {
-          pluginFile: "resources/ai-plugin.json",
+          file: "resources/ai-plugin.json",
           id: "plugin1",
         },
       ];
@@ -373,7 +373,7 @@ describe("teamsApp/createAppPackage", async () => {
       const manifest = new TeamsAppManifest();
       manifest.plugins = [
         {
-          pluginFile: "resources/ai-plugin.json",
+          file: "resources/ai-plugin.json",
           id: "plugin1",
         },
       ];
@@ -699,7 +699,7 @@ describe("teamsApp/createAppPackage", async () => {
     const manifest = new TeamsAppManifest();
     manifest.plugins = [
       {
-        pluginFile: "resources/ai-plugin.json",
+        file: "resources/ai-plugin.json",
         id: "plugin1",
       },
     ];

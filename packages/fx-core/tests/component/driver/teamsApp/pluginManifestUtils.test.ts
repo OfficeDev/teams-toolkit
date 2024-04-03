@@ -73,7 +73,7 @@ describe("pluginManifestUtils", () => {
     validDomains: [],
     plugins: [
       {
-        pluginFile: "resources/plugin.json",
+        file: "resources/plugin.json",
         id: "plugin1",
       },
     ],

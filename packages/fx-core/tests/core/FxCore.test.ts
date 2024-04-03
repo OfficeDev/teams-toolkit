@@ -1714,7 +1714,7 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.plugins = [
       {
-        pluginFile: "ai-plugin.json",
+        file: "ai-plugin.json",
         id: "plugin1",
       },
     ];
@@ -1770,7 +1770,7 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.plugins = [
       {
-        pluginFile: "ai-plugin.json",
+        file: "ai-plugin.json",
         id: "plugin1",
       },
     ];
@@ -1826,7 +1826,7 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.plugins = [
       {
-        pluginFile: "ai-plugin.json",
+        file: "ai-plugin.json",
         id: "plugin1",
       },
     ];
@@ -3386,7 +3386,7 @@ describe("copilotPlugin", async () => {
       const manifest = new TeamsAppManifest();
       manifest.plugins = [
         {
-          pluginFile: "ai-plugin.json",
+          file: "ai-plugin.json",
           id: "plugin1",
         },
       ];
@@ -3427,7 +3427,7 @@ describe("copilotPlugin", async () => {
       const manifest = new TeamsAppManifest();
       manifest.plugins = [
         {
-          pluginFile: "ai-plugin.json",
+          file: "ai-plugin.json",
           id: "plugin1",
         },
       ];

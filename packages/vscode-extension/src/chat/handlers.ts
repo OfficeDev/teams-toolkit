@@ -19,6 +19,7 @@ import {
 
 import { downloadDirectory } from "@microsoft/teamsfx-core/build/component/generator/utils";
 import * as uuid from "uuid";
+import * as path from "path";
 
 import createCommandHandler from "./commands/create/createCommandHandler";
 import { ProjectMetadata } from "./commands/create/types";
@@ -212,6 +213,57 @@ export async function chatExecuteCommandHandler(
     TelemetryTriggerFrom.CopilotChat,
     ...args
   );
+}
+
+export async function chatCreateOfficeAddinTemplateCommandHandler(
+  command: string,
+  requestId: string,
+  data: any
+) {
+  const officeAddinChatTelemetryData = ChatTelemetryData.get(requestId);
+  const correlationId = uuid.v4();
+  if (officeAddinChatTelemetryData) {
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChatClickButton,
+      {
+        ...officeAddinChatTelemetryData.properties,
+        [TelemetryProperty.CopilotChatRunCommandId]: OfficeAddinChatCommand.Create,
+        [TelemetryProperty.CorrelationId]: correlationId,
+      },
+      officeAddinChatTelemetryData.measurements
+    );
+  }
+  const customFolder = await window.showOpenDialog({
+    title: localize("teamstoolkit.chatParticipants.create.selectFolder.title"),
+    openLabel: localize("teamstoolkit.chatParticipants.create.selectFolder.label"),
+    defaultUri: Uri.file(workspace.workspaceFolders![0].uri.fsPath),
+    canSelectFiles: false,
+    canSelectFolders: true,
+    canSelectMany: false,
+  });
+  if (!customFolder) {
+    return;
+  } else {
+    const dstPath = customFolder[0].fsPath;
+    const baseName: string = data.name;
+    let projectName = baseName;
+    let index = 0;
+    while (fs.existsSync(path.join(dstPath, projectName))) {
+      projectName = `${baseName} ${++index}`;
+    }
+    const inputs = {
+      ...data,
+      "programming-language": "typescript",
+      folder: dstPath,
+      "app-name": projectName,
+    };
+    return await commands.executeCommand<Result<unknown, FxError>>(
+      command,
+      correlationId,
+      TelemetryTriggerFrom.CopilotChat,
+      inputs
+    );
+  }
 }
 
 export async function openUrlCommandHandler(url: string) {

@@ -25,6 +25,10 @@ import { IChatTelemetryData } from "../../types";
 import { getCopilotResponseAsString, getSampleDownloadUrlInfo } from "../../utils";
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
+import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
+import { BM25, BMDocument, DocumentWithmetadata } from "../../rag/BM25";
+import { prepareDiscription } from "../../rag/ragUtil";
+import { getOfficeAddinProjectMatchSystemPrompt } from "../../officeAddinPrompts";
 
 export async function matchProject(
   request: ChatRequest,
@@ -163,4 +167,106 @@ export function fileTreeAdd(root: ChatResponseFileTree, relativePath: string) {
   parent.children?.push({
     name: filename,
   });
+}
+
+export async function matchOfficeAddinProject(
+  request: ChatRequest,
+  token: CancellationToken,
+  telemetryMetadata: IChatTelemetryData
+): Promise<ProjectMetadata | undefined> {
+  const allOfficeAddinProjectMetadata = [
+    ...getOfficeAddinTemplateMetadata(),
+    ...(await getOfficeAddinSampleMetadata()),
+  ];
+  const messages = [
+    getOfficeAddinProjectMatchSystemPrompt(allOfficeAddinProjectMetadata),
+    new LanguageModelChatUserMessage(request.prompt),
+  ];
+  telemetryMetadata.chatMessages.push(...messages);
+  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  let matchedProjectId: string;
+  if (response) {
+    try {
+      const responseJson = JSON.parse(response);
+      if (responseJson && responseJson.addin) {
+        matchedProjectId = responseJson.addin;
+      }
+    } catch (e) {}
+  }
+  let result: ProjectMetadata | undefined;
+  const matchedProject = allOfficeAddinProjectMetadata.find(
+    (config) => config.id === matchedProjectId
+  );
+  if (matchedProject) {
+    result = matchedProject;
+  }
+  return result;
+}
+
+export async function getOfficeAddinSampleMetadata(): Promise<ProjectMetadata[]> {
+  const sampleCollection = await sampleProvider.SampleCollection;
+  const result: ProjectMetadata[] = [];
+  for (const sample of sampleCollection.samples) {
+    if (
+      sample.types.includes("Word") ||
+      sample.types.includes("Excel") ||
+      sample.types.includes("Powerpoint")
+    ) {
+      result.push({
+        id: sample.id,
+        type: "sample",
+        platform: "WXP",
+        name: sample.title,
+        description: sample.fullDescription,
+      });
+    }
+  }
+  return result;
+}
+
+export function getOfficeAddinTemplateMetadata(): ProjectMetadata[] {
+  return officeAddinTemplateMeatdata.map((config) => {
+    return {
+      id: config.id,
+      type: "template",
+      platform: "WXP",
+      name: config.name,
+      description: config.description,
+      data: {
+        capabilities: config.id,
+        "project-type": config["project-type"],
+        "addin-host": config["addin-host"],
+        isFromOfficeAddinChatParticipant: true,
+        name: config.name,
+      },
+    };
+  });
+}
+
+export async function matchOfficeAddinProjectByBM25(
+  request: ChatRequest
+): Promise<ProjectMetadata | undefined> {
+  const allOfficeAddinProjectMetadata = [
+    ...getOfficeAddinTemplateMetadata(),
+    ...(await getOfficeAddinSampleMetadata()),
+  ];
+  const documents: DocumentWithmetadata[] = allOfficeAddinProjectMetadata.map((sample) => {
+    return {
+      documentText: prepareDiscription(sample.description.toLowerCase()).join(" "),
+      metadata: sample,
+    };
+  });
+
+  const bm25 = new BM25(documents);
+  const query = prepareDiscription(request.prompt.toLowerCase());
+
+  // at most match one sample or template
+  const matchedDocuments: BMDocument[] = bm25.search(query, 3);
+
+  // adjust score when more samples added
+  if (matchedDocuments.length === 1 && matchedDocuments[0].score > 1) {
+    return matchedDocuments[0].document.metadata as ProjectMetadata;
+  }
+
+  return undefined;
 }

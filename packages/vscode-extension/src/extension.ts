@@ -84,6 +84,7 @@ import {
   IsChatParticipantEnabled,
   officeAddinChatParticipantId,
   chatParticipantId,
+  CHAT_CREATE_OFFICEADDIN_TEMPLATE_COMMAND_ID,
 } from "./chat/consts";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -93,6 +94,7 @@ import {
   openUrlCommandHandler,
   handleFeedback,
   officeAddinChatRequestHandler,
+  chatCreateOfficeAddinTemplateCommandHandler,
 } from "./chat/handlers";
 import { CommandKey as CommandKeys } from "./constants";
 
@@ -455,6 +457,10 @@ function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand("fx-extension.openOfficeDevDocument", (...args) =>
       Correlator.run(officeDevHandlers.openDocumentHandler, args)
+    ),
+    vscode.commands.registerCommand(
+      CHAT_CREATE_OFFICEADDIN_TEMPLATE_COMMAND_ID,
+      chatCreateOfficeAddinTemplateCommandHandler
     )
     // vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler)
     // vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)

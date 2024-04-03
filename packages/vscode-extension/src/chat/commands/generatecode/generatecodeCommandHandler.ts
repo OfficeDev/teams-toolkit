@@ -23,12 +23,15 @@ export default async function generatecodeCommandHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatResult> {
-  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeAddinChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeAddinChatParticipantId,
     OfficeAddinChatCommand.GenerateCode,
     request.location
   );
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChatStart,
+    officeAddinChatTelemetryData.properties
+  );
   const isHarmful = await isInputHarmful(request, token);
   if (!isHarmful) {
     return await Planner.getInstance().processRequest(
@@ -36,14 +39,21 @@ export default async function generatecodeCommandHandler(
       request,
       response,
       token,
-      OfficeAddinChatCommand.GenerateCode
+      OfficeAddinChatCommand.GenerateCode,
+      officeAddinChatTelemetryData
     );
   } else {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
+    officeAddinChatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      officeAddinChatTelemetryData.properties,
+      officeAddinChatTelemetryData.measurements
+    );
     return {
       metadata: {
         command: OfficeAddinChatCommand.GenerateCode,
-        requestId: chatTelemetryData.requestId,
+        requestId: officeAddinChatTelemetryData.requestId,
       },
     };
   }

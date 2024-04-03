@@ -20,6 +20,7 @@ import jsyaml from "js-yaml";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { Validator } from "../src/validators/validator";
 import { SMEValidator } from "../src/validators/smeValidator";
+import { ValidatorFactory } from "../src/validators/validatorFactory";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -491,6 +492,109 @@ describe("SpecParser", () => {
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
       sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return a valid result when the spec is valid for copilot", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { projectType: ProjectType.Copilot });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should only create validator once if already created", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { projectType: ProjectType.Copilot });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const createValidatorSpy = sinon.spy(ValidatorFactory, "create");
+      const result1 = await specParser.validate();
+      const result2 = await specParser.validate();
+      sinon.assert.calledOnce(createValidatorSpy);
     });
 
     it("should return error result is project type is SME/Copilot, and OpenAPI spec version >= 3.1.0", async () => {

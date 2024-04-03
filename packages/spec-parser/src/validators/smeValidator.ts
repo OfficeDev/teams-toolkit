@@ -9,16 +9,10 @@ import {
   ErrorType,
   ProjectType,
   CheckParamResult,
-  ErrorResult,
-  ValidateResult,
-  ValidationStatus,
-  WarningResult,
-  WarningType,
   SpecValidationResult,
 } from "../interfaces";
 import { Validator } from "./validator";
 import { Utils } from "../utils";
-import { ConstantString } from "../constants";
 
 export class SMEValidator extends Validator {
   private static readonly SMERequiredParamsMaxNum = 5;

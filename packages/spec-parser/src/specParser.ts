@@ -435,9 +435,6 @@ export class SpecParser {
   }
 
   private getAPIs(spec: OpenAPIV3.Document): APIMap {
-    if (this.apiMap !== undefined) {
-      return this.apiMap;
-    }
     const validator = this.getValidator(spec);
     const apiMap = validator.listAPIs();
     this.apiMap = apiMap;

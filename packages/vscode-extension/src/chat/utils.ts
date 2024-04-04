@@ -5,15 +5,15 @@ import {
   CancellationToken,
   ChatRequest,
   ChatResponseStream,
-  LanguageModelChatSystemMessage,
   LanguageModelChatMessage,
-  lm,
+  LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
+  lm,
 } from "vscode";
 
 import { sampleProvider } from "@microsoft/teamsfx-core";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
-import { isContentHarmfulSystemPrompt } from "./officeAddinPrompts";
+import { buildDynamicPrompt } from "./dynamicPrompt";
 import { Tokenizer } from "./tokenizer";
 
 export async function verbatimCopilotInteraction(
@@ -110,24 +110,18 @@ export async function isInputHarmful(
   token: CancellationToken
 ): Promise<boolean> {
   const phrases = generatePhrases(request.prompt);
-  const userMessagePrompt = `
-Please review the content of list of items below, send me back with a 0-100 score. Message: 
-${phrases.map((phrase, index) => `${index}. ${phrase}.`).join("\n ")}
-  `;
+  const userMessagePrompt = buildDynamicPrompt("inputRai", phrases).prompt;
   return isContentHarmful(userMessagePrompt, token);
 }
 
 export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
-  const userMessagePrompt = `
-  Please send following message back to me in orginal format. Message: 
-  ${output}
-  `;
+  const userMessagePrompt = buildDynamicPrompt("outputRai", output).prompt;
   return await isContentHarmful(userMessagePrompt, token);
 }
 
 async function isContentHarmful(content: string, token: CancellationToken): Promise<boolean> {
   const isHarmfulMessage = [
-    isContentHarmfulSystemPrompt,
+    new LanguageModelChatSystemMessage(buildDynamicPrompt("raiSystem", null).prompt),
     new LanguageModelChatUserMessage(content),
   ];
   async function getIsHarmfulResponseAsync() {
@@ -154,7 +148,7 @@ async function isContentHarmful(content: string, token: CancellationToken): Prom
 }
 
 // brutely break the sentence into phrases, that LLM can handle with a better result
-function generatePhrases(sentence: string): string[] {
+export function generatePhrases(sentence: string): string[] {
   const words: string[] = sentence.split(" ");
   const phrases: string[] = [];
   const maxPhraseLength = 6;

@@ -115,7 +115,8 @@ const functionBuilders: IFunctionBuilder[] = [
         })
       );
 
-      const separator = getDeepValue<string>(separatorExpression, params) || "";
+      const separator =
+        (separatorExpression && getDeepValue<string>(separatorExpression, params)) || "";
 
       return builtArray.filter((item) => !!item).join(separator);
     },

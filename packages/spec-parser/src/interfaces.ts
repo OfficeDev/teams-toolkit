@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { IParameter } from "@microsoft/teams-manifest";
 import { OpenAPIV3 } from "openapi-types";
 
 /**
@@ -13,6 +14,18 @@ export interface ValidateResult {
    */
   status: ValidationStatus;
 
+  /**
+   * An array of warning results generated during validation.
+   */
+  warnings: WarningResult[];
+
+  /**
+   * An array of error results generated during validation.
+   */
+  errors: ErrorResult[];
+}
+
+export interface SpecValidationResult {
   /**
    * An array of warning results generated during validation.
    */
@@ -83,6 +96,7 @@ export enum ErrorType {
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
   MultipleAuthNotSupported = "multiple-auth-not-supported",
+  SpecVersionNotSupported = "spec-version-not-supported",
 
   ListFailed = "list-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",
@@ -92,6 +106,22 @@ export enum ErrorType {
   GenerateFailed = "generate-failed",
   ValidateFailed = "validate-failed",
   GetSpecFailed = "get-spec-failed",
+
+  AuthTypeIsNotSupported = "auth-type-is-not-supported",
+  MissingOperationId = "missing-operation-id",
+  PostBodyContainMultipleMediaTypes = "post-body-contain-multiple-media-types",
+  ResponseContainMultipleMediaTypes = "response-contain-multiple-media-types",
+  ResponseJsonIsEmpty = "response-json-is-empty",
+  PostBodySchemaIsNotJson = "post-body-schema-is-not-json",
+  PostBodyContainsRequiredUnsupportedSchema = "post-body-contains-required-unsupported-schema",
+  ParamsContainRequiredUnsupportedSchema = "params-contain-required-unsupported-schema",
+  ParamsContainsNestedObject = "params-contains-nested-object",
+  RequestBodyContainsNestedObject = "request-body-contains-nested-object",
+  ExceededRequiredParamsLimit = "exceeded-required-params-limit",
+  NoParameter = "no-parameter",
+  NoAPIInfo = "no-api-info",
+  MethodNotAllowed = "method-not-allowed",
+  UrlPathNotExist = "url-path-not-exist",
 
   Cancelled = "cancelled",
   Unknown = "unknown",
@@ -161,24 +191,11 @@ export interface WrappedAdaptiveCard {
   previewCardTemplate: PreviewCardTemplate;
 }
 
-export interface ChoicesItem {
-  title: string;
-  value: string;
-}
-
-export interface Parameter {
-  name: string;
-  title: string;
-  description: string;
-  inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
-  value?: string;
-  choices?: ChoicesItem[];
-}
-
 export interface CheckParamResult {
   requiredNum: number;
   optionalNum: number;
   isValid: boolean;
+  reason: ErrorType[];
 }
 
 export interface ParseOptions {
@@ -196,6 +213,11 @@ export interface ParseOptions {
    * If true, the parser will allow API Key authentication in the spec file.
    */
   allowAPIKeyAuth?: boolean;
+
+  /**
+   * If true, the parser will allow Bearer Token authentication in the spec file.
+   */
+  allowBearerTokenAuth?: boolean;
 
   /**
    * If true, the parser will allow multiple parameters in the spec file. Teams AI project would ignore this parameters and always true
@@ -230,19 +252,40 @@ export interface APIInfo {
   path: string;
   title: string;
   id: string;
-  parameters: Parameter[];
+  parameters: IParameter[];
   description: string;
   warning?: WarningResult;
 }
 
-export interface ListAPIResult {
+export interface ListAPIInfo {
   api: string;
   server: string;
   operationId: string;
-  auth?: OpenAPIV3.SecuritySchemeObject;
+  isValid: boolean;
+  reason: ErrorType[];
+  auth?: AuthInfo;
+}
+
+export interface APIMap {
+  [key: string]: {
+    operation: OpenAPIV3.OperationObject;
+    isValid: boolean;
+    reason: ErrorType[];
+  };
+}
+
+export interface APIValidationResult {
+  isValid: boolean;
+  reason: ErrorType[];
+}
+
+export interface ListAPIResult {
+  allAPICount: number;
+  validAPICount: number;
+  APIs: ListAPIInfo[];
 }
 
 export interface AuthInfo {
-  authSchema: OpenAPIV3.SecuritySchemeObject;
+  authScheme: OpenAPIV3.SecuritySchemeObject;
   name: string;
 }

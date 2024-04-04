@@ -30,6 +30,7 @@ import {
   WarningType,
   SpecParserError,
   AdaptiveCardGenerator,
+  ProjectType,
 } from "@microsoft/m365-spec-parser";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { assert, expect } from "chai";
@@ -50,6 +51,7 @@ import { ErrorResult } from "@microsoft/m365-spec-parser";
 import { PluginManifestUtils } from "../../../src/component/driver/teamsApp/utils/PluginManifestUtils";
 import path from "path";
 import { OpenAPIV3 } from "openapi-types";
+import { format } from "util";
 
 const openAIPluginManifest = {
   schema_version: "v1",
@@ -973,6 +975,11 @@ describe("formatValidationErrors", () => {
         content: "test",
       },
       {
+        type: ErrorType.SpecVersionNotSupported,
+        content: "test",
+        data: "3.1.0",
+      },
+      {
         type: ErrorType.Unknown,
         content: "unknown",
       },
@@ -993,7 +1000,10 @@ describe("formatValidationErrors", () => {
     expect(res[8].content).equals("resolveurl");
     expect(res[9].content).equals(getLocalizedString("core.common.CancelledMessage"));
     expect(res[10].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
-    expect(res[11].content).equals("unknown");
+    expect(res[11].content).equals(
+      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[11].data)
+    );
+    expect(res[12].content).equals("unknown");
   });
 });
 
@@ -1020,18 +1030,26 @@ describe("listPluginExistingOperations", () => {
     sandbox
       .stub(SpecParser.prototype, "validate")
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
-    sandbox.stub(SpecParser.prototype, "list").resolves([
-      {
-        api: "api1",
-        server: "https://test",
-        operationId: "get",
-        auth: {
-          type: "apiKey",
-          name: "test",
-          in: "header",
+    sandbox.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api1",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "http",
+              scheme: "bearer",
+            },
+          },
+          isValid: true,
+          reason: [],
         },
-      },
-    ]);
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
     const res = await listPluginExistingOperations(
       teamsManifestWithPlugin,
       "manifestPath",
@@ -1068,34 +1086,6 @@ describe("listPluginExistingOperations", () => {
       hasException = true;
       expect(e.source).equal("listPluginExistingOperations");
       expect(e.name).equal("api-spec-not-used-in-plugin");
-    }
-    expect(hasException).to.be.true;
-  });
-
-  it("invalid openapi spec", async () => {
-    sandbox
-      .stub(PluginManifestUtils.prototype, "getApiSpecFilePathFromTeamsManifest")
-      .resolves(ok(["openapi.yaml"]));
-
-    sandbox.stub(SpecParser.prototype, "validate").resolves({
-      status: ValidationStatus.Error,
-      warnings: [],
-      errors: [
-        {
-          type: ErrorType.NoServerInformation,
-          content: "content",
-        },
-      ],
-    });
-
-    let hasException = false;
-
-    try {
-      await listPluginExistingOperations(teamsManifestWithPlugin, "manifestPath", "openapi.yaml");
-    } catch (e) {
-      hasException = true;
-      expect(e.source).equal("listPluginExistingOperations");
-      expect(e.name).equal("invalid-api-spec");
     }
     expect(hasException).to.be.true;
   });
@@ -1313,5 +1303,294 @@ describe("updateForCustomApi", async () => {
       .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
     await CopilotPluginHelper.updateForCustomApi(limitedSpec, "javascript", "path", "openapi.yaml");
     expect(mockWriteFile.calledThrice).to.be.true;
+  });
+
+  it("happy path with spec with required and multiple parameter", async () => {
+    const newSpec = {
+      openapi: "3.0.0",
+      info: {
+        title: "My API",
+        version: "1.0.0",
+      },
+      description: "test",
+      paths: {
+        "/hello": {
+          get: {
+            operationId: "getHello",
+            summary: "Returns a greeting",
+            parameters: [
+              {
+                name: "query",
+                in: "query",
+                schema: { type: "string" },
+                required: true,
+              },
+              {
+                name: "query2",
+                in: "query",
+                schema: { type: "string" },
+                requried: false,
+              },
+              {
+                name: "query3",
+                in: "query",
+                schema: { type: "string" },
+                requried: true,
+                description: "test",
+              },
+            ],
+            responses: {
+              "200": {
+                description: "",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    } as OpenAPIV3.Document;
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(newSpec, "typescript", "path", "openapi.yaml");
+  });
+
+  it("happy path with spec with auth", async () => {
+    const authSpec = {
+      openapi: "3.0.0",
+      info: {
+        title: "My API",
+        version: "1.0.0",
+      },
+      description: "test",
+      paths: {
+        "/hello": {
+          get: {
+            operationId: "getHello",
+            summary: "Returns a greeting",
+            parameters: [
+              {
+                name: "query",
+                in: "query",
+                schema: { type: "string" },
+              },
+            ],
+            responses: {
+              "200": {
+                description: "A greeting message",
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "string",
+                    },
+                  },
+                },
+              },
+            },
+            security: [
+              {
+                api_key: [],
+              },
+            ],
+          },
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        securitySchemes: {
+          api_key: {
+            type: "apiKey",
+            name: "api_key",
+            in: "header",
+          },
+        },
+      },
+    } as OpenAPIV3.Document;
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "writeFile").callsFake((file, data) => {
+      if (file === path.join("path", "src", "prompts", "chat", "skprompt.txt")) {
+        expect(data).to.contains("The following is a conversation with an AI assistant.");
+      } else if (file === path.join("path", "src", "adaptiveCard", "hello.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "prompts", "chat", "actions.json")) {
+        expect(data).to.contains("getHello");
+      } else if (file === path.join("path", "src", "app", "app.ts")) {
+        expect(data).to.contains(`app.ai.action("getHello"`);
+        expect(data).not.to.contains("{{");
+        expect(data).not.to.contains("// Replace with action code");
+      }
+    });
+    sandbox
+      .stub(fs, "readFile")
+      .resolves(Buffer.from("test code // Replace with action code {{OPENAPI_SPEC_PATH}}"));
+    await CopilotPluginHelper.updateForCustomApi(authSpec, "typescript", "path", "openapi.yaml");
+  });
+});
+
+describe("listOperations", async () => {
+  const context = createContextV3();
+  const sandbox = sinon.createSandbox();
+  const inputs = {
+    "custom-copilot-rag": "custom-copilot-rag-customApi",
+    platform: Platform.VSCode,
+  };
+  const spec = {
+    openapi: "3.0.0",
+    info: {
+      title: "My API",
+      version: "1.0.0",
+    },
+    description: "test",
+    paths: {
+      "/hello": {
+        get: {
+          operationId: "getHello",
+          summary: "Returns a greeting",
+          parameters: [
+            {
+              name: "query",
+              in: "query",
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "A greeting message",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "string",
+                  },
+                },
+              },
+            },
+          },
+          security: [
+            {
+              api_key: [],
+            },
+          ],
+        },
+        post: {
+          operationId: "createPet",
+          summary: "Create a pet",
+          description: "Create a new pet in the store",
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name"],
+                  properties: {
+                    name: {
+                      type: "string",
+                      description: "Name of the pet",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      securitySchemes: {
+        api_key: {
+          type: "apiKey",
+          name: "api_key",
+          in: "header",
+        },
+      },
+    },
+  } as OpenAPIV3.Document;
+
+  afterEach(async () => {
+    sandbox.restore();
+  });
+
+  it("allow auth for teams ai project", async () => {
+    sandbox.stub(CopilotPluginHelper, "formatValidationErrors").resolves([]);
+    sandbox.stub(CopilotPluginHelper, "logValidationResults").resolves();
+    sandbox.stub(SpecParser.prototype, "validate").resolves({
+      status: ValidationStatus.Valid,
+      warnings: [],
+      errors: [],
+    });
+    sandbox
+      .stub(SpecParser.prototype, "list")
+      .resolves({ APIs: [], allAPICount: 1, validAPICount: 0 });
+
+    const res = await CopilotPluginHelper.listOperations(
+      context,
+      undefined,
+      "",
+      inputs,
+      true,
+      false,
+      ""
+    );
+    expect(res.isOk()).to.be.true;
   });
 });

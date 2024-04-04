@@ -4,8 +4,8 @@
 import { AsyncAppValidationStatus } from "./AsyncAppValidationResponse";
 
 export interface AsyncAppValidationDetailsResponse {
-  continuationToken: string;
-  appValidations: AsyncAppValidationDetailsViewModel[];
+  continuationToken?: string;
+  appValidations?: AsyncAppValidationDetailsViewModel[];
 }
 
 export interface AsyncAppValidationDetailsViewModel {

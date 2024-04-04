@@ -1,0 +1,39 @@
+{{#header}} version: 1.0.0 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsapp provision' is executed
+provision:
+{{#aadAppCreate}} skipClientSecret {{/aadAppCreate}}
+
+{{#teamsAppCreate}} {{/teamsAppCreate}}
+
+{{#armDeploy}} deploymentName: Create-resources-for-sme {{/armDeploy}}
+
+{{#aadAppUpdate}} {{/aadAppUpdate}}
+
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+
+# Triggered when 'teamsapp deploy' is executed
+deploy:
+{{#cliRunNpmCommand}} install, args: install {{/cliRunNpmCommand}}
+
+{{#cliRunNpmCommand}} args: run build --if-present, build {{/cliRunNpmCommand}}
+
+{{#azureFunctionsZipDeploy}} resourceId: ${{API_FUNCTION_RESOURCE_ID}}, ignoreFile: .funcignore {{/azureFunctionsZipDeploy}}
+
+# Triggered when 'teamsapp publish' is executed
+publish:
+{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
+{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
+{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
+{{#teamsAppUpdate}} {{/teamsAppUpdate}}
+{{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}

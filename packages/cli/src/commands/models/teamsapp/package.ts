@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import { CLICommand, TeamsAppInputs } from "@microsoft/teamsfx-api";
 import { getFxCore } from "../../../activate";
+import { commands } from "../../../resource";
 import { TelemetryEvent } from "../../../telemetry/cliTelemetryEvents";
 import {
   EnvFileOption,
@@ -14,7 +15,7 @@ import {
 
 export const teamsappPackageCommand: CLICommand = {
   name: "package",
-  description: "Build your Microsoft Teams app into a package for publishing.",
+  description: commands.package.description,
   options: [
     TeamsAppManifestFileOption,
     TeamsAppOuputPackageOption,

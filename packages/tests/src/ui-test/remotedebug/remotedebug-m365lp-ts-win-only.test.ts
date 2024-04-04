@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -8,6 +11,8 @@ import {
   RemoteDebugTestContext,
   runProvision,
   runDeploy,
+  provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -63,8 +68,8 @@ describe("Remote debug Tests", function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
       await createNewProject("m365lp", appName, "TypeScript");
-      await runProvision(appName);
-      await runDeploy();
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

@@ -10,14 +10,18 @@ import fs from "fs-extra";
 import path from "path";
 import {
   APIInfo,
+  APIMap,
   AuthInfo,
+  ErrorResult,
   ErrorType,
   GenerateResult,
+  ListAPIInfo,
   ListAPIResult,
   ParseOptions,
   ProjectType,
   ValidateResult,
   ValidationStatus,
+  WarningResult,
   WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
@@ -27,6 +31,8 @@ import { Utils } from "./utils";
 import { ManifestUpdater } from "./manifestUpdater";
 import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
+import { ValidatorFactory } from "./validators/validatorFactory";
+import { Validator } from "./validators/validator";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -36,7 +42,8 @@ export class SpecParser {
   public readonly parser: SwaggerParser;
   public readonly options: Required<ParseOptions>;
 
-  private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
+  private apiMap: APIMap | undefined;
+  private validator: Validator | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
   private isSwaggerFile: boolean | undefined;
@@ -45,6 +52,7 @@ export class SpecParser {
     allowMissingId: true,
     allowSwagger: true,
     allowAPIKeyAuth: false,
+    allowBearerTokenAuth: false,
     allowMultipleParameters: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
@@ -83,6 +91,9 @@ export class SpecParser {
         };
       }
 
+      const errors: ErrorResult[] = [];
+      const warnings: WarningResult[] = [];
+
       if (!this.options.allowSwagger && this.isSwaggerFile) {
         return {
           status: ValidationStatus.Error,
@@ -93,7 +104,42 @@ export class SpecParser {
         };
       }
 
-      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
+      // Remote reference not supported
+      const refPaths = this.parser.$refs.paths();
+      // refPaths [0] is the current spec file path
+      if (refPaths.length > 1) {
+        errors.push({
+          type: ErrorType.RemoteRefNotSupported,
+          content: Utils.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
+          data: refPaths,
+        });
+      }
+
+      if (!!this.isSwaggerFile && this.options.allowSwagger) {
+        warnings.push({
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: ConstantString.ConvertSwaggerToOpenAPI,
+        });
+      }
+
+      const validator = this.getValidator(this.spec!);
+      const validationResult = validator.validateSpec();
+
+      warnings.push(...validationResult.warnings);
+      errors.push(...validationResult.errors);
+
+      let status = ValidationStatus.Valid;
+      if (warnings.length > 0 && errors.length === 0) {
+        status = ValidationStatus.Warning;
+      } else if (errors.length > 0) {
+        status = ValidationStatus.Error;
+      }
+
+      return {
+        status: status,
+        warnings: warnings,
+        errors: errors,
+      };
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -109,52 +155,51 @@ export class SpecParser {
    * @returns A string array that represents the HTTP method and path of each operation, such as ['GET /pets/{petId}', 'GET /user/{userId}']
    * according to copilot plugin spec, only list get and post method without auth
    */
-  async list(): Promise<ListAPIResult[]> {
+  async list(): Promise<ListAPIResult> {
     try {
       await this.loadSpec();
       const spec = this.spec!;
-      const apiMap = this.getAllSupportedAPIs(spec);
-      const result: ListAPIResult[] = [];
+      const apiMap = this.getAPIs(spec);
+      const result: ListAPIResult = {
+        APIs: [],
+        allAPICount: 0,
+        validAPICount: 0,
+      };
       for (const apiKey in apiMap) {
-        const apiResult: ListAPIResult = {
-          api: "",
-          server: "",
-          operationId: "",
-        };
+        const { operation, isValid, reason } = apiMap[apiKey];
         const [method, path] = apiKey.split(" ");
-        const operation = apiMap[apiKey];
-        const rootServer = spec.servers && spec.servers[0];
-        const methodServer = spec.paths[path]!.servers && spec.paths[path]?.servers![0];
-        const operationServer = operation.servers && operation.servers[0];
 
-        const serverUrl = operationServer || methodServer || rootServer;
-        if (!serverUrl) {
-          throw new SpecParserError(
-            ConstantString.NoServerInformation,
-            ErrorType.NoServerInformation
-          );
-        }
+        const operationId =
+          operation.operationId ?? `${method.toLowerCase()}${Utils.convertPathToCamelCase(path)}`;
 
-        apiResult.server = Utils.resolveServerUrl(serverUrl.url);
+        const apiResult: ListAPIInfo = {
+          api: apiKey,
+          server: "",
+          operationId: operationId,
+          isValid: isValid,
+          reason: reason,
+        };
 
-        let operationId = operation.operationId;
-        if (!operationId) {
-          operationId = `${method.toLowerCase()}${Utils.convertPathToCamelCase(path)}`;
-        }
-        apiResult.operationId = operationId;
+        if (isValid) {
+          const serverObj = Utils.getServerObject(spec, method.toLocaleLowerCase(), path);
+          if (serverObj) {
+            apiResult.server = Utils.resolveEnv(serverObj.url);
+          }
 
-        const authArray = Utils.getAuthArray(operation.security, spec);
-
-        for (const auths of authArray) {
-          if (auths.length === 1) {
-            apiResult.auth = auths[0].authSchema;
-            break;
+          const authArray = Utils.getAuthArray(operation.security, spec);
+          for (const auths of authArray) {
+            if (auths.length === 1) {
+              apiResult.auth = auths[0];
+              break;
+            }
           }
         }
 
-        apiResult.api = apiKey;
-        result.push(apiResult);
+        result.APIs.push(apiResult);
       }
+
+      result.allAPICount = result.APIs.length;
+      result.validAPICount = result.APIs.filter((api) => api.isValid).length;
 
       return result;
     } catch (err) {
@@ -283,8 +328,8 @@ export class SpecParser {
       const newUnResolvedSpec = newSpecs[0];
       const newSpec = newSpecs[1];
 
-      const authSet: Set<AuthInfo> = new Set();
       let hasMultipleAuth = false;
+      let authInfo: AuthInfo | undefined = undefined;
 
       for (const url in newSpec.paths) {
         for (const method in newSpec.paths[url]) {
@@ -293,8 +338,10 @@ export class SpecParser {
           const authArray = Utils.getAuthArray(operation.security, newSpec);
 
           if (authArray && authArray.length > 0) {
-            authSet.add(authArray[0][0]);
-            if (authSet.size > 1) {
+            const currentAuth = authArray[0][0];
+            if (!authInfo) {
+              authInfo = authArray[0][0];
+            } else if (authInfo.name !== currentAuth.name) {
               hasMultipleAuth = true;
               break;
             }
@@ -350,7 +397,6 @@ export class SpecParser {
         throw new SpecParserError(ConstantString.CancelledMessage, ErrorType.Cancelled);
       }
 
-      const authInfo = Array.from(authSet)[0];
       const [updatedManifest, warnings] = await ManifestUpdater.updateManifest(
         manifestPath,
         outputSpecPath,
@@ -388,14 +434,19 @@ export class SpecParser {
     }
   }
 
-  private getAllSupportedAPIs(spec: OpenAPIV3.Document): {
-    [key: string]: OpenAPIV3.OperationObject;
-  } {
-    if (this.apiMap !== undefined) {
-      return this.apiMap;
+  private getAPIs(spec: OpenAPIV3.Document): APIMap {
+    const validator = this.getValidator(spec);
+    const apiMap = validator.listAPIs();
+    this.apiMap = apiMap;
+    return apiMap;
+  }
+
+  private getValidator(spec: OpenAPIV3.Document): Validator {
+    if (this.validator) {
+      return this.validator;
     }
-    const result = Utils.listSupportedAPIs(spec, this.options);
-    this.apiMap = result;
-    return result;
+    const validator = ValidatorFactory.create(spec, this.options);
+    this.validator = validator;
+    return validator;
   }
 }

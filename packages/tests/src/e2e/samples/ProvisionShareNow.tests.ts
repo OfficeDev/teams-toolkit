@@ -28,6 +28,6 @@ class ShareNowTestCase extends CaseFactory {
 new ShareNowTestCase(
   TemplateProjectFolder.ShareNow,
   15277467,
-  "v-ivanchen@microsoft.com",
+  "zhaofengxu@microsoft.com",
   ["sql", "tab & bot"]
 ).test();

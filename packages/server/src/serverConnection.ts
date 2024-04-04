@@ -96,6 +96,7 @@ export default class ServerConnection implements IServerConnection {
       this.loadOpenAIPluginManifestRequest.bind(this),
       this.listOpenAPISpecOperationsRequest.bind(this),
       this.checkAndInstallTestTool.bind(this),
+      this.listPluginApiSpecs.bind(this),
     ].forEach((fn) => {
       /// fn.name = `bound ${functionName}`
       connection.onRequest(`${ServerConnection.namespace}/${fn.name.split(" ")[1]}`, fn);
@@ -442,6 +443,19 @@ export default class ServerConnection implements IServerConnection {
     return standardizeResult(res);
   }
 
+  public async listPluginApiSpecs(
+    inputs: Inputs,
+    token: CancellationToken
+  ): Promise<Result<string[], FxError>> {
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (inputs) => this.core.listPluginApiSpecs(inputs),
+      inputs
+    );
+    return standardizeResult(res);
+  }
+
   public async loadOpenAIPluginManifestRequest(
     inputs: Inputs,
     token: CancellationToken
@@ -465,13 +479,8 @@ export default class ServerConnection implements IServerConnection {
       (inputs) => this.core.copilotPluginListOperations(inputs),
       inputs
     );
-    if (res.isErr()) {
-      const msg = res.error.map((e) => e.content).join("\n");
-      return standardizeResult(
-        err(new UserError("Fx-VS", "ListOpenAPISpecOperationsError", msg, msg))
-      );
-    }
-    return standardizeResult(ok(res.value));
+
+    return standardizeResult(res);
   }
 
   public async checkAndInstallTestTool(

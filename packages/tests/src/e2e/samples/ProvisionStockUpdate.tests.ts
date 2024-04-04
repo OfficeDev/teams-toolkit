@@ -32,6 +32,6 @@ class StockUpdateTestCase extends CaseFactory {
 new StockUpdateTestCase(
   TemplateProjectFolder.StockUpdate,
   15772706,
-  "v-ivanchen@microsoft.com",
+  "qidon@microsoft.com",
   ["bot"]
 ).test();

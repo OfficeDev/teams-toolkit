@@ -24,7 +24,7 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^2.2.0",
+        "@microsoft/teamsfx": "^2.3.1",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },

@@ -5,7 +5,7 @@
  * @author zyun@microsoft.com
  */
 
-import { Context, Inputs, ok, Platform } from "@microsoft/teamsfx-api";
+import { Context, Inputs, ok, Platform, err, SystemError } from "@microsoft/teamsfx-api";
 import * as chai from "chai";
 import * as childProcess from "child_process";
 import fs from "fs";
@@ -22,19 +22,16 @@ import { OfficeXMLAddinGenerator } from "../../../src/component/generator/office
 import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import { createContextV3 } from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
-import {
-  OfficeAddinCapabilityOptions,
-  ProjectTypeOptions,
-  QuestionNames,
-} from "../../../src/question";
+import { OfficeAddinHostOptions, ProjectTypeOptions, QuestionNames } from "../../../src/question";
 import { MockTools } from "../../core/utils";
 import { FeatureFlagName } from "../../../src/common/constants";
-import { getOfficeXMLAddinHostProjectRepoInfo } from "../../../src/component/generator/officeXMLAddin/projectConfig";
+import { getOfficeAddinTemplateConfig } from "../../../src/component/generator/officeXMLAddin/projectConfig";
 
 describe("OfficeXMLAddinGenerator", function () {
   const testFolder = path.resolve("./tmp");
   let context: Context;
   let mockedEnvRestore: RestoreFn;
+  const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv(
@@ -85,11 +82,11 @@ describe("OfficeXMLAddinGenerator", function () {
       platform: Platform.CLI,
       projectPath: testFolder,
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
-      [QuestionNames.Capabilities]: ["taskpane"],
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+      [QuestionNames.Capabilities]: "word-taskpane",
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").resolves(undefined);
@@ -106,11 +103,11 @@ describe("OfficeXMLAddinGenerator", function () {
       platform: Platform.CLI,
       projectPath: testFolder,
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
-      [QuestionNames.Capabilities]: ["manifest"],
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+      [QuestionNames.Capabilities]: "word-manifest",
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "javascript",
     };
 
     sinon.stub(Generator, "generateTemplate").resolves(ok(undefined));
@@ -125,11 +122,11 @@ describe("OfficeXMLAddinGenerator", function () {
       platform: Platform.CLI,
       projectPath: testFolder,
       [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
-      [QuestionNames.OfficeAddinCapability]: OfficeAddinCapabilityOptions.word().id,
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
       [QuestionNames.Capabilities]: ["react"],
       [QuestionNames.AppName]: "office-addin-test",
       [QuestionNames.OfficeAddinFolder]: undefined,
-      [QuestionNames.ProgrammingLanguage]: "TypeScript",
+      [QuestionNames.ProgrammingLanguage]: "typescript",
     };
 
     sinon.stub(HelperMethods, "downloadProjectTemplateZipFile").rejects(undefined);
@@ -138,16 +135,74 @@ describe("OfficeXMLAddinGenerator", function () {
 
     chai.assert.isTrue(result.isErr());
   });
-});
 
-describe("projectConfig", () => {
-  it("should return empty repo info if manifest-only project", () => {
-    chai.assert.equal(getOfficeXMLAddinHostProjectRepoInfo("excel", "manifest", "ts"), "");
+  it("should failed when get manifest-only failed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+      [QuestionNames.Capabilities]: ["word-manifest"],
+      [QuestionNames.AppName]: "office-addin-test",
+      [QuestionNames.OfficeAddinFolder]: undefined,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+    };
+
+    sinon.stub(Generator, "generateTemplate").onCall(0).resolves(err(mockedError));
+    const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(result.isErr());
   });
 
-  it("should success return repo info if not manifest-only project", () => {
+  it("should failed when get readme failed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+      [QuestionNames.Capabilities]: ["word-manifest"],
+      [QuestionNames.AppName]: "office-addin-test",
+      [QuestionNames.OfficeAddinFolder]: undefined,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+    };
+
+    const generatorStub = sinon.stub(Generator, "generateTemplate");
+    generatorStub.onCall(0).resolves(ok(undefined));
+    generatorStub.onCall(1).resolves(err(mockedError));
+    const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(result.isErr());
+  });
+
+  it("should failed when gen yml failed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: testFolder,
+      [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
+      [QuestionNames.OfficeAddinHost]: OfficeAddinHostOptions.word().id,
+      [QuestionNames.Capabilities]: ["word-manifest"],
+      [QuestionNames.AppName]: "office-addin-test",
+      [QuestionNames.OfficeAddinFolder]: undefined,
+      [QuestionNames.ProgrammingLanguage]: "javascript",
+    };
+
+    const generatorStub = sinon.stub(Generator, "generateTemplate");
+    generatorStub.onCall(0).resolves(ok(undefined));
+    generatorStub.onCall(1).resolves(ok(undefined));
+    generatorStub.onCall(2).resolves(err(mockedError));
+    sinon.stub(OfficeAddinManifest, "modifyManifestFile").resolves({});
+    const result = await OfficeXMLAddinGenerator.generate(context, inputs, testFolder);
+
+    chai.assert.isTrue(result.isErr());
+  });
+});
+
+describe("getOfficeAddinTemplateConfig", () => {
+  it("should return empty repo info if manifest-only project", () => {
+    const config = getOfficeAddinTemplateConfig(ProjectTypeOptions.officeXMLAddin().id, "excel");
+    chai.assert.equal(config["excel-manifest"].framework?.default?.typescript, undefined);
     chai.assert.equal(
-      getOfficeXMLAddinHostProjectRepoInfo("excel", "react", "ts"),
+      config["excel-react"].framework?.default?.typescript,
       "https://aka.ms/ccdevx-fx-react-ts"
     );
   });

@@ -34,7 +34,8 @@ This is a simple hello world application with both Bot and Message extension cap
 ## Edit the manifest
 
 You can find the Teams app manifest in `./appPackage` folder. The folder contains one manifest file:
-* `manifest.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
+
+- `manifest.json`: Manifest file for Teams app running locally or running remotely (After deployed to Azure).
 
 This file contains template arguments with `${{...}}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
@@ -42,8 +43,8 @@ This file contains template arguments with `${{...}}` statements which will be r
 
 Deploy your project to Azure by following these steps:
 
-| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                  | From TeamsFx CLI                                                                                                                                                                                                                    |
-| :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| From Visual Studio Code                                                                                                                                                                                                                                                                                                                                                                                                                                             | From TeamsFx CLI                                                                                                                                                     |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.</li> <li>After you signed in, select a subscription under your account.</li><li>Open the Teams Toolkit and click `Provision` from DEPLOYMENT section or open the command palette and select: `Teams: Provision`.</li><li>Open the Teams Toolkit and click `Deploy` or open the command palette and select: `Teams: Deploy`.</li></ul> | <ul> <li>Run command `teamsapp auth login azure`.</li> <li>Run command `teamsapp provision --env dev`.</li> <li>Run command: `teamsapp deploy --env dev`. </li></ul> |
 
 > Note: Provisioning and deployment may incur charges to your Azure Subscription.
@@ -87,33 +88,29 @@ This template provides some sample functionality:
 
 - You can create and send an adaptive card.
 
-  ![CreateCard](./images/AdaptiveCard.png)
+  ![CreateCard](https://github.com/OfficeDev/TeamsFx/assets/86260893/a0a8304b-3074-4eb8-9097-655cdda0b937)
 
 - You can share a message in an adaptive card form.
 
-  ![ShareMessage](./images/ShareMessage.png)
+  ![ShareMessage](https://github.com/OfficeDev/TeamsFx/assets/86260893/a7d4dd7b-6466-4e89-8f42-b93629a90bc8)
 
 - You can paste a link that "unfurls" (`.botframework.com` is monitored in this template) and a card will be rendered.
 
-  ![ComposeArea](./images/LinkUnfurlingImage.png)
+  ![ComposeArea](https://github.com/OfficeDev/TeamsFx/assets/86260893/2b155dc8-9c01-4f14-8e2f-d179b81e97c6)
 
 To trigger these functions, there are multiple entry points:
 
-- `@mention` Your message extension, from the `search box area`.
+- Type a `/` in the command box and select your message extension.
 
-  ![AtBotFromSearch](./images/AtBotFromSearch.png)
-
-- `@mention` your message extension from the `compose message area`.
-
-  ![AtBotFromMessage](./images/AtBotInMessage.png)
+  ![AtBotFromSearch](https://github.com/OfficeDev/TeamsFx/assets/86260893/d9ee7f72-0248-4a35-ae4d-e09d447614e6)
 
 - Click the `...` under compose message area, find your message extension.
 
-  ![ComposeArea](./images/ThreeDot.png)
+  ![ComposeArea](https://github.com/OfficeDev/TeamsFx/assets/86260893/f447f015-bb68-4ae2-9e0a-aae69c00c328)
 
 - Click the `...` next to any messages you received or sent.
 
-  ![ComposeArea](./images/ThreeDotOnMessage.png)
+  ![ComposeArea](https://github.com/OfficeDev/TeamsFx/assets/86260893/0237dc5a-8b4d-4f52-a2fb-95ad17264c90)
 
 ## Further reading
 

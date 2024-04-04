@@ -3,6 +3,7 @@
 A Message Extension allows users to interact with your web service while composing messages in the Microsoft Teams client. Users can invoke your web service to assist message composition, from the message compose box, or from the search bar.
 
 This app template has a search command, an action command and a link unfurling.
+
 1. The search command allows users to search an external system and share results through the compose message area of the Microsoft Teams client.
 2. The action command allows you to present your users with a modal pop-up called a task module in Teams. The task module collects or displays information, processes the interaction, and sends the information back to Teams.
 3. With link unfurling, an app can unfurl a link into an adaptive card when URLs with a particular domain are pasted into the compose message area in Microsoft Teams or email body in Outlook.
@@ -26,31 +27,30 @@ This app template has a search command, an action command and a link unfurling.
    2. In Outlook: click the `More apps` icon under compose email area to find your message extension. Only search command and link unfurling works in Outlook.
 6. Paste a link ending with `.botframework.com` into compose message area in Teams or email body in Outlook. You should see an adaptive card unfurled.
 
-![Search app demo](https://user-images.githubusercontent.com/11220663/167868361-40ffaaa3-0300-4313-ae22-0f0bab49c329.png)
-![action-ME](https://github.com/OfficeDev/TeamsFx/assets/11220663/4af867b1-0b4b-4665-ac43-badf56106d84)
+![action-ME](https://github.com/OfficeDev/TeamsFx/assets/25220706/378ea4d7-9332-4aec-9f85-59891d086b80)
 
 ## What's included in the template
 
-| Folder       | Contents                                            |
-| - | - |
-| `.vscode`    | VSCode files for debugging                          |
-| `appPackage` | Templates for the Teams application manifest        |
-| `env`        | Environment files                                   |
-| `infra`      | Templates for provisioning Azure resources          |
+| Folder       | Contents                                     |
+| ------------ | -------------------------------------------- |
+| `.vscode`    | VSCode files for debugging                   |
+| `appPackage` | Templates for the Teams application manifest |
+| `env`        | Environment files                            |
+| `infra`      | Templates for provisioning Azure resources   |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 
-| File                                 | Contents                                           |
-| - | - |
-|`src/teamsBot.js`| Handles the business logic for this app template to query npm registry and return result list to Teams.|
-|`src/index.js`| `index.js` is used to setup and configure the Message Extension.|
+| File              | Contents                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------- |
+| `src/teamsBot.js` | Handles the business logic for this app template to query npm registry and return result list to Teams. |
+| `src/index.js`    | `index.js` is used to setup and configure the Message Extension.                                        |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
-| File                                 | Contents                                           |
-| - | - |
-|`teamsapp.yml`|This is the main Teams Toolkit project file. The project file defines two primary things:  Properties and configuration Stage definitions. |
-|`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
+| File                 | Contents                                                                                                                                  |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
+| `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                     |
 
 ## Extend the template
 
@@ -66,5 +66,5 @@ Following documentation will help you to extend the template.
 - [Collaborate on app development](https://learn.microsoft.com/microsoftteams/platform/toolkit/teamsfx-collaboration)
 - [Set up the CI/CD pipeline](https://learn.microsoft.com/microsoftteams/platform/toolkit/use-cicd-template)
 - [Publish the app to your organization or the Microsoft Teams app store](https://learn.microsoft.com/microsoftteams/platform/toolkit/publish)
-- [Develop with Teams Toolkit CLI](https://aka.ms/teamsfx-cli/debug)
+- [Develop with Teams Toolkit CLI](https://aka.ms/teams-toolkit-cli/debug)
 - [Preview the app on mobile clients](https://github.com/OfficeDev/TeamsFx/wiki/Run-and-debug-your-Teams-application-on-iOS-or-Android-client)

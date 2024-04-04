@@ -26,6 +26,6 @@ class TodoListBackendTestCase extends CaseFactory {
 new TodoListBackendTestCase(
   TemplateProjectFolder.TodoListBackend,
   15277465,
-  "v-ivanchen@microsoft.com",
+  "junhan@microsoft.com",
   ["aad", "tab", "function", "sql"]
 ).test();

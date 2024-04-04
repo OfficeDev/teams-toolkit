@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { CLICommandOption } from "@microsoft/teamsfx-api";
+import { commands } from "../resource";
 
 export const ProjectFolderOption: CLICommandOption = {
   name: "folder",
@@ -68,7 +69,7 @@ export const IgnoreKeysOption: CLICommandOption = {
 export const ListFormatOption: CLICommandOption = {
   name: "format",
   shortName: "f",
-  description: "Specifies the format of the results.",
+  description: commands["list.templates"].options.format,
   type: "string",
   choices: ["table", "json"],
   default: "table",
@@ -82,4 +83,19 @@ export const ShowDescriptionOption: CLICommandOption = {
   type: "boolean",
   default: false,
   required: true,
+};
+
+export const ConfigFilePathOption: CLICommandOption = {
+  type: "string",
+  name: "config-file-path",
+  shortName: "c",
+  description: "Specifies the path of the configuration yaml file.",
+};
+
+export const ValidateMethodOption: CLICommandOption = {
+  type: "string",
+  name: "validate-method",
+  shortName: "m",
+  choices: ["validation-rules", "test-cases"],
+  description: "Specifies validation method",
 };

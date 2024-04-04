@@ -26,9 +26,9 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     env:
-      AZURE_CLIENT_ID: ${{ secrets.TEST_AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.TEST_AZURE_CLIENT_SECRET }}
-      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      DEVTUNNEL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+      DEVTUNNEL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+      DEVTUNNEL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
     steps:
       - name: wait for 60s
         run: |
@@ -38,7 +38,7 @@ jobs:
       - name: clean devtunnel
         run: |
           curl -sL https://aka.ms/DevTunnelCliInstall | bash
-          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
           ~/bin/devtunnel delete-all -f
 
       - name: re-run failed jobs

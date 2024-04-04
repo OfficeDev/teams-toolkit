@@ -18,15 +18,19 @@ provision:
       teamsAppId: TEAMS_APP_ID
 
   # Create or reuse an existing Microsoft Entra application for bot.
-  - uses: botAadApp/create
+  - uses: aadApp/create
     with:
       # The Microsoft Entra application's display name
       name: {{appName}}${{APP_NAME_SUFFIX}}
+      generateClientSecret: true
+      signInAudience: AzureADMultipleOrgs
     writeToEnvironmentFile:
       # The Microsoft Entra application's client id created for bot.
-      botId: BOT_ID
+      clientId: BOT_ID
       # The Microsoft Entra application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD
+      clientSecret: SECRET_BOT_PASSWORD
+      # The Microsoft Entra application's object id created for bot.
+      objectId: BOT_OBJECT_ID
 
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
     with:
@@ -104,6 +108,7 @@ deploy:
 {{^PlaceProjectFileInSolutionDir}}
       workingDirectory: ../{{ProjectName}}
 {{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
   # Deploy your application to Azure App Service using the zip deploy feature.
   # For additional details, refer to https://aka.ms/zip-deploy-to-app-services.
   - uses: azureAppService/zipDeploy

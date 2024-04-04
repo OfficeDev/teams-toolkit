@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export type IDynamicPromptTemplateSet<TArgs> = Record<StringStartsWithLowercase, string> & {
-  main?: string;
-  $presets?: IDynamicPromptPresets;
-  $version: string;
+export type IDynamicPromptTemplateSet<TArgs> = {
+  templates: Record<string, string>;
+  version: string;
+  presets?: IDynamicPromptPresets;
   $__args_type_helper__?: TArgs;
 };
 
@@ -15,8 +15,9 @@ export interface IDynamicPromptSettings {
 export interface IDynamicPromptParams<TArgs = never> {
   args: TArgs;
 
-  templates: IDynamicPromptTemplateSet<TArgs>;
+  templates: Record<string, string>;
   common: IDynamicPromptTemplateSet<unknown>;
+  presets?: IDynamicPromptPresets;
 
   item?: unknown;
   itemIndex?: number;
@@ -26,35 +27,5 @@ export interface IDynamicPromptParams<TArgs = never> {
 export interface IDynamicPromptPresets {
   [key: string]: SingleOrArray<string | number | boolean | undefined | IDynamicPromptPresets>;
 }
-
-type LowercaseLetter =
-  | "a"
-  | "b"
-  | "c"
-  | "d"
-  | "e"
-  | "f"
-  | "g"
-  | "h"
-  | "i"
-  | "j"
-  | "k"
-  | "l"
-  | "m"
-  | "n"
-  | "o"
-  | "p"
-  | "q"
-  | "r"
-  | "s"
-  | "t"
-  | "u"
-  | "v"
-  | "w"
-  | "x"
-  | "y"
-  | "z";
-
-type StringStartsWithLowercase = `${LowercaseLetter}${string}`;
 
 type SingleOrArray<T> = T | T[];

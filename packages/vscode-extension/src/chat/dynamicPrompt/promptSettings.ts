@@ -12,7 +12,7 @@ export type ArgsType<T extends TemplateSetName> = ArgsTypeHelper<T> extends infe
   : null;
 
 export type IDynamicPromptPartialSettings = {
-  [T in keyof PromptMapType]?: Partial<PromptMapType[T]>;
+  [T in TemplateSetName]?: Partial<PromptMapType[T]>;
 };
 
 type PromptMapType = typeof prompts;

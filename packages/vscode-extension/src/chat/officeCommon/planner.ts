@@ -125,12 +125,6 @@ I can't assist you with this request. Here are some details:
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
-    telemetryData.markComplete();
-    ExtTelemetry.sendTelemetryEvent(
-      TelemetryEvent.CopilotChat,
-      telemetryData.properties,
-      telemetryData.measurements
-    );
 
     return chatResult;
   }

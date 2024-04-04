@@ -50,7 +50,7 @@ export default async function generatecodeCommandHandler(
 
   const isHarmful = await isInputHarmful(request, token);
   if (!isHarmful) {
-    return await Planner.getInstance().processRequest(
+    const chatResult = await Planner.getInstance().processRequest(
       new LanguageModelChatUserMessage(request.prompt),
       request,
       response,
@@ -58,6 +58,13 @@ export default async function generatecodeCommandHandler(
       OfficeAddinChatCommand.GenerateCode,
       officeAddinChatTelemetryData
     );
+    officeAddinChatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      officeAddinChatTelemetryData.properties,
+      officeAddinChatTelemetryData.measurements
+    );
+    return chatResult;
   } else {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));
     officeAddinChatTelemetryData.markComplete();

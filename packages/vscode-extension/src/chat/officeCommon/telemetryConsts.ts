@@ -46,4 +46,5 @@ export const MeasurementCompilieErrorCannotAssignToReadOnlyPropertyCount =
   "CannotAssignToReadOnlyPropertyCount";
 export const MeasurementCompilieErrorTopLevelExpressionForbidenCount =
   "TopLevelExpressionForbidenCount";
+export const MeasurementCompilieErrorExpressionExpectedCount = "ExpressionExpectedCount";
 export const MeasurementCompilieErrorOthersCount = "CompilieErrorOthersCount";

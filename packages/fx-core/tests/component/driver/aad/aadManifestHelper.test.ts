@@ -172,7 +172,7 @@ describe("Microsoft Entra manifest helper Test", () => {
       .expect(() => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifestWithInvalidSting);
       })
-      .to.throw("Some requiredResourceAccess item(s) are missing resourceAppId property.");
+      .to.throw("Some requiredResourceAccess item(s) are missing the resourceAppId property.");
   });
 
   it("processRequiredResourceAccessInManifest with no resourceAccess id", async () => {

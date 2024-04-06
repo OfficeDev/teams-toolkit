@@ -11,7 +11,7 @@ import { OfficeAddinChatCommand, officeAddinChatParticipantId } from "../consts"
 import { ISkill } from "./skills/iSkill";
 import { SkillsManager } from "./skills/skillsManager";
 import { Spec } from "./skills/spec";
-import { ICopilotChatResult, ITelemetryData } from "../types";
+import { IChatTelemetryData, ICopilotChatResult, ITelemetryData } from "../types";
 import { ChatTelemetryData } from "../telemetry";
 import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
@@ -45,30 +45,26 @@ export class Planner {
     request: ChatRequest,
     response: ChatResponseStream,
     token: CancellationToken,
-    command: OfficeAddinChatCommand
+    command: OfficeAddinChatCommand,
+    telemetryData: ChatTelemetryData
   ): Promise<ICopilotChatResult> {
     const candidates: ISkill[] = SkillsManager.getInstance().getCapableSkills(command);
-    const chatTelemetryData = ChatTelemetryData.createByParticipant(
-      officeAddinChatParticipantId,
-      command,
-      request.location
-    );
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, telemetryData.properties);
     const t0 = performance.now();
     token.onCancellationRequested(() => {
       const t1 = performance.now();
       const duration = (t1 - t0) / 1000;
-      chatTelemetryData.extendBy(
+      telemetryData.extendBy(
         { [PropertySystemRequestCancelled]: "true" },
         { [MeasurementCommandExcutionTimeSec]: duration }
       );
-      chatTelemetryData.markComplete();
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChat, chatTelemetryData.properties);
+      telemetryData.markComplete();
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChat, telemetryData.properties);
     });
     const chatResult: ICopilotChatResult = {
       metadata: {
         command: command,
-        requestId: chatTelemetryData.requestId,
+        requestId: telemetryData.requestId,
       },
     };
 
@@ -125,15 +121,9 @@ I can't assist you with this request. Here are some details:
     const t1 = performance.now();
     const duration = (t1 - t0) / 1000;
     spec.appendix.telemetryData.measurements[MeasurementCommandExcutionTimeSec] = duration;
-    chatTelemetryData.extendBy(
+    telemetryData.extendBy(
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
-    );
-    chatTelemetryData.markComplete();
-    ExtTelemetry.sendTelemetryEvent(
-      TelemetryEvent.CopilotChat,
-      chatTelemetryData.properties,
-      chatTelemetryData.measurements
     );
 
     return chatResult;

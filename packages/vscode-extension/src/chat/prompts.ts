@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProjectMetadata } from "./commands/create/types";
 import * as vscode from "vscode";
 import { localize } from "../utils/localizeUtils";
+import { ProjectMetadata } from "./commands/create/types";
 
 export const defaultSystemPrompt = () => {
   const defaultNoConcuptualAnswer = localize(
@@ -47,38 +47,21 @@ export const describeScenarioSystemPrompt = new vscode.LanguageModelChatSystemMe
   `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
 );
 
-export function getProjectMatchSystemPrompt(projectMetadata: ProjectMetadata[]) {
+export function getProjectMatchSystemPrompt(
+  projectMetadata: ProjectMetadata[],
+  examples: Array<{ user: string; app: string }>
+) {
   const appsDescription = projectMetadata
     .map((config) => `'${config.id}' (${config.description})`)
     .join(", ");
-  const examples = [
-    {
-      user: "an app that manages to-do list and works in Outlook",
-      app: "todo-list-with-Azure-backend-M365",
-    },
-    {
-      user: "an app to send notification to a lot of users",
-      app: "large-scale-notification",
-    },
-    {
-      user: "an app shown in sharepoint",
-      app: "tab-spfx",
-    },
-    {
-      user: "a tab app",
-      app: "tab-non-sso",
-    },
-    {
-      user: "a bot that accepts commands",
-      app: "command-bot",
-    },
-  ];
   const exampleDescription = examples
     .map(
       (example, index) =>
-        `${index + 1}. User asks: ${example.user}, return { "app": [${example.app}]}.`
+        `${index + 1}. User asks: ${example.user}, return { "app": [ { "id": ${
+          example.app
+        }, "score": 1.0 }]}.`
     )
     .join(" ");
-  return new vscode.LanguageModelChatSystemMessage(`You are an expert in determining which of the following apps the user is interested in. The apps are: ${appsDescription}. Your job is to determine which app would most help the user based on their query. Choose at most three of the available apps as the best matched app. Only respond with a JSON object containing the app you choose. Do not respond in a conversational tone, only JSON. For example: ${exampleDescription}
+  return new vscode.LanguageModelChatSystemMessage(`You are an expert in determining which of the following apps the user is interested in. The apps are: ${appsDescription}. Your job is to determine which app would most help the user based on their query. Choose the best matched apps. Only respond with a JSON object containing the apps you choose with a float number between 0-1.0 representing confidence. Do not respond in a conversational tone, only JSON. For example: ${exampleDescription}
   `);
 }

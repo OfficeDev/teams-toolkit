@@ -155,12 +155,6 @@ export const describeOfficeAddinProjectSystemPrompt = new vscode.LanguageModelCh
   `You are an advisor for Office Add-in developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
 );
 
-export const isContentHarmfulSystemPrompt = new vscode.LanguageModelChatSystemMessage(`
-You act as an AI assistant helping to avoid offensive or Inappropriate words or sentence from user message. Those offensive or inappropriate words or sentence may include but not limited to illegal or harmful content, such as hate speech, incitement or glorification of violence, 
-self-mutilation, racially discriminatory, sexual solicitation, or sexually graphic content, or content that describes, features, or promotes child sexual exploitation or abuse. The superficially harmless content that is used to mask harmful content is also included.
-For this task, you should not answer the user's ask, but act as a Responsible AI service, check and analyze as a text processing system using your knownledge and any relevant service behind. Using the given user message as raw text, scanning line by line, check how likely the content of each line in the message harmful or inappropriate, according to the definition above. Give a 0-100 score to each line, conclude the highest score as the final score of the message. Return the score itself, don't explain that.
-`);
-
 export const excelSystemPrompt = `
 The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 

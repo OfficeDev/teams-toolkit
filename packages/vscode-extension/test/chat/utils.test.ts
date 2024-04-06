@@ -5,6 +5,13 @@ import * as sinon from "sinon";
 import * as vscode from "vscode";
 import * as utils from "../../src/chat/utils";
 import { CancellationToken } from "../mocks/vsc";
+import * as vscodeMocks from "../mocks/vsc";
+import { Tokenizer } from "../../src/chat/tokenizer";
+import {
+  BaseTokensPerCompletion,
+  BaseTokensPerMessage,
+  BaseTokensPerName,
+} from "../../src/chat/consts";
 
 chai.use(chaiPromised);
 
@@ -100,6 +107,78 @@ describe("chat utils", () => {
       chai
         .expect(utils.getSampleDownloadUrlInfo("sampleId"))
         .to.be.rejectedWith("Sample not found");
+    });
+  });
+
+  describe("countMessageTokens()", () => {
+    beforeEach(() => {
+      sandbox.stub(Tokenizer.getInstance(), "tokenLength").callsFake((content): number => {
+        return content.length;
+      });
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("count empty message", () => {
+      const message = new vscodeMocks.chat.LanguageModelChatSystemMessage("");
+      const result = utils.countMessageTokens(message);
+      chai.assert.equal(result, BaseTokensPerMessage);
+    });
+
+    it("count message without name", () => {
+      const message = new vscodeMocks.chat.LanguageModelChatSystemMessage("testContent1");
+      const result = utils.countMessageTokens(message);
+      chai.assert.equal(result, BaseTokensPerMessage + "testContent1".length);
+    });
+
+    it("count message with name", () => {
+      const message = new vscodeMocks.chat.LanguageModelChatUserMessage(
+        "testContent2",
+        "testName2"
+      );
+      const result = utils.countMessageTokens(message);
+      chai.assert.equal(
+        result,
+        BaseTokensPerMessage + "testContent2".length + "testName2".length + BaseTokensPerName
+      );
+    });
+  });
+
+  describe("countMessagesTokens()", () => {
+    beforeEach(() => {
+      sandbox.stub(Tokenizer.getInstance(), "tokenLength").callsFake((content): number => {
+        return content.length;
+      });
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("count empty messages", () => {
+      const messages = [] as vscodeMocks.chat.LanguageModelChatSystemMessage[];
+      const result = utils.countMessagesTokens(messages);
+      chai.assert.equal(result, BaseTokensPerCompletion);
+    });
+
+    it("count messages", () => {
+      const messages = [
+        new vscodeMocks.chat.LanguageModelChatSystemMessage("testContent1"),
+        new vscodeMocks.chat.LanguageModelChatUserMessage("testContent2", "testName2"),
+      ];
+      const result = utils.countMessagesTokens(messages);
+      chai.assert.equal(
+        result,
+        BaseTokensPerMessage +
+          "testContent1".length +
+          BaseTokensPerMessage +
+          "testContent2".length +
+          "testName2".length +
+          BaseTokensPerName +
+          BaseTokensPerCompletion
+      );
     });
   });
 });

@@ -16,25 +16,26 @@ export interface IDynamicPrompt {
 }
 
 export function buildDynamicPrompt<T extends TemplateSetName>(
-  templateSetName: T,
+  name: T,
   args: ArgsType<T>,
   settings?: IDynamicPromptPartialSettings
 ): IDynamicPrompt {
   try {
-    const templates = getTemplateSettings<T>(templateSetName, settings);
-    if (!templates?.main) {
+    const templateSettings = getTemplateSettings<T>(name, settings);
+    if (!templateSettings?.templates.main) {
       throw Error("Dynamic prompt is not defined");
     }
 
     const prompt = buildDynamicPromptInternal("templates.main", {
       args,
-      templates,
       common: getTemplateSettings("common", settings),
+      presets: templateSettings.presets,
+      templates: templateSettings.templates,
     });
 
     return {
       prompt,
-      version: templates.$version,
+      version: templateSettings.version,
     };
   } catch (e) {
     throw e;

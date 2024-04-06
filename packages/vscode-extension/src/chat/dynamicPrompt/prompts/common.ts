@@ -4,5 +4,6 @@
 import { IDynamicPromptTemplateSet } from "../utils/types";
 
 export const common: IDynamicPromptTemplateSet<never> = {
-  $version: "1.0",
+  templates: {},
+  version: "1.0",
 };

@@ -2,14 +2,11 @@
 // Licensed under the MIT license.
 import {
   CancellationToken,
-  ChatRequest,
   ChatResponseStream,
-  LanguageModelChatAssistantMessage,
   LanguageModelChatMessage,
   LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { writeLogToFile } from "../Utils";
 import { getCodeGenerateGuidance } from "./codeGuidance";
 import { CodeIssueDetector, DetectionResult } from "./codeIssueDetector";
 import { ISkill } from "./iSkill"; // Add the missing import statement
@@ -272,17 +269,6 @@ That code snippet should surrounded by a pair of triple backticks, and must foll
 
 Let's think step by step.
     `;
-
-    await writeLogToFile(
-      `\n\n[Code issue fix] Fixing code issue: ${errorMessages.join(
-        "\n\n[Code issue fix] Fixing code issue: "
-      )}`
-    );
-    await writeLogToFile(
-      `\n\n[Code warning fix] Fixing code issue: ${warningMessage.join(
-        "\n\n [Code warning fix] Fixing code issue:"
-      )}`
-    );
 
     let referenceUserPrompt = "";
     switch (host) {

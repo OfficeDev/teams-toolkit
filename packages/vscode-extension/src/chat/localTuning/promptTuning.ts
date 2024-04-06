@@ -3,11 +3,6 @@
 
 import { promises } from "fs";
 import { transpile } from "typescript";
-import {
-  LanguageModelChatMessage,
-  LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
-} from "vscode";
 import { buildDynamicPrompt } from "../dynamicPrompt";
 import { generatePhrases, getCopilotResponseAsString } from "../utils";
 import { ILocalPromptTuningConfigurations, LocalTuningScenarioHandler } from "./types";
@@ -27,17 +22,14 @@ export const promptTuning: LocalTuningScenarioHandler = async (
   const config = await loadConfig();
 
   log("Config loaded");
-  const raiSystem = buildDynamicPrompt("raiSystem", null, config.dynamicPromptSettings).prompt;
-
   await Promise.all(
     config.userPrompts.map(async (userPrompt, textIndex) => {
       const phases = generatePhrases(userPrompt);
-      const raiUser = buildDynamicPrompt("inputRai", phases, config.dynamicPromptSettings).prompt;
-
-      const messages = [
-        raiSystem && new LanguageModelChatSystemMessage(raiSystem),
-        raiUser && new LanguageModelChatUserMessage(raiUser),
-      ].filter((m) => m) as LanguageModelChatMessage[];
+      const messages = buildDynamicPrompt(
+        "inputRai",
+        phases,
+        config.dynamicPromptSettings
+      ).messages;
 
       const outputs = await Promise.all(
         Array(config.callCount)

@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as prompts from "./prompts";
+import * as promptFormats from "./formats";
 import { IDynamicPromptSettings } from "./utils/types";
 
-export type TemplateSetName = keyof PromptMapType;
+export type TemplateSetName = keyof FormatMapType;
 export type ArgsType<T extends TemplateSetName> = ArgsTypeHelper<T> extends infer U
   ? [U] extends [never]
     ? null
@@ -12,13 +12,13 @@ export type ArgsType<T extends TemplateSetName> = ArgsTypeHelper<T> extends infe
   : null;
 
 export type IDynamicPromptPartialSettings = {
-  [T in TemplateSetName]?: Partial<PromptMapType[T]>;
+  [T in TemplateSetName]?: Partial<FormatMapType[T]>;
 };
 
-type PromptMapType = typeof prompts;
+type FormatMapType = typeof promptFormats;
 type ArgsTypeHelper<T extends TemplateSetName> = Exclude<
-  PromptMapType[T]["$__args_type_helper__"],
+  FormatMapType[T]["$__args_type_helper__"],
   undefined
 >;
 
-export const dynamicPromptSettings: IDynamicPromptSettings = prompts;
+export const dynamicPromptSettings: IDynamicPromptSettings = promptFormats;

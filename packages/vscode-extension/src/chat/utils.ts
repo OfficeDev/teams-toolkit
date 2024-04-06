@@ -110,26 +110,21 @@ export async function isInputHarmful(
   token: CancellationToken
 ): Promise<boolean> {
   const phrases = generatePhrases(request.prompt);
-  const userMessagePrompt = buildDynamicPrompt("inputRai", phrases).prompt;
-  return isContentHarmful(userMessagePrompt, token);
+  const messages = buildDynamicPrompt("inputRai", phrases).messages;
+  return isContentHarmful(messages, token);
 }
 
 export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
-  const userMessagePrompt = buildDynamicPrompt("outputRai", output).prompt;
-  return await isContentHarmful(userMessagePrompt, token);
+  const messages = buildDynamicPrompt("outputRai", output).messages;
+  return await isContentHarmful(messages, token);
 }
 
-async function isContentHarmful(content: string, token: CancellationToken): Promise<boolean> {
-  const isHarmfulMessage = [
-    new LanguageModelChatSystemMessage(buildDynamicPrompt("raiSystem", null).prompt),
-    new LanguageModelChatUserMessage(content),
-  ];
+async function isContentHarmful(
+  messages: LanguageModelChatMessage[],
+  token: CancellationToken
+): Promise<boolean> {
   async function getIsHarmfulResponseAsync() {
-    const isHarmfulResponse = await getCopilotResponseAsString(
-      "copilot-gpt-4",
-      isHarmfulMessage,
-      token
-    );
+    const isHarmfulResponse = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
     if (
       !isHarmfulResponse ||
       isHarmfulResponse === "" ||

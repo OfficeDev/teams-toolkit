@@ -1,22 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export type IDynamicPromptTemplateSet<TArgs> = {
+export interface IDynamicPromptSettings {
+  [templateName: string]: IDynamicPromptFormat<unknown>;
+}
+
+export type IDynamicPromptFormat<TArgs> = {
   templates: Record<string, string>;
+  messages: IDynamicPromptMessageFormat[];
   version: string;
   presets?: IDynamicPromptPresets;
   $__args_type_helper__?: TArgs;
 };
 
-export interface IDynamicPromptSettings {
-  [templateName: string]: IDynamicPromptTemplateSet<unknown>;
+export interface IDynamicPromptMessageFormat {
+  role: MessageRole;
+  entryTemplate: string;
 }
+
+export type MessageRole = "system" | "user" | "assistant";
 
 export interface IDynamicPromptParams<TArgs = never> {
   args: TArgs;
 
   templates: Record<string, string>;
-  common: IDynamicPromptTemplateSet<unknown>;
+  common: Record<string, string>;
   presets?: IDynamicPromptPresets;
 
   item?: unknown;

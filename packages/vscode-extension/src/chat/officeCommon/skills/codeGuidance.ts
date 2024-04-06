@@ -6,6 +6,7 @@ export function getCodeGenerateGuidance(host: string) {
     - Code must be TypeScript compabible with ES2015.
     - Include type declarations in variable declaration, function return declaration, function argument declaration.
     - Add rich comments to explain the code.
+    - Don't add invocation of the main or entry function.
     - Use async/await over .then for Promise.
     - An async function must return a Promise.
     - Must await for async function.

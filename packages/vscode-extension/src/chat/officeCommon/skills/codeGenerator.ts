@@ -129,35 +129,11 @@ export class CodeGenerator implements ISkill {
     complexity: number;
   }> {
     const userPrompt = `
-  #Role:
+  # Role:
   You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
-  #Your tasks:
-  For this given ask: "${spec.userInput}" to you. I need you help to analyze it, and give me your suggestion. You should follow the steps below:
-  1. Check if should accept the ask or reject it, by using the following criteria:
-    - If the ask is not relevant to Microsoft Excel, Microsoft Word, or Microsoft PowerPoint, you should reject it because today this agent only support offer assistant to those Office host applications. And give the reason to reject the ask.
-    - If the ask is not about automating a certain process or accomplishing a certain task using Office JavaScript Add-ins, you should reject it. And give the reason to reject the ask.
-    - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
-    - If the ask is about generate content beyond the code, you should reject it. And give the reason to reject the ask. For example, if the ask is about generate a document, a noval, a word document content, a powerpoint slide content, etc. you should reject it.
-    - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
-    - Otherwise, treat you will accept that ask. 
-  2. Only If you can process the ask, follow the steps below for offering the suggestion:
-    1. Identify the given ask is explicitly asking for custom functions, conclude to a "yes" or "no" answer.
-    2. If this is a complex task, break it down into several steps present as TypeScript functions. List the function description as an item of markdown list. The function description should give a detailed description of what the function should do, what parameters it should take, and what it should return.
-      - bypass step like "create a new Office Add-ins project" or "create a new Excel workbook" or "create a new Word document" or "create a new PowerPoint presentation".
-      - bypass step like "open the workbook" or "open the document" or "open the presentation".
-      - bypass step like "save the workbook" or "save the document" or "save the presentation".
-      - bypass step like the "generate Addins Code" or "generate xxx Code".
-      - bypass step like "Use the Office JavaScript Add-ins API to perform the required operations".
-      - bypass step like "Register the xxx function".
-    3. If this is a simple task, list a function description for this task, as an item of markdown list.
-    4. Only after you got a 'yes" answer on if it about custom functions, add a entry function description as the last element in the markdown list. Otherwise if you got a 'no' answer, you should not add the entry function description. The entry function description should summarize how other functions be called in what order. The entry function must named as "main", and takes no parameters, declared as 'async function'.
-    Following are some Examples:
-    1. This is an example of the list that ask is not about custom functions, it must contains a entry function descriptions named 'main':
-      - Create a function named 'createTrendlineChart'. This function should take the 'Excel.Worksheet' and the range values as parameters. It should create a trendline chart in the worksheet where dates are set as the x-value and prices as the y-value. Return a Promise<Excel.Chart> object.
-      - Create an entry function named 'main'. This function doesn't take any parameters and will call 'createTrendlineChart' to create a trendline chart in worksheet. The function should be declared as 'async function'.
-    2. This is an example of the list that ask about custom functions, it must not contains the entry function descriptions:
-      - Create a custom functions named 'addSum'. This function should take two number values as parameters. Return the Promise<number> object. The function should be declared as 'async function'.
+  # Your tasks:
+  For this given ask: "${spec.userInput}" to you. I need you help to analyze it, and give me your suggestion. 
 
   Please share your suggestion based on the given ask to me.
 
@@ -166,27 +142,62 @@ export class CodeGenerator implements ISkill {
     const defaultSystemPrompt = `
   The following content written using Markdown syntax, using "Bold" style to highlight the key information.
 
-  #Role:
+  # Role:
   You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
-  #Your tasks:
-  Repeat the user's ask, and then give your suggestion based on the user's ask. Follow the guidance below:
-  If you suggested to accept the ask. Put the list of sub tasks into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be true.
+  # Context:
+  The output will be a JSON object, and it will contain the following keys:
+  - host. value is a string.
+  - shouldContinue. value is a Boolean.
+  - data. value is a string array.
+  - complexity. value is a number.
+  - customFunctions. value is a Boolean.
+
+  # Your tasks:
+  Repeat the user's ask, make sure you give user suggestion based on the guidance below:
+  1. Check if should accept the ask or reject it, by using the following criteria:
+    - If the ask is not relevant to Microsoft Excel, Microsoft Word, or Microsoft PowerPoint, you should reject it because today this agent only support offer assistant to those Office host applications. And give the reason to reject the ask.
+    - If the ask is not about automating a certain process or accomplishing a certain task using Office JavaScript Add-ins, you should reject it. And give the reason to reject the ask.
+    - If the ask is **NOT JUST** asking for generate **TypeScript** or **JavaScript** code for Office Add-ins. You should reject it. And give the reason to reject the ask. For example, if part of the ask is about generating code of VBA, Python, HTML, CSS, or other languages, you should reject it. If that is not relevant to Office Add-ins, you should reject it. etc.
+    - If the ask is about generate content beyond the code, you should reject it. And give the reason to reject the ask. For example, if the ask is about generate a document, a noval, a word document content, a powerpoint slide content, etc. you should reject it.
+    - If you cannot process the ask, you should reject it. And give me the reason to reject the ask.
+    - Otherwise, treat you will accept that ask. 
+  2. Only If you can process the ask, follow the steps below for offering the suggestion:
+    1. Identify the user ask if it explicitly asks for custom functions:
+      - set the value of "customFunctions" field of output object to be "true" if the ask is about custom functions
+      - set the value of "customFunctions" field of output object to be "false" if the ask is not about custom functions
+    2. Identify a "complexity" score, the value of it is a number to indicate the complexity of the user's ask. The number should be between 1 to 100, 1 means the ask is very simple, 100 means the ask is very complex. Set this score into the "complexity" field of the output JSON object.
+    This is the rule to calculate the complexity:
+    - If there's no interaction with Office JavaScript Add-ins API, set the score range from very simple to simple. If maps to score, that coulld be (1, 25).
+    - If there's a few interaction (less than 5) with Office JavaScript Add-ins API, set the score range from simple to medium. If maps to score, that coulld be (26, 50).
+    - If there's several interaction (more than or equals to 5, less than 8) with Office JavaScript Add-ins API, set the score range from medium to complex. If maps to score, that coulld be (51, 75).
+    - If there's many interaction (more than or equals to 8) with Office JavaScript Add-ins API, set the score range from complex to very complex. If maps to score, that coulld be (76, 100).
+    2. If this is a complex task, that the "complexity score" greater than 50, break it down into several steps present as TypeScript functions. For each function, give a one line function description, that should have a briefly description of what the function should do, what parameters it should take, and what it should return. Add those function descriptions to the "data" field of the output JSON object.
+      - bypass step like "create a new Office Add-ins project" or "create a new Excel workbook" or "create a new Word document" or "create a new PowerPoint presentation".
+      - bypass step like "open the workbook" or "open the document" or "open the presentation".
+      - bypass step like "save the workbook" or "save the document" or "save the presentation".
+      - bypass step like the "generate Addins Code" or "generate xxx Code".
+      - bypass step like "Use the Office JavaScript Add-ins API to perform the required operations".
+      - bypass step like "Register the xxx function".
+    3. If this is a simple task, that the "complexity score" less than 50, generate a single one line function description for this task without any break down, and put that description into the "data" field.
+    4. Check the value of output object's "customFunctions" field:
+      - If the value is "true", you should not include the entry function description in the "data" field.
+      - If the value is "false", you should include the entry function description in the "data" field. The entry function description should summarize how other functions be called in what order. The entry function must named as "main", and takes no parameters, declared as 'async function'.
+    5. Identify and set the "host" property of the output JSON object, that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". 
+
+    Following are some Examples:
+    1. This is an example of the list that ask is not about custom functions, it must contains a entry function descriptions named 'main':
+      - Create a function named 'createTrendlineChart'. This function should take the 'Excel.Worksheet' and the range values as parameters. It should create a trendline chart in the worksheet where dates are set as the x-value and prices as the y-value. Return a Promise<Excel.Chart> object.
+      - Create an entry function named 'main'. This function doesn't take any parameters and will call 'createTrendlineChart' to create a trendline chart in worksheet. The function should be declared as 'async function'.
+    2. This is an example of the list that ask about custom functions, it must not contains the entry function descriptions:
+      - Create a custom functions named 'addSum'. This function should take two number values as parameters. Return the Promise<number> object. The function should be declared as 'async function'.
+  
+  If you suggested to accept the ask. Put the list of function description into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be true.
   If you suggested to reject the ask, put the reason to reject into the "data" field of the output JSON object. A "shouldContinue" field on that JSON object should be false.
   You must strickly follow the format of output.
 
   #The format of output:
   The output should be just a **JSON object**. You should not add anything else to the output
-  - The first key named "host", that value is a string to indicate which Office application is the most relevant to the user's ask. You can pick from "Excel", "Word", "PowerPoint". 
-  - The second key is "shouldContinue", the value is a Boolean.
-  - The third key named "data", the value of it is the list of sub tasks or rejection reason, and that is a string array.
-  - The fourth key named "complexity", the value of it is a number to indicate the complexity of the user's ask. The number should be between 1 to 100, 1 means the ask is very simple, 100 means the ask is very complex. This is the rule to calculate the complexity:
-    - If there's no interaction with Office JavaScript Add-ins API, set the score range from very simple to simple. If maps to score, that coulld be (1, 25).
-    - If there's a few interaction (less than 2) with Office JavaScript Add-ins API, set the score range from simple to medium. If maps to score, that coulld be (26, 50).
-    - If there's several interaction (more than 2, less than 5) with Office JavaScript Add-ins API, set the score range from medium to complex. If maps to score, that coulld be (51, 75).
-    - If there's many interaction (more than 5) with Office JavaScript Add-ins API, set the score range from complex to very complex. If maps to score, that coulld be (76, 100).
-  - The last key named "customFunctions", set value of it to be a Boolean true if the user's ask is about Office JavaScript Add-ins with custom functions on Excel. Otherwise, set it to be a Boolean false.
-  If the value of "shouldContinue" is true, then the value of "data" should be the list of sub tasks; if the value of "shouldContinue" is false, then the value of "data" should be the list of missing information or reason to reject. **Beyond this JSON object, you should not add anything else to the output**.
 
   Think about that step by step.
   `;
@@ -237,7 +248,7 @@ export class CodeGenerator implements ISkill {
     if (
       !copilotRet.customFunctions &&
       !copilotRet.data.find((task: string) => {
-        return task.includes("entry function named 'main'");
+        return task.includes("'main'");
       })
     ) {
       console.debug(

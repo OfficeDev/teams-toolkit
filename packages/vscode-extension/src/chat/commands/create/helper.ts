@@ -33,7 +33,7 @@ import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
 
 const TOKEN_LIMITS = 2700;
-const SCORE_LIMIT = 0.7;
+const SCORE_LIMIT = 0.8;
 
 export async function matchProject(
   request: ChatRequest,

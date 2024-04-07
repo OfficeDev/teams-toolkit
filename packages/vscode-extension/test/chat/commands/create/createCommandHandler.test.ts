@@ -77,7 +77,7 @@ describe("chat create command", () => {
       );
       chai.assert.isTrue(
         response.markdown.calledOnceWith(
-          "No matching templates or samples found. Try a different app description or explore other templates.\n"
+          "I cannot find any matching templates or samples. Refine your app description or explore other templates."
         )
       );
     });
@@ -205,6 +205,86 @@ describe("chat create command", () => {
       chai.assert.isTrue(showFileTreeStub.notCalled);
       chai.assert.isTrue(response.markdown.calledThrice);
       chai.assert.isTrue(response.button.calledTwice);
+    });
+
+    it("has >5 matched results", async () => {
+      const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      sandbox.stub(chatTelemetryDataMock, "properties").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(chatTelemetryDataMock, "measurements").get(function getterFn() {
+        return undefined;
+      });
+      chatTelemetryDataMock.chatMessages = [];
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const fakedSamples = [
+        {
+          id: "test-sample",
+          type: "sample",
+          platform: "Teams",
+          name: "test sample",
+          description: "test sample",
+        },
+        {
+          id: "test-sample",
+          type: "template",
+          platform: "Teams",
+          name: "test sample",
+          description: "test sample",
+        },
+        {
+          id: "test-sample",
+          type: "sample",
+          platform: "Teams",
+          name: "test sample",
+          description: "test sample",
+        },
+        {
+          id: "test-sample",
+          type: "template",
+          platform: "Teams",
+          name: "test sample",
+          description: "test sample",
+        },
+        {
+          id: "test-sample",
+          type: "sample",
+          platform: "Teams",
+          name: "test sample",
+          description: "test sample",
+        },
+        {
+          id: "test-sample",
+          type: "template",
+          platform: "Teams",
+          name: "test sample",
+          description: "test sample",
+        },
+      ] as ProjectMetadata[];
+      sandbox.stub(helper, "matchProject").resolves(fakedSamples);
+      const showFileTreeStub = sandbox.stub(helper, "showFileTree");
+      sandbox.stub(util, "verbatimCopilotInteraction");
+
+      const response = {
+        markdown: sandbox.stub(),
+        button: sandbox.stub(),
+      };
+      const token = new CancellationToken();
+      await createCommandHandler.default(
+        { prompt: "test" } as unknown as vscode.ChatRequest,
+        {} as unknown as vscode.ChatContext,
+        response as unknown as vscode.ChatResponseStream,
+        token
+      );
+      chai.assert.isTrue(showFileTreeStub.notCalled);
+      chai.assert.isTrue(
+        response.markdown.calledOnceWith(
+          "Your app description is too generic. To find relevant templates or samples, give specific details of your app's capabilities or technologies.\n\nE.g. Instead of saying ‘create a chat bot’, you could specify ‘create a chat bot that answers FAQs for customer support.’"
+        )
+      );
     });
   });
 });

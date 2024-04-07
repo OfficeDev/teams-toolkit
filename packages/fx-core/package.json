@@ -63,6 +63,7 @@
     "test:teamsappMgr": "nyc mocha \"tests/component/driver/teamsApp/teamsappMgr.test.ts\"",
     "test:projcheck": "nyc mocha \"tests/common/projectTypeChecker.test.ts\"",
     "test:telemetry": "nyc mocha \"tests/common/telemetry.test.ts\"",
+    "test:stringUtils": "nyc mocha \"tests/common/stringUtils.test.ts\"",
     "clean": "rm -rf build",
     "prebuild": "npm run gen:cli",
     "build": "rimraf build && npx tsc -p ./",

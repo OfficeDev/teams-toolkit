@@ -30,8 +30,8 @@ function tokenize(text: string) {
   return text.split(/\s/);
 }
 
-export function maskSecret(inputText: string, threshold = MIN_ENTROPY): string {
-  if (!inputText) return inputText;
+export function maskSecret(inputText?: string, threshold = MIN_ENTROPY): string {
+  if (!inputText) return "";
   const results: string[] = [];
   const tokens = tokenize(inputText);
   tokens.forEach((token) => {

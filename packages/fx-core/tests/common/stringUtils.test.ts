@@ -18,5 +18,9 @@ describe("stringUtils", () => {
       const output = maskSecret(input);
       assert.equal(output, "Bearer ***");
     });
+    it("input undefined", async () => {
+      const output = maskSecret();
+      assert.equal(output, "");
+    });
   });
 });

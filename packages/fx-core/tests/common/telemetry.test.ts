@@ -44,5 +44,9 @@ describe("telemetry", () => {
       const output = extractMethodNamesFromErrorStack(stack);
       assert.equal(output, expectedOutput.join(" | "));
     });
+    it("input undefined", async () => {
+      const output = extractMethodNamesFromErrorStack();
+      assert.equal(output, "");
+    });
   });
 });

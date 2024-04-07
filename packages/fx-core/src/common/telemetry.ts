@@ -7,6 +7,7 @@ import { TOOLS, globalVars } from "../core/globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
 import { assign } from "lodash";
 import { ProjectType } from "@microsoft/m365-spec-parser";
+import { maskSecret } from "./stringUtils";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -241,8 +242,8 @@ export function fillInTelemetryPropsForFxError(
   props[TelemetryConstants.properties.errorCode] =
     props[TelemetryConstants.properties.errorCode] || errorCode;
   props[TelemetryConstants.properties.errorType] = errorType;
-  // props[TelemetryConstants.properties.errorMessage] = error.message;  // error-message is retired
-  // props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
+  props[TelemetryConstants.properties.errorMessage] = maskSecret(error.message);
+  props[TelemetryConstants.properties.errorStack] = extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
   props[TelemetryConstants.properties.errorName] = error.name;
 
   // append global context properties
@@ -291,7 +292,8 @@ export function fillinProjectTypeProperties(
   assign(props, newProps);
 }
 
-export function extractMethodNamesFromErrorStack(stack: string): string {
+export function extractMethodNamesFromErrorStack(stack?: string): string {
+  if (!stack) return "";
   const methodNamesRegex = /at\s([\w.<>\[\]\s]+)\s\(/g;
   let match;
   const methodNames: string[] = [];

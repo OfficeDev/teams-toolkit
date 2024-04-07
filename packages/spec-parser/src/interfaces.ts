@@ -25,6 +25,18 @@ export interface ValidateResult {
   errors: ErrorResult[];
 }
 
+export interface SpecValidationResult {
+  /**
+   * An array of warning results generated during validation.
+   */
+  warnings: WarningResult[];
+
+  /**
+   * An array of error results generated during validation.
+   */
+  errors: ErrorResult[];
+}
+
 /**
  * An interface that represents a warning result generated during validation.
  */

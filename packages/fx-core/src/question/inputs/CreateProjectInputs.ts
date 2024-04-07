@@ -87,7 +87,7 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Authentication Type */
   "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
   /** @description Chat With Your Data */
-  "custom-copilot-rag"?: "custom-copilot-rag-azureAISearch";
+  "custom-copilot-rag"?: "custom-copilot-rag-customize" | "custom-copilot-rag-azureAISearch";
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */

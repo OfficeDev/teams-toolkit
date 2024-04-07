@@ -2208,7 +2208,7 @@ export class CustomCopilotRagOptions {
 
   static all(): OptionItem[] {
     return [
-      // CustomCopilotRagOptions.customize(),
+      CustomCopilotRagOptions.customize(),
       CustomCopilotRagOptions.azureAISearch(),
       // CustomCopilotRagOptions.customApi(),
       // CustomCopilotRagOptions.microsoft365(),

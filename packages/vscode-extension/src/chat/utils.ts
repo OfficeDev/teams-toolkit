@@ -14,6 +14,7 @@ import {
 import { sampleProvider } from "@microsoft/teamsfx-core";
 import { BaseTokensPerCompletion, BaseTokensPerMessage, BaseTokensPerName } from "./consts";
 import { buildDynamicPrompt } from "./dynamicPrompt";
+import { inputRai, outputRai } from "./dynamicPrompt/formats";
 import { Tokenizer } from "./tokenizer";
 
 export async function verbatimCopilotInteraction(
@@ -109,7 +110,7 @@ export async function isInputHarmful(
   request: ChatRequest,
   token: CancellationToken
 ): Promise<boolean> {
-  const messages = buildDynamicPrompt("inputRai", request.prompt).messages;
+  const messages = buildDynamicPrompt(inputRai, request.prompt).messages;
   let response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
   if (!response) {
     throw new Error("Got empty response");
@@ -129,7 +130,7 @@ export async function isInputHarmful(
 }
 
 export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {
-  const messages = buildDynamicPrompt("outputRai", output).messages;
+  const messages = buildDynamicPrompt(outputRai, output).messages;
   return await isContentHarmful(messages, token);
 }
 

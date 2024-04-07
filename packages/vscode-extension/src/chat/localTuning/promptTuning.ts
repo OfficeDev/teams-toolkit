@@ -10,9 +10,9 @@ import {
   LanguageModelChatUserMessage,
 } from "vscode";
 import { buildDynamicPrompt } from "../dynamicPrompt";
-import { getCopilotResponseAsString } from "./utilFunctions";
 import { loadConfig } from "./loadConfig";
 import { LocalTuningScenarioHandler } from "./types";
+import { getCopilotResponseAsString } from "./utilFunctions";
 
 export const promptTuning: LocalTuningScenarioHandler = async (
   request,
@@ -31,11 +31,7 @@ export const promptTuning: LocalTuningScenarioHandler = async (
   await Promise.all(
     config.userPrompts.map(async (userPrompt, textIndex) => {
       const startTime = new Date();
-      const messages = buildDynamicPrompt(
-        "inputRai",
-        userPrompt,
-        config.dynamicPromptSettings
-      ).messages;
+      const messages = buildDynamicPrompt(config.dynamicPromptFormat, userPrompt).messages;
 
       const outputs = await Promise.all(
         Array(config.callCount)

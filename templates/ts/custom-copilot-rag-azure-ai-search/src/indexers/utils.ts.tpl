@@ -11,7 +11,7 @@ import {
 import { MyDocument } from "../app/azureAISearchDataSource";
 import { OpenAIEmbeddings } from "@microsoft/teams-ai";
 {{#useOpenAI}}
-import { config } from "../config";
+import config from "../config";
 {{/useOpenAI}}
 
 /**

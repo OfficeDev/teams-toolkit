@@ -50,6 +50,11 @@ export class MyDataSource implements DataSource {
         if(!query) {
             return { output: "", length: 0, tooLong: false };
         }
+        for (let data of this._data) {
+            if (data.includes(query)) {
+                return { output: this.formatDocument(data), length: data.length, tooLong: false };
+            }
+        }
         if (query.toLocaleLowerCase().includes("perksplus")) {
             return { output: this.formatDocument(this._data[0]), length: this._data[0].length, tooLong: false };
         } else if (query.toLocaleLowerCase().includes("company") || query.toLocaleLowerCase().includes("history")) {

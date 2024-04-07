@@ -40,7 +40,7 @@ interface IResult {
 
 Here is the request text:
 \`\`\`json
-{{args}}
+{{stringify(args)}}
 \`\`\`
 `,
     user: `Please provide the reuslt JSON

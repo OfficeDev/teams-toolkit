@@ -11,13 +11,6 @@ import {
 } from "@azure/search-documents";
 import { MyDocument } from "../app/AzureAISearchDataSource";
 import { OpenAIEmbeddings } from "@microsoft/teams-ai";
-import config from "../config";
-
-export const WAIT_TIME = 4000;
-
-export const documentKeyRetriever: (document: MyDocument) => string = (document: MyDocument): string => {
-    return document.docId!;
-};
 
 /**
  * A wrapper for setTimeout that resolves a promise after timeInMs milliseconds.

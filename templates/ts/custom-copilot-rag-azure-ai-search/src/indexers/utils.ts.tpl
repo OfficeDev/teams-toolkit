@@ -1,7 +1,6 @@
 /**
  * Defines the utility methods.
  */
-
 import {
     SearchIndexClient,
     SearchIndex,

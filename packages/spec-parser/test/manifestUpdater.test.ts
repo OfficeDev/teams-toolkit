@@ -85,7 +85,8 @@ describe("updateManifestWithAiPlugin", () => {
       description: { short: "My API", full: "My API description" },
       plugins: [
         {
-          pluginFile: "ai-plugin.json",
+          file: "ai-plugin.json",
+          id: "plugin_1",
         },
       ],
     };
@@ -223,7 +224,8 @@ describe("updateManifestWithAiPlugin", () => {
       description: { short: "My API", full: "My API description" },
       plugins: [
         {
-          pluginFile: "ai-plugin.json",
+          file: "ai-plugin.json",
+          id: "plugin_1",
         },
       ],
     };
@@ -364,7 +366,8 @@ describe("updateManifestWithAiPlugin", () => {
       description: { short: "My API", full: "My API description" },
       plugins: [
         {
-          pluginFile: "ai-plugin.json",
+          file: "ai-plugin.json",
+          id: "plugin_1",
         },
       ],
     };
@@ -465,7 +468,8 @@ describe("updateManifestWithAiPlugin", () => {
       description: { short: "My API", full: "My API description" },
       plugins: [
         {
-          pluginFile: "ai-plugin.json",
+          file: "ai-plugin.json",
+          id: "plugin_1",
         },
       ],
     };

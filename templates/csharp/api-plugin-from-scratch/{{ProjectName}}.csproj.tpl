@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
-    <ProjectCapability Include="APIME" />
+    <ProjectCapability Include="CopilotPlugin" />
   </ItemGroup>
 
   <ItemGroup>

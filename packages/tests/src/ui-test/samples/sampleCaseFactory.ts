@@ -24,11 +24,6 @@ import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
-import {
-  runProvision,
-  runDeploy,
-  reRunDeploy,
-} from "../remotedebug/remotedebugContext";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { expect } from "chai";
 import { Page } from "playwright";
@@ -364,17 +359,14 @@ export abstract class CaseFactory {
                 }
               },
               dev: async () => {
-                await runProvision(
+                await sampledebugContext.provisionProject(
                   sampledebugContext.appName,
-                  env,
-                  false,
-                  options?.type === "spfx"
+                  sampledebugContext.projectPath
                 );
-                try {
-                  await runDeploy(Timeout.tabDeploy);
-                } catch (error) {
-                  await reRunDeploy(Timeout.tabDeploy);
-                }
+                await sampledebugContext.deployProject(
+                  sampledebugContext.projectPath,
+                  Timeout.botDeploy
+                );
               },
             };
 

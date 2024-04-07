@@ -3,7 +3,13 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import { ParseOptions, APIValidationResult, ErrorType, ProjectType } from "../interfaces";
+import {
+  ParseOptions,
+  APIValidationResult,
+  ErrorType,
+  ProjectType,
+  SpecValidationResult,
+} from "../interfaces";
 import { Validator } from "./validator";
 
 export class TeamsAIValidator extends Validator {
@@ -12,6 +18,20 @@ export class TeamsAIValidator extends Validator {
     this.projectType = ProjectType.TeamsAi;
     this.options = options;
     this.spec = spec;
+  }
+
+  validateSpec(): SpecValidationResult {
+    const result: SpecValidationResult = { errors: [], warnings: [] };
+
+    // validate spec server
+    let validationResult = this.validateSpecServer();
+    result.errors.push(...validationResult.errors);
+
+    // validate no supported API
+    validationResult = this.validateSpecNoSupportAPI();
+    result.errors.push(...validationResult.errors);
+
+    return result;
   }
 
   validateAPI(method: string, path: string): APIValidationResult {

@@ -115,4 +115,5 @@ export class ConstantString {
   static readonly CommandTitleMaxLens = 32;
   static readonly ParameterTitleMaxLens = 32;
   static readonly SMERequiredParamsMaxNum = 5;
+  static readonly DefaultPluginId = "plugin_1";
 }

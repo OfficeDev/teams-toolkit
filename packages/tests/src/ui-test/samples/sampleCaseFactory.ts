@@ -307,7 +307,8 @@ export abstract class CaseFactory {
       });
 
       it(
-        `[auto] ${env === "local" ? env : "remote"
+        `[auto] ${
+          env === "local" ? env : "remote"
         } debug for Sample ${sampleName}`,
         {
           testPlanCaseId,
@@ -358,8 +359,14 @@ export abstract class CaseFactory {
                 }
               },
               dev: async () => {
-                await sampledebugContext.provisionProject(sampledebugContext.appName, sampledebugContext.projectPath);
-                await sampledebugContext.deployProject(sampledebugContext.projectPath, Timeout.botDeploy);
+                await sampledebugContext.provisionProject(
+                  sampledebugContext.appName,
+                  sampledebugContext.projectPath
+                );
+                await sampledebugContext.deployProject(
+                  sampledebugContext.projectPath,
+                  Timeout.botDeploy
+                );
               },
             };
 

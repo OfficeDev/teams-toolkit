@@ -33,10 +33,7 @@ import {
   createResourceGroup,
 } from "../../utils/cleanHelper";
 import { Executor } from "../../utils/executor";
-import {
-  runProvision,
-  runDeploy,
-} from "../remotedebug/remotedebugContext";
+import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
 export class SampledebugContext extends TestContext {
   public readonly appName: string;
@@ -443,7 +440,7 @@ export class SampledebugContext extends TestContext {
       await runProvision(appName);
     }
   }
-  
+
   public async deployProject(
     projectPath: string,
     waitTime: number = Timeout.tabDeploy,
@@ -467,7 +464,7 @@ export class SampledebugContext extends TestContext {
       await runDeploy(waitTime);
     }
   }
-  
+
   public async runCliProvision(
     projectPath: string,
     appName: string,
@@ -486,7 +483,7 @@ export class SampledebugContext extends TestContext {
       AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
     });
   }
-  
+
   public async runCliDeploy(
     projectPath: string,
     option = "",

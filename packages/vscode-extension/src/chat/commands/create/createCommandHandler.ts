@@ -39,7 +39,7 @@ export default async function createCommandHandler(
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   if (request.prompt.trim() === "") {
-    response.markdown(localize("teamstoolkit.chatParticipants.create.description"));
+    response.markdown(localize("teamstoolkit.chatParticipants.create.noPromptAnswer"));
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
       chatTelemetryData.properties,

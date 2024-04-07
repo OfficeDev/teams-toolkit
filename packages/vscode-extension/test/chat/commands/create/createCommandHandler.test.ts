@@ -45,7 +45,7 @@ describe("chat create command", () => {
       );
       chai.assert.isTrue(
         response.markdown.calledOnceWith(
-          "Use this command to find relevant templates or samples to build your Teams app as per your description. E.g. @teams /create create an AI assistant bot that can complete common tasks."
+          "Use this command to provide description and other details about the Teams app that you want to build.\n\nE.g. @teams /create a Teams app that will notify my team about new GitHub pull requests.\n\n@teams /create I want to create a ToDo Teams app."
         )
       );
       chai.assert.isTrue(sendTelemetryEventStub.calledTwice);

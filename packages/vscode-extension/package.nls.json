@@ -467,6 +467,7 @@
     "teamstoolkit.chatParticipants.nextStep.whatsNext": "What should I do next?",
     "teamstoolkit.chatParticipants.create.sample": "Scaffold this sample",
     "teamstoolkit.chatParticipants.create.template": "Create this template",
+    "teamstoolkit.chatParticipants.create.noPromptAnswer": "Use this command to provide description and other details about the Teams app that you want to build.\n\nE.g. @teams /create a Teams app that will notify my team about new GitHub pull requests.\n\n@teams /create I want to create a ToDo Teams app.",
     "teamstoolkit.chatParticipants.create.quickPick.workspace": "Current workspace",
     "teamstoolkit.chatParticipants.create.selectFolder.title": "Choose the location to save your project",
     "teamstoolkit.chatParticipants.create.selectFolder.label": "Select Folder",

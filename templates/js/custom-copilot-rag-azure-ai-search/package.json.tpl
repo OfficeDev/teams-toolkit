@@ -4,7 +4,7 @@
     "msteams": {
         "teamsAppId": null
     },
-    "description": "Microsoft Teams Toolkit AI Chat Bot Sample with Teams AI Library",
+    "description": "Microsoft Teams Toolkit RAG Bot Sample with Azure AI Search and Teams AI Library",
     "engines": {
         "node": "16 || 18"
     },

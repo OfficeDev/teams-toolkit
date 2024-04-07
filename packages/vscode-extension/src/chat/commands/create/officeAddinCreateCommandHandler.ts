@@ -86,7 +86,6 @@ export default async function officeAddinCreateCommandHandler(
         });
       }
     } else {
-      // TODO: If the match fails, generate the code.
       return await Planner.getInstance().processRequest(
         new LanguageModelChatUserMessage(request.prompt),
         request,

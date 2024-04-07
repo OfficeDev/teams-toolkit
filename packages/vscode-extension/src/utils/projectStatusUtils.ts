@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 
 import { ConfigFolderName, Result } from "@microsoft/teamsfx-api";
-import { getFixedCommonProjectSettings } from "@microsoft/teamsfx-core";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as os from "os";
+import { getFixedCommonProjectSettings } from "../chat/commands/nextstep/helper";
 import { ProjectActionStatus } from "../chat/commands/nextstep/types";
 import { CommandKey } from "../constants";
 
-const projectStatusFilePath = os.homedir() + `/.${ConfigFolderName}/projectStates.json`;
+export const projectStatusFilePath = os.homedir() + `/.${ConfigFolderName}/projectStates.json`;
 
 export const RecordedActions: (keyof ProjectActionStatus)[] = [
   CommandKey.Provision,
@@ -43,9 +43,7 @@ export async function getProjectStatus(projectId: string): Promise<ProjectAction
         }
       });
       status = { ...status, ...json[projectId] };
-    } catch (e) {
-      console.error(e);
-    }
+    } catch {}
   }
   return status;
 }
@@ -64,22 +62,18 @@ export async function updateProjectStatus(
     const status = await getProjectStatus(p);
     status[commandName as keyof ProjectActionStatus] = {
       result: result.isOk() ? "success" : "fail",
-      time: new Date(),
+      time: new Date(Date.now()),
     };
     let json: any = {};
     if (await fs.pathExists(projectStatusFilePath)) {
       try {
         json = JSON.parse(await fs.readFile(projectStatusFilePath, "utf8"));
-      } catch (e) {
-        console.error(e);
-      }
+      } catch {}
     }
     try {
       json[p] = status;
       await fs.writeFile(projectStatusFilePath, JSON.stringify(json, null, 2));
-    } catch (e) {
-      console.error(e);
-    }
+    } catch {}
   }
 }
 

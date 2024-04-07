@@ -2,21 +2,35 @@
 
 This template showcases an app that unfurls a link into an adaptive card when URLs with a particular domain are pasted into the compose message area in Microsoft Teams or email body in Outlook.
 
+{{#enableMETestToolByDefault}}
+![hero-image](https://aka.ms/teams-app-test-tool-link-unfurling-hero-image)
+{{/enableMETestToolByDefault}}
+{{^enableMETestToolByDefault}}
 ![hero-image](https://aka.ms/teamsfx-link-unfurling-hero-image)
+{{/enableMETestToolByDefault}}
 
 ## Get Started with the Link Unfurling app
 
 > **Prerequisites**
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
+{{^enableMETestToolByDefault}}
 > - A Microsoft 365 account. If you do not have Microsoft 365 account, apply one from [Microsoft 365 developer program](https://developer.microsoft.com/microsoft-365/dev-program)
+{{/enableMETestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [TeamsFx CLI](https://aka.ms/teamsfx-toolkit-cli)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableMETestToolByDefault}}
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser.
+3. The browser will pop up to open Teams App Test Tool.
+4. Click the "+" button in the input box, select "Link Unfurling" and paste a link ending with `.botframework.com`. You should see an adaptive card unfurled. Click `Send to Conversation` to send it to the current chat or channel.
+{{/enableMETestToolByDefault}}
+{{^enableMETestToolByDefault}}
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams or Outlook using a web browser by select a target Microsoft application: `Debug in Teams`, `Debug in Outlook` and click the `Run and Debug` green arrow button.
 4. When Teams or Outlook launches in the browser, select the Add button in the dialog to install your app to Teams.
 5. Paste a link ending with `.botframework.com` into compose message area in Teams or email body in Outlook. You should see an adaptive card unfurled.
+{{/enableMETestToolByDefault}}
 
 ## What's included in the template
 
@@ -24,6 +38,7 @@ This template showcases an app that unfurls a link into an adaptive card when UR
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `teamsapp.yml`       | Main project file describes your application configuration and defines the set of actions to run in each lifecycle stages |
 | `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging                                      |
+| `teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.            |
 | `.vscode/`           | VSCode files for local debug                                                                                              |
 | `src/`               | The source code for the link unfurling application                                                                        |
 | `appPackage/`        | Templates for the Teams application manifest                                                                              |

@@ -15,10 +15,24 @@ This app template has a search command, an action command and a link unfurling.
 > To run the template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
+{{^enableMETestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
+{{/enableMETestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableMETestToolByDefault}}
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser.
+3. To trigger the Message Extension to invoke commands:
+   1. To trigger search commands, click the `+` in compose message area and select `Search command`.
+   2. To trigger action commands, click the `+` in compose message area or `...` above a message and select `Action command`.
+   3. To trigger link unfurling, click the `+` in compose message area and select `Link unfurling`.
+
+![Search app demo](https://github.com/OfficeDev/TeamsFx/assets/9698542/5275e5bc-492f-4365-b602-5803938a9780)
+
+![action-ME](https://github.com/OfficeDev/TeamsFx/assets/9698542/c0afbd89-7fbb-4e73-98a2-f018be4ca88c)
+{{/enableMETestToolByDefault}}
+{{^enableMETestToolByDefault}}
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
@@ -27,7 +41,10 @@ This app template has a search command, an action command and a link unfurling.
    2. In Outlook: click the `More apps` icon under compose email area to find your message extension. Only search command and link unfurling works in Outlook.
 6. Paste a link ending with `.botframework.com` into compose message area in Teams or email body in Outlook. You should see an adaptive card unfurled.
 
+![Search app demo](https://user-images.githubusercontent.com/11220663/167868361-40ffaaa3-0300-4313-ae22-0f0bab49c329.png)
+
 ![action-ME](https://github.com/OfficeDev/TeamsFx/assets/25220706/378ea4d7-9332-4aec-9f85-59891d086b80)
+{{/enableMETestToolByDefault}}
 
 ## What's included in the template
 
@@ -51,6 +68,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
 | `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                     |
+| `teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.                            |
 
 ## Extend the template
 

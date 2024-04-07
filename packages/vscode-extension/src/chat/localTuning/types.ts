@@ -9,7 +9,8 @@ export type LocalTuningScenarioHandler = (
 ) => Promise<void>;
 
 export interface ILocalPromptTuningConfigurations {
-  dynamicPromptSettings: IDynamicPromptPartialSettings;
-  userPrompts: string[];
   callCount: number;
+  dynamicPromptSettings: IDynamicPromptPartialSettings;
+  outputDir: string;
+  userPrompts: string[];
 }

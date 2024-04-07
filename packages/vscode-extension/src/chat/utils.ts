@@ -110,7 +110,22 @@ export async function isInputHarmful(
   token: CancellationToken
 ): Promise<boolean> {
   const messages = buildDynamicPrompt("inputRai", request.prompt).messages;
-  return isContentHarmful(messages, token);
+  let response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
+  if (!response) {
+    throw new Error("Got empty response");
+  }
+
+  const separatorIndex = response.indexOf("```");
+  if (separatorIndex >= 0) {
+    response = response.substring(0, separatorIndex);
+  }
+  const resultJson = JSON.parse(response);
+
+  if (typeof resultJson.isHarmful !== "boolean") {
+    throw new Error(`Failed to parse response: isHarmful is not a boolean.`);
+  }
+
+  return resultJson.isHarmful;
 }
 
 export async function isOutputHarmful(output: string, token: CancellationToken): Promise<boolean> {

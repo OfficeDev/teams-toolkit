@@ -38,6 +38,21 @@ export default async function createCommandHandler(
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
+  if (request.prompt.trim() === "") {
+    response.markdown(localize("teamstoolkit.chatParticipants.create.description"));
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      chatTelemetryData.properties,
+      chatTelemetryData.measurements
+    );
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        requestId: chatTelemetryData.requestId,
+      },
+    };
+  }
+
   const matchedResult = await helper.matchProject(request, token, chatTelemetryData);
 
   if (matchedResult.length === 0) {

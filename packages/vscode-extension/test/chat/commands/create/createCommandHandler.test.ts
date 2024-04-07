@@ -20,6 +20,37 @@ describe("chat create command", () => {
       sandbox.restore();
     });
 
+    it("returns default answer", async () => {
+      const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
+      sandbox.stub(chatTelemetryDataMock, "properties").get(function getterFn() {
+        return undefined;
+      });
+      sandbox.stub(chatTelemetryDataMock, "measurements").get(function getterFn() {
+        return undefined;
+      });
+      sandbox
+        .stub(telemetry.ChatTelemetryData, "createByParticipant")
+        .returns(chatTelemetryDataMock);
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+      const response = {
+        markdown: sandbox.stub(),
+      };
+      const token = new CancellationToken();
+      await createCommandHandler.default(
+        { prompt: "" } as unknown as vscode.ChatRequest,
+        {} as unknown as vscode.ChatContext,
+        response as unknown as vscode.ChatResponseStream,
+        token
+      );
+      chai.assert.isTrue(
+        response.markdown.calledOnceWith(
+          "Use this command to find relevant templates or samples to build your Teams app as per your description. E.g. @teams /create create an AI assistant bot that can complete common tasks."
+        )
+      );
+      chai.assert.isTrue(sendTelemetryEventStub.calledTwice);
+    });
+
     it("returns no result answer", async () => {
       const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       sandbox.stub(chatTelemetryDataMock, "properties").get(function getterFn() {
@@ -39,7 +70,7 @@ describe("chat create command", () => {
       };
       const token = new CancellationToken();
       await createCommandHandler.default(
-        {} as unknown as vscode.ChatRequest,
+        { prompt: "test" } as unknown as vscode.ChatRequest,
         {} as unknown as vscode.ChatContext,
         response as unknown as vscode.ChatResponseStream,
         token
@@ -81,7 +112,7 @@ describe("chat create command", () => {
       };
       const token = new CancellationToken();
       await createCommandHandler.default(
-        {} as unknown as vscode.ChatRequest,
+        { prompt: "test" } as unknown as vscode.ChatRequest,
         {} as unknown as vscode.ChatContext,
         response as unknown as vscode.ChatResponseStream,
         token
@@ -119,7 +150,7 @@ describe("chat create command", () => {
       };
       const token = new CancellationToken();
       await createCommandHandler.default(
-        {} as unknown as vscode.ChatRequest,
+        { prompt: "test" } as unknown as vscode.ChatRequest,
         {} as unknown as vscode.ChatContext,
         response as unknown as vscode.ChatResponseStream,
         token
@@ -166,7 +197,7 @@ describe("chat create command", () => {
       };
       const token = new CancellationToken();
       await createCommandHandler.default(
-        {} as unknown as vscode.ChatRequest,
+        { prompt: "test" } as unknown as vscode.ChatRequest,
         {} as unknown as vscode.ChatContext,
         response as unknown as vscode.ChatResponseStream,
         token

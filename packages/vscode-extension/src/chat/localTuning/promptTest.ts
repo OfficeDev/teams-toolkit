@@ -5,7 +5,7 @@ import { promises } from "fs";
 import * as path from "path";
 import { loadConfig } from "./loadConfig";
 import { LocalTuningScenarioHandler } from "./types";
-import { isHarmful_new } from "./utilFunctions";
+import { isHarmful_new, isHarmful_old } from "./utilFunctions";
 
 export const promptTest: LocalTuningScenarioHandler = async (request, context, response, token) => {
   const log = (message: string) => {
@@ -24,8 +24,8 @@ export const promptTest: LocalTuningScenarioHandler = async (request, context, r
     try {
       const prompt = config.userPrompts[i];
       const results = await Promise.all([
-        isHarmful_new(JSON.stringify(prompt), config.dynamicPromptSettings, token),
-        true, // isHarmful_old(prompt, token),
+        isHarmful_new(config.dynamicPromptFormat, prompt, token),
+        isHarmful_old(prompt, token),
       ]);
 
       const [newResult, oldResult] = results;

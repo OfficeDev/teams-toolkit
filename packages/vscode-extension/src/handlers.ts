@@ -1388,19 +1388,13 @@ export async function showLocalDebugMessage() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
-  let message = util.format(
-    localize("teamstoolkit.handlers.localDebugDescription.fallback"),
-    appName,
-    globalVariables.workspaceUri?.fsPath
-  );
+  const messageTemplate = await getLocalDebugMessageTemplate(isWindows);
+
+  let message = util.format(messageTemplate, appName, globalVariables.workspaceUri?.fsPath);
   if (isWindows) {
     const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
     const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-    message = util.format(
-      localize("teamstoolkit.handlers.localDebugDescription"),
-      appName,
-      openFolderCommand
-    );
+    message = util.format(messageTemplate, appName, openFolderCommand);
   }
   void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
     if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {
@@ -1408,6 +1402,33 @@ export async function showLocalDebugMessage() {
       selection.run();
     }
   });
+}
+
+export async function getLocalDebugMessageTemplate(isWindows: boolean): Promise<string> {
+  const enabledTestTool = await isTestToolEnabled();
+
+  if (isWindows) {
+    return enabledTestTool
+      ? localize("teamstoolkit.handlers.localDebugDescription.enabledTestTool")
+      : localize("teamstoolkit.handlers.localDebugDescription");
+  }
+
+  return enabledTestTool
+    ? localize("teamstoolkit.handlers.localDebugDescription.enabledTestTool.fallback")
+    : localize("teamstoolkit.handlers.localDebugDescription.fallback");
+}
+
+// check if test tool is enabled in scaffolded project
+async function isTestToolEnabled(): Promise<boolean> {
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+
+    const testToolYamlPath = path.join(workspacePath, "teamsapp.testtool.yml");
+    return fs.pathExists(testToolYamlPath);
+  }
+
+  return false;
 }
 
 export async function ShowScaffoldingWarningSummary(

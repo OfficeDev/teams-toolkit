@@ -2690,6 +2690,7 @@ describe("autoOpenProjectHandler", () => {
   it("showLocalDebugMessage()", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
@@ -2716,6 +2717,46 @@ describe("autoOpenProjectHandler", () => {
     await handlers.showLocalDebugMessage();
 
     chai.assert.isTrue(executeCommandStub.notCalled);
+  });
+
+  it("getLocalDebugMessageTemplate() - Windows & Test Tool enabled", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(fs, "pathExists").resolves(true);
+
+    const result = await handlers.getLocalDebugMessageTemplate(true);
+    chai.assert.isTrue(result.includes("Test Tool"));
+  });
+
+  it("getLocalDebugMessageTemplate() - Windows & Test Tool disabled", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(fs, "pathExists").resolves(false);
+
+    const result = await handlers.getLocalDebugMessageTemplate(true);
+    chai.assert.isFalse(result.includes("Test Tool"));
+  });
+
+  it("getLocalDebugMessageTemplate() - non-Windows & Test Tool enabled", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(fs, "pathExists").resolves(true);
+
+    const result = await handlers.getLocalDebugMessageTemplate(false);
+    chai.assert.isTrue(result.includes("Test Tool"));
+  });
+
+  it("getLocalDebugMessageTemplate() - non-Windows & Test Tool disabled", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+    sandbox.stub(fs, "pathExists").resolves(false);
+
+    const result = await handlers.getLocalDebugMessageTemplate(false);
+    chai.assert.isFalse(result.includes("Test Tool"));
+  });
+
+  it("getLocalDebugMessageTemplate() - non workspace folder", async () => {
+    sandbox.stub(vscode.workspace, "workspaceFolders").value([]);
+    sandbox.stub(fs, "pathExists").resolves(false);
+
+    const result = await handlers.getLocalDebugMessageTemplate(false);
+    chai.assert.isFalse(result.includes("Test Tool"));
   });
 
   it("installAdaptiveCardExt()", async () => {

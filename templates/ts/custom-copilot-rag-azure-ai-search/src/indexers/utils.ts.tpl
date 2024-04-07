@@ -10,6 +10,9 @@ import {
 } from "@azure/search-documents";
 import { MyDocument } from "../app/azureAISearchDataSource";
 import { OpenAIEmbeddings } from "@microsoft/teams-ai";
+{{#useOpenAI}}
+import { config } from "../config";
+{{/useOpenAI}}
 
 /**
  * A wrapper for setTimeout that resolves a promise after timeInMs milliseconds.

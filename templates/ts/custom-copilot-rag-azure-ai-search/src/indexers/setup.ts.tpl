@@ -1,6 +1,6 @@
 import { AzureKeyCredential, SearchClient, SearchIndexClient } from "@azure/search-documents";
 import { createIndexIfNotExists, delay, upsertDocuments, getEmbeddingVector } from "./utils";
-import { MyDocument } from "../app/AzureAISearchDataSource";
+import { MyDocument } from "../app/azureAISearchDataSource";
 import path from "path";
 import * as fs from "fs";
 

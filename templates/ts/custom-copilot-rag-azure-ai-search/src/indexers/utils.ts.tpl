@@ -9,7 +9,7 @@ import {
     SearchClient,
     IndexDocumentsResult
 } from "@azure/search-documents";
-import { MyDocument } from "../app/AzureAISearchDataSource";
+import { MyDocument } from "../app/azureAISearchDataSource";
 import { OpenAIEmbeddings } from "@microsoft/teams-ai";
 
 /**

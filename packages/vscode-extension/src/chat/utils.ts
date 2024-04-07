@@ -109,8 +109,7 @@ export async function isInputHarmful(
   request: ChatRequest,
   token: CancellationToken
 ): Promise<boolean> {
-  const phrases = generatePhrases(request.prompt);
-  const messages = buildDynamicPrompt("inputRai", phrases).messages;
+  const messages = buildDynamicPrompt("inputRai", request.prompt).messages;
   return isContentHarmful(messages, token);
 }
 
@@ -140,42 +139,4 @@ async function isContentHarmful(
   const results = await Promise.all(promises);
   const isHarmful = results.filter((result) => result === true).length > 0;
   return isHarmful;
-}
-
-// brutely break the sentence into phrases, that LLM can handle with a better result
-export function generatePhrases(sentence: string): string[] {
-  const words: string[] = sentence.split(" ");
-  const phrases: string[] = [];
-  const maxPhraseLength = 6;
-  const minPhraseLength = 3;
-
-  if (words.length < minPhraseLength) {
-    phrases.push(sentence);
-    return phrases;
-  }
-
-  const n: number = words.length > maxPhraseLength ? maxPhraseLength : words.length;
-  for (let i = minPhraseLength; i <= n; i++) {
-    for (let j = 0; j <= words.length - i; j++) {
-      const phrase = words.slice(j, j + i).join(" ");
-      if (
-        phrase.toLowerCase().includes("office") ||
-        phrase.toLowerCase().includes("addin") ||
-        phrase.toLowerCase().includes("add-in") ||
-        phrase.toLowerCase().includes("add in") ||
-        phrase.toLowerCase().includes("javascript") ||
-        phrase.toLowerCase().includes("api") ||
-        phrase.toLowerCase().includes("microsoft") ||
-        phrase.toLowerCase().includes("excel") ||
-        phrase.toLowerCase().includes("word") ||
-        phrase.toLowerCase().includes("powerpoint") ||
-        phrase.toLowerCase().includes("code")
-      ) {
-        continue;
-      }
-      phrases.push(phrase);
-    }
-  }
-  phrases.push(sentence);
-  return phrases;
 }

@@ -9,12 +9,23 @@ This app template is a search-based [message extension](https://docs.microsoft.c
 > To run the template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
+{{^enableMETestToolByDefault}}
 > - A [Microsoft 365 account for development](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts)
 > - [Set up your dev environment for extending Teams apps across Microsoft 365](https://aka.ms/teamsfx-m365-apps-prerequisites)
 >   Please note that after you enrolled your developer tenant in Office 365 Target Release, it may take couple days for the enrollment to take effect.
+{{/enableMETestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableMETestToolByDefault}}
+2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+3. To trigger the Message Extension, you can click the `+` in compose message area and select `Search Command`
+
+**Congratulations**! You are running an application that can now search npm registries in Teams App Test Tool.
+
+![Search app demo](https://github.com/OfficeDev/TeamsFx/assets/9698542/5275e5bc-492f-4365-b602-5803938a9780)
+{{/enableMETestToolByDefault}}
+{{^enableMETestToolByDefault}}
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 4. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
@@ -25,6 +36,7 @@ This app template is a search-based [message extension](https://docs.microsoft.c
 **Congratulations**! You are running an application that can now search npm registries in Teams and Outlook.
 
 ![Search app demo](https://github.com/OfficeDev/TeamsFx/assets/25220706/27fefae9-c51f-49af-a175-c8c9d5a71af0)
+{{/enableMETestToolByDefault}}
 
 ## What's included in the template
 
@@ -40,8 +52,8 @@ The following files can be customized and demonstrate an example implementation 
 
 | File               | Contents                                                                                       |
 | ------------------ | ---------------------------------------------------------------------------------------------- |
-| `src/searchApp.js` | Handles the business logic for this app template to query npm registry and return result list. |
-| `src/index.js`     | `index.js` is used to setup and configure the Message Extension.                               |
+| `src/searchApp.ts` | Handles the business logic for this app template to query npm registry and return result list. |
+| `src/index.ts`     | `index.ts` is used to setup and configure the Message Extension.                               |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -49,6 +61,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
 | `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                     |
+| `teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.                            |
 
 ## Extend the template
 

@@ -4,14 +4,10 @@ environmentFolderPath: ./env
 
 # Triggered when 'teamsapp provision' is executed
 provision:
-{{#teamsAppCreate}} {{/teamsAppCreate}}
+{{#teamsAppCreate}}  {{/teamsAppCreate}}
 
-{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
-{{#teamsAppUpdate}} {{/teamsAppUpdate}}
-{{#teamsAppExtendToM365}} {{/teamsAppExtendToM365}}
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
 
-# Triggered when 'teamsapp publish' is executed
-publish:
-{{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
-{{#teamsAppUpdate}} {{/teamsAppUpdate}}
-{{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}
+{{#teamsAppUpdate}}  {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}}  {{/teamsAppExtendToM365}}

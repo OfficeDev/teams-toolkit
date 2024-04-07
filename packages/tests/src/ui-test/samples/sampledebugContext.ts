@@ -30,8 +30,10 @@ import {
   cleanAppStudio,
   cleanUpLocalProject,
   cleanUpResourceGroup,
+  createResourceGroup,
 } from "../../utils/cleanHelper";
 import { Executor } from "../../utils/executor";
+import { runProvision, runDeploy } from "../remotedebug/remotedebugContext";
 
 export class SampledebugContext extends TestContext {
   public readonly appName: string;
@@ -414,5 +416,89 @@ export class SampledebugContext extends TestContext {
       console.log("stdout: ", stdout);
       console.log("stderr: ", stderr);
     }
+  }
+
+  public async provisionProject(
+    appName: string,
+    projectPath = "",
+    createRg = true,
+    tool: "ttk" | "cli" = "cli",
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    if (tool === "cli") {
+      await this.runCliProvision(
+        projectPath,
+        appName,
+        createRg,
+        option,
+        env,
+        processEnv
+      );
+    } else {
+      await runProvision(appName);
+    }
+  }
+
+  public async deployProject(
+    projectPath: string,
+    waitTime: number = Timeout.tabDeploy,
+    tool: "ttk" | "cli" = "cli",
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    if (tool === "cli") {
+      await this.runCliDeploy(
+        projectPath,
+        option,
+        env,
+        processEnv,
+        retries,
+        newCommand
+      );
+    } else {
+      await runDeploy(waitTime);
+    }
+  }
+
+  public async runCliProvision(
+    projectPath: string,
+    appName: string,
+    createRg = true,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    if (createRg) {
+      await createResourceGroup(appName, env, "westus");
+    }
+    const resourceGroupName = `${appName}-${env}-rg`;
+    await CliHelper.showVersion(projectPath, processEnv);
+    await CliHelper.provisionProject2(projectPath, option, env, {
+      ...process.env,
+      AZURE_RESOURCE_GROUP_NAME: resourceGroupName,
+    });
+  }
+
+  public async runCliDeploy(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    await CliHelper.deployAll(
+      projectPath,
+      option,
+      env,
+      processEnv,
+      retries,
+      newCommand
+    );
   }
 }

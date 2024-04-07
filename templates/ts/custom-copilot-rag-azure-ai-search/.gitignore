@@ -3,7 +3,6 @@ env/.env.*.user
 env/.env.local
 .localConfigs
 .localConfigs.testTool
-.localConfigs
 .notification.localstore.json
 .notification.testtoolstore.json
 appPackage/build
@@ -18,3 +17,6 @@ node_modules/
 
 # build
 lib/
+
+# devTools
+devTools/

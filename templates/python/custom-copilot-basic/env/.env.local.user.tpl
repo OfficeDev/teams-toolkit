@@ -18,7 +18,12 @@ SECRET_AZURE_OPENAI_API_KEY='{{{azureOpenAIKey}}}'
 {{^azureOpenAIKey}}
 SECRET_AZURE_OPENAI_API_KEY=
 {{/azureOpenAIKey}}
-AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=
+{{#azureOpenAIDeploymentName}}
+AZURE_OPENAI_DEPLOYMENT_NAME='{{{azureOpenAIDeploymentName}}}'
+{{/azureOpenAIDeploymentName}}
+{{^azureOpenAIDeploymentName}}
+AZURE_OPENAI_DEPLOYMENT_NAME=
+{{/azureOpenAIDeploymentName}}
 {{#azureOpenAIEndpoint}}
 AZURE_OPENAI_ENDPOINT='{{{azureOpenAIEndpoint}}}'
 {{/azureOpenAIEndpoint}}

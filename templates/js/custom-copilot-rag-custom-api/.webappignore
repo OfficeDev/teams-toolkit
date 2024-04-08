@@ -27,3 +27,4 @@ teamsapp.*.yml
 /appPackage/*.png
 /appPackage/manifest.json
 /infra/
+/devTools/

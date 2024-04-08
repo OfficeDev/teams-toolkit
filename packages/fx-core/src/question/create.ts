@@ -644,6 +644,17 @@ export class CapabilityOptions {
     capabilityOptions.push(
       ...CapabilityOptions.officeAddinDynamicCapabilities(inputs?.projectType, inputs?.host)
     );
+    // if (isOfficeXMLAddinEnabled()) {
+    //   capabilityOptions.push(
+    //     ...[
+    //       ...CapabilityOptions.officeAddinStaticCapabilities("word"),
+    //       ...CapabilityOptions.officeAddinStaticCapabilities("excel"),
+    //       ...CapabilityOptions.officeAddinStaticCapabilities("powerpoint"),
+    //     ]
+    //   );
+    // } else {
+    //   capabilityOptions.push(...CapabilityOptions.officeAddinStaticCapabilities("json"));
+    // }
     return capabilityOptions;
   }
 

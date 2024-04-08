@@ -29,7 +29,6 @@ import {
   isCLIDotNetEnabled,
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
-  isOfficeXMLAddinEnabled,
   isTdpTemplateCliTestEnabled,
   isApiMeSSOEnabled,
 } from "../common/featureFlags";
@@ -213,13 +212,16 @@ function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else {
-        staticOptions.push(
-          isOfficeXMLAddinEnabled() && !isOfficeJSONAddinEnabled()
-            ? ProjectTypeOptions.officeXMLAddin(inputs.platform)
-            : isOfficeJSONAddinEnabled()
-            ? ProjectTypeOptions.officeAddin(inputs.platform)
-            : ProjectTypeOptions.outlookAddin(inputs.platform)
-        );
+        if (inputs.agent === "office") {
+          //only for @office agent, officeXMLAddin are supported
+          staticOptions.push(ProjectTypeOptions.officeXMLAddin(inputs.platform));
+        } else {
+          if (isOfficeJSONAddinEnabled()) {
+            staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
+          } else {
+            staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
+          }
+        }
       }
       return staticOptions;
     },
@@ -644,17 +646,6 @@ export class CapabilityOptions {
     capabilityOptions.push(
       ...CapabilityOptions.officeAddinDynamicCapabilities(inputs?.projectType, inputs?.host)
     );
-    // if (isOfficeXMLAddinEnabled()) {
-    //   capabilityOptions.push(
-    //     ...[
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("word"),
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("excel"),
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("powerpoint"),
-    //     ]
-    //   );
-    // } else {
-    //   capabilityOptions.push(...CapabilityOptions.officeAddinStaticCapabilities("json"));
-    // }
     return capabilityOptions;
   }
 

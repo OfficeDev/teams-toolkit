@@ -15,6 +15,7 @@ import {
   QuickPickItem,
   commands,
   ChatResultFeedback,
+  env,
 } from "vscode";
 import * as createCommandHandler from "../../src/chat/commands/create/createCommandHandler";
 import * as nextStepCommandHandler from "../../src/chat/commands/nextstep/nextstepCommandHandler";
@@ -30,6 +31,9 @@ import * as generatorUtil from "@microsoft/teamsfx-core/build/component/generato
 import * as localizeUtils from "../../src/utils/localizeUtils";
 import { ProjectMetadata } from "../../src/chat/commands/create/types";
 import { Correlator } from "@microsoft/teamsfx-core";
+import * as path from "path";
+import { openUrlCommandHandler } from "../../src/chat/handlers";
+import { request } from "http";
 
 describe("chat handlers", () => {
   const sandbox = sinon.createSandbox();
@@ -136,6 +140,33 @@ describe("chat handlers", () => {
       sandbox.restore();
     });
 
+    it("undefined workspace folders", async () => {
+      sandbox.stub(workspace, "workspaceFolders").value(undefined);
+      const showQuickPickStub = sandbox
+        .stub(window, "showQuickPick")
+        .returns(Promise.resolve("Browse...") as unknown as Promise<QuickPickItem>);
+      const fsCopyStub = sandbox.stub(fs, "copy");
+      const customFolderPath = "customFolderPath";
+      const customFolder: URI[] = [URI.file(customFolderPath)];
+      const showOpenDialogStub = sandbox
+        .stub(window, "showOpenDialog")
+        .returns(Promise.resolve(customFolder));
+      const showInformationMessageStub = sandbox.stub(window, "showInformationMessage");
+      const executeCommandStub = sandbox.stub(commands, "executeCommand");
+      sandbox.stub(localizeUtils, "localize").returns("Current Workspace");
+      await handler.chatCreateCommandHandler("fakeFolder");
+
+      chai.expect(showQuickPickStub.called).to.equal(false);
+      chai.expect(showOpenDialogStub.calledOnce).to.equal(true);
+      chai.expect(fsCopyStub.args[0][0]).to.equal("fakeFolder");
+      chai.expect(path.basename(fsCopyStub.args[0][1])).to.equal(customFolderPath);
+      chai.expect(fsCopyStub.calledOnce).to.equal(true);
+      chai.expect(showInformationMessageStub.called).to.equal(false);
+      chai
+        .expect(executeCommandStub.calledOnceWith("vscode.openFolder", URI.file(customFolderPath)))
+        .to.equal(true);
+    });
+
     it("choose no folder", async () => {
       sandbox.stub(workspace, "workspaceFolders").value([{ uri: { fsPath: "workspacePath" } }]);
       const fsCopyStub = sandbox.stub(fs, "copy");
@@ -210,7 +241,8 @@ describe("chat handlers", () => {
 
       chai.expect(showQuickPickStub.calledOnce).to.equal(true);
       chai.expect(showOpenDialogStub.calledOnce).to.equal(true);
-      chai.expect(fsCopyStub.args[0]).to.deep.equal(["fakeFolder", "\\" + customFolderPath]);
+      chai.expect(fsCopyStub.args[0][0]).to.equal("fakeFolder");
+      chai.expect(path.basename(fsCopyStub.args[0][1])).to.equal(customFolderPath);
       chai.expect(fsCopyStub.calledOnce).to.equal(true);
       chai.expect(showInformationMessageStub.called).to.equal(false);
       chai
@@ -311,6 +343,26 @@ describe("chat handlers", () => {
       chai.expect(sendTelemetryEventStub.calledOnce).to.equal(true);
       chai.expect(executeCommandStub.calledOnce).to.equal(true);
     });
+
+    it("execute commands with undefined chat telemetry data", async () => {
+      sandbox.stub(telemetry.ChatTelemetryData, "get").returns(undefined);
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const executeCommandStub = sandbox.stub(commands, "executeCommand");
+      await handler.chatExecuteCommandHandler("fakeCommand", "fakeRequestId", ["fakeArgs"]);
+
+      chai.expect(sendTelemetryEventStub.called).to.equal(false);
+      chai.expect(executeCommandStub.calledOnce).to.equal(true);
+    });
+  });
+
+  describe("openUrlCommandHandler()", () => {
+    afterEach(async () => {
+      sandbox.restore();
+    });
+
+    it("open external", async () => {
+      await openUrlCommandHandler("fakeUrl");
+    });
   });
 
   describe("handleFeedback()", () => {
@@ -318,7 +370,7 @@ describe("chat handlers", () => {
       sandbox.restore();
     });
 
-    it("handle feedback", async () => {
+    it("handle feedback with undefined request id and command", async () => {
       const fakeFeedback: ChatResultFeedback = {
         result: {},
         kind: 1,
@@ -338,6 +390,35 @@ describe("chat handlers", () => {
         },
         {
           [TelemetryProperty.CopilotChatFeedbackHelpful]: 1,
+        },
+      ]);
+    });
+
+    it("handle feedback with request id and command", async () => {
+      const fakeFeedback: ChatResultFeedback = {
+        result: {
+          metadata: {
+            requestId: "testRequestId",
+            command: "testCommand",
+          },
+        },
+        kind: 0,
+      };
+      sandbox.stub(Correlator, "getId").returns("testCorrelationId");
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      handler.handleFeedback(fakeFeedback);
+
+      chai.expect(sendTelemetryEventStub.calledOnce).to.equal(true);
+      chai.expect(sendTelemetryEventStub.args[0]).to.deep.equal([
+        TelemetryEvent.CopilotChatFeedback,
+        {
+          [TelemetryProperty.CopilotChatRequestId]: "testRequestId",
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+          [TelemetryProperty.CopilotChatCommand]: "testCommand",
+          [TelemetryProperty.CorrelationId]: "testCorrelationId",
+        },
+        {
+          [TelemetryProperty.CopilotChatFeedbackHelpful]: 0,
         },
       ]);
     });

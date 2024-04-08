@@ -1262,6 +1262,19 @@ export class FxCore {
       return err(manifestRes.error);
     }
 
+    const confirmRes = await context.userInteraction.showMessage(
+      "info",
+      getLocalizedString("core.addApi.confirm", AppPackageFolderName),
+      true,
+      getLocalizedString("core.addApi.continue")
+    );
+
+    if (confirmRes.isErr()) {
+      return err(confirmRes.error);
+    } else if (confirmRes.value !== getLocalizedString("core.addApi.continue")) {
+      return err(new UserCancelError());
+    }
+
     // Merge existing operations in manifest.json
     const specParser = new SpecParser(
       url,
@@ -1295,19 +1308,6 @@ export class FxCore {
         .map((operation) => operation.api);
       const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
       outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
-    }
-
-    const confirmRes = await context.userInteraction.showMessage(
-      "info",
-      getLocalizedString("core.addApi.confirm", "appPackage"),
-      true,
-      getLocalizedString("core.addApi.continue")
-    );
-
-    if (confirmRes.isErr()) {
-      return err(confirmRes.error);
-    } else if (confirmRes.value !== getLocalizedString("core.addApi.continue")) {
-      return err(new UserCancelError());
     }
 
     const operations = [...existingOperations, ...newOperations];

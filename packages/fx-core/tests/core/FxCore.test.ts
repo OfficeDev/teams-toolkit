@@ -77,6 +77,7 @@ import {
   InvalidProjectError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
+  UserCancelError,
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
 import {
@@ -1695,6 +1696,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
   });
@@ -1749,6 +1751,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "getPluginFilePath").resolves(ok("ai-plugin.json"));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     if (result.isErr()) {
       console.log(result.error);
@@ -1804,6 +1807,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -1863,6 +1867,7 @@ describe("copilotPlugin", async () => {
       .resolves(err(new SystemError("testError", "testError", "", "")));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
 
     assert.isTrue(result.isErr());
@@ -1937,6 +1942,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -2010,6 +2016,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -2089,6 +2096,7 @@ describe("copilotPlugin", async () => {
     const yamlString = jsyaml.dump(teamsappObject);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(yamlString as any);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -2177,6 +2185,7 @@ describe("copilotPlugin", async () => {
     const yamlString = jsyaml.dump(teamsappObject);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(yamlString as any);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -2250,6 +2259,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2347,6 +2357,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2484,6 +2495,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2592,6 +2604,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2740,6 +2753,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2882,6 +2896,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -3029,6 +3044,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -3164,6 +3180,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -3300,6 +3317,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
   });
@@ -3316,6 +3334,7 @@ describe("copilotPlugin", async () => {
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").throws(new Error("fakeError"));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
@@ -3343,6 +3362,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "generate").throws(new Error("fakeError"));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
@@ -3367,14 +3387,77 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const core = new FxCore(tools);
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isErr());
+  });
+
+  it("add API - ui error", async () => {
+    const appName = await mockV3Project();
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ManifestPath]: "manifest.json",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon
+      .stub(tools.ui, "showMessage")
+      .resolves(err(new UserError("testSource", "testError", "", "")));
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.name, "testError");
+    }
+  });
+
+  it("add API - not 'add' when confirm", async () => {
+    const appName = await mockV3Project();
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ManifestPath]: "manifest.json",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
     sinon
       .stub(SpecParser.prototype, "generate")
       .throws(new SpecParserError("fakeMessage", ErrorType.SpecNotValid));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(tools.ui, "showMessage").resolves(ok(""));
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.isTrue(result.error instanceof UserCancelError);
+    }
   });
 
   describe("listPluginApiSpecs", async () => {

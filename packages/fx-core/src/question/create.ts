@@ -2216,7 +2216,7 @@ export class CustomCopilotRagOptions {
     return [
       CustomCopilotRagOptions.customize(),
       CustomCopilotRagOptions.azureAISearch(),
-      // CustomCopilotRagOptions.customApi(),
+      CustomCopilotRagOptions.customApi(),
       CustomCopilotRagOptions.microsoft365(),
     ];
   }

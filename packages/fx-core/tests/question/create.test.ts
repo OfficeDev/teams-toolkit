@@ -1195,7 +1195,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.CustomCopilotRag) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 4);
             return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
@@ -1259,7 +1259,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.CustomCopilotRag) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 4);
             return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
@@ -1335,7 +1335,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 3);
             return ok({ type: "success", result: "typescript" });
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;
@@ -1358,14 +1358,14 @@ describe("scaffold question", () => {
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
           QuestionNames.CustomCopilotRag,
-          // QuestionNames.ApiSpecLocation,
-          // QuestionNames.ApiOperation,
-          // QuestionNames.ProgrammingLanguage,
-          // QuestionNames.LLMService,
-          // QuestionNames.AzureOpenAIKey,
-          // QuestionNames.AzureOpenAIEndpoint,
-          // QuestionNames.Folder,
-          // QuestionNames.AppName,
+          QuestionNames.ApiSpecLocation,
+          QuestionNames.ApiOperation,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
         ]);
       });
 
@@ -1424,12 +1424,12 @@ describe("scaffold question", () => {
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
           QuestionNames.CustomCopilotRag,
-          // QuestionNames.ProgrammingLanguage,
-          // QuestionNames.LLMService,
-          // QuestionNames.AzureOpenAIKey,
-          // QuestionNames.AzureOpenAIEndpoint,
-          // QuestionNames.Folder,
-          // QuestionNames.AppName,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
         ]);
       });
 

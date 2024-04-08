@@ -957,6 +957,12 @@ describe("formatValidationErrors", () => {
       {
         type: ErrorType.NoSupportedApi,
         content: "test",
+        data: [],
+      },
+      {
+        type: ErrorType.NoSupportedApi,
+        content: "test",
+        data: [{ api: "GET /api", reason: ["auth-type-is-not-supported"] }],
       },
       {
         type: ErrorType.NoExtraAPICanBeAdded,
@@ -995,15 +1001,26 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.UrlProtocolNotSupported", "http")
     );
     expect(res[5].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
-    expect(res[6].content).equals(getLocalizedString("core.common.NoSupportedApi"));
-    expect(res[7].content).equals(getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"));
-    expect(res[8].content).equals("resolveurl");
-    expect(res[9].content).equals(getLocalizedString("core.common.CancelledMessage"));
-    expect(res[10].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
-    expect(res[11].content).equals(
-      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[11].data)
+    expect(res[6].content).equals(
+      getLocalizedString(
+        "core.common.NoSupportedApi",
+        getLocalizedString("core.common.invalidReason.NoAPIs")
+      )
     );
-    expect(res[12].content).equals("unknown");
+    expect(res[7].content).equals(
+      getLocalizedString(
+        "core.common.NoSupportedApi",
+        "GET /api: " + getLocalizedString("core.common.invalidReason.AuthTypeIsNotSupported")
+      )
+    );
+    expect(res[8].content).equals(getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"));
+    expect(res[9].content).equals("resolveurl");
+    expect(res[10].content).equals(getLocalizedString("core.common.CancelledMessage"));
+    expect(res[11].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
+    expect(res[12].content).equals(
+      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[12].data)
+    );
+    expect(res[13].content).equals("unknown");
   });
 });
 

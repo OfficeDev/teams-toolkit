@@ -277,6 +277,9 @@
 /templates/**/custom-copilot-assistant-assistants-api @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /templates/**/custom-copilot-assistant-new @kimizhu @swatDong @kuojianlu @XiaofuHuang
 /templates/**/custom-copilot-basic @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/templates/**/custom-copilot-rag-azure-ai-search @kimizhu @swatDong @kuojianlu @XiaofuHuang @xiaolang124
+/templates/**/custom-copilot-rag-customize @kimizhu @swatDong @kuojianlu @XiaofuHuang @xiaolang124
+/templates/**/custom-copilot-rag-microsoft365 @kimizhu @swatDong @kuojianlu @XiaofuHuang @xiaolang124
 /templates/**/dashboard-tab @hund030 @eriolchan @huimiu
 /templates/**/default-bot @JerryYangKai @eriolchan @Siglud @Yukun-dong
 /templates/**/default-bot-message-extension @yuqizhou77

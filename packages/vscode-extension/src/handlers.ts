@@ -1293,7 +1293,7 @@ export async function openReadMeHandler(...args: unknown[]) {
       title: localize("teamstoolkit.handlers.createProjectTitle"),
       run: async (): Promise<void> => {
         await Correlator.run(
-          async () => await createNewProjectHandler([TelemetryTriggerFrom.Notification])
+          async () => await createNewProjectHandler(TelemetryTriggerFrom.Notification)
         );
       },
     };
@@ -3099,7 +3099,7 @@ export async function scaffoldFromDeveloperPortalHandler(
     return err(error);
   }
 
-  const res = await createNewProjectHandler([{ teamsAppFromTdp: appDefinition }]);
+  const res = await createNewProjectHandler({ teamsAppFromTdp: appDefinition });
 
   if (res.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(

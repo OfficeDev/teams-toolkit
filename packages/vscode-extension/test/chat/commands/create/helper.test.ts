@@ -49,7 +49,12 @@ describe("chat create helper", () => {
         .stub(telemetry.ChatTelemetryData, "createByParticipant")
         .returns(chatTelemetryDataMock);
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      sandbox.stub(util, "getCopilotResponseAsString").resolves('{"app":["test1"]}');
+      sandbox
+        .stub(util, "getCopilotResponseAsString")
+        .onFirstCall()
+        .resolves('{"app":[{"id": "test1", "score": 1.0}]}')
+        .onSecondCall()
+        .resolves('{"app":[{"id": "test2", "score": 0.5}]}');
 
       const token = new CancellationToken();
       const result = await helper.matchProject(

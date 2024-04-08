@@ -1,15 +1,15 @@
-# Overview of the AI Search Bot template
+# Overview of the Customize RAG Bot template
 
 This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library).
-It showcases how to build an basic RAG bot in Teams capable of chatting with users but with context provided by Azure AI Search data source.
+It showcases how to build an basic RAG bot in Teams capable of chatting with users but with context provided by customize data source.
 
-- [Overview of the AI Search Bot template](#overview-of-the-ai-search-bot-template)
-  - [Get started with the AI Search Bot template](#get-started-with-the-ai-search-bot-template)
+- [Overview of the Customize RAG Bot template](#overview-of-the-customize-rag-bot-template)
+  - [Get started with the Customize RAG Bot template](#get-started-with-the-customize-rag-bot-template)
   - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Search Bot template with more AI capabilities](#extend-the-ai-search-bot-template-with-more-ai-capabilities)
+  - [Extend the Customize RAG Bot template with more AI capabilities](#extend-the-customize-rag-bot-template-with-more-ai-capabilities)
   - [Additional information and references](#additional-information-and-references)
 
-## Get started with the AI Search Bot template
+## Get started with the Customize RAG Bot template
 
 > **Prerequisites**
 >
@@ -18,20 +18,19 @@ It showcases how to build an basic RAG bot in Teams capable of chatting with use
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 {{#useOpenAI}}
-> - An account with [OpenAI](https://platform.openai.com/) and [Azure AI Search](https://azure.microsoft.com/en-us/products/ai-services/ai-search).
+> - An account with [OpenAI](https://platform.openai.com/).
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-> - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource and [Azure AI Search](https://azure.microsoft.com/en-us/products/ai-services/ai-search).
+> - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource.
 {{/useAzureOpenAI}}
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#useOpenAI}}
-1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`. And fill in your Azure AI search key `SECRET_AZURE_SEARCH_KEY=<your--ai-search-key>` and endpoint `AZURE_SEARCH_ENDPOINT=<your-ai-search-endpoint>`.
+1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>`, endpoint `AZURE_OPENAI_ENDPOINT=<your-endpoint>`, deployment name `AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>`, and embedding deployment name `AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME=<your-embedding-deployment>`. And fill in your Azure AI search key `SECRET_AZURE_SEARCH_KEY=<your-ai-search-key>` and endpoint `AZURE_SEARCH_ENDPOINT=<your-ai-search-endpoint>`.
+1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_API_KEY=<your-key>`, endpoint `AZURE_OPENAI_ENDPOINT=<your-endpoint>` and deployment name `AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>`.
 {{/useAzureOpenAI}}
-1. Do `npm install` and `npm run indexer:create` to create the my documents index. Once you're done using the sample it's good practice to delete the index. You can do so with the `npm run indexer:delete` command.
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 1. You can send any message to get a response from the bot.
 
@@ -53,17 +52,14 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`src/index.ts`| Sets up the bot app server.|
-|`src/adapter.ts`| Sets up the bot adapter.|
-|`src/config.ts`| Defines the environment variables.|
+|`src/index.js`| Sets up the bot app server.|
+|`src/adapter.js`| Sets up the bot adapter.|
+|`src/config.js`| Defines the environment variables.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
-|`src/app/app.ts`| Handles business logics for the RAG bot.|
-|`src/app/azureAISearchDataSource.ts`| Defines the Azure AI search data source.|
-|`src/indexers/data/*.md`| Raw text data sources.|
-|`src/indexers/utils.ts`| Basic index tools. |
-|`src/indexers/setup.ts`| A script to create index and upload documents. |
-|`src/indexers/delete.ts`| A script to delete index and documents. |
+|`src/app/app.js`| Handles business logics for the RAG bot.|
+|`src/app/myDataSource.js`| Defines the data source.|
+|`src/data/*.md`| Raw text data sources.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -73,7 +69,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Search bot template with more AI capabilities
+## Extend the Customize RAG Bot template with more AI capabilities
 
 You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the Basic AI Chatbot template with more AI capabilities, like:
 - [Customize prompt](https://aka.ms/teamsfx-basic-ai-chatbot#customize-prompt)

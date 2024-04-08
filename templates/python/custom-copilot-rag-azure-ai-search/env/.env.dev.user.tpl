@@ -17,14 +17,24 @@ SECRET_AZURE_OPENAI_API_KEY='{{{azureOpenAIKey}}}'
 {{^azureOpenAIKey}}
 SECRET_AZURE_OPENAI_API_KEY=
 {{/azureOpenAIKey}}
+{{#azureOpenAIDeploymentName}}
+AZURE_OPENAI_MODEL_DEPLOYMENT_NAME='{{{azureOpenAIDeploymentName}}}'
+{{/azureOpenAIDeploymentName}}
+{{^azureOpenAIDeploymentName}}
 AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=
+{{/azureOpenAIDeploymentName}}
 {{#azureOpenAIEndpoint}}
 AZURE_OPENAI_ENDPOINT='{{{azureOpenAIEndpoint}}}'
 {{/azureOpenAIEndpoint}}
 {{^azureOpenAIEndpoint}}
 AZURE_OPENAI_ENDPOINT=
 {{/azureOpenAIEndpoint}}
+{{#azureOpenAIEmbeddingDeploymentName}}
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT='{{{azureOpenAIEmbeddingDeploymentName}}}'
+{{/azureOpenAIEmbeddingDeploymentName}}
+{{^azureOpenAIEmbeddingDeploymentName}}
 AZURE_OPENAI_EMBEDDING_DEPLOYMENT=
+{{/azureOpenAIEmbeddingDeploymentName}}
 {{/useAzureOpenAI}}
 
 SECRET_AZURE_SEARCH_KEY=

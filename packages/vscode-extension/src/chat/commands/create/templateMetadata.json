@@ -6,16 +6,16 @@
     "description": "This project is a Basic Bot template designed for Microsoft Teams. The bot can be used in various scenarios such as notifying about build failures, providing information about the weather, bus schedules, or travel information. The bot interaction can range from a simple question and answer to a complex conversation. As a cloud application, the bot can provide valuable and secure access to cloud services and corporate resources."
   },
   {
-    "id": "ai-bot",
-    "name": "AI Chat Bot",
-    "project-type": "bot-type",
-    "description": "This project is an AI Chat Bot template for Microsoft Teams. The bot responds to user questions like an AI assistant, providing information to users within Teams. The template is built using the Teams AI library, which enables the development of AI-based Teams applications."
+    "id": "custom-copilot-basic",
+    "name": "Basic AI Chatbot",
+    "project-type": "custom-copilot-type",
+    "description": "This template showcases a bot app that responds to user questions like ChatGPT. This enables your users to talk with the AI bot in Teams. The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications."
   },
   {
-    "id": "ai-assistant-bot",
-    "name": "AI Assistant Bot",
-    "project-type": "bot-type",
-    "description": "This project is an AI Assistant Bot template for Microsoft Teams. It utilizes the Teams AI library and OpenAI Assistants API to create an intelligent chat bot capable of assisting users with specific tasks using natural language. The bot can be used directly within Teams conversations. You can change the instructions and settings in the script to customize the assistant."
+    "id": "custom-copilot-agent",
+    "name": "AI Agent",
+    "project-type": "custom-copilot-type",
+    "description": "This app template is built on top of Teams AI library. It showcases how to build an AI agent in Teams capable of chatting with users and helping users accomplish a specific task using natural language right in the Teams conversations, such as managing tasks."
   },
   {
     "id": "notification",

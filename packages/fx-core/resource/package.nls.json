@@ -1,4 +1,6 @@
 {
+  "core.addApi.confirm":"Teams Toolkit will modify files in your \"%s\" folder based on the new OpenAPI description document you provided. To prevent unexpected change loss, we recommend you back up your files or use git for change tracking before proceeding",
+  "core.addApi.continue": "Add",
   "core.provision.provision": "Provision",
   "core.provision.learnMore": "More info",
   "core.provision.azureAccount": "Azure account: %s",

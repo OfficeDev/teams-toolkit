@@ -105,6 +105,7 @@ import {
   MissingRequiredInputError,
   MultipleAuthError,
   MultipleServerError,
+  UserCancelError,
   assembleError,
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
@@ -1294,6 +1295,19 @@ export class FxCore {
         .map((operation) => operation.api);
       const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
       outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
+    }
+
+    const confirmRes = await context.userInteraction.showMessage(
+      "info",
+      getLocalizedString("core.addApi.confirm", "appPackage"),
+      true,
+      getLocalizedString("core.addApi.continue")
+    );
+
+    if (confirmRes.isErr()) {
+      return err(confirmRes.error);
+    } else if (confirmRes.value !== getLocalizedString("core.addApi.continue")) {
+      return err(new UserCancelError());
     }
 
     const operations = [...existingOperations, ...newOperations];

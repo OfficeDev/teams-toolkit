@@ -1211,6 +1211,8 @@ describe("scaffold question", () => {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
             return ok({ type: "success", result: "testEndppint" });
+          } else if (question.name === QuestionNames.AzureOpenAIDeploymentName) {
+            return ok({ type: "success", result: "testAzureOpenAIDeploymentName" });
           } else if (question.name === QuestionNames.Folder) {
             return ok({ type: "success", result: "./" });
           } else if (question.name === QuestionNames.AppName) {

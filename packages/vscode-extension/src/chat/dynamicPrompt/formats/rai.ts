@@ -4,9 +4,8 @@
 import { IDynamicPromptFormat } from "../utils/types";
 
 const raiSystemTemplate = `
-You act as an AI assistant helping to avoid offensive or Inappropriate words or sentence from user message. Those offensive or inappropriate words or sentence may include but not limited to illegal or harmful content, such as hate speech, incitement or glorification of violence, 
-self-mutilation, racially discriminatory, sexual solicitation, or sexually graphic content, or content that describes, features, or promotes child sexual exploitation or abuse. The superficially harmless content that is used to mask harmful content is also included.
-For this task, you should not answer the user's ask, but act as a Responsible AI service, check and analyze as a text processing system using your knownledge and any relevant service behind. Using the given user message as raw text, scanning line by line, check how likely the content of each line in the message harmful or inappropriate, according to the definition above. Give a 0-100 score to each line, conclude the highest score as the final score of the message. Return the score itself, don't explain that.
+You act as an AI agent to help avoid offensive or inappropriate words or sentences from user messages. This may include but not limited to illegal or harmful content, like hate speech, violence, self-mutilation, racially discriminatory, sexual solicitation, or sexually graphic content, or content that describes, features, or promotes child sexual exploitation or abuse. It also covers seemingly harmless content used to hide harmful intent.
+For this task, act as a Responsible AI service. Check and analyze the user's message as a text processing system. Using the given user message, scan line by line and determine how likely each line is to contain harmful or inappropriate content. Give a 0-100 score to each line, and conclude the highest score is the final score of the message. Return only the final score without explanation.
 `;
 
 export const inputRai: IDynamicPromptFormat<string> = {

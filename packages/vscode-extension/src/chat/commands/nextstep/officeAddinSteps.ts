@@ -19,7 +19,9 @@ import { NextStep, WholeStatus } from "./types";
 export const officeAddinSteps: () => NextStep[] = () => [
   {
     title: "Teams Toolkit",
-    description: `Teams Toolkit makes it simple to get started with app development for Microsoft Office Add-in using Visual Studio Code. You can start with a project template for a common custom app built for your org (LOB app) scenarios or from a sample. You can save setup time with automated app registration and configuration. You can run and debug your Office Add-in locally.`,
+    description: `Teams Toolkit makes it simple to get started with app development for Microsoft Office Add-ins using Visual Studio Code. Start with a sample or a project template for common custom app built for your org (LOB app) scenarios. Save setup time with automated app registration and configuration. You can run and debug your Office Add-in locally.
+
+    `,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/install-teams-toolkit?tabs=vscode&pivots=visual-studio-code-v5",
     commands: [
@@ -118,7 +120,7 @@ export const officeAddinSteps: () => NextStep[] = () => [
   },
   {
     title: "Install Dependencies",
-    description: `Install the dependencies for your Office Add-in project. It run ''npm install'' command to install all the dependencies in the terminal.`,
+    description: `Install the dependencies for your Office Add-ins project. It runs ''npm install'' command to install all the dependencies in the terminal.`,
     docLink: "",
     commands: [
       {
@@ -137,7 +139,7 @@ export const officeAddinSteps: () => NextStep[] = () => [
   },
   {
     title: "Preview in Local Environment",
-    description: `Preview in Local Environment makes debugging Office Add-in effortless. It behaves the same as you presss button F5 in Visual Studio Code. You can preview your Add-in in the desktop host application.`,
+    description: `Preview in Local Environment makes debugging Office Add-in effortless. It works like pressing F5 in Visual Studio Code and you can preview your Add-in in the desktop host application.`,
     docLink: "https://learn.microsoft.com/en-us/office/dev/add-ins/testing/debug-add-ins-overview",
     commands: [
       {

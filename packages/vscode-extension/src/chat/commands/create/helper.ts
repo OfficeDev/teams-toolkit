@@ -336,7 +336,7 @@ export function getOfficeAddinTemplateMetadata(): ProjectMetadata[] {
         capabilities: config.id,
         "project-type": config["project-type"],
         "addin-host": config["addin-host"],
-        isFromOfficeAddinChatParticipant: true,
+        agent: "office",
         name: config.name,
       },
     };

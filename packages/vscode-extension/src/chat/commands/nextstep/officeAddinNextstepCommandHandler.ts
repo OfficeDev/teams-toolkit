@@ -44,7 +44,7 @@ export default async function officeAddinNextStepCommandHandler(
     response.markdown(`
 This command provides guidance on your next steps based on your workspace.
 
-E.g. If you're unsure what to do after creating a project, simply ask Copilot by using @office/nextstep.`);
+E.g. If you're unsure what to do after creating a project, simply ask Copilot by using @office /nextstep.`);
     officeAddinChatTelemetryData.markComplete("unsupportedPrompt");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,

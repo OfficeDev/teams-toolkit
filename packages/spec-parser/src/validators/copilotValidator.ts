@@ -3,7 +3,13 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import { ParseOptions, APIValidationResult, ErrorType, ProjectType } from "../interfaces";
+import {
+  ParseOptions,
+  APIValidationResult,
+  ErrorType,
+  ProjectType,
+  SpecValidationResult,
+} from "../interfaces";
 import { Validator } from "./validator";
 import { Utils } from "../utils";
 
@@ -13,6 +19,28 @@ export class CopilotValidator extends Validator {
     this.projectType = ProjectType.Copilot;
     this.options = options;
     this.spec = spec;
+  }
+
+  validateSpec(): SpecValidationResult {
+    const result: SpecValidationResult = { errors: [], warnings: [] };
+
+    // validate spec version
+    let validationResult = this.validateSpecVersion();
+    result.errors.push(...validationResult.errors);
+
+    // validate spec server
+    validationResult = this.validateSpecServer();
+    result.errors.push(...validationResult.errors);
+
+    // validate no supported API
+    validationResult = this.validateSpecNoSupportAPI();
+    result.errors.push(...validationResult.errors);
+
+    // validate operationId missing
+    validationResult = this.validateSpecOperationId();
+    result.warnings.push(...validationResult.warnings);
+
+    return result;
   }
 
   validateAPI(method: string, path: string): APIValidationResult {

@@ -77,10 +77,16 @@ describe("Migration Tests", function () {
       CliHelper.setV3Enable();
 
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
+      await mirgationDebugTestContext.provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
       // v3 deploy
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
+      await mirgationDebugTestContext.deployProject(
+        mirgationDebugTestContext.projectPath,
+        Timeout.botDeploy
+      );
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       // UI verify

@@ -117,9 +117,9 @@ export class GraphDataSource implements DataSource {
     ): Promise<string | undefined> {
         const encodedUrl = this.encodeSharepointContentUrl(contentUrl);
         const fileContentResponse = await this.graphClient
-        .api(`/shares/${encodedUrl}/driveItem/content`)
-        .responseType(ResponseType.TEXT)
-        .get();
+            .api(`/shares/${encodedUrl}/driveItem/content`)
+            .responseType(ResponseType.TEXT)
+            .get();
 
         return fileContentResponse;
     }
@@ -128,7 +128,7 @@ export class GraphDataSource implements DataSource {
         const byteData = Buffer.from(webUrl, "utf-8");
         const base64String = byteData.toString("base64");
         return (
-        "u!" + base64String.replace("=", "").replace("/", "_").replace("+", "_")
+            "u!" + base64String.replace("=", "").replace("/", "_").replace("+", "_")
         );
     }
 }

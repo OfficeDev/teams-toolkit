@@ -4,7 +4,7 @@
     "msteams": {
         "teamsAppId": null
     },
-    "description": "Microsoft Teams Toolkit AI Chat Bot Sample with Teams AI Library",
+    "description": "Microsoft Teams Toolkit RAG Bot Sample with Graph API and Teams AI Library",
     "engines": {
         "node": "16 || 18"
     },
@@ -35,7 +35,7 @@
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-        "@types/node": "^14.0.0",
+        "@types/node": "^16.0.0",
         "env-cmd": "^10.1.0",
         "ts-node": "^10.4.0",
         "typescript": "^4.4.4",

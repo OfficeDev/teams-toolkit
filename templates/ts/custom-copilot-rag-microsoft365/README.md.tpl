@@ -60,7 +60,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/config.ts`| Defines the environment variables.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
-|`src/app/app.ts`| Handles business logics for the AI Agent.|
+|`src/app/app.ts`| Handles business logics for the RAG bot.|
 |`src/app/m365DataSource.ts`| Defines the m365 data source.|
 |`src/data/*.md`| Raw text data sources.|
 |`src/public/*.html`| Auth start page and an auth end page to be used by the user sign in flow.|

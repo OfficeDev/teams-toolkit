@@ -124,6 +124,7 @@ mockedVSCode.ChatLocation = vscodeMocks.chat.ChatLocation;
     return await task({ report: () => {} }, new vscodeMocks.CancellationToken());
   },
   createQuickPick: () => {},
+  showQuickPick: () => {},
   showOpenDialog: () => {},
   showTextDocument: () => {},
   createTerminal: () => {},

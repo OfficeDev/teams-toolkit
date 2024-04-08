@@ -12,7 +12,7 @@ import {
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
 import {
-  validateProactiveMessaging,
+  validateBot,
   initPage,
 } from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
@@ -112,7 +112,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateProactiveMessaging(page);
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World Bot is Running",
+      });
     }
   );
 });

@@ -179,7 +179,7 @@ export class ProjectTypeOptions {
   }
 }
 
-function projectTypeQuestion(): SingleSelectQuestion {
+export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     ProjectTypeOptions.bot(Platform.CLI),
     ProjectTypeOptions.tab(Platform.CLI),

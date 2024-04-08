@@ -58,6 +58,7 @@ import {
   programmingLanguageQuestion,
   officeAddinFrameworkQuestion,
   getAddinFrameworkOptions,
+  projectTypeQuestion,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
@@ -3748,6 +3749,55 @@ describe("scaffold question", () => {
       if (question.dynamicOptions) {
         const options = await question.dynamicOptions(inputs);
         assert.deepEqual(options, [{ id: "default", label: "Default" }]);
+      }
+    });
+  });
+
+  describe("projectTypeQuestion", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("trigger from agent", async () => {
+      const question = projectTypeQuestion();
+      const inputs: Inputs = { platform: Platform.CLI, agent: "office" };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        const officeAddinOption = options.find(
+          (o) => o.id === ProjectTypeOptions.officeXMLAddin().id
+        );
+        assert.isDefined(officeAddinOption);
+      }
+    });
+    it("enable isOfficeJSONAddinEnabled()", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.OfficeAddin]: "true",
+      });
+      const question = projectTypeQuestion();
+      const inputs: Inputs = { platform: Platform.CLI };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        const officeAddinOption = options.find(
+          (o) => o.id === ProjectTypeOptions.officeAddin(inputs.platform).id
+        );
+        assert.isDefined(officeAddinOption);
+      }
+    });
+    it("disable isOfficeJSONAddinEnabled()", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.OfficeAddin]: "false",
+      });
+      const question = projectTypeQuestion();
+      const inputs: Inputs = { platform: Platform.CLI };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        const officeAddinOption = options.find(
+          (o) => o.id === ProjectTypeOptions.outlookAddin(inputs.platform).id
+        );
+        assert.isDefined(officeAddinOption);
       }
     });
   });

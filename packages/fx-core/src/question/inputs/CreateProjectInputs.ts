@@ -101,6 +101,8 @@ export interface CreateProjectInputs extends Inputs {
   "azure-openai-key"?: string;
   /** @description Azure OpenAI Endpoint */
   "azure-openai-endpoint"?: string;
+  /** @description Azure OpenAI Endpoint */
+  "azure-openai-deployment-name"?: string;
   /** @description OpenAI Key */
   "openai-key"?: string;
   /** @description Framework */

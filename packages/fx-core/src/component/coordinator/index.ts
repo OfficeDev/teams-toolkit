@@ -384,6 +384,8 @@ class Coordinator {
           const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
           const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
           const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
+          const azureOpenAIDeploymentName: string | undefined =
+            inputs[QuestionNames.AzureOpenAIDeploymentName];
           context.templateVariables = Generator.getDefaultVariables(
             appName,
             safeProjectNameFromVS,
@@ -395,6 +397,7 @@ class Coordinator {
               openAIKey,
               azureOpenAIKey,
               azureOpenAIEndpoint,
+              azureOpenAIDeploymentName,
             }
           );
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);

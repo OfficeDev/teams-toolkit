@@ -191,6 +191,11 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Azure OpenAI Endpoint",
   },
   {
+    name: "azure-openai-deployment-name",
+    type: "string",
+    description: "Azure OpenAI Endpoint",
+  },
+  {
     name: "openai-key",
     type: "string",
     description: "OpenAI Key",

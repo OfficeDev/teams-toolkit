@@ -463,11 +463,11 @@
     "teamstoolkit.officeAddIn.workspace.invalid": "Invalid workspace path",
     "teamstoolkit.chatParticipants.teams.description": "Use this command to ask questions about Teams app development.",
     "teamstoolkit.chatParticipants.create.description": "Use this command to find relevant templates or samples to build your Teams app as per your description. E.g. @teams /create create an AI assistant bot that can complete common tasks.",
-    "teamstoolkit.chatParticipants.nextStep.description": "This command provides guidance on your next steps based on your workspace.",
+    "teamstoolkit.chatParticipants.nextStep.description": "Use this command to move to the next step at any stage of your Teams app development.",
     "teamstoolkit.chatParticipants.nextStep.whatsNext": "What should I do next?",
     "teamstoolkit.chatParticipants.create.sample": "Scaffold this sample",
     "teamstoolkit.chatParticipants.create.template": "Create this template",
-    "teamstoolkit.chatParticipants.create.tooGeneric": "Your app description is too generic. To find relevant templates or samples, give specific details of your app's capabilities or technologies.\n\nE.g. Instead of saying ‘create a chat bot’, you could specify ‘create a chat bot that answers FAQs for customer support.’",
+    "teamstoolkit.chatParticipants.create.tooGeneric": "Your app description is too generic. To find relevant templates or samples, give specific details of your app's capabilities or technologies.\n\nE.g. Instead of saying 'create a chat bot', you could specify 'create a chat bot that answers FAQs for customer support.'",
     "teamstoolkit.chatParticipants.create.matched": "We've found %d projects that match your description. Take a look at them below.\n",
     "teamstoolkit.chatParticipants.create.noMatched": "I cannot find any matching templates or samples. Refine your app description or explore other templates.",
     "teamstoolkit.chatParticipants.create.noPromptAnswer": "Use this command to provide description and other details about the Teams app that you want to build.\n\nE.g. @teams /create a Teams app that will notify my team about new GitHub pull requests.\n\n@teams /create I want to create a ToDo Teams app.",
@@ -476,5 +476,6 @@
     "teamstoolkit.chatParticipants.create.selectFolder.label": "Select Folder",
     "teamstoolkit.chatParticipants.create.successfullyCreated": "Project successfully created in current workspace.",
     "teamstoolkit.chatParticipants.create.failToCreate": "Unable to create the project.",
+    "teamstoolkit.chatParticipants.nextStep.noPromptAnswer": "This command provides guidance on your next steps based on your workspace.\n\nE.g. If you're unsure what to do after creating a project, simply ask Copilot by using @teams /nextstep.",
     "teamstoolkit.chatParticipants.default.noConceptualAnswer": "This is a procedural question, @teams can only answer questions regarding descriptions or concepts for now. You could try these commands or learn more from [Teams Toolkit documentation](https://learn.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals).\n\n • /create: Use this command to find relevant templates or samples to build your Teams app as per your description. E.g. @teams /create create an AI assistant bot that can complete common tasks.\n\n • /nextstep: Use this command to move to the next step at any stage of your Teams app development."
 }

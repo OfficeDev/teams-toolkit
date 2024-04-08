@@ -1,4 +1,4 @@
-import { ILocalPromptTuningConfigurations } from "../../../src/chat/localTuning/types";
+import { ILocalPromptTuningConfigurations } from "./types";
 
 (function getPromptTemplates(): ILocalPromptTuningConfigurations {
   const harmfulRequests = [
@@ -107,7 +107,7 @@ result: IResult =
       ],
       version: "0.4",
     },
-    userPrompts: harmfulRequests.slice(20, 40),
+    userPrompts: harmfulRequests.slice(20, 22),
     callCount: 2,
     outputDir: "c:/temp/teams-fx/rai",
   };

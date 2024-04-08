@@ -71,7 +71,10 @@ export interface Inputs extends Record<string, any> {
   projectId?: string;
   nonInteractive?: boolean;
   correlationId?: string;
-  agent?: "teams" | "office"; //whether the caller is triggered by @teams or @office agent
+  /**
+   * whether the caller is triggered by @teams or @office agent
+   */
+  agent?: "teams" | "office";
 }
 
 export type InputsWithProjectPath = Inputs & { projectPath: string };

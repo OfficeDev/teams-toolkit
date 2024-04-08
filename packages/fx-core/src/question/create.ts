@@ -1461,7 +1461,13 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   if (capabilities === CapabilityOptions.SPFxTab().id) {
     // SPFx only supports typescript
     return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
-  } else if (capabilitiesHavePythonOption.includes(capabilities)) {
+  } else if (
+    capabilitiesHavePythonOption.includes(capabilities) &&
+    !(
+      capabilities == CapabilityOptions.customCopilotRag().id &&
+      inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.microsoft365().id
+    )
+  ) {
     // support python language
     return [
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
@@ -2211,7 +2217,7 @@ export class CustomCopilotRagOptions {
       CustomCopilotRagOptions.customize(),
       CustomCopilotRagOptions.azureAISearch(),
       // CustomCopilotRagOptions.customApi(),
-      // CustomCopilotRagOptions.microsoft365(),
+      CustomCopilotRagOptions.microsoft365(),
     ];
   }
 }

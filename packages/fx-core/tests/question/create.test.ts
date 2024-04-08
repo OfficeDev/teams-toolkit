@@ -1235,7 +1235,7 @@ describe("scaffold question", () => {
         ]);
       });
 
-      it("RAG - Customize - Azure OpenAI with out deployment name", async () => {
+      it("RAG - Customize - Azure OpenAI wit empty endpoint", async () => {
         const inputs: Inputs = {
           platform: Platform.VSCode,
         };
@@ -1276,10 +1276,6 @@ describe("scaffold question", () => {
             return ok({ type: "success", result: "llm-service-azure-openai" });
           } else if (question.name === QuestionNames.AzureOpenAIKey) {
             return ok({ type: "success", result: "testKey" });
-          } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
-            return ok({ type: "success", result: "testEndppint" });
-          } else if (question.name === QuestionNames.AzureOpenAIDeploymentName) {
-            return ok({ type: "success", result: "" });
           } else if (question.name === QuestionNames.Folder) {
             return ok({ type: "success", result: "./" });
           } else if (question.name === QuestionNames.AppName) {
@@ -1296,7 +1292,6 @@ describe("scaffold question", () => {
           QuestionNames.LLMService,
           QuestionNames.AzureOpenAIKey,
           QuestionNames.AzureOpenAIEndpoint,
-          QuestionNames.AzureOpenAIDeploymentName,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);

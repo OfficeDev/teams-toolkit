@@ -2360,7 +2360,9 @@ function azureOpenAIDeploymentNameQuestion(): TextInputQuestion {
   return {
     type: "text",
     name: QuestionNames.AzureOpenAIDeploymentName,
-    title: getLocalizedString("core.createProjectQuestion.llmService.azureOpenAIEndpoint.title"),
+    title: getLocalizedString(
+      "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.title"
+    ),
     placeholder: getLocalizedString(
       "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.placeholder"
     ),

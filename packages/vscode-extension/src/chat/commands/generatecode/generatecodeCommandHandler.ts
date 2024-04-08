@@ -34,7 +34,7 @@ export default async function generatecodeCommandHandler(
   );
 
   if (process.env.NODE_ENV === "development") {
-    const localScenarioHandlers = await import("../../localTuning");
+    const localScenarioHandlers = await import("../../../../test/chat/mocks/localTuning");
     if (request.prompt in localScenarioHandlers) {
       const scenarioName = request.prompt as keyof typeof localScenarioHandlers;
       await localScenarioHandlers[scenarioName](request, context, response, token);

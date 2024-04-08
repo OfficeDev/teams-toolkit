@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ChatRequestHandler } from "vscode";
-import { IDynamicPromptPartialSettings } from "../dynamicPrompt/promptSettings";
+import { IDynamicPromptFormat } from "../../../../src/chat/dynamicPrompt/utils/types";
 
 export type LocalTuningScenarioHandler = (
   ...params: Parameters<ChatRequestHandler>
@@ -10,7 +10,7 @@ export type LocalTuningScenarioHandler = (
 
 export interface ILocalPromptTuningConfigurations {
   callCount: number;
-  dynamicPromptSettings: IDynamicPromptPartialSettings;
+  dynamicPromptFormat: IDynamicPromptFormat<string>;
   outputDir: string;
   userPrompts: string[];
 }

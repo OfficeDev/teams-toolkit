@@ -7,12 +7,7 @@ import {
   LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import {
-  ArgsType,
-  IDynamicPromptPartialSettings,
-  TemplateSetName,
-  dynamicPromptSettings,
-} from "./promptSettings";
+import { commonTemplates } from "./formats/common";
 import { buildDynamicPromptInternal } from "./utils/buildDynamicPrompt";
 import { IDynamicPromptFormat, MessageRole } from "./utils/types";
 
@@ -21,27 +16,16 @@ export interface IDynamicPrompt {
   version: string;
 }
 
-export function buildDynamicPrompt<T extends TemplateSetName>(
-  formatName: T,
-  args: ArgsType<T>,
-  settings?: IDynamicPromptPartialSettings
-): IDynamicPrompt {
+export function buildDynamicPrompt<T>(format: IDynamicPromptFormat<T>, args: T): IDynamicPrompt {
   try {
-    const templateSettings = getTemplateSettings<T>(formatName, settings);
-    if (!templateSettings?.templates) {
-      throw Error("Dynamic prompt is not defined");
-    }
-
-    const commonTemplates = getTemplateSettings("common", settings).templates;
-
-    const messages = templateSettings.messages.map((messageFormat) => {
+    const messages = format.messages.map((messageFormat) => {
       const { role, entryTemplate } = messageFormat;
 
       const prompt = buildDynamicPromptInternal(`templates.${entryTemplate}`, {
         args,
         common: commonTemplates,
-        presets: templateSettings.presets,
-        templates: templateSettings.templates,
+        presets: format.presets,
+        templates: format.templates,
       });
 
       return createMessage(role, prompt);
@@ -49,24 +33,11 @@ export function buildDynamicPrompt<T extends TemplateSetName>(
 
     return {
       messages,
-      version: templateSettings.version,
+      version: format.version,
     };
   } catch (e) {
     throw e;
   }
-}
-
-function getTemplateSettings<T extends TemplateSetName>(
-  name: T,
-  settings?: IDynamicPromptPartialSettings
-) {
-  settings = settings || {};
-  const templates = {
-    ...dynamicPromptSettings[name],
-    ...settings[name],
-  };
-
-  return templates as IDynamicPromptFormat<ArgsType<T>>;
 }
 
 function createMessage(role: MessageRole, prompt: string): LanguageModelChatMessage {

@@ -2,15 +2,16 @@
 // Licensed under the MIT license.
 
 import { CancellationToken, LanguageModelChatMessage, lm } from "vscode";
-import { buildDynamicPrompt } from "../dynamicPrompt";
-import { IDynamicPromptPartialSettings } from "../dynamicPrompt/promptSettings";
+import { buildDynamicPrompt } from "../../../../src/chat/dynamicPrompt";
+import { inputRai03 } from "../../../../src/chat/dynamicPrompt/formats";
+import { IDynamicPromptFormat } from "../../../../src/chat/dynamicPrompt/utils/types";
 
 export async function isHarmful_new(
+  format: IDynamicPromptFormat<string>,
   prompt: string,
-  settings: IDynamicPromptPartialSettings,
   token: CancellationToken
 ): Promise<boolean | string> {
-  const messages = buildDynamicPrompt("outputRai", prompt, settings).messages;
+  const messages = buildDynamicPrompt(format, prompt).messages;
   let response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
 
   try {
@@ -37,7 +38,7 @@ export async function isHarmful_old(
   token: CancellationToken
 ): Promise<boolean | string> {
   const phrases = generatePhrases(request);
-  const messages = buildDynamicPrompt("inputRai03", phrases).messages;
+  const messages = buildDynamicPrompt(inputRai03, phrases).messages;
 
   async function getIsHarmfulResponseAsync() {
     const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);

@@ -19,11 +19,11 @@ class ChefBotTestCase extends CaseFactory {
     sampledebugContext: SampledebugContext,
     env: "local" | "dev"
   ): Promise<void> {
-    const envFile = path.resolve(sampledebugContext.projectPath, ".env");
-    // create .env file
-    fs.writeFileSync(envFile, "OPENAI_KEY=yourapikey");
-    console.log(`add OPENAI_KEY=yourapikey to .env file`);
-    await sampledebugContext.prepareDebug("yarn");
+    const envFile = path.resolve(sampledebugContext.projectPath, "env", ".env.local.user");
+    // create .env.local.user file
+    fs.writeFileSync(envFile, "SECRET_OPENAI_KEY=yourapikey");
+    console.log(`add SECRET_OPENAI_KEY=yourapikey to .env file`);
+    // await sampledebugContext.prepareDebug("yarn");
   }
   override async onValidate(page: Page): Promise<void> {
     console.log("Moked api key. Only verify happy path...");

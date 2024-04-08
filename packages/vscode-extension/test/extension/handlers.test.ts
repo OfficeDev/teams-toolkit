@@ -2719,46 +2719,6 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(executeCommandStub.notCalled);
   });
 
-  it("getLocalDebugMessageTemplate() - Windows & Test Tool enabled", async () => {
-    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
-    sandbox.stub(fs, "pathExists").resolves(true);
-
-    const result = await handlers.getLocalDebugMessageTemplate(true);
-    chai.assert.isTrue(result.includes("Test Tool"));
-  });
-
-  it("getLocalDebugMessageTemplate() - Windows & Test Tool disabled", async () => {
-    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
-    sandbox.stub(fs, "pathExists").resolves(false);
-
-    const result = await handlers.getLocalDebugMessageTemplate(true);
-    chai.assert.isFalse(result.includes("Test Tool"));
-  });
-
-  it("getLocalDebugMessageTemplate() - non-Windows & Test Tool enabled", async () => {
-    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
-    sandbox.stub(fs, "pathExists").resolves(true);
-
-    const result = await handlers.getLocalDebugMessageTemplate(false);
-    chai.assert.isTrue(result.includes("Test Tool"));
-  });
-
-  it("getLocalDebugMessageTemplate() - non-Windows & Test Tool disabled", async () => {
-    sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
-    sandbox.stub(fs, "pathExists").resolves(false);
-
-    const result = await handlers.getLocalDebugMessageTemplate(false);
-    chai.assert.isFalse(result.includes("Test Tool"));
-  });
-
-  it("getLocalDebugMessageTemplate() - non workspace folder", async () => {
-    sandbox.stub(vscode.workspace, "workspaceFolders").value([]);
-    sandbox.stub(fs, "pathExists").resolves(false);
-
-    const result = await handlers.getLocalDebugMessageTemplate(false);
-    chai.assert.isFalse(result.includes("Test Tool"));
-  });
-
   it("installAdaptiveCardExt()", async () => {
     sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
     sandbox.stub(vscode.extensions, "getExtension").returns(undefined);

@@ -125,6 +125,7 @@ import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   anonymizeFilePaths,
   getAppName,
+  getLocalDebugMessageTemplate,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
@@ -1402,33 +1403,6 @@ export async function showLocalDebugMessage() {
       selection.run();
     }
   });
-}
-
-export async function getLocalDebugMessageTemplate(isWindows: boolean): Promise<string> {
-  const enabledTestTool = await isTestToolEnabled();
-
-  if (isWindows) {
-    return enabledTestTool
-      ? localize("teamstoolkit.handlers.localDebugDescription.enabledTestTool")
-      : localize("teamstoolkit.handlers.localDebugDescription");
-  }
-
-  return enabledTestTool
-    ? localize("teamstoolkit.handlers.localDebugDescription.enabledTestTool.fallback")
-    : localize("teamstoolkit.handlers.localDebugDescription.fallback");
-}
-
-// check if test tool is enabled in scaffolded project
-async function isTestToolEnabled(): Promise<boolean> {
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-
-    const testToolYamlPath = path.join(workspacePath, "teamsapp.testtool.yml");
-    return fs.pathExists(testToolYamlPath);
-  }
-
-  return false;
 }
 
 export async function ShowScaffoldingWarningSummary(

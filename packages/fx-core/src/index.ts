@@ -46,3 +46,4 @@ export * from "./ui/validationUtils";
 export * from "./question";
 export * from "./component/generator/copilotPlugin/helper";
 export * from "./question/util";
+export * from "./common/projectTypeChecker";

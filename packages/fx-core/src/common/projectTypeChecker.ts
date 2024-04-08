@@ -270,6 +270,9 @@ export function getCapabilities(manifest: any): string[] {
   if (manifest.extensions && manifest.extensions.length > 0) {
     capabilities.push("extension");
   }
+  if (manifest.plugins && manifest.plugins.length > 0) {
+    capabilities.push("plugin");
+  }
   return capabilities;
 }
 export const projectTypeChecker = new ProjectTypeChecker();

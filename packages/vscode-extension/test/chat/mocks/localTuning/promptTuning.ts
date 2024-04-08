@@ -9,7 +9,7 @@ import {
   LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { buildDynamicPrompt } from "../dynamicPrompt";
+import { buildDynamicPrompt } from "../../../../src/chat/dynamicPrompt";
 import { loadConfig } from "./loadConfig";
 import { LocalTuningScenarioHandler } from "./types";
 import { getCopilotResponseAsString } from "./utilFunctions";

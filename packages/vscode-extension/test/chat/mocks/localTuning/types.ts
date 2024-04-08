@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { ChatRequestHandler } from "vscode";
-import { IDynamicPromptFormat } from "../dynamicPrompt/utils/types";
+import { IDynamicPromptFormat } from "../../../../src/chat/dynamicPrompt/utils/types";
 
 export type LocalTuningScenarioHandler = (
   ...params: Parameters<ChatRequestHandler>

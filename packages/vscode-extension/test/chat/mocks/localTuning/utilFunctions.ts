@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import { CancellationToken, LanguageModelChatMessage, lm } from "vscode";
-import { buildDynamicPrompt } from "../dynamicPrompt";
-import { inputRai03 } from "../dynamicPrompt/formats";
-import { IDynamicPromptFormat } from "../dynamicPrompt/utils/types";
+import { buildDynamicPrompt } from "../../../../src/chat/dynamicPrompt";
+import { inputRai03 } from "../../../../src/chat/dynamicPrompt/formats";
+import { IDynamicPromptFormat } from "../../../../src/chat/dynamicPrompt/utils/types";
 
 export async function isHarmful_new(
   format: IDynamicPromptFormat<string>,

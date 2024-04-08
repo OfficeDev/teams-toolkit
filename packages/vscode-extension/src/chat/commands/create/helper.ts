@@ -33,7 +33,7 @@ import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
 
 const TOKEN_LIMITS = 2700;
-const SCORE_LIMIT = 0.7;
+const SCORE_LIMIT = 0.8;
 
 export async function matchProject(
   request: ChatRequest,
@@ -47,13 +47,15 @@ export async function matchProject(
   ];
   matchedProjects.sort((a, b) => b.score - a.score);
   const result: ProjectMetadata[] = [];
+  const matchedProjectIds = new Set<string>();
   for (const { id, score } of matchedProjects) {
     if (score < SCORE_LIMIT) {
       break;
     }
     const matchedProject = allProjectMetadata.find((config) => config.id === id);
-    if (matchedProject) {
+    if (matchedProject && !matchedProjectIds.has(matchedProject.id)) {
       result.push(matchedProject);
+      matchedProjectIds.add(matchedProject.id);
     }
   }
   return result;

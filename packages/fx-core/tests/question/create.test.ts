@@ -2916,13 +2916,14 @@ describe("scaffold question", () => {
           sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
           sandbox.stub(SpecParser.prototype, "validate").resolves({
             status: ValidationStatus.Error,
-            errors: [{ content: "error", type: ErrorType.NoSupportedApi }],
+            errors: [{ content: "error", type: ErrorType.NoSupportedApi, data: [] }],
             warnings: [],
           });
 
           const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
 
-          assert.equal(res, getLocalizedString("core.common.NoSupportedApi"));
+          const noAPIMessage = getLocalizedString("core.common.invalidReason.NoAPIs");
+          assert.equal(res, getLocalizedString("core.common.NoSupportedApi", noAPIMessage));
         });
 
         it("invalid openAI plugin manifest spec - multiple errors", async () => {
@@ -2943,7 +2944,7 @@ describe("scaffold question", () => {
           sandbox.stub(SpecParser.prototype, "validate").resolves({
             status: ValidationStatus.Error,
             errors: [
-              { content: "error", type: ErrorType.NoSupportedApi },
+              { content: "error", type: ErrorType.NoSupportedApi, data: [] },
               { content: "error2", type: ErrorType.RelativeServerUrlNotSupported },
             ],
             warnings: [],
@@ -2977,7 +2978,7 @@ describe("scaffold question", () => {
           sandbox.stub(SpecParser.prototype, "validate").resolves({
             status: ValidationStatus.Error,
             errors: [
-              { content: "error", type: ErrorType.NoSupportedApi },
+              { content: "error", type: ErrorType.NoSupportedApi, data: [] },
               { content: "error2", type: ErrorType.RelativeServerUrlNotSupported },
             ],
             warnings: [],
@@ -2986,9 +2987,10 @@ describe("scaffold question", () => {
           const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
           assert.equal(
             res,
-            `${getLocalizedString("core.common.NoSupportedApi")}\n${getLocalizedString(
-              "core.common.RelativeServerUrlNotSupported"
-            )}`
+            `${getLocalizedString(
+              "core.common.NoSupportedApi",
+              getLocalizedString("core.common.invalidReason.NoAPIs")
+            )}\n${getLocalizedString("core.common.RelativeServerUrlNotSupported")}`
           );
         });
 

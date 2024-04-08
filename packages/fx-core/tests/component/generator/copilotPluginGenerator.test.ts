@@ -957,6 +957,39 @@ describe("formatValidationErrors", () => {
       {
         type: ErrorType.NoSupportedApi,
         content: "test",
+        data: [],
+      },
+      {
+        type: ErrorType.NoSupportedApi,
+        content: "test",
+        data: [
+          {
+            api: "GET /api",
+            reason: [
+              ErrorType.AuthTypeIsNotSupported,
+              ErrorType.MissingOperationId,
+              ErrorType.PostBodyContainMultipleMediaTypes,
+              ErrorType.ResponseContainMultipleMediaTypes,
+              ErrorType.ResponseJsonIsEmpty,
+              ErrorType.PostBodySchemaIsNotJson,
+              ErrorType.MethodNotAllowed,
+              ErrorType.UrlPathNotExist,
+            ],
+          },
+          {
+            api: "GET /api2",
+            reason: [
+              ErrorType.PostBodyContainsRequiredUnsupportedSchema,
+              ErrorType.ParamsContainRequiredUnsupportedSchema,
+              ErrorType.ParamsContainsNestedObject,
+              ErrorType.RequestBodyContainsNestedObject,
+              ErrorType.ExceededRequiredParamsLimit,
+              ErrorType.NoParameter,
+              ErrorType.NoAPIInfo,
+            ],
+          },
+          { api: "GET /api3", reason: ["unknown"] },
+        ],
       },
       {
         type: ErrorType.NoExtraAPICanBeAdded,
@@ -995,15 +1028,53 @@ describe("formatValidationErrors", () => {
       getLocalizedString("core.common.UrlProtocolNotSupported", "http")
     );
     expect(res[5].content).equals(getLocalizedString("core.common.RelativeServerUrlNotSupported"));
-    expect(res[6].content).equals(getLocalizedString("core.common.NoSupportedApi"));
-    expect(res[7].content).equals(getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"));
-    expect(res[8].content).equals("resolveurl");
-    expect(res[9].content).equals(getLocalizedString("core.common.CancelledMessage"));
-    expect(res[10].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
-    expect(res[11].content).equals(
-      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[11].data)
+    expect(res[6].content).equals(
+      getLocalizedString(
+        "core.common.NoSupportedApi",
+        getLocalizedString("core.common.invalidReason.NoAPIs")
+      )
     );
-    expect(res[12].content).equals("unknown");
+
+    const errorMessage1 = [
+      getLocalizedString("core.common.invalidReason.AuthTypeIsNotSupported"),
+      getLocalizedString("core.common.invalidReason.MissingOperationId"),
+      getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes"),
+      getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes"),
+      getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty"),
+      getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson"),
+      getLocalizedString("core.common.invalidReason.MethodNotAllowed"),
+      getLocalizedString("core.common.invalidReason.UrlPathNotExist"),
+    ];
+    const errorMessage2 = [
+      getLocalizedString("core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"),
+      getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema"),
+      getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject"),
+      getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject"),
+      getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit"),
+      getLocalizedString("core.common.invalidReason.NoParameter"),
+      getLocalizedString("core.common.invalidReason.NoAPIInfo"),
+    ];
+    const errorMessage3 = ["unknown"];
+    expect(res[7].content).equals(
+      getLocalizedString(
+        "core.common.NoSupportedApi",
+        "GET /api: " +
+          errorMessage1.join(", ") +
+          "\n" +
+          "GET /api2: " +
+          errorMessage2.join(", ") +
+          "\n" +
+          "GET /api3: unknown"
+      )
+    );
+    expect(res[8].content).equals(getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"));
+    expect(res[9].content).equals("resolveurl");
+    expect(res[10].content).equals(getLocalizedString("core.common.CancelledMessage"));
+    expect(res[11].content).equals(getLocalizedString("core.common.SwaggerNotSupported"));
+    expect(res[12].content).equals(
+      format(getLocalizedString("core.common.SpecVersionNotSupported"), res[12].data)
+    );
+    expect(res[13].content).equals("unknown");
   });
 });
 

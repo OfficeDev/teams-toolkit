@@ -57,7 +57,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/config.js`| Defines the environment variables.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
-|`src/app/app.js`| Handles business logics for the AI Agent.|
+|`src/app/app.js`| Handles business logics for the RAG bot.|
 |`src/app/myDataSource.js`| Defines the data source.|
 |`src/data/*.md`| Raw text data sources.|
 

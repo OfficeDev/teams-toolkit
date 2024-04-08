@@ -571,7 +571,7 @@
   "depChecker.learnMoreButtonText": "Learn more",
   "depChecker.needInstallNpm": "You must have NPM installed to debug your local functions.",
   "depChecker.failToValidateFuncCoreTool": "Unable to validate Azure Functions Core Tools after installation.",
-  "depChecker.symlinkDirAlreadyExist": "The destination of the symlink already exists",
+  "depChecker.symlinkDirAlreadyExist": "The destination of the symlink (%s) already exists, please remove it and try again.",
   "depChecker.portableFuncNodeNotMatched": "Your Node.js (@NodeVersion) is incompatible with Teams Toolkit Azure Functions Core Tools (@FuncVersion).",
   "depChecker.invalidFuncVersion": "The format of version %s is invalid.",
   "depChecker.noSentinelFile": "Azure Functions Core Tools installation is incomplete.",

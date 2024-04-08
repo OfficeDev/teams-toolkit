@@ -1465,7 +1465,9 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     capabilitiesHavePythonOption.includes(capabilities) &&
     !(
       capabilities == CapabilityOptions.customCopilotRag().id &&
-      inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.microsoft365().id
+      (inputs[CapabilityOptions.customCopilotRag().id] ==
+        CustomCopilotRagOptions.microsoft365().id ||
+        inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.customApi().id)
     )
   ) {
     // support python language

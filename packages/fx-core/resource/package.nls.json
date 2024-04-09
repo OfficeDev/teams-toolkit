@@ -407,7 +407,7 @@
   "core.createProjectQuestion.officeXMLAddin.manifestOnly.title": "Add-in Project With only Manifest File",
   "core.createProjectQuestion.officeXMLAddin.manifestOnly.detail": "Create an add-in project that includes only the manifest file",
   "core.aiAssistantBotOption.label": "AI Agent Bot",
-  "core.aiAssistantBotOption.detail": "A custom AI agent bot in Teams using Teams AI library and OpenAI Assistants API",
+  "core.aiAssistantBotOption.detail": "A custom AI Agent bot in Teams using Teams AI library and OpenAI Assistants API",
   "core.aiBotOption.label": "AI Chat Bot",
   "core.aiBotOption.detail": "A basic AI chat bot in Teams using Teams AI library",
   "core.spfxFolder.title": "SPFx solution folder",

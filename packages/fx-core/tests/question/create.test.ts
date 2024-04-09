@@ -1355,6 +1355,7 @@ describe("scaffold question", () => {
           QuestionNames.ProgrammingLanguage,
           QuestionNames.LLMService,
           QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIDeploymentName,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
@@ -1423,14 +1424,15 @@ describe("scaffold question", () => {
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
           QuestionNames.CustomCopilotRag,
-          // QuestionNames.ApiSpecLocation,
-          // QuestionNames.ApiOperation,
-          // QuestionNames.ProgrammingLanguage,
-          // QuestionNames.LLMService,
-          // QuestionNames.AzureOpenAIKey,
-          // QuestionNames.AzureOpenAIEndpoint,
-          // QuestionNames.Folder,
-          // QuestionNames.AppName,
+          QuestionNames.ApiSpecLocation,
+          QuestionNames.ApiOperation,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
         ]);
       });
 

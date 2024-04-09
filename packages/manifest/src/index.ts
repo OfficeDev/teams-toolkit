@@ -157,8 +157,7 @@ export class ManifestUtil {
 
     if ((manifest as TeamsAppManifest).plugins) {
       const apiPlugins = (manifest as TeamsAppManifest).plugins;
-      if (apiPlugins && apiPlugins.length > 0 && apiPlugins[0].pluginFile)
-        properties.isPlugin = true;
+      if (apiPlugins && apiPlugins.length > 0 && apiPlugins[0].file) properties.isPlugin = true;
     }
 
     return properties;

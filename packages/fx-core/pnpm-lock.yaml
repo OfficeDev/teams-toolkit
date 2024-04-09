@@ -287,7 +287,7 @@ devDependencies:
     specifier: ^6.4.1
     version: 6.4.1(webpack@5.62.1)
   eslint:
-    specifier: ^7.22.0
+    specifier: ^7.29.0
     version: 7.29.0
   eslint-plugin-header:
     specifier: ^3.1.1

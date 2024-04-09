@@ -54,6 +54,7 @@ export class Generator {
       openAIKey?: string;
       azureOpenAIKey?: string;
       azureOpenAIEndpoint?: string;
+      azureOpenAIDeploymentName?: string;
     }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
@@ -79,6 +80,7 @@ export class Generator {
       openAIKey: llmServiceData?.openAIKey ?? "",
       azureOpenAIKey: llmServiceData?.azureOpenAIKey ?? "",
       azureOpenAIEndpoint: llmServiceData?.azureOpenAIEndpoint ?? "",
+      azureOpenAIDeploymentName: llmServiceData?.azureOpenAIDeploymentName ?? "",
       isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
       NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
       NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",

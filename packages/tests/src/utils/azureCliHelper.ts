@@ -107,7 +107,7 @@ export class AzSqlHelper {
   }
 
   static async login() {
-    const command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
+    const command = `az login -u ${Env["azureAccountName"]} -p ${Env["azureAccountPassword"]}`;
     await Executor.execute(command, process.cwd());
     // set subscription
     const subscription = Env["azureSubscriptionId"];
@@ -237,7 +237,7 @@ export class AzServiceBusHelper {
   }
 
   static async login() {
-    const command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
+    const command = `az login -u ${Env["azureAccountName"]} -p ${Env["azureAccountPassword"]}`;
     await Executor.execute(command, process.cwd());
 
     // set subscription

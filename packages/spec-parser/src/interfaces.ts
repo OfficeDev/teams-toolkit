@@ -289,3 +289,8 @@ export interface AuthInfo {
   authScheme: OpenAPIV3.SecuritySchemeObject;
   name: string;
 }
+
+export interface InvalidAPIInfo {
+  api: string;
+  reason: ErrorType[];
+}

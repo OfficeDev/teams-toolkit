@@ -21,3 +21,6 @@ lib/
 .localConfigs
 .notification.localstore.json
 .notification.testtoolstore.json
+
+# Dev tool directories
+/devTools/

@@ -8,7 +8,7 @@ deploy:
   - uses: devTool/install
     with:
       testTool:
-        version: ~0.1.0-beta
+        version: ~0.2.1-beta
         symlinkDir: ./devTools/teamsapptester
 
   # Run npm command
@@ -27,6 +27,6 @@ deploy:
         {{#useAzureOpenAI}}
         AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}
         AZURE_OPENAI_ENDPOINT: ${{AZURE_OPENAI_ENDPOINT}}
-        AZURE_OPENAI_DEPLOYMENT: ${{AZURE_OPENAI_DEPLOYMENT}}
+        AZURE_OPENAI_DEPLOYMENT: ${{AZURE_OPENAI_MODEL_DEPLOYMENT_NAME}}
         {{/useAzureOpenAI}}
         TEAMSFX_NOTIFICATION_STORE_FILENAME: ${{TEAMSFX_NOTIFICATION_STORE_FILENAME}}

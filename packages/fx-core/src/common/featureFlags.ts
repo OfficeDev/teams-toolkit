@@ -62,10 +62,6 @@ export function isMultipleParametersEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, true);
 }
 
-export function isOfficeXMLAddinEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.OfficeXMLAddin, false);
-}
-
 export function isOfficeJSONAddinEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
 }
@@ -84,10 +80,6 @@ export function isAsyncAppValidationEnabled(): boolean {
 
 export function isNewProjectTypeEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
-}
-
-export function isApiMeSSOEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiMeSSO, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

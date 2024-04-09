@@ -8,7 +8,7 @@ deploy:
   - uses: devTool/install
     with:
       testTool:
-        version: ~0.1.0-beta
+        version: ~0.2.1-beta
         symlinkDir: ./devTools/teamsapptester
 
   # Generate runtime environment variables

@@ -37,7 +37,7 @@ import { OfficeXMLAddinGenerator } from "../../../src/component/generator/office
 
 const V3Version = MetadataV3.projectVersion;
 describe("coordinator create", () => {
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
   setTools(tools);
@@ -659,30 +659,7 @@ describe("coordinator create", () => {
     assert.equal(generator.args[0][2], TemplateNames.Tab);
   });
 
-  it("create API ME (without api auth options) from new api sucessfully", async () => {
-    const v3ctx = createContextV3();
-    v3ctx.userInteraction = new MockedUserInteraction();
-
-    const generator = sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      folder: ".",
-      [QuestionNames.ProjectType]: ProjectTypeOptions.me().id,
-      [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
-      [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.Scratch]: ScratchOptions.yes().id,
-    };
-    const res = await coordinator.create(v3ctx, inputs);
-    assert.isTrue(res.isOk());
-    assert.equal(generator.args[0][2], TemplateNames.CopilotPluginFromScratch);
-  });
-
   it("create API ME (no auth) from new api sucessfully", async () => {
-    mockedEnvRestore = mockedEnv({
-      API_COPILOT_API_KEY: "true",
-    });
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
 
@@ -704,9 +681,6 @@ describe("coordinator create", () => {
   });
 
   it("create API ME (key auth) from new api sucessfully", async () => {
-    mockedEnvRestore = mockedEnv({
-      API_COPILOT_API_KEY: "true",
-    });
     const v3ctx = createContextV3();
     v3ctx.userInteraction = new MockedUserInteraction();
 

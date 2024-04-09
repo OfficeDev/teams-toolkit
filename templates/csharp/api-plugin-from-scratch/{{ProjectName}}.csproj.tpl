@@ -8,10 +8,12 @@
     <RootNamespace>{{SafeProjectName}}</RootNamespace>
   </PropertyGroup>
 
+{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <ProjectCapability Include="TeamsFx" />
-    <ProjectCapability Include="APIME" />
+    <ProjectCapability Include="CopilotPlugin" />
   </ItemGroup>
+{{/isNewProjectTypeEnabled}}
 
   <ItemGroup>
     <None Include="appPackage/**/*" />

@@ -54,7 +54,6 @@ export function chatRequestHandler(
   } else {
     return defaultHandler(request, context, response, token);
   }
-  return {};
 }
 
 async function defaultHandler(

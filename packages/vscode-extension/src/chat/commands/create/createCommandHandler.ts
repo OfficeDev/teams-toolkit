@@ -9,6 +9,7 @@ import {
   LanguageModelChatUserMessage,
 } from "vscode";
 
+import * as util from "util";
 import { CommandKey } from "../../../constants";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
@@ -38,12 +39,27 @@ export default async function createCommandHandler(
   );
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
+  if (request.prompt.trim() === "") {
+    response.markdown(localize("teamstoolkit.chatParticipants.create.noPromptAnswer"));
+
+    chatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      chatTelemetryData.properties,
+      chatTelemetryData.measurements
+    );
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        requestId: chatTelemetryData.requestId,
+      },
+    };
+  }
+
   const matchedResult = await helper.matchProject(request, token, chatTelemetryData);
 
   if (matchedResult.length === 0) {
-    response.markdown(
-      "No matching templates or samples found. Try a different app description or explore other templates.\n"
-    );
+    response.markdown(localize("teamstoolkit.chatParticipants.create.noMatched"));
     chatTelemetryData.markComplete();
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
@@ -58,6 +74,7 @@ export default async function createCommandHandler(
     };
   }
   if (matchedResult.length === 1) {
+    response.markdown(localize("teamstoolkit.chatParticipants.create.oneMatched"));
     const firstMatch = matchedResult[0];
     const describeProjectChatMessages = [
       describeProjectSystemPrompt,
@@ -102,11 +119,12 @@ export default async function createCommandHandler(
         requestId: chatTelemetryData.requestId,
       },
     };
-  } else {
+  } else if (matchedResult.length <= 5) {
     response.markdown(
-      `We've found ${
+      util.format(
+        localize("teamstoolkit.chatParticipants.create.multipleMatched"),
         matchedResult.slice(0, 3).length
-      } projects that match your description. Take a look at them below.\n`
+      )
     );
     for (const project of matchedResult.slice(0, 3)) {
       response.markdown(`- ${project.name}: `);
@@ -141,6 +159,21 @@ export default async function createCommandHandler(
         });
       }
     }
+
+    chatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      chatTelemetryData.properties,
+      chatTelemetryData.measurements
+    );
+    return {
+      metadata: {
+        command: TeamsChatCommand.Create,
+        requestId: chatTelemetryData.requestId,
+      },
+    };
+  } else {
+    response.markdown(localize("teamstoolkit.chatParticipants.create.tooGeneric"));
 
     chatTelemetryData.markComplete();
     ExtTelemetry.sendTelemetryEvent(

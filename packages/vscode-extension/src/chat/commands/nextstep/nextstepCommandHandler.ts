@@ -22,6 +22,7 @@ import { getCopilotResponseAsString } from "../../utils";
 import { getWholeStatus } from "./status";
 import { allSteps } from "./steps";
 import { NextStep, WholeStatus } from "./types";
+import { localize } from "../../../utils/localizeUtils";
 
 export default async function nextStepCommandHandler(
   request: ChatRequest,
@@ -37,10 +38,7 @@ export default async function nextStepCommandHandler(
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
 
   if (request.prompt) {
-    response.markdown(`
-This command provides guidance on your next steps based on your workspace.
-
-E.g. If you're unsure what to do after creating a project, simply ask Copilot by using @teams/nextstep.`);
+    response.markdown(localize("teamstoolkit.chatParticipants.nextStep.noPromptAnswer"));
     chatTelemetryData.markComplete("unsupportedPrompt");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,

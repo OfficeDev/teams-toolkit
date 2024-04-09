@@ -165,7 +165,6 @@ describe("updateManifestWithAiPlugin", () => {
       openapi: "3.0.2",
       info: {
         title: "My API",
-        description: "My API description",
       },
       servers: [
         {
@@ -192,7 +191,6 @@ describe("updateManifestWithAiPlugin", () => {
           post: {
             operationId: "createPet",
             summary: "Create a pet",
-            description: "Create a new pet in the store",
             requestBody: {
               content: {
                 "application/json": {
@@ -223,7 +221,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
     const expectedManifest = {
       name: { short: "Original Name", full: "Original Full Name" },
-      description: { short: "My API", full: "My API description" },
+      description: { short: "My API", full: "Original Full Description" },
       plugins: [
         {
           file: "ai-plugin.json",
@@ -235,14 +233,11 @@ describe("updateManifestWithAiPlugin", () => {
     const expectedPlugins: PluginManifestSchema = {
       schema_version: "v2",
       name_for_human: "Original Name",
-      description_for_human: "My API description",
+      description_for_human: "<Please add description of the plugin>",
       capabilities: {
         conversation_starters: [
           {
             text: "Returns all pets from the system that the user has access to",
-          },
-          {
-            text: "Create a new pet in the store",
           },
         ],
         localization: {},
@@ -263,8 +258,8 @@ describe("updateManifestWithAiPlugin", () => {
           },
         },
         {
+          description: "",
           name: "createPet",
-          description: "Create a new pet in the store",
           parameters: {
             type: "object",
             required: ["name"],

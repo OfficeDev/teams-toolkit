@@ -1263,7 +1263,7 @@ export class FxCore {
     }
 
     const confirmRes = await context.userInteraction.showMessage(
-      "info",
+      "warn",
       getLocalizedString("core.addApi.confirm", AppPackageFolderName),
       true,
       getLocalizedString("core.addApi.continue")

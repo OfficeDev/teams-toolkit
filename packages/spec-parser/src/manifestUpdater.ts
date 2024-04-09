@@ -102,6 +102,7 @@ export class ManifestUpdater {
   ): Promise<PluginManifestSchema> {
     const functions: FunctionObject[] = [];
     const functionNames: string[] = [];
+    const conversationStarters: string[] = [];
 
     const paths = spec.paths;
 
@@ -184,6 +185,9 @@ export class ManifestUpdater {
 
               functions.push(funcObj);
               functionNames.push(operationId);
+              if (description) {
+                conversationStarters.push(description);
+              }
             }
           }
         }
@@ -238,6 +242,19 @@ export class ManifestUpdater {
     if (!apiPlugin.description_for_human) {
       apiPlugin.description_for_human =
         spec.info.description ?? "<Please add description of the plugin>";
+    }
+
+    if (options.allowConversationStarters) {
+      if (!apiPlugin.capabilities?.conversation_starters && conversationStarters.length > 0) {
+        if (!apiPlugin.capabilities) {
+          apiPlugin.capabilities = {
+            localization: {},
+          };
+        }
+        apiPlugin.capabilities.conversation_starters = conversationStarters
+          .slice(0, 5)
+          .map((text) => ({ text }));
+      }
     }
 
     return apiPlugin;

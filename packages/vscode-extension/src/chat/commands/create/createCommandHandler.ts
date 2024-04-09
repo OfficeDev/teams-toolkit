@@ -74,7 +74,7 @@ export default async function createCommandHandler(
     };
   }
   if (matchedResult.length === 1) {
-    response.markdown(util.format(localize("teamstoolkit.chatParticipants.create.matched"), 1));
+    response.markdown(localize("teamstoolkit.chatParticipants.create.oneMatched"));
     const firstMatch = matchedResult[0];
     const describeProjectChatMessages = [
       describeProjectSystemPrompt,
@@ -122,7 +122,7 @@ export default async function createCommandHandler(
   } else if (matchedResult.length <= 5) {
     response.markdown(
       util.format(
-        localize("teamstoolkit.chatParticipants.create.matched"),
+        localize("teamstoolkit.chatParticipants.create.multipleMatched"),
         matchedResult.slice(0, 3).length
       )
     );

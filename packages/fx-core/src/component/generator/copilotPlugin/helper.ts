@@ -834,7 +834,7 @@ async function updatePromptForCustomApi(
     const promptFilePath = path.join(chatFolder, "skprompt.txt");
     const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
       spec.info.description ? ". " + spec.info.description : "."
-    }\n\ncontext:\nAvailable actions: {{getAction}}.`;
+    }\nIf the API doesn't require parameters, invoke it with default JSON object { "path": null, "body": null, "query": null }.\n\ncontext:\nAvailable actions: {{getAction}}.`;
     await fs.writeFile(promptFilePath, prompt, { encoding: "utf-8", flag: "w" });
   }
 }

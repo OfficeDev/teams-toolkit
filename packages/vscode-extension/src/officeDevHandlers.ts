@@ -108,7 +108,7 @@ export function installOfficeAddInDependencies(args?: any[]): Promise<Result<nul
 
 export async function popupOfficeAddInDependenciesMessage() {
   const buttonOptions = ["Yes", "No"];
-  const notificationMessage = localize("teamstoolkit.handlers.askInstallOfficeDependency");
+  const notificationMessage = localize("teamstoolkit.handlers.askInstallOfficeAddinDependency");
 
   const result = await vscode.window.showInformationMessage(notificationMessage, ...buttonOptions);
 
@@ -118,7 +118,7 @@ export async function popupOfficeAddInDependenciesMessage() {
   } else if (result === "No") {
     // Handle No button click
     void vscode.window.showInformationMessage(
-      localize("teamstoolkit.handlers.installOfficeDependencyCancelled")
+      localize("teamstoolkit.handlers.installOfficeAddinDependencyCancelled")
     );
   } else {
     // Handle case where pop-up was dismissed without clicking a button

@@ -47,6 +47,7 @@ export enum QuestionNames {
   OpenAIKey = "openai-key",
   AzureOpenAIKey = "azure-openai-key",
   AzureOpenAIEndpoint = "azure-openai-endpoint",
+  AzureOpenAIDeploymentName = "azure-openai-deployment-name",
 
   Features = "features",
   Env = "env",

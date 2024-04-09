@@ -2349,6 +2349,19 @@ function azureOpenAIEndpointQuestion(): TextInputQuestion {
   };
 }
 
+function azureOpenAIDeploymentNameQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.AzureOpenAIDeploymentName,
+    title: getLocalizedString(
+      "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.title"
+    ),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.placeholder"
+    ),
+  };
+}
+
 export function capabilitySubTree(): IQTreeNode {
   const node: IQTreeNode = {
     data: capabilityQuestion(),
@@ -2515,6 +2528,14 @@ export function capabilitySubTree(): IQTreeNode {
                   return inputs[QuestionNames.AzureOpenAIKey]?.length > 0;
                 },
                 data: azureOpenAIEndpointQuestion(),
+                children: [
+                  {
+                    condition: (inputs: Inputs) => {
+                      return inputs[QuestionNames.AzureOpenAIEndpoint]?.length > 0;
+                    },
+                    data: azureOpenAIDeploymentNameQuestion(),
+                  },
+                ],
               },
             ],
           },

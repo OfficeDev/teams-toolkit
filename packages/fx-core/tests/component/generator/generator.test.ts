@@ -849,12 +849,14 @@ describe("Generator happy path", async () => {
       llmService: "llm-service-azure-openai",
       azureOpenAIKey: "test-key",
       azureOpenAIEndpoint: "test-endpoint",
+      azureOpenAIDeploymentName: "test-deployment",
     });
     assert.equal(vars.useOpenAI, "");
     assert.equal(vars.useAzureOpenAI, "true");
     assert.equal(vars.openAIKey, "");
     assert.equal(vars.azureOpenAIKey, "test-key");
     assert.equal(vars.azureOpenAIEndpoint, "test-endpoint");
+    assert.equal(vars.azureOpenAIDeploymentName, "test-deployment");
   });
 
   it("template variables when contains auth", async () => {

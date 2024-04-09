@@ -1212,6 +1212,71 @@ describe("scaffold question", () => {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
             return ok({ type: "success", result: "testEndppint" });
+          } else if (question.name === QuestionNames.AzureOpenAIDeploymentName) {
+            return ok({ type: "success", result: "testAzureOpenAIDeploymentName" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.CustomCopilotRag,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("RAG - Customize - Azure OpenAI wit empty endpoint", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 3);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotRag().id });
+          } else if (question.name === QuestionNames.CustomCopilotRag) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 4);
+            return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 3);
+            return ok({ type: "success", result: "python" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "llm-service-azure-openai" });
+          } else if (question.name === QuestionNames.AzureOpenAIKey) {
+            return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.Folder) {
             return ok({ type: "success", result: "./" });
           } else if (question.name === QuestionNames.AppName) {
@@ -1365,6 +1430,7 @@ describe("scaffold question", () => {
           QuestionNames.LLMService,
           QuestionNames.AzureOpenAIKey,
           QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
@@ -1429,6 +1495,7 @@ describe("scaffold question", () => {
           QuestionNames.LLMService,
           QuestionNames.AzureOpenAIKey,
           QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);

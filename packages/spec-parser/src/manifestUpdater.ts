@@ -244,13 +244,13 @@ export class ManifestUpdater {
         spec.info.description ?? "<Please add description of the plugin>";
     }
 
-    if (options.allowConversationStarters) {
-      if (!apiPlugin.capabilities?.conversation_starters && conversationStarters.length > 0) {
-        if (!apiPlugin.capabilities) {
-          apiPlugin.capabilities = {
-            localization: {},
-          };
-        }
+    if (options.allowConversationStarters && conversationStarters.length > 0) {
+      if (!apiPlugin.capabilities) {
+        apiPlugin.capabilities = {
+          localization: {},
+        };
+      }
+      if (!apiPlugin.capabilities.conversation_starters) {
         apiPlugin.capabilities.conversation_starters = conversationStarters
           .slice(0, 5)
           .map((text) => ({ text }));

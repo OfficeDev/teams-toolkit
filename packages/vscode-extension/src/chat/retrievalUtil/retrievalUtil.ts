@@ -4,6 +4,19 @@
 import { stemmer } from "./porter2Stemmer";
 import * as stopwords from "./stop_words_english.json";
 
+export type DocumentMetadata = {
+  description: string;
+  codeSample: string;
+};
+
+export type API = {
+  name: string;
+  description: string;
+  kind: string;
+  signature: string;
+  examples: string[];
+};
+
 const synonymReplaceRules: Record<string, string> = {
   fetch: "get",
   retriev: "get",
@@ -13,6 +26,20 @@ const synonymReplaceRules: Record<string, string> = {
   modifi: "edit",
   remov: "delet",
 };
+
+// for new json array templates
+export function prepareExamples(
+  docs: DocumentMetadata[]
+): [string[], Map<string, DocumentMetadata>] {
+  const docsWithMetadata: Map<string, DocumentMetadata> = new Map();
+  const cleanDocs: string[] = [];
+  docs.forEach((doc) => {
+    const cleanDescription = prepareDiscription(doc.description).join(" ");
+    cleanDocs.push(cleanDescription);
+    docsWithMetadata.set(cleanDescription, doc);
+  });
+  return [cleanDocs, docsWithMetadata];
+}
 
 export function filterStopWords(texts: string[]): string[] {
   return texts.filter((word) => !stopwords.includes(word));

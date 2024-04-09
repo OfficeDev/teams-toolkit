@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import axios from "axios";
-import { BM25, DocumentWithmetadata } from "../../rag/BM25";
+import { BM25, DocumentWithmetadata } from "../../retrievalUtil/BM25";
 import { SampleData } from "./sampleData";
-import { prepareDiscription } from "../../rag/ragUtil";
+import { prepareDiscription } from "../../retrievalUtil/retrievalUtil";
 
 export type WXPAppName = "Word" | "Excel" | "PowerPoint";
 

@@ -90,6 +90,7 @@ export interface CreateProjectInputs extends Inputs {
   "custom-copilot-rag"?:
     | "custom-copilot-rag-customize"
     | "custom-copilot-rag-azureAISearch"
+    | "custom-copilot-rag-customApi"
     | "custom-copilot-rag-microsoft365";
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";

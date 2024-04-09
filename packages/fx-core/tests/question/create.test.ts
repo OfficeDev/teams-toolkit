@@ -1355,7 +1355,6 @@ describe("scaffold question", () => {
           QuestionNames.ProgrammingLanguage,
           QuestionNames.LLMService,
           QuestionNames.AzureOpenAIKey,
-          QuestionNames.AzureOpenAIDeploymentName,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);

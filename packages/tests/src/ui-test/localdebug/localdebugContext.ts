@@ -221,7 +221,7 @@ export class LocalDebugTestContext extends TestContext {
       case "aiassist":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-assistant --programming-language ${this.lang}`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability custom-copilot-agent --programming-language ${this.lang}`
         );
         break;
       case "msgnewapi":

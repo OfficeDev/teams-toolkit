@@ -1,14 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 export type Instruction = string | string[];
 export type Example = string | string[];
 
 export interface PluginManifestSchema {
   schema_version: string;
   name_for_human: string;
+  namespace?: string;
   description_for_model?: string;
   description_for_human: string;
-  namespace?: string;
   logo_url?: string;
   contact_email?: string;
   legal_info_url?: string;
@@ -25,73 +26,48 @@ export interface FunctionObject {
   name: string;
   description?: string;
   parameters?: FunctionParameters;
-  returns?: FunctionReturnType;
+  returns?: FunctionReturnType | FunctionRichResponseReturnType;
   states?: {
     reasoning?: FunctionStateConfig;
     responding?: FunctionStateConfig;
     [k: string]: unknown;
   };
-  /**
-   * Describes the capabilities of a function, such as confirmations for functions.
-   */
   capabilities?: {
     confirmation?: ConfirmationObject;
+    response_semantics?: ResponseSemanticsObject;
     [k: string]: unknown;
   };
   [k: string]: unknown;
 }
-/**
- * A map of parameters for the function.
- */
 export interface FunctionParameters {
-  /**
-   * The type of the function parameters object. Must be 'object'.
-   */
   type?: "object";
-  /**
-   * Map from parameter names to description of parameter requirements.
-   */
-  properties?: {
+  properties: {
     [k: string]: FunctionParameter;
   };
   required?: string[];
   [k: string]: unknown;
 }
-
+/**
+ * This interface was referenced by `undefined`'s JSON-Schema definition
+ * via the `patternProperty` "^[A-Za-z0-9_]+$".
+ */
 export interface FunctionParameter {
-  /**
-   * The type for the parameter. Must be one of: string, array, boolean, integer, number.
-   */
-  type?: "string" | "array" | "boolean" | "integer" | "number";
+  type: "string" | "array" | "boolean" | "integer" | "number";
   items?: {
     [k: string]: unknown;
   };
-  /**
-   * An array that specifies the permissible string values for the property.
-   */
   enum?: string[];
-  /**
-   * The description of the parameter.
-   */
   description?: string;
-  /**
-   * The default value of the parameter.
-   */
   default?: string | boolean | number | number | unknown[];
   [k: string]: unknown;
 }
-/**
- * Describes the value of what's returned by the function.
- */
 export interface FunctionReturnType {
-  /**
-   * Type of return value of the function.
-   */
-  type?: "string" | "array" | "boolean" | "integer" | "number";
-  /**
-   * Description of the function's return value.
-   */
+  type: "string";
   description?: string;
+  [k: string]: unknown;
+}
+export interface FunctionRichResponseReturnType {
+  $ref: "https://copilot.microsoft.com/schemas/rich-response-v1.0.json";
   [k: string]: unknown;
 }
 export interface FunctionStateConfig {
@@ -106,6 +82,19 @@ export interface ConfirmationObject {
   body?: string;
   [k: string]: unknown;
 }
+export interface ResponseSemanticsObject {
+  data_path: string;
+  properties?: {
+    title?: string;
+    subtitle?: string;
+    url?: string;
+    information_protection_url?: string;
+    template_selector?: string;
+    [k: string]: unknown;
+  };
+  static_template?: string;
+  [k: string]: unknown;
+}
 export interface RuntimeObjectLocalplugin {
   type: "LocalPlugin";
   run_for_functions?: string[];
@@ -118,12 +107,14 @@ export interface LocalPluginRuntime {
 }
 export interface RuntimeObjectOpenapi {
   type: "OpenApi";
-  auth?: {
-    type?: string;
-    [k: string]: unknown;
-  };
+  auth?: AuthObject;
   run_for_functions?: string[];
   spec: OpenApiRuntime;
+  [k: string]: unknown;
+}
+export interface AuthObject {
+  type: "none" | "oAuthPluginVault" | "apiKeyPluginVault";
+  reference_id?: string;
   [k: string]: unknown;
 }
 export interface OpenApiRuntime {
@@ -131,7 +122,15 @@ export interface OpenApiRuntime {
   [k: string]: unknown;
 }
 export interface LocalizationObject {
+  /**
+   * This interface was referenced by `LocalizationObject`'s JSON-Schema definition
+   * via the `patternProperty` "^(?i)[a-z]{2,3}(-[a-z]{2})?(?-i)$".
+   */
   [k: string]: {
+    /**
+     * This interface was referenced by `undefined`'s JSON-Schema definition
+     * via the `patternProperty` "^[A-Za-z_][A-Za-z0-9_]*$".
+     */
     [k: string]: {
       message: string;
       description: string;

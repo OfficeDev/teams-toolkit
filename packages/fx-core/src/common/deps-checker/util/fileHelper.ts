@@ -27,7 +27,7 @@ export async function createSymlink(target: string, linkFilePath: string): Promi
   await unlinkSymlink(linkFilePath);
   // check if destination already exists
   if (await fs.pathExists(linkFilePath)) {
-    throw new DepsCheckerError(Messages.symlinkDirAlreadyExist(), v3DefaultHelpLink);
+    throw new DepsCheckerError(Messages.symlinkDirAlreadyExist(linkFilePath), v3DefaultHelpLink);
   }
 
   return await fs.ensureSymlink(

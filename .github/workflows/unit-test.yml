@@ -54,7 +54,7 @@ jobs:
       - name: CodeCov report attempt 1
         id: codecov1
         continue-on-error: true
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true

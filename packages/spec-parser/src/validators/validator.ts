@@ -12,6 +12,7 @@ import {
   APIMap,
   SpecValidationResult,
   WarningType,
+  InvalidAPIInfo,
 } from "../interfaces";
 import { Utils } from "../utils";
 import { ConstantString } from "../constants";
@@ -80,9 +81,17 @@ export abstract class Validator {
 
     const validAPIs = Object.entries(apiMap).filter(([, value]) => value.isValid);
     if (validAPIs.length === 0) {
+      const data = [];
+      for (const key in apiMap) {
+        const { reason } = apiMap[key];
+        const apiInvalidReason: InvalidAPIInfo = { api: key, reason: reason };
+        data.push(apiInvalidReason);
+      }
+
       result.errors.push({
         type: ErrorType.NoSupportedApi,
         content: ConstantString.NoSupportedApi,
+        data,
       });
     }
 

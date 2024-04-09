@@ -58,6 +58,7 @@ import {
   programmingLanguageQuestion,
   officeAddinFrameworkQuestion,
   getAddinFrameworkOptions,
+  projectTypeQuestion,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
@@ -251,9 +252,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (none auth)", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.ApiKey]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -293,7 +291,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.ApiMEAuth) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions?.(inputs);
-          assert.isTrue(options?.length === 2);
+          assert.isTrue(options?.length === 3);
           return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
@@ -316,7 +314,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.ApiMEAuth) {
           const select = question as SingleSelectQuestion;
           const options = select.staticOptions;
-          assert.isTrue(options.length === 2);
+          assert.isTrue(options.length === 3);
           return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
         }
         return ok({ type: "success", result: undefined });
@@ -334,9 +332,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (key auth)", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.ApiKey]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -376,7 +371,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.ApiMEAuth) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions?.(inputs);
-          assert.isTrue(options?.length === 2);
+          assert.isTrue(options?.length === 3);
           return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
@@ -384,23 +379,6 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: "test001" });
         } else if (question.name === QuestionNames.Folder) {
           return ok({ type: "success", result: "./" });
-        } else if (question.name === QuestionNames.MeArchitectureType) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.staticOptions;
-          // Assert
-          assert.equal(options.length, 2);
-          // Assert
-          assert.equal(options.length, 2);
-          assert.deepEqual(options, [
-            MeArchitectureOptions.newApi(),
-            MeArchitectureOptions.apiSpec(),
-          ]);
-          return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
-        } else if (question.name === QuestionNames.ApiMEAuth) {
-          const select = question as SingleSelectQuestion;
-          const options = select.staticOptions;
-          assert.isTrue(options.length === 2);
-          return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
         }
         return ok({ type: "success", result: undefined });
       };
@@ -417,10 +395,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (sso auth)", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.ApiKey]: "true",
-        [FeatureFlagName.ApiMeSSO]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -1195,7 +1169,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.CustomCopilotRag) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 4);
             return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
@@ -1211,6 +1185,71 @@ describe("scaffold question", () => {
             return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.AzureOpenAIEndpoint) {
             return ok({ type: "success", result: "testEndppint" });
+          } else if (question.name === QuestionNames.AzureOpenAIDeploymentName) {
+            return ok({ type: "success", result: "testAzureOpenAIDeploymentName" });
+          } else if (question.name === QuestionNames.Folder) {
+            return ok({ type: "success", result: "./" });
+          } else if (question.name === QuestionNames.AppName) {
+            return ok({ type: "success", result: "test001" });
+          }
+          return ok({ type: "success", result: undefined });
+        };
+        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+        assert.deepEqual(questions, [
+          QuestionNames.ProjectType,
+          QuestionNames.Capabilities,
+          QuestionNames.CustomCopilotRag,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
+        ]);
+      });
+
+      it("RAG - Customize - Azure OpenAI wit empty endpoint", async () => {
+        const inputs: Inputs = {
+          platform: Platform.VSCode,
+        };
+        const questions: string[] = [];
+        const visitor: QuestionTreeVisitor = async (
+          question: Question,
+          ui: UserInteraction,
+          inputs: Inputs,
+          step?: number,
+          totalSteps?: number
+        ) => {
+          questions.push(question.name);
+          await callFuncs(question, inputs);
+          if (question.name === QuestionNames.ProjectType) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 5);
+            return ok({ type: "success", result: ProjectTypeOptions.customCopilot().id });
+          } else if (question.name === QuestionNames.Capabilities) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 3);
+            return ok({ type: "success", result: CapabilityOptions.customCopilotRag().id });
+          } else if (question.name === QuestionNames.CustomCopilotRag) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 4);
+            return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
+          } else if (question.name === QuestionNames.ProgrammingLanguage) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 3);
+            return ok({ type: "success", result: "python" });
+          } else if (question.name === QuestionNames.LLMService) {
+            const select = question as SingleSelectQuestion;
+            const options = await select.dynamicOptions!(inputs);
+            assert.isTrue(options.length === 2);
+            return ok({ type: "success", result: "llm-service-azure-openai" });
+          } else if (question.name === QuestionNames.AzureOpenAIKey) {
+            return ok({ type: "success", result: "testKey" });
           } else if (question.name === QuestionNames.Folder) {
             return ok({ type: "success", result: "./" });
           } else if (question.name === QuestionNames.AppName) {
@@ -1259,7 +1298,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.CustomCopilotRag) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 4);
             return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
@@ -1358,14 +1397,15 @@ describe("scaffold question", () => {
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
           QuestionNames.CustomCopilotRag,
-          // QuestionNames.ApiSpecLocation,
-          // QuestionNames.ApiOperation,
-          // QuestionNames.ProgrammingLanguage,
-          // QuestionNames.LLMService,
-          // QuestionNames.AzureOpenAIKey,
-          // QuestionNames.AzureOpenAIEndpoint,
-          // QuestionNames.Folder,
-          // QuestionNames.AppName,
+          QuestionNames.ApiSpecLocation,
+          QuestionNames.ApiOperation,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
         ]);
       });
 
@@ -1424,12 +1464,13 @@ describe("scaffold question", () => {
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
           QuestionNames.CustomCopilotRag,
-          // QuestionNames.ProgrammingLanguage,
-          // QuestionNames.LLMService,
-          // QuestionNames.AzureOpenAIKey,
-          // QuestionNames.AzureOpenAIEndpoint,
-          // QuestionNames.Folder,
-          // QuestionNames.AppName,
+          QuestionNames.ProgrammingLanguage,
+          QuestionNames.LLMService,
+          QuestionNames.AzureOpenAIKey,
+          QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
+          QuestionNames.Folder,
+          QuestionNames.AppName,
         ]);
       });
 
@@ -2916,13 +2957,14 @@ describe("scaffold question", () => {
           sandbox.stub(axios, "get").resolves({ status: 200, data: manifest });
           sandbox.stub(SpecParser.prototype, "validate").resolves({
             status: ValidationStatus.Error,
-            errors: [{ content: "error", type: ErrorType.NoSupportedApi }],
+            errors: [{ content: "error", type: ErrorType.NoSupportedApi, data: [] }],
             warnings: [],
           });
 
           const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
 
-          assert.equal(res, getLocalizedString("core.common.NoSupportedApi"));
+          const noAPIMessage = getLocalizedString("core.common.invalidReason.NoAPIs");
+          assert.equal(res, getLocalizedString("core.common.NoSupportedApi", noAPIMessage));
         });
 
         it("invalid openAI plugin manifest spec - multiple errors", async () => {
@@ -2943,7 +2985,7 @@ describe("scaffold question", () => {
           sandbox.stub(SpecParser.prototype, "validate").resolves({
             status: ValidationStatus.Error,
             errors: [
-              { content: "error", type: ErrorType.NoSupportedApi },
+              { content: "error", type: ErrorType.NoSupportedApi, data: [] },
               { content: "error2", type: ErrorType.RelativeServerUrlNotSupported },
             ],
             warnings: [],
@@ -2977,7 +3019,7 @@ describe("scaffold question", () => {
           sandbox.stub(SpecParser.prototype, "validate").resolves({
             status: ValidationStatus.Error,
             errors: [
-              { content: "error", type: ErrorType.NoSupportedApi },
+              { content: "error", type: ErrorType.NoSupportedApi, data: [] },
               { content: "error2", type: ErrorType.RelativeServerUrlNotSupported },
             ],
             warnings: [],
@@ -2986,9 +3028,10 @@ describe("scaffold question", () => {
           const res = await (question.additionalValidationOnAccept as any).validFunc("url", inputs);
           assert.equal(
             res,
-            `${getLocalizedString("core.common.NoSupportedApi")}\n${getLocalizedString(
-              "core.common.RelativeServerUrlNotSupported"
-            )}`
+            `${getLocalizedString(
+              "core.common.NoSupportedApi",
+              getLocalizedString("core.common.invalidReason.NoAPIs")
+            )}\n${getLocalizedString("core.common.RelativeServerUrlNotSupported")}`
           );
         });
 
@@ -3748,6 +3791,55 @@ describe("scaffold question", () => {
       if (question.dynamicOptions) {
         const options = await question.dynamicOptions(inputs);
         assert.deepEqual(options, [{ id: "default", label: "Default" }]);
+      }
+    });
+  });
+
+  describe("projectTypeQuestion", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("trigger from agent", async () => {
+      const question = projectTypeQuestion();
+      const inputs: Inputs = { platform: Platform.CLI, agent: "office" };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        const officeAddinOption = options.find(
+          (o) => o.id === ProjectTypeOptions.officeXMLAddin().id
+        );
+        assert.isDefined(officeAddinOption);
+      }
+    });
+    it("enable isOfficeJSONAddinEnabled()", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.OfficeAddin]: "true",
+      });
+      const question = projectTypeQuestion();
+      const inputs: Inputs = { platform: Platform.CLI };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        const officeAddinOption = options.find(
+          (o) => o.id === ProjectTypeOptions.officeAddin(inputs.platform).id
+        );
+        assert.isDefined(officeAddinOption);
+      }
+    });
+    it("disable isOfficeJSONAddinEnabled()", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.OfficeAddin]: "false",
+      });
+      const question = projectTypeQuestion();
+      const inputs: Inputs = { platform: Platform.CLI };
+      assert.isDefined(question.dynamicOptions);
+      if (question.dynamicOptions) {
+        const options = (await question.dynamicOptions(inputs)) as OptionItem[];
+        const officeAddinOption = options.find(
+          (o) => o.id === ProjectTypeOptions.outlookAddin(inputs.platform).id
+        );
+        assert.isDefined(officeAddinOption);
       }
     });
   });

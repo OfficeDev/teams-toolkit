@@ -40,8 +40,10 @@ export class SMEValidator extends Validator {
     result.errors.push(...validationResult.errors);
 
     // validate operationId missing
-    validationResult = this.validateSpecOperationId();
-    result.warnings.push(...validationResult.warnings);
+    if (this.options.allowMissingId) {
+      validationResult = this.validateSpecOperationId();
+      result.warnings.push(...validationResult.warnings);
+    }
 
     return result;
   }

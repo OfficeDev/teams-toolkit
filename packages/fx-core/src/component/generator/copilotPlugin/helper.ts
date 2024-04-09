@@ -81,10 +81,10 @@ enum OpenAIPluginManifestErrorType {
 }
 
 export const copilotPluginParserOptions: ParseOptions = {
-  allowAPIKeyAuth: true,
-  allowBearerTokenAuth: true,
+  allowAPIKeyAuth: false,
+  allowBearerTokenAuth: false,
   allowMultipleParameters: true,
-  allowOauth2: true,
+  allowOauth2: false,
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
@@ -202,7 +202,7 @@ export async function listOperations(
           }
     );
     const validationRes = await specParser.validate();
-    validationRes.errors = formatValidationErrors(validationRes.errors);
+    validationRes.errors = formatValidationErrors(validationRes.errors, inputs);
 
     logValidationResults(
       validationRes.errors,
@@ -252,12 +252,15 @@ export async function listOperations(
         );
         // No extra API can be added
         if (operations.length == 0) {
-          const errors = [
-            {
-              type: ApiSpecErrorType.NoExtraAPICanBeAdded,
-              content: getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"),
-            },
-          ];
+          const errors = formatValidationErrors(
+            [
+              {
+                type: ApiSpecErrorType.NoExtraAPICanBeAdded,
+                content: "",
+              },
+            ],
+            inputs
+          );
           logValidationResults(errors, [], context, true, false, false, existingCorrelationId);
           return err(errors);
         }
@@ -308,7 +311,7 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
 }
 
 function formatTelemetryValidationProperty(result: ErrorResult | WarningResult): string {
-  return result.type.toString() + ": " + result.content;
+  return result.type.toString();
 }
 
 export async function listPluginExistingOperations(
@@ -669,11 +672,14 @@ export async function isYamlSpecFile(specPath: string): Promise<boolean> {
   }
 }
 
-export function formatValidationErrors(errors: ApiSpecErrorResult[]): ApiSpecErrorResult[] {
+export function formatValidationErrors(
+  errors: ApiSpecErrorResult[],
+  inputs: Inputs
+): ApiSpecErrorResult[] {
   return errors.map((error) => {
     return {
       type: error.type,
-      content: formatValidationErrorContent(error),
+      content: formatValidationErrorContent(error, inputs),
       data: error.data,
     };
   });
@@ -718,7 +724,8 @@ function mapInvalidReasonToMessage(reason: ErrorType): string {
   }
 }
 
-function formatValidationErrorContent(error: ApiSpecErrorResult): string {
+function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs): string {
+  const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {
@@ -752,9 +759,13 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
         if (messages.length === 0) {
           messages.push(getLocalizedString("core.common.invalidReason.NoAPIs"));
         }
-        return getLocalizedString("core.common.NoSupportedApi", messages.join("\n"));
+        return isPlugin
+          ? getLocalizedString("core.common.NoSupportedApiCopilot", messages.join("\n"))
+          : getLocalizedString("core.common.NoSupportedApi", messages.join("\n"));
       case ErrorType.NoExtraAPICanBeAdded:
-        return getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded");
+        return isPlugin
+          ? getLocalizedString("error.copilot.noExtraAPICanBeAdded")
+          : getLocalizedString("error.apime.noExtraAPICanBeAdded");
       case ErrorType.ResolveServerUrlFailed:
         return error.content;
       case ErrorType.Cancelled:

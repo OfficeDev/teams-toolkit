@@ -105,6 +105,7 @@ import {
   MissingRequiredInputError,
   MultipleAuthError,
   MultipleServerError,
+  UserCancelError,
   assembleError,
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
@@ -1259,6 +1260,19 @@ export class FxCore {
     const manifestRes = await manifestUtils._readAppManifest(manifestPath);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
+    }
+
+    const confirmRes = await context.userInteraction.showMessage(
+      "warn",
+      getLocalizedString("core.addApi.confirm", AppPackageFolderName),
+      true,
+      getLocalizedString("core.addApi.continue")
+    );
+
+    if (confirmRes.isErr()) {
+      return err(confirmRes.error);
+    } else if (confirmRes.value !== getLocalizedString("core.addApi.continue")) {
+      return err(new UserCancelError());
     }
 
     // Merge existing operations in manifest.json

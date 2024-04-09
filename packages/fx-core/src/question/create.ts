@@ -29,9 +29,7 @@ import {
   isCLIDotNetEnabled,
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
-  isOfficeXMLAddinEnabled,
   isTdpTemplateCliTestEnabled,
-  isApiMeSSOEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -180,7 +178,7 @@ export class ProjectTypeOptions {
   }
 }
 
-function projectTypeQuestion(): SingleSelectQuestion {
+export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     ProjectTypeOptions.bot(Platform.CLI),
     ProjectTypeOptions.tab(Platform.CLI),
@@ -213,13 +211,16 @@ function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else {
-        staticOptions.push(
-          isOfficeXMLAddinEnabled() && !isOfficeJSONAddinEnabled()
-            ? ProjectTypeOptions.officeXMLAddin(inputs.platform)
-            : isOfficeJSONAddinEnabled()
-            ? ProjectTypeOptions.officeAddin(inputs.platform)
-            : ProjectTypeOptions.outlookAddin(inputs.platform)
-        );
+        if (inputs.agent === "office") {
+          //only for @office agent, officeXMLAddin are supported
+          staticOptions.push(ProjectTypeOptions.officeXMLAddin(inputs.platform));
+        } else {
+          if (isOfficeJSONAddinEnabled()) {
+            staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
+          } else {
+            staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
+          }
+        }
       }
       return staticOptions;
     },
@@ -644,17 +645,6 @@ export class CapabilityOptions {
     capabilityOptions.push(
       ...CapabilityOptions.officeAddinDynamicCapabilities(inputs?.projectType, inputs?.host)
     );
-    // if (isOfficeXMLAddinEnabled()) {
-    //   capabilityOptions.push(
-    //     ...[
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("word"),
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("excel"),
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("powerpoint"),
-    //     ]
-    //   );
-    // } else {
-    //   capabilityOptions.push(...CapabilityOptions.officeAddinStaticCapabilities("json"));
-    // }
     return capabilityOptions;
   }
 
@@ -1461,7 +1451,15 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   if (capabilities === CapabilityOptions.SPFxTab().id) {
     // SPFx only supports typescript
     return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
-  } else if (capabilitiesHavePythonOption.includes(capabilities)) {
+  } else if (
+    capabilitiesHavePythonOption.includes(capabilities) &&
+    !(
+      capabilities == CapabilityOptions.customCopilotRag().id &&
+      (inputs[CapabilityOptions.customCopilotRag().id] ==
+        CustomCopilotRagOptions.microsoft365().id ||
+        inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.customApi().id)
+    )
+  ) {
     // support python language
     return [
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
@@ -2045,16 +2043,7 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
     ),
     cliDescription: "The authentication type for the API.",
     staticOptions: ApiMessageExtensionAuthOptions.all(),
-    dynamicOptions: () => {
-      const options: OptionItem[] = [ApiMessageExtensionAuthOptions.none()];
-      if (isApiKeyEnabled()) {
-        options.push(ApiMessageExtensionAuthOptions.apiKey());
-      }
-      if (isApiMeSSOEnabled()) {
-        options.push(ApiMessageExtensionAuthOptions.microsoftEntra());
-      }
-      return options;
-    },
+    dynamicOptions: () => ApiMessageExtensionAuthOptions.all(),
     default: ApiMessageExtensionAuthOptions.none().id,
   };
 }
@@ -2210,8 +2199,8 @@ export class CustomCopilotRagOptions {
     return [
       CustomCopilotRagOptions.customize(),
       CustomCopilotRagOptions.azureAISearch(),
-      // CustomCopilotRagOptions.customApi(),
-      // CustomCopilotRagOptions.microsoft365(),
+      CustomCopilotRagOptions.customApi(),
+      CustomCopilotRagOptions.microsoft365(),
     ];
   }
 }
@@ -2350,6 +2339,19 @@ function azureOpenAIEndpointQuestion(): TextInputQuestion {
   };
 }
 
+function azureOpenAIDeploymentNameQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.AzureOpenAIDeploymentName,
+    title: getLocalizedString(
+      "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.title"
+    ),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.placeholder"
+    ),
+  };
+}
+
 export function capabilitySubTree(): IQTreeNode {
   const node: IQTreeNode = {
     data: capabilityQuestion(),
@@ -2443,10 +2445,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         condition: (inputs: Inputs) => {
-          return (
-            (isApiKeyEnabled() || isApiMeSSOEnabled()) &&
-            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id
-          );
+          return inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id;
         },
         data: apiMessageExtensionAuthQuestion(),
       },
@@ -2516,6 +2515,14 @@ export function capabilitySubTree(): IQTreeNode {
                   return inputs[QuestionNames.AzureOpenAIKey]?.length > 0;
                 },
                 data: azureOpenAIEndpointQuestion(),
+                children: [
+                  {
+                    condition: (inputs: Inputs) => {
+                      return inputs[QuestionNames.AzureOpenAIEndpoint]?.length > 0;
+                    },
+                    data: azureOpenAIDeploymentNameQuestion(),
+                  },
+                ],
               },
             ],
           },

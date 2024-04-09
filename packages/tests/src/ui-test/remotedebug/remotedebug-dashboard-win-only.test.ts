@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Ivan Chen <v-ivanchen@microsoft.com>
  */
@@ -5,8 +8,8 @@ import * as path from "path";
 import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -63,8 +66,8 @@ describe("Remote debug Tests", function () {
     },
     async function () {
       await createNewProject("dashboard", appName, "JavaScript");
-      await runProvision(appName);
-      await runDeploy();
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

@@ -1262,7 +1262,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.CustomCopilotRag) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 3);
+            assert.isTrue(options.length === 4);
             return ok({ type: "success", result: CustomCopilotRagOptions.customize().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
@@ -1429,6 +1429,7 @@ describe("scaffold question", () => {
           QuestionNames.LLMService,
           QuestionNames.AzureOpenAIKey,
           QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
@@ -1493,6 +1494,7 @@ describe("scaffold question", () => {
           QuestionNames.LLMService,
           QuestionNames.AzureOpenAIKey,
           QuestionNames.AzureOpenAIEndpoint,
+          QuestionNames.AzureOpenAIDeploymentName,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);

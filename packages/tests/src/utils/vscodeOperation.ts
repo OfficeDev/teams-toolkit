@@ -75,7 +75,10 @@ export async function ensureExtensionActivated(): Promise<void> {
               .getText();
             const treeViewActivated =
               sectionTitle === Extension.activatedItemName &&
-              sectionText.includes(Extension.sidebarCommandContentName);
+              (sectionText.includes(Extension.sidebarCommandContentName) ||
+                sectionText.includes(
+                  Extension.sidebarCommandContentNameOfficeDev
+                ));
             if (treeViewActivated) {
               // wait for activation
               await driver.sleep(Timeout.shortTimeLoading);

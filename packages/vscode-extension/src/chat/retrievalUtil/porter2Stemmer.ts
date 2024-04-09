@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 const doubleRegex = /(bb|dd|ff|gg|mm|nn|pp|rr|tt)$/;
+const nonVowelRegex = /[^aeiouy]/;
 const ruleS2: Record<string, string> = {
   ational: "ate",
   ation: "ate",
@@ -168,11 +169,11 @@ export function stemmer(value: string): string {
   //step 1b Search for the longest among the following suffixes, and, if found, perform the action indicated.
   //eed   eed replace by ee if in R1
   let r1 = getR1(value);
+  const regEed = /(eed|eedly)$/;
+  const matchELonger1b = regEed.test(value);
   if (r1 && r1[1].length > 0) {
-    if (r1[1].endsWith("eedly")) {
-      value = value.slice(0, -3);
-    } else if (r1[1].endsWith("eed")) {
-      value = value.slice(0, -1);
+    if (regEed.test(r1[1])) {
+      value = value.replace(regEed, "ee");
     }
   }
 
@@ -181,14 +182,20 @@ export function stemmer(value: string): string {
   //if the word ends with a double remove the last letter (so hopp -> hop), or
   //if the word is short, add e (so hop -> hope)
   const regEd = /(ed|edly|ing|ingly)$/;
-  if (regEd.test(value)) {
-    value = value.replace(regEd, "");
-    if (value.endsWith("at") || value.endsWith("bl") || value.endsWith("iz")) {
-      value += "e";
-    } else if (doubleRegex.test(value)) {
-      value = value.slice(0, -1);
-    } else if (isShort(value)) {
-      value += "e";
+  if (!matchELonger1b && regEd.test(value)) {
+    const preced = value.replace(regEd, "");
+    if (nonVowelRegex.test(preced)) {
+      value = value.replace(regEd, "");
+      if (value.endsWith("at") || value.endsWith("bl") || value.endsWith("iz")) {
+        value += "e";
+      } else if (doubleRegex.test(value)) {
+        const nonAeo = /[^aeo]/;
+        if (nonAeo.test(value.slice(0, -2))) {
+          value = value.slice(0, -1);
+        }
+      } else if (isShort(value)) {
+        value += "e";
+      }
     }
   }
 
@@ -203,7 +210,8 @@ export function stemmer(value: string): string {
   if (r1 && r1[1].length > 0) {
     const r1Value = r1[1];
     const regLi = /[cdeghkmnrt]li$/;
-    if (regLi.test(r1Value)) {
+    const regLiR1 = /li$/;
+    if (regLiR1.test(r1Value) && regLi.test(value)) {
       value = value.slice(0, -2);
     } else if (r1Value.endsWith("ogi") && value.endsWith("logi")) {
       value = value.slice(0, -1);

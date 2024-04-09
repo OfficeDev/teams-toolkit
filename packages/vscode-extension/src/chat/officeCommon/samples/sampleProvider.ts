@@ -6,10 +6,10 @@ import {
   LanguageModelChatMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { BM25, BMDocument } from "../../rag/BM25";
+import { BM25, BMDocument } from "../../retrievalUtil/BM25";
 import { OfficeAddinTemplateModelPorvider, WXPAppName } from "./officeAddinTemplateModelPorvider";
 import { SampleData } from "./sampleData";
-import { prepareDiscription } from "../../rag/ragUtil";
+import { prepareDiscription } from "../../retrievalUtil/retrievalUtil";
 
 // TODO: adjust the score threshold
 const scoreThreshold = 0.5;

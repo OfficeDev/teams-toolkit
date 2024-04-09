@@ -32,8 +32,8 @@ import {
 import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
 import * as officeAddinTemplateMeatdata from "./officeAddinTemplateMetadata.json";
-import { BM25, BMDocument, DocumentWithmetadata } from "../../rag/BM25";
-import { prepareDiscription } from "../../rag/ragUtil";
+import { BM25, BMDocument, DocumentWithmetadata } from "../../retrievalUtil/BM25";
+import { prepareDiscription } from "../../retrievalUtil/retrievalUtil";
 import { getOfficeAddinProjectMatchSystemPrompt } from "../../officeAddinPrompts";
 
 const TOKEN_LIMITS = 2700;

@@ -49,44 +49,6 @@ describe("next steps", () => {
     });
   });
 
-  describe('title: "Prerequisites"', () => {
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it("description: has error", () => {
-      const step = steps.find((s) => s.title === "Prerequisites");
-      chai.assert.isTrue(
-        (step?.description as DescripitionFunc)({
-          machineStatus: {
-            resultOfPrerequistes: "Prerequisites error",
-          },
-        } as WholeStatus).includes("Prerequisites error")
-      );
-    });
-
-    it("condition: selected", () => {
-      sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
-      const step = steps.find((s) => s.title === "Prerequisites");
-      chai.assert.isNotEmpty(step);
-      chai.assert.isTrue(step?.condition({} as WholeStatus));
-    });
-
-    it("condition: not selected - no project opened", () => {
-      sandbox.stub(condition, "isProjectOpened").returns(false);
-      const step = steps.find((s) => s.title === "Prerequisites");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
-    });
-
-    it("condition: not selected - prerequisite check succeeded", () => {
-      sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
-      const step = steps.find((s) => s.title === "Prerequisites");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
-    });
-  });
-
   describe('title: "Summary of README"', () => {
     afterEach(() => {
       sandbox.restore();
@@ -114,7 +76,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       sandbox.stub(condition, "isHaveReadMe").returns(true);
       const step = steps.find((s) => s.title === "Summary of README");
@@ -130,14 +92,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Summary of README");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       const step = steps.find((s) => s.title === "Summary of README");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -145,7 +107,7 @@ describe("next steps", () => {
 
     it("condition: not selected - had no readme content", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       sandbox.stub(condition, "isHaveReadMe").returns(false);
       const step = steps.find((s) => s.title === "Summary of README");
@@ -160,7 +122,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       sandbox.stub(condition, "canPreviewInTestTool").returns(true);
@@ -177,14 +139,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Test Tool");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Test Tool");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -192,7 +154,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug succeed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       const step = steps.find((s) => s.title === "Test Tool");
@@ -201,7 +163,7 @@ describe("next steps", () => {
 
     it("condition: not selected - cannot preview in Test Tool", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "canPreviewInTestTool").returns(false);
@@ -217,7 +179,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       sandbox.stub(condition, "isM365AccountLogin").returns(false);
@@ -234,14 +196,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Microsoft 365 Account");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Microsoft 365 Account");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -249,7 +211,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug succeed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       const step = steps.find((s) => s.title === "Microsoft 365 Account");
@@ -258,7 +220,7 @@ describe("next steps", () => {
 
     it("condition: not selected - log into M365 account", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isM365AccountLogin").returns(true);
@@ -274,7 +236,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       sandbox.stub(condition, "isM365AccountLogin").returns(false);
@@ -291,14 +253,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Microsoft 365 Developer Program");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Microsoft 365 Developer Program");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -306,7 +268,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug succeed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       const step = steps.find((s) => s.title === "Microsoft 365 Developer Program");
@@ -315,7 +277,7 @@ describe("next steps", () => {
 
     it("condition: not selected - log into M365 account", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isM365AccountLogin").returns(true);
@@ -331,7 +293,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       sandbox.stub(condition, "isM365AccountLogin").returns(true);
@@ -348,14 +310,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Preview in Microsoft Teams");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Preview in Microsoft Teams");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -363,7 +325,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug succeed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       const step = steps.find((s) => s.title === "Preview in Microsoft Teams");
@@ -372,7 +334,7 @@ describe("next steps", () => {
 
     it("condition: not selected - not log into M365 account", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isM365AccountLogin").returns(false);
@@ -404,7 +366,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isHaveReadMe").returns(true);
@@ -421,14 +383,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "How to Extend");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "How to Extend");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -436,7 +398,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       const step = steps.find((s) => s.title === "How to Extend");
@@ -445,7 +407,7 @@ describe("next steps", () => {
 
     it("condition: not selected - had no readme content", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isHaveReadMe").returns(false);
@@ -461,7 +423,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       const step = steps.find((s) => s.title === "CI/CD");
@@ -477,14 +439,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "CI/CD");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "CI/CD");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -492,7 +454,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       const step = steps.find((s) => s.title === "CI/CD");
@@ -507,7 +469,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(false);
@@ -525,14 +487,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Azure Account");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Azure Account");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -540,7 +502,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       const step = steps.find((s) => s.title === "Azure Account");
@@ -549,7 +511,7 @@ describe("next steps", () => {
 
     it("condition: not selected - provision succeeded before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);
@@ -559,7 +521,7 @@ describe("next steps", () => {
 
     it("condition: not selected - not log into Azure account", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(false);
@@ -576,7 +538,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(false);
@@ -594,14 +556,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Provision Azure resources");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Provision Azure resources");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -609,7 +571,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       const step = steps.find((s) => s.title === "Provision Azure resources");
@@ -618,7 +580,7 @@ describe("next steps", () => {
 
     it("condition: not selected - provision succeeded before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);
@@ -628,7 +590,7 @@ describe("next steps", () => {
 
     it("condition: not selected - not log into Azure Account", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(false);
@@ -645,7 +607,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);
@@ -663,14 +625,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Deploy to Cloud");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Deploy to Cloud");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -678,7 +640,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       const step = steps.find((s) => s.title === "Deploy to Cloud");
@@ -687,7 +649,7 @@ describe("next steps", () => {
 
     it("condition: not selected - provision failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(false);
@@ -697,7 +659,7 @@ describe("next steps", () => {
 
     it("condition: not selected - deploy succeeded before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);
@@ -714,7 +676,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);
@@ -733,14 +695,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Publish the App");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Publish the App");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -748,7 +710,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       const step = steps.find((s) => s.title === "Publish the App");
@@ -757,7 +719,7 @@ describe("next steps", () => {
 
     it("condition: not selected - provision failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(false);
@@ -767,7 +729,7 @@ describe("next steps", () => {
 
     it("condition: not selected - deploy failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);
@@ -778,7 +740,7 @@ describe("next steps", () => {
 
     it("condition: not selected - published before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);
@@ -796,7 +758,7 @@ describe("next steps", () => {
 
     it("condition: selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);
@@ -814,14 +776,14 @@ describe("next steps", () => {
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(false);
+
       const step = steps.find((s) => s.title === "Remote Preview");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - did no action before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       const step = steps.find((s) => s.title === "Remote Preview");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -829,7 +791,7 @@ describe("next steps", () => {
 
     it("condition: not selected - debug failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
       const step = steps.find((s) => s.title === "Remote Preview");
@@ -838,7 +800,7 @@ describe("next steps", () => {
 
     it("condition: not selected - provision failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(false);
@@ -848,7 +810,7 @@ describe("next steps", () => {
 
     it("condition: not selected - deploy failed before", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
-      sandbox.stub(condition, "isPrequisitesCheckSucceeded").returns(true);
+
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
       sandbox.stub(condition, "isProvisionedSucceededAfterInfraCodeChanged").returns(true);

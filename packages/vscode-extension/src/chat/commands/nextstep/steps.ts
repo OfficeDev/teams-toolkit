@@ -12,7 +12,6 @@ import {
   isFirstInstalled,
   isHaveReadMe,
   isM365AccountLogin,
-  isPrequisitesCheckSucceeded,
   isProjectOpened,
   isProvisionedSucceededAfterInfraCodeChanged,
   isPublishedSucceededBefore,
@@ -65,25 +64,6 @@ export const allSteps: () => NextStep[] = () => [
     priority: 0,
   },
   {
-    title: "Prerequisites",
-    description: (status: WholeStatus) =>
-      `Ensure the following requirements are met before you start building your Teams app. It seems you met the prerequisites error: ${status
-        .machineStatus.resultOfPrerequistes!}. You can fix it and try again.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites",
-    commands: [
-      {
-        title: "Check Prerequisites Again",
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.ValidateGetStartedPrerequisites],
-      },
-    ],
-    followUps: [],
-    condition: (status: WholeStatus) =>
-      isProjectOpened(status) && !isPrequisitesCheckSucceeded(status),
-    priority: 0,
-  },
-  {
     title: "Summary of README",
     description: (status: WholeStatus) => {
       // readme must exist because the condition has checked it
@@ -113,15 +93,12 @@ export const allSteps: () => NextStep[] = () => [
     ],
     followUps: [],
     condition: (status: WholeStatus) =>
-      isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
-      isDidNoActionAfterScaffolded(status) &&
-      isHaveReadMe(status),
+      isProjectOpened(status) && isDidNoActionAfterScaffolded(status) && isHaveReadMe(status),
     priority: 1,
   },
   {
     title: "Test Tool",
-    description: `Teams App Test Tool (Test Tool) makes debugging bot-based apps effortless. You can chat with your bot and see its messages and Adaptive Cards as they appear in Teams. You don't need a Microsoft 365 developer account, tunneling, or Teams app and bot registration to use Test Tool.`,
+    description: `Teams App Test Tool (Test Tool) makes debugging bot-based apps effortless. You can chat with your bot and see its messages and Adaptive Cards as they appear in Teams. You don't need a Microsoft 365 developer account, tunneling, or Teams app and bot registration to use Test Tool. When previewing with Test Tool, it will check all required prerequisites and guide you to fix them in output.`,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-your-teams-app-test-tool?tabs=vscode%2Cclijs",
     commands: [
@@ -134,7 +111,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       !isDebugSucceededAfterSourceCodeChanged(status) &&
       canPreviewInTestTool(status),
@@ -155,7 +131,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       !isDebugSucceededAfterSourceCodeChanged(status) &&
       !isM365AccountLogin(status),
@@ -176,7 +151,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       !isDebugSucceededAfterSourceCodeChanged(status) &&
       !isM365AccountLogin(status),
@@ -184,7 +158,7 @@ export const allSteps: () => NextStep[] = () => [
   },
   {
     title: "Preview in Microsoft Teams",
-    description: `Teams Toolkit helps you to debug and preview your Microsoft Teams app locally. During the debugging process, Teams Toolkit automatically starts app services, launches debuggers, and uploads Teams app. You can preview your Teams app in Teams web client locally after debugging.`,
+    description: `Teams Toolkit helps you to debug and preview your Microsoft Teams app locally. During the debugging process, Teams Toolkit automatically starts app services, launches debuggers, and uploads Teams app. You can preview your Teams app in Teams web client locally after debugging. When previewing with Microsoft Teams, it will check all required prerequisites and guide you to fix them in output.`,
     docLink:
       "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=Windows%2CWindows1&pivots=visual-studio-code-v5",
     commands: [
@@ -197,7 +171,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       !isDebugSucceededAfterSourceCodeChanged(status) &&
       isM365AccountLogin(status),
@@ -226,7 +199,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDebugSucceededAfterSourceCodeChanged(status) &&
       isHaveReadMe(status),
@@ -241,7 +213,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [], // TODO: point to S3
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDebugSucceededAfterSourceCodeChanged(status),
     priority: 2,
@@ -262,7 +233,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDebugSucceededAfterSourceCodeChanged(status) &&
       !isProvisionedSucceededAfterInfraCodeChanged(status) &&
@@ -285,7 +255,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDebugSucceededAfterSourceCodeChanged(status) &&
       !isProvisionedSucceededAfterInfraCodeChanged(status) &&
@@ -307,7 +276,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDebugSucceededAfterSourceCodeChanged(status) &&
       isProvisionedSucceededAfterInfraCodeChanged(status) &&
@@ -329,7 +297,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDebugSucceededAfterSourceCodeChanged(status) &&
       isProvisionedSucceededAfterInfraCodeChanged(status) &&
@@ -351,7 +318,6 @@ export const allSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDebugSucceededAfterSourceCodeChanged(status) &&
       isProvisionedSucceededAfterInfraCodeChanged(status) &&

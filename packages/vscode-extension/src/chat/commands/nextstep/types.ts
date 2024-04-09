@@ -11,7 +11,6 @@ export interface CommandRunningStatus {
 
 export interface MachineStatus {
   firstInstalled: boolean; // if TTK is first installed
-  resultOfPrerequistes?: string; // the result of the prerequisites check
   m365LoggedIn: boolean; // if the user has logged in M365
   azureLoggedIn: boolean; // if the user has logged in Azure
 }

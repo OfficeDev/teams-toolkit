@@ -40,6 +40,8 @@ import {
 import { manifestUtils } from "./utils/ManifestUtils";
 import { ValidateManifestDriver } from "./validate";
 import { ValidateAppPackageDriver } from "./validateAppPackage";
+import { ValidateWithTestCasesArgs } from "./interfaces/ValidateWithTestCasesArgs";
+import { ValidateWithTestCasesDriver } from "./validateTestCases";
 
 class TeamsAppMgr {
   async ensureAppPackageFile(inputs: TeamsAppInputs): Promise<Result<undefined, FxError>> {
@@ -206,14 +208,27 @@ class TeamsAppMgr {
       }
     } else if (inputs["package-file"]) {
       const teamsAppPackageFilePath = inputs["package-file"];
-      const args: ValidateAppPackageArgs = {
-        appPackagePath: teamsAppPackageFilePath,
-        showMessage: true,
-      };
-      const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
-      const result = (await driver.execute(args, context)).result;
-      if (result.isErr()) {
-        return err(result.error);
+      if (inputs["validate-method"] == "test-cases") {
+        const args: ValidateWithTestCasesArgs = {
+          appPackagePath: teamsAppPackageFilePath,
+          showProgressBar: false,
+          showMessage: true,
+        };
+        const driver: ValidateWithTestCasesDriver = Container.get("teamsApp/validateWithTestCases");
+        const result = (await driver.execute(args, context)).result;
+        if (result.isErr()) {
+          return err(result.error);
+        }
+      } else {
+        const args: ValidateAppPackageArgs = {
+          appPackagePath: teamsAppPackageFilePath,
+          showMessage: true,
+        };
+        const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+        const result = (await driver.execute(args, context)).result;
+        if (result.isErr()) {
+          return err(result.error);
+        }
       }
     }
     return ok(undefined);

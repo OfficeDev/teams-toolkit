@@ -5,7 +5,14 @@
 import { OpenAPIV3 } from "openapi-types";
 import fs from "fs-extra";
 import path from "path";
-import { AuthInfo, ErrorType, ParseOptions, ProjectType, WarningResult } from "./interfaces";
+import {
+  AuthInfo,
+  ErrorType,
+  ParseOptions,
+  ProjectType,
+  WarningResult,
+  WarningType,
+} from "./interfaces";
 import { Utils } from "./utils";
 import { SpecParserError } from "./specParserError";
 import { ConstantString } from "./constants";
@@ -31,14 +38,23 @@ export class ManifestUpdater {
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
     manifest.plugins = [
       {
-        pluginFile: apiPluginRelativePath,
+        file: apiPluginRelativePath,
+        id: ConstantString.DefaultPluginId,
       },
     ];
+
+    const appName = this.removeEnvs(manifest.name.short);
 
     ManifestUpdater.updateManifestDescription(manifest, spec);
 
     const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
-    const apiPlugin = ManifestUpdater.generatePluginManifestSchema(spec, specRelativePath, options);
+    const apiPlugin = await ManifestUpdater.generatePluginManifestSchema(
+      spec,
+      specRelativePath,
+      apiPluginFilePath,
+      appName,
+      options
+    );
 
     return [manifest, apiPlugin];
   }
@@ -77,11 +93,13 @@ export class ManifestUpdater {
     return parameter;
   }
 
-  static generatePluginManifestSchema(
+  static async generatePluginManifestSchema(
     spec: OpenAPIV3.Document,
     specRelativePath: string,
+    apiPluginFilePath: string,
+    appName: string,
     options: ParseOptions
-  ): PluginManifestSchema {
+  ): Promise<PluginManifestSchema> {
     const functions: FunctionObject[] = [];
     const functionNames: string[] = [];
 
@@ -172,24 +190,55 @@ export class ManifestUpdater {
       }
     }
 
-    const apiPlugin: PluginManifestSchema = {
-      schema_version: "v2",
-      name_for_human: spec.info.title,
-      description_for_human: spec.info.description ?? "<Please add description of the plugin>",
-      functions: functions,
-      runtimes: [
-        {
-          type: "OpenApi",
-          auth: {
-            type: "none", // TODO, support auth in the future
-          },
-          spec: {
-            url: specRelativePath,
-          },
-          run_for_functions: functionNames,
+    let apiPlugin: PluginManifestSchema;
+    if (await fs.pathExists(apiPluginFilePath)) {
+      apiPlugin = await fs.readJSON(apiPluginFilePath);
+    } else {
+      apiPlugin = {
+        schema_version: "v2",
+        name_for_human: "",
+        description_for_human: "",
+        functions: [],
+        runtimes: [],
+      };
+    }
+
+    apiPlugin.functions = apiPlugin.functions || [];
+
+    for (const func of functions) {
+      const index = apiPlugin.functions?.findIndex((f) => f.name === func.name);
+      if (index === -1) {
+        apiPlugin.functions.push(func);
+      } else {
+        apiPlugin.functions[index] = func;
+      }
+    }
+
+    apiPlugin.runtimes = apiPlugin.runtimes || [];
+    const index = apiPlugin.runtimes.findIndex((runtime) => runtime.spec.url === specRelativePath);
+    if (index === -1) {
+      apiPlugin.runtimes.push({
+        type: "OpenApi",
+        auth: {
+          type: "none",
         },
-      ],
-    };
+        spec: {
+          url: specRelativePath,
+        },
+        run_for_functions: functionNames,
+      });
+    } else {
+      apiPlugin.runtimes[index].run_for_functions = functionNames;
+    }
+
+    if (!apiPlugin.name_for_human) {
+      apiPlugin.name_for_human = appName;
+    }
+
+    if (!apiPlugin.description_for_human) {
+      apiPlugin.description_for_human =
+        spec.info.description ?? "<Please add description of the plugin>";
+    }
 
     return apiPlugin;
   }
@@ -289,17 +338,31 @@ export class ManifestUpdater {
             if (options.allowMethods?.includes(method)) {
               const operationItem = (operations as any)[method];
               if (operationItem) {
-                const [command, warning] = Utils.parseApiInfo(operationItem, options);
+                const command = Utils.parseApiInfo(operationItem, options);
+
+                if (
+                  command.parameters &&
+                  command.parameters.length >= 1 &&
+                  command.parameters.some((param) => param.isRequired)
+                ) {
+                  command.parameters = command.parameters.filter((param) => param.isRequired);
+                } else if (command.parameters && command.parameters.length > 0) {
+                  command.parameters = [command.parameters[0]];
+                  warnings.push({
+                    type: WarningType.OperationOnlyContainsOptionalParam,
+                    content: Utils.format(
+                      ConstantString.OperationOnlyContainsOptionalParam,
+                      command.id
+                    ),
+                    data: command.id,
+                  });
+                }
 
                 if (adaptiveCardFolder) {
                   const adaptiveCardPath = path.join(adaptiveCardFolder, command.id + ".json");
                   command.apiResponseRenderingTemplateFile = (await fs.pathExists(adaptiveCardPath))
                     ? ManifestUpdater.getRelativePath(manifestPath, adaptiveCardPath)
                     : "";
-                }
-
-                if (warning) {
-                  warnings.push(warning);
                 }
 
                 commands.push(command);
@@ -316,5 +379,15 @@ export class ManifestUpdater {
   static getRelativePath(from: string, to: string): string {
     const relativePath = path.relative(path.dirname(from), to);
     return path.normalize(relativePath).replace(/\\/g, "/");
+  }
+
+  static removeEnvs(str: string): string {
+    const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
+    const matches = placeHolderReg.exec(str);
+    let newStr = str;
+    if (matches != null) {
+      newStr = newStr.replace(matches[0], "");
+    }
+    return newStr;
   }
 }

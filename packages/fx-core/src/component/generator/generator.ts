@@ -35,7 +35,11 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
-import { enableTestToolByDefault, isNewProjectTypeEnabled } from "../../common/featureFlags";
+import {
+  enableMETestToolByDefault,
+  enableTestToolByDefault,
+  isNewProjectTypeEnabled,
+} from "../../common/featureFlags";
 import { Utils } from "@microsoft/m365-spec-parser";
 
 export class Generator {
@@ -50,6 +54,7 @@ export class Generator {
       openAIKey?: string;
       azureOpenAIKey?: string;
       azureOpenAIEndpoint?: string;
+      azureOpenAIDeploymentName?: string;
     }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
@@ -69,11 +74,13 @@ export class Generator {
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
+      enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
       useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",
       useAzureOpenAI: llmServiceData?.llmService === "llm-service-azure-openai" ? "true" : "",
       openAIKey: llmServiceData?.openAIKey ?? "",
       azureOpenAIKey: llmServiceData?.azureOpenAIKey ?? "",
       azureOpenAIEndpoint: llmServiceData?.azureOpenAIEndpoint ?? "",
+      azureOpenAIDeploymentName: llmServiceData?.azureOpenAIDeploymentName ?? "",
       isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
       NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
       NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",

@@ -48,7 +48,7 @@ export class CustomizedSpinner {
       clearInterval(this.intervalId);
       this.intervalId = null;
       // show cursor
-      process.stdout.write("\x1b[?25h\n");
+      process.stdout.write("\x1b[?25h");
     }
   }
 }

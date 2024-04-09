@@ -44,7 +44,7 @@ import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
 import { cliSource } from "./constants";
 import { CheckboxChoice, SelectChoice, checkbox, select } from "./prompts";
-import { strings } from "./resource";
+import { errors } from "./resource";
 import { getColorizedString } from "./utils";
 import { CustomizedSpinner } from "./spinner";
 /// TODO: input can be undefined
@@ -119,6 +119,7 @@ class CLIUserInteraction implements UserInteraction {
         type: "input",
         name: name,
         message: message,
+        default: defaultValue,
         validate: validate,
       },
     ]);
@@ -285,7 +286,7 @@ class CLIUserInteraction implements UserInteraction {
         const error = new InputValidationError(
           config.name,
           util.format(
-            strings["error.InvalidOptionErrorReason"],
+            errors["error.InvalidOptionErrorReason"],
             result.value,
             choices.map((choice) => choice.id).join(",")
           )
@@ -394,7 +395,7 @@ class CLIUserInteraction implements UserInteraction {
         const error = new InputValidationError(
           config.name,
           util.format(
-            strings["error.InvalidOptionErrorReason"],
+            errors["error.InvalidOptionErrorReason"],
             result.value.join(","),
             choices.map((choice) => choice.id).join(",")
           )

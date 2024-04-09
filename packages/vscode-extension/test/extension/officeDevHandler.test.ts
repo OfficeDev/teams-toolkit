@@ -113,6 +113,13 @@ describe("officeDevHandler", () => {
     );
   });
 
+  it("openPromptLibraryLink", async () => {
+    testOpenUrlHandler(
+      officeDevHandlers.openPromptLibraryLink,
+      "https://aka.ms/OfficeAddinsPromptLibrary"
+    );
+  });
+
   it("popupOfficeAddInDependenciesMessage", async () => {
     const autoInstallDependencyHandlerStub = sandbox.stub(handlers, "autoInstallDependencyHandler");
     sandbox.stub(localizeUtils, "localize").returns("installPopUp");

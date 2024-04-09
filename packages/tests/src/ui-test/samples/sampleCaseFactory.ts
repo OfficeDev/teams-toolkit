@@ -24,11 +24,6 @@ import { SampledebugContext } from "./sampledebugContext";
 import { it } from "../../utils/it";
 import { VSBrowser } from "vscode-extension-tester";
 import { getScreenshotName } from "../../utils/nameUtil";
-import {
-  runProvision,
-  runDeploy,
-  reRunDeploy,
-} from "../remotedebug/remotedebugContext";
 import { AzSqlHelper } from "../../utils/azureCliHelper";
 import { expect } from "chai";
 import { Page } from "playwright";
@@ -122,6 +117,7 @@ export abstract class CaseFactory {
     skipDebug?: boolean;
     debug?: "cli" | "ttk";
     botFlag?: boolean;
+    repoPath?: string;
   };
 
   public constructor(
@@ -142,6 +138,7 @@ export abstract class CaseFactory {
       skipDebug?: boolean;
       debug?: "cli" | "ttk";
       botFlag?: boolean;
+      repoPath?: string;
     } = {}
   ) {
     this.sampleName = sampleName;
@@ -292,7 +289,8 @@ export abstract class CaseFactory {
         sampledebugContext = new SampledebugContext(
           sampleName,
           sampleProjectMap[sampleName],
-          options?.testRootFolder ?? "./resource"
+          options?.testRootFolder ?? "./resource",
+          options?.repoPath ?? "./resource"
         );
         await sampledebugContext.before();
         // use before middleware to process typical sample
@@ -361,17 +359,14 @@ export abstract class CaseFactory {
                 }
               },
               dev: async () => {
-                await runProvision(
+                await sampledebugContext.provisionProject(
                   sampledebugContext.appName,
-                  env,
-                  false,
-                  options?.type === "spfx"
+                  sampledebugContext.projectPath
                 );
-                try {
-                  await runDeploy(Timeout.tabDeploy);
-                } catch (error) {
-                  await reRunDeploy(Timeout.tabDeploy);
-                }
+                await sampledebugContext.deployProject(
+                  sampledebugContext.projectPath,
+                  Timeout.botDeploy
+                );
               },
             };
 

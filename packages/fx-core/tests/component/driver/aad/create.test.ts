@@ -23,6 +23,7 @@ import {
 import { UserError } from "@microsoft/teamsfx-api";
 import { OutputEnvironmentVariableUndefinedError } from "../../../../src/component/driver/error/outputEnvironmentVariableUndefinedError";
 import { AadAppNameTooLongError } from "../../../../src/component/driver/aad/error/aadAppNameTooLongError";
+import { SignInAudience } from "../../../../src/component/driver/aad/interface/signInAudience";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -163,6 +164,70 @@ describe("aadAppCreate", async () => {
     expect(result.summaries).includes(
       `Generated client secret for Microsoft Entra application with object id ${expectedObjectId}`
     );
+  });
+
+  it("shouldd set default values for client secret expire time, description, and service management reference", async () => {
+    sinon
+      .stub(AadAppClient.prototype, "createAadApp")
+      .callsFake(async (displayName, signInAudience, serviceManagementReference) => {
+        expect(serviceManagementReference).to.be.undefined;
+        return {
+          id: expectedObjectId,
+          displayName: expectedDisplayName,
+          appId: expectedClientId,
+        } as AADApplication;
+      });
+
+    sinon
+      .stub(AadAppClient.prototype, "generateClientSecret")
+      .callsFake(async (objectId, clientSecretExpireDays, clientSecretDescription) => {
+        expect(clientSecretExpireDays).to.equal(180);
+        expect(clientSecretDescription).to.equal("default");
+        return expectedSecretText;
+      });
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
+  });
+
+  it("should use user defined client secret expire time, description, and service management reference", async () => {
+    const expectedServiceManagementReference = "00000000-0000-0000-0000-000000000000";
+    const expectedExpireTime = 90;
+    const expectedDescription = "custom";
+    sinon
+      .stub(AadAppClient.prototype, "createAadApp")
+      .callsFake(async (displayName, signInAudience, serviceManagementReference) => {
+        expect(serviceManagementReference).to.equal(expectedServiceManagementReference);
+        return {
+          id: expectedObjectId,
+          displayName: expectedDisplayName,
+          appId: expectedClientId,
+        } as AADApplication;
+      });
+
+    sinon
+      .stub(AadAppClient.prototype, "generateClientSecret")
+      .callsFake(async (objectId, clientSecretExpireDays, clientSecretDescription) => {
+        expect(clientSecretExpireDays).to.equal(expectedExpireTime);
+        expect(clientSecretDescription).to.equal(expectedDescription);
+        return expectedSecretText;
+      });
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+      clientSecretExpireDays: expectedExpireTime,
+      clientSecretDescription: expectedDescription,
+      serviceManagementReference: expectedServiceManagementReference,
+    };
+
+    const result = await createAadAppDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
   });
 
   it("should output to specific environment variable based on writeToEnvironmentFile declaration", async () => {
@@ -421,6 +486,56 @@ describe("aadAppCreate", async () => {
     expect(endTelemetry.eventName).to.equal("aadApp/create");
     expect(endTelemetry.properties.component).to.equal("aadAppcreate");
     expect(endTelemetry.properties.success).to.equal("yes");
+    expect(endTelemetry.properties["new-aad-app"]).to.equal("true");
+  });
+
+  it("should set new-aad-app telemetry to false when reuse existing AAD app", async () => {
+    const mockedTelemetryReporter = new MockedTelemetryReporter();
+    let startTelemetry: any, endTelemetry: any;
+
+    sinon
+      .stub(mockedTelemetryReporter, "sendTelemetryEvent")
+      .onFirstCall()
+      .callsFake((eventName, properties, measurements) => {
+        startTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      })
+      .onSecondCall()
+      .callsFake((eventName, properties, measurements) => {
+        endTelemetry = {
+          eventName,
+          properties,
+          measurements,
+        };
+      });
+
+    envRestore = mockedEnv({
+      [outputKeys.clientId]: "existing value",
+      [outputKeys.objectId]: "existing value",
+      [outputKeys.clientSecret]: "existing value",
+    });
+
+    const args: any = {
+      name: "test",
+      generateClientSecret: true,
+    };
+    const driverContext: any = {
+      m365TokenProvider: new MockedM365Provider(),
+      telemetryReporter: mockedTelemetryReporter,
+    };
+
+    const result = await createAadAppDriver.execute(args, driverContext, outputEnvVarNames);
+
+    expect(result.result.isOk()).to.be.true;
+    expect(startTelemetry.eventName).to.equal("aadApp/create-start");
+    expect(startTelemetry.properties.component).to.equal("aadAppcreate");
+    expect(endTelemetry.eventName).to.equal("aadApp/create");
+    expect(endTelemetry.properties.component).to.equal("aadAppcreate");
+    expect(endTelemetry.properties.success).to.equal("yes");
+    expect(endTelemetry.properties["new-aad-app"]).to.equal("false");
   });
 
   it("should send telemetries when fail", async () => {

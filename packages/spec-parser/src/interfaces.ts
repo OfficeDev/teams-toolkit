@@ -25,6 +25,18 @@ export interface ValidateResult {
   errors: ErrorResult[];
 }
 
+export interface SpecValidationResult {
+  /**
+   * An array of warning results generated during validation.
+   */
+  warnings: WarningResult[];
+
+  /**
+   * An array of error results generated during validation.
+   */
+  errors: ErrorResult[];
+}
+
 /**
  * An interface that represents a warning result generated during validation.
  */
@@ -84,6 +96,7 @@ export enum ErrorType {
   ResolveServerUrlFailed = "resolve-server-url-failed",
   SwaggerNotSupported = "swagger-not-supported",
   MultipleAuthNotSupported = "multiple-auth-not-supported",
+  SpecVersionNotSupported = "spec-version-not-supported",
 
   ListFailed = "list-failed",
   listSupportedAPIInfoFailed = "list-supported-api-info-failed",
@@ -93,6 +106,22 @@ export enum ErrorType {
   GenerateFailed = "generate-failed",
   ValidateFailed = "validate-failed",
   GetSpecFailed = "get-spec-failed",
+
+  AuthTypeIsNotSupported = "auth-type-is-not-supported",
+  MissingOperationId = "missing-operation-id",
+  PostBodyContainMultipleMediaTypes = "post-body-contain-multiple-media-types",
+  ResponseContainMultipleMediaTypes = "response-contain-multiple-media-types",
+  ResponseJsonIsEmpty = "response-json-is-empty",
+  PostBodySchemaIsNotJson = "post-body-schema-is-not-json",
+  PostBodyContainsRequiredUnsupportedSchema = "post-body-contains-required-unsupported-schema",
+  ParamsContainRequiredUnsupportedSchema = "params-contain-required-unsupported-schema",
+  ParamsContainsNestedObject = "params-contains-nested-object",
+  RequestBodyContainsNestedObject = "request-body-contains-nested-object",
+  ExceededRequiredParamsLimit = "exceeded-required-params-limit",
+  NoParameter = "no-parameter",
+  NoAPIInfo = "no-api-info",
+  MethodNotAllowed = "method-not-allowed",
+  UrlPathNotExist = "url-path-not-exist",
 
   Cancelled = "cancelled",
   Unknown = "unknown",
@@ -166,6 +195,7 @@ export interface CheckParamResult {
   requiredNum: number;
   optionalNum: number;
   isValid: boolean;
+  reason: ErrorType[];
 }
 
 export interface ParseOptions {
@@ -231,16 +261,36 @@ export interface ListAPIInfo {
   api: string;
   server: string;
   operationId: string;
+  isValid: boolean;
+  reason: ErrorType[];
   auth?: AuthInfo;
+}
+
+export interface APIMap {
+  [key: string]: {
+    operation: OpenAPIV3.OperationObject;
+    isValid: boolean;
+    reason: ErrorType[];
+  };
+}
+
+export interface APIValidationResult {
+  isValid: boolean;
+  reason: ErrorType[];
 }
 
 export interface ListAPIResult {
   allAPICount: number;
   validAPICount: number;
-  validAPIs: ListAPIInfo[];
+  APIs: ListAPIInfo[];
 }
 
 export interface AuthInfo {
   authScheme: OpenAPIV3.SecuritySchemeObject;
   name: string;
+}
+
+export interface InvalidAPIInfo {
+  api: string;
+  reason: ErrorType[];
 }

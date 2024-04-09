@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.4/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: v1.4
+version: v1.5
 
 environmentFolderPath: ./env
 
@@ -46,7 +46,7 @@ provision:
   - uses: apiKey/register
     with:
       # Name of the API Key
-      name: x-api-key
+      name: apiKey
       # Value of the API Key
       primaryClientSecret: ${{SECRET_API_KEY}}
       # Teams app ID
@@ -56,7 +56,18 @@ provision:
     # Write the registration information of API Key into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
-      registrationId: X_API_KEY_REGISTRATION_ID
+      registrationId: APIKEY_REGISTRATION_ID
+
+  # Update API KEY
+  - uses: apiKey/update
+    with:
+      # Name of the API Key
+      name: apiKey      
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: ./appPackage/apiSpecificationFile/repair.yml
+      registrationId: ${{APIKEY_REGISTRATION_ID}}
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

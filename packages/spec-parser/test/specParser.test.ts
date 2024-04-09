@@ -18,6 +18,9 @@ import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
 import { Utils } from "../src/utils";
 import jsyaml from "js-yaml";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { Validator } from "../src/validators/validator";
+import { SMEValidator } from "../src/validators/smeValidator";
+import { ValidatorFactory } from "../src/validators/validatorFactory";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -246,7 +249,7 @@ describe("SpecParser", () => {
         warnings: [],
         errors: [
           { type: ErrorType.NoServerInformation, content: ConstantString.NoServerInformation },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -271,7 +274,7 @@ describe("SpecParser", () => {
             content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -300,7 +303,7 @@ describe("SpecParser", () => {
               },
             ],
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -319,7 +322,9 @@ describe("SpecParser", () => {
       expect(result).to.deep.equal({
         status: ValidationStatus.Error,
         warnings: [],
-        errors: [{ type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi }],
+        errors: [
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
+        ],
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -439,6 +444,71 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(dereferenceStub);
     });
 
+    it("should return no supported API error with invalid api info", async function () {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://servers1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { allowMissingId: false });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.NoSupportedApi,
+            content: ConstantString.NoSupportedApi,
+            data: [
+              {
+                api: "GET /pet",
+                reason: [ErrorType.MissingOperationId],
+              },
+            ],
+          },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
     it("should return a valid result when the spec is valid", async () => {
       const specPath = "path/to/spec";
       const spec = {
@@ -481,6 +551,217 @@ describe("SpecParser", () => {
       };
 
       const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return a valid result when the spec is valid for copilot", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { projectType: ProjectType.Copilot });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should only create validator once if already created", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { projectType: ProjectType.Copilot });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const createValidatorSpy = sinon.spy(ValidatorFactory, "create");
+      const result1 = await specParser.validate();
+      const result2 = await specParser.validate();
+      sinon.assert.calledOnce(createValidatorSpy);
+    });
+
+    it("should return error result is project type is SME/Copilot, and OpenAPI spec version >= 3.1.0", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.1.0",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath);
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+      expect(result.errors[0].type).equal(ErrorType.SpecVersionNotSupported);
+      expect(result.errors[0].content).equal(
+        Utils.format(ConstantString.SpecVersionNotSupported, "3.1.0")
+      );
+      expect(result.errors[0].data).equal("3.1.0");
+      expect(result.status).equal(ValidationStatus.Error);
+
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return valid result is project type is Teams Ai, and OpenAPI spec version >= 3.1.0", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.1.0",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { projectType: ProjectType.TeamsAi });
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
       const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
@@ -537,7 +818,7 @@ describe("SpecParser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(SMEValidator.prototype, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");
@@ -1270,6 +1551,114 @@ describe("SpecParser", () => {
       }
     });
 
+    it("should work if two api contains same auth", async () => {
+      const specParser = new SpecParser("path/to/spec.yaml", { allowAPIKeyAuth: true });
+      const spec = {
+        openapi: "3.0.0",
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+          },
+        },
+        paths: {
+          "/hello": {
+            get: {
+              operationId: "getHello",
+              security: [
+                {
+                  api_key: [],
+                },
+              ],
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            post: {
+              security: [
+                {
+                  api_key: [],
+                },
+              ],
+              operationId: "postHello",
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const specFilterStub = sinon.stub(SpecFilter, "specFilter").returns({} as any);
+      const outputFileStub = sinon.stub(fs, "outputFile").resolves();
+      const outputJSONStub = sinon.stub(fs, "outputJSON").resolves();
+      const JsyamlSpy = sinon.spy(jsyaml, "dump");
+
+      const manifestUpdaterStub = sinon
+        .stub(ManifestUpdater, "updateManifest")
+        .resolves([{}, []] as any);
+      const generateAdaptiveCardStub = sinon
+        .stub(AdaptiveCardGenerator, "generateAdaptiveCard")
+        .returns([
+          {
+            type: "AdaptiveCard",
+            $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+            version: "1.5",
+            body: [
+              {
+                type: "TextBlock",
+                text: "id: ${id}",
+                wrap: true,
+              },
+            ],
+          },
+          "$",
+        ]);
+
+      const filter = ["get /hello", "post /hello"];
+
+      const outputSpecPath = "path/to/output.yaml";
+      const result = await specParser.generate("path/to/manifest.json", filter, outputSpecPath);
+      expect(result.allSuccess).to.be.true;
+      expect(JsyamlSpy.calledOnce).to.be.true;
+      expect(specFilterStub.calledOnce).to.be.true;
+      expect(outputFileStub.calledOnce).to.be.true;
+      expect(manifestUpdaterStub.calledOnce).to.be.true;
+      expect(outputFileStub.firstCall.args[0]).to.equal(outputSpecPath);
+      expect(outputJSONStub.calledOnce).to.be.true;
+      expect(generateAdaptiveCardStub.notCalled).to.be.true;
+    });
+
     it("should work if contain multiple API key in spec when project Type is teams ai", async () => {
       const specParser = new SpecParser("path/to/spec.yaml", {
         allowAPIKeyAuth: true,
@@ -1547,6 +1936,15 @@ describe("SpecParser", () => {
             url: "https://server1",
           },
         ],
+        components: {
+          securitySchemes: {
+            api_key: {
+              type: "apiKey",
+              name: "api_key",
+              in: "header",
+            },
+          },
+        },
         paths: {
           "/pets": {
             get: {
@@ -1602,11 +2000,34 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
+          {
+            api: "GET /pets",
+            server: "",
+            operationId: "getPetById",
+            reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
+            isValid: false,
+          },
           {
             api: "GET /user/{userId}",
             server: "https://server1",
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
+          },
+          {
+            api: "POST /user/{userId}",
+            server: "",
+            operationId: "createUser",
+            reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
+            isValid: false,
+          },
+          {
+            api: "POST /store/order",
+            server: "",
+            operationId: "placeOrder",
+            reason: ["response-json-is-empty", "no-parameter"],
+            isValid: false,
           },
         ],
         allAPICount: 4,
@@ -1652,15 +2073,6 @@ describe("SpecParser", () => {
                 },
               },
             },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
           },
         },
       };
@@ -1671,14 +2083,16 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
             operationId: "getUserUserId",
+            isValid: true,
+            reason: [],
           },
         ],
-        allAPICount: 3,
+        allAPICount: 1,
         validAPICount: 1,
       });
     });
@@ -1751,11 +2165,13 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server5",
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,
@@ -1822,7 +2238,7 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
@@ -1831,6 +2247,8 @@ describe("SpecParser", () => {
               name: "api_key",
             },
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,
@@ -1895,7 +2313,7 @@ describe("SpecParser", () => {
 
       const result = await specParser.list();
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
@@ -1907,6 +2325,8 @@ describe("SpecParser", () => {
               name: "bearerTokenAuth",
             },
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,
@@ -2029,7 +2449,7 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
@@ -2042,6 +2462,8 @@ describe("SpecParser", () => {
               name: "api_key1",
             },
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
           {
             api: "POST /user/{userId}",
@@ -2055,6 +2477,8 @@ describe("SpecParser", () => {
               name: "api_key1",
             },
             operationId: "postUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 2,
@@ -2120,11 +2544,13 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,
@@ -2136,13 +2562,12 @@ describe("SpecParser", () => {
       const specPath = "valid-spec.yaml";
       const specParser = new SpecParser(specPath, { allowMissingId: false });
       const spec = {
-        paths: {
-          "/pets": {
-            get: {
-              operationId: "getPetById",
-              security: [{ api_key: [] }],
-            },
+        servers: [
+          {
+            url: "https://server1",
           },
+        ],
+        paths: {
           "/user/{userId}": {
             get: {
               parameters: [
@@ -2171,15 +2596,6 @@ describe("SpecParser", () => {
                 },
               },
             },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
           },
         },
       };
@@ -2190,8 +2606,16 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [],
-        allAPICount: 4,
+        APIs: [
+          {
+            api: "GET /user/{userId}",
+            server: "",
+            operationId: "getUserUserId",
+            isValid: false,
+            reason: ["missing-operation-id"],
+          },
+        ],
+        allAPICount: 1,
         validAPICount: 0,
       });
     });
@@ -2250,15 +2674,6 @@ describe("SpecParser", () => {
                 },
               },
             },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
           },
         },
       };
@@ -2266,13 +2681,28 @@ describe("SpecParser", () => {
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      try {
-        await specParser.list();
-        expect.fail("Expected an error to be thrown");
-      } catch (err) {
-        expect((err as SpecParserError).message).contain(ConstantString.NoServerInformation);
-        expect((err as SpecParserError).errorType).to.equal(ErrorType.NoServerInformation);
-      }
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal({
+        APIs: [
+          {
+            api: "GET /pets",
+            server: "",
+            operationId: "getPetById",
+            isValid: false,
+            reason: ["no-server-information", "response-json-is-empty", "no-parameter"],
+          },
+          {
+            api: "GET /user/{userId}",
+            server: "",
+            operationId: "getUserUserId",
+            isValid: false,
+            reason: ["no-server-information"],
+          },
+        ],
+        allAPICount: 2,
+        validAPICount: 0,
+      });
     });
 
     it("should return correct domain when domain contains placeholder", async () => {
@@ -2337,7 +2767,7 @@ describe("SpecParser", () => {
       const result = await specParser.list();
 
       expect(result).to.deep.equal({
-        validAPIs: [
+        APIs: [
           {
             api: "GET /user/{userId}",
             server: "https://server1",
@@ -2350,6 +2780,8 @@ describe("SpecParser", () => {
               name: "api_key",
             },
             operationId: "getUserById",
+            isValid: true,
+            reason: [],
           },
         ],
         allAPICount: 1,

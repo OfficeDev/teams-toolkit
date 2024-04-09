@@ -41,5 +41,5 @@ new ProactiveMessagingTestCase(
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { testRootFolder: "./resource/samples" }
+  { repoPath: "./resource/samples" }
 ).test();

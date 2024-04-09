@@ -25,6 +25,7 @@ import { manifestUtils } from "./utils/ManifestUtils";
 import { expandEnvironmentVariable, getEnvironmentVariables } from "../../utils/common";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import { InvalidFileOutsideOfTheDirectotryError } from "../../../error/teamsApp";
+import { normalizePath } from "./utils/utils";
 
 export const actionName = "teamsApp/zipAppPackage";
 
@@ -183,21 +184,17 @@ export class CreateAppPackageDriver implements StepDriver {
       if (checkExistenceRes.isErr()) {
         return err(checkExistenceRes.error);
       }
-      const expandedEnvVarResult = await CreateAppPackageDriver.expandOpenAPIEnvVars(
+
+      const addFileWithVariableRes = await this.addFileWithVariable(
+        zip,
+        manifest.composeExtensions[0].apiSpecificationFile,
         apiSpecificationFile,
+        TelemetryPropertyKey.customizedOpenAPIKeys,
         context
       );
-      if (expandedEnvVarResult.isErr()) {
-        return err(expandedEnvVarResult.error);
+      if (addFileWithVariableRes.isErr()) {
+        return err(addFileWithVariableRes.error);
       }
-      const openAPIContent = expandedEnvVarResult.value;
-      const attr = await fs.stat(apiSpecificationFile);
-      zip.addFile(
-        manifest.composeExtensions[0].apiSpecificationFile,
-        Buffer.from(openAPIContent),
-        "",
-        attr.mode
-      );
 
       if (manifest.composeExtensions[0].commands.length > 0) {
         for (const command of manifest.composeExtensions[0].commands) {
@@ -221,16 +218,30 @@ export class CreateAppPackageDriver implements StepDriver {
     }
 
     // API plugin
-    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].pluginFile) {
-      const pluginFile = path.resolve(appDirectory, manifest.plugins[0].pluginFile);
+    if (manifest.plugins && manifest.plugins.length > 0 && manifest.plugins[0].file) {
+      const pluginFile = path.resolve(appDirectory, manifest.plugins[0].file);
       const checkExistenceRes = await this.validateReferencedFile(pluginFile, appDirectory);
       if (checkExistenceRes.isErr()) {
         return err(checkExistenceRes.error);
       }
-      const dir = path.dirname(manifest.plugins[0].pluginFile);
-      this.addFileInZip(zip, dir, pluginFile);
 
-      const addFilesRes = await this.addPluginRelatedFiles(zip, pluginFile, appDirectory);
+      const addFileWithVariableRes = await this.addFileWithVariable(
+        zip,
+        manifest.plugins[0].file,
+        pluginFile,
+        TelemetryPropertyKey.customizedAIPluginKeys,
+        context
+      );
+      if (addFileWithVariableRes.isErr()) {
+        return err(addFileWithVariableRes.error);
+      }
+
+      const addFilesRes = await this.addPluginRelatedFiles(
+        zip,
+        manifest.plugins[0].file,
+        appDirectory,
+        context
+      );
       if (addFilesRes.isErr()) {
         return err(addFilesRes.error);
       }
@@ -254,20 +265,21 @@ export class CreateAppPackageDriver implements StepDriver {
     return ok(new Map());
   }
 
-  private static async expandOpenAPIEnvVars(
-    openAPISpecPath: string,
-    ctx: WrapDriverContext
+  private static async expandEnvVars(
+    filePath: string,
+    ctx: WrapDriverContext,
+    telemetryKey: TelemetryPropertyKey
   ): Promise<Result<string, FxError>> {
-    const content = await fs.readFile(openAPISpecPath, "utf8");
+    const content = await fs.readFile(filePath, "utf8");
     const vars = getEnvironmentVariables(content);
     ctx.addTelemetryProperties({
-      [TelemetryPropertyKey.customizedOpenAPIKeys]: vars.join(";"),
+      [telemetryKey]: vars.join(";"),
     });
     const result = expandEnvironmentVariable(content);
     const notExpandedVars = getEnvironmentVariables(result);
     if (notExpandedVars.length > 0) {
       return err(
-        new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), openAPISpecPath)
+        new MissingEnvironmentVariablesError("teamsApp", notExpandedVars.join(","), filePath)
       );
     }
     return ok(result);
@@ -322,27 +334,40 @@ export class CreateAppPackageDriver implements StepDriver {
   private async addPluginRelatedFiles(
     zip: AdmZip,
     pluginFile: string,
-    appDirectory: string
+    appDirectory: string,
+    context: WrapDriverContext
   ): Promise<Result<undefined, FxError>> {
+    const pluginFilePath = path.join(appDirectory, pluginFile);
     let pluginContent;
     try {
-      pluginContent = (await fs.readJSON(pluginFile)) as PluginManifestSchema;
+      pluginContent = (await fs.readJSON(pluginFilePath)) as PluginManifestSchema;
     } catch (e) {
-      return err(new JSONSyntaxError(pluginFile, e, actionName));
+      return err(new JSONSyntaxError(pluginFilePath, e, actionName));
     }
     const runtimes = pluginContent.runtimes;
     if (runtimes && runtimes.length > 0) {
       for (const runtime of runtimes) {
         if (runtime.type === "OpenApi" && runtime.spec?.url) {
-          const specFile = path.resolve(path.dirname(pluginFile), runtime.spec.url);
+          const specFile = path.resolve(path.dirname(pluginFilePath), runtime.spec.url);
           // add openapi spec
           const checkExistenceRes = await this.validateReferencedFile(specFile, appDirectory);
           if (checkExistenceRes.isErr()) {
             return err(checkExistenceRes.error);
           }
 
-          const dir = path.relative(appDirectory, path.dirname(specFile));
-          this.addFileInZip(zip, dir, specFile);
+          const entryName = path.relative(appDirectory, specFile);
+          const useForwardSlash = pluginFile.concat(runtime.spec.url).includes("/");
+
+          const addFileWithVariableRes = await this.addFileWithVariable(
+            zip,
+            normalizePath(entryName, useForwardSlash),
+            specFile,
+            TelemetryPropertyKey.customizedOpenAPIKeys,
+            context
+          );
+          if (addFileWithVariableRes.isErr()) {
+            return err(addFileWithVariableRes.error);
+          }
         }
       }
     }
@@ -350,7 +375,30 @@ export class CreateAppPackageDriver implements StepDriver {
     return ok(undefined);
   }
 
-  private addFileInZip(zip: AdmZip, dir: string, filePath: string) {
-    zip.addLocalFile(filePath, dir === "." ? "" : dir);
+  private async addFileWithVariable(
+    zip: AdmZip,
+    entryName: string,
+    filePath: string,
+    telemetryKey: TelemetryPropertyKey,
+    context: WrapDriverContext
+  ): Promise<Result<undefined, FxError>> {
+    const expandedEnvVarResult = await CreateAppPackageDriver.expandEnvVars(
+      filePath,
+      context,
+      telemetryKey
+    );
+    if (expandedEnvVarResult.isErr()) {
+      return err(expandedEnvVarResult.error);
+    }
+    const content = expandedEnvVarResult.value;
+
+    const attr = await fs.stat(filePath);
+    zip.addFile(entryName, Buffer.from(content), "", attr.mode);
+
+    return ok(undefined);
+  }
+
+  private addFileInZip(zip: AdmZip, zipPath: string, filePath: string) {
+    zip.addLocalFile(filePath, zipPath === "." ? "" : zipPath);
   }
 }

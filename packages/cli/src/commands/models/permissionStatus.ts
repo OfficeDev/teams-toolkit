@@ -4,19 +4,20 @@ import { CLICommand, InputsWithProjectPath, err, ok } from "@microsoft/teamsfx-a
 import { PermissionListInputs, PermissionListOptions } from "@microsoft/teamsfx-core";
 import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 import { azureMessage, spfxMessage } from "./permissionGrant";
 
 export const permissionStatusCommand: CLICommand = {
   name: "status",
-  description: "Check user's permission.",
+  description: commands["collaborator.status"].description,
   options: [
     ...PermissionListOptions,
     {
       name: "all",
       shortName: "a",
-      description: "Whether to list all collaborators.",
+      description: commands["collaborator.status"].options["all"],
       type: "boolean",
       required: false,
     },

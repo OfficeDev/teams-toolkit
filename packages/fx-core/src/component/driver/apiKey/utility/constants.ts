@@ -7,6 +7,8 @@ export const logMessageKeys = {
   apiKeyNotFound: "driver.apiKey.log.apiKeyNotFound",
   successCreateApiKey: "driver.apiKey.log.successCreateApiKey",
   failedExecuteDriver: "driver.apiKey.log.failedExecuteDriver",
+  skipUpdateApiKey: "driver.apiKey.log.skipUpdateApiKey",
+  successUpdateApiKey: "driver.apiKey.log.successUpdateApiKey",
 };
 
 export const maxDomainPerApiKey = 1;

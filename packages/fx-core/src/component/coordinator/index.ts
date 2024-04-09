@@ -23,7 +23,6 @@ import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
-import { isApiKeyEnabled, isApiMeSSOEnabled } from "../../common/featureFlags";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
@@ -361,11 +360,7 @@ class Coordinator {
           capability === CapabilityOptions.m365SearchMe().id &&
           meArchitecture === MeArchitectureOptions.newApi().id
         ) {
-          if ((isApiKeyEnabled() || isApiMeSSOEnabled()) && apiMEAuthType) {
-            feature = `${feature}:${apiMEAuthType}`;
-          } else {
-            feature = `${feature}:none`;
-          }
+          feature = `${feature}:${apiMEAuthType}`;
         }
 
         if (capability === CapabilityOptions.customCopilotRag().id) {

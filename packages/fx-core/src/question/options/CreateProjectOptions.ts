@@ -155,6 +155,7 @@ export const CreateProjectOptions: CLICommandOption[] = [
     choices: [
       "custom-copilot-rag-customize",
       "custom-copilot-rag-azureAISearch",
+      "custom-copilot-rag-customApi",
       "custom-copilot-rag-microsoft365",
     ],
   },

@@ -77,15 +77,17 @@ import { ExtensionSurvey } from "./utils/survey";
 import { configMgr } from "./config";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import {
-  CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
   CHAT_CREATE_SAMPLE_COMMAND_ID,
   CHAT_EXECUTE_COMMAND_ID,
   CHAT_OPENURL_COMMAND_ID,
   IsChatParticipantEnabled,
-  officeAddinChatParticipantId,
   chatParticipantId,
-  CHAT_CREATE_OFFICEADDIN_TEMPLATE_COMMAND_ID,
 } from "./chat/consts";
+import {
+  CHAT_CREATE_OFFICE_SAMPLE_COMMAND_ID,
+  officeChatParticipantId,
+  CHAT_CREATE_OFFICE_TEMPLATE_COMMAND_ID,
+} from "./officeChat/consts";
 import followupProvider from "./chat/followupProvider";
 import {
   chatCreateCommandHandler,
@@ -93,9 +95,11 @@ import {
   chatRequestHandler,
   openUrlCommandHandler,
   handleFeedback,
-  officeAddinChatRequestHandler,
-  chatCreateOfficeAddinTemplateCommandHandler,
 } from "./chat/handlers";
+import {
+  officeChatRequestHandler,
+  chatCreateOfficeTemplateCommandHandler,
+} from "./officeChat/handlers";
 import { CommandKey as CommandKeys } from "./constants";
 
 export let VS_CODE_UI: VsCodeUI;
@@ -121,7 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerChatParticipant(context);
 
-  registerOfficeAddinChatParticipant(context);
+  registerOfficeChatParticipant(context);
 
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
@@ -440,10 +444,10 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
 /**
  * Copilot Chat Participant for Office Add-in
  */
-function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
+function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
   const participant = vscode.chat.createChatParticipant(
-    officeAddinChatParticipantId,
-    officeAddinChatRequestHandler
+    officeChatParticipantId,
+    officeChatRequestHandler
   );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
   participant.followupProvider = followupProvider;
@@ -451,16 +455,13 @@ function registerOfficeAddinChatParticipant(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     participant,
-    vscode.commands.registerCommand(
-      CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID,
-      chatCreateCommandHandler
-    ),
+    vscode.commands.registerCommand(CHAT_CREATE_OFFICE_SAMPLE_COMMAND_ID, chatCreateCommandHandler),
     vscode.commands.registerCommand("fx-extension.openOfficeDevDocument", (...args) =>
       Correlator.run(officeDevHandlers.openDocumentHandler, args)
     ),
     vscode.commands.registerCommand(
-      CHAT_CREATE_OFFICEADDIN_TEMPLATE_COMMAND_ID,
-      chatCreateOfficeAddinTemplateCommandHandler
+      CHAT_CREATE_OFFICE_TEMPLATE_COMMAND_ID,
+      chatCreateOfficeTemplateCommandHandler
     )
     // vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler)
     // vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)

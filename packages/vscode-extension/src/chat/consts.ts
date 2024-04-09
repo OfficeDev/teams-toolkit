@@ -4,26 +4,14 @@
 import { ChatFollowup } from "vscode";
 import { localize } from "../utils/localizeUtils";
 
-export const officeAddinChatParticipantId = "ms-teams-vscode-extension.office";
 export const chatParticipantId = "ms-teams-vscode-extension.teams";
 
 export const CHAT_CREATE_SAMPLE_COMMAND_ID = "fx-extension.chat.createSample";
-export const CHAT_CREATE_OFFICEADDIN_SAMPLE_COMMAND_ID =
-  "fx-extension.chat.createOfficeAddinSample";
-export const CHAT_CREATE_OFFICEADDIN_TEMPLATE_COMMAND_ID =
-  "fx-extension.chat.createOfficeAddinTemplate";
 export const CHAT_EXECUTE_COMMAND_ID = "fx-extension.chat.executeCommand";
 export const CHAT_OPENURL_COMMAND_ID = "fx-extension.chat.openUrlCommand";
 
 export const enum TeamsChatCommand {
   Create = "create",
-  NextStep = "nextstep",
-  Help = "help",
-}
-
-export const enum OfficeAddinChatCommand {
-  Create = "create",
-  GenerateCode = "generatecode",
   NextStep = "nextstep",
   Help = "help",
 }

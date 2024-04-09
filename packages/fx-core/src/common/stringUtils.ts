@@ -3,6 +3,14 @@
 
 const MIN_ENTROPY = 4;
 
+const WHITE_LIST = [
+  "user-file-path",
+  "publish-app,",
+  "X-Correlation-ID",
+  "innerError",
+  "client-request-id",
+];
+
 function getProbMap(str: string) {
   const probMap = new Map<string, number>();
   for (const char of str) {
@@ -75,7 +83,7 @@ export interface MaskSecretOptions {
 
 export function maskSecret(
   inputText?: string,
-  option = { threshold: MIN_ENTROPY, whiteList: [] as string[] }
+  option = { threshold: MIN_ENTROPY, whiteList: WHITE_LIST }
 ): string {
   if (!inputText) return "";
   let output = "";
@@ -83,15 +91,17 @@ export function maskSecret(
   tokens.forEach((token) => {
     computeShannonEntropy(token);
     if (
-      token.splitter ||
       option.whiteList?.includes(token.value) ||
-      (token.entropy && token.entropy <= option.threshold)
+      token.splitter ||
+      (token.entropy || 0) <= option.threshold
     ) {
       output += token.value;
     } else {
-      output += "<REDACTED: secret>";
+      output += "<b><REDACTED: secret></b>";
     }
   });
-  console.log(tokens);
+  for (const token of tokens) {
+    console.log(token);
+  }
   return output;
 }

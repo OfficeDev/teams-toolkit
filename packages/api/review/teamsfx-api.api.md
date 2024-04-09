@@ -306,6 +306,7 @@ export interface ErrorOptionBase {
     message?: string;
     // (undocumented)
     name?: string;
+    skipProcessInTelemetry?: boolean;
     // (undocumented)
     source?: string;
     // (undocumented)
@@ -360,6 +361,7 @@ export interface FxError extends Error {
     categories?: string[];
     innerError?: any;
     recommendedOperation?: string;
+    skipProcessInTelemetry?: boolean;
     source: string;
     timestamp: Date;
     // (undocumented)
@@ -871,6 +873,7 @@ export class SystemError extends Error implements FxError {
     innerError?: any;
     issueLink?: string;
     recommendedOperation?: string;
+    skipProcessInTelemetry?: boolean;
     source: string;
     timestamp: Date;
     userData?: string;
@@ -1065,6 +1068,7 @@ export class UserError extends Error implements FxError {
     helpLink?: string;
     innerError?: any;
     recommendedOperation?: string;
+    skipProcessInTelemetry?: boolean;
     source: string;
     timestamp: Date;
     userData?: string;

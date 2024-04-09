@@ -26,22 +26,72 @@ function shannonEntropy(str: string, probMap: Map<string, number>) {
   return -sum;
 }
 
-function tokenize(text: string) {
-  return text.split(/\s/);
+class Token {
+  value: string;
+  splitter: boolean;
+  entropy?: number;
+  constructor(value: string, splitter: boolean) {
+    this.value = value;
+    this.splitter = splitter;
+  }
 }
 
-export function maskSecret(inputText?: string, threshold = MIN_ENTROPY): string {
+function tokenize(text: string): Token[] {
+  const splitterString = " '`\n\t\r\",:{}";
+  const splitterChars = new Set<string>();
+  for (const char of splitterString) {
+    splitterChars.add(char);
+  }
+  const tokens: Token[] = [];
+  let currentToken = "";
+  for (const char of text) {
+    if (splitterChars.has(char)) {
+      if (currentToken.length > 0) {
+        tokens.push(new Token(currentToken, false));
+        currentToken = "";
+      }
+      tokens.push(new Token(char, true));
+    } else {
+      currentToken += char;
+    }
+  }
+  if (currentToken.length > 0) {
+    tokens.push(new Token(currentToken, false));
+  }
+  return tokens;
+}
+
+function computeShannonEntropy(token: Token) {
+  if (!token.splitter) {
+    const probMap = getProbMap(token.value);
+    token.entropy = shannonEntropy(token.value, probMap);
+  }
+}
+
+export interface MaskSecretOptions {
+  threshold?: number;
+  whiteList?: string[];
+}
+
+export function maskSecret(
+  inputText?: string,
+  option = { threshold: MIN_ENTROPY, whiteList: [] as string[] }
+): string {
   if (!inputText) return "";
-  const results: string[] = [];
+  let output = "";
   const tokens = tokenize(inputText);
   tokens.forEach((token) => {
-    const probMap = getProbMap(token);
-    const b64_entropy = shannonEntropy(token, probMap);
-    if (b64_entropy > threshold) {
-      results.push("***");
+    computeShannonEntropy(token);
+    if (
+      token.splitter ||
+      option.whiteList?.includes(token.value) ||
+      (token.entropy && token.entropy <= option.threshold)
+    ) {
+      output += token.value;
     } else {
-      results.push(token);
+      output += "<REDACTED: secret>";
     }
   });
-  return results.join(" ");
+  console.log(tokens);
+  return output;
 }

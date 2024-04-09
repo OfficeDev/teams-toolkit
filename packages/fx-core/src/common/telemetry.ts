@@ -242,7 +242,9 @@ export function fillInTelemetryPropsForFxError(
   props[TelemetryConstants.properties.errorCode] =
     props[TelemetryConstants.properties.errorCode] || errorCode;
   props[TelemetryConstants.properties.errorType] = errorType;
-  props[TelemetryConstants.properties.errorMessage] = maskSecret(error.message);
+  props[TelemetryConstants.properties.errorMessage] = error.skipProcessInTelemetry
+    ? error.message
+    : maskSecret(error.message);
   props[TelemetryConstants.properties.errorStack] = extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
   props[TelemetryConstants.properties.errorName] = error.name;
 

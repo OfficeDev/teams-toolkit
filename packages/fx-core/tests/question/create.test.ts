@@ -251,9 +251,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (none auth)", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.ApiKey]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -293,7 +290,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.ApiMEAuth) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions?.(inputs);
-          assert.isTrue(options?.length === 2);
+          assert.isTrue(options?.length === 3);
           return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
@@ -316,7 +313,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.ApiMEAuth) {
           const select = question as SingleSelectQuestion;
           const options = select.staticOptions;
-          assert.isTrue(options.length === 2);
+          assert.isTrue(options.length === 3);
           return ok({ type: "success", result: ApiMessageExtensionAuthOptions.none().id });
         }
         return ok({ type: "success", result: undefined });
@@ -334,9 +331,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (key auth)", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.ApiKey]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -376,7 +370,7 @@ describe("scaffold question", () => {
         } else if (question.name === QuestionNames.ApiMEAuth) {
           const select = question as SingleSelectQuestion;
           const options = await select.dynamicOptions?.(inputs);
-          assert.isTrue(options?.length === 2);
+          assert.isTrue(options?.length === 3);
           return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
         } else if (question.name === QuestionNames.ProgrammingLanguage) {
           return ok({ type: "success", result: "javascript" });
@@ -384,23 +378,6 @@ describe("scaffold question", () => {
           return ok({ type: "success", result: "test001" });
         } else if (question.name === QuestionNames.Folder) {
           return ok({ type: "success", result: "./" });
-        } else if (question.name === QuestionNames.MeArchitectureType) {
-          const select = question as SingleSelectQuestion;
-          const options = await select.staticOptions;
-          // Assert
-          assert.equal(options.length, 2);
-          // Assert
-          assert.equal(options.length, 2);
-          assert.deepEqual(options, [
-            MeArchitectureOptions.newApi(),
-            MeArchitectureOptions.apiSpec(),
-          ]);
-          return ok({ type: "success", result: MeArchitectureOptions.newApi().id });
-        } else if (question.name === QuestionNames.ApiMEAuth) {
-          const select = question as SingleSelectQuestion;
-          const options = select.staticOptions;
-          assert.isTrue(options.length === 2);
-          return ok({ type: "success", result: ApiMessageExtensionAuthOptions.apiKey().id });
         }
         return ok({ type: "success", result: undefined });
       };
@@ -417,10 +394,6 @@ describe("scaffold question", () => {
     });
 
     it("traverse in vscode me from new api (sso auth)", async () => {
-      mockedEnvRestore = mockedEnv({
-        [FeatureFlagName.ApiKey]: "true",
-        [FeatureFlagName.ApiMeSSO]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };

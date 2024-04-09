@@ -30,7 +30,6 @@ import {
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
   isTdpTemplateCliTestEnabled,
-  isApiMeSSOEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -2044,16 +2043,7 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
     ),
     cliDescription: "The authentication type for the API.",
     staticOptions: ApiMessageExtensionAuthOptions.all(),
-    dynamicOptions: () => {
-      const options: OptionItem[] = [ApiMessageExtensionAuthOptions.none()];
-      if (isApiKeyEnabled()) {
-        options.push(ApiMessageExtensionAuthOptions.apiKey());
-      }
-      if (isApiMeSSOEnabled()) {
-        options.push(ApiMessageExtensionAuthOptions.microsoftEntra());
-      }
-      return options;
-    },
+    dynamicOptions: () => ApiMessageExtensionAuthOptions.all(),
     default: ApiMessageExtensionAuthOptions.none().id,
   };
 }
@@ -2455,10 +2445,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         condition: (inputs: Inputs) => {
-          return (
-            (isApiKeyEnabled() || isApiMeSSOEnabled()) &&
-            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id
-          );
+          return inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id;
         },
         data: apiMessageExtensionAuthQuestion(),
       },

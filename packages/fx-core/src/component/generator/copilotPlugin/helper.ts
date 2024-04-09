@@ -40,6 +40,7 @@ import {
   ParseOptions,
   AdaptiveCardGenerator,
   Utils,
+  InvalidAPIInfo,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -678,6 +679,45 @@ export function formatValidationErrors(errors: ApiSpecErrorResult[]): ApiSpecErr
   });
 }
 
+function mapInvalidReasonToMessage(reason: ErrorType): string {
+  switch (reason) {
+    case ErrorType.AuthTypeIsNotSupported:
+      return getLocalizedString("core.common.invalidReason.AuthTypeIsNotSupported");
+    case ErrorType.MissingOperationId:
+      return getLocalizedString("core.common.invalidReason.MissingOperationId");
+    case ErrorType.PostBodyContainMultipleMediaTypes:
+      return getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes");
+    case ErrorType.ResponseContainMultipleMediaTypes:
+      return getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes");
+    case ErrorType.ResponseJsonIsEmpty:
+      return getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty");
+    case ErrorType.PostBodySchemaIsNotJson:
+      return getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson");
+    case ErrorType.PostBodyContainsRequiredUnsupportedSchema:
+      return getLocalizedString(
+        "core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"
+      );
+    case ErrorType.ParamsContainRequiredUnsupportedSchema:
+      return getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema");
+    case ErrorType.ParamsContainsNestedObject:
+      return getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject");
+    case ErrorType.RequestBodyContainsNestedObject:
+      return getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject");
+    case ErrorType.ExceededRequiredParamsLimit:
+      return getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit");
+    case ErrorType.NoParameter:
+      return getLocalizedString("core.common.invalidReason.NoParameter");
+    case ErrorType.NoAPIInfo:
+      return getLocalizedString("core.common.invalidReason.NoAPIInfo");
+    case ErrorType.MethodNotAllowed:
+      return getLocalizedString("core.common.invalidReason.MethodNotAllowed");
+    case ErrorType.UrlPathNotExist:
+      return getLocalizedString("core.common.invalidReason.UrlPathNotExist");
+    default:
+      return reason.toString();
+  }
+}
+
 function formatValidationErrorContent(error: ApiSpecErrorResult): string {
   try {
     switch (error.type) {
@@ -702,7 +742,17 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
       case ErrorType.RelativeServerUrlNotSupported:
         return getLocalizedString("core.common.RelativeServerUrlNotSupported");
       case ErrorType.NoSupportedApi:
-        return getLocalizedString("core.common.NoSupportedApi");
+        const messages = [];
+        const invalidAPIInfo = error.data as InvalidAPIInfo[];
+        for (const info of invalidAPIInfo) {
+          const mes = `${info.api}: ${info.reason.map(mapInvalidReasonToMessage).join(", ")}`;
+          messages.push(mes);
+        }
+
+        if (messages.length === 0) {
+          messages.push(getLocalizedString("core.common.invalidReason.NoAPIs"));
+        }
+        return getLocalizedString("core.common.NoSupportedApi", messages.join("\n"));
       case ErrorType.NoExtraAPICanBeAdded:
         return getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded");
       case ErrorType.ResolveServerUrlFailed:

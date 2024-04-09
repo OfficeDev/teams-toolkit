@@ -249,7 +249,7 @@ describe("SpecParser", () => {
         warnings: [],
         errors: [
           { type: ErrorType.NoServerInformation, content: ConstantString.NoServerInformation },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -274,7 +274,7 @@ describe("SpecParser", () => {
             content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -303,7 +303,7 @@ describe("SpecParser", () => {
               },
             ],
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -322,7 +322,9 @@ describe("SpecParser", () => {
       expect(result).to.deep.equal({
         status: ValidationStatus.Error,
         warnings: [],
-        errors: [{ type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi }],
+        errors: [
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
+        ],
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -438,6 +440,71 @@ describe("SpecParser", () => {
           },
         ],
         errors: [],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return no supported API error with invalid api info", async function () {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://servers1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { allowMissingId: false });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.NoSupportedApi,
+            content: ConstantString.NoSupportedApi,
+            data: [
+              {
+                api: "GET /pet",
+                reason: [ErrorType.MissingOperationId],
+              },
+            ],
+          },
+        ],
       });
       sinon.assert.calledOnce(dereferenceStub);
     });

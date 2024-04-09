@@ -592,6 +592,7 @@ describe("handlers", () => {
       });
 
       const res = await handlers.openConfigStateFile([]);
+      await fs.remove(tmpDir);
 
       if (res) {
         chai.assert.isTrue(res.isErr());

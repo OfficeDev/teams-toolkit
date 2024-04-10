@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { maskSecretValues } from "../component/utils/envUtil";
-
 const MIN_ENTROPY = 4;
 const SECRET_REPLACE = "<REDACTED:secret>";
 const USER_REPLACE = "<REDACTED:user>";
@@ -121,4 +119,16 @@ function maskByPattern(command: string): string {
   let output = command.replace(regexU, `$1 ${USER_REPLACE}`);
   output = output.replace(regexP, `$1 ${SECRET_REPLACE}`);
   return output;
+}
+
+export function maskSecretValues(stdout: string, replace = "***"): string {
+  for (const key of Object.keys(process.env)) {
+    if (key.startsWith("SECRET_")) {
+      const value = process.env[key];
+      if (value) {
+        stdout = stdout.replace(value, replace);
+      }
+    }
+  }
+  return stdout;
 }

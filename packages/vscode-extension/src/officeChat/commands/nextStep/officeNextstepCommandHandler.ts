@@ -16,7 +16,10 @@ import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import followupProvider from "../../../chat/followupProvider";
 import { ChatTelemetryData } from "../../../chat/telemetry";
 import { ICopilotChatResult } from "../../../chat/types";
-import { describeStep } from "../../../chat/commands/nextstep/nextstepCommandHandler";
+import {
+  describeStep,
+  generateResponse,
+} from "../../../chat/commands/nextstep/nextstepCommandHandler";
 import { officeSteps } from "./officeSteps";
 import { getWholeStatus } from "../../../chat/commands/nextstep/status";
 import { WholeStatus } from "../../../chat/commands/nextstep/types";
@@ -62,33 +65,7 @@ E.g. If you're unsure what to do after creating a project, simply ask Copilot by
   const steps = officeSteps()
     .filter((s) => s.condition(status))
     .sort((a, b) => a.priority - b.priority);
-  if (steps.length > 1) {
-    response.markdown("Here are the next steps you can do:\n");
-  }
-  for (let index = 0; index < Math.min(3, steps.length); index++) {
-    const s = steps[index];
-    if (s.description instanceof Function) {
-      s.description = s.description(status);
-    }
-    const stepDescription = await describeStep(s, token, officeChatTelemetryData);
-    const title = s.docLink ? `[${s.title}](${s.docLink})` : s.title;
-    if (steps.length > 1) {
-      response.markdown(`${index + 1}. ${title}: ${stepDescription}\n`);
-    } else {
-      response.markdown(`${title}: ${stepDescription}\n`);
-    }
-    s.commands.forEach((c) => {
-      if (c.command === CHAT_EXECUTE_COMMAND_ID) {
-        c.arguments!.splice(1, 0, officeChatTelemetryData.requestId);
-      }
-      response.button(c);
-    });
-  }
-  const followUps: ChatFollowup[] = [];
-  steps.forEach((s) => {
-    followUps.push(...s.followUps);
-  });
-  followupProvider.addFollowups(followUps);
+  await generateResponse(steps, status, response, token, officeChatTelemetryData);
 
   officeChatTelemetryData.markComplete();
   ExtTelemetry.sendTelemetryEvent(

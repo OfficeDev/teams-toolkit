@@ -4,15 +4,36 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
-### April 01, 2024
+### April 15, 2024
 
-#### New Features
+#### New Features 
 
-- **Word, Excel and PowerPoint Add-ins in Teams Toolkit**
-![WXP Add-in](https://github.com/OfficeDev/TeamsFx/assets/11220663/30679a8c-b0b0-4b1c-ad4f-114547a12a6b)
-Teams Toolkit now supports Microsoft Word, Excel, or PowerPoint JavaScript add-in development. This support enables developers to quickly get started and build add-ins with high productivity, featuring:
-  - Code samples for various add-in types such as task pane, content, or ribbon. Developers can customize these samples to create their own add-in projects for Word, Excel and PowerPoints.
-  - A side pane offering a unified and centralized experience for checking dependencies, running and debugging add-ins, managing lifecycle, leveraging utility, getting help, and providing feedback.
+- **Create API based Message Extensions using auth-protected API** </br> 
+  Teams Toolkit supports two types of API authentication protection in your API based Message Extension app: </br> 
+  ![add-auth-api-me](https://github.com/OfficeDev/TeamsFx/assets/113089977/c5faea2f-676b-4a8c-82d6-f3b037e54f0e) 
+  - API-Key: you can either add the API key of your existing API, or if you don't have an API, Teams Toolkit will generate one to show how authentication works. 
+  - Microsoft Entra (Azure AD): Teams Toolkit can help you create Microsoft Entra ID to authenticate your new API. 
+
+- **Debug Message Extensions in Teams App Test Tool** </br> 
+  Teams App Test Tool helps developers to debug and test in a web-based environment that emulates Microsoft Teams without using tunnels or Microsoft 365 account. In this version we add Teams App Test Tool support to all types of Message Extension app, including search-based, action-based and link unfurling Message Extension app. 
+  ![ME-test-tool](https://github.com/OfficeDev/TeamsFx/assets/113089977/2b55996f-87a9-4683-abaf-3089b7ea878e) 
+  The picture below shows search-based and action-based Message Extension app running in Teams app test tool:</br> 
+  ![ME-in-test-tool-example](https://github.com/OfficeDev/TeamsFx/assets/113089977/b255737a-9bfc-4c58-9324-985aaf81298a) 
+
+- **Create intelligent chatbot with domain knowledge from custom data** </br> 
+  Custom Copilot is an AI-powered chatbot with RAG capability that can understand natural language and retrieve domain data to answer domain-specific questions. Teams Toolkit now supports to access your custom data in Custome Copilot app.</br> 
+  When create the Custom Copilot app, you can select "Chat with your data" and then select the desired data source.</br> 
+  ![access-data-custom-copilot](https://github.com/OfficeDev/TeamsFx/assets/113089977/d40cfc84-8cb8-4816-b587-668a2bcf9560) 
+  There are four kinds of data source for you to choose:</br> 
+  ![data-source-custom-copilot](https://github.com/OfficeDev/TeamsFx/assets/113089977/2d010366-96a0-4f8b-861d-28d5bb9e36b8) 
+  - Custom data source: you can add whatever data source you want to Custom Copilot app, for example file system or vector DB. 
+  - Azure AI Search: your chatbot can access data on Azure AI search service and use it in conversation with users. 
+  - Custom API: your chatbot can invoke the API defined in the OpenAPI description document to retrieve domain data from API service.  
+  - Microsoft Graph + SharePoint: your chatbot can query M365 context data from Microsoft Graph Search API as data source in the conversation. 
+
+- **Develop Word, Excel and PowerPoint Add-ins in Teams Toolkit**
+  ![WXP Add-in](https://github.com/OfficeDev/TeamsFx/assets/11220663/30679a8c-b0b0-4b1c-ad4f-114547a12a6b)
+  Teams Toolkit now supports Microsoft Word, Excel, or PowerPoint JavaScript add-in development. Now you can see the above side pane offering a unified and centralized experience for checking dependencies, running and debugging add-ins, managing lifecycle, leveraging utility, getting help, and providing feedback. 
 
 ### March 19, 2024
 

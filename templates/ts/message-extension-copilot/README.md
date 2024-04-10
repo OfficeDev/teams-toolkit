@@ -16,7 +16,14 @@ This app template is a search-based [message extension](https://docs.microsoft.c
 > - Join Microsoft 365 Copilot Plugin development [early access program](https://aka.ms/plugins-dev-waitlist).
 
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{^enableMETestToolByDefault}}
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
+{{/enableMETestToolByDefault}}
+{{#enableMETestToolByDefault}}
+3. To directly trigger the Message Extension in Teams App Test Tool, you can:
+   1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool`.
+   2. When Test Tool launches in the browser, click the `+` in compose message area and select `Search command` to trigger the search commands.
+{{/enableMETestToolByDefault}}
 3. To directly trigger the Message Extension in Teams, you can:
    1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
    2. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
@@ -55,6 +62,7 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `teamsapp.yml`       | This is the main Teams Toolkit project file. The project file defines two primary things: Properties and configuration Stage definitions. |
 | `teamsapp.local.yml` | This overrides `teamsapp.yml` with actions that enable local execution and debugging.                                                     |
+| `teamsapp.testtool.yml`| This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.                            |
 
 ## Extend the template
 

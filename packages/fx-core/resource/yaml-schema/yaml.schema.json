@@ -824,7 +824,7 @@
         },
         "uses": {
           "type": "string",
-          "description": "This action will trigger asyn validations for the Teams app package file. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
+          "description": "This action will trigger async validations for the Teams app package file. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
           "const": "teamsApp/validateWithTestCases"
         },
         "with": {

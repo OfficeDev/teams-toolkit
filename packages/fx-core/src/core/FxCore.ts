@@ -1249,7 +1249,7 @@ export class FxCore {
     QuestionMW("copilotPluginAddAPI"),
     ConcurrentLockerMW,
   ])
-  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<string, FxError>> {
     const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
@@ -1416,8 +1416,10 @@ export class FxCore {
       newOperations,
       inputs.projectPath
     );
-    void context.userInteraction.showMessage("info", message, false);
-    return ok(undefined);
+    if (inputs.platform !== Platform.VS) {
+      void context.userInteraction.showMessage("info", message, false);
+    }
+    return ok(message);
   }
 
   @hooks([

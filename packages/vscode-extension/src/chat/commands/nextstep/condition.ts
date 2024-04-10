@@ -24,15 +24,6 @@ export function isProjectOpened(status: WholeStatus): boolean {
 }
 
 /**
- * if the prerequisites check is succeeded
- * @param status
- * @returns
- */
-export function isPrequisitesCheckSucceeded(status: WholeStatus): boolean {
-  return !status.machineStatus.resultOfPrerequistes;
-}
-
-/**
  * if did no action after the project is scaffolded
  * @param status
  * @returns

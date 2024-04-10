@@ -27,21 +27,6 @@ describe("chat nextstep conditions", () => {
     chai.assert.isFalse(condition.isProjectOpened({} as WholeStatus));
   });
 
-  it("isPrequisitesCheckSucceeded", () => {
-    chai.assert.isTrue(
-      condition.isPrequisitesCheckSucceeded({
-        machineStatus: {},
-      } as WholeStatus)
-    );
-    chai.assert.isFalse(
-      condition.isPrequisitesCheckSucceeded({
-        machineStatus: {
-          resultOfPrerequistes: "is not install nodejs",
-        },
-      } as WholeStatus)
-    );
-  });
-
   describe("isDidNoActionAfterScaffolded", () => {
     it("no opened project", () => {
       chai.assert.isTrue(condition.isDidNoActionAfterScaffolded({} as WholeStatus));

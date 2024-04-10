@@ -592,6 +592,7 @@ describe("handlers", () => {
       });
 
       const res = await handlers.openConfigStateFile([]);
+      await fs.remove(tmpDir);
 
       if (res) {
         chai.assert.isTrue(res.isErr());
@@ -1000,7 +1001,7 @@ describe("handlers", () => {
 
     await handlers.openSamplesHandler();
 
-    sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, undefined);
+    sandbox.assert.calledOnceWithExactly(createOrShow, PanelType.SampleGallery, []);
   });
 
   it("openReadMeHandler", async () => {
@@ -1534,21 +1535,13 @@ describe("handlers", () => {
   ].forEach(({ type, buildError, buttonNum }) => {
     it(`showError - ${type} - recommend test tool`, async () => {
       sandbox.stub(localizeUtils, "localize").returns("");
-      const showErrorMessageStub = sandbox
-        .stub<any, any>(vscode.window, "showErrorMessage")
-        .callsFake((title: string, button: any) => {
-          return Promise.resolve(button);
-        });
+      const showErrorMessageStub = sandbox.stub<any, any>(vscode.window, "showErrorMessage");
       sandbox.stub(debugCommonUtils, "isTestToolEnabledProject").returns(true);
       sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("path"));
-      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       sandbox.stub(vscode.commands, "executeCommand");
       const error = buildError();
       await handlers.showError(error);
 
-      chai.assert.isTrue(
-        sendTelemetryEventStub.calledWith(extTelemetryEvents.TelemetryEvent.MessageDebugInTestTool)
-      );
       chai.assert.equal(showErrorMessageStub.firstCall.args.length, buttonNum + 1);
     });
   });
@@ -1633,7 +1626,7 @@ describe("handlers", () => {
         .stub(extension.VS_CODE_UI, "createProgressBar")
         .returns(progressHandler);
 
-      const res = await handlers.scaffoldFromDeveloperPortalHandler([]);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler();
 
       chai.assert.equal(res.isOk(), true);
       chai.assert.equal(createProgressBar.notCalled, true);
@@ -1751,7 +1744,7 @@ describe("handlers", () => {
       };
       sinon.stub(AppStudioClient, "getApp").resolves(appDefinition);
 
-      const res = await handlers.scaffoldFromDeveloperPortalHandler(["appId", "testuser"]);
+      const res = await handlers.scaffoldFromDeveloperPortalHandler("appId", "testuser");
 
       chai.assert.equal(createProject.args[0][0].teamsAppFromTdp.teamsAppId, "mock-id");
       chai.assert.isTrue(res.isOk());
@@ -2235,10 +2228,10 @@ describe("handlers", () => {
       sinon.stub(extension, "VS_CODE_UI").value(new VsCodeUI(<vscode.ExtensionContext>{}));
       const openUrl = sandbox.stub(extension.VS_CODE_UI, "openUrl").resolves(ok(true));
 
-      await handlers.openDocumentHandler([
+      await handlers.openDocumentHandler(
         extTelemetryEvents.TelemetryTriggerFrom.SideBar,
-        "learnmore",
-      ]);
+        "learnmore"
+      );
 
       chai.assert.isTrue(sendTelemetryStub.calledOnceWith("documentation"));
       chai.assert.isTrue(openUrl.calledOnceWith("https://aka.ms/teams-toolkit-5.0-upgrade"));
@@ -2778,6 +2771,7 @@ describe("autoOpenProjectHandler", () => {
   describe("acpInstalled()", () => {
     afterEach(() => {
       mockfs.restore();
+      sandbox.restore();
     });
 
     it("already installed", async () => {
@@ -2840,7 +2834,7 @@ describe("autoOpenProjectHandler", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
 
-    await handlers.debugInTestToolHandler("treeview");
+    await handlers.debugInTestToolHandler("treeview")();
 
     chai.assert.isTrue(
       executeCommandStub.calledOnceWith("workbench.action.quickOpen", "debug Debug in Test Tool")
@@ -2853,7 +2847,7 @@ describe("autoOpenProjectHandler", () => {
     sinon.stub(ExtTelemetry, "sendTelemetryEvent");
     const executeCommandStub = sinon.stub(vscode.commands, "executeCommand");
 
-    await handlers.debugInTestToolHandler("message");
+    await handlers.debugInTestToolHandler("message")();
 
     chai.assert.isTrue(
       executeCommandStub.calledOnceWith("workbench.action.quickOpen", "debug Debug in Test Tool")

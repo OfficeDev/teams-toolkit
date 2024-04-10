@@ -51,10 +51,9 @@ describe("chat nextstep handler", () => {
         token
       );
       chai.assert.isTrue(
-        response.markdown.calledOnceWith(`
-This command provides guidance on your next steps based on your workspace.
-
-E.g. If you're unsure what to do after creating a project, simply ask Copilot by using @teams/nextstep.`)
+        response.markdown.calledOnceWith(
+          `This command provides guidance on your next steps based on your workspace.\n\nE.g. If you're unsure what to do after creating a project, simply ask Copilot by using @teams /nextstep.`
+        )
       );
     });
 

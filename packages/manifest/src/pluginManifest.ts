@@ -92,7 +92,7 @@ export interface ResponseSemanticsObject {
     template_selector?: string;
     [k: string]: unknown;
   };
-  static_template?: string;
+  static_template?: { [k: string]: unknown };
   [k: string]: unknown;
 }
 export interface RuntimeObjectLocalplugin {

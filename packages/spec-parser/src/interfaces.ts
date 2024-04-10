@@ -235,6 +235,11 @@ export interface ParseOptions {
   allowMethods?: string[];
 
   /**
+   * If true, the parser will allow conversation starters in plugin file. Only take effect in Copilot project
+   */
+  allowConversationStarters?: boolean;
+
+  /**
    * The type of project that the parser is being used for.
    * Project can be SME/Copilot/TeamsAi
    */

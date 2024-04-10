@@ -14,7 +14,6 @@ import {
   ListAPIResult,
   ProjectType,
   APIMap,
-  WarningType,
   ErrorResult,
   WarningResult,
 } from "./interfaces";
@@ -32,7 +31,6 @@ export class SpecParser {
   public readonly parser: SwaggerParser;
   public readonly options: Required<ParseOptions>;
 
-  private apiMap: APIMap | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private validator: Validator | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
@@ -46,6 +44,7 @@ export class SpecParser {
     allowBearerTokenAuth: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
+    allowConversationStarters: false,
     projectType: ProjectType.SME,
   };
 
@@ -242,12 +241,8 @@ export class SpecParser {
   }
 
   private getAPIs(spec: OpenAPIV3.Document): APIMap {
-    if (this.apiMap !== undefined) {
-      return this.apiMap;
-    }
     const validator = this.getValidator(spec);
     const apiMap = validator.listAPIs();
-    this.apiMap = apiMap;
     return apiMap;
   }
 

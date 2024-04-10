@@ -378,7 +378,8 @@ export class CodeIssueDetector {
             // Get the first declaration
             const declaration = declarations[0];
             // Get the signature of the declaration
-            const signature = checker?.getSignatureFromDeclaration(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const signature = checker!.getSignatureFromDeclaration(
               declaration as ts.SignatureDeclaration
             );
 
@@ -704,7 +705,8 @@ export class CodeIssueDetector {
       if (
         sourceFile &&
         (ts.isImportDeclaration(node) ||
-          (ts.isCallExpression(node) && node.expression.getText() === "require"))
+          ((ts.isVariableStatement(node) || ts.isExpressionStatement(node)) &&
+            node.getText().includes("require(")))
       ) {
         {
           const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
@@ -975,8 +977,9 @@ export class CodeIssueDetector {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
               const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus a number '${leftType.value.toString()}' on the '${span.expression.right.getFullText()}'.Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
               result.runtimeErrors.push(warningMsg);
-            } else if (!!sourceFile) {
-              const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+            } else {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              const line = sourceFile!.getLineAndCharacterOfPosition(node.getStart()).line + 1;
               const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus '${span.expression.right.getFullText()}' on '${span.expression.left.getFullText()}'. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
               result.runtimeErrors.push(warningMsg);
             }

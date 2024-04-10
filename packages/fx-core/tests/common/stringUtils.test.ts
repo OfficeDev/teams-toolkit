@@ -16,7 +16,7 @@ describe("stringUtils", () => {
       const input =
         "Bearer eyJ0eXAiOiJKV1QiLCJub25jZSI6IkZQQVpfd0ZXc2EwdFpCcGMtcXJITFBzQjd6QnJSWmpzbnFTMW";
       const output = maskSecret(input);
-      assert.equal(output, "Bearer <REDACTED: secret>");
+      assert.equal(output, "Bearer <REDACTED:secret>");
     });
     it("input undefined", async () => {
       const output = maskSecret();

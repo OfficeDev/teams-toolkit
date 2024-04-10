@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { maskSecretValues } from "../component/utils/envUtil";
+
 const MIN_ENTROPY = 4;
+const SECRET_REPLACE = "<REDACTED:secret>";
+const USER_REPLACE = "<REDACTED:user>";
 
 const WHITE_LIST = [
   "user-file-path",
@@ -86,6 +90,11 @@ export function maskSecret(
   option = { threshold: MIN_ENTROPY, whiteList: WHITE_LIST }
 ): string {
   if (!inputText) return "";
+  // mask by secret pattern
+  inputText = maskByPattern(inputText);
+  // mask by .env.xxx.user
+  inputText = maskSecretValues(inputText, SECRET_REPLACE);
+  // mask by entropy
   let output = "";
   const tokens = tokenize(inputText);
   tokens.forEach((token) => {
@@ -97,11 +106,19 @@ export function maskSecret(
     ) {
       output += token.value;
     } else {
-      output += "<b><REDACTED: secret></b>";
+      output += SECRET_REPLACE;
     }
   });
   for (const token of tokens) {
     console.log(token);
   }
+  return output;
+}
+
+function maskByPattern(command: string): string {
+  const regexU = /(-u|--username|--user) (\S+)/;
+  const regexP = /(-p|--password|--pwd) (\S+)/;
+  let output = command.replace(regexU, `$1 ${USER_REPLACE}`);
+  output = output.replace(regexP, `$1 ${SECRET_REPLACE}`);
   return output;
 }

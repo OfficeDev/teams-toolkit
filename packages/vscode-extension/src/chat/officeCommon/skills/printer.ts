@@ -38,17 +38,15 @@ export class Printer implements ISkill {
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const template = `
-# 1. Task Summary
+For your question:\n
 ${spec.userInput}
 
-# 2. The output
-The following TypeScript code snippet is generated based on the task breakdown. You can copy and paste it into your project, and modify it as needed.
-## 2.1 TypeScript Code Snippets
+Here is a code snippet using Office JavaScript API and TypeScript to help you get started:
 \`\`\`typescript
 ${spec.appendix.codeSnippet}
 \`\`\`
-## 2.2 Code Explanation
-${spec.appendix.codeExplanation}
+
+The code above powered by AI, so surprises and mistakes are possible. Make sure to verify any generated code or suggestions.
 `;
     const isHarmful = await isOutputHarmful(template, token);
     if (isHarmful) {

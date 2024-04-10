@@ -19,6 +19,7 @@ import {
   MeasurementSelfReflectionExecutionTimeInTotalSec,
 } from "../telemetryConsts";
 import { customFunctionSystemPrompt, excelSystemPrompt } from "../../officeAddinPrompts";
+import { writeLogToFile } from "../Utils";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -65,17 +66,17 @@ export class CodeIssueCorrector implements ISkill {
     let issueTolerance = 10;
 
     if (spec.appendix.complexity < 25) {
-      maxRetryCount = 5;
+      maxRetryCount = 3;
       issueTolerance = 3;
     } else if (spec.appendix.complexity < 50) {
-      maxRetryCount = 5;
+      maxRetryCount = 3;
       issueTolerance = 3;
     } else if (spec.appendix.complexity < 75) {
-      maxRetryCount = 7;
-      issueTolerance = 5;
+      maxRetryCount = 4;
+      issueTolerance = 4;
     } else {
-      maxRetryCount = 7;
-      issueTolerance = 5;
+      maxRetryCount = 4;
+      issueTolerance = 4;
     }
 
     if (baseLineResuult.compileErrors.length === 0 && baseLineResuult.runtimeErrors.length === 0) {
@@ -87,7 +88,7 @@ export class CodeIssueCorrector implements ISkill {
       console.debug(
         `${baseLineResuult.compileErrors.length} compile errors in baseline code that beyond our tolerance ${issueTolerance}, skip the self reflection.`
       );
-      return { result: ExecutionResultEnum.Failure, spec: spec };
+      return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
     }
 
     let additionalInfo = "";
@@ -138,6 +139,8 @@ export class CodeIssueCorrector implements ISkill {
           fixedCode,
           spec.appendix.telemetryData
         );
+      // await writeLogToFile("\n# compileErrors:\n" + issuesAfterFix.compileErrors.join("\n\n"));
+      // await writeLogToFile("\n# runtimeErrors:\n" + issuesAfterFix.runtimeErrors.join("\n\n"));
       const terminateResult = this.terminateFixIteration(
         spec.appendix.complexity,
         codeSnippet,
@@ -199,7 +202,7 @@ export class CodeIssueCorrector implements ISkill {
 
     spec.appendix.telemetryData.properties[MeasurementSystemSelfReflectionAttemptSucceeded] =
       "false";
-    return { result: ExecutionResultEnum.Failure, spec: spec };
+    return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
   }
 
   async fixIssueAsync(
@@ -221,7 +224,7 @@ export class CodeIssueCorrector implements ISkill {
 You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on TypeScript, JavaScript, popular algorithm, Office Add-ins API, and deep understanding on the feature of Office applications (Word, Excel, PowerPoint). You need to offer the assistance to fix the code issue in the user given code snippet.
 
 # Context:
-Given a Office JavaScript add-in code snippet. It have some errors and warnings in the code snippet. You should make code changes on my given code snippet to fix those errors and warnings.
+Given a Office JavaScript add-in code snippet. It have some errors and warnings in the code snippet. You should make code changes on my given code snippet to fix those errors and warnings. You are allowed to change the function body, but not allowed to change the function signature, function name, and function parameters. And you're not allowed to remove the function.
 \`\`\`typescript
 ${codeSnippet};
 \`\`\`

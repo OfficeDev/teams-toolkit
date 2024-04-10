@@ -5,6 +5,7 @@ export const PropertySystemRequesRejected = "RequestRejected";
 export const PropertySystemRequestFailed = "RequestFailed";
 export const PropertySystemRequestSucceeded = "RequestSucceeded";
 export const PropertySystemRequestCancelled = "RequestCancelled";
+export const PropertySystemRequestFailedAndGoNext = "RequestFailedAndGoNext";
 export const PropertySystemFailureFromSkill = "FailureFromSkill";
 export const SystemCopilotUnexpectedResult = "CopilotUnexpectedResult";
 export const PropertySystemCodeGenResult = "CodeGenResult";

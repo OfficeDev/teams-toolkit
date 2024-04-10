@@ -22,6 +22,7 @@ import {
   PropertySystemRequesRejected,
   PropertySystemRequestCancelled,
   PropertySystemRequestFailed,
+  PropertySystemRequestFailedAndGoNext,
   PropertySystemRequestSucceeded,
 } from "./telemetryConsts";
 import { purifyUserMessage } from "../utils";
@@ -102,20 +103,21 @@ export class Planner {
             `The skill "${candidate.name || "Unknown"}" is rejected to process the request.`
           );
         }
-        spec.appendix.telemetryData.properties[PropertySystemRequestSucceeded] = "true";
+
+        if (invokeResult == ExecutionResultEnum.FailedAndGoNext) {
+          spec.appendix.telemetryData.properties[PropertySystemRequestFailedAndGoNext] = "true";
+          spec.appendix.telemetryData.properties[PropertySystemFailureFromSkill] =
+            candidate.name || "unknown";
+        } else {
+          spec.appendix.telemetryData.properties[PropertySystemRequestSucceeded] = "true";
+        }
+
         console.log(`Skill ${candidate.name || "unknown"} is executed.`);
       }
     } catch (error) {
-      let errorDetails = `
-I can't assist you with this request. Here are some details:
+      const errorDetails = `
+I can't assist you with this request.
       `;
-      if (spec.sections.length > 0) {
-        spec.sections.forEach((section) => {
-          errorDetails = errorDetails.concat(`\n- ${section}`);
-        });
-      } else {
-        errorDetails = errorDetails.concat(`\n- ${(error as Error).message}`);
-      }
       response.markdown(errorDetails);
     }
     const t1 = performance.now();

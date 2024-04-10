@@ -139,7 +139,7 @@ export class CodeGenerator implements ISkill {
   # Your tasks:
   For this given ask: "${spec.userInput}" to you. I need you help to analyze it, and give me your suggestion. 
 
-  Please share your suggestion based on the given ask to me.
+  Please share your suggestion as a JSON object.
 
   Think about that step by step.
   `;
@@ -150,7 +150,7 @@ export class CodeGenerator implements ISkill {
   You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
 
   # Context:
-  The output will be a JSON object, and it will contain the following keys:
+  The output must be a JSON object wrapped into a markdown json block, and it will contain the following keys:
   - host. value is a string.
   - shouldContinue. value is a Boolean.
   - data. value is a string array.
@@ -201,7 +201,7 @@ export class CodeGenerator implements ISkill {
   You must strickly follow the format of output.
 
   #The format of output:
-  The output should be just a **JSON object**. You should not add anything else to the output
+  Beyond the mark down json code block. You should not add anything else to the output
 
   Think about that step by step.
   `;
@@ -210,14 +210,20 @@ export class CodeGenerator implements ISkill {
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatSystemMessage(defaultSystemPrompt),
       new LanguageModelChatUserMessage(userPrompt),
-      new LanguageModelChatAssistantMessage("```json\n"),
+      // new LanguageModelChatAssistantMessage("```json\n"),
     ];
     const copilotResponse = await getCopilotResponseAsString(
       "copilot-gpt-3.5-turbo", // "copilot-gpt-4",
       messages,
       token
     );
-    let copilotRet = {
+    let copilotRet: {
+      host: string;
+      shouldContinue: boolean;
+      customFunctions: boolean;
+      complexity: number;
+      data: string[];
+    } = {
       host: "",
       shouldContinue: false,
       customFunctions: false,
@@ -229,7 +235,7 @@ export class CodeGenerator implements ISkill {
       if (!copilotResponse) {
         return null; // The response is empty
       }
-      const codeSnippetRet = copilotResponse.match(/([\s\S]*?)```/);
+      const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
       if (!codeSnippetRet) {
         // try if the LLM already give a json object
         copilotRet = JSON.parse(copilotResponse.trim());
@@ -252,13 +258,15 @@ export class CodeGenerator implements ISkill {
     if (
       !copilotRet.customFunctions &&
       !copilotRet.data.find((task: string) => {
-        return task.includes("'main'");
+        return task.includes("function named 'main'");
       })
     ) {
       console.debug(
         `[User task breakdown] The entry function 'main' is missing from task breakdown.`
       );
-      return null;
+      copilotRet.data.push(
+        "Create an entry function named 'main'. This function doesn't take any parameters and will call other functions in the list in right order. The function should be declared as 'async function'."
+      );
     }
 
     if (

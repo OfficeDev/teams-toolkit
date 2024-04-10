@@ -5,4 +5,5 @@ export enum ExecutionResultEnum {
   Success = "Success",
   Failure = "Failure",
   Rejected = "Rejected",
+  FailedAndGoNext = "FailedAndGoNext",
 }

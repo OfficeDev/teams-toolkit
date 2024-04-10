@@ -842,7 +842,7 @@ export class CodeIssueDetector {
         const propertyStr = node.name.getText();
         const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
         const warningMsg = `Error: PropertyAccessExpression after CallExpression: ${expressionStr}.${propertyStr} at line ${line}.`;
-        const fixSuggestion = `Fix suggestion: The immediate property access after a function call is forbidden. You must store the result of the function call ${expressionStr} in a variable first, then access the property ${propertyStr} from the variable in the next line.`;
+        const fixSuggestion = `Fix suggestion: The immediate property access after a function call is forbidden. You must store the result of the function call ${expressionStr} in a variable first, prefer in previous line. Then access the property ${propertyStr} from the variable in the next line.`;
         const warning = `${warningMsg} ${fixSuggestion}`;
         result.runtimeErrors.push(warning);
       }
@@ -906,14 +906,14 @@ export class CodeIssueDetector {
           const rightType = checker.getTypeAtLocation(node.right);
           if (checker.typeToString(rightType) === "number" && !!sourceFile) {
             const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-            const warningMsg = `Double check: Excel A1 Notation in String Concatenation: '${node.getText()}' at line ${line}. Based on the Excel A1 notation string definition, and code context, double check if the ${node.right.getFullText()} represent the expected row size. And expression '${node.getText()}' present the expected range size. If the size is not expected, update the code to match the expected size.`;
+            const warningMsg = `Double check: Excel A1 Notation in String Concatenation: '${node.getText()}' at line ${line}. Based on the Excel A1 notation string definition, and code context, double check if the ${node.right.getFullText()} represent the expected row size. And expression '${node.getText()}' present the expected range size. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
             result.runtimeErrors.push(warningMsg);
           }
         } else if (ts.isStringLiteral(node.right) && self.isValidExcelA1Notation(node.right.text)) {
           const leftType = checker.getTypeAtLocation(node.left);
           if (checker.typeToString(leftType) === "number" && !!sourceFile) {
             const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-            const warningMsg = `Double check: Excel A1 Notation in String Concatenation: '${node.getText()}' at line ${line}. Based on the Excel A1 notation string definition, and code context, double check if the ${node.left.getFullText()} represent the expected row size. And expression '${node.getText()}' present the expected range size. If the size is not expected, update the code to match the expected size.`;
+            const warningMsg = `Double check: Excel A1 Notation in String Concatenation: '${node.getText()}' at line ${line}. Based on the Excel A1 notation string definition, and code context, double check if the ${node.left.getFullText()} represent the expected row size. And expression '${node.getText()}' present the expected range size. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
             result.runtimeErrors.push(warningMsg);
           }
         }
@@ -948,7 +948,7 @@ export class CodeIssueDetector {
             const type = checker.getTypeAtLocation(span.expression.name);
             if (!!sourceFile && checker.typeToString(type) === "number") {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Based on the Excel A1 notation string definition, and code context, Double check the ${expressionStr} represent the expected size. If the size is not expected, update the code to match the expected size.`;
+              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Based on the Excel A1 notation string definition, and code context, Double check the ${expressionStr} represent the expected size. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
               result.runtimeErrors.push(warningMsg);
             }
           } else if (
@@ -965,7 +965,7 @@ export class CodeIssueDetector {
               !!sourceFile
             ) {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus a number '${rightType.value.toString()}' on the '${span.expression.left.getFullText()}'. If the size is not expected, update the code to match the expected size.`;
+              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus a number '${rightType.value.toString()}' on the '${span.expression.left.getFullText()}'. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
               result.runtimeErrors.push(warningMsg);
             } else if (
               checker.typeToString(rightType) === "number" &&
@@ -973,11 +973,11 @@ export class CodeIssueDetector {
               !!sourceFile
             ) {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus a number '${leftType.value.toString()}' on the '${span.expression.right.getFullText()}'. If the size is not expected, update the code to match the expected size.`;
+              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus a number '${leftType.value.toString()}' on the '${span.expression.right.getFullText()}'.Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
               result.runtimeErrors.push(warningMsg);
             } else if (!!sourceFile) {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus '${span.expression.right.getFullText()}' on '${span.expression.left.getFullText()}'. If the size is not expected, update the code to match the expected size.`;
+              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus '${span.expression.right.getFullText()}' on '${span.expression.left.getFullText()}'. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
               result.runtimeErrors.push(warningMsg);
             }
           }
@@ -1005,7 +1005,7 @@ export class CodeIssueDetector {
     function visit(node: ts.Node, checker: ts.TypeChecker): void {
       if (sourceFile && ts.isStringLiteral(node) && self.isValidExcelA1Notation(node.text)) {
         const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-        const warningMsg = `Double check: Excel A1 Notation in String Literal: ${node.text} at line ${line}. Ensure the ${node.text} has the expected size. If it size is not fixed, you update code by reading the size from the variable, object property or the function return value, convert the string literal to a template string, or use the string interpolation.`;
+        const warningMsg = `Double check: Excel A1 Notation in String Literal: ${node.text} at line ${line}. Ensure the ${node.text} has the expected size. If it size is not fixed, you must update code by reading the size from the variable, object property or the function return value, convert the string literal to a template string, or use the string interpolation. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
         result.runtimeErrors.push(warningMsg);
       }
       ts.forEachChild(node, (child) => visit(child, checker));

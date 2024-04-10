@@ -1705,10 +1705,10 @@ describe("copilotPlugin", async () => {
     assert.isTrue(result.isOk());
   });
 
-  it("add API - vs platform", async () => {
+  it("add API - VS platform", async () => {
     const appName = await mockV3Project();
     const inputs: Inputs = {
-      platform: Platform.VSCode,
+      platform: Platform.VS,
       [QuestionNames.Folder]: os.tmpdir(),
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["GET /user/{userId}"],
@@ -1754,7 +1754,7 @@ describe("copilotPlugin", async () => {
     const showMessage = sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
-    assert.isTrue(showMessage.calledTwice);
+    assert.isTrue(showMessage.calledOnce);
   });
 
   it("add API - Copilot plugin", async () => {

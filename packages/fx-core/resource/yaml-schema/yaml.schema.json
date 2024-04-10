@@ -59,6 +59,7 @@
           { "$ref": "#/definitions/teamsAppCreate" },
           { "$ref": "#/definitions/teamsAppValidateManifest" },
           { "$ref": "#/definitions/teamsAppValidateAppPackage" },
+          { "$ref": "#/definitions/teamsAppValidateWithTestCases" },
           { "$ref": "#/definitions/teamsAppZipAppPackage" },
           { "$ref": "#/definitions/teamsAppUpdate" },
           { "$ref": "#/definitions/teamsAppPublishAppPackage" },
@@ -789,6 +790,42 @@
           "type": "string",
           "description": "This action will validate Teams app package file using validation rules. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
           "const": "teamsApp/validateAppPackage"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Parameters for this action",
+          "required": ["appPackagePath"],
+          "properties": {
+            "appPackagePath": {
+              "type": "string",
+              "description": "Path to zipped Teams app package file."
+            }
+          }
+        }
+      }
+    },
+    "teamsAppValidateWithTestCases": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Async Valiation Tests. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
+      "required": ["uses", "with"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "An optional name of this action."
+        },
+        "env": {
+          "type": "object",
+          "description": "Define environment variables for this action.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "uses": {
+          "type": "string",
+          "description": "This action will trigger asyn validations for the Teams app package file. Refer to https://aka.ms/teamsfx-actions/teamsapp-validate for more details.",
+          "const": "teamsApp/validateWithTestCases"
         },
         "with": {
           "type": "object",

@@ -4,8 +4,8 @@ This template showcases an AI-powered intelligent chatbot that can understand na
 
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
  
-- [Overview of the Custom Copilot from Custom API template](#overview-of-the-basic-ai-chatbot-template)
-  - [Get started with the Custom Copilot from Custom API template](#get-started-with-the-basic-ai-chatbot-template)
+- [Overview of the Custom Copilot from Custom API template](#overview-of-the-custom-copilot-from-custom-api-template)
+  - [Get started with the Custom Copilot from Custom API template](#get-started-with-the-custom-copilot-from-custom-api-template)
   - [What's included in the template](#whats-included-in-the-template)
   - [Extend the Custom Copilot from Custom API template with more APIs](#extend-the-custom-copilot-from-custom-api-template-with-more-apis)
   - [Additional information and references](#additional-information-and-references)

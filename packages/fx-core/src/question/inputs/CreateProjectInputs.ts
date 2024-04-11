@@ -14,8 +14,14 @@ export interface CreateProjectInputs extends Inputs {
   /** @description Teams Toolkit: select runtime for your app */
   runtime?: "node" | "dotnet";
   /** @description New Project */
-  "project-type"?: "bot-type" | "tab-type" | "me-type" | "outlook-addin-type" | "office-addin-type";
-  /** @description Select to create an Outlook, Word, Excel, or PowerPoint Add-in */
+  "project-type"?:
+    | "bot-type"
+    | "tab-type"
+    | "me-type"
+    | "office-xml-addin-type"
+    | "office-addin-type"
+    | "outlook-addin-type";
+  /** @description Select to Create an Outlook, Word, Excel, or PowerPoint Add-in */
   "addin-host"?: "outlook" | "word" | "excel" | "powerpoint";
   /** @description Capabilities */
   capabilities?:
@@ -34,11 +40,13 @@ export interface CreateProjectInputs extends Inputs {
     | "copilot-plugin-new-api"
     | "copilot-plugin-existing-api"
     | "custom-copilot-basic"
+    | "custom-copilot-rag"
     | "custom-copilot-agent"
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
     | "json-taskpane"
+    | "office-content-addin"
     | "word-taskpane"
     | "word-sso"
     | "word-react"
@@ -46,8 +54,8 @@ export interface CreateProjectInputs extends Inputs {
     | "excel-taskpane"
     | "excel-sso"
     | "excel-react"
-    | "excel-cfshared"
-    | "excel-cfjs"
+    | "excel-custom-functions-shared"
+    | "excel-custom-functions-js"
     | "excel-manifest"
     | "powerpoint-taskpane"
     | "powerpoint-sso"
@@ -78,6 +86,12 @@ export interface CreateProjectInputs extends Inputs {
   "api-operation"?: string[];
   /** @description Authentication Type */
   "api-me-auth"?: "none" | "api-key" | "microsoft-entra";
+  /** @description Chat With Your Data */
+  "custom-copilot-rag"?:
+    | "custom-copilot-rag-customize"
+    | "custom-copilot-rag-azureAISearch"
+    | "custom-copilot-rag-customApi"
+    | "custom-copilot-rag-microsoft365";
   /** @description AI Agent */
   "custom-copilot-agent"?: "custom-copilot-agent-new" | "custom-copilot-agent-assistants-api";
   /** @description Programming Language */
@@ -88,6 +102,8 @@ export interface CreateProjectInputs extends Inputs {
   "azure-openai-key"?: string;
   /** @description Azure OpenAI Endpoint */
   "azure-openai-endpoint"?: string;
+  /** @description Azure OpenAI Deployment Name */
+  "azure-openai-deployment-name"?: string;
   /** @description OpenAI Key */
   "openai-key"?: string;
   /** @description Framework */

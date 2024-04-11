@@ -1297,7 +1297,7 @@
           "items": {
             "type": "string",
             "enum": [
-              "mail"
+              "mail", "document", "workbook", "presentation"
             ]
           }
         },

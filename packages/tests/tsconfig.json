@@ -28,6 +28,7 @@
     "node_modules",
     ".test-resources",
     "src/ui-test/treeview/office-xml-addin",
+    "src/ui-test/treeview/word-xml-addin",
     "src/commonlib",
     "src/e2e"
   ]

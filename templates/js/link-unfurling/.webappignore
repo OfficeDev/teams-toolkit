@@ -2,6 +2,10 @@
 .fx
 .deployment
 .localConfigs
+.localConfigs.testTool
+.notification.localstore.json
+.notification.testtoolstore.json
+/devTools
 .vscode
 *.js.map
 *.ts.map

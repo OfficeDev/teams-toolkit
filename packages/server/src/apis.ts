@@ -183,6 +183,10 @@ export interface IServerConnection {
     options: TestToolInstallOptions & { correlationId: string },
     token: CancellationToken
   ) => Promise<Result<DependencyStatusRPC, FxError>>;
+  listPluginApiSpecs: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<string[], FxError>>;
 }
 
 /**

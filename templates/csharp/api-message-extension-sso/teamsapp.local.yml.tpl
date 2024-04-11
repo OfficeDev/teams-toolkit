@@ -42,6 +42,7 @@ provision:
     with:
       run:
         echo "::set-teamsfx-env OPENAPI_SERVER_URL=https://${{DEV_TUNNEL_URL}}";
+        echo "::set-teamsfx-env OPENAPI_SERVER_DOMAIN=${{DEV_TUNNEL_URL}}";
 
   # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
   # manifest file to determine which Microsoft Entra app to update.

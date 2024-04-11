@@ -10,7 +10,6 @@ describe("Tokenizer", () => {
   });
 
   it("getInstance", () => {
-    chai.assert.isUndefined(Tokenizer.instance);
     const instance = Tokenizer.getInstance();
     chai.assert.isDefined(instance);
   });

@@ -15,7 +15,7 @@
   - Microsoft Entra (Azure AD): Teams Toolkit can help you create Microsoft Entra ID to authenticate your new API. 
 
 - **Debug Message Extensions in Teams App Test Tool** </br> 
-  Teams App Test Tool helps developers to debug and test in a web-based environment that emulates Microsoft Teams without using tunnels or Microsoft 365 account. In this version we add Teams App Test Tool support to all types of Message Extension app, including search-based, action-based and link unfurling Message Extension app. 
+  Teams App Test Tool helps developers to debug and test in a web-based environment that emulates Microsoft Teams without using tunnels or Microsoft 365 account. In this version we add Teams App Test Tool support to search-based, action-based and link unfurling Message Extension app. 
   ![ME-test-tool](https://github.com/OfficeDev/TeamsFx/assets/113089977/2b55996f-87a9-4683-abaf-3089b7ea878e) 
   The picture below shows search-based and action-based Message Extension app running in Teams App Test Tool:</br> 
   ![ME-in-test-tool-example](https://github.com/OfficeDev/TeamsFx/assets/113089977/b255737a-9bfc-4c58-9324-985aaf81298a) 

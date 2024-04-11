@@ -12,6 +12,7 @@ import {
   APIInfo,
   APIMap,
   AuthInfo,
+  ErrorResult,
   ErrorType,
   GenerateResult,
   ListAPIInfo,
@@ -20,6 +21,7 @@ import {
   ProjectType,
   ValidateResult,
   ValidationStatus,
+  WarningResult,
   WarningType,
 } from "./interfaces";
 import { ConstantString } from "./constants";
@@ -29,6 +31,8 @@ import { Utils } from "./utils";
 import { ManifestUpdater } from "./manifestUpdater";
 import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
 import { wrapAdaptiveCard } from "./adaptiveCardWrapper";
+import { ValidatorFactory } from "./validators/validatorFactory";
+import { Validator } from "./validators/validator";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -38,7 +42,7 @@ export class SpecParser {
   public readonly parser: SwaggerParser;
   public readonly options: Required<ParseOptions>;
 
-  private apiMap: APIMap | undefined;
+  private validator: Validator | undefined;
   private spec: OpenAPIV3.Document | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
   private isSwaggerFile: boolean | undefined;
@@ -51,6 +55,7 @@ export class SpecParser {
     allowMultipleParameters: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
+    allowConversationStarters: false,
     projectType: ProjectType.SME,
   };
 
@@ -86,6 +91,9 @@ export class SpecParser {
         };
       }
 
+      const errors: ErrorResult[] = [];
+      const warnings: WarningResult[] = [];
+
       if (!this.options.allowSwagger && this.isSwaggerFile) {
         return {
           status: ValidationStatus.Error,
@@ -96,26 +104,42 @@ export class SpecParser {
         };
       }
 
-      if (
-        this.options.projectType === ProjectType.SME ||
-        this.options.projectType === ProjectType.Copilot
-      ) {
-        if (this.spec!.openapi >= "3.1.0") {
-          return {
-            status: ValidationStatus.Error,
-            warnings: [],
-            errors: [
-              {
-                type: ErrorType.SpecVersionNotSupported,
-                content: Utils.format(ConstantString.SpecVersionNotSupported, this.spec!.openapi),
-                data: this.spec!.openapi,
-              },
-            ],
-          };
-        }
+      // Remote reference not supported
+      const refPaths = this.parser.$refs.paths();
+      // refPaths [0] is the current spec file path
+      if (refPaths.length > 1) {
+        errors.push({
+          type: ErrorType.RemoteRefNotSupported,
+          content: Utils.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
+          data: refPaths,
+        });
       }
 
-      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
+      if (!!this.isSwaggerFile && this.options.allowSwagger) {
+        warnings.push({
+          type: WarningType.ConvertSwaggerToOpenAPI,
+          content: ConstantString.ConvertSwaggerToOpenAPI,
+        });
+      }
+
+      const validator = this.getValidator(this.spec!);
+      const validationResult = validator.validateSpec();
+
+      warnings.push(...validationResult.warnings);
+      errors.push(...validationResult.errors);
+
+      let status = ValidationStatus.Valid;
+      if (warnings.length > 0 && errors.length === 0) {
+        status = ValidationStatus.Warning;
+      } else if (errors.length > 0) {
+        status = ValidationStatus.Error;
+      }
+
+      return {
+        status: status,
+        warnings: warnings,
+        errors: errors,
+      };
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -145,44 +169,32 @@ export class SpecParser {
         const { operation, isValid, reason } = apiMap[apiKey];
         const [method, path] = apiKey.split(" ");
 
+        const operationId =
+          operation.operationId ?? `${method.toLowerCase()}${Utils.convertPathToCamelCase(path)}`;
+
         const apiResult: ListAPIInfo = {
-          api: "",
+          api: apiKey,
           server: "",
-          operationId: "",
+          operationId: operationId,
           isValid: isValid,
           reason: reason,
         };
 
-        const rootServer = spec.servers && spec.servers[0];
-        const methodServer = spec.paths[path]!.servers && spec.paths[path]?.servers![0];
-        const operationServer = operation.servers && operation.servers[0];
+        if (isValid) {
+          const serverObj = Utils.getServerObject(spec, method.toLocaleLowerCase(), path);
+          if (serverObj) {
+            apiResult.server = Utils.resolveEnv(serverObj.url);
+          }
 
-        const serverUrl = operationServer || methodServer || rootServer;
-        if (!serverUrl) {
-          throw new SpecParserError(
-            ConstantString.NoServerInformation,
-            ErrorType.NoServerInformation
-          );
-        }
-
-        apiResult.server = Utils.resolveEnv(serverUrl.url);
-
-        let operationId = operation.operationId;
-        if (!operationId) {
-          operationId = `${method.toLowerCase()}${Utils.convertPathToCamelCase(path)}`;
-        }
-        apiResult.operationId = operationId;
-
-        const authArray = Utils.getAuthArray(operation.security, spec);
-
-        for (const auths of authArray) {
-          if (auths.length === 1) {
-            apiResult.auth = auths[0];
-            break;
+          const authArray = Utils.getAuthArray(operation.security, spec);
+          for (const auths of authArray) {
+            if (auths.length === 1) {
+              apiResult.auth = auths[0];
+              break;
+            }
           }
         }
 
-        apiResult.api = apiKey;
         result.APIs.push(apiResult);
       }
 
@@ -423,11 +435,17 @@ export class SpecParser {
   }
 
   private getAPIs(spec: OpenAPIV3.Document): APIMap {
-    if (this.apiMap !== undefined) {
-      return this.apiMap;
+    const validator = this.getValidator(spec);
+    const apiMap = validator.listAPIs();
+    return apiMap;
+  }
+
+  private getValidator(spec: OpenAPIV3.Document): Validator {
+    if (this.validator) {
+      return this.validator;
     }
-    const result = Utils.listAPIs(spec, this.options);
-    this.apiMap = result;
-    return result;
+    const validator = ValidatorFactory.create(spec, this.options);
+    this.validator = validator;
+    return validator;
   }
 }

@@ -18,6 +18,9 @@ import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
 import { Utils } from "../src/utils";
 import jsyaml from "js-yaml";
 import mockedEnv, { RestoreFn } from "mocked-env";
+import { Validator } from "../src/validators/validator";
+import { SMEValidator } from "../src/validators/smeValidator";
+import { ValidatorFactory } from "../src/validators/validatorFactory";
 
 describe("SpecParser", () => {
   afterEach(() => {
@@ -246,7 +249,7 @@ describe("SpecParser", () => {
         warnings: [],
         errors: [
           { type: ErrorType.NoServerInformation, content: ConstantString.NoServerInformation },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -271,7 +274,7 @@ describe("SpecParser", () => {
             content: Utils.format(ConstantString.UrlProtocolNotSupported, "http"),
             data: "http",
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -300,7 +303,7 @@ describe("SpecParser", () => {
               },
             ],
           },
-          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi },
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
         ],
       });
       sinon.assert.calledOnce(dereferenceStub);
@@ -319,7 +322,9 @@ describe("SpecParser", () => {
       expect(result).to.deep.equal({
         status: ValidationStatus.Error,
         warnings: [],
-        errors: [{ type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi }],
+        errors: [
+          { type: ErrorType.NoSupportedApi, content: ConstantString.NoSupportedApi, data: [] },
+        ],
       });
       sinon.assert.calledOnce(dereferenceStub);
     });
@@ -439,6 +444,71 @@ describe("SpecParser", () => {
       sinon.assert.calledOnce(dereferenceStub);
     });
 
+    it("should return no supported API error with invalid api info", async function () {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://servers1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { allowMissingId: false });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+
+      expect(result).to.deep.equal({
+        status: ValidationStatus.Error,
+        warnings: [],
+        errors: [
+          {
+            type: ErrorType.NoSupportedApi,
+            content: ConstantString.NoSupportedApi,
+            data: [
+              {
+                api: "GET /pet",
+                reason: [ErrorType.MissingOperationId],
+              },
+            ],
+          },
+        ],
+      });
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
     it("should return a valid result when the spec is valid", async () => {
       const specPath = "path/to/spec";
       const spec = {
@@ -489,6 +559,109 @@ describe("SpecParser", () => {
       expect(result.warnings).to.be.an("array").that.is.empty;
       expect(result.errors).to.be.an("array").that.is.empty;
       sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should return a valid result when the spec is valid for copilot", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { projectType: ProjectType.Copilot });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const result = await specParser.validate();
+      expect(result.status).to.equal(ValidationStatus.Valid);
+      expect(result.warnings).to.be.an("array").that.is.empty;
+      expect(result.errors).to.be.an("array").that.is.empty;
+      sinon.assert.calledOnce(dereferenceStub);
+    });
+
+    it("should only create validator once if already created", async () => {
+      const specPath = "path/to/spec";
+      const spec = {
+        openapi: "3.0.2",
+        servers: [
+          {
+            url: "https://server1",
+          },
+        ],
+        paths: {
+          "/pet": {
+            get: {
+              tags: ["pet"],
+              operationId: "getPet",
+              summary: "Get pet information from the store",
+              parameters: [
+                {
+                  name: "tags",
+                  in: "query",
+                  description: "Tags to filter by",
+                  schema: {
+                    type: "string",
+                  },
+                },
+              ],
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        $ref: "#/components/schemas/Pet",
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const specParser = new SpecParser(specPath, { projectType: ProjectType.Copilot });
+      const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
+      const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
+      const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
+      const createValidatorSpy = sinon.spy(ValidatorFactory, "create");
+      const result1 = await specParser.validate();
+      const result2 = await specParser.validate();
+      sinon.assert.calledOnce(createValidatorSpy);
     });
 
     it("should return error result is project type is SME/Copilot, and OpenAPI spec version >= 3.1.0", async () => {
@@ -645,7 +818,7 @@ describe("SpecParser", () => {
         const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
         const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
         const validateStub = sinon.stub(specParser.parser, "validate").resolves(spec as any);
-        sinon.stub(Utils, "validateSpec").throws(new Error("validateSpec error"));
+        sinon.stub(SMEValidator.prototype, "validateSpec").throws(new Error("validateSpec error"));
 
         const result = await specParser.validate();
         expect.fail("Expected SpecParserError to be thrown");
@@ -1830,18 +2003,10 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /pets",
-            server: "https://server1",
+            server: "",
             operationId: "getPetById",
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
-            auth: {
-              authScheme: {
-                in: "header",
-                name: "api_key",
-                type: "apiKey",
-              },
-              name: "api_key",
-            },
           },
           {
             api: "GET /user/{userId}",
@@ -1852,22 +2017,14 @@ describe("SpecParser", () => {
           },
           {
             api: "POST /user/{userId}",
-            server: "https://server1",
+            server: "",
             operationId: "createUser",
             reason: ["auth-type-is-not-supported", "response-json-is-empty", "no-parameter"],
             isValid: false,
-            auth: {
-              authScheme: {
-                in: "header",
-                name: "api_key",
-                type: "apiKey",
-              },
-              name: "api_key",
-            },
           },
           {
             api: "POST /store/order",
-            server: "https://server1",
+            server: "",
             operationId: "placeOrder",
             reason: ["response-json-is-empty", "no-parameter"],
             isValid: false,
@@ -2452,7 +2609,7 @@ describe("SpecParser", () => {
         APIs: [
           {
             api: "GET /user/{userId}",
-            server: "https://server1",
+            server: "",
             operationId: "getUserUserId",
             isValid: false,
             reason: ["missing-operation-id"],
@@ -2517,15 +2674,6 @@ describe("SpecParser", () => {
                 },
               },
             },
-            post: {
-              operationId: "createUser",
-              security: [{ api_key: [] }],
-            },
-          },
-          "/store/order": {
-            post: {
-              operationId: "placeOrder",
-            },
           },
         },
       };
@@ -2533,13 +2681,28 @@ describe("SpecParser", () => {
       const specParser = new SpecParser(specPath);
       const parseStub = sinon.stub(specParser.parser, "parse").resolves(spec as any);
       const dereferenceStub = sinon.stub(specParser.parser, "dereference").resolves(spec as any);
-      try {
-        await specParser.list();
-        expect.fail("Expected an error to be thrown");
-      } catch (err) {
-        expect((err as SpecParserError).message).contain(ConstantString.NoServerInformation);
-        expect((err as SpecParserError).errorType).to.equal(ErrorType.NoServerInformation);
-      }
+      const result = await specParser.list();
+
+      expect(result).to.deep.equal({
+        APIs: [
+          {
+            api: "GET /pets",
+            server: "",
+            operationId: "getPetById",
+            isValid: false,
+            reason: ["no-server-information", "response-json-is-empty", "no-parameter"],
+          },
+          {
+            api: "GET /user/{userId}",
+            server: "",
+            operationId: "getUserUserId",
+            isValid: false,
+            reason: ["no-server-information"],
+          },
+        ],
+        allAPICount: 2,
+        validAPICount: 0,
+      });
     });
 
     it("should return correct domain when domain contains placeholder", async () => {

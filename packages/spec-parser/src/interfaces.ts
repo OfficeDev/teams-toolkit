@@ -25,6 +25,18 @@ export interface ValidateResult {
   errors: ErrorResult[];
 }
 
+export interface SpecValidationResult {
+  /**
+   * An array of warning results generated during validation.
+   */
+  warnings: WarningResult[];
+
+  /**
+   * An array of error results generated during validation.
+   */
+  errors: ErrorResult[];
+}
+
 /**
  * An interface that represents a warning result generated during validation.
  */
@@ -223,6 +235,11 @@ export interface ParseOptions {
   allowMethods?: string[];
 
   /**
+   * If true, the parser will allow conversation starters in plugin file. Only take effect in Copilot project
+   */
+  allowConversationStarters?: boolean;
+
+  /**
    * The type of project that the parser is being used for.
    * Project can be SME/Copilot/TeamsAi
    */
@@ -276,4 +293,9 @@ export interface ListAPIResult {
 export interface AuthInfo {
   authScheme: OpenAPIV3.SecuritySchemeObject;
   name: string;
+}
+
+export interface InvalidAPIInfo {
+  api: string;
+  reason: ErrorType[];
 }

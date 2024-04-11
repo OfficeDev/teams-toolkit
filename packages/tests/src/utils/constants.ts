@@ -10,6 +10,8 @@ export class Extension {
   public static readonly sidebarWelcomeSectionName: string = "Teams Toolkit";
   public static readonly sidebarWelcomeContentName: string = "Create a New App";
   public static readonly sidebarCommandContentName: string = "Create New App";
+  public static readonly sidebarCommandContentNameOfficeDev: string =
+    "Preview Your Office Add-in (F5)";
   public static readonly settingsCategory: string = "Fx-extension";
   public static readonly settingsInsiderPreview: string = "Insider Preview";
 }
@@ -80,7 +82,7 @@ export enum TemplateProjectFolder {
   OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
   AssistDashboard = "developer-assist-dashboard",
   DiceRoller = "live-share-dice-roller",
-  ChefBot = "teams-chef-bot",
+  ChefBot = "04.ai.a.teamsChefBot",
   GraphConnectorBot = "graph-connector-bot",
   SpfxProductivity = "spfx-productivity-dashboard",
   RetailDashboard = "react-retail-dashboard",
@@ -266,6 +268,38 @@ export class TreeViewCommands {
     "Preview Your Teams App (F5)",
   ];
   public static readonly EnvSectionName: string = "ENVIRONMENT";
+
+  public static readonly OfficeDevDevelopmentSectionName: string =
+    "DEVELOPMENT";
+  public static readonly OfficeDevDevelopmentSectionItems: string[] = [
+    "Create a New App",
+    "View Samples",
+    "Check and Install Dependencies",
+    "Preview Your Office Add-in (F5)",
+    "Stop Previewing Your Office Add-in",
+  ];
+
+  public static readonly OfficeDevLifeCycleSectionName: string = "LIFECYCLE";
+  public static readonly OfficeDevLifeCycleSectionItems: string[] = [
+    "Deploy",
+    "Publish",
+  ];
+
+  public static readonly OfficeDevUtilitySectionName: string = "UTILITY";
+  public static readonly OfficeDevUtilitySectionItems: string[] = [
+    "Validate Manifest File",
+    "Script Lab",
+    "View Prompts for GitHub Copilot",
+  ];
+
+  public static readonly OfficeDevHelpAndFeedBackSectionName: string =
+    "HELP AND FEEDBACK";
+  public static readonly OfficeDevHelpAndFeedBackSectionItems: string[] = [
+    "Documentation",
+    "Get Started",
+    "Open Partner Center",
+    "Report Issues on GitHub",
+  ];
 }
 
 export class CommandPaletteCommands {
@@ -400,6 +434,7 @@ export class Notification {
 }
 
 export class CreateProjectQuestion {
+  static readonly CustomCopilot = "Custom Copilot";
   static readonly Bot = "Bot";
   static readonly Tab = "Tab";
   static readonly MessageExtension = "Message Extension";

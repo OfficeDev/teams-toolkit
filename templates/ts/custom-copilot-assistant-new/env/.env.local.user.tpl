@@ -24,5 +24,10 @@ AZURE_OPENAI_ENDPOINT='{{{azureOpenAIEndpoint}}}'
 {{^azureOpenAIEndpoint}}
 AZURE_OPENAI_ENDPOINT=
 {{/azureOpenAIEndpoint}}
+{{#azureOpenAIDeploymentName}}
+AZURE_OPENAI_DEPLOYMENT_NAME='{{{azureOpenAIDeploymentName}}}'
+{{/azureOpenAIDeploymentName}}
+{{^azureOpenAIDeploymentName}}
 AZURE_OPENAI_DEPLOYMENT_NAME=
+{{/azureOpenAIDeploymentName}}
 {{/useAzureOpenAI}}

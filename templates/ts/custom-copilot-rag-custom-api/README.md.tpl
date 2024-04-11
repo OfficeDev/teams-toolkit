@@ -34,7 +34,7 @@ The app template is built using the Teams AI library, which provides the capabil
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>`, endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>` and deployment name `AZURE_OPENAI_DEPLOYMENT=<your-deployment-name>`.
+1. In file *env/.env.testtool.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>`, endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint>` and deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=<your-deployment-name>`.
 {{/useAzureOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 1. You can send any message to get a response from the bot.
@@ -49,7 +49,7 @@ The app template is built using the Teams AI library, which provides the capabil
 1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`.
 {{/useOpenAI}}
 {{#useAzureOpenAI}}
-1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>`, endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint> and deployment name `AZURE_OPENAI_DEPLOYMENT=<your-deployment-name>`.
+1. In file *env/.env.local.user*, fill in your Azure OpenAI key `SECRET_AZURE_OPENAI_ENDPOINT=<your-key>`, endpoint `SECRET_AZURE_OPENAI_ENDPOINT=<your-endpoint> and deployment name `AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=<your-deployment-name>`.
 {{/useAzureOpenAI}}
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.

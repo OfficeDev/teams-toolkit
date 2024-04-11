@@ -365,7 +365,8 @@ export interface ITogetherModeScene {
 }
 
 export interface IPlugin {
-  pluginFile: string;
+  file: string;
+  id: string;
 }
 
 export type AppManifest = Record<string, any>;

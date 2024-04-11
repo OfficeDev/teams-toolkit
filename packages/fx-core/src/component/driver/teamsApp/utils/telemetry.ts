@@ -13,6 +13,7 @@ export enum TelemetryPropertyKey {
   publishedAppId = "published-app-id",
   customizedKeys = "customized-manifest-keys",
   customizedOpenAPIKeys = "customized-openapi-keys",
+  customizedAIPluginKeys = "customized-ai-plugin-keys",
   validationErrors = "validation-errors",
   validationWarnings = "validation-warnings",
   OverwriteIfAppAlreadyExists = "overwrite-if-app-already-exists",

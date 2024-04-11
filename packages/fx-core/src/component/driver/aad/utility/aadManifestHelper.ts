@@ -9,6 +9,8 @@ import {
   AadManifestErrorMessage,
   MissingResourceAccessIdUserError,
   MissingResourceAppIdUserError,
+  RequiredResourceAccessShouldBeArrayUserError,
+  ResourceAccessShouldBeArrayUserError,
   UnknownResourceAccessIdUserError,
   UnknownResourceAccessTypeUserError,
   UnknownResourceAppIdUserError,
@@ -216,6 +218,11 @@ export class AadManifestHelper {
 
   public static processRequiredResourceAccessInManifest(manifest: AADManifest): void {
     const map = getPermissionMap();
+
+    if (manifest.requiredResourceAccess && !Array.isArray(manifest.requiredResourceAccess)) {
+      throw new RequiredResourceAccessShouldBeArrayUserError(componentName);
+    }
+
     manifest.requiredResourceAccess?.forEach((requiredResourceAccessItem) => {
       const resourceIdOrName = requiredResourceAccessItem.resourceAppId;
       let resourceId = resourceIdOrName;
@@ -228,6 +235,13 @@ export class AadManifestHelper {
           throw new UnknownResourceAppIdUserError(componentName, resourceIdOrName);
         }
         requiredResourceAccessItem.resourceAppId = resourceId;
+      }
+
+      if (
+        requiredResourceAccessItem.resourceAccess &&
+        !Array.isArray(requiredResourceAccessItem.resourceAccess)
+      ) {
+        throw new ResourceAccessShouldBeArrayUserError(componentName);
       }
 
       requiredResourceAccessItem.resourceAccess?.forEach((resourceAccessItem) => {

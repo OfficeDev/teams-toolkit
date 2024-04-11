@@ -139,6 +139,16 @@
             }
         },
         "cases": [
+            "sample-remotedebug-chef-bot"
+        ]
+    },
+    {
+        "os": {
+            "windows-latest": {
+                "node-18": []
+            }
+        },
+        "cases": [
             "sample-remotedebug-todo-list-with-spfx",
             "sample-remotedebug-react-retail-dashboard",
             "sample-remotedebug-spfx-productivity-dashboard"

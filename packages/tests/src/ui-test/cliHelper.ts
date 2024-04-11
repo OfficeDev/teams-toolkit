@@ -130,6 +130,69 @@ export class CliHelper {
     }
   }
 
+  static async provisionProject2(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsapp provision --env ${env} --interactive false --verbose ${option}`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      }
+    );
+
+    if (result.stderr) {
+      console.error(
+        `[Failed] provision ${projectPath}. Error message: ${result.stderr}`
+      );
+    } else {
+      console.log(`[Successfully] provision ${projectPath}`);
+    }
+  }
+
+  static async showVersion(
+    projectPath: string,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
+    const result = await execAsyncWithRetry(`teamsapp --version`, {
+      cwd: projectPath,
+      env: processEnv ? processEnv : process.env,
+      timeout: 0,
+    });
+
+    console.log(`Cli Version: ${result.stdout}`);
+  }
+
+  static async deployAll(
+    projectPath: string,
+    option = "",
+    env: "dev" | "local" = "dev",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsapp deploy --env ${env} --interactive false --verbose ${option}`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      },
+      retries,
+      newCommand
+    );
+    const message = `deploy all resources for ${projectPath}`;
+    if (result.stderr) {
+      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] ${message}`);
+    }
+  }
+
   static async publishProject(
     projectPath: string,
     env: "local" | "dev" = "local",

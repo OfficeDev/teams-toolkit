@@ -9,6 +9,7 @@ import sinon from "sinon";
 import { SpecParserError } from "../src/specParserError";
 import { ErrorType, ParseOptions, ProjectType } from "../src/interfaces";
 import { Utils } from "../src/utils";
+import { ValidatorFactory } from "../src/validators/validatorFactory";
 
 describe("specFilter", () => {
   afterEach(() => {
@@ -20,6 +21,11 @@ describe("specFilter", () => {
       title: "My API",
       version: "1.0.0",
     },
+    servers: [
+      {
+        url: "https://example.com",
+      },
+    ],
     paths: {
       "/hello": {
         get: {
@@ -96,6 +102,11 @@ describe("specFilter", () => {
         title: "My API",
         version: "1.0.0",
       },
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello": {
           get: {
@@ -169,6 +180,11 @@ describe("specFilter", () => {
         title: "My API",
         version: "1.0.0",
       },
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello": {
           get: {
@@ -215,6 +231,11 @@ describe("specFilter", () => {
     const filter = ["get /hello/{id}"];
     const unResolvedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello/{id}": {
           get: {
@@ -248,6 +269,11 @@ describe("specFilter", () => {
     };
     const expectedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {},
     };
 
@@ -274,6 +300,11 @@ describe("specFilter", () => {
     const filter = ["get /hello/{id}"];
     const unResolvedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello/{id}": {
           get: {
@@ -307,6 +338,11 @@ describe("specFilter", () => {
     };
     const expectedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello/{id}": {
           get: {
@@ -380,6 +416,11 @@ describe("specFilter", () => {
     const filter = ["get /nonexistent"];
     const unResolvedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello": {
           get: {
@@ -395,6 +436,11 @@ describe("specFilter", () => {
 
     const expectedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {},
     };
 
@@ -434,12 +480,29 @@ describe("specFilter", () => {
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
-  it("should throw a SpecParserError if isSupportedApi throws an error", () => {
-    const filter = ["GET /path"];
-    const unResolveSpec = {} as any;
-    const isSupportedApiStub = sinon
-      .stub(Utils, "isSupportedApi")
-      .throws(new Error("isSupportedApi error"));
+  it("should throw a SpecParserError if ValidatorFactory throws an error", () => {
+    const filter = ["GET /hello"];
+    const unResolveSpec = {
+      openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
+      paths: {
+        "/hello": {
+          get: {
+            responses: {
+              "200": {
+                description: "OK",
+              },
+            },
+          },
+        },
+      },
+    } as any;
+
+    sinon.stub(ValidatorFactory, "create").throws(new Error("ValidatorFactory create error"));
 
     try {
       const options: ParseOptions = {
@@ -456,7 +519,7 @@ describe("specFilter", () => {
     } catch (err: any) {
       expect(err).to.be.instanceOf(SpecParserError);
       expect(err.errorType).to.equal(ErrorType.FilterSpecFailed);
-      expect(err.message).to.equal("Error: isSupportedApi error");
+      expect(err.message).to.equal("Error: ValidatorFactory create error");
     }
   });
 });

@@ -423,6 +423,10 @@ class ADOTestPlanClient {
   }
 }
 
+async function sleep(ms: number) {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 /**
  * subcommand list
  *
@@ -456,9 +460,10 @@ async function main() {
       }
 
       const testPlan = await ADOTestPlanClient.CloneTestPlan(tpn);
+      // wait for a short time to complete clone
+      await sleep(30 * 1000);
       console.log(testPlan.id);
-
-      break;
+      return testPlan.id;
     }
 
     case "archive": {

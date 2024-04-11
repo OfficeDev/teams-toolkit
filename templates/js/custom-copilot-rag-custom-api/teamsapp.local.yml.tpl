@@ -15,15 +15,19 @@ provision:
       teamsAppId: TEAMS_APP_ID
 
   # Create or reuse an existing Microsoft Entra application for bot.
-  - uses: botAadApp/create
+  - uses: aadApp/create
     with:
       # The Microsoft Entra application's display name
       name: {{appName}}${{APP_NAME_SUFFIX}}
+      generateClientSecret: true
+      signInAudience: AzureADMultipleOrgs
     writeToEnvironmentFile:
       # The Microsoft Entra application's client id created for bot.
-      botId: BOT_ID
+      clientId: BOT_ID
       # The Microsoft Entra application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD
+      clientSecret: SECRET_BOT_PASSWORD
+      # The Microsoft Entra application's object id created for bot.
+      objectId: BOT_OBJECT_ID
 
   # Create or update the bot registration on dev.botframework.com
   - uses: botFramework/create
@@ -82,5 +86,5 @@ deploy:
         {{#useAzureOpenAI}}
         AZURE_OPENAI_API_KEY: ${{SECRET_AZURE_OPENAI_API_KEY}}
         AZURE_OPENAI_ENDPOINT: ${{AZURE_OPENAI_ENDPOINT}}
-        AZURE_OPENAI_DEPLOYMENT: ${{AZURE_OPENAI_DEPLOYMENT}}
+        AZURE_OPENAI_DEPLOYMENT: ${{AZURE_OPENAI_MODEL_DEPLOYMENT_NAME}}
         {{/useAzureOpenAI}}

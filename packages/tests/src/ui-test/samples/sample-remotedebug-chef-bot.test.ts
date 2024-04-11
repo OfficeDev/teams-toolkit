@@ -22,14 +22,22 @@ class ChefBotTestCase extends CaseFactory {
     const envFile = path.resolve(
       sampledebugContext.projectPath,
       "env",
-      `.env.${env}`
+      ".env.dev.user"
     );
-    let OPENAI_API_KEY = fs.readFileSync(envFile, "utf-8");
-    OPENAI_API_KEY += "\nSECRET_OPENAI_API_KEY=yourapikey";
-    fs.writeFileSync(envFile, OPENAI_API_KEY);
-    console.log(`add OPENAI_API_KEY ${OPENAI_API_KEY} to .env.${env} file`);
+    // create .env.local.user file
+    fs.writeFileSync(envFile, "SECRET_OPENAI_KEY=yourapikey");
+    console.log(`add SECRET_OPENAI_KEY=yourapikey to .env file`);
+    // await sampledebugContext.prepareDebug("yarn");
   }
   override async onValidate(page: Page): Promise<void> {
+    console.log("Moked api key. Only verify happy path...");
+    return await validateWelcomeAndReplyBot(page, {
+      hasCommandReplyValidation: true,
+      botCommand: "helloWorld",
+      expectedReplyMessage: ValidationContent.AiBotErrorMessage,
+    });
+  }
+  public override async onCliValidate(page: Page): Promise<void> {
     console.log("Mocked api key. Only verify happy path...");
     return await validateWelcomeAndReplyBot(page, {
       hasCommandReplyValidation: true,
@@ -45,5 +53,8 @@ new ChefBotTestCase(
   "v-ivanchen@microsoft.com",
   "dev",
   [],
-  { testRootFolder: path.resolve(os.homedir(), "resourse") } // fix yarn error
+  {
+    repoPath: "./resource/js/samples",
+    testRootFolder: path.resolve(os.homedir(), "resource"),
+  }
 ).test();

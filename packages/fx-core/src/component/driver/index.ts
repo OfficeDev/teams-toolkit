@@ -32,3 +32,4 @@ import "./botFramework/createOrUpdateBot";
 import "./m365/acquire";
 import "./add/addWebPart";
 import "./apiKey/create";
+import "./apiKey/update";

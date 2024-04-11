@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CommandKey } from "../../../constants";
-import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import {
   canOfficeAddInPreviewInLocalEnv,
   isDebugSucceededAfterSourceCodeChanged,
@@ -10,10 +8,11 @@ import {
   isDidNoActionAfterScaffolded,
   isFirstInstalled,
   isHaveReadMe,
-  isPrequisitesCheckSucceeded,
   isProjectOpened,
 } from "../../../chat/commands/nextstep/condition";
 import { NextStep, WholeStatus } from "../../../chat/commands/nextstep/types";
+import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
+import { CommandKey } from "../../../constants";
 
 // TODO: align the description with PM
 export const officeSteps: () => NextStep[] = () => [
@@ -63,26 +62,6 @@ export const officeSteps: () => NextStep[] = () => [
     priority: 0,
   },
   {
-    title: "Prerequisites",
-    description: (status: WholeStatus) =>
-      `Ensure the following requirements are met before you start building your Office Add-in. It seems you met the prerequisites error: ${
-        status.machineStatus.resultOfPrerequistes || ""
-      }. You can fix it and try again.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/office/dev/add-ins/concepts/requirements-for-running-office-add-ins",
-    commands: [
-      {
-        title: "Check Prerequisites Again",
-        command: CHAT_EXECUTE_COMMAND_ID,
-        arguments: [CommandKey.ValidateGetStartedPrerequisites],
-      },
-    ],
-    followUps: [],
-    condition: (status: WholeStatus) =>
-      isProjectOpened(status) && !isPrequisitesCheckSucceeded(status),
-    priority: 0,
-  },
-  {
     title: "Summary of README",
     description: (status: WholeStatus) => {
       // readme must exist because the condition has checked it
@@ -112,10 +91,7 @@ export const officeSteps: () => NextStep[] = () => [
     ],
     followUps: [],
     condition: (status: WholeStatus) =>
-      isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
-      isDidNoActionAfterScaffolded(status) &&
-      isHaveReadMe(status),
+      isProjectOpened(status) && isDidNoActionAfterScaffolded(status) && isHaveReadMe(status),
     priority: 1,
   },
   {
@@ -132,7 +108,6 @@ export const officeSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       !isDependenciesInstalled(status),
     priority: 1,
@@ -151,7 +126,6 @@ export const officeSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDependenciesInstalled(status) &&
       canOfficeAddInPreviewInLocalEnv(status) &&
@@ -173,7 +147,6 @@ export const officeSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDependenciesInstalled(status) &&
       isDebugSucceededAfterSourceCodeChanged(status),
@@ -194,7 +167,6 @@ export const officeSteps: () => NextStep[] = () => [
     followUps: [],
     condition: (status: WholeStatus) =>
       isProjectOpened(status) &&
-      isPrequisitesCheckSucceeded(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDependenciesInstalled(status) &&
       isDebugSucceededAfterSourceCodeChanged(status),

@@ -2725,6 +2725,7 @@ describe("autoOpenProjectHandler", () => {
   it("showLocalDebugMessage()", async () => {
     sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
     sandbox.stub(vscode.workspace, "openTextDocument");
+    sandbox.stub(process, "platform").value("win32");
     const executeCommandStub = sandbox.stub(vscode.commands, "executeCommand");
 
     sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {

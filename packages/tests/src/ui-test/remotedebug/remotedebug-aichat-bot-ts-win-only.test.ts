@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  deployProject,
+  provisionProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -74,8 +74,8 @@ describe("Remote debug Tests", function () {
       editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");
       editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", "https://test.com");
       editDotEnvFile(envPath, "AZURE_OPENAI_DEPLOYMENT_NAME", "fake");
-      await runProvision(appName);
-      await runDeploy(Timeout.botDeploy);
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

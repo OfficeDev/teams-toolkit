@@ -21,6 +21,7 @@ import { DeveloperPortalAPIFailedError } from "../../../../src/error/teamsApp";
 import {
   ApiSecretRegistration,
   ApiSecretRegistrationAppType,
+  ApiSecretRegistrationUpdate,
 } from "../../../../src/component/driver/teamsApp/interfaces/ApiSecretRegistration";
 import { AsyncAppValidationStatus } from "../../../../src/component/driver/teamsApp/interfaces/AsyncAppValidationResponse";
 
@@ -905,6 +906,51 @@ describe("App Studio API Test", () => {
       } catch (error) {
         chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
       }
+    });
+  });
+
+  describe("updateApiKeyRegistration", () => {
+    const appApiRegistration: ApiSecretRegistrationUpdate = {
+      description: "fake description",
+      applicableToApps: ApiSecretRegistrationAppType.AnyApp,
+      targetUrlsShouldStartWith: ["https://www.example.com"],
+    };
+    it("404 not found", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const error = {
+        name: "404",
+        message: "fake message",
+      };
+      sinon.stub(fakeAxiosInstance, "patch").throws(error);
+
+      try {
+        await AppStudioClient.updateApiKeyRegistration(
+          appStudioToken,
+          appApiRegistration,
+          "fakeId"
+        );
+      } catch (error) {
+        chai.assert.equal(error.name, DeveloperPortalAPIFailedError.name);
+      }
+    });
+
+    it("Happy path", async () => {
+      const fakeAxiosInstance = axios.create();
+      sinon.stub(axios, "create").returns(fakeAxiosInstance);
+
+      const response = {
+        data: appApiRegistration,
+      };
+      sinon.stub(fakeAxiosInstance, "patch").resolves(response);
+
+      const res = await AppStudioClient.updateApiKeyRegistration(
+        appStudioToken,
+        appApiRegistration,
+        "fakeId"
+      );
+      chai.assert.equal(res, appApiRegistration);
     });
   });
 

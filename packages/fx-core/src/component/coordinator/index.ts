@@ -23,7 +23,6 @@ import { EOL } from "os";
 import * as path from "path";
 import * as uuid from "uuid";
 import * as xml2js from "xml2js";
-import { isApiKeyEnabled } from "../../common/featureFlags";
 import { getLocalizedString } from "../../common/localizeUtils";
 import { TelemetryEvent, TelemetryProperty } from "../../common/telemetry";
 import { getResourceGroupInPortal } from "../../common/tools";
@@ -361,11 +360,7 @@ class Coordinator {
           capability === CapabilityOptions.m365SearchMe().id &&
           meArchitecture === MeArchitectureOptions.newApi().id
         ) {
-          if (isApiKeyEnabled() && apiMEAuthType) {
-            feature = `${feature}:${apiMEAuthType}`;
-          } else {
-            feature = `${feature}:none`;
-          }
+          feature = `${feature}:${apiMEAuthType}`;
         }
 
         if (capability === CapabilityOptions.customCopilotRag().id) {
@@ -384,6 +379,8 @@ class Coordinator {
           const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
           const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
           const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
+          const azureOpenAIDeploymentName: string | undefined =
+            inputs[QuestionNames.AzureOpenAIDeploymentName];
           context.templateVariables = Generator.getDefaultVariables(
             appName,
             safeProjectNameFromVS,
@@ -395,6 +392,7 @@ class Coordinator {
               openAIKey,
               azureOpenAIKey,
               azureOpenAIEndpoint,
+              azureOpenAIDeploymentName,
             }
           );
           const res = await Generator.generateTemplate(context, projectPath, templateName, langKey);

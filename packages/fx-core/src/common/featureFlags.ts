@@ -82,10 +82,6 @@ export function isNewProjectTypeEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
 }
 
-export function isApiMeSSOEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiMeSSO, false);
-}
-
 export function isChatParticipantEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ChatParticipant, false);
 }

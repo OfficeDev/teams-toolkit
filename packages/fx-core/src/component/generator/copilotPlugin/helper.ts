@@ -40,6 +40,7 @@ import {
   ParseOptions,
   AdaptiveCardGenerator,
   Utils,
+  InvalidAPIInfo,
 } from "@microsoft/m365-spec-parser";
 import fs from "fs-extra";
 import { getLocalizedString } from "../../../common/localizeUtils";
@@ -80,10 +81,10 @@ enum OpenAIPluginManifestErrorType {
 }
 
 export const copilotPluginParserOptions: ParseOptions = {
-  allowAPIKeyAuth: true,
-  allowBearerTokenAuth: true,
+  allowAPIKeyAuth: false,
+  allowBearerTokenAuth: false,
   allowMultipleParameters: true,
-  allowOauth2: true,
+  allowOauth2: false,
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
@@ -201,7 +202,7 @@ export async function listOperations(
           }
     );
     const validationRes = await specParser.validate();
-    validationRes.errors = formatValidationErrors(validationRes.errors);
+    validationRes.errors = formatValidationErrors(validationRes.errors, inputs);
 
     logValidationResults(
       validationRes.errors,
@@ -217,7 +218,7 @@ export async function listOperations(
     }
 
     const listResult: ListAPIResult = await specParser.list();
-    let operations = listResult.validAPIs;
+    let operations = listResult.APIs.filter((value) => value.isValid);
     context.telemetryReporter.sendTelemetryEvent(telemetryEvents.listApis, {
       [telemetryProperties.validApisCount]: listResult.validAPICount.toString(),
       [telemetryProperties.allApisCount]: listResult.allAPICount.toString(),
@@ -251,12 +252,15 @@ export async function listOperations(
         );
         // No extra API can be added
         if (operations.length == 0) {
-          const errors = [
-            {
-              type: ApiSpecErrorType.NoExtraAPICanBeAdded,
-              content: getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded"),
-            },
-          ];
+          const errors = formatValidationErrors(
+            [
+              {
+                type: ApiSpecErrorType.NoExtraAPICanBeAdded,
+                content: "",
+              },
+            ],
+            inputs
+          );
           logValidationResults(errors, [], context, true, false, false, existingCorrelationId);
           return err(errors);
         }
@@ -307,7 +311,7 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
 }
 
 function formatTelemetryValidationProperty(result: ErrorResult | WarningResult): string {
-  return result.type.toString() + ": " + result.content;
+  return result.type.toString();
 }
 
 export async function listPluginExistingOperations(
@@ -341,24 +345,8 @@ export async function listPluginExistingOperations(
   }
 
   const specParser = new SpecParser(apiSpecFilePath, copilotPluginParserOptions);
-  const validationRes = await specParser.validate();
-  validationRes.errors = formatValidationErrors(validationRes.errors);
-
-  if (validationRes.status === ValidationStatus.Error) {
-    const errorMessage = getLocalizedString(
-      "core.createProjectQuestion.apiSpec.multipleValidationErrors.message"
-    );
-    throw new UserError(
-      "listPluginExistingOperations",
-      invalidApiSpecErrorName,
-      errorMessage,
-      errorMessage
-    );
-  }
-
   const listResult = await specParser.list();
-  const operations = listResult.validAPIs;
-  return operations.map((o) => o.api);
+  return listResult.APIs.map((o) => o.api);
 }
 
 export function logValidationResults(
@@ -684,17 +672,60 @@ export async function isYamlSpecFile(specPath: string): Promise<boolean> {
   }
 }
 
-export function formatValidationErrors(errors: ApiSpecErrorResult[]): ApiSpecErrorResult[] {
+export function formatValidationErrors(
+  errors: ApiSpecErrorResult[],
+  inputs: Inputs
+): ApiSpecErrorResult[] {
   return errors.map((error) => {
     return {
       type: error.type,
-      content: formatValidationErrorContent(error),
+      content: formatValidationErrorContent(error, inputs),
       data: error.data,
     };
   });
 }
 
-function formatValidationErrorContent(error: ApiSpecErrorResult): string {
+function mapInvalidReasonToMessage(reason: ErrorType): string {
+  switch (reason) {
+    case ErrorType.AuthTypeIsNotSupported:
+      return getLocalizedString("core.common.invalidReason.AuthTypeIsNotSupported");
+    case ErrorType.MissingOperationId:
+      return getLocalizedString("core.common.invalidReason.MissingOperationId");
+    case ErrorType.PostBodyContainMultipleMediaTypes:
+      return getLocalizedString("core.common.invalidReason.PostBodyContainMultipleMediaTypes");
+    case ErrorType.ResponseContainMultipleMediaTypes:
+      return getLocalizedString("core.common.invalidReason.ResponseContainMultipleMediaTypes");
+    case ErrorType.ResponseJsonIsEmpty:
+      return getLocalizedString("core.common.invalidReason.ResponseJsonIsEmpty");
+    case ErrorType.PostBodySchemaIsNotJson:
+      return getLocalizedString("core.common.invalidReason.PostBodySchemaIsNotJson");
+    case ErrorType.PostBodyContainsRequiredUnsupportedSchema:
+      return getLocalizedString(
+        "core.common.invalidReason.PostBodyContainsRequiredUnsupportedSchema"
+      );
+    case ErrorType.ParamsContainRequiredUnsupportedSchema:
+      return getLocalizedString("core.common.invalidReason.ParamsContainRequiredUnsupportedSchema");
+    case ErrorType.ParamsContainsNestedObject:
+      return getLocalizedString("core.common.invalidReason.ParamsContainsNestedObject");
+    case ErrorType.RequestBodyContainsNestedObject:
+      return getLocalizedString("core.common.invalidReason.RequestBodyContainsNestedObject");
+    case ErrorType.ExceededRequiredParamsLimit:
+      return getLocalizedString("core.common.invalidReason.ExceededRequiredParamsLimit");
+    case ErrorType.NoParameter:
+      return getLocalizedString("core.common.invalidReason.NoParameter");
+    case ErrorType.NoAPIInfo:
+      return getLocalizedString("core.common.invalidReason.NoAPIInfo");
+    case ErrorType.MethodNotAllowed:
+      return getLocalizedString("core.common.invalidReason.MethodNotAllowed");
+    case ErrorType.UrlPathNotExist:
+      return getLocalizedString("core.common.invalidReason.UrlPathNotExist");
+    default:
+      return reason.toString();
+  }
+}
+
+function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs): string {
+  const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
   try {
     switch (error.type) {
       case ErrorType.SpecNotValid: {
@@ -718,9 +749,23 @@ function formatValidationErrorContent(error: ApiSpecErrorResult): string {
       case ErrorType.RelativeServerUrlNotSupported:
         return getLocalizedString("core.common.RelativeServerUrlNotSupported");
       case ErrorType.NoSupportedApi:
-        return getLocalizedString("core.common.NoSupportedApi");
+        const messages = [];
+        const invalidAPIInfo = error.data as InvalidAPIInfo[];
+        for (const info of invalidAPIInfo) {
+          const mes = `${info.api}: ${info.reason.map(mapInvalidReasonToMessage).join(", ")}`;
+          messages.push(mes);
+        }
+
+        if (messages.length === 0) {
+          messages.push(getLocalizedString("core.common.invalidReason.NoAPIs"));
+        }
+        return isPlugin
+          ? getLocalizedString("core.common.NoSupportedApiCopilot", messages.join("\n"))
+          : getLocalizedString("core.common.NoSupportedApi", messages.join("\n"));
       case ErrorType.NoExtraAPICanBeAdded:
-        return getLocalizedString("error.copilotPlugin.noExtraAPICanBeAdded");
+        return isPlugin
+          ? getLocalizedString("error.copilot.noExtraAPICanBeAdded")
+          : getLocalizedString("error.apime.noExtraAPICanBeAdded");
       case ErrorType.ResolveServerUrlFailed:
         return error.content;
       case ErrorType.Cancelled:
@@ -789,7 +834,7 @@ async function updatePromptForCustomApi(
     const promptFilePath = path.join(chatFolder, "skprompt.txt");
     const prompt = `The following is a conversation with an AI assistant.\nThe assistant can help to call APIs for the open api spec file${
       spec.info.description ? ". " + spec.info.description : "."
-    }\n\ncontext:\nAvailable actions: {{getAction}}.`;
+    }\nIf the API doesn't require parameters, invoke it with default JSON object { "path": null, "body": null, "query": null }.\n\ncontext:\nAvailable actions: {{getAction}}.`;
     await fs.writeFile(promptFilePath, prompt, { encoding: "utf-8", flag: "w" });
   }
 }

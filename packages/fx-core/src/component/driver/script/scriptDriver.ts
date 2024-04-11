@@ -204,9 +204,9 @@ export function convertScriptErrorToFxError(
   run: string
 ): ScriptTimeoutError | ScriptExecutionError {
   if (error.killed) {
-    return new ScriptTimeoutError(run, error);
+    return new ScriptTimeoutError(error);
   } else {
-    return new ScriptExecutionError(run, error.message, error);
+    return new ScriptExecutionError(error);
   }
 }
 

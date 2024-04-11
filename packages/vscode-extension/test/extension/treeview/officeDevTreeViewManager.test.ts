@@ -27,7 +27,7 @@ describe("OfficeDevTreeViewManager", () => {
 
     const utilityTreeView = officeDevTreeViewManager.getTreeView("teamsfx-officedev-utility");
     chai.assert.isDefined(utilityTreeView);
-    chai.assert.equal((utilityTreeView as any).commands.length, 2);
+    chai.assert.equal((utilityTreeView as any).commands.length, 3);
 
     const helpAndFeedbackTreeView = officeDevTreeViewManager.getTreeView(
       "teamsfx-officedev-help-and-feedback"

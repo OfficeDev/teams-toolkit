@@ -1,0 +1,13 @@
+{{#header}} version: 1.1.0 {{/header}}
+
+environmentFolderPath: ./env
+
+# Triggered when 'teamsapp provision' is executed
+provision:
+{{#teamsAppCreate}}  {{/teamsAppCreate}}
+
+{{#teamsAppZipAppPackage}}  {{/teamsAppZipAppPackage}}
+
+{{#teamsAppUpdate}}  {{/teamsAppUpdate}}
+
+{{#teamsAppExtendToM365}}  {{/teamsAppExtendToM365}}

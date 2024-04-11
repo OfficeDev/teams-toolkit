@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 /**
  * @author Helly Zhang <v-helzha@microsoft.com>
  */
@@ -7,13 +10,12 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
   getAadObjectId,
+  provisionProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
   createNewProject,
-  getNotification,
   runDeployAadAppManifest,
 } from "../../utils/vscodeOperation";
 import { Env } from "../../utils/env";
@@ -67,7 +69,7 @@ describe("Remote debug Tests", function () {
       //create tab project
       const driver = VSBrowser.instance.driver;
       await createNewProject("tab", appName);
-      await runProvision(appName);
+      await provisionProject(appName, projectPath);
 
       await updateAadTemplate(projectPath, "-updated");
       await driver.sleep(Timeout.shortTimeWait);

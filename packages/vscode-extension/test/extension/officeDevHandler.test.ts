@@ -6,12 +6,7 @@ import * as mockfs from "mock-fs";
 import * as sinon from "sinon";
 import * as vscode from "vscode";
 import { Terminal } from "vscode";
-import {
-  OfficeDevTerminal,
-  triggerGenerateGUID,
-  triggerInstall,
-  triggerValidate,
-} from "../../src/debug/taskTerminal/officeDevTerminal";
+import { OfficeDevTerminal, TriggerCmdType } from "../../src/debug/taskTerminal/officeDevTerminal";
 import * as extension from "../../src/extension";
 import * as globalVariables from "../../src/globalVariables";
 import * as handlers from "../../src/handlers";
@@ -115,6 +110,13 @@ describe("officeDevHandler", () => {
     testOpenUrlHandler(
       officeDevHandlers.openScriptLabLink,
       "https://learn.microsoft.com/office/dev/add-ins/overview/explore-with-script-lab"
+    );
+  });
+
+  it("openPromptLibraryLink", async () => {
+    testOpenUrlHandler(
+      officeDevHandlers.openPromptLibraryLink,
+      "https://aka.ms/OfficeAddinsPromptLibrary"
     );
   });
 
@@ -284,14 +286,14 @@ describe("OfficeDevTerminal", () => {
     const result = await officeDevHandlers.validateOfficeAddInManifest();
     chai.expect(result.isOk()).to.be.true;
     sinon.assert.calledOnce(showStub);
-    sinon.assert.calledWith(sendTextStub, triggerValidate); // replace triggerValidate with actual value
+    sinon.assert.calledWith(sendTextStub, TriggerCmdType.triggerValidate); // replace triggerValidate with actual value
   });
 
   it("should install Office AddIn Dependencies", async () => {
     const result = await officeDevHandlers.installOfficeAddInDependencies();
     chai.expect(result.isOk()).to.be.true;
     sinon.assert.calledOnce(showStub);
-    sinon.assert.calledWith(sendTextStub, triggerInstall); // replace triggerInstall with actual value
+    sinon.assert.calledWith(sendTextStub, TriggerCmdType.triggerInstall); // replace triggerInstall with actual value
   });
 });
 
@@ -354,7 +356,7 @@ describe("generateManifestGUID", () => {
     sinon.assert.calledOnce(getInstanceStub);
     sinon.assert.calledOnce(showStub);
     sinon.assert.calledOnce(sendTextStub);
-    sinon.assert.calledWithExactly(sendTextStub, triggerGenerateGUID);
+    sinon.assert.calledWithExactly(sendTextStub, TriggerCmdType.triggerGenerateGUID);
     sinon.restore();
   });
 });

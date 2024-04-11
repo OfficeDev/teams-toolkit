@@ -91,3 +91,11 @@ export const ConfigFilePathOption: CLICommandOption = {
   shortName: "c",
   description: "Specifies the path of the configuration yaml file.",
 };
+
+export const ValidateMethodOption: CLICommandOption = {
+  type: "string",
+  name: "validate-method",
+  shortName: "m",
+  choices: ["validation-rules", "test-cases"],
+  description: "Specifies validation method",
+};

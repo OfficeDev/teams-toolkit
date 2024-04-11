@@ -790,6 +790,12 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openScriptLabLinkCmd);
 
+  const openPromptLibraryLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openPromptLibraryLink",
+    (...args) => Correlator.run(officeDevHandlers.openPromptLibraryLink, args)
+  );
+  context.subscriptions.push(openPromptLibraryLinkCmd);
+
   // help and feedback
   const openHelpFeedbackLinkCmd = vscode.commands.registerCommand(
     "fx-extension.openOfficeDevHelpFeedbackLink",

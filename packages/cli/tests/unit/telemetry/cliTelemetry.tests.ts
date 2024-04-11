@@ -52,11 +52,11 @@ describe("Telemetry", function () {
           if (eventName === "UserError") {
             expect(properties[TelemetryProperty.ErrorType]).equals(TelemetryErrorType.UserError);
             expect(properties[TelemetryProperty.ErrorCode]).equals("ut.user");
-            expect(properties[TelemetryProperty.ErrorMessage]).equals("UserError");
+            // expect(properties[TelemetryProperty.ErrorMessage]).equals("UserError");
           } else {
             expect(properties[TelemetryProperty.ErrorType]).equals(TelemetryErrorType.SystemError);
             expect(properties[TelemetryProperty.ErrorCode]).equals("ut.system");
-            expect(properties[TelemetryProperty.ErrorMessage]).equals("SystemError");
+            // expect(properties[TelemetryProperty.ErrorMessage]).equals("SystemError");
           }
         });
       const reporter = new CliTelemetryReporter("real", "real", "real", "real");

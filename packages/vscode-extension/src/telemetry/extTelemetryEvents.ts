@@ -264,6 +264,13 @@ export enum TelemetryEvent {
   CopilotChat = "copilot-chat",
   CopilotChatFeedback = "copilot-chat-feedback",
   CopilotChatClickButton = "copilot-chat-click-button",
+
+  //Office add-in related
+  validateAddInManifest = "validate-addin-manifest",
+  installAddInDependencies = "install-addin-dependencies",
+  stopAddInDebug = "stop-office-addin-debug",
+  generateAddInGUID = "generate-addin-guid",
+  openNewOfficeAddInProject = "open-new-office-addin-project",
 }
 
 export enum TelemetryProperty {

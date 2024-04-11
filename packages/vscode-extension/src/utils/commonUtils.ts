@@ -16,6 +16,8 @@ import { getV3TeamsAppId } from "../debug/commonUtils";
 import * as globalVariables from "../globalVariables";
 import { core } from "../handlers";
 import { TelemetryProperty, TelemetryTriggerFrom } from "../telemetry/extTelemetryEvents";
+import { localize } from "./localizeUtils";
+import { workspace } from "vscode";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -375,4 +377,31 @@ export async function hasAdaptiveCardInWorkspace(): Promise<boolean> {
 function isAdaptiveCard(content: string): boolean {
   const pattern = /"type"\s*:\s*"AdaptiveCard"/;
   return pattern.test(content);
+}
+
+export async function getLocalDebugMessageTemplate(isWindows: boolean): Promise<string> {
+  const enabledTestTool = await isTestToolEnabled();
+
+  if (isWindows) {
+    return enabledTestTool
+      ? localize("teamstoolkit.handlers.localDebugDescription.enabledTestTool")
+      : localize("teamstoolkit.handlers.localDebugDescription");
+  }
+
+  return enabledTestTool
+    ? localize("teamstoolkit.handlers.localDebugDescription.enabledTestTool.fallback")
+    : localize("teamstoolkit.handlers.localDebugDescription.fallback");
+}
+
+// check if test tool is enabled in scaffolded project
+async function isTestToolEnabled(): Promise<boolean> {
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    const workspaceFolder = workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+
+    const testToolYamlPath = path.join(workspacePath, "teamsapp.testtool.yml");
+    return fs.pathExists(testToolYamlPath);
+  }
+
+  return false;
 }

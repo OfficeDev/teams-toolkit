@@ -126,6 +126,7 @@ import TreeViewManagerInstance from "./treeview/treeViewManager";
 import {
   anonymizeFilePaths,
   getAppName,
+  getLocalDebugMessageTemplate,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppTelemetryInfoByEnv,
@@ -1405,19 +1406,13 @@ export async function showLocalDebugMessage() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   const appName = (await getAppName()) ?? localize("teamstoolkit.handlers.fallbackAppName");
   const isWindows = process.platform === "win32";
-  let message = util.format(
-    localize("teamstoolkit.handlers.localDebugDescription.fallback"),
-    appName,
-    globalVariables.workspaceUri?.fsPath
-  );
+  const messageTemplate = await getLocalDebugMessageTemplate(isWindows);
+
+  let message = util.format(messageTemplate, appName, globalVariables.workspaceUri?.fsPath);
   if (isWindows) {
     const folderLink = encodeURI(globalVariables.workspaceUri!.toString());
     const openFolderCommand = `command:fx-extension.openFolder?%5B%22${folderLink}%22%5D`;
-    message = util.format(
-      localize("teamstoolkit.handlers.localDebugDescription"),
-      appName,
-      openFolderCommand
-    );
+    message = util.format(messageTemplate, appName, openFolderCommand);
   }
   void vscode.window.showInformationMessage(message, localDebug).then((selection) => {
     if (selection?.title === localize("teamstoolkit.handlers.localDebugTitle")) {

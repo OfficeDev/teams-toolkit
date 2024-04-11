@@ -37,7 +37,10 @@ import {
   CheckSideloadingPermissionFailedError,
   DeveloperPortalAPIFailedError,
 } from "../../../../error/teamsApp";
-import { ApiSecretRegistration } from "../interfaces/ApiSecretRegistration";
+import {
+  ApiSecretRegistration,
+  ApiSecretRegistrationUpdate,
+} from "../interfaces/ApiSecretRegistration";
 import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 import { AsyncAppValidationResponse } from "../interfaces/AsyncAppValidationResponse";
 import { AsyncAppValidationResultsResponse } from "../interfaces/AsyncAppValidationResultsResponse";
@@ -626,13 +629,16 @@ export namespace AppStudioClient {
    * Submit App Validation Request (In-App) for which App Definitions are stored at TDP.
    * @param teamsAppId
    * @param appStudioToken
+   * @param timeoutSeconds
    * @returns
    */
   export async function submitAppValidationRequest(
     teamsAppId: string,
-    appStudioToken: string
+    appStudioToken: string,
+    timeoutSeconds = 10
   ): Promise<AsyncAppValidationResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
+    requester.defaults.timeout = timeoutSeconds * 1000;
     try {
       const response = await RetryHandler.Retry(() =>
         requester.post(`/api/v1.0/appvalidations/appdefinition/validate`, {
@@ -673,13 +679,16 @@ export namespace AppStudioClient {
    * Get App validation results by provided app validation id
    * @param appValidationId
    * @param appStudioToken
+   * @param timeoutSeconds
    * @returns
    */
   export async function getAppValidationById(
     appValidationId: string,
-    appStudioToken: string
+    appStudioToken: string,
+    timeoutSeconds = 10
   ): Promise<AsyncAppValidationResultsResponse> {
     const requester = createRequesterWithToken(appStudioToken, region);
+    requester.defaults.timeout = timeoutSeconds * 1000;
     try {
       const response = await RetryHandler.Retry(() =>
         requester.get(`/api/v1.0/appvalidations/${appValidationId}`)
@@ -807,6 +816,26 @@ export namespace AppStudioClient {
       return response?.data;
     } catch (e) {
       const error = wrapException(e, APP_STUDIO_API_NAMES.GET_API_KEY);
+      throw error;
+    }
+  }
+
+  export async function updateApiKeyRegistration(
+    appStudioToken: string,
+    apiKeyRegistration: ApiSecretRegistrationUpdate,
+    apiKeyRegistrationId: string
+  ): Promise<ApiSecretRegistrationUpdate> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.patch(
+          `/api/v1.0/apiSecretRegistrations/${apiKeyRegistrationId}`,
+          apiKeyRegistration
+        )
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.UPDATE_API_KEY);
       throw error;
     }
   }

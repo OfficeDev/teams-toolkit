@@ -1,21 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { find } from "lodash";
 import * as cp from "child_process";
 import * as vscode from "vscode";
 import * as globalVariables from "../../globalVariables";
 import { FxError, Result, Void, ok } from "@microsoft/teamsfx-api";
 // eslint-disable-next-line import/no-cycle
 import { BaseTaskTerminal, ControlCodes } from "./baseTaskTerminal";
-import { fetchManifestList } from "@microsoft/teamsfx-core";
+import { OfficeManifestType, fetchManifestList } from "@microsoft/teamsfx-core";
 import { localize } from "../../utils/localizeUtils";
 
-export const triggerInstall = "trigger install dependencies";
-export const triggerValidate = "trigger validate";
-export const triggerStopDebug = "trigger stop debug";
-export const triggerGenerateGUID = "generate manifest GUID";
+export enum TriggerCmdType {
+  triggerInstall = "trigger install dependencies",
+  triggerValidate = "trigger validate",
+  triggerStopDebug = "trigger stop debug",
+  triggerGenerateGUID = "generate manifest GUID",
+}
+
+enum ProcessStatus {
+  notStarted,
+  running,
+  completed,
+}
 
 export class OfficeDevTerminal extends BaseTaskTerminal {
-  private static instance: vscode.Terminal | undefined;
+  private status = ProcessStatus.notStarted;
 
   constructor() {
     super();
@@ -26,65 +35,66 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
   }
 
   async open() {
-    this.writeEmitter.fire(
-      `${this.color(localize("teamstoolkit.officeAddIn.terminal.open"), "green")}\r\n`
-    );
     await this.do();
   }
 
   close(): void {
-    this.stop()
-      .catch((error) => {
-        this.writeEmitter.fire(`${error?.message as string}\r\n`);
-      })
-      .finally(() => {
-        OfficeDevTerminal.instance?.dispose();
-        OfficeDevTerminal.instance = undefined;
-      });
+    this.stop().catch((error) => {
+      this.writeEmitter.fire(`${error?.message as string}\r\n`);
+    });
   }
 
   handleInput(data: string): void {
     if (data.includes(ControlCodes.CtrlC)) {
-      this.stop()
-        .catch((error) => {
-          this.writeEmitter.fire(`${error?.message as string}\r\n`);
-        })
-        .finally(() => {
-          OfficeDevTerminal.instance?.dispose();
-          OfficeDevTerminal.instance = undefined;
-        });
-    } else if (data.startsWith(triggerInstall)) {
-      this.writeEmitter.fire(
-        `\r\n${this.color(
-          localize("teamstoolkit.officeAddIn.terminal.installDependency"),
-          "yellow"
-        )}\r\n`
-      );
-      this.installDependencies();
-    } else if (data.startsWith(triggerValidate)) {
-      this.writeEmitter.fire(
-        `\r\n${this.color(
-          localize("teamstoolkit.officeAddIn.terminal.validateManifest"),
-          "yellow"
-        )}\r\n`
-      );
-      this.runValidate();
-    } else if (data.startsWith(triggerStopDebug)) {
-      this.writeEmitter.fire(
-        `\r\n${this.color(
-          localize("teamstoolkit.officeAddIn.terminal.stopDebugging"),
-          "yellow"
-        )}\r\n`
-      );
-      this.stopDebug();
-    } else if (data.startsWith(triggerGenerateGUID)) {
-      this.writeEmitter.fire(
-        `\r\n${this.color(
-          localize("teamstoolkit.officeAddIn.terminal.generateManifestGUID"),
-          "yellow"
-        )}\r\n`
-      );
-      this.generateManifestGUID();
+      this.stop().catch((error) => {
+        this.writeEmitter.fire(`${error?.message as string}\r\n`);
+      });
+    } else if (data.startsWith(TriggerCmdType.triggerInstall)) {
+      if (this.status != ProcessStatus.running) {
+        this.writeEmitter.fire(
+          `\r\n${this.color(
+            localize("teamstoolkit.officeAddIn.terminal.installDependency"),
+            "yellow"
+          )}\r\n`
+        );
+        this.installDependencies();
+        this.status = ProcessStatus.running;
+      }
+    } else if (data.startsWith(TriggerCmdType.triggerValidate)) {
+      if (this.status != ProcessStatus.running) {
+        this.writeEmitter.fire(
+          `\r\n${this.color(
+            localize("teamstoolkit.officeAddIn.terminal.validateManifest"),
+            "yellow"
+          )}\r\n`
+        );
+        this.runValidate();
+        this.status = ProcessStatus.running;
+      }
+    } else if (data.startsWith(TriggerCmdType.triggerStopDebug)) {
+      if (this.status != ProcessStatus.running) {
+        this.writeEmitter.fire(
+          `\r\n${this.color(
+            localize("teamstoolkit.officeAddIn.terminal.stopDebugging"),
+            "yellow"
+          )}\r\n`
+        );
+        this.stopDebug();
+        this.status = ProcessStatus.running;
+      }
+    } else if (data.startsWith(TriggerCmdType.triggerGenerateGUID)) {
+      if (this.status != ProcessStatus.running) {
+        this.writeEmitter.fire(
+          `\r\n${this.color(
+            localize("teamstoolkit.officeAddIn.terminal.generateManifestGUID"),
+            "yellow"
+          )}\r\n`
+        );
+        this.generateManifestGUID();
+        this.status = ProcessStatus.running;
+      }
+    } else if (this.status == ProcessStatus.completed) {
+      this.closeEmitter.fire(0);
     }
   }
 
@@ -110,25 +120,9 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
       this.writeEmitter.fire(line);
     });
 
-    childProc.on("exit", (code: number) => {
-      if (code == 0) {
-        this.writeEmitter.fire(
-          this.color(
-            `${cmdStr} ${localize("teamstoolkit.officeAddIn.terminal.success.tips")}`,
-            "green"
-          ) + "\r\n"
-        );
-      } else {
-        this.writeEmitter.fire(
-          this.color(
-            `${cmdStr} ${localize("teamstoolkit.officeAddIn.terminal.fail.tips")}`,
-            "red"
-          ) + "\r\n"
-        );
-      }
-      this.writeEmitter.fire(
-        this.color(localize("teamstoolkit.officeAddIn.terminal.terminate"), "green") + "\r\n"
-      );
+    childProc.on("exit", () => {
+      this.writeEmitter.fire(localize("teamstoolkit.officeAddIn.terminal.terminate") + "\r\n");
+      this.status = ProcessStatus.completed;
     });
   }
 
@@ -161,13 +155,13 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
 
   public installDependencies() {
     const cmd = "npm";
-    const args = ["install"];
+    const args = ["install", "--color=always"];
     this.startChildProcess(cmd, args);
   }
 
   private getManifest(): string | undefined {
     const workspacePath = globalVariables.workspaceUri?.fsPath;
-    const manifestList = fetchManifestList(workspacePath);
+    const manifestList = fetchManifestList(workspacePath, OfficeManifestType.XmlAddIn);
     if (!manifestList || manifestList.length == 0) {
       this.writeEmitter.fire(
         this.color(`${localize("teamstoolkit.officeAddIn.terminal.manifest.notfound")}\r\n`, "red")
@@ -191,13 +185,34 @@ export class OfficeDevTerminal extends BaseTaskTerminal {
     }
   }
 
-  public static getInstance() {
-    if (!OfficeDevTerminal.instance) {
-      OfficeDevTerminal.instance = vscode.window.createTerminal({
-        name: "OfficeAddInDev task",
+  public static getTerminalTitle(triggerCmd: TriggerCmdType): string | undefined {
+    switch (triggerCmd) {
+      case TriggerCmdType.triggerInstall:
+        return localize("teamstoolkit.commandsTreeViewProvider.checkAndInstallDependenciesTitle");
+      case TriggerCmdType.triggerGenerateGUID:
+        return localize("teamstoolkit.codeLens.generateManifestGUID");
+      case TriggerCmdType.triggerStopDebug:
+        return localize("teamstoolkit.commandsTreeViewProvider.officeAddIn.stopDebugTitle");
+      case TriggerCmdType.triggerValidate:
+        return localize("teamstoolkit.commandsTreeViewProvider.validateManifestTitle");
+      default:
+        return undefined;
+    }
+  }
+
+  public static getInstance(triggerCmd: TriggerCmdType): vscode.Terminal {
+    let terminal: vscode.Terminal | undefined;
+    const terminalTitle = OfficeDevTerminal.getTerminalTitle(triggerCmd);
+    if (
+      vscode.window.terminals.length === 0 ||
+      (terminal = find(vscode.window.terminals, (value) => value.name === terminalTitle)) ===
+        undefined
+    ) {
+      terminal = vscode.window.createTerminal({
+        name: terminalTitle || "officeAddInDev task",
         pty: new OfficeDevTerminal(),
       });
     }
-    return OfficeDevTerminal.instance;
+    return terminal;
   }
 }

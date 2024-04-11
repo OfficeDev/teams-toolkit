@@ -77,6 +77,7 @@ import {
   InvalidProjectError,
   MissingEnvironmentVariablesError,
   MissingRequiredInputError,
+  UserCancelError,
 } from "../../src/error/common";
 import { NoNeedUpgradeError } from "../../src/error/upgrade";
 import {
@@ -243,7 +244,7 @@ describe("Core basic APIs", () => {
 
   it("deploy aad manifest happy path", async () => {
     const promtionOnVSC =
-      'Your Microsoft Entra app has been deployed successfully. To view that, click "Learn more"';
+      'Your Microsoft Entra app has been deployed successfully. To view that, click "More info"';
 
     const core = new FxCore(tools);
     const showMessage = sandbox.spy(tools.ui, "showMessage") as unknown as sinon.SinonSpy<
@@ -275,12 +276,12 @@ describe("Core basic APIs", () => {
     assert.equal(showMessage.getCall(0).args[0], "info");
     assert.equal(showMessage.getCall(0).args[1], promtionOnVSC);
     assert.isFalse(showMessage.getCall(0).args[2]);
-    assert.equal(showMessage.getCall(0).args[3], "Learn more");
+    assert.equal(showMessage.getCall(0).args[3], "More info");
     assert.isFalse(openUrl.called);
   });
-  it("deploy aad manifest happy path with click learn more", async () => {
+  it("deploy aad manifest happy path with click more info", async () => {
     const core = new FxCore(tools);
-    sandbox.stub(tools.ui, "showMessage").resolves(ok("Learn more"));
+    sandbox.stub(tools.ui, "showMessage").resolves(ok("More info"));
     sandbox.stub(tools.ui, "openUrl").resolves(ok(true));
     const appName = await mockV3Project();
     sandbox
@@ -1492,14 +1493,15 @@ describe("getQuestions", async () => {
         "openapi-spec-location",
         "api-operation",
         "api-me-auth",
-        // "custom-copilot-rag",
-        // "openapi-spec-location",
-        // "api-operation",
+        "custom-copilot-rag",
+        "openapi-spec-location",
+        "api-operation",
         "custom-copilot-agent",
         "programming-language",
         "llm-service",
         "azure-openai-key",
         "azure-openai-endpoint",
+        "azure-openai-deployment-name",
         "openai-key",
         "office-addin-framework-type",
         "folder",
@@ -1532,14 +1534,15 @@ describe("getQuestions", async () => {
         "openapi-spec-location",
         "api-operation",
         "api-me-auth",
-        // "custom-copilot-rag",
-        // "openapi-spec-location",
-        // "api-operation",
+        "custom-copilot-rag",
+        "openapi-spec-location",
+        "api-operation",
         "custom-copilot-agent",
         "programming-language",
         "llm-service",
         "azure-openai-key",
         "azure-openai-endpoint",
+        "azure-openai-deployment-name",
         "openai-key",
         "office-addin-framework-type",
         "folder",
@@ -1572,14 +1575,15 @@ describe("getQuestions", async () => {
         "openapi-spec-location",
         "api-operation",
         "api-me-auth",
-        // "custom-copilot-rag",
-        // "openapi-spec-location",
-        // "api-operation",
+        "custom-copilot-rag",
+        "openapi-spec-location",
+        "api-operation",
         "custom-copilot-agent",
         "programming-language",
         "llm-service",
         "azure-openai-key",
         "azure-openai-endpoint",
+        "azure-openai-deployment-name",
         "openai-key",
         "office-addin-framework-type",
         "folder",
@@ -1613,14 +1617,15 @@ describe("getQuestions", async () => {
         "openapi-spec-location",
         "api-operation",
         "api-me-auth",
-        // "custom-copilot-rag",
-        // "openapi-spec-location",
-        // "api-operation",
+        "custom-copilot-rag",
+        "openapi-spec-location",
+        "api-operation",
         "custom-copilot-agent",
         "programming-language",
         "llm-service",
         "azure-openai-key",
         "azure-openai-endpoint",
+        "azure-openai-deployment-name",
         "openai-key",
         "office-addin-framework-type",
         "folder",
@@ -1668,9 +1673,21 @@ describe("copilotPlugin", async () => {
       },
     ];
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -1683,6 +1700,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
   });
@@ -1702,13 +1720,26 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.plugins = [
       {
-        pluginFile: "ai-plugin.json",
+        file: "ai-plugin.json",
+        id: "plugin1",
       },
     ];
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -1724,6 +1755,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "getPluginFilePath").resolves(ok("ai-plugin.json"));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     if (result.isErr()) {
       console.log(result.error);
@@ -1745,13 +1777,26 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.plugins = [
       {
-        pluginFile: "ai-plugin.json",
+        file: "ai-plugin.json",
+        id: "plugin1",
       },
     ];
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -1766,6 +1811,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -1788,13 +1834,26 @@ describe("copilotPlugin", async () => {
     const manifest = new TeamsAppManifest();
     manifest.plugins = [
       {
-        pluginFile: "ai-plugin.json",
+        file: "ai-plugin.json",
+        id: "plugin1",
       },
     ];
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -1812,6 +1871,7 @@ describe("copilotPlugin", async () => {
       .resolves(err(new SystemError("testError", "testError", "", "")));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(CopilotPluginHelper, "listPluginExistingOperations").resolves([]);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
 
     assert.isTrue(result.isErr());
@@ -1844,7 +1904,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server",
@@ -1856,6 +1916,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -1868,6 +1930,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -1882,6 +1946,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -1913,7 +1978,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -1925,6 +1990,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -1937,6 +2004,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -1951,6 +2020,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -1982,7 +2052,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -1994,6 +2064,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2006,6 +2078,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2026,6 +2100,7 @@ describe("copilotPlugin", async () => {
     const yamlString = jsyaml.dump(teamsappObject);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(yamlString as any);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -2057,7 +2132,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2069,6 +2144,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2081,6 +2158,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2110,6 +2189,7 @@ describe("copilotPlugin", async () => {
     const yamlString = jsyaml.dump(teamsappObject);
     sinon.stub(fs, "pathExists").resolves(true);
     sinon.stub(fs, "readFile").resolves(yamlString as any);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
     if (result.isErr()) {
@@ -2141,7 +2221,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2153,6 +2233,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2165,6 +2247,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2179,6 +2263,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2234,7 +2319,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2246,6 +2331,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2258,6 +2345,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2272,6 +2361,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2367,7 +2457,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2379,6 +2469,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2391,6 +2483,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2405,6 +2499,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2471,7 +2566,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2483,6 +2578,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2495,6 +2592,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2509,6 +2608,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2615,7 +2715,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2627,6 +2727,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2639,6 +2741,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2653,6 +2757,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2754,7 +2859,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2766,6 +2871,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2778,6 +2885,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2791,6 +2900,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -2896,7 +3006,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -2908,6 +3018,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -2920,6 +3032,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -2934,6 +3048,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -3027,7 +3142,7 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
+      APIs: [
         {
           operationId: "getUserById",
           server: "https://server1",
@@ -3039,6 +3154,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           operationId: "getStoreOrder",
@@ -3051,6 +3168,8 @@ describe("copilotPlugin", async () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 2,
@@ -3065,6 +3184,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const teamsappObject = {
       provision: [
         {
@@ -3173,9 +3293,21 @@ describe("copilotPlugin", async () => {
     ];
 
     const listResult: ListAPIResult = {
-      validAPIs: [
-        { operationId: "getUserById", server: "https://server", api: "GET /user/{userId}" },
-        { operationId: "getStoreOrder", server: "https://server", api: "GET /store/order" },
+      APIs: [
+        {
+          operationId: "getUserById",
+          server: "https://server",
+          api: "GET /user/{userId}",
+          isValid: true,
+          reason: [],
+        },
+        {
+          operationId: "getStoreOrder",
+          server: "https://server",
+          api: "GET /store/order",
+          isValid: true,
+          reason: [],
+        },
       ],
       validAPICount: 2,
       allAPICount: 2,
@@ -3189,6 +3321,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "list").resolves(listResult);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isOk());
   });
@@ -3205,6 +3338,7 @@ describe("copilotPlugin", async () => {
     const core = new FxCore(tools);
     sinon.stub(SpecParser.prototype, "generate").throws(new Error("fakeError"));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
@@ -3232,6 +3366,7 @@ describe("copilotPlugin", async () => {
     sinon.stub(SpecParser.prototype, "generate").throws(new Error("fakeError"));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
@@ -3256,14 +3391,77 @@ describe("copilotPlugin", async () => {
       projectPath: path.join(os.tmpdir(), appName),
     };
     const core = new FxCore(tools);
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(tools.ui, "showMessage").resolves(ok("Add"));
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isErr());
+  });
+
+  it("add API - ui error", async () => {
+    const appName = await mockV3Project();
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ManifestPath]: "manifest.json",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
+    sinon.stub(validationUtils, "validateInputs").resolves(undefined);
+    sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon
+      .stub(tools.ui, "showMessage")
+      .resolves(err(new UserError("testSource", "testError", "", "")));
+
+    const result = await core.copilotPluginAddAPI(inputs);
+    assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.equal(result.error.name, "testError");
+    }
+  });
+
+  it("add API - not 'add' when confirm", async () => {
+    const appName = await mockV3Project();
+    const manifest = new TeamsAppManifest();
+    manifest.composeExtensions = [
+      {
+        composeExtensionType: "apiBased",
+        apiSpecificationFile: "apiSpecificationFiles/openapi.json",
+        commands: [],
+      },
+    ];
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [QuestionNames.Folder]: os.tmpdir(),
+      [QuestionNames.ApiSpecLocation]: "test.json",
+      [QuestionNames.ApiOperation]: ["testOperation"],
+      [QuestionNames.ManifestPath]: "manifest.json",
+      projectPath: path.join(os.tmpdir(), appName),
+    };
+    const core = new FxCore(tools);
     sinon
       .stub(SpecParser.prototype, "generate")
       .throws(new SpecParserError("fakeMessage", ErrorType.SpecNotValid));
     sinon.stub(validationUtils, "validateInputs").resolves(undefined);
     sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
+    sinon.stub(tools.ui, "showMessage").resolves(ok(""));
 
     const result = await core.copilotPluginAddAPI(inputs);
     assert.isTrue(result.isErr());
+    if (result.isErr()) {
+      assert.isTrue(result.error instanceof UserCancelError);
+    }
   });
 
   describe("listPluginApiSpecs", async () => {
@@ -3275,7 +3473,8 @@ describe("copilotPlugin", async () => {
       const manifest = new TeamsAppManifest();
       manifest.plugins = [
         {
-          pluginFile: "ai-plugin.json",
+          file: "ai-plugin.json",
+          id: "plugin1",
         },
       ];
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
@@ -3315,7 +3514,8 @@ describe("copilotPlugin", async () => {
       const manifest = new TeamsAppManifest();
       manifest.plugins = [
         {
-          pluginFile: "ai-plugin.json",
+          file: "ai-plugin.json",
+          id: "plugin1",
         },
       ];
       sinon.stub(manifestUtils, "_readAppManifest").resolves(ok(manifest));
@@ -3407,7 +3607,7 @@ describe("copilotPlugin", async () => {
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
     sinon
       .stub(SpecParser.prototype, "list")
-      .resolves({ validAPIs: [], allAPICount: 0, validAPICount: 0 });
+      .resolves({ APIs: [], allAPICount: 0, validAPICount: 0 });
 
     try {
       await core.copilotPluginListOperations(inputs as any);
@@ -3433,7 +3633,7 @@ describe("copilotPlugin", async () => {
       .resolves({ status: ValidationStatus.Valid, warnings: [], errors: [] });
     sinon
       .stub(SpecParser.prototype, "list")
-      .resolves({ validAPIs: [], allAPICount: 0, validAPICount: 0 });
+      .resolves({ APIs: [], allAPICount: 0, validAPICount: 0 });
 
     try {
       await core.copilotPluginListOperations(inputs as any);

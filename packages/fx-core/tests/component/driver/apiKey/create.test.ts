@@ -67,7 +67,7 @@ describe("CreateApiKeyDriver", () => {
       applicableToApps: ApiSecretRegistrationAppType.SpecificApp,
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -79,6 +79,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -108,7 +110,7 @@ describe("CreateApiKeyDriver", () => {
     });
 
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -120,6 +122,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -150,7 +154,7 @@ describe("CreateApiKeyDriver", () => {
     });
 
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -162,6 +166,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -223,7 +229,7 @@ describe("CreateApiKeyDriver", () => {
       };
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -235,6 +241,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -400,7 +408,7 @@ describe("CreateApiKeyDriver", () => {
     };
 
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -412,6 +420,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api",
@@ -424,6 +434,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 2,
@@ -446,7 +458,7 @@ describe("CreateApiKeyDriver", () => {
     };
     sinon
       .stub(SpecParser.prototype, "list")
-      .resolves({ validAPIs: [], validAPICount: 0, allAPICount: 1 });
+      .resolves({ APIs: [], validAPICount: 0, allAPICount: 1 });
     const result = await createApiKeyDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isErr()).to.be.true;
     if (result.result.isErr()) {
@@ -462,11 +474,13 @@ describe("CreateApiKeyDriver", () => {
       apiSpecPath: "mockedPath",
     };
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
           operationId: "get",
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 1,
@@ -487,7 +501,7 @@ describe("CreateApiKeyDriver", () => {
       apiSpecPath: "mockedPath",
     };
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api1",
           server: "https://test",
@@ -499,6 +513,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api2",
@@ -511,6 +527,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "basic",
             },
           },
+          isValid: true,
+          reason: [],
         },
         {
           api: "api3",
@@ -524,6 +542,8 @@ describe("CreateApiKeyDriver", () => {
               name: "test1",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       validAPICount: 3,
@@ -542,7 +562,7 @@ describe("CreateApiKeyDriver", () => {
       .throws(new SystemError("source", "name", "message"));
 
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -554,6 +574,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,
@@ -597,7 +619,7 @@ describe("CreateApiKeyDriver", () => {
       targetAudience: ApiSecretRegistrationTargetAudience.AnyTenant,
     });
     sinon.stub(SpecParser.prototype, "list").resolves({
-      validAPIs: [
+      APIs: [
         {
           api: "api",
           server: "https://test",
@@ -609,6 +631,8 @@ describe("CreateApiKeyDriver", () => {
               scheme: "bearer",
             },
           },
+          isValid: true,
+          reason: [],
         },
       ],
       allAPICount: 1,

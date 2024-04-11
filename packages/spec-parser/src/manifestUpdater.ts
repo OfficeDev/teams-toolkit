@@ -25,6 +25,8 @@ import {
   FunctionParameters,
   FunctionParameter,
 } from "@microsoft/teams-manifest";
+import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
+import { wrapResponseSemantics } from "./adaptiveCardWrapper";
 
 export class ManifestUpdater {
   static async updateManifestWithAiPlugin(
@@ -182,6 +184,14 @@ export class ManifestUpdater {
                 description: description,
                 parameters: parameters,
               };
+
+              if (options.allowResponseSemantics) {
+                const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+                const responseSemantic = wrapResponseSemantics(card, jsonPath);
+                funcObj.capabilities = {
+                  response_semantics: responseSemantic,
+                };
+              }
 
               functions.push(funcObj);
               functionNames.push(operationId);

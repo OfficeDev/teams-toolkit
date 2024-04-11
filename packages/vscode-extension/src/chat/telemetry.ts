@@ -4,9 +4,7 @@ import { LanguageModelChatMessage, ChatLocation } from "vscode";
 import { countMessagesTokens } from "./utils";
 import { IChatTelemetryData, ITelemetryData } from "./types";
 import { Correlator, getUuid } from "@microsoft/teamsfx-core";
-import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
-  TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
   TelemetryTriggerFrom,

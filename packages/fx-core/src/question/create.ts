@@ -30,7 +30,6 @@ import {
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
   isTdpTemplateCliTestEnabled,
-  isApiMeSSOEnabled,
   isChatParticipantEnabled,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";

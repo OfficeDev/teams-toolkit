@@ -191,7 +191,7 @@ export class CodeGenerator implements ISkill {
 
     Following are some Examples:
     1. This is an example of the list that ask is not about custom functions, it must contains a entry function descriptions named 'main':
-      - Create a function named 'createTrendlineChart'. This function should take the 'Excel.Worksheet' and the range values as parameters. It should create a trendline chart in the worksheet where dates are set as the x-value and prices as the y-value. Return a Promise<Excel.Chart> object.
+      - Create a function named 'createTrendlineChart'. This function should take the object instance of 'Excel.Worksheet' and the range values which type is 'any[][]' as parameters. It should create a trendline chart in the worksheet where dates are set as the x-value and prices as the y-value. Return a Promise<Excel.Chart> object.
       - Create an entry function named 'main'. This function doesn't take any parameters and will call 'createTrendlineChart' to create a trendline chart in worksheet. The function should be declared as 'async function'.
     2. This is an example of the list that ask about custom functions, it must not contains the entry function descriptions:
       - Create a custom functions named 'addSum'. This function should take two number values as parameters. Return the Promise<number> object. The function should be declared as 'async function'.
@@ -320,11 +320,6 @@ Let's think step by step.
       host;
     spec.appendix.telemetryData.properties[PropertySystemCodeGenIsCustomFunction] =
       isCustomFunctions.toString();
-    let samplesPrompt = `
-    The following content written using Markdown syntax, using "Bold" style to highlight the key information.
-
-    # There're some samples relevant to the your's ask, you can read it and repeat by yourself, before start to generate code.
-    `;
     let referenceUserPrompt = "";
     switch (host) {
       case "Excel":
@@ -339,6 +334,11 @@ Let's think step by step.
         break;
     }
 
+    let samplesPrompt = `
+    The following content written using Markdown syntax, using "Bold" style to highlight the key information.
+
+    # There're some samples relevant to the your's ask, you can read it and repeat by yourself, before start to generate code.
+    `;
     // Then let's query if any code examples relevant to the user's ask that we can put as examples
     const scenarioSamples =
       await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodes(

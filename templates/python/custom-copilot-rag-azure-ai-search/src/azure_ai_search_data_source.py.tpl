@@ -24,7 +24,7 @@ async def get_embedding_vector(text: str):
     ))
     {{/useAzureOpenAI}}
     {{#useOpenAI}}
-    embedding=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
+    embeddings=OpenAIEmbeddings(OpenAIEmbeddingsOptions(
         api_key=Config.OPENAI_API_KEY,
         model=Config.OPENAI_EMBEDDING_DEPLOYMENT,
     ))

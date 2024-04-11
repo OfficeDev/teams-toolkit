@@ -147,8 +147,8 @@ export class CodeIssueCorrector implements ISkill {
           fixedCode,
           spec.appendix.telemetryData
         );
-      await writeLogToFile("\n# compileErrors:\n" + issuesAfterFix.compileErrors.join("\n\n"));
-      await writeLogToFile("\n# runtimeErrors:\n" + issuesAfterFix.runtimeErrors.join("\n\n"));
+      // await writeLogToFile("\n# compileErrors:\n" + issuesAfterFix.compileErrors.join("\n\n"));
+      // await writeLogToFile("\n# runtimeErrors:\n" + issuesAfterFix.runtimeErrors.join("\n\n"));
       historicalErrors.push(
         ...baseLineResuult.compileErrors.map(
           (item) => item.replace(/at Char \d+-\d+:/g, "").split("\nFix suggestion")[0]

@@ -25,7 +25,6 @@ import { ConstantString } from "../common/constants";
 import { Correlator } from "../common/correlator";
 import {
   isApiCopilotPluginEnabled,
-  isApiKeyEnabled,
   isCLIDotNetEnabled,
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
@@ -2077,13 +2076,9 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         );
       } else if (isPlugin) {
         placeholder = ""; // TODO: add placeholder for api plugin
-      } else if (isApiKeyEnabled()) {
-        placeholder = getLocalizedString(
-          "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
-        );
       } else {
         placeholder = getLocalizedString(
-          "core.createProjectQuestion.apiSpec.operation.placeholder"
+          "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
         );
       }
 

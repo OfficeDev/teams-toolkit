@@ -49,7 +49,6 @@ import { EOL } from "os";
 import { SummaryConstant } from "../../configManager/constant";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
 import path from "path";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 import { QuestionNames } from "../../../question/questionNames";
 import { pluginManifestUtils } from "../../driver/teamsApp/utils/PluginManifestUtils";
 import { copilotPluginApiSpecOptionId } from "../../../question/constants";
@@ -186,8 +185,6 @@ export async function listOperations(
     inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id;
 
   try {
-    const allowAPIKeyAuth = isPlugin || isApiKeyEnabled();
-    const allowMultipleParameters = isPlugin || isMultipleParametersEnabled();
     const specParser = new SpecParser(
       apiSpecUrl as string,
       isPlugin
@@ -197,8 +194,8 @@ export async function listOperations(
             projectType: ProjectType.TeamsAi,
           }
         : {
-            allowBearerTokenAuth: allowAPIKeyAuth, // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters,
+            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+            allowMultipleParameters: true,
           }
     );
     const validationRes = await specParser.validate();

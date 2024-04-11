@@ -36,7 +36,6 @@ import { Container } from "typedi";
 import { pathToFileURL } from "url";
 import { parse, parseDocument } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
@@ -1281,8 +1280,8 @@ export class FxCore {
       isPlugin
         ? copilotPluginParserOptions
         : {
-            allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters: isMultipleParametersEnabled(),
+            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+            allowMultipleParameters: true,
           }
     );
 
@@ -1319,7 +1318,8 @@ export class FxCore {
     );
 
     try {
-      if (isApiKeyEnabled()) {
+      // TODO: type b will support auth
+      if (!isPlugin) {
         const authNames: Set<string> = new Set();
         const serverUrls: Set<string> = new Set();
         for (const api of operations) {

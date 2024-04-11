@@ -414,7 +414,7 @@ export function assembleError(e: any, source?: string): FxError {
     return new UnhandledError(new Error(e as string), source);
   } else {
     const code = e.code as string;
-    if (code && (errnoCodes[code] || code.startsWith("ERR_"))) {
+    if (typeof code === "string" && code && (errnoCodes[code] || code.startsWith("ERR_"))) {
       // convert to internal error
       return new InternalError(e, source);
     }

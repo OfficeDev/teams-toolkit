@@ -58,6 +58,10 @@ export function isApiKeyEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
 }
 
+export function isNewGeneratorEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.NewGenerator, true);
+}
+
 export function isMultipleParametersEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, true);
 }

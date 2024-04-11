@@ -31,7 +31,6 @@ describe("officeNextStepCommandHandler", () => {
   });
 
   afterEach(() => {
-    sandbox.restore();
     sinon.restore();
   });
 

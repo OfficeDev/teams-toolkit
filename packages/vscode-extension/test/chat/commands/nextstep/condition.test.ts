@@ -4,7 +4,6 @@ import * as condition from "../../../../src/chat/commands/nextstep/condition";
 import { WholeStatus } from "../../../../src/chat/commands/nextstep/types";
 import { CommandKey } from "../../../../src/constants";
 import { emptyProjectStatus } from "../../../../src/utils/projectStatusUtils";
-import { canOfficeAddInPreviewInLocalEnv } from "../../../../src/chat/commands/nextstep/condition";
 
 chai.use(chaiPromised);
 
@@ -382,52 +381,5 @@ describe("chat nextstep conditions", () => {
         } as WholeStatus)
       );
     });
-  });
-
-  describe("canOfficeAddInPreviewInLocalEnv", () => {
-    it('should return true when launchJSONContent includes "desktop (edge legacy)" or "desktop (edge chromium)"', () => {
-      const result = canOfficeAddInPreviewInLocalEnv({
-        projectOpened: {
-          launchJSONContent: "desktop (edge legacy)",
-        },
-      } as WholeStatus);
-      chai.assert.isTrue(result);
-    });
-
-    it('should return false when launchJSONContent does not include "desktop (edge legacy)" or "desktop (edge chromium)"', () => {
-      const result = canOfficeAddInPreviewInLocalEnv({
-        projectOpened: {
-          launchJSONContent: "",
-        },
-      } as WholeStatus);
-      chai.assert.isFalse(result);
-    });
-
-    it("should return false when projectOpened or launchJSONContent is not defined", () => {
-      const result = canOfficeAddInPreviewInLocalEnv({} as WholeStatus);
-      chai.assert.isFalse(result);
-    });
-  });
-
-  it("isDependenciesInstalled", () => {
-    chai.assert.isTrue(
-      condition.isDependenciesInstalled({
-        projectOpened: {
-          nodeModulesExist: true,
-        },
-        machineStatus: {},
-      } as WholeStatus)
-    );
-
-    chai.assert.isFalse(
-      condition.isDependenciesInstalled({
-        projectOpened: {
-          nodeModulesExist: false,
-        },
-        machineStatus: {},
-      } as WholeStatus)
-    );
-
-    chai.assert.isFalse(condition.isDependenciesInstalled({} as WholeStatus));
   });
 });

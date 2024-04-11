@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { ChatFollowup } from "vscode";
-import { localize } from "../utils/localizeUtils";
 
 export const chatParticipantId = "ms-teams-vscode-extension.teams";
 

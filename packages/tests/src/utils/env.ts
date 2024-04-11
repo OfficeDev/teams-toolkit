@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 import * as dotenv from "dotenv";
 dotenv.config();
 
@@ -76,6 +78,13 @@ export class Env {
 
   static get AZURE_CLIENT_SECRET() {
     return this.getVal("AZURE_CLIENT_SECRET", process.env.AZURE_CLIENT_SECRET);
+  }
+
+  static get azureResourceGroup() {
+    return this.getVal(
+      "AZURE_RESOURCE_GROUP_NAME",
+      process.env.AZURE_RESOURCE_GROUP_NAME
+    );
   }
 
   private static getVal(name: string, value: string | undefined): string {

@@ -13,6 +13,8 @@ import fs from "fs-extra";
 import * as os from "os";
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 import { expect } from "chai";
+import { Env } from "./env";
+import { EnvConstants } from "../../src/commonlib/constants";
 
 export class Executor {
   static async execute(
@@ -49,9 +51,14 @@ export class Executor {
     }
   }
 
-  static login() {
-    const command = `az login --service-principal -u ${process.env.AZURE_CLIENT_ID} -p ${process.env.AZURE_CLIENT_SECRET} -t ${process.env.AZURE_TENANT_ID}`;
-    return this.execute(command, process.cwd());
+  static async login() {
+    const command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
+    await Executor.execute(command, process.cwd());
+
+    // set subscription
+    const subscription = Env["azureSubscriptionId"];
+    const setSubscriptionCommand = `az account set --subscription ${subscription}`;
+    return await Executor.execute(setSubscriptionCommand, process.cwd());
   }
 
   static concatProcessEnv(
@@ -468,8 +475,6 @@ export class Executor {
       envContent = fs.readFileSync(envFile, "utf-8");
     } catch (error) {
       console.log("read file error", error);
-      console.log("create .env.local file");
-      fs.writeFileSync(envFile, "");
     }
     const domainRegex = /Connect via browser: https:\/\/(\S+)/;
     const endpointRegex = /Connect via browser: (\S+)/;

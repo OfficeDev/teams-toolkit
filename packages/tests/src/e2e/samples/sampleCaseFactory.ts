@@ -25,6 +25,7 @@ import {
   FrontendValidator,
   BotValidator,
   FunctionValidator,
+  ContainerAppValidator,
 } from "../../commonlib";
 import m365Login from "@microsoft/teamsapp-cli/src/commonlib/m365Login";
 
@@ -41,6 +42,7 @@ export abstract class CaseFactory {
     | "function"
     | "spfx"
     | "tab & bot"
+    | "aca"
   )[] = [];
   public options?: {
     skipProvision?: boolean;
@@ -63,6 +65,7 @@ export abstract class CaseFactory {
       | "function"
       | "spfx"
       | "tab & bot"
+      | "aca"
     )[] = [],
     options: {
       skipProvision?: boolean;
@@ -183,6 +186,11 @@ export abstract class CaseFactory {
             );
             await functionValidator.validateProvision();
           }
+          if (validate.includes("aca")) {
+            // Validate Container App Provision
+            const aca = new ContainerAppValidator(context);
+            await aca.validateProvision(false);
+          }
         }
 
         // deploy
@@ -192,6 +200,12 @@ export abstract class CaseFactory {
             console.log("debug finish!");
             return;
           }
+
+          if (validate.includes("aca")) {
+            const { success } = await Executor.login();
+            expect(success).to.be.true;
+          }
+
           const { success } = await Executor.deploy(projectPath);
           expect(success).to.be.true;
 
@@ -217,6 +231,10 @@ export abstract class CaseFactory {
             options?.manifestFolderName
           );
           expect(success).to.be.true;
+
+          if (validate.includes("aca")) {
+            await ContainerAppValidator.validateContainerAppStatus();
+          }
         }
 
         // package

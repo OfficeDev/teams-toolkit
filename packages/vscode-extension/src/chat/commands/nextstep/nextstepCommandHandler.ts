@@ -59,6 +59,30 @@ export default async function nextStepCommandHandler(
   const steps = allSteps()
     .filter((s) => s.condition(status))
     .sort((a, b) => a.priority - b.priority);
+  await generateResponse(steps, status, response, token, chatTelemetryData);
+
+  chatTelemetryData.markComplete();
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChat,
+    chatTelemetryData.properties,
+    chatTelemetryData.measurements
+  );
+
+  return {
+    metadata: {
+      command: TeamsChatCommand.NextStep,
+      requestId: chatTelemetryData.requestId,
+    },
+  };
+}
+
+export async function generateResponse(
+  steps: NextStep[],
+  status: WholeStatus,
+  response: ChatResponseStream,
+  token: CancellationToken,
+  chatTelemetryData: IChatTelemetryData
+) {
   if (steps.length > 1) {
     response.markdown("Here are the next steps you can do:\n");
   }
@@ -86,20 +110,6 @@ export default async function nextStepCommandHandler(
     followUps.push(...s.followUps);
   });
   followupProvider.addFollowups(followUps);
-
-  chatTelemetryData.markComplete();
-  ExtTelemetry.sendTelemetryEvent(
-    TelemetryEvent.CopilotChat,
-    chatTelemetryData.properties,
-    chatTelemetryData.measurements
-  );
-
-  return {
-    metadata: {
-      command: TeamsChatCommand.NextStep,
-      requestId: chatTelemetryData.requestId,
-    },
-  };
 }
 
 export async function describeStep(

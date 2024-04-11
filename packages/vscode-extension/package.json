@@ -1522,6 +1522,7 @@
     "@types/react-router-dom": "^5.1.7",
     "@types/react-syntax-highlighter": "^15.5.5",
     "@types/sinon": "^9.0.9",
+    "@types/string-similarity": "^4.0.2",
     "@types/tmp": "^0.2.0",
     "@types/uuid": "^8.3.0",
     "@types/validator": "^13.1.1",
@@ -1611,6 +1612,7 @@
     "react-collapsible": "^2.10.0",
     "react-copy-to-clipboard": "^5.1.0",
     "react-syntax-highlighter": "^15.5.0",
+    "string-similarity": "^4.0.4",
     "tmp": "^0.2.1",
     "validator": "^13.7.0",
     "vscode-tas-client": "^0.1.75"

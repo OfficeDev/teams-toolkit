@@ -20,6 +20,8 @@ import {
   MeasurementCompilieErrorTypeIsNotAssignableToTypeCount,
 } from "../telemetryConsts";
 import { ChatResponseStream } from "vscode";
+import stringSimilarity = require("string-similarity");
+import { name } from "@azure/msal-node/dist/packageMetadata";
 
 export class DetectionResult {
   public compileErrors: string[] = [];
@@ -52,6 +54,7 @@ export class CodeIssueDetector {
   private definionFile: ts.SourceFile | undefined;
   private program: ts.Program | undefined;
   private typeChecker: ts.TypeChecker | undefined;
+  private completeMemberNames: string[] = [];
 
   private constructor() {}
 
@@ -75,7 +78,7 @@ export class CodeIssueDetector {
     const result = new DetectionResult();
     response.progress("Reviewing code...");
     // order is matther, don't swith the order
-    await this.buildTypeDefAst();
+    await this.buildTypeDefAst(host);
     this.buildProgram(codeSnippet);
     this.typeChecker = this.program?.getTypeChecker();
     result.merge(this.getCompilationErrorsAsync(host, isCustomFunction, telemetryData));
@@ -84,7 +87,7 @@ export class CodeIssueDetector {
     return result;
   }
 
-  private async buildTypeDefAst(): Promise<void> {
+  private async buildTypeDefAst(host: string): Promise<void> {
     if (!this.definionFile) {
       const typeDefStr = await fetchRawFileContent(
         `https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/office-js/index.d.ts`
@@ -95,6 +98,14 @@ export class CodeIssueDetector {
         ts.ScriptTarget.Latest,
         true
       );
+
+      // Add this condition to check if self.definionFile is defined
+      ts.forEachChild(this.definionFile, (node) => {
+        const names = this.processNamespace(host, null, node);
+        names?.forEach((name) => {
+          this.completeMemberNames.push(name);
+        });
+      });
     }
   }
 
@@ -297,9 +308,60 @@ export class CodeIssueDetector {
                 });
               });
             }
-            return `'${invalidProperty}' is invalid property or method, rewrite the code. Use another approach as alternative. Following are the available properties and methods of the type '${className}': \n\`\`\`typescript\n${memberNames.join(
-              "\n"
-            )}\n\`\`\`\n`;
+            if (memberNames.length === 0) {
+              return `
+The type '${className}' is not a valid JavaScript API type, and '${invalidProperty}' is invalid property or method of the type '${className}'. You should fix that by rewrite relevant code snippet with different approach.
+              `;
+            }
+            const localPropertyMethodNames =
+              memberNames.map((name) => name.split("property/method:")[1] ?? "") || [];
+            const truncated = stringSimilarity.findBestMatch(
+              `${invalidProperty}`,
+              localPropertyMethodNames
+            ).bestMatch.target;
+            const sortedSimilarStringsLocal: string = memberNames.find((name) => {
+              return name.indexOf(truncated) >= 0;
+            }) as string;
+            const sortedSimilarStringsGlobal: string[] = stringSimilarity
+              .findBestMatch(
+                `${invalidProperty}`,
+                self.completeMemberNames.map((name) => name.split("property/method:")[1].trim())
+              )
+              .ratings.map((rating, index) => {
+                rating.target = self.completeMemberNames[index];
+                return rating;
+              })
+              .filter((rating) => rating.rating > 0.35)
+              .sort((a, b) => b.rating - a.rating)
+              .slice(0, 10)
+              .map((rating) => rating.target);
+            const foundCandidate: boolean =
+              sortedSimilarStringsGlobal.find((name) => {
+                return name.indexOf(sortedSimilarStringsLocal) >= 0;
+              }) !== undefined;
+
+            if (foundCandidate) {
+              return `
+'${invalidProperty}' is invalid property or method of the type '${className}'. 
+You should fix that by taking the suggestion below. The 'class' indicates the type of class, and 'property/method' indicates the property or method name belongs to the class.
+\`\`\`typescript
+${sortedSimilarStringsLocal}
+\`\`\`\n
+              `;
+            } else {
+              return `
+'${invalidProperty}' is invalid property or method of the type '${className}'. 
+Based on the purpose of that line of code, you can refer potential possible relevant properties or method below. It may need more than one intermediate steps to get there, using your knownledge and the list below to find the path. The 'class' indicates the type of class, and 'property/method' indicates the property or method name belongs to the class.
+\`\`\`typescript
+${sortedSimilarStringsLocal}
+${sortedSimilarStringsGlobal.join("\n")}
+\`\`\`\n
+You may able to use the property or method of the type '${className}' as the start of the intermediate steps.
+\`\`\`typescript
+${memberNames.join("\n")}
+\`\`\`\n
+              `;
+            }
           }
         }
         return fixSuggestion; // something went wrong
@@ -378,7 +440,8 @@ export class CodeIssueDetector {
             // Get the first declaration
             const declaration = declarations[0];
             // Get the signature of the declaration
-            const signature = checker?.getSignatureFromDeclaration(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            const signature = checker!.getSignatureFromDeclaration(
               declaration as ts.SignatureDeclaration
             );
 
@@ -626,23 +689,35 @@ export class CodeIssueDetector {
     return fixSuggestion;
   }
 
-  private getMethodsAndProperties(classname: string, node: ts.Node): string[] {
-    if (ts.isClassDeclaration(node) && node.name && node.name.getText() === classname) {
-      const members = node.members;
-      const memberNames = members
-        .map((member) => {
-          if (ts.isMethodDeclaration(member) || ts.isPropertyDeclaration(member)) {
-            return member.name.getText();
-          }
-          return undefined;
-        })
-        .filter((name): name is string => name !== undefined); // filter out undefined values
-      return memberNames;
+  private getMethodsAndProperties(classname: string | null, node: ts.Node): string[] {
+    if (
+      ts.isClassDeclaration(node) && !!classname
+        ? node.name && node.name.getText() === classname
+        : true
+    ) {
+      try {
+        const declaredClassName = (node as ts.ClassDeclaration).name?.getText() || classname || "";
+        const members = (node as ts.ClassDeclaration).members;
+        if (!members) {
+          return [];
+        }
+        const memberNames = members
+          .map((member) => {
+            if (ts.isMethodDeclaration(member) || ts.isPropertyDeclaration(member)) {
+              return `class: ${declaredClassName}, property/method: ${member.name.getText()}`;
+            }
+            return undefined;
+          })
+          .filter((name): name is string => name !== undefined); // filter out undefined values
+        return memberNames;
+      } catch (error) {
+        console.error("getMethodsAndProperties:" + (error as Error).toString());
+      }
     }
     return [];
   }
 
-  private processNamespace(namespace: string, classname: string, node: ts.Node) {
+  private processNamespace(namespace: string, classname: string | null, node: ts.Node) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     if (ts.isModuleDeclaration(node) && node.name && node.name.getText() == namespace) {
@@ -704,7 +779,8 @@ export class CodeIssueDetector {
       if (
         sourceFile &&
         (ts.isImportDeclaration(node) ||
-          (ts.isCallExpression(node) && node.expression.getText() === "require"))
+          ((ts.isVariableStatement(node) || ts.isExpressionStatement(node)) &&
+            node.getText().includes("require(")))
       ) {
         {
           const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
@@ -736,19 +812,23 @@ export class CodeIssueDetector {
     let mainFunctionHasValidSignature = false;
     let definedAsAsync = false;
     function visit(node: ts.Node, checker: ts.TypeChecker) {
-      if (ts.isFunctionDeclaration(node)) {
-        if (node.name && node.name.text === "main") {
-          foundTheMainFunction = true;
-          if (node.parameters.length === 0) {
-            mainFunctionHasValidSignature = true;
-          }
-
+      // try to cover the arrow function, function expresson.
+      if (
+        ts.isFunctionDeclaration(node) ||
+        ts.isArrowFunction(node) ||
+        ts.isFunctionExpression(node)
+      ) {
+        const name = ts.isFunctionDeclaration(node)
+          ? node.name?.getText()
+          : node.parent?.getText().split(" ")[1];
+        if (name === "main") {
           const isAsync = node.modifiers?.some(
             (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword
           );
-          if (isAsync) {
-            definedAsAsync = true;
-          }
+          const hasNoArguments = node.parameters.length === 0;
+          foundTheMainFunction = true;
+          mainFunctionHasValidSignature = hasNoArguments;
+          definedAsAsync = !!isAsync;
         }
       }
       ts.forEachChild(node, (child) => visit(child, checker));
@@ -975,8 +1055,9 @@ export class CodeIssueDetector {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
               const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus a number '${leftType.value.toString()}' on the '${span.expression.right.getFullText()}'.Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
               result.runtimeErrors.push(warningMsg);
-            } else if (!!sourceFile) {
-              const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+            } else {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+              const line = sourceFile!.getLineAndCharacterOfPosition(node.getStart()).line + 1;
               const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus '${span.expression.right.getFullText()}' on '${span.expression.left.getFullText()}'. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
               result.runtimeErrors.push(warningMsg);
             }

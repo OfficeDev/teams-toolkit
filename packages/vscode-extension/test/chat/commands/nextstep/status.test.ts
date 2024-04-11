@@ -6,6 +6,7 @@ import * as helper from "../../../../src/chat/commands/nextstep/helper";
 import { MachineStatus, WholeStatus } from "../../../../src/chat/commands/nextstep/types";
 import { CommandKey } from "../../../../src/constants";
 import * as projectStatusUtils from "../../../../src/utils/projectStatusUtils";
+import * as fs from "fs-extra";
 
 chai.use(chaiPromised);
 
@@ -44,6 +45,7 @@ describe("chat nextstep status", () => {
       sandbox.stub(helper, "checkCredential").resolves({ m365LoggedIn: true, azureLoggedIn: true });
       sandbox.stub(helper, "globalStateGet").resolves(true);
       sandbox.stub(helper, "globalStateUpdate");
+      sandbox.stub(fs, "pathExists").resolves(true);
       await chai.expect(status.getWholeStatus("test-folder")).to.eventually.deep.equal({
         machineStatus: {
           azureLoggedIn: true,
@@ -60,6 +62,7 @@ describe("chat nextstep status", () => {
           actionStatus: projectStatusUtils.emptyProjectStatus(),
           readmeContent: undefined,
           launchJSONContent: undefined,
+          nodeModulesExist: true,
         },
       } as WholeStatus);
     });
@@ -75,6 +78,7 @@ describe("chat nextstep status", () => {
       sandbox.stub(helper, "checkCredential").resolves({ m365LoggedIn: true, azureLoggedIn: true });
       sandbox.stub(helper, "globalStateGet").resolves(true);
       sandbox.stub(helper, "globalStateUpdate");
+      sandbox.stub(fs, "pathExists").resolves(true);
       await chai.expect(status.getWholeStatus("test-folder")).to.eventually.deep.equal({
         machineStatus: {
           azureLoggedIn: true,
@@ -91,6 +95,7 @@ describe("chat nextstep status", () => {
           actionStatus: projectStatusUtils.emptyProjectStatus(),
           readmeContent: undefined,
           launchJSONContent: undefined,
+          nodeModulesExist: true,
         },
       } as WholeStatus);
     });

@@ -24,6 +24,7 @@ import {
   MeasurementSelfReflectionExecutionTimeInTotalSec,
 } from "../telemetryConsts";
 import { customFunctionSystemPrompt, excelSystemPrompt } from "../../officePrompts";
+import { writeLogToFile } from "../utils";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -95,6 +96,8 @@ export class CodeIssueCorrector implements ISkill {
       return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
     }
 
+    let fixedCode: string | null = codeSnippet;
+    const historicalErrors: string[] = [];
     let additionalInfo = "";
     for (let index = 0; index < maxRetryCount; index++) {
       const t0 = performance.now();
@@ -120,7 +123,7 @@ export class CodeIssueCorrector implements ISkill {
       }
       statusString = "fixing code issues... " + statusString;
       response.progress(statusString);
-      let fixedCode = await this.fixIssueAsync(
+      fixedCode = await this.fixIssueAsync(
         token,
         host,
         spec.appendix.isCustomFunction,
@@ -128,6 +131,7 @@ export class CodeIssueCorrector implements ISkill {
         codeTaskBreakdown,
         baseLineResuult.compileErrors,
         baseLineResuult.runtimeErrors,
+        historicalErrors,
         additionalInfo,
         model
       );
@@ -145,6 +149,11 @@ export class CodeIssueCorrector implements ISkill {
         );
       // await writeLogToFile("\n# compileErrors:\n" + issuesAfterFix.compileErrors.join("\n\n"));
       // await writeLogToFile("\n# runtimeErrors:\n" + issuesAfterFix.runtimeErrors.join("\n\n"));
+      historicalErrors.push(
+        ...baseLineResuult.compileErrors.map(
+          (item) => item.replace(/at Char \d+-\d+:/g, "").split("\nFix suggestion")[0]
+        )
+      );
       const terminateResult = this.terminateFixIteration(
         spec.appendix.complexity,
         codeSnippet,
@@ -204,6 +213,7 @@ export class CodeIssueCorrector implements ISkill {
       baseLineResuult = issuesAfterFix;
     }
 
+    spec.appendix.codeSnippet = fixedCode || codeSnippet;
     spec.appendix.telemetryData.properties[MeasurementSystemSelfReflectionAttemptSucceeded] =
       "false";
     return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
@@ -217,6 +227,7 @@ export class CodeIssueCorrector implements ISkill {
     substeps: string[],
     errorMessages: string[],
     warningMessage: string[],
+    historicalErrors: string[],
     additionalInfo: string,
     model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4"
   ) {
@@ -237,6 +248,13 @@ ${
     ? "The prior fix is inapprioriate, some details as '" +
       additionalInfo +
       "', you should learn from your past errors and avoid same problem in this try."
+    : ""
+}
+
+${
+  historicalErrors.length > 0
+    ? "The historical errors you made in previous tries that you should avoid:\n- " +
+      historicalErrors.join("\n\n- ")
     : ""
 }
 

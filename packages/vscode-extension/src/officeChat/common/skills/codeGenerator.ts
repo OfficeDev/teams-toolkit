@@ -339,13 +339,16 @@ Let's think step by step.
 
     # There're some samples relevant to the your's ask, you can read it and repeat by yourself, before start to generate code.
     `;
+
+    const k = host.toLowerCase() == "powerpoint" ? 2 : 1;
+
     // Then let's query if any code examples relevant to the user's ask that we can put as examples
     const scenarioSamples =
       await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodes(
         token,
         host,
         spec.userInput,
-        2 // Get top 2 most relevant samples for now
+        k
       );
     if (scenarioSamples.size > 0) {
       const codeSnippets: string[] = [];

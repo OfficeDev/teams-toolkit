@@ -83,11 +83,7 @@ import {
   IsChatParticipantEnabled,
   chatParticipantId,
 } from "./chat/consts";
-import {
-  CHAT_CREATE_OFFICE_SAMPLE_COMMAND_ID,
-  officeChatParticipantId,
-  CHAT_CREATE_OFFICE_TEMPLATE_COMMAND_ID,
-} from "./officeChat/consts";
+import { officeChatParticipantId } from "./officeChat/consts";
 import followupProvider from "./chat/followupProvider";
 import {
   chatCreateCommandHandler,
@@ -96,10 +92,7 @@ import {
   openUrlCommandHandler,
   handleFeedback,
 } from "./chat/handlers";
-import {
-  officeChatRequestHandler,
-  chatCreateOfficeTemplateCommandHandler,
-} from "./officeChat/handlers";
+import { officeChatRequestHandler } from "./officeChat/handlers";
 import { CommandKey as CommandKeys } from "./constants";
 
 export let VS_CODE_UI: VsCodeUI;
@@ -449,19 +442,14 @@ function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
     officeChatParticipantId,
     officeChatRequestHandler
   );
-  participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
+  participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "office.png");
   participant.followupProvider = followupProvider;
   participant.onDidReceiveFeedback((e) => handleFeedback(e));
 
   context.subscriptions.push(
     participant,
-    vscode.commands.registerCommand(CHAT_CREATE_OFFICE_SAMPLE_COMMAND_ID, chatCreateCommandHandler),
     vscode.commands.registerCommand("fx-extension.openOfficeDevDocument", (...args) =>
       Correlator.run(officeDevHandlers.openDocumentHandler, args)
-    ),
-    vscode.commands.registerCommand(
-      CHAT_CREATE_OFFICE_TEMPLATE_COMMAND_ID,
-      chatCreateOfficeTemplateCommandHandler
     )
     // vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler)
     // vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)

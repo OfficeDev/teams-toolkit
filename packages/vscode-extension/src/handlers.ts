@@ -385,7 +385,7 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   }
   const projectPathUri = Uri.file(res.projectPath);
   // If it is triggered in @office /create for code gen, then do no open the temp folder.
-  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.isFromCodeGen) {
+  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.agent === "office") {
     return result;
   }
   // show local debug button by default

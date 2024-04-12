@@ -6,33 +6,20 @@ import {
   ChatContext,
   ChatRequest,
   ChatResponseStream,
-  commands,
   LanguageModelChatUserMessage,
   ProviderResult,
-  Uri,
-  window,
-  workspace,
 } from "vscode";
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as uuid from "uuid";
 import { OfficeChatCommand, officeChatParticipantId } from "./consts";
 import followupProvider from "../chat/followupProvider";
 import { ICopilotChatResult } from "../chat/types";
 import { ChatTelemetryData } from "../chat/telemetry";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import {
-  TelemetryTriggerFrom,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "../telemetry/extTelemetryEvents";
-import { localize } from "../utils/localizeUtils";
+import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import officeCreateCommandHandler from "./commands/create/officeCreateCommandHandler";
 import generatecodeCommandHandler from "./commands/generatecode/generatecodeCommandHandler";
 import officeNextStepCommandHandler from "./commands/nextStep/officeNextstepCommandHandler";
 import { defaultOfficeSystemPrompt } from "./officePrompts";
 import { verbatimCopilotInteraction } from "../chat/utils";
-import { FxError, Result } from "@microsoft/teamsfx-api";
 
 export function officeChatRequestHandler(
   request: ChatRequest,
@@ -75,55 +62,4 @@ async function officeDefaultHandler(
     chatTelemetryData.measurements
   );
   return { metadata: { command: undefined, requestId: chatTelemetryData.requestId } };
-}
-
-export async function chatCreateOfficeTemplateCommandHandler(
-  command: string,
-  requestId: string,
-  data: any
-) {
-  const officeChatTelemetryData = ChatTelemetryData.get(requestId);
-  const correlationId = uuid.v4();
-  if (officeChatTelemetryData) {
-    ExtTelemetry.sendTelemetryEvent(
-      TelemetryEvent.CopilotChatClickButton,
-      {
-        ...officeChatTelemetryData.properties,
-        [TelemetryProperty.CopilotChatRunCommandId]: OfficeChatCommand.Create,
-        [TelemetryProperty.CorrelationId]: correlationId,
-      },
-      officeChatTelemetryData.measurements
-    );
-  }
-  const customFolder = await window.showOpenDialog({
-    title: localize("teamstoolkit.chatParticipants.create.selectFolder.title"),
-    openLabel: localize("teamstoolkit.chatParticipants.create.selectFolder.label"),
-    defaultUri: Uri.file(workspace.workspaceFolders![0].uri.fsPath),
-    canSelectFiles: false,
-    canSelectFolders: true,
-    canSelectMany: false,
-  });
-  if (!customFolder) {
-    return;
-  } else {
-    const dstPath = customFolder[0].fsPath;
-    const baseName: string = data.name;
-    let projectName = baseName;
-    let index = 0;
-    while (fs.existsSync(path.join(dstPath, projectName))) {
-      projectName = `${baseName} ${++index}`;
-    }
-    const inputs = {
-      ...data,
-      "programming-language": "typescript",
-      folder: dstPath,
-      "app-name": projectName,
-    };
-    return await commands.executeCommand<Result<unknown, FxError>>(
-      command,
-      correlationId,
-      TelemetryTriggerFrom.CopilotChat,
-      inputs
-    );
-  }
 }

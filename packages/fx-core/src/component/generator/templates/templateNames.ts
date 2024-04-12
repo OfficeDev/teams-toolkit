@@ -12,6 +12,7 @@ import {
 export enum TemplateNames {
   Tab = "non-sso-tab",
   SsoTab = "sso-tab",
+  SsoTabObo = "sso-tab-with-obo-flow",
   TabSSR = "non-sso-tab-ssr",
   SsoTabSSR = "sso-tab-ssr",
   DashboardTab = "dashboard-tab",
@@ -33,14 +34,13 @@ export enum TemplateNames {
   M365MessageExtension = "m365-message-extension",
   TabAndDefaultBot = "non-sso-tab-default-bot",
   BotAndMessageExtension = "default-bot-message-extension",
-  SsoTabObo = "sso-tab-with-obo-flow",
   LinkUnfurling = "link-unfurling",
+  AIBot = "ai-bot",
+  AIAssistantBot = "ai-assistant-bot",
+  ApiPluginFromScratch = "api-plugin-from-scratch",
   CopilotPluginFromScratch = "copilot-plugin-from-scratch",
   CopilotPluginFromScratchApiKey = "copilot-plugin-from-scratch-api-key",
   ApiMessageExtensionSso = "api-message-extension-sso",
-  ApiPluginFromScratch = "api-plugin-from-scratch",
-  AIBot = "ai-bot",
-  AIAssistantBot = "ai-assistant-bot",
   CustomCopilotBasic = "custom-copilot-basic",
   CustomCopilotRagCustomize = "custom-copilot-rag-customize",
   CustomCopilotRagAzureAISearch = "custom-copilot-rag-azure-ai-search",
@@ -51,6 +51,12 @@ export enum TemplateNames {
 }
 
 export const Feature2TemplateName = {
+  [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
+  [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
+  [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
+  [`${CapabilityOptions.nonSsoTab().id}:ssr`]: TemplateNames.TabSSR,
+  [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
+  [`${CapabilityOptions.dashboardTab().id}:undefined`]: TemplateNames.DashboardTab,
   [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appService().id}`]:
     TemplateNames.NotificationRestify,
   [`${CapabilityOptions.notificationBot().id}:${NotificationTriggerOptions.appServiceForVS().id}`]:
@@ -76,20 +82,18 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.commandBot().id}:undefined`]: TemplateNames.CommandAndResponse,
   [`${CapabilityOptions.workflowBot().id}:undefined`]: TemplateNames.Workflow,
   [`${CapabilityOptions.basicBot().id}:undefined`]: TemplateNames.DefaultBot,
-  [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
   [`${CapabilityOptions.me().id}:undefined`]: TemplateNames.MessageExtension,
-  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botMe().id}`]:
-    TemplateNames.M365MessageExtension,
+  [`${CapabilityOptions.collectFormMe().id}:undefined`]: TemplateNames.MessageExtensionAction,
+  [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botPlugin().id}`]:
     TemplateNames.MessageExtensionCopilot,
-  [`${CapabilityOptions.SearchMe().id}:undefined`]: TemplateNames.MessageExtensionSearch,
-  [`${CapabilityOptions.tab().id}:undefined`]: TemplateNames.SsoTab,
-  [`${CapabilityOptions.nonSsoTab().id}:undefined`]: TemplateNames.Tab,
-  [`${CapabilityOptions.m365SsoLaunchPage().id}:undefined`]: TemplateNames.SsoTabObo,
-  [`${CapabilityOptions.dashboardTab().id}:undefined`]: TemplateNames.DashboardTab,
+  [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.botMe().id}`]:
+    TemplateNames.M365MessageExtension,
   [`${CapabilityOptions.nonSsoTabAndBot().id}:undefined`]: TemplateNames.TabAndDefaultBot,
   [`${CapabilityOptions.botAndMe().id}:undefined`]: TemplateNames.BotAndMessageExtension,
   [`${CapabilityOptions.linkUnfurling().id}:undefined`]: TemplateNames.LinkUnfurling,
+  [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
+  [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
   [`${CapabilityOptions.copilotPluginNewApi().id}:undefined`]: TemplateNames.ApiPluginFromScratch,
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
     ApiMessageExtensionAuthOptions.none().id
@@ -100,10 +104,6 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.m365SearchMe().id}:undefined:${MeArchitectureOptions.newApi().id}:${
     ApiMessageExtensionAuthOptions.microsoftEntra().id
   }`]: TemplateNames.ApiMessageExtensionSso,
-  [`${CapabilityOptions.aiBot().id}:undefined`]: TemplateNames.AIBot,
-  [`${CapabilityOptions.aiAssistantBot().id}:undefined`]: TemplateNames.AIAssistantBot,
-  [`${CapabilityOptions.tab().id}:ssr`]: TemplateNames.SsoTabSSR,
-  [`${CapabilityOptions.nonSsoTab().id}:ssr`]: TemplateNames.TabSSR,
   [`${CapabilityOptions.customCopilotBasic().id}:undefined`]: TemplateNames.CustomCopilotBasic,
   [`${CapabilityOptions.customCopilotRag().id}:undefined:${
     CustomCopilotRagOptions.customize().id

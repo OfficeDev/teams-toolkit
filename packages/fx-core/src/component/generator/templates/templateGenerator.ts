@@ -7,12 +7,8 @@ import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../../common/utils";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { commonTemplateName, componentName, errorSource } from "../constant";
-import {
-  enableTestToolByDefault,
-  isApiKeyEnabled,
-  isNewProjectTypeEnabled,
-} from "../../../common/featureFlags";
+import { componentName } from "../constant";
+import { enableTestToolByDefault, isNewProjectTypeEnabled } from "../../../common/featureFlags";
 import {
   ApiMessageExtensionAuthOptions,
   CapabilityOptions,
@@ -177,7 +173,7 @@ export class DefaultTemplateGenerator implements IGenerator {
 
   public activate(ctx: Context, inputs: Inputs): boolean {
     return Object.keys(Feature2TemplateName).some((feature) =>
-      feature.includes(inputs.capabilities)
+      feature.startsWith(inputs.capabilities)
     );
   }
 
@@ -267,6 +263,12 @@ export class DefaultTemplateGenerator implements IGenerator {
     const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
     const trigger = inputs[QuestionNames.BotTrigger] as string;
     let feature = `${capability}:${trigger}`;
+    if (
+      capability === CapabilityOptions.m365SsoLaunchPage().id ||
+      capability === CapabilityOptions.m365SearchMe().id
+    ) {
+      inputs.isM365 = true;
+    }
 
     if (
       language === "csharp" &&
@@ -292,11 +294,7 @@ export class DefaultTemplateGenerator implements IGenerator {
       capability === CapabilityOptions.m365SearchMe().id &&
       meArchitecture === MeArchitectureOptions.newApi().id
     ) {
-      if (isApiKeyEnabled() && apiMEAuthType) {
-        feature = `${feature}:${apiMEAuthType}`;
-      } else {
-        feature = `${feature}:none`;
-      }
+      feature = `${feature}:${apiMEAuthType}`;
     }
 
     if (capability === CapabilityOptions.customCopilotRag().id) {

@@ -598,7 +598,7 @@ export class CliHelper {
         ? "teamsapp"
         : "teamsfx",
       v3
-        ? ["preview --telemetry false", "--env", env]
+        ? ["preview", "--telemetry", "false", "--env", env]
         : ["preview", `--${env}`],
       {
         cwd: projectPath,

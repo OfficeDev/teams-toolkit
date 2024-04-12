@@ -1406,6 +1406,44 @@ describe("handlers", () => {
     });
   });
 
+  describe("downloadSampleApp", function () {
+    this.beforeEach(() => {
+      sandbox.stub(globalVariables, "checkIsSPFx").returns(false);
+      sandbox.stub(vscode.commands, "executeCommand");
+    });
+
+    this.afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const errorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(false);
+      const createProject = sandbox.spy(handlers.core, "createSampleProject");
+
+      await handlers.downloadSampleApp(extTelemetryEvents.TelemetryTriggerFrom.CopilotChat, "test");
+
+      chai.assert.isTrue(createProject.calledOnce);
+      chai.assert.isTrue(errorEventStub.notCalled);
+    });
+
+    it("has error", async () => {
+      sandbox.stub(handlers, "core").value(new MockCore());
+      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      const errorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(false);
+      sandbox
+        .stub(handlers.core, "createSampleProject")
+        .rejects(err(new Error("Cannot get user login information")));
+
+      await handlers.downloadSampleApp(extTelemetryEvents.TelemetryTriggerFrom.CopilotChat, "test");
+
+      chai.assert.isTrue(errorEventStub.calledOnce);
+    });
+  });
+
   it("downloadSample", async () => {
     const inputs: Inputs = {
       scratch: "no",

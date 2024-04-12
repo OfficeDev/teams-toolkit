@@ -165,7 +165,7 @@ export class LocalDebugTestContext extends TestContext {
       case "botfunc":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang}--telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability tab --programming-language ${this.lang} --telemetry false`
         );
         await execCommand(
           path.resolve(this.testRootFolder, this.appName),
@@ -191,7 +191,7 @@ export class LocalDebugTestContext extends TestContext {
       case "dashboard":
         await execCommand(
           this.testRootFolder,
-          `teamsapp new --app-name ${this.appName} --interactive false --capability dashboard-tab --programming-language ${this.lang}--telemetry false`
+          `teamsapp new --app-name ${this.appName} --interactive false --capability dashboard-tab --programming-language ${this.lang} --telemetry false`
         );
         break;
       case "timeNoti":

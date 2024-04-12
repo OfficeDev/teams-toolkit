@@ -13,4 +13,8 @@ export const copilotPluginOptionIds = [
   copilotPluginApiSpecOptionId,
   copilotPluginOpenAIPluginOptionId,
 ];
-export const capabilitiesHavePythonOption = ["custom-copilot-basic", "custom-copilot-rag"];
+export const capabilitiesHavePythonOption = [
+  "custom-copilot-basic",
+  "custom-copilot-rag",
+  "custom-copilot-agent-new"
+];

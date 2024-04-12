@@ -1452,7 +1452,9 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     // SPFx only supports typescript
     return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
   } else if (
-    capabilitiesHavePythonOption.includes(capabilities) &&
+    capabilitiesHavePythonOption.includes(
+      inputs[capabilities] ? inputs[capabilities] : capabilities
+    ) &&
     !(
       capabilities == CapabilityOptions.customCopilotRag().id &&
       (inputs[CapabilityOptions.customCopilotRag().id] ==

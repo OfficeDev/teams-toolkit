@@ -898,7 +898,7 @@ async function updateActionForCustomApi(
 
       actions.push({
         name: item.item.operationId,
-        description: item.item.description,
+        description: item.item.description ?? item.item.summary,
         parameters: parameters,
       });
     }

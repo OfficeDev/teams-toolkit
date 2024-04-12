@@ -119,3 +119,7 @@ You can follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
+
+## Known issue
+- If you use `Debug in Test Tool` to local debug, you might get an error `InternalServiceError: connect ECONNREFUSED 127.0.0.1:3978` in Test Tool log. You can wait for Python launch console ready and then refresh the front end web page. 
+- When you use `Launch Remote in Teams` to remote debug after deployment, you might loose interaction with your bot. This is because the remote service needs to restart. Please wait for several minutes to retry it.

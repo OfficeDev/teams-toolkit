@@ -7,14 +7,14 @@ import { CancellationToken } from "../../mocks/vsc";
 import * as vscode from "vscode";
 import * as globalVariables from "../../../src/globalVariables";
 import * as core from "@microsoft/teamsfx-core";
-import * as status from "../../../src/chat/commands/nextstep/status";
 import { NextStep, WholeStatus } from "../../../src/chat/commands/nextstep/types";
+import * as status from "../../../src/officeChat/commands/nextStep/status";
 import { TeamsFollowupProvider } from "../../../src/chat/followupProvider";
 import * as util from "../../../src/chat/utils";
 import * as officeSteps from "../../../src/officeChat/commands/nextStep/officeSteps";
 import { CHAT_EXECUTE_COMMAND_ID, CHAT_OPENURL_COMMAND_ID } from "../../../src/chat/consts";
 
-describe("officeNextStepCommandHandler", () => {
+describe("office steps: officeNextStepCommandHandler", () => {
   const sandbox = sinon.createSandbox();
 
   beforeEach(() => {
@@ -147,9 +147,9 @@ describe("officeNextStepCommandHandler", () => {
       response as unknown as vscode.ChatResponseStream,
       token
     );
-    chai.assert.isTrue(getCopilotResponseAsStringStub.calledOnce);
-    chai.assert.isTrue(response.markdown.calledOnce);
-    chai.assert.isTrue(response.button.calledTwice);
+    chai.assert.isTrue(getCopilotResponseAsStringStub.calledTwice);
+    chai.assert.isTrue(response.markdown.calledThrice);
+    chai.assert.isTrue(response.button.calledThrice);
     chai.assert.isTrue(followupProviderStub.calledOnce);
   });
 });

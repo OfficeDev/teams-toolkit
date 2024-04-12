@@ -3,6 +3,7 @@ import * as chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { officeSteps } from "../../../src/officeChat/commands/nextStep/officeSteps";
 import * as condition from "../../../src/chat/commands/nextstep/condition";
+import * as officeCondition from "../../../src/officeChat/commands/nextStep/condition";
 import { DescripitionFunc, WholeStatus } from "../../../src/chat/commands/nextstep/types";
 
 describe("office steps", () => {
@@ -121,7 +122,7 @@ describe("office steps", () => {
     it("condition: selected - project opened, did action after scaffolded, dependencies not installed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(false);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(false);
 
       const step = steps.find((s) => s.title === "Install Dependencies");
       chai.assert.isTrue(step?.condition({} as WholeStatus));
@@ -145,7 +146,7 @@ describe("office steps", () => {
     it("condition: not selected - dependencies installed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
 
       const step = steps.find((s) => s.title === "Install Dependencies");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -160,8 +161,8 @@ describe("office steps", () => {
     it("condition: selected - project opened, did action after scaffolded, dependencies installed, can preview in local env, debug not succeeded after source code changed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
-      sandbox.stub(condition, "canOfficeAddInPreviewInLocalEnv").returns(true);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(officeCondition, "canOfficeAddInPreviewInLocalEnv").returns(true);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
@@ -186,7 +187,7 @@ describe("office steps", () => {
     it("condition: not selected - dependencies not installed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(false);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(false);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -195,8 +196,8 @@ describe("office steps", () => {
     it("condition: not selected - cannot preview in local env", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
-      sandbox.stub(condition, "canOfficeAddInPreviewInLocalEnv").returns(false);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(officeCondition, "canOfficeAddInPreviewInLocalEnv").returns(false);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
       chai.assert.isFalse(step?.condition({} as WholeStatus));
@@ -205,8 +206,8 @@ describe("office steps", () => {
     it("condition: not selected - debug succeeded after source code changed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
-      sandbox.stub(condition, "canOfficeAddInPreviewInLocalEnv").returns(true);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(officeCondition, "canOfficeAddInPreviewInLocalEnv").returns(true);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
@@ -222,7 +223,7 @@ describe("office steps", () => {
     it("condition: selected - project opened, did action after scaffolded, dependencies installed, debug succeeded after source code changed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
 
       const step = steps.filter((s) => s.title === "Publish to App Source" || s.title === "Deploy");
@@ -250,7 +251,7 @@ describe("office steps", () => {
     it("condition: not selected - dependencies not installed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(false);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(false);
 
       const step = steps.filter((s) => s.title === "Publish to App Source" || s.title === "Deploy");
       chai.assert.isFalse(step?.[0]?.condition({} as WholeStatus));
@@ -260,7 +261,7 @@ describe("office steps", () => {
     it("condition: not selected - debug not succeeded after source code changed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
 
       const step = steps.filter((s) => s.title === "Publish to App Source" || s.title === "Deploy");

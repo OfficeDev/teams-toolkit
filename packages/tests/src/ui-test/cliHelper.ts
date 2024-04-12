@@ -209,7 +209,7 @@ export class CliHelper {
   ) {
     console.log(`[publish] ${projectPath}`);
     const result = await execAsyncWithRetry(
-      `teamsapp publish --env ${env} --telemetry false --verbose  ${option}`,
+      `teamsapp publish --env ${env} --verbose  ${option} --telemetry false`,
       {
         cwd: projectPath,
         env: processEnv ? processEnv : process.env,
@@ -358,7 +358,7 @@ export class CliHelper {
       console.log("add command is not supported in v3");
     } else {
       const result = await execAsyncWithRetry(
-        `teamsapp deploy --telemetry false ${resourceToDeploy} ${option}`,
+        `teamsapp deploy ${resourceToDeploy} ${option}  --telemetry false`,
         {
           cwd: projectPath,
           env: processEnv ? processEnv : process.env,
@@ -598,7 +598,7 @@ export class CliHelper {
         ? "teamsapp"
         : "teamsfx",
       v3
-        ? ["preview", "--telemetry", "false", "--env", env]
+        ? ["preview", "--env", env, "--telemetry", "false"]
         : ["preview", `--${env}`],
       {
         cwd: projectPath,

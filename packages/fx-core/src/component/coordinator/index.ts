@@ -72,7 +72,7 @@ import { pathUtils } from "../utils/pathUtils";
 import { settingsUtil } from "../utils/settingsUtil";
 import { SummaryReporter } from "./summary";
 import { Generators } from "../generator/generatorProvider";
-import { Feature2TemplateName } from "../generator/templates/templateGenerator";
+import { Feature2TemplateName } from "../generator/templates/templateNames";
 import { convertToLangKey } from "../generator/utils";
 
 const M365Actions = [

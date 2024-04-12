@@ -35,10 +35,8 @@ import { QuestionNames } from "../../../src/question/questionNames";
 import { MockTools, randomAppName } from "../../core/utils";
 import { MockedUserInteraction } from "../../plugins/solution/util";
 import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
-import {
-  DefaultTemplateGenerator,
-  TemplateNames,
-} from "../../../src/component/generator/templates/templateGenerator";
+import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
+import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
 
 const V3Version = MetadataV3.projectVersion;
 

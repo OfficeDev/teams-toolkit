@@ -55,6 +55,7 @@ import {
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
+import * as copilotChatHandlers from "./copilotChatHandlers";
 import * as officeDevHandlers from "./officeDevHandlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
 import { VsCodeUI } from "./qm/vsc_ui";
@@ -63,13 +64,34 @@ import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEv
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
-import { delay, hasAdaptiveCardInWorkspace, isM365Project } from "./utils/commonUtils";
+import {
+  FeatureFlags,
+  delay,
+  hasAdaptiveCardInWorkspace,
+  isM365Project,
+} from "./utils/commonUtils";
 import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
 import { configMgr } from "./config";
 import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
+import {
+  CHAT_CREATE_SAMPLE_COMMAND_ID,
+  CHAT_EXECUTE_COMMAND_ID,
+  CHAT_OPENURL_COMMAND_ID,
+  IsChatParticipantEnabled,
+  chatParticipantId,
+} from "./chat/consts";
+import followupProvider from "./chat/followupProvider";
+import {
+  chatCreateCommandHandler,
+  chatExecuteCommandHandler,
+  chatRequestHandler,
+  openUrlCommandHandler,
+  handleFeedback,
+} from "./chat/handlers";
+import { CommandKey as CommandKeys } from "./constants";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -92,6 +114,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
   registerInternalCommands(context);
 
+  registerChatParticipant(context);
+
   if (isTeamsFxProject) {
     activateTeamsFxRegistration(context);
   }
@@ -108,6 +132,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // UI is ready to show & interact
   await vscode.commands.executeCommand("setContext", "fx-extension.isTeamsFx", isTeamsFxProject);
+
+  // control whether to show chat participant entries
+  await vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isChatParticipantEnabled",
+    IsChatParticipantEnabled
+  );
+
+  process.env[FeatureFlags.ChatParticipant] = IsChatParticipantEnabled.toString();
 
   await vscode.commands.executeCommand(
     "setContext",
@@ -210,7 +243,7 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   // Create a new Teams app
   registerInCommandController(
     context,
-    "fx-extension.create",
+    CommandKeys.Create,
     handlers.createNewProjectHandler,
     "createProject"
   );
@@ -239,19 +272,16 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
   context.subscriptions.push(openLifecycleTreeview);
 
   // Documentation
-  registerInCommandController(context, "fx-extension.openDocument", handlers.openDocumentHandler);
+  registerInCommandController(context, CommandKeys.OpenDocument, handlers.openDocumentHandler);
 
   // README
-  const openReadMeCmd = vscode.commands.registerCommand("fx-extension.openReadMe", (...args) =>
-    Correlator.run(handlers.openReadMeHandler, args)
-  );
-  context.subscriptions.push(openReadMeCmd);
+  registerInCommandController(context, CommandKeys.OpenReadMe, handlers.openReadMeHandler);
 
   // View samples
-  registerInCommandController(context, "fx-extension.openSamples", handlers.openSamplesHandler);
+  registerInCommandController(context, CommandKeys.OpenSamples, handlers.openSamplesHandler);
 
   // Quick start
-  registerInCommandController(context, "fx-extension.openWelcome", handlers.openWelcomeHandler);
+  registerInCommandController(context, CommandKeys.OpenWelcome, handlers.openWelcomeHandler);
 
   // Tutorials
   registerInCommandController(
@@ -260,17 +290,15 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     handlers.selectTutorialsHandler
   );
 
-  const signinM365 = vscode.commands.registerCommand("fx-extension.signinM365", (...args) =>
-    Correlator.run(handlers.signinM365Callback, args)
-  );
-  context.subscriptions.push(signinM365);
+  // Sign in to M365
+  registerInCommandController(context, CommandKeys.SigninM365, handlers.signinM365Callback);
 
   // Prerequisites check
-  const validateGetStartedPrerequisitesCmd = vscode.commands.registerCommand(
-    "fx-extension.validate-getStarted-prerequisites",
-    (...args) => Correlator.run(handlers.validateGetStartedPrerequisitesHandler, args)
+  registerInCommandController(
+    context,
+    CommandKeys.ValidateGetStartedPrerequisites,
+    handlers.validateGetStartedPrerequisitesHandler
   );
-  context.subscriptions.push(validateGetStartedPrerequisitesCmd);
 
   // Upgrade command to update Teams manifest
   const migrateTeamsManifestCmd = vscode.commands.registerCommand(
@@ -291,6 +319,12 @@ function registerActivateCommands(context: vscode.ExtensionContext) {
     Correlator.run(handlers.selectAndDebugHandler, args)
   );
   context.subscriptions.push(runIconCmd);
+
+  // Register invoke teams agent command
+  const invokeTeamsAgent = vscode.commands.registerCommand("fx-extension.invokeChat", (...args) =>
+    Correlator.run(copilotChatHandlers.invokeTeamsAgent, args)
+  );
+  context.subscriptions.push(invokeTeamsAgent);
 }
 
 /**
@@ -368,10 +402,26 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
-  const signinAzure = vscode.commands.registerCommand("fx-extension.signinAzure", (...args) =>
-    Correlator.run(handlers.signinAzureCallback, args)
+  registerInCommandController(context, CommandKeys.SigninAzure, handlers.signinAzureCallback);
+}
+
+/**
+ * Copilot Chat Participant
+ */
+function registerChatParticipant(context: vscode.ExtensionContext) {
+  const participant = vscode.chat.createChatParticipant(chatParticipantId, (...args) =>
+    Correlator.run(chatRequestHandler, ...args)
   );
-  context.subscriptions.push(signinAzure);
+  participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "teams.png");
+  participant.followupProvider = followupProvider;
+  participant.onDidReceiveFeedback((...args) => Correlator.run(handleFeedback, ...args));
+
+  context.subscriptions.push(
+    participant,
+    vscode.commands.registerCommand(CHAT_CREATE_SAMPLE_COMMAND_ID, chatCreateCommandHandler),
+    vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler),
+    vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
+  );
 
   const generateManifestGUID = vscode.commands.registerCommand(
     "fx-extension.generateManifestGUID",
@@ -400,7 +450,7 @@ function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   // Provision in the cloud
   registerInCommandController(
     context,
-    "fx-extension.provision",
+    CommandKeys.Provision,
     handlers.provisionHandler,
     "provision"
   );
@@ -414,10 +464,10 @@ function registerTreeViewCommandsInLifecycle(context: vscode.ExtensionContext) {
   );
 
   // Deploy to the cloud
-  registerInCommandController(context, "fx-extension.deploy", handlers.deployHandler, "deploy");
+  registerInCommandController(context, CommandKeys.Deploy, handlers.deployHandler, "deploy");
 
   // Publish to Teams
-  registerInCommandController(context, "fx-extension.publish", handlers.publishHandler, "publish");
+  registerInCommandController(context, CommandKeys.Publish, handlers.publishHandler, "publish");
 
   // Publish in Developer Portal
   registerInCommandController(
@@ -493,13 +543,7 @@ function registerTeamsFxCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(editAadManifestTemplateCmd);
 
-  const preview = vscode.commands.registerCommand(
-    "fx-extension.preview",
-    async (node: Record<string, string>) => {
-      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
-    }
-  );
-  context.subscriptions.push(preview);
+  registerInCommandController(context, CommandKeys.Preview, handlers.treeViewPreviewHandler);
 
   registerInCommandController(context, "fx-extension.openFolder", handlers.openFolderHandler);
 
@@ -549,28 +593,25 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(manageCollaborator);
 
-  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", () =>
-    Correlator.run(handlers.treeViewLocalDebugHandler)
-  );
-  context.subscriptions.push(localDebug);
+  registerInCommandController(context, CommandKeys.LocalDebug, handlers.treeViewLocalDebugHandler);
 
-  const localDebugWithIcon = vscode.commands.registerCommand(
+  registerInCommandController(
+    context,
     "fx-extension.localdebugWithIcon",
-    () => Correlator.run(handlers.treeViewLocalDebugHandler)
+    handlers.treeViewLocalDebugHandler
   );
-  context.subscriptions.push(localDebugWithIcon);
 
-  const debugInTestToolWithIcon = vscode.commands.registerCommand(
+  registerInCommandController(
+    context,
     "fx-extension.debugInTestToolWithIcon",
-    () => Correlator.run(() => handlers.debugInTestToolHandler("treeview"))
+    handlers.debugInTestToolHandler("treeview")
   );
-  context.subscriptions.push(debugInTestToolWithIcon);
 
-  const debugInTestToolFromMessage = vscode.commands.registerCommand(
-    "fx-extension.debugInTestToolFromMessage",
-    () => Correlator.run(() => handlers.debugInTestToolHandler("message"))
+  registerInCommandController(
+    context,
+    CommandKeys.DebugInTestToolFromMessage,
+    handlers.debugInTestToolHandler("message")
   );
-  context.subscriptions.push(debugInTestToolFromMessage);
 
   const m365AccountSettingsCmd = vscode.commands.registerCommand(
     "fx-extension.m365AccountSettings",
@@ -667,13 +708,11 @@ function registerMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openSubscriptionInPortal);
 
-  const previewWithIcon = vscode.commands.registerCommand(
+  registerInCommandController(
+    context,
     "fx-extension.previewWithIcon",
-    async (node: Record<string, string>) => {
-      await Correlator.run(handlers.treeViewPreviewHandler, node.identifier);
-    }
+    handlers.treeViewPreviewHandler
   );
-  context.subscriptions.push(previewWithIcon);
 
   const refreshEnvironment = vscode.commands.registerCommand(
     "fx-extension.refreshEnvironment",
@@ -712,10 +751,7 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(installDependencyCmd);
 
-  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", () =>
-    Correlator.run(handlers.treeViewLocalDebugHandler)
-  );
-  context.subscriptions.push(localDebug);
+  registerInCommandController(context, CommandKeys.LocalDebug, handlers.treeViewLocalDebugHandler);
 
   const stopDebugging = vscode.commands.registerCommand("fx-extension.stopDebugging", () =>
     Correlator.run(officeDevHandlers.stopOfficeAddInDebug)
@@ -1095,18 +1131,21 @@ async function runOfficeDevBackgroundTasks() {
 function registerInCommandController(
   context: vscode.ExtensionContext,
   name: string,
-  callback: (args?: unknown[]) => Promise<Result<unknown, FxError>>,
+  callback: (...args: unknown[]) => Promise<Result<unknown, FxError>>,
   runningLabelKey?: string
 ) {
   commandController.registerCommand(name, callback, runningLabelKey);
-  const command = vscode.commands.registerCommand(name, (...args) =>
-    Correlator.run(runCommand, name, args)
-  );
+  const command = vscode.commands.registerCommand(name, (...args) => {
+    if (args[1] === TelemetryTriggerFrom.CopilotChat) {
+      return Correlator.runWithId(args[0], runCommand, name, ...args.slice(1));
+    }
+    return Correlator.run(runCommand, name, ...args);
+  });
   context.subscriptions.push(command);
 }
 
-function runCommand(commandName: string, args: unknown[]) {
-  void commandController.runCommand(commandName, args);
+function runCommand(commandName: string, ...args: unknown[]) {
+  return commandController.runCommand(commandName, ...args);
 }
 
 async function checkProjectUpgradable(): Promise<boolean> {
@@ -1147,6 +1186,6 @@ async function detectedTeamsFxProject(context: vscode.ExtensionContext) {
 
 async function recommendACPExtension(): Promise<void> {
   if (!handlers.acpInstalled() && (await hasAdaptiveCardInWorkspace())) {
-    await handlers.installAdaptiveCardExt([TelemetryTriggerFrom.Auto]);
+    await handlers.installAdaptiveCardExt(TelemetryTriggerFrom.Auto);
   }
 }

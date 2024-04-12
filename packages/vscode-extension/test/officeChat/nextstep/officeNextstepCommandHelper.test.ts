@@ -97,7 +97,7 @@ describe("officeNextStepCommandHandler", () => {
     sandbox.stub(officeSteps, "officeSteps").returns([
       {
         title: "selected - app opened",
-        description: "description: selected - app opened",
+        description: () => "description: selected - app opened",
         followUps: [],
         docLink: "docLink",
         commands: [
@@ -110,6 +110,21 @@ describe("officeNextStepCommandHandler", () => {
             command: CHAT_OPENURL_COMMAND_ID,
             title: "title",
             arguments: ["url"],
+          },
+        ],
+        condition: (status) => true,
+        priority: 1,
+      } as NextStep,
+      {
+        title: "selected 2 - app opened",
+        description: () => "description: selected 2 - app opened",
+        followUps: [],
+        docLink: "docLink",
+        commands: [
+          {
+            command: CHAT_EXECUTE_COMMAND_ID,
+            title: "title",
+            arguments: ["command-name"],
           },
         ],
         condition: (status) => true,

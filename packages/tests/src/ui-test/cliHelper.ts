@@ -88,7 +88,7 @@ export class CliHelper {
           "--env",
           env,
           "--verbose",
-          "telemetry",
+          "--telemetry",
           "false",
         ],
         {

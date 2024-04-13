@@ -9,12 +9,7 @@ import {
   LanguageModelChatUserMessage,
 } from "vscode";
 
-import {
-  OfficeChatCommand,
-  officeChatParticipantId,
-  CHAT_CREATE_OFFICE_SAMPLE_COMMAND_ID,
-  CHAT_CREATE_OFFICE_TEMPLATE_COMMAND_ID,
-} from "../../consts";
+import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { verbatimCopilotInteraction } from "../../../chat/utils";
 import { isInputHarmful } from "../../utils";
 import { ICopilotChatResult } from "../../../chat/types";
@@ -23,10 +18,10 @@ import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { ChatTelemetryData } from "../../../chat/telemetry";
 import { showFileTree } from "../../../chat/commands/create/helper";
-import { matchOfficeProject } from "./helper";
+import { matchOfficeProject, showTemplateFileTree } from "./helper";
 import { localize } from "../../../utils/localizeUtils";
 import { Planner } from "../../common/planner";
-import { CommandKey } from "../../../constants";
+import { CHAT_CREATE_SAMPLE_COMMAND_ID } from "../../../chat/consts";
 
 export default async function officeCreateCommandHandler(
   request: ChatRequest,
@@ -65,15 +60,19 @@ export default async function officeCreateCommandHandler(
         const folder = await showFileTree(matchedResult, response);
         const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         response.button({
-          command: CHAT_CREATE_OFFICE_SAMPLE_COMMAND_ID,
+          command: CHAT_CREATE_SAMPLE_COMMAND_ID,
           arguments: [folder],
           title: sampleTitle,
         });
       } else if (matchedResult.type === "template") {
+        response.markdown(
+          "\nWe've found a template project that matches your description. Take a look at it below."
+        );
+        const tmpFolder = await showTemplateFileTree(matchedResult.data, response);
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         response.button({
-          command: CHAT_CREATE_OFFICE_TEMPLATE_COMMAND_ID,
-          arguments: [CommandKey.Create, officeChatTelemetryData.requestId, matchedResult.data],
+          command: CHAT_CREATE_SAMPLE_COMMAND_ID,
+          arguments: [tmpFolder],
           title: templateTitle,
         });
       }

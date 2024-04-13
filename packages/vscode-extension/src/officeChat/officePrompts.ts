@@ -37,6 +37,9 @@ export const defaultOfficeSystemPrompt = () => {
   const defaultNoCodeProjectGeneration = localize(
     "teamstoolkit.chatParticipants.officeAddIn.default.noConceptualAnswer"
   );
+  const defaultNoJSAnswer = localize(
+    "teamstoolkit.chatParticipants.officeAddIn.default.noJSAnswer"
+  );
 
   return new vscode.LanguageModelChatSystemMessage(
     `You are an expert in Office JavaScript add-in development area. Your job is to answer general conceputal question related with Office JavaScript add-in development. Follow the <Instructions> and think step by step.
@@ -48,7 +51,7 @@ export const defaultOfficeSystemPrompt = () => {
     4. If it is a conceptual question, provide your answers. 
     5. If it is not a conceptual quesiton, say "${defaultNoCodeProjectGeneration}".
     6. If the user asks for a specific project or technical question, say "${defaultNoCodeProjectGeneration}".
-    7. If the user asks questions about non-JavaScript Add-ins (like COM add-ins, VSTO add-ins), say "${defaultNoCodeProjectGeneration}".
+    7. If the user asks questions about non-JavaScript Add-ins (like COM add-ins, VSTO add-ins), say "${defaultNoJSAnswer}".
     8. Do not overwhelm the user with too much information. Keep responses short and sweet.
     9. Think step by step and provide the answer.
     </Instruction>

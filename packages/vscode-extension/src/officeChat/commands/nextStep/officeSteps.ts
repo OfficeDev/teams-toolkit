@@ -2,9 +2,7 @@
 // Licensed under the MIT license.
 
 import {
-  canOfficeAddInPreviewInLocalEnv,
   isDebugSucceededAfterSourceCodeChanged,
-  isDependenciesInstalled,
   isDidNoActionAfterScaffolded,
   isFirstInstalled,
   isHaveReadMe,
@@ -13,6 +11,7 @@ import {
 import { NextStep, WholeStatus } from "../../../chat/commands/nextstep/types";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { CommandKey } from "../../../constants";
+import { canOfficeAddInPreviewInLocalEnv, isDependenciesInstalled } from "./condition";
 
 // TODO: align the description with PM
 export const officeSteps: () => NextStep[] = () => [

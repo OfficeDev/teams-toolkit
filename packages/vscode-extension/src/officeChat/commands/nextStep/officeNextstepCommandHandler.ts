@@ -18,8 +18,8 @@ import { ChatTelemetryData } from "../../../chat/telemetry";
 import { ICopilotChatResult } from "../../../chat/types";
 import { describeStep } from "../../../chat/commands/nextstep/nextstepCommandHandler";
 import { officeSteps } from "./officeSteps";
-import { getWholeStatus } from "../../../chat/commands/nextstep/status";
 import { WholeStatus } from "../../../chat/commands/nextstep/types";
+import { getWholeStatus } from "./status";
 
 export default async function officeNextStepCommandHandler(
   request: ChatRequest,

@@ -35,7 +35,7 @@ export interface WholeStatus {
     actionStatus: ProjectActionStatus;
     readmeContent?: string; // the content of the readme file
     launchJSONContent?: string; // the content of the .vscode/launch.json
-    nodeModulesExist: boolean; // if the node_modules folder exists
+    nodeModulesExist?: boolean; // if the node_modules folder exists
   };
 }
 

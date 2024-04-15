@@ -124,6 +124,7 @@ export class ManifestUtil {
       capabilities.push("Bot");
     }
     if (manifest.composeExtensions) {
+      capabilities.push("MessageExtension");
     }
 
     const properties: ManifestCommonProperties = {

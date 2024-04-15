@@ -12,7 +12,7 @@ class BotSSODockerTestCase extends CaseFactory {}
 
 new BotSSODockerTestCase(
   TemplateProjectFolder.BotSSODocker,
-  0,
+  27656551,
   "yiminjin@microsoft.com",
   ["aca"]
 ).test();

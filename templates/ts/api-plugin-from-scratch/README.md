@@ -2,7 +2,7 @@
 
 ## Build a Copilot Plugin from a new API with Azure Functions
 
-This app template allows Microsoft Copilot for Microsoft 365 to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:
+This app template allows Microsoft Copilot for Microsoft 365 to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Copilot to:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.

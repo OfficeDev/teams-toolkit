@@ -71,7 +71,7 @@ The app template is built using the Teams AI library, which provides the capabil
 ![ai agent](https://github.com/OfficeDev/Microsoft-Teams-Samples/assets/109947924/6a362379-5c22-40d4-8087-9fc37bc96800)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
-![ai agent](https://user-images.githubusercontent.com/7642967/258726187-8306610b-579e-4301-872b-1b5e85141eff.png)
+![ai agent](https://github.com/OfficeDev/TeamsFx/assets/109947924/775a0fde-f2ba-4198-a94d-a43c598d6e9b)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template
@@ -106,13 +106,8 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 
 ## Extend the AI Agent template with more AI capabilities
 
-You can follow [Build a AI Agent in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the AI Agent template with more AI capabilities, like:
-- [Customize prompt](https://aka.ms/teamsfx-basic-ai-chatbot#customize-prompt)
-- [Customize user input](https://aka.ms/teamsfx-basic-ai-chatbot#customize-user-input)
-- [Customize conversation history](https://aka.ms/teamsfx-basic-ai-chatbot#customize-conversation-history)
-- [Customize model type](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-type)
-- [Customize model parameters](https://aka.ms/teamsfx-basic-ai-chatbot#customize-model-parameters)
-- [Handle messages with image](https://aka.ms/teamsfx-basic-ai-chatbot#handle-messages-with-image)
+You can follow [Build an AI Agent in Teams](https://aka.ms/teamsfx-ai-agent) to extend the AI Agent template with more AI capabilities, like:
+- [Add functions](https://aka.ms/teamsfx-ai-agent#add-functions-build-new)
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)

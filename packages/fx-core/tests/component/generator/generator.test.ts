@@ -743,12 +743,7 @@ describe("render template", () => {
     const tools = new MockTools();
     setTools(tools);
     const context = createContextV3();
-    const inputs = {
-      platform: Platform.VSCode,
-      [QuestionNames.AppName]: randomAppName(),
-      [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
-      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
-    } as Inputs;
+    let inputs: Inputs;
     const sandbox = createSandbox();
     const tmpDir = path.join(__dirname, "tmp");
     const templateName = TemplateNames.DefaultBot;
@@ -765,6 +760,12 @@ describe("render template", () => {
     }
 
     beforeEach(() => {
+      inputs = {
+        platform: Platform.VSCode,
+        [QuestionNames.AppName]: randomAppName(),
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.TS,
+        [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
+      } as Inputs;
       sandbox.stub(featurefalgs, "isNewGeneratorEnabled").returns(newGeneratorFlag);
     });
 
@@ -822,25 +823,33 @@ describe("render template", () => {
 
     it("template variables when test tool enabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "true" });
-      const vars = Generator.getDefaultVariables("test");
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test");
       assert.equal(vars.enableTestToolByDefault, "true");
     });
 
     it("template variables when test tool disabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
-      const vars = Generator.getDefaultVariables("test");
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test");
       assert.equal(vars.enableTestToolByDefault, "");
     });
 
     it("template variables when ME test tool enabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_ME_TEST_TOOL: "true" });
-      const vars = Generator.getDefaultVariables("test");
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test");
       assert.equal(vars.enableMETestToolByDefault, "true");
     });
 
     it("template variables when ME test tool disabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_ME_TEST_TOOL: "false" });
-      const vars = Generator.getDefaultVariables("test");
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test");
       assert.equal(vars.enableMETestToolByDefault, "");
     });
 
@@ -850,26 +859,37 @@ describe("render template", () => {
         TEAMSFX_NEW_PROJECT_TYPE_NAME: "M365",
         TEAMSFX_NEW_PROJECT_TYPE_EXTENSION: "maproj",
       });
-      const vars = Generator.getDefaultVariables("test");
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test");
       assert.equal(vars.isNewProjectTypeEnabled, "true");
     });
 
     it("template variables when test tool disabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "false" });
-      const vars = Generator.getDefaultVariables("test");
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test");
       assert.equal(vars.isNewProjectTypeEnabled, "");
     });
 
     it("template variables when set placeProjectFileInSolutionDir to true", async () => {
-      const vars = Generator.getDefaultVariables("test", undefined, undefined, true);
+      inputs.placeProjectFileInSolutionDir = "true";
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test", undefined, undefined, true);
       assert.equal(vars.PlaceProjectFileInSolutionDir, "true");
     });
 
     it("template variables with custom copilot - OpenAI", async () => {
-      const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
-        llmService: "llm-service-openai",
-        openAIKey: "test-key",
-      });
+      inputs[QuestionNames.LLMService] = "llm-service-openai";
+      inputs[QuestionNames.OpenAIKey] = "test-key";
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
+            llmService: "llm-service-openai",
+            openAIKey: "test-key",
+          });
       assert.equal(vars.useOpenAI, "true");
       assert.equal(vars.useAzureOpenAI, "");
       assert.equal(vars.openAIKey, "test-key");
@@ -878,12 +898,18 @@ describe("render template", () => {
     });
 
     it("template variables with custom copilot - Azure OpenAI", async () => {
-      const vars = Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
-        llmService: "llm-service-azure-openai",
-        azureOpenAIKey: "test-key",
-        azureOpenAIEndpoint: "test-endpoint",
-        azureOpenAIDeploymentName: "test-deployment",
-      });
+      inputs[QuestionNames.LLMService] = "llm-service-azure-openai";
+      inputs[QuestionNames.AzureOpenAIKey] = "test-key";
+      inputs[QuestionNames.AzureOpenAIEndpoint] = "test-endpoint";
+      inputs[QuestionNames.AzureOpenAIDeploymentName] = "test-deployment";
+      const vars = newGeneratorFlag
+        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        : Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
+            llmService: "llm-service-azure-openai",
+            azureOpenAIKey: "test-key",
+            azureOpenAIEndpoint: "test-endpoint",
+            azureOpenAIDeploymentName: "test-deployment",
+          });
       assert.equal(vars.useOpenAI, "");
       assert.equal(vars.useAzureOpenAI, "true");
       assert.equal(vars.openAIKey, "");

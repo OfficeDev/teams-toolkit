@@ -8,7 +8,11 @@ import { convertToAlphanumericOnly } from "../../../common/utils";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { commonTemplateName, componentName } from "../constant";
-import { enableTestToolByDefault, isNewProjectTypeEnabled } from "../../../common/featureFlags";
+import {
+  enableMETestToolByDefault,
+  enableTestToolByDefault,
+  isNewProjectTypeEnabled,
+} from "../../../common/featureFlags";
 import {
   CapabilityOptions,
   MeArchitectureOptions,
@@ -22,45 +26,14 @@ import { GeneratorContext, TemplateActionSeq } from "../generatorAction";
 import { TemplateInfo } from "./templateInfo";
 import { Feature2TemplateName } from "./templateNames";
 
-export interface TemplateGenerator {
-  activate(ctx: Context, inputs: Inputs): boolean;
-  run(
-    ctx: Context,
-    inputs: Inputs,
-    destinationPath: string,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>>;
-  getTemplateInfos(
-    ctx: Context,
-    inputs: Inputs,
-    actionContext?: ActionContext
-  ): Promise<Result<TemplateInfo[], FxError>>;
-  post(
-    ctx: Context,
-    inputs: Inputs,
-    destinationPath: string,
-    actionContext?: ActionContext
-  ): Promise<Result<undefined, FxError>>;
-}
-
-export class DefaultTemplateGenerator implements TemplateGenerator {
+export class DefaultTemplateGenerator {
   componentName = componentName;
 
-  public activate(ctx: Context, inputs: Inputs): boolean {
+  // override this method to determine whether to run this generator
+  public activate(context: Context, inputs: Inputs): boolean {
     return Object.keys(Feature2TemplateName).some((feature) =>
       feature.startsWith(inputs.capabilities)
     );
-  }
-
-  public getTemplateInfos(
-    ctx: Context,
-    inputs: Inputs,
-    actionContext?: ActionContext
-  ): Promise<Result<TemplateInfo[], FxError>> {
-    const templateName = this.getTemplateName(inputs);
-    const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
-    const variables = this.getDefaultReplaceMap(inputs);
-    return Promise.resolve(ok([{ templateName, language, variables }]));
   }
 
   @hooks([
@@ -73,27 +46,40 @@ export class DefaultTemplateGenerator implements TemplateGenerator {
     }),
   ])
   public async run(
-    ctx: Context,
+    context: Context,
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
-    const preResult = await this.getTemplateInfos(ctx, inputs, actionContext);
+    const preResult = await this.getTemplateInfos(context, inputs, actionContext);
     if (preResult.isErr()) return err(preResult.error);
 
     const templateInfos = preResult.value;
     for (const templateInfo of templateInfos) {
-      await this.scaffolding(ctx, templateInfo, destinationPath, actionContext);
+      await this.scaffolding(context, templateInfo, destinationPath, actionContext);
     }
 
-    const postRes = await this.post(ctx, inputs, destinationPath, actionContext);
+    const postRes = await this.post(context, inputs, destinationPath, actionContext);
     if (postRes.isErr()) return postRes;
 
     return ok(undefined);
   }
 
-  public post(
-    ctx: Context,
+  // override this method to provide information of templates to be generated
+  protected getTemplateInfos(
+    context: Context,
+    inputs: Inputs,
+    actionContext?: ActionContext
+  ): Promise<Result<TemplateInfo[], FxError>> {
+    const templateName = this.getTemplateName(inputs);
+    const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
+    const variables = this.getDefaultReplaceMap(inputs);
+    return Promise.resolve(ok([{ templateName, language, variables }]));
+  }
+
+  // override this method to do post process
+  protected post(
+    context: Context,
     inputs: Inputs,
     destinationPath: string,
     actionContext?: ActionContext
@@ -101,7 +87,7 @@ export class DefaultTemplateGenerator implements TemplateGenerator {
     return Promise.resolve(ok(undefined));
   }
 
-  public getDefaultReplaceMap(inputs: Inputs): { [key: string]: string } {
+  protected getDefaultReplaceMap(inputs: Inputs): { [key: string]: string } {
     const appName = inputs[QuestionNames.AppName] as string;
     const safeProjectName =
       inputs[QuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(appName);
@@ -111,6 +97,8 @@ export class DefaultTemplateGenerator implements TemplateGenerator {
     const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
     const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
     const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
+    const azureOpenAIDeploymentName: string | undefined =
+      inputs[QuestionNames.AzureOpenAIDeploymentName];
 
     return {
       appName: appName,
@@ -120,11 +108,13 @@ export class DefaultTemplateGenerator implements TemplateGenerator {
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
+      enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
       useOpenAI: llmService === "llm-service-openai" ? "true" : "",
       useAzureOpenAI: llmService === "llm-service-azure-openai" ? "true" : "",
       openAIKey: openAIKey ?? "",
       azureOpenAIKey: azureOpenAIKey ?? "",
       azureOpenAIEndpoint: azureOpenAIEndpoint ?? "",
+      azureOpenAIDeploymentName: azureOpenAIDeploymentName ?? "",
       isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
       NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
       NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",
@@ -182,7 +172,7 @@ export class DefaultTemplateGenerator implements TemplateGenerator {
   }
 
   private async scaffolding(
-    ctx: Context,
+    context: Context,
     templateInfo: TemplateInfo,
     destinationPath: string,
     actionContext?: ActionContext
@@ -200,7 +190,7 @@ export class DefaultTemplateGenerator implements TemplateGenerator {
       name: name,
       language: language,
       destination: destinationPath,
-      logProvider: ctx.logProvider,
+      logProvider: context.logProvider,
       fileNameReplaceFn: (fileName, fileData) =>
         renderTemplateFileName(fileName, fileData, replaceMap)
           .replace(/\\/g, "/")
@@ -213,7 +203,7 @@ export class DefaultTemplateGenerator implements TemplateGenerator {
     };
 
     await actionContext?.progressBar?.next(ProgressMessages.generateTemplate);
-    ctx.logProvider.debug(`Downloading app template "${templateName}" to ${destinationPath}`);
+    context.logProvider.debug(`Downloading app template "${templateName}" to ${destinationPath}`);
     await Generator.generate(generatorContext, TemplateActionSeq);
 
     merge(actionContext?.telemetryProps, {

@@ -36,7 +36,7 @@
   Teams Toolkit now supports Microsoft Word, Excel, or PowerPoint JavaScript add-in development. Now you can see the above side pane offering a unified and centralized experience for checking dependencies, running and debugging add-ins, managing lifecycle, leveraging utility, getting help, and providing feedback.
 
 #### Enhancement
-- Users may encounter issues when creating Microsoft Entra client secrete due to tenant regulations. We smooth this experience by enabling users to customize parameters when creating Microsoft Entra client secret and provide help docs to easily resolve issues. The parameters user can specify in teamsapp.yml file are |||||| |\\\\ `clientSecretExpireDays` and `clientSecretDescription`.
+- Users may encounter issues when creating Microsoft Entra client secrete due to tenant regulations. We smooth this experience by enabling users to customize parameters when creating Microsoft Entra client secret and provide help docs to easily resolve issues. The parameters user can specify in teamsapp.yml file are `clientSecretExpireDays` and `clientSecretDescription`.
 ![create-aad-parameter](https://github.com/OfficeDev/TeamsFx/assets/113089977/76d219d6-6f40-464c-81c6-1b660953cc1f)
 
 ### March 19, 2024

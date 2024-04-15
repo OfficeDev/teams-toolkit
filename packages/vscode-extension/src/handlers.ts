@@ -842,11 +842,7 @@ export async function downloadSampleApp(...args: unknown[]) {
   if (res.isOk()) {
     props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-    if (isValidOfficeAddInProject((res.value as vscode.Uri).fsPath)) {
-      await openOfficeDevFolder(res.value, true);
-    } else {
-      await openFolder(res.value, true);
-    }
+    await openFolder(res.value, true);
   } else {
     props[TelemetryProperty.Success] = TelemetrySuccess.No;
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);

@@ -1420,20 +1420,6 @@ describe("handlers", () => {
       sandbox.stub(handlers, "core").value(new MockCore());
       sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const errorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(false);
-      const createProject = sandbox.spy(handlers.core, "createSampleProject");
-
-      await handlers.downloadSampleApp(extTelemetryEvents.TelemetryTriggerFrom.CopilotChat, "test");
-
-      chai.assert.isTrue(createProject.calledOnce);
-      chai.assert.isTrue(errorEventStub.notCalled);
-    });
-
-    it("happy path - officeAddin", async () => {
-      sandbox.stub(handlers, "core").value(new MockCore());
-      sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
-      const errorEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sandbox.stub(projectSettingsHelper, "isValidOfficeAddInProject").returns(true);
       const createProject = sandbox.spy(handlers.core, "createSampleProject");
 
       await handlers.downloadSampleApp(extTelemetryEvents.TelemetryTriggerFrom.CopilotChat, "test");

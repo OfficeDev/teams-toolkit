@@ -4,7 +4,7 @@
 
 > Note: This changelog only includes the changes for the pre-release versions of Teams Toolkit. For the changelog of stable versions, please refer to the [Teams Toolkit Changelog](https://github.com/OfficeDev/TeamsFx/blob/dev/packages/vscode-extension/CHANGELOG.md).
 
-### April 15, 2024
+### April 18, 2024
 
 #### New Features 
 

@@ -54,14 +54,6 @@ export function enableMETestToolByDefault(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.METestTool, true);
 }
 
-export function isApiKeyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
-}
-
-export function isMultipleParametersEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, true);
-}
-
 export function isOfficeJSONAddinEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
 }

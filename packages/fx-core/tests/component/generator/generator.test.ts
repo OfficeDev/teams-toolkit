@@ -50,6 +50,7 @@ import { CapabilityOptions, ProgrammingLanguage } from "../../../src/question/cr
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
 import { Inputs, Platform } from "@microsoft/teamsfx-api";
 import { TemplateNames } from "../../../src/component/generator/templates/templateNames";
+import { getTemplateReplaceMap } from "../../../src/component/generator/templates/templateReplaceMap";
 
 const mockedSampleInfo: SampleConfig = {
   id: "test-id",
@@ -824,7 +825,7 @@ describe("render template", () => {
     it("template variables when test tool enabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "true" });
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test");
       assert.equal(vars.enableTestToolByDefault, "true");
     });
@@ -832,7 +833,7 @@ describe("render template", () => {
     it("template variables when test tool disabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_TEST_TOOL: "false" });
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test");
       assert.equal(vars.enableTestToolByDefault, "");
     });
@@ -840,7 +841,7 @@ describe("render template", () => {
     it("template variables when ME test tool enabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_ME_TEST_TOOL: "true" });
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test");
       assert.equal(vars.enableMETestToolByDefault, "true");
     });
@@ -848,7 +849,7 @@ describe("render template", () => {
     it("template variables when ME test tool disabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_ME_TEST_TOOL: "false" });
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test");
       assert.equal(vars.enableMETestToolByDefault, "");
     });
@@ -860,7 +861,7 @@ describe("render template", () => {
         TEAMSFX_NEW_PROJECT_TYPE_EXTENSION: "maproj",
       });
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test");
       assert.equal(vars.isNewProjectTypeEnabled, "true");
     });
@@ -868,7 +869,7 @@ describe("render template", () => {
     it("template variables when test tool disabled", async () => {
       sandbox.stub(process, "env").value({ TEAMSFX_NEW_PROJECT_TYPE: "false" });
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test");
       assert.equal(vars.isNewProjectTypeEnabled, "");
     });
@@ -876,7 +877,7 @@ describe("render template", () => {
     it("template variables when set placeProjectFileInSolutionDir to true", async () => {
       inputs.placeProjectFileInSolutionDir = "true";
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test", undefined, undefined, true);
       assert.equal(vars.PlaceProjectFileInSolutionDir, "true");
     });
@@ -885,7 +886,7 @@ describe("render template", () => {
       inputs[QuestionNames.LLMService] = "llm-service-openai";
       inputs[QuestionNames.OpenAIKey] = "test-key";
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
             llmService: "llm-service-openai",
             openAIKey: "test-key",
@@ -903,7 +904,7 @@ describe("render template", () => {
       inputs[QuestionNames.AzureOpenAIEndpoint] = "test-endpoint";
       inputs[QuestionNames.AzureOpenAIDeploymentName] = "test-deployment";
       const vars = newGeneratorFlag
-        ? (new DefaultTemplateGenerator() as any).getDefaultReplaceMap(inputs)
+        ? getTemplateReplaceMap(inputs)
         : Generator.getDefaultVariables("test", "test", undefined, false, undefined, {
             llmService: "llm-service-azure-openai",
             azureOpenAIKey: "test-key",

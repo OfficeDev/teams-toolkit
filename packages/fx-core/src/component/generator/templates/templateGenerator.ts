@@ -4,15 +4,9 @@
 import { hooks } from "@feathersjs/hooks/lib";
 import { Context, FxError, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
-import { convertToAlphanumericOnly } from "../../../common/utils";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { commonTemplateName, componentName } from "../constant";
-import {
-  enableMETestToolByDefault,
-  enableTestToolByDefault,
-  isNewProjectTypeEnabled,
-} from "../../../common/featureFlags";
 import {
   CapabilityOptions,
   MeArchitectureOptions,
@@ -25,8 +19,10 @@ import { merge } from "lodash";
 import { GeneratorContext, TemplateActionSeq } from "../generatorAction";
 import { TemplateInfo } from "./templateInfo";
 import { Feature2TemplateName } from "./templateNames";
+import { getTemplateReplaceMap } from "./templateReplaceMap";
 
 export class DefaultTemplateGenerator {
+  // override this property to send telemetry event with different component name
   componentName = componentName;
 
   // override this method to determine whether to run this generator
@@ -36,6 +32,7 @@ export class DefaultTemplateGenerator {
     );
   }
 
+  // The main entry of the generator. Do not override this method.
   @hooks([
     ActionExecutionMW({
       enableProgressBar: true,
@@ -73,8 +70,8 @@ export class DefaultTemplateGenerator {
   ): Promise<Result<TemplateInfo[], FxError>> {
     const templateName = this.getTemplateName(inputs);
     const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
-    const variables = this.getDefaultReplaceMap(inputs);
-    return Promise.resolve(ok([{ templateName, language, variables }]));
+    const replaceMap = getTemplateReplaceMap(inputs);
+    return Promise.resolve(ok([{ templateName, language, replaceMap }]));
   }
 
   // override this method to do post process
@@ -85,40 +82,6 @@ export class DefaultTemplateGenerator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     return Promise.resolve(ok(undefined));
-  }
-
-  protected getDefaultReplaceMap(inputs: Inputs): { [key: string]: string } {
-    const appName = inputs[QuestionNames.AppName] as string;
-    const safeProjectName =
-      inputs[QuestionNames.SafeProjectName] ?? convertToAlphanumericOnly(appName);
-    const targetFramework = inputs.targetFramework;
-    const placeProjectFileInSolutionDir = inputs.placeProjectFileInSolutionDir === "true";
-    const llmService: string | undefined = inputs[QuestionNames.LLMService];
-    const openAIKey: string | undefined = inputs[QuestionNames.OpenAIKey];
-    const azureOpenAIKey: string | undefined = inputs[QuestionNames.AzureOpenAIKey];
-    const azureOpenAIEndpoint: string | undefined = inputs[QuestionNames.AzureOpenAIEndpoint];
-    const azureOpenAIDeploymentName: string | undefined =
-      inputs[QuestionNames.AzureOpenAIDeploymentName];
-
-    return {
-      appName: appName,
-      ProjectName: appName,
-      TargetFramework: targetFramework ?? "net8.0",
-      PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
-      SafeProjectName: safeProjectName,
-      SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-      enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
-      enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
-      useOpenAI: llmService === "llm-service-openai" ? "true" : "",
-      useAzureOpenAI: llmService === "llm-service-azure-openai" ? "true" : "",
-      openAIKey: openAIKey ?? "",
-      azureOpenAIKey: azureOpenAIKey ?? "",
-      azureOpenAIEndpoint: azureOpenAIEndpoint ?? "",
-      azureOpenAIDeploymentName: azureOpenAIDeploymentName ?? "",
-      isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
-      NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
-      NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",
-    };
   }
 
   private getTemplateName(inputs: Inputs) {
@@ -179,7 +142,7 @@ export class DefaultTemplateGenerator {
   ): Promise<void> {
     const name = templateInfo.templateName;
     const language = convertToLangKey(templateInfo.language) ?? commonTemplateName;
-    const replaceMap = templateInfo.replaceMap ?? {};
+    const replaceMap = templateInfo.replaceMap;
     const filterFn = templateInfo.filterFn ?? (() => true);
     const templateName = `${name}-${language}`;
     merge(actionContext?.telemetryProps, {

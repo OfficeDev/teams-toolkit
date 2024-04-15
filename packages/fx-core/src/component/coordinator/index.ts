@@ -210,12 +210,13 @@ class Coordinator {
           warnings = res.value.warnings;
         }
       } else if (isNewGeneratorEnabled()) {
-        const generators = Generators.filter((g) => g.activate(context, inputs));
-        if (generators.length === 0) {
+        const generator = Generators.find((g) => g.activate(context, inputs));
+        if (!generator) {
           return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
         }
-        const res = await generators[0].run(context, inputs, projectPath);
+        const res = await generator.run(context, inputs, projectPath);
         if (res.isErr()) return err(res.error);
+        // TODO: move the following code to CopilotPluginGenerator
         if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
           const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
             context,

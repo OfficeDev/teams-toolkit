@@ -124,6 +124,10 @@ const config = {
           from: "./node_modules/dompurify/dist/purify.min.js",
           to: "../resource/purify.min.js",
         },
+        {
+          from: "./node_modules/mermaid/dist/mermaid.min.js",
+          to: "../resource/mermaid.min.js",
+        },
       ],
     }),
   ],

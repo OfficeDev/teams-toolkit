@@ -7,7 +7,7 @@ import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { convertToAlphanumericOnly } from "../../../common/utils";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
-import { componentName } from "../constant";
+import { commonTemplateName, componentName } from "../constant";
 import { enableTestToolByDefault, isNewProjectTypeEnabled } from "../../../common/featureFlags";
 import {
   CapabilityOptions,
@@ -188,7 +188,7 @@ export class DefaultTemplateGenerator implements TemplateGenerator {
     actionContext?: ActionContext
   ): Promise<void> {
     const name = templateInfo.templateName;
-    const language = convertToLangKey(templateInfo.language);
+    const language = convertToLangKey(templateInfo.language) ?? commonTemplateName;
     const replaceMap = templateInfo.replaceMap ?? {};
     const filterFn = templateInfo.filterFn ?? (() => true);
     const templateName = `${name}-${language}`;

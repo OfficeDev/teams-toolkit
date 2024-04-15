@@ -60,11 +60,12 @@ export class FeatureFlagName {
   static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";
   static readonly TestTool = "TEAMSFX_TEST_TOOL";
+  static readonly METestTool = "TEAMSFX_ME_TEST_TOOL";
   static readonly ApiKey = "API_COPILOT_API_KEY";
   static readonly MultipleParameters = "API_COPILOT_MULTIPLE_PARAMETERS";
   static readonly TeamsFxRebranding = "TEAMSFX_REBRANDING";
   static readonly TdpTemplateCliTest = "TEAMSFX_TDP_TEMPLATE_CLI_TEST";
   static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
-  static readonly ApiMeSSO = "API_ME_SSO";
+  static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
 }

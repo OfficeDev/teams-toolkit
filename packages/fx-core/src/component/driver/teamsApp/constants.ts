@@ -252,10 +252,14 @@ export class APP_STUDIO_API_NAMES {
   public static readonly DELETE_BOT = "delete-bot";
   public static readonly UPDATE_BOT = "update-bot";
   public static readonly CREATE_API_KEY = "create-api-key";
+  public static readonly UPDATE_API_KEY = "update-api-key";
   public static readonly GET_API_KEY = "get-api-key";
   public static readonly SUMIT_APP_VALIDATION = "submit-app-validation";
   public static readonly GET_APP_VALIDATION_RESULT = "get-app-validation-result";
   public static readonly GET_APP_VALIDATION_REQUESTS = "get-app-validation-requests";
+  public static readonly GET_OAUTH = "get-oauth";
+  public static readonly CREATE_OAUTH = "create-oauth";
+  public static readonly UPDATE_OAUTH = "update-oauth";
 }
 
 /**

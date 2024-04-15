@@ -13,10 +13,15 @@ import {
   ValidationStatus,
   ListAPIResult,
   ProjectType,
+  APIMap,
+  ErrorResult,
+  WarningResult,
 } from "./interfaces";
 import { SpecParserError } from "./specParserError";
 import { Utils } from "./utils";
 import { ConstantString } from "./constants";
+import { ValidatorFactory } from "./validators/validatorFactory";
+import { Validator } from "./validators/validator";
 
 /**
  * A class that parses an OpenAPI specification file and provides methods to validate, list, and generate artifacts.
@@ -26,8 +31,8 @@ export class SpecParser {
   public readonly parser: SwaggerParser;
   public readonly options: Required<ParseOptions>;
 
-  private apiMap: { [key: string]: OpenAPIV3.PathItemObject } | undefined;
   private spec: OpenAPIV3.Document | undefined;
+  private validator: Validator | undefined;
   private unResolveSpec: OpenAPIV3.Document | undefined;
   private isSwaggerFile: boolean | undefined;
 
@@ -39,6 +44,8 @@ export class SpecParser {
     allowBearerTokenAuth: false,
     allowOauth2: false,
     allowMethods: ["get", "post"],
+    allowConversationStarters: false,
+    allowResponseSemantics: false,
     projectType: ProjectType.SME,
   };
 
@@ -65,11 +72,7 @@ export class SpecParser {
     try {
       try {
         await this.loadSpec();
-        await this.parser.validate(this.spec!, {
-          validate: {
-            schema: false,
-          },
-        });
+        await this.parser.validate(this.spec!);
       } catch (e) {
         return {
           status: ValidationStatus.Error,
@@ -78,17 +81,51 @@ export class SpecParser {
         };
       }
 
+      const errors: ErrorResult[] = [];
+      const warnings: WarningResult[] = [];
+
       if (!this.options.allowSwagger && this.isSwaggerFile) {
         return {
           status: ValidationStatus.Error,
           warnings: [],
           errors: [
-            { type: ErrorType.SwaggerNotSupported, content: ConstantString.SwaggerNotSupported },
+            {
+              type: ErrorType.SwaggerNotSupported,
+              content: ConstantString.SwaggerNotSupported,
+            },
           ],
         };
       }
 
-      return Utils.validateSpec(this.spec!, this.parser, !!this.isSwaggerFile, this.options);
+      // Remote reference not supported
+      const refPaths = this.parser.$refs.paths();
+      // refPaths [0] is the current spec file path
+      if (refPaths.length > 1) {
+        errors.push({
+          type: ErrorType.RemoteRefNotSupported,
+          content: Utils.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
+          data: refPaths,
+        });
+      }
+
+      const validator = this.getValidator(this.spec!);
+      const validationResult = validator.validateSpec();
+
+      warnings.push(...validationResult.warnings);
+      errors.push(...validationResult.errors);
+
+      let status = ValidationStatus.Valid;
+      if (warnings.length > 0 && errors.length === 0) {
+        status = ValidationStatus.Warning;
+      } else if (errors.length > 0) {
+        status = ValidationStatus.Error;
+      }
+
+      return {
+        status: status,
+        warnings: warnings,
+        errors: errors,
+      };
     } catch (err) {
       throw new SpecParserError((err as Error).toString(), ErrorType.ValidateFailed);
     }
@@ -97,19 +134,24 @@ export class SpecParser {
   async listSupportedAPIInfo(): Promise<APIInfo[]> {
     try {
       await this.loadSpec();
-      const apiMap = this.getAllSupportedAPIs(this.spec!);
+      const apiMap = this.getAPIs(this.spec!);
       const apiInfos: APIInfo[] = [];
       for (const key in apiMap) {
-        const pathObjectItem = apiMap[key];
+        const { operation, isValid } = apiMap[key];
+
+        if (!isValid) {
+          continue;
+        }
+
         const [method, path] = key.split(" ");
-        const operationId = pathObjectItem.operationId;
+        const operationId = operation.operationId;
 
         // In Browser environment, this api is by default not support api without operationId
         if (!operationId) {
           continue;
         }
 
-        const [command, warning] = Utils.parseApiInfo(pathObjectItem, this.options);
+        const command = Utils.parseApiInfo(operation, this.options);
 
         const apiInfo: APIInfo = {
           method: method,
@@ -119,10 +161,6 @@ export class SpecParser {
           parameters: command.parameters!,
           description: command.description!,
         };
-
-        if (warning) {
-          apiInfo.warning = warning;
-        }
 
         apiInfos.push(apiInfo);
       }
@@ -203,14 +241,18 @@ export class SpecParser {
     }
   }
 
-  private getAllSupportedAPIs(spec: OpenAPIV3.Document): {
-    [key: string]: OpenAPIV3.OperationObject;
-  } {
-    if (this.apiMap !== undefined) {
-      return this.apiMap;
+  private getAPIs(spec: OpenAPIV3.Document): APIMap {
+    const validator = this.getValidator(spec);
+    const apiMap = validator.listAPIs();
+    return apiMap;
+  }
+
+  private getValidator(spec: OpenAPIV3.Document): Validator {
+    if (this.validator) {
+      return this.validator;
     }
-    const result = Utils.listSupportedAPIs(spec, this.options);
-    this.apiMap = result;
-    return result;
+    const validator = ValidatorFactory.create(spec, this.options);
+    this.validator = validator;
+    return validator;
   }
 }

@@ -16,6 +16,7 @@ export {
   ParseOptions,
   AdaptiveCard,
   ProjectType,
+  InvalidAPIInfo,
 } from "./interfaces";
 
 export { ConstantString } from "./constants";

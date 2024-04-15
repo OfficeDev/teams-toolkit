@@ -12,9 +12,18 @@ on:
 jobs:
   main:
     runs-on: ubuntu-latest
+    environment: engineering
     permissions:
       issues: write
+      id-token: write
+      contents: read
     steps:
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
       - name: Checkout
         uses: actions/checkout@v3
       - name: Checkout github action repository
@@ -43,7 +52,6 @@ jobs:
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           milestone-prefix: "CY"
-          devops-token: ${{secrets.ADO_PAT}}
           devops-org: "msazure"
           devops-projectId: "Microsoft Teams Extensibility"
           title-prefix: "[Github]"

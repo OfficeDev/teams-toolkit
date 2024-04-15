@@ -8,11 +8,7 @@ provision:
 
 {{#armDeploy}} deploymentName: Create-resources-for-sme {{/armDeploy}}
 
-{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
-
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
-
-{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}
 
@@ -28,8 +24,6 @@ deploy:
 
 # Triggered when 'teamsapp publish' is executed
 publish:
-{{#teamsAppValidateManifest}} {{/teamsAppValidateManifest}}
 {{#teamsAppZipAppPackage}} {{/teamsAppZipAppPackage}}
-{{#teamsAppValidateAppPackage}} {{/teamsAppValidateAppPackage}}
 {{#teamsAppUpdate}} {{/teamsAppUpdate}}
 {{#teamsAppPublishAppPackage}} {{/teamsAppPublishAppPackage}}

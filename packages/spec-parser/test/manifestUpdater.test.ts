@@ -71,7 +71,7 @@ describe("updateManifestWithAiPlugin", () => {
       };
 
       const expectedPlugins: PluginManifestSchema = {
-        schema_version: "v2",
+        schema_version: "v2.1",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -222,7 +222,7 @@ describe("updateManifestWithAiPlugin", () => {
       };
 
       const expectedPlugins: PluginManifestSchema = {
-        schema_version: "v2",
+        schema_version: "v2.1",
         name_for_human: "Original Name",
         namespace: "originalname",
         description_for_human: "My API description",
@@ -390,7 +390,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -530,7 +530,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "<Please add description of the plugin>",
@@ -672,7 +672,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "<Please add description of the plugin>",
@@ -822,7 +822,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "<Please add description of the plugin>",
@@ -890,7 +890,7 @@ describe("updateManifestWithAiPlugin", () => {
       .resolves(originalManifest)
       .withArgs(pluginFilePath)
       .resolves({
-        schema_version: "v2",
+        schema_version: "v2.1",
         name_for_human: "",
         description_for_human: "",
         capabilities: {
@@ -994,7 +994,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -1091,7 +1091,7 @@ describe("updateManifestWithAiPlugin", () => {
       .resolves(originalManifest)
       .withArgs(pluginFilePath)
       .resolves({
-        schema_version: "v2",
+        schema_version: "v2.1",
         name_for_human: "",
         description_for_human: "",
         functions: [
@@ -1226,7 +1226,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "exist_name",
       namespace: "existnamespace",
       description_for_human: "exist_description",
@@ -1285,7 +1285,7 @@ describe("updateManifestWithAiPlugin", () => {
       .resolves(originalManifest)
       .withArgs(pluginFilePath)
       .resolves({
-        schema_version: "v2",
+        schema_version: "v2.1",
         name_for_human: "exist_name",
         namespace: "existnamespace",
         description_for_human: "exist_description",
@@ -1379,7 +1379,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -1438,7 +1438,7 @@ describe("updateManifestWithAiPlugin", () => {
       .resolves(originalManifest)
       .withArgs(pluginFilePath)
       .resolves({
-        schema_version: "v2",
+        schema_version: "v2.1",
         name_for_human: "",
         description_for_human: "",
         functions: [
@@ -1582,7 +1582,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -1730,7 +1730,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",
@@ -1838,7 +1838,7 @@ describe("updateManifestWithAiPlugin", () => {
     };
 
     const expectedPlugins: PluginManifestSchema = {
-      schema_version: "v2",
+      schema_version: "v2.1",
       name_for_human: "Original Name",
       namespace: "originalname",
       description_for_human: "My API description",

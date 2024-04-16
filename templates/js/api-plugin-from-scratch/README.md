@@ -26,12 +26,12 @@ This app template allows Microsoft Copilot for Microsoft 365 to interact directl
 ## What's included in the template
 
 | Folder       | Contents                                                                                                    |
-| ------------ | ----------------------------------------------------------------------------------------------------------- |
-| `.vscode`    | VSCode files for debugging                                                                                  |
-| `appPackage` | Templates for the Teams application manifest, the API specification and response template for API responses |
-| `env`        | Environment files                                                                                           |
-| `infra`      | Templates for provisioning Azure resources                                                                  |
-| `src`        | The source code for the repair API                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| `.vscode`    | VSCode files for debugging                                                                  |
+| `appPackage` | Templates for the Teams application manifest, the plugin manifest and the API specification |
+| `env`        | Environment files                                                                           |
+| `infra`      | Templates for provisioning Azure resources                                                  |
+| `src`        | The source code for the repair API                                                          |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 

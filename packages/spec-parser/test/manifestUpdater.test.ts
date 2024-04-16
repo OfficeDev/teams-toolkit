@@ -128,7 +128,7 @@ describe("updateManifestWithAiPlugin", () => {
         {
           type: "OpenApi",
           auth: {
-            type: "none",
+            type: "None",
           },
           spec: {
             url: "spec/outputSpec.yaml",
@@ -298,7 +298,7 @@ describe("updateManifestWithAiPlugin", () => {
         {
           type: "OpenApi",
           auth: {
-            type: "none",
+            type: "None",
           },
           spec: {
             url: "spec/outputSpec2.yaml",
@@ -308,7 +308,7 @@ describe("updateManifestWithAiPlugin", () => {
         {
           type: "OpenApi",
           auth: {
-            type: "none",
+            type: "None",
           },
           spec: {
             url: "spec/outputSpec.yaml",
@@ -366,7 +366,7 @@ describe("updateManifestWithAiPlugin", () => {
           {
             type: "OpenApi",
             auth: {
-              type: "none",
+              type: "None",
             },
             spec: {
               url: "spec/outputSpec2.yaml",
@@ -501,7 +501,7 @@ describe("updateManifestWithAiPlugin", () => {
         {
           type: "OpenApi",
           auth: {
-            type: "none",
+            type: "None",
           },
           spec: {
             url: "spec/outputSpec.yaml",
@@ -652,7 +652,7 @@ describe("updateManifestWithAiPlugin", () => {
         {
           type: "OpenApi",
           auth: {
-            type: "none",
+            type: "None",
           },
           spec: {
             url: "spec/outputSpec.yaml",
@@ -710,7 +710,7 @@ describe("updateManifestWithAiPlugin", () => {
           {
             type: "OpenApi",
             auth: {
-              type: "none",
+              type: "None",
             },
             spec: {
               url: "spec/outputSpec.yaml",
@@ -854,7 +854,7 @@ describe("updateManifestWithAiPlugin", () => {
         {
           type: "OpenApi",
           auth: {
-            type: "none",
+            type: "None",
           },
           spec: {
             url: "spec/outputSpec.yaml",
@@ -1005,7 +1005,7 @@ describe("updateManifestWithAiPlugin", () => {
         {
           type: "OpenApi",
           auth: {
-            type: "none",
+            type: "None",
           },
           spec: {
             url: "spec/outputSpec.yaml",
@@ -1079,7 +1079,7 @@ describe("updateManifestWithAiPlugin", () => {
         {
           type: "OpenApi",
           auth: {
-            type: "none",
+            type: "None",
           },
           spec: {
             url: "spec/outputSpec.yaml",

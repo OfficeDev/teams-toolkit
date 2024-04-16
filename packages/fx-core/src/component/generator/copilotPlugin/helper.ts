@@ -457,18 +457,10 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
 export function generateScaffoldingSummary(
   warnings: Warning[],
   teamsManifest: TeamsAppManifest,
-  projectPath: string
+  apiSpecFilePath: string
 ): string {
-  const apiSpecFileName =
-    teamsManifest.composeExtensions?.length &&
-    teamsManifest.composeExtensions[0].apiSpecificationFile
-      ? teamsManifest.composeExtensions[0].apiSpecificationFile
-      : "";
-  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(
-    warnings,
-    path.join(AppPackageFolderName, apiSpecFileName)
-  );
-  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath, warnings);
+  const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(warnings, apiSpecFilePath);
+  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, warnings);
   const manifestWarningMessage = manifestWarningResult.map((warn) => {
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
@@ -523,7 +515,6 @@ function formatApiSpecValidationWarningMessage(
 
 function validateTeamsManifestLength(
   teamsManifest: TeamsAppManifest,
-  projectPath: string,
   warnings: Warning[]
 ): string[] {
   const nameShortLimit = 30;

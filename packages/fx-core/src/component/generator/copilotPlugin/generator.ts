@@ -424,7 +424,7 @@ export class CopilotPluginGenerator {
 
       // log warnings
       if (inputs.platform === Platform.CLI || inputs.platform === Platform.VS) {
-        const warnSummary = generateScaffoldingSummary(warnings, teamsManifest, destinationPath);
+        const warnSummary = generateScaffoldingSummary(warnings, teamsManifest, openapiSpecPath);
 
         if (warnSummary) {
           void context.logProvider.info(warnSummary);

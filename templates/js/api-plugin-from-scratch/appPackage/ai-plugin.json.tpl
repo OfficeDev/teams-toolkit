@@ -25,7 +25,7 @@
     {
       "type": "OpenApi",
       "auth": {
-        "type": "none"
+        "type": "None"
       },
       "spec": {
         "url": "apiSpecificationFile/repair.yml",

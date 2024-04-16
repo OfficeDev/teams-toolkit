@@ -231,7 +231,7 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     return ProjectTypeOptions.officeAddinAllIds().includes(projectType);
   }
 
-  protected getTemplateInfos(
+  public async getTemplateInfos(
     context: Context,
     inputs: Inputs,
     actionContext?: ActionContext
@@ -249,7 +249,7 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
     return Promise.resolve(ok([{ templateName: tplName, language: lang, replaceMap }]));
   }
 
-  protected async post(
+  public async post(
     context: Context,
     inputs: Inputs,
     destinationPath: string,

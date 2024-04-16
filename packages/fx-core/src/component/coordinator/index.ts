@@ -161,7 +161,7 @@ class Coordinator {
       });
 
       if (isNewGeneratorEnabled()) {
-        // for new
+        // refactored generator
         for (const generator of Generators) {
           if (generator.activate(context, inputs)) {
             const res = await generator.run(context, inputs, projectPath);
@@ -169,6 +169,7 @@ class Coordinator {
           }
         }
       } else {
+        // legacy logic
         if (capability === CapabilityOptions.SPFxTab().id) {
           const res = await SPFxGenerator.generate(context, inputs, projectPath);
           if (res.isErr()) return err(res.error);

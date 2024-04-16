@@ -36,6 +36,7 @@ import { manifestUtils } from "../../../src/component/driver/teamsApp/utils/Mani
 import { Generator } from "../../../src/component/generator/generator";
 import {
   OfficeAddinGenerator,
+  OfficeAddinGeneratorNew,
   getHost,
 } from "../../../src/component/generator/officeAddin/generator";
 import {
@@ -48,6 +49,7 @@ import { AccessGithubError, UserCancelError } from "../../../src/error";
 import {
   CapabilityOptions,
   OfficeAddinHostOptions,
+  ProgrammingLanguage,
   ProjectTypeOptions,
   QuestionNames,
 } from "../../../src/question";
@@ -1162,4 +1164,71 @@ describe("OfficeAddinGenerator for Office Addin", function () {
 
   //   chai.expect(result.isOk()).to.eq(true);
   // });
+});
+
+describe("OfficeAddinGeneratorNew", () => {
+  const generator = new OfficeAddinGeneratorNew();
+  const context = createContextV3();
+  describe("active()", () => {
+    it(`should return true`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.ProgrammingLanguage] = "JavaScript";
+      const res = generator.activate(context, inputs);
+      chai.assert.isTrue(res);
+    });
+
+    it(`should return false`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.bot().id;
+      inputs[QuestionNames.ProgrammingLanguage] = "JavaScript";
+      const res = generator.activate(context, inputs);
+      chai.assert.isTrue(res);
+    });
+  });
+
+  describe("getTemplateInfos()", () => {
+    it(`should return office-json-addin template`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
+      inputs[QuestionNames.Capabilities] = CapabilityOptions.officeAddinImport().id;
+      const res = await generator.getTemplateInfos(context, inputs);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const templates = res.value;
+        chai.assert.isTrue(templates.length === 1);
+        const template = templates[0];
+        chai.assert.isTrue(template.templateName === "office-json-addin");
+        chai.assert.isTrue(template.language === ProgrammingLanguage.TS);
+      }
+    });
+
+    it(`should return office-json-addin template`, async () => {
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        projectPath: "./",
+      };
+      inputs[QuestionNames.ProjectType] = ProjectTypeOptions.outlookAddin().id;
+      inputs[QuestionNames.Capabilities] = "some";
+      inputs[QuestionNames.ProgrammingLanguage] = ProgrammingLanguage.JS;
+      const res = await generator.getTemplateInfos(context, inputs);
+      chai.assert.isTrue(res.isOk());
+      if (res.isOk()) {
+        const templates = res.value;
+        chai.assert.isTrue(templates.length === 1);
+        const template = templates[0];
+        chai.assert.isTrue(template.templateName === "office-addin");
+        chai.assert.isTrue(template.language === ProgrammingLanguage.JS);
+      }
+    });
+  });
 });

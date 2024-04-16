@@ -4,6 +4,7 @@ import { FeatureFlagName } from "./constants";
 import * as path from "path";
 import * as fs from "fs-extra";
 import * as chai from "chai";
+import * as os from "os";
 import { dotenvUtil } from "./envUtil";
 import { TestFilePath } from "./constants";
 import { exec, spawn, SpawnOptionsWithoutStdio } from "child_process";
@@ -364,4 +365,32 @@ export async function updateDeverloperInManifestFile(
   }
   console.log("Replaced the properties of developer in manifest file");
   await fs.writeJSON(manifestFile, context, { spaces: 4 });
+}
+
+/**
+ * Create a file named argv.json in the .vscode folder in the user's home directory.
+ * fix issue: TTK sideloading extension is not enabled in vscode
+ */
+export function createVscodeArgvFile(): void {
+  const userDir = os.homedir(); // 获取用户目录
+
+  const vscodeDir = path.join(userDir, ".vscode");
+  const vscodeArgvPath = path.join(vscodeDir, "argv.json");
+  const content = {
+    "enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"],
+  };
+
+  // 如果.vscode目录不存在，先创建它
+  if (!fs.existsSync(vscodeDir)) {
+    fs.mkdirSync(vscodeDir);
+  }
+
+  // 写入文件
+  fs.writeFile(vscodeArgvPath, JSON.stringify(content, null, 2), (err) => {
+    if (err) {
+      console.error("Error creating argv.json file:", err);
+    } else {
+      console.log("argv.json file created successfully.");
+    }
+  });
 }

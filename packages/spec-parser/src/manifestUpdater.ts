@@ -212,6 +212,7 @@ export class ManifestUpdater {
         schema_version: "v2",
         name_for_human: "",
         description_for_human: "",
+        namespace: "",
         functions: [],
         runtimes: [],
       };
@@ -247,6 +248,10 @@ export class ManifestUpdater {
 
     if (!apiPlugin.name_for_human) {
       apiPlugin.name_for_human = appName;
+    }
+
+    if (!apiPlugin.namespace) {
+      apiPlugin.namespace = ManifestUpdater.removeAllSpecialCharacters(appName);
     }
 
     if (!apiPlugin.description_for_human) {
@@ -416,5 +421,9 @@ export class ManifestUpdater {
       newStr = newStr.replace(matches[0], "");
     }
     return newStr;
+  }
+
+  static removeAllSpecialCharacters(str: string): string {
+    return str.toLowerCase().replace(/[^a-z0-9]/g, "");
   }
 }

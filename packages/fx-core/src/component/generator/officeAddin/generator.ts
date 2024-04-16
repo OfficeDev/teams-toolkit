@@ -223,6 +223,8 @@ export async function getHost(addinManifestPath: string): Promise<OfficeHost> {
 }
 
 export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
+  componentName = "office-addin-generator";
+
   // activation condition
   public activate(context: Context, inputs: Inputs): boolean {
     const projectType = inputs[QuestionNames.ProjectType];

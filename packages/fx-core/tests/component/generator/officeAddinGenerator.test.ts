@@ -1176,7 +1176,7 @@ describe("OfficeAddinGeneratorNew", () => {
         projectPath: "./",
       };
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.officeAddin().id;
-      inputs[QuestionNames.ProgrammingLanguage] = "JavaScript";
+      inputs[QuestionNames.ProgrammingLanguage] = ProgrammingLanguage.JS;
       const res = generator.activate(context, inputs);
       chai.assert.isTrue(res);
     });
@@ -1187,9 +1187,9 @@ describe("OfficeAddinGeneratorNew", () => {
         projectPath: "./",
       };
       inputs[QuestionNames.ProjectType] = ProjectTypeOptions.bot().id;
-      inputs[QuestionNames.ProgrammingLanguage] = "JavaScript";
+      inputs[QuestionNames.ProgrammingLanguage] = ProgrammingLanguage.JS;
       const res = generator.activate(context, inputs);
-      chai.assert.isTrue(res);
+      chai.assert.isFalse(res);
     });
   });
 

@@ -167,19 +167,6 @@ class Coordinator {
             if (res.isErr()) return err(res.error);
           }
         }
-        // // TODO: move the following code to CopilotPluginGenerator
-        // if (inputs[QuestionNames.CustomCopilotRag] === CustomCopilotRagOptions.customApi().id) {
-        //   const res = await CopilotPluginGenerator.generateForCustomCopilotRagCustomApi(
-        //     context,
-        //     inputs,
-        //     projectPath
-        //   );
-        //   if (res.isErr()) {
-        //     return err(res.error);
-        //   } else {
-        //     warnings = res.value.warnings;
-        //   }
-        // }
       } else {
         if (capability === CapabilityOptions.SPFxTab().id) {
           const res = await SPFxGenerator.generate(context, inputs, projectPath);

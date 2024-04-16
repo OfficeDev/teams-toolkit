@@ -62,7 +62,7 @@ describe("SPFxGenerator", function () {
       if (directory.includes("teams")) {
         return {
           $schema:
-            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+            "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
           manifestVersion: "1.16",
           id: "fakedId",
           name: {

@@ -372,25 +372,20 @@ export async function updateDeverloperInManifestFile(
  * fix issue: TTK sideloading extension is not enabled in vscode
  */
 export function createVscodeArgvFile(): void {
-  const userDir = os.homedir(); // 获取用户目录
-
+  const userDir = os.homedir();
   const vscodeDir = path.join(userDir, ".vscode");
   const vscodeArgvPath = path.join(vscodeDir, "argv.json");
   const content = {
     "enable-proposed-api": ["TeamsDevApp.ms-teams-vscode-extension"],
   };
 
-  // 如果.vscode目录不存在，先创建它
   if (!fs.existsSync(vscodeDir)) {
+    console.log("Creating .vscode directory in the user's home directory.");
+    console.log("vscodeArgvPath: ", vscodeArgvPath);
     fs.mkdirSync(vscodeDir);
   }
 
-  // 写入文件
-  fs.writeFile(vscodeArgvPath, JSON.stringify(content, null, 2), (err) => {
-    if (err) {
-      console.error("Error creating argv.json file:", err);
-    } else {
-      console.log("argv.json file created successfully.");
-    }
-  });
+  fs.writeFileSync(vscodeArgvPath, JSON.stringify(content, null, 2));
+  console.log("argv.json file created successfully.");
+  console.log(content);
 }

@@ -175,7 +175,7 @@ describe("metadata rsc permission util", () => {
 
   it("parseManifest happy path", async () => {
     sandbox.stub(fs, "pathExists").resolves(true);
-    sandbox.stub(manifestUtils, "readAppManifest").resolves(ok(readAppManifestRes as any));
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(ok(readAppManifestRes as any));
     let props: any = {};
     await metadataRscPermissionUtil.parseManifest(ymlPath, mockProjectModel, props);
     assert(props[ProjectTypeProps.TeamsManifestVersion] === "1.16");

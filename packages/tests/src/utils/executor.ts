@@ -52,8 +52,9 @@ export class Executor {
   }
 
   static async login() {
-    const command = `az login -u ${Env["azureAccountName"]} -p '${Env["azureAccountPassword"]}'`;
-    await Executor.execute(command, process.cwd());
+    const command = `az login --username ${Env["azureAccountName"]} --password '${Env["azureAccountPassword"]}' --tenant ${Env["azureTenantId"]}`;
+    const { success } = await Executor.execute(command, process.cwd());
+    expect(success).to.be.true;
 
     // set subscription
     const subscription = Env["azureSubscriptionId"];

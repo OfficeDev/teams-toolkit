@@ -216,6 +216,9 @@ export abstract class CaseFactory {
             const bot = new BotValidator(context, projectPath, env);
             await bot.validateDeploy();
           }
+          if (validate.includes("aca")) {
+            await ContainerAppValidator.validateContainerAppStatus();
+          }
         }
 
         // validate
@@ -231,10 +234,6 @@ export abstract class CaseFactory {
             options?.manifestFolderName
           );
           expect(success).to.be.true;
-
-          if (validate.includes("aca")) {
-            await ContainerAppValidator.validateContainerAppStatus();
-          }
         }
 
         // package

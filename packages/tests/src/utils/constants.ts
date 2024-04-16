@@ -63,6 +63,7 @@ export enum TemplateProjectFolder {
   HelloWorldTabBackEnd = "hello-world-tab-with-backend",
   ContactExporter = "graph-toolkit-contact-exporter",
   HelloWorldBotSSO = "bot-sso",
+  BotSSODocker = "bot-sso-docker",
   TodoListSpfx = "todo-list-SPFx",
   MyFirstMetting = "hello-world-in-meeting",
   TodoListM365 = "todo-list-with-Azure-backend-M365",

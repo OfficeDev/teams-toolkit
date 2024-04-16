@@ -161,6 +161,7 @@ class Coordinator {
       });
 
       if (isNewGeneratorEnabled()) {
+        // for new
         for (const generator of Generators) {
           if (generator.activate(context, inputs)) {
             const res = await generator.run(context, inputs, projectPath);

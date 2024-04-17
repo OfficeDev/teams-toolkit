@@ -31,11 +31,14 @@ class AiBotTestCase extends CaseFactory {
   }
 }
 
+const myRecord: Record<string, string> = {};
+myRecord["custom-copilot-rag"] = "custom-copilot-rag-azureAISearch";
 new AiBotTestCase(
-  Capability.AiSearch,
+  Capability.RAG,
   27454388,
   "frankqian@microsoft.com",
   ["bot"],
   ProgrammingLanguage.PY,
-  {}
+  {},
+  myRecord
 ).test();

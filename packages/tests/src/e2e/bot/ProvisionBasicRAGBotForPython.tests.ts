@@ -31,11 +31,14 @@ class AiBotTestCase extends CaseFactory {
   }
 }
 
+const myRecord: Record<string, string> = {};
+myRecord["custom-copilot-rag"] = "custom-copilot-rag-customize";
 new AiBotTestCase(
-  Capability.BasicRAG,
+  Capability.RAG,
   27178092,
   "frankqian@microsoft.com",
   ["bot"],
   ProgrammingLanguage.PY,
-  {}
+  {},
+  myRecord
 ).test();

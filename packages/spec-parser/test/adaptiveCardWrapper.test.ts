@@ -11,7 +11,6 @@ import {
 } from "../src/adaptiveCardWrapper";
 import { AdaptiveCard } from "../src/interfaces";
 import { ConstantString } from "../src/constants";
-import exp from "constants";
 
 describe("adaptiveCardWrapper", () => {
   afterEach(() => {

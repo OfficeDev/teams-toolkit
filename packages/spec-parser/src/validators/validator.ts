@@ -154,7 +154,9 @@ export abstract class Validator {
       result.reason.push(ErrorType.ResponseContainMultipleMediaTypes);
     } else if (Object.keys(json).length === 0) {
       // response body should not be empty
-      result.reason.push(ErrorType.ResponseJsonIsEmpty);
+      if (this.options.projectType === ProjectType.SME) {
+        result.reason.push(ErrorType.ResponseJsonIsEmpty);
+      }
     }
 
     return result;

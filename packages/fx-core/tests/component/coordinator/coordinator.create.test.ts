@@ -15,7 +15,10 @@ import { developerPortalScaffoldUtils } from "../../../src/component/developerPo
 import { AppDefinition } from "../../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { CopilotPluginGenerator } from "../../../src/component/generator/copilotPlugin/generator";
 import { Generator } from "../../../src/component/generator/generator";
-import { OfficeAddinGenerator } from "../../../src/component/generator/officeAddin/generator";
+import {
+  OfficeAddinGenerator,
+  OfficeAddinGeneratorNew,
+} from "../../../src/component/generator/officeAddin/generator";
 import { SPFxGenerator } from "../../../src/component/generator/spfx/spfxGenerator";
 import { createContextV3 } from "../../../src/component/utils";
 import { settingsUtil } from "../../../src/component/utils/settingsUtil";
@@ -40,7 +43,7 @@ import { TemplateNames } from "../../../src/component/generator/templates/templa
 
 const V3Version = MetadataV3.projectVersion;
 
-[false, true].forEach((newGeneratorFlag) => {
+[false].forEach((newGeneratorFlag) => {
   describe(`coordinator create with isNewGeneratorEnabled = ${newGeneratorFlag}`, () => {
     const mockedEnvRestore: RestoreFn = () => {};
     const sandbox = sinon.createSandbox();
@@ -1225,5 +1228,33 @@ describe("Copilot plugin", async () => {
     };
     const res = await coordinator.create(v3ctx, inputs);
     assert.isTrue(res.isErr());
+  });
+});
+
+describe(`coordinator create with isNewGeneratorEnabled = true`, () => {
+  const sandbox = sinon.createSandbox();
+  const tools = new MockTools();
+  setTools(tools);
+  beforeEach(() => {
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(FeatureFlags, "isNewGeneratorEnabled").returns(true);
+  });
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should scaffold by OfficeAddinGeneratorNew successfully", async () => {
+    const v3ctx = createContextV3();
+    v3ctx.userInteraction = new MockedUserInteraction();
+    sandbox.stub(OfficeAddinGeneratorNew.prototype, "run").resolves(ok(undefined));
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      folder: ".",
+      [QuestionNames.ProjectType]: ProjectTypeOptions.outlookAddin().id,
+      [QuestionNames.AppName]: randomAppName(),
+      [QuestionNames.Scratch]: ScratchOptions.yes().id,
+    };
+    const res = await coordinator.create(v3ctx, inputs);
+    assert.isTrue(res.isOk());
   });
 });

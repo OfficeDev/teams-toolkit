@@ -1,43 +1,37 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
 import {
   CancellationToken,
   ChatContext,
   ChatRequest,
   ChatResponseStream,
-  commands,
-  env,
+  ChatResultFeedback,
   LanguageModelChatUserMessage,
   ProviderResult,
   Uri,
-  window,
-  workspace,
-  ChatResultFeedback,
+  commands,
+  env,
 } from "vscode";
 
-import { downloadDirectory } from "@microsoft/teamsfx-core/build/component/generator/utils";
 import * as uuid from "uuid";
 
-import createCommandHandler from "./commands/create/createCommandHandler";
-import { ProjectMetadata } from "./commands/create/types";
-import nextStepCommandHandler from "./commands/nextstep/nextstepCommandHandler";
-import { TeamsChatCommand, chatParticipantId } from "./consts";
-import followupProvider from "./followupProvider";
-import { defaultSystemPrompt } from "./prompts";
-import { getSampleDownloadUrlInfo, verbatimCopilotInteraction } from "./utils";
+import { FxError, Result } from "@microsoft/teamsfx-api";
+import { Correlator } from "@microsoft/teamsfx-core";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { ICopilotChatResult, ITelemetryData } from "./types";
+import createCommandHandler from "./commands/create/createCommandHandler";
+import nextStepCommandHandler from "./commands/nextstep/nextstepCommandHandler";
+import { TeamsChatCommand, chatParticipantId } from "./consts";
+import followupProvider from "./followupProvider";
+import { defaultSystemPrompt } from "./prompts";
 import { ChatTelemetryData } from "./telemetry";
-import { localize } from "../utils/localizeUtils";
-import { Correlator } from "@microsoft/teamsfx-core";
-import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { ICopilotChatResult, ITelemetryData } from "./types";
+import { verbatimCopilotInteraction } from "./utils";
 
 export function chatRequestHandler(
   request: ChatRequest,
@@ -80,56 +74,6 @@ async function defaultHandler(
     chatTelemetryData.measurements
   );
   return { metadata: { command: undefined, requestId: chatTelemetryData.requestId } };
-}
-
-export async function chatCreateCommandHandler(folderOrSample: string | ProjectMetadata) {
-  // Let user choose the project folder
-  let dstPath = "";
-  let folderChoice: string | undefined = undefined;
-  if (workspace.workspaceFolders !== undefined && workspace.workspaceFolders.length > 0) {
-    folderChoice = await window.showQuickPick([
-      localize("teamstoolkit.chatParticipants.create.quickPick.workspace"),
-      localize("teamstoolkit.qm.browse"),
-    ]);
-    if (!folderChoice) {
-      return;
-    }
-    if (folderChoice === localize("teamstoolkit.chatParticipants.create.quickPick.workspace")) {
-      dstPath = workspace.workspaceFolders[0].uri.fsPath;
-    }
-  }
-  if (dstPath === "") {
-    const customFolder = await window.showOpenDialog({
-      title: localize("teamstoolkit.chatParticipants.create.selectFolder.title"),
-      openLabel: localize("teamstoolkit.chatParticipants.create.selectFolder.label"),
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
-    });
-    if (!customFolder) {
-      return;
-    }
-    dstPath = customFolder[0].fsPath;
-  }
-  try {
-    if (typeof folderOrSample === "string") {
-      await fs.copy(folderOrSample, dstPath);
-    } else {
-      const downloadUrlInfo = await getSampleDownloadUrlInfo(folderOrSample.id);
-      await downloadDirectory(downloadUrlInfo, dstPath, 2, 20);
-    }
-    if (folderChoice !== localize("teamstoolkit.chatParticipants.create.quickPick.workspace")) {
-      void commands.executeCommand("vscode.openFolder", Uri.file(dstPath));
-    } else {
-      void window.showInformationMessage(
-        localize("teamstoolkit.chatParticipants.create.successfullyCreated")
-      );
-      void commands.executeCommand("workbench.view.extension.teamsfx");
-    }
-  } catch (error) {
-    console.error("Error copying files:", error);
-    void window.showErrorMessage(localize("teamstoolkit.chatParticipants.create.failToCreate"));
-  }
 }
 
 export async function chatExecuteCommandHandler(

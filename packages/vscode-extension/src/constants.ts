@@ -36,6 +36,7 @@ export enum CommandKey {
   OpenWelcome = "fx-extension.openWelcome",
   OpenDocument = "fx-extension.openDocument",
   OpenSamples = "fx-extension.openSamples",
+  DownloadSample = "fx-extension.downloadSample",
   ValidateGetStartedPrerequisites = "fx-extension.validate-getStarted-prerequisites",
   OpenReadMe = "fx-extension.openReadMe",
   DebugInTestToolFromMessage = "fx-extension.debugInTestToolFromMessage",

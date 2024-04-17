@@ -20,7 +20,7 @@
 
 ## Learn more
 
-- [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)
+- [Extend Microsoft Copilot for Microsoft 365](https://aka.ms/teamsfx-copilot-plugin)
 
 ## Report an issue
 

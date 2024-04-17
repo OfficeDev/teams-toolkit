@@ -483,7 +483,7 @@ describe("updateManifestWithAiPlugin", () => {
       expect(apiPlugin).to.deep.equal(expectedPlugins);
     });
 
-    it("should generate oauth property for apiPlugin files", async () => {
+    it("should not generate auth property for apiPlugin files for unsupported auth type", async () => {
       const spec: any = {
         openapi: "3.0.2",
         info: {
@@ -594,8 +594,7 @@ describe("updateManifestWithAiPlugin", () => {
           {
             type: "OpenApi",
             auth: {
-              type: "oAuthPluginVault",
-              reference_id: "OAUTH_REGISTRATION_ID",
+              type: "none",
             },
             spec: {
               url: "spec/outputSpec.yaml",
@@ -618,20 +617,11 @@ describe("updateManifestWithAiPlugin", () => {
       };
 
       const authInfo: AuthInfo = {
-        name: "oauth",
+        name: "apiKeyAuth",
         authScheme: {
-          type: "oauth2",
-          flows: {
-            authorizationCode: {
-              authorizationUrl: "https://example.com/oauth/authorize",
-              tokenUrl: "https://example.com/oauth/token",
-              scopes: {
-                read: "Grants read access",
-                write: "Grants write access",
-                admin: "Grants access to admin operations",
-              },
-            },
-          },
+          type: "apiKey",
+          in: "header",
+          name: "Authorization",
         },
       };
 

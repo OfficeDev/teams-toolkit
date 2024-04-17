@@ -122,9 +122,12 @@ export class ManifestUpdater {
       } else if (Utils.isBearerTokenAuth(authInfo.authScheme)) {
         pluginAuthObj.type = "apiKeyPluginVault";
       }
-      pluginAuthObj.reference_id = `${Utils.getSafeRegistrationIdEnvName(
-        authInfo.name
-      )}_REGISTRATION_ID`;
+
+      if (pluginAuthObj.type !== "none") {
+        pluginAuthObj.reference_id = `${Utils.getSafeRegistrationIdEnvName(
+          authInfo.name
+        )}_REGISTRATION_ID`;
+      }
     }
 
     for (const pathUrl in paths) {

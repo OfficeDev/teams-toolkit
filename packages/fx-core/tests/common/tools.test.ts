@@ -27,8 +27,6 @@ import {
 } from "../../src/common/tools";
 import { AuthSvcClient } from "../../src/component/driver/teamsApp/clients/authSvcClient";
 import { MockTools } from "../core/utils";
-import { isV3Enabled } from "../../src/common/featureFlags";
-import { UserCancelError } from "../../src/error";
 
 chai.use(chaiAsPromised);
 
@@ -350,27 +348,6 @@ projectId: 00000000-0000-0000-0000-000000000000`;
       sinon.stub(mockTools.tokenProvider.m365TokenProvider, "getAccessToken").resolves(ok("xxx"));
       sinon.stub(axios, "get").resolves({ data: { webUrl: "122" } });
       const res = await getSPFxToken(mockTools.tokenProvider.m365TokenProvider);
-    });
-  });
-  describe("feature flag check", () => {
-    let mockedEnvRestore: RestoreFn;
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-    it("should return true if no v5 set", () => {
-      mockedEnvRestore = mockedEnv({}, { clear: true });
-      const res = isV3Enabled();
-      chai.expect(res).true;
-    });
-    it("should return true if v5 set", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
-      const res = isV3Enabled();
-      chai.expect(res).true;
-    });
-    it("should return false is v5 set false", () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "false" }, { clear: true });
-      const res = isV3Enabled();
-      chai.expect(res).false;
     });
   });
 

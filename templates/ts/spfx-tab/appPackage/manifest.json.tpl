@@ -38,7 +38,7 @@
         {
             "configurationUrl": "https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/teamshostedapp.aspx%3FopenPropertyPane=true%26teams%26componentId={{componentId}}%26forceLocale={locale}",
             "canUpdateConfiguration": true,
-            "scopes": [    
+            "scopes": [
                 "team"
             ]
         }

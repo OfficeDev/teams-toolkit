@@ -852,5 +852,13 @@
   "driver.apiKey.error.domainInvalid": "Domain is invalid. Domain for API key should follow: 1. Max %d domain per API key. 2. Use comma to separate domains",
   "driver.apiKey.error.failedToGetDomain": "Failed to get domain from API specification. Please make sure your API specification is valid.",
   "driver.apiKey.log.successCreateApiKey": "Created API key with id %s",
-  "driver.apiKey.log.failedExecuteDriver": "Unable to execute action %s. Error message: %s"
+  "driver.apiKey.log.failedExecuteDriver": "Unable to execute action %s. Error message: %s",
+  "driver.oauth.description.create": "Create an Oauth registration on Developer Portal for authentication in Open API spec.",
+  "driver.oauth.title.create": "Creating Oauth registration...",
+  "driver.oauth.log.skipCreateOauth": "Environment variable %s exists. Skip creating API key.",
+  "driver.oauth.log.oauthNotFound": "Environment variable %s exists but failed to retrieve Oauth registration from Developer Portal. Check manually if it exists.",
+  "driver.oauth.error.nameTooLong": "The name for Oauth is too long. The maximum length is 128.",
+  "driver.oauth.log.successCreateOauth": "Oauth registration creted successfully with id %s!",
+  "driver.oauth.error.domainInvalid": "Domain is invalid. Max %d domain per Oauth registration.",
+  "driver.apiKey.error.oauthAuthInfoInvalid": "Failed to parse oauth2 authScheme from spec. Please make sure your API specification is valid."
 }

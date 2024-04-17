@@ -160,6 +160,8 @@ export enum Capability {
   Tab = "tab",
   // v3 only
   AiBot = "custom-copilot-basic",
+  BasicRAG = "custom-copilot-rag-customize",
+  AiSearch = "custom-copilot-rag-azureAISearch",
   TaskPane = "taskpane",
 }
 

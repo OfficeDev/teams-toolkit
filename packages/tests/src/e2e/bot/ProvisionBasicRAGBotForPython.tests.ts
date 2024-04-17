@@ -31,8 +31,8 @@ class AiBotTestCase extends CaseFactory {
 }
 
 new AiBotTestCase(
-  Capability.AiBot,
-  27551399,
+  Capability.BasicRAG,
+  27178092,
   "frankqian@microsoft.com",
   ["bot"],
   ProgrammingLanguage.PY,

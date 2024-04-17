@@ -40,6 +40,7 @@ import {
   environmentManager,
   manifestUtils,
   pathUtils,
+  pluginManifestUtils,
 } from "@microsoft/teamsfx-core";
 import commandController from "../../src/commandController";
 import { AzureAccountManager } from "../../src/commonlib/azureLogin";
@@ -72,6 +73,7 @@ import VsCodeLogInstance from "../../src/commonlib/log";
 import * as localPrerequisites from "../../src/debug/prerequisitesHandler";
 import { TeamsAppMigrationHandler } from "../../src/migration/migrationHandler";
 import * as featureFlags from "@microsoft/teamsfx-core/build/common/featureFlags";
+import { TelemetryEvent } from "../../src/telemetry/extTelemetryEvents";
 
 describe("handlers", () => {
   describe("activate()", function () {
@@ -2499,7 +2501,7 @@ describe("autoOpenProjectHandler", () => {
     chai.assert.isTrue(executeCommandStub.calledOnce);
   });
 
-  it("opens README and show warnings successfully", async () => {
+  it("opens README and show APIE ME warnings successfully", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
     sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
     const showMessageStub = sandbox
@@ -2530,7 +2532,6 @@ describe("autoOpenProjectHandler", () => {
       manifestVersion: "",
       isApiME: true,
       isSPFx: false,
-      isApiBasedMe: true,
     };
     const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
     VsCodeLogInstance.outputChannel = {
@@ -2541,11 +2542,57 @@ describe("autoOpenProjectHandler", () => {
 
     await handlers.autoOpenProjectHandler();
 
-    chai.assert.isTrue(sendTelemetryStub.called);
     chai.assert.isTrue(sendTelemetryStub.calledTwice);
     chai.assert.isTrue(parseManifestStub.called);
   });
 
+  it("opens README and show copilot plugin warnings successfully", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    sandbox.stub(vscode.window, "showInformationMessage").resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else if (key === GlobalKey.CreateWarnings) {
+        return JSON.stringify([{ type: "type", content: "content" }]);
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+    sandbox.stub(path, "relative").returns("test");
+
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        name: { short: "short", full: "full" },
+        description: { short: "short", full: "" },
+        plugins: [{ file: "ai-plugin.json", id: "plugin1" }],
+      } as any)
+    );
+    const parseRes = {
+      id: "",
+      version: "",
+      capabilities: ["plugin"],
+      manifestVersion: "",
+      isApiME: false,
+      isSPFx: false,
+    };
+    const parseManifestStub = sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
+    const getApiSpecStub = sandbox
+      .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
+      .resolves(ok(["test"]));
+    VsCodeLogInstance.outputChannel = {
+      show: () => {},
+      info: () => {},
+    } as unknown as vscode.OutputChannel;
+    const sendTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendTelemetryStub.calledTwice);
+    chai.assert.isTrue(parseManifestStub.called);
+    chai.assert.isTrue(getApiSpecStub.called);
+  });
   it("skip show warnings if parsing error", async () => {
     sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
     sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
@@ -2596,6 +2643,60 @@ describe("autoOpenProjectHandler", () => {
     await handlers.autoOpenProjectHandler();
 
     chai.assert.isTrue(sendErrorTelemetryStub.called);
+  });
+
+  it("skip show warnings if get plugin api spec error", async () => {
+    sandbox.stub(globalVariables, "workspaceUri").value(vscode.Uri.file("test"));
+    sandbox.stub(globalVariables, "isTeamsFxProject").resolves(false);
+    const showMessageStub = sandbox
+      .stub(vscode.window, "showInformationMessage")
+      .resolves(undefined);
+    sandbox.stub(globalState, "globalStateGet").callsFake(async (key: string) => {
+      if (key === "fx-extension.openReadMe") {
+        return vscode.Uri.file("test").fsPath;
+      } else if (key === GlobalKey.CreateWarnings) {
+        return JSON.stringify([{ type: "type", content: "content" }]);
+      } else {
+        return "";
+      }
+    });
+    sandbox.stub(globalState, "globalStateUpdate");
+
+    sandbox.stub(manifestUtils, "_readAppManifest").resolves(
+      ok({
+        name: { short: "short", full: "full" },
+        description: { short: "short", full: "" },
+        plugins: [{ file: "ai-plugin.json", id: "plugin1" }],
+      } as any)
+    );
+    const parseRes = {
+      id: "",
+      version: "",
+      capabilities: ["plugin"],
+      manifestVersion: "",
+      isApiME: false,
+      isSPFx: false,
+      isApiBasedMe: true,
+    };
+    sandbox.stub(ManifestUtil, "parseCommonProperties").returns(parseRes);
+    const getApiSpecStub = sandbox
+      .stub(pluginManifestUtils, "getApiSpecFilePathFromTeamsManifest")
+      .resolves(err(new SystemError("test", "test", "", "")));
+    VsCodeLogInstance.outputChannel = {
+      show: () => {},
+      info: () => {},
+    } as unknown as vscode.OutputChannel;
+    sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+    const sendErrorTelemetryStub = sandbox.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+
+    await handlers.autoOpenProjectHandler();
+
+    chai.assert.isTrue(sendErrorTelemetryStub.called);
+    chai.assert.equal(
+      sendErrorTelemetryStub.args[0][0],
+      TelemetryEvent.ShowScaffoldingWarningSummaryError
+    );
+    chai.assert.isTrue(getApiSpecStub.called);
   });
 
   it("auto install dependency", async () => {

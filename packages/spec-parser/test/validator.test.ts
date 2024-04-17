@@ -2132,6 +2132,43 @@ describe("Validator", () => {
       assert.strictEqual(isValid, true);
     });
 
+    it("should return true response body is empty", () => {
+      const method = "GET";
+      const path = "/users";
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        paths: {
+          "/users": {
+            get: {
+              parameters: [],
+              responses: {
+                "201": {
+                  description: "A successful response indicating that the repair was created",
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, true);
+    });
+
     it("should return true if parameter is in header and required for copilot", () => {
       const method = "GET";
       const path = "/users";
@@ -2190,7 +2227,7 @@ describe("Validator", () => {
       assert.strictEqual(isValid, true);
     });
 
-    it("should not support multiple required parameters count larger than 5 for copilot", () => {
+    it("should support multiple required parameters count larger than 5 for copilot", () => {
       const method = "POST";
       const path = "/users";
       const spec = {

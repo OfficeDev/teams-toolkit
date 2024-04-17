@@ -25,7 +25,7 @@ describe("pluginManifestUtils", () => {
     runtimes: [
       {
         type: "OpenApi",
-        auth: { type: "none" },
+        auth: { type: "None" },
         spec: {
           url: "openapi.yaml",
         },
@@ -224,7 +224,7 @@ describe("pluginManifestUtils", () => {
       runtimes: [
         {
           type: "OpenApi",
-          auth: { type: "none" },
+          auth: { type: "None" },
           spec: {
             url: "",
           },

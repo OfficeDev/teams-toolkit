@@ -289,7 +289,7 @@ describe("teamsApp/createAppPackage", async () => {
         runtimes: [
           {
             type: "OpenApi",
-            auth: { type: "none" },
+            auth: { type: "None" },
             spec: { url: "test\\openai.yml" },
           },
         ],

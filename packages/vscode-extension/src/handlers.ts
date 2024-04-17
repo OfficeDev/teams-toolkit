@@ -77,6 +77,7 @@ import {
   MetadataV3,
   CapabilityOptions,
   isChatParticipantEnabled,
+  pluginManifestUtils,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -1464,18 +1465,40 @@ export async function ShowScaffoldingWarningSummary(
     const manifestRes = await manifestUtils._readAppManifest(
       path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
     );
+    let message;
     if (manifestRes.isOk()) {
-      if (ManifestUtil.parseCommonProperties(manifestRes.value).isApiME) {
-        const message = generateScaffoldingSummary(
+      const teamsManifest = manifestRes.value;
+      const commonProperties = ManifestUtil.parseCommonProperties(teamsManifest);
+      if (commonProperties.capabilities.includes("plugin")) {
+        const apiSpecFilePathRes = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+          teamsManifest,
+          path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
+        );
+        if (apiSpecFilePathRes.isErr()) {
+          ExtTelemetry.sendTelemetryErrorEvent(
+            TelemetryEvent.ShowScaffoldingWarningSummaryError,
+            apiSpecFilePathRes.error
+          );
+        } else {
+          message = generateScaffoldingSummary(
+            createWarnings,
+            teamsManifest,
+            path.relative(workspacePath, apiSpecFilePathRes.value[0])
+          );
+        }
+      }
+      if (commonProperties.isApiME) {
+        message = generateScaffoldingSummary(
           createWarnings,
           manifestRes.value,
-          workspacePath
+          teamsManifest.composeExtensions?.[0].apiSpecificationFile ?? ""
         );
-        if (message) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
-          VsCodeLogInstance.outputChannel.show();
-          void VsCodeLogInstance.info(message);
-        }
+      }
+
+      if (message) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
+        VsCodeLogInstance.outputChannel.show();
+        void VsCodeLogInstance.info(message);
       }
     } else {
       ExtTelemetry.sendTelemetryErrorEvent(

@@ -162,17 +162,12 @@ class Coordinator {
 
       if (isNewGeneratorEnabled()) {
         // refactored generator
-        let count = 0;
-        for (const generator of Generators) {
-          if (generator.activate(context, inputs)) {
-            const res = await generator.run(context, inputs, projectPath);
-            if (res.isErr()) return err(res.error);
-            count++;
-          }
-        }
-        if (count === 0) {
+        const generator = Generators.find((g) => g.activate(context, inputs));
+        if (!generator) {
           return err(new MissingRequiredInputError(QuestionNames.Capabilities, "coordinator"));
         }
+        const res = await generator.run(context, inputs, projectPath);
+        if (res.isErr()) return err(res.error);
       } else {
         // legacy logic
         if (capability === CapabilityOptions.SPFxTab().id) {

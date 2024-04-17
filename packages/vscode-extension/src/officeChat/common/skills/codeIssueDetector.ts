@@ -310,7 +310,7 @@ export class CodeIssueDetector {
             }
             if (memberNames.length === 0) {
               return `
-The type '${className}' is not a valid JavaScript API type, and '${invalidProperty}' is invalid property or method of the type '${className}'. You should fix that by rewrite relevant code snippet with different approach.
+The type '${className}' is not a valid Office JavaScript API type, and '${invalidProperty}' is invalid property or method of the type '${className}'. You may incorrectly use a namespace, or other raw JavaScript type. You should fix that by rewrite relevant code snippet with different approach.
               `;
             }
             const localPropertyMethodNames =
@@ -333,7 +333,7 @@ The type '${className}' is not a valid JavaScript API type, and '${invalidProper
               })
               .filter((rating) => rating.rating > 0.35)
               .sort((a, b) => b.rating - a.rating)
-              .slice(0, 10)
+              .slice(0, 5)
               .map((rating) => rating.target);
             const foundCandidate: boolean =
               sortedSimilarStringsGlobal.find((name) => {
@@ -341,22 +341,44 @@ The type '${className}' is not a valid JavaScript API type, and '${invalidProper
               }) !== undefined;
 
             if (foundCandidate) {
+              const declarationWithComments = self.getDeclarationWithComments(
+                host,
+                sortedSimilarStringsLocal.split("property/method:")[0].trim(),
+                sortedSimilarStringsLocal.split("property/method:")[1].trim()
+              );
               return `
 '${invalidProperty}' is invalid property or method of the type '${className}'. 
-You should fix that by taking the suggestion below. The 'class' indicates the type of class, and 'property/method' indicates the property or method name belongs to the class.
+You should fix that by using the listed method or property below.
+method or property of type '${className}':
 \`\`\`typescript
-${sortedSimilarStringsLocal}
+${declarationWithComments.comments || ""}
+${declarationWithComments.declaration || ""}
 \`\`\`\n
               `;
             } else {
+              sortedSimilarStringsGlobal.unshift(sortedSimilarStringsLocal);
+              const suggestioons = sortedSimilarStringsGlobal.map((suggestion, index) => {
+                const declarationWithComments = self.getDeclarationWithComments(
+                  host,
+                  suggestion.split("property/method:")[0].trim(),
+                  suggestion.split("property/method:")[1].trim()
+                );
+                return `
+${index + 1}. Candidate for fixing:
+  \`\`\`typescript
+  // This is method or property of type '${declarationWithComments.class}'
+  ${declarationWithComments.comments || ""}
+  ${declarationWithComments.declaration || ""}
+  \`\`\`\n
+                `;
+              });
               return `
 '${invalidProperty}' is invalid property or method of the type '${className}'. 
-Based on the purpose of that line of code, you can refer potential possible relevant properties or method below. It may need more than one intermediate steps to get there, using your knownledge and the list below to find the path. The 'class' indicates the type of class, and 'property/method' indicates the property or method name belongs to the class.
-\`\`\`typescript
-${sortedSimilarStringsLocal}
-${sortedSimilarStringsGlobal.join("\n")}
-\`\`\`\n
-You may able to use the property or method of the type '${className}' as the start of the intermediate steps.
+Based on the purpose of that line of code, you can refer potential possible relevant properties or method below. It may need more than one intermediate steps to get there, using your knownledge and the list below to find the path.
+
+${suggestioons.join("\n")}
+
+You may able to use the property or method of the type '${className}' as the start of the intermediate steps. The class indicates the type of the object, and the property or method indicates the action or the property of the object.
 \`\`\`typescript
 ${memberNames.join("\n")}
 \`\`\`\n
@@ -715,6 +737,43 @@ ${memberNames.join("\n")}
       }
     }
     return [];
+  }
+
+  private getDeclarationWithComments(moduleName: string, className: string, memberName: string) {
+    const sourceFile = this.definionFile;
+
+    let declaration: ts.Node | undefined;
+    let comments: string | undefined;
+
+    function visit(node: ts.Node) {
+      if (!declaration && ts.isModuleDeclaration(node) && node.name.getText() === moduleName) {
+        ts.forEachChild(node, visit);
+      } else if (
+        !declaration &&
+        ts.isClassDeclaration(node) &&
+        node.name?.getText() === className
+      ) {
+        ts.forEachChild(node, visit);
+      } else if (
+        !declaration &&
+        (ts.isPropertyDeclaration(node) || ts.isMethodDeclaration(node)) &&
+        node.name.getText() === memberName
+      ) {
+        declaration = node;
+        const commentRanges = ts.getLeadingCommentRanges(sourceFile!.text, node.pos);
+        comments = commentRanges
+          ? commentRanges
+              .map((range) => sourceFile!.text.substring(range.pos, range.end).trim())
+              .join("\n")
+          : undefined;
+      } else {
+        ts.forEachChild(node, visit);
+      }
+    }
+
+    ts.forEachChild(sourceFile!, visit);
+
+    return { class: className, declaration: declaration?.getFullText(), comments };
   }
 
   private processNamespace(namespace: string, classname: string | null, node: ts.Node) {

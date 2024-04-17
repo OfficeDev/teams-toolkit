@@ -113,7 +113,7 @@ export interface RuntimeObjectOpenapi {
   [k: string]: unknown;
 }
 export interface AuthObject {
-  type: "none" | "oAuthPluginVault" | "apiKeyPluginVault";
+  type: "None" | "OAuthPluginVault" | "ApiKeyPluginVault";
   reference_id?: string;
   [k: string]: unknown;
 }

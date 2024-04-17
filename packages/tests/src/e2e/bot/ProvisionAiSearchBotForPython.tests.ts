@@ -26,7 +26,7 @@ class AiSearchBotAzureOpenAITestCase extends CaseFactory {
       SECRET_AZURE_SEARCH_KEY +
       "\n" +
       AZURE_SEARCH_ENDPOINT;
-    fs.writeFileSync(userFile, KEY);
+    fs.appendFileSync(userFile, KEY);
     console.log(`add key ${KEY} to .env.dev.user file`);
   }
 }
@@ -45,7 +45,7 @@ class AiSearchBotOpenAITestCase extends CaseFactory {
       SECRET_AZURE_SEARCH_KEY +
       "\n" +
       AZURE_SEARCH_ENDPOINT;
-    fs.writeFileSync(userFile, KEY);
+    fs.appendFileSync(userFile, KEY);
     console.log(`add key ${KEY} to .env.dev.user file`);
   }
 }

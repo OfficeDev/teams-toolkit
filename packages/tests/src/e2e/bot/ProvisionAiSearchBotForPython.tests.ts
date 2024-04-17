@@ -12,25 +12,15 @@ import * as path from "path";
 import { expect } from "chai";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 
-class AiBotTestCase extends CaseFactory {
+class AiSearchBotAzureOpenAITestCase extends CaseFactory {
   public override async onAfterCreate(projectPath: string): Promise<void> {
     expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
     const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
-    const AZURE_OPENAI_ENDPOINT = "AZURE_OPENAI_ENDPOINT=https://test.com";
-    const SECRET_AZURE_OPENAI_API_KEY = "SECRET_AZURE_OPENAI_API_KEY=fake";
-    const AZURE_OPENAI_MODEL_DEPLOYMENT_NAME =
-      "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=fake";
     const AZURE_OPENAI_EMBEDDING_DEPLOYMENT =
       "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=fake";
     const SECRET_AZURE_SEARCH_KEY = "SECRET_AZURE_SEARCH_KEY=fake";
     const AZURE_SEARCH_ENDPOINT = "AZURE_SEARCH_ENDPOINT=https://test.com";
     const KEY =
-      SECRET_AZURE_OPENAI_API_KEY +
-      "\n" +
-      AZURE_OPENAI_ENDPOINT +
-      "\n" +
-      AZURE_OPENAI_MODEL_DEPLOYMENT_NAME +
-      "\n" +
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT +
       "\n" +
       SECRET_AZURE_SEARCH_KEY +
@@ -41,14 +31,53 @@ class AiBotTestCase extends CaseFactory {
   }
 }
 
-const myRecord: Record<string, string> = {};
-myRecord["custom-copilot-rag"] = "custom-copilot-rag-azureAISearch";
-new AiBotTestCase(
+class AiSearchBotOpenAITestCase extends CaseFactory {
+  public override async onAfterCreate(projectPath: string): Promise<void> {
+    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
+    const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
+    const AZURE_OPENAI_EMBEDDING_DEPLOYMENT =
+      "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=fake";
+    const SECRET_AZURE_SEARCH_KEY = "SECRET_AZURE_SEARCH_KEY=fake";
+    const AZURE_SEARCH_ENDPOINT = "AZURE_SEARCH_ENDPOINT=https://test.com";
+    const KEY =
+      AZURE_OPENAI_EMBEDDING_DEPLOYMENT +
+      "\n" +
+      SECRET_AZURE_SEARCH_KEY +
+      "\n" +
+      AZURE_SEARCH_ENDPOINT;
+    fs.writeFileSync(userFile, KEY);
+    console.log(`add key ${KEY} to .env.dev.user file`);
+  }
+}
+
+// Azure OpenAI
+const myRecordAzOpenAI: Record<string, string> = {};
+myRecordAzOpenAI["custom-copilot-rag"] = "custom-copilot-rag-azureAISearch";
+myRecordAzOpenAI["llm-service"] = "llm-service-azure-openai";
+myRecordAzOpenAI["azure-openai-key"] = "fake";
+myRecordAzOpenAI["azure-openai-deployment-name"] = "fake";
+myRecordAzOpenAI["azure-openai-endpoint"] = "https://test.com";
+new AiSearchBotAzureOpenAITestCase(
   Capability.RAG,
   27454388,
   "frankqian@microsoft.com",
   ["bot"],
   ProgrammingLanguage.PY,
   {},
-  myRecord
+  myRecordAzOpenAI
+).test();
+
+// OpenAI
+const myRecordOpenAI: Record<string, string> = {};
+myRecordOpenAI["custom-copilot-rag"] = "custom-copilot-rag-azureAISearch";
+myRecordOpenAI["llm-service"] = "llm-service-openai";
+myRecordOpenAI["azure-openai-key"] = "fake";
+new AiSearchBotOpenAITestCase(
+  Capability.RAG,
+  27454412,
+  "frankqian@microsoft.com",
+  ["bot"],
+  ProgrammingLanguage.PY,
+  {},
+  myRecordOpenAI
 ).test();

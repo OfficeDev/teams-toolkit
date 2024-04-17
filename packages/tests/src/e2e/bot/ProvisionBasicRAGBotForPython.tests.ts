@@ -7,38 +7,40 @@
 
 import { Capability } from "../../utils/constants";
 import { CaseFactory } from "../caseFactory";
-import * as fs from "fs-extra";
-import * as path from "path";
-import { expect } from "chai";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 
-class AiBotTestCase extends CaseFactory {
-  public override async onAfterCreate(projectPath: string): Promise<void> {
-    expect(fs.pathExistsSync(path.resolve(projectPath, "infra"))).to.be.true;
-    const userFile = path.resolve(projectPath, "env", `.env.dev.user`);
-    const AZURE_OPENAI_ENDPOINT = "AZURE_OPENAI_ENDPOINT=https://test.com";
-    const SECRET_AZURE_OPENAI_API_KEY = "SECRET_AZURE_OPENAI_API_KEY=fake";
-    const AZURE_OPENAI_MODEL_DEPLOYMENT_NAME =
-      "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=fake";
-    const KEY =
-      SECRET_AZURE_OPENAI_API_KEY +
-      "\n" +
-      AZURE_OPENAI_ENDPOINT +
-      "\n" +
-      AZURE_OPENAI_MODEL_DEPLOYMENT_NAME;
-    fs.writeFileSync(userFile, KEY);
-    console.log(`add key ${KEY} to .env.dev.user file`);
-  }
-}
+class BasicRAGBotAzureOpenAITestCase extends CaseFactory {}
 
-const myRecord: Record<string, string> = {};
-myRecord["custom-copilot-rag"] = "custom-copilot-rag-customize";
-new AiBotTestCase(
+class BasicRAGBotOpenAITestCase extends CaseFactory {}
+
+// Azure OpenAI
+const myRecordAzOpenAI: Record<string, string> = {};
+myRecordAzOpenAI["custom-copilot-rag"] = "custom-copilot-rag-customize";
+myRecordAzOpenAI["llm-service"] = "llm-service-azure-openai";
+myRecordAzOpenAI["azure-openai-key"] = "fake";
+myRecordAzOpenAI["azure-openai-deployment-name"] = "fake";
+myRecordAzOpenAI["azure-openai-endpoint"] = "https://test.com";
+new BasicRAGBotAzureOpenAITestCase(
   Capability.RAG,
   27178092,
   "frankqian@microsoft.com",
   ["bot"],
   ProgrammingLanguage.PY,
   {},
-  myRecord
+  myRecordAzOpenAI
+).test();
+
+// OpenAI
+const myRecordOpenAI: Record<string, string> = {};
+myRecordOpenAI["custom-copilot-rag"] = "custom-copilot-rag-customize";
+myRecordOpenAI["llm-service"] = "llm-service-openai";
+myRecordOpenAI["openai-key"] = "fake";
+new BasicRAGBotOpenAITestCase(
+  Capability.RAG,
+  27178104,
+  "frankqian@microsoft.com",
+  ["bot"],
+  ProgrammingLanguage.PY,
+  {},
+  myRecordOpenAI
 ).test();

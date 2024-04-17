@@ -7,9 +7,6 @@
 
 import { Capability } from "../../utils/constants";
 import { CaseFactory } from "../caseFactory";
-import * as fs from "fs-extra";
-import * as path from "path";
-import { expect } from "chai";
 import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 
 class AiBotAzureOpenAITestCase extends CaseFactory {}

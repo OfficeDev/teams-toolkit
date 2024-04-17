@@ -73,7 +73,7 @@ new AiSearchBotAzureOpenAITestCase(
 const myRecordOpenAI: Record<string, string> = {};
 myRecordOpenAI["custom-copilot-rag"] = "custom-copilot-rag-azureAISearch";
 myRecordOpenAI["llm-service"] = "llm-service-openai";
-myRecordOpenAI["azure-openai-key"] = "fake";
+myRecordOpenAI["openai-key"] = "fake";
 new AiSearchBotOpenAITestCase(
   Capability.RAG,
   27454412,

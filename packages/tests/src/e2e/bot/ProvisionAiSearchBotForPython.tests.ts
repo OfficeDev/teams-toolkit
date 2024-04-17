@@ -20,12 +20,22 @@ class AiBotTestCase extends CaseFactory {
     const SECRET_AZURE_OPENAI_API_KEY = "SECRET_AZURE_OPENAI_API_KEY=fake";
     const AZURE_OPENAI_MODEL_DEPLOYMENT_NAME =
       "AZURE_OPENAI_MODEL_DEPLOYMENT_NAME=fake";
+    const AZURE_OPENAI_EMBEDDING_DEPLOYMENT =
+      "AZURE_OPENAI_EMBEDDING_DEPLOYMENT=fake";
+    const SECRET_AZURE_SEARCH_KEY = "SECRET_AZURE_SEARCH_KEY=fake";
+    const AZURE_SEARCH_ENDPOINT = "AZURE_SEARCH_ENDPOINT=https://test.com";
     const KEY =
       SECRET_AZURE_OPENAI_API_KEY +
       "\n" +
       AZURE_OPENAI_ENDPOINT +
       "\n" +
-      AZURE_OPENAI_MODEL_DEPLOYMENT_NAME;
+      AZURE_OPENAI_MODEL_DEPLOYMENT_NAME +
+      "\n" +
+      AZURE_OPENAI_EMBEDDING_DEPLOYMENT +
+      "\n" +
+      SECRET_AZURE_SEARCH_KEY +
+      "\n" +
+      AZURE_SEARCH_ENDPOINT;
     fs.writeFileSync(userFile, KEY);
     console.log(`add key ${KEY} to .env.dev.user file`);
   }

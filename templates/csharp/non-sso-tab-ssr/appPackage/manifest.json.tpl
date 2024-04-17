@@ -29,7 +29,7 @@
     "staticTabs": [
         {
             "entityId": "index",
-            "name": "My Tab",
+            "name": "Home",
             "contentUrl": "${{TAB_ENDPOINT}}/tab",
             "websiteUrl": "${{TAB_ENDPOINT}}/tab",
             "scopes": [

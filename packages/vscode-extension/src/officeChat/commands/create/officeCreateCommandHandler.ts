@@ -17,8 +17,7 @@ import { describeOfficeProjectSystemPrompt } from "../../officePrompts";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
 import { ChatTelemetryData } from "../../../chat/telemetry";
-import { showFileTree } from "../../../chat/commands/create/helper";
-import { matchOfficeProject, showTemplateFileTree } from "./helper";
+import { matchOfficeProject, showOfficeSampleFileTree, showOfficeTemplateFileTree } from "./helper";
 import { localize } from "../../../utils/localizeUtils";
 import { Planner } from "../../common/planner";
 import { CHAT_CREATE_SAMPLE_COMMAND_ID } from "../../../chat/consts";
@@ -57,7 +56,7 @@ export default async function officeCreateCommandHandler(
         token
       );
       if (matchedResult.type === "sample") {
-        const folder = await showFileTree(matchedResult, response);
+        const folder = await showOfficeSampleFileTree(matchedResult, response);
         const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         response.button({
           command: CHAT_CREATE_SAMPLE_COMMAND_ID,
@@ -68,7 +67,7 @@ export default async function officeCreateCommandHandler(
         response.markdown(
           "\nWe've found a template project that matches your description. Take a look at it below."
         );
-        const tmpFolder = await showTemplateFileTree(matchedResult.data, response);
+        const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data, response);
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         response.button({
           command: CHAT_CREATE_SAMPLE_COMMAND_ID,

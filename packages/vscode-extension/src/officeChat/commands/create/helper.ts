@@ -21,11 +21,13 @@ import { getCopilotResponseAsString } from "../../../chat/utils";
 import { BM25, BMDocument, DocumentWithmetadata } from "../../retrievalUtil/BM25";
 import { prepareDiscription } from "../../retrievalUtil/retrievalUtil";
 import { getOfficeProjectMatchSystemPrompt } from "../../officePrompts";
-import { sampleProvider } from "@microsoft/teamsfx-core";
+import { officeSampleProvider } from "./officeSamples";
 import { CommandKey } from "../../../constants";
 import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
-import { fileTreeAdd } from "../../../chat/commands/create/helper";
+import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
+import { getOfficeSampleDownloadUrlInfo } from "../../common/utils";
+import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
 
 export async function matchOfficeProject(
   request: ChatRequest,
@@ -60,22 +62,16 @@ export async function matchOfficeProject(
 }
 
 export async function getOfficeSampleMetadata(): Promise<ProjectMetadata[]> {
-  const sampleCollection = await sampleProvider.SampleCollection;
+  const sampleCollection = await officeSampleProvider.OfficeSampleCollection;
   const result: ProjectMetadata[] = [];
   for (const sample of sampleCollection.samples) {
-    if (
-      sample.types.includes("Word") ||
-      sample.types.includes("Excel") ||
-      sample.types.includes("Powerpoint")
-    ) {
-      result.push({
-        id: sample.id,
-        type: "sample",
-        platform: "WXP",
-        name: sample.title,
-        description: sample.fullDescription,
-      });
-    }
+    result.push({
+      id: sample.id,
+      type: "sample",
+      platform: "WXP",
+      name: sample.title,
+      description: sample.fullDescription,
+    });
   }
   return result;
 }
@@ -99,7 +95,29 @@ export function getOfficeTemplateMetadata(): ProjectMetadata[] {
   });
 }
 
-export async function showTemplateFileTree(
+export async function showOfficeSampleFileTree(
+  projectMetadata: ProjectMetadata,
+  response: ChatResponseStream
+): Promise<string> {
+  response.markdown(
+    "\nWe've found a sample project that matches your description. Take a look at it below."
+  );
+  const downloadUrlInfo = await getOfficeSampleDownloadUrlInfo(projectMetadata.id);
+  const { samplePaths, fileUrlPrefix } = await getSampleFileInfo(downloadUrlInfo, 2);
+  const tempFolder = tmp.dirSync({ unsafeCleanup: true }).name;
+  const nodes = await buildFileTree(
+    fileUrlPrefix,
+    samplePaths,
+    tempFolder,
+    downloadUrlInfo.dir,
+    2,
+    20
+  );
+  response.filetree(nodes, Uri.file(path.join(tempFolder, downloadUrlInfo.dir)));
+  return path.join(tempFolder, downloadUrlInfo.dir);
+}
+
+export async function showOfficeTemplateFileTree(
   data: any,
   response: ChatResponseStream,
   codeSnippet?: string

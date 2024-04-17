@@ -9,7 +9,7 @@ import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
 import { CHAT_CREATE_SAMPLE_COMMAND_ID } from "../../../chat/consts";
 import { localize } from "../../../utils/localizeUtils";
-import { showTemplateFileTree } from "../../commands/create/helper";
+import { showOfficeTemplateFileTree } from "../../commands/create/helper";
 
 export class projectCreator implements ISkill {
   name: string | undefined;
@@ -44,7 +44,7 @@ export class projectCreator implements ISkill {
       "programming-language": "typescript",
       agent: "office",
     };
-    const rootFolder = await showTemplateFileTree(
+    const rootFolder = await showOfficeTemplateFileTree(
       createInputs,
       response,
       spec.appendix.codeSnippet

@@ -161,6 +161,7 @@ export enum Capability {
   Tab = "tab",
   // v3 only
   AiBot = "custom-copilot-basic",
+  RAG = "custom-copilot-rag",
   TaskPane = "taskpane",
 }
 

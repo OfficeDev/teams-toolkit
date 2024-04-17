@@ -824,6 +824,31 @@ export async function runCommand(
   return result;
 }
 
+export async function downloadSampleApp(...args: unknown[]) {
+  const sampleId = args[1] as string;
+  const props: any = {
+    [TelemetryProperty.TriggerFrom]: getTriggerFromProperty(args),
+    [TelemetryProperty.SampleAppName]: sampleId,
+  };
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
+  const inputs: Inputs = getSystemInputs();
+  inputs["samples"] = sampleId;
+  inputs.projectId = inputs.projectId ?? uuid.v4();
+
+  const res = await downloadSample(inputs);
+  if (inputs.projectId) {
+    props[TelemetryProperty.NewProjectId] = inputs.projectId;
+  }
+  if (res.isOk()) {
+    props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
+    await openFolder(res.value, true);
+  } else {
+    props[TelemetryProperty.Success] = TelemetrySuccess.No;
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
+  }
+}
+
 export async function downloadSample(inputs: Inputs): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   try {

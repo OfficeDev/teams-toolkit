@@ -235,7 +235,7 @@ export class ManifestUpdater {
       apiPlugin.runtimes.push({
         type: "OpenApi",
         auth: {
-          type: "none",
+          type: "None",
         },
         spec: {
           url: specRelativePath,

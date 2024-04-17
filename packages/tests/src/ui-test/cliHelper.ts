@@ -13,7 +13,6 @@ import {
   ResourceToDeploy,
   Capability,
 } from "../utils/constants";
-import { isV3Enabled } from "@microsoft/teamsfx-core";
 import path from "path";
 import * as chai from "chai";
 import { Executor } from "../utils/executor";
@@ -58,9 +57,6 @@ export class CliHelper {
     processEnv: NodeJS.ProcessEnv = process.env,
     delay: number = 10 * 60 * 1000
   ) {
-    if (!isV3Enabled() && env === "local") {
-      chai.assert.fail("local env is not supported in v2");
-    }
     console.log(`[Provision] ${projectPath}`);
     const timeout = timeoutPromise(delay);
     let command = "";
@@ -269,9 +265,6 @@ export class CliHelper {
     processEnv: NodeJS.ProcessEnv = process.env,
     delay: number = 10 * 60 * 1000
   ) {
-    if (!isV3Enabled() && env === "local") {
-      chai.assert.fail(`[error] provision local only support in V3 project`);
-    }
     console.log(`[Deploy] ${projectPath}`);
     const timeout = timeoutPromise(delay);
 
@@ -354,26 +347,7 @@ export class CliHelper {
     retries?: number,
     newCommand?: string
   ) {
-    if (isV3Enabled()) {
-      console.log("add command is not supported in v3");
-    } else {
-      const result = await execAsyncWithRetry(
-        `teamsapp deploy ${resourceToDeploy} ${option}  --telemetry false`,
-        {
-          cwd: projectPath,
-          env: processEnv ? processEnv : process.env,
-          timeout: 0,
-        },
-        retries,
-        newCommand
-      );
-      const message = `deploy ${resourceToDeploy} for ${projectPath}`;
-      if (result.stderr) {
-        console.log(`[Failed] ${message}. Error message: ${result.stderr}`);
-      } else {
-        console.log(`[Successfully] ${message}`);
-      }
-    }
+    console.log("add command is not supported in v3");
   }
 
   static async createDotNetProject(
@@ -418,7 +392,6 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    console.log("isV3Enabled: " + isV3Enabled());
     const command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options} --telemetry false`;
     const timeout = 100000;
     try {
@@ -447,22 +420,11 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    console.log("isV3Enabled: " + isV3Enabled());
-    let command;
-    if (isV3Enabled()) {
-      command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options} --telemetry false`;
-    } else {
-      command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} --programming-language ${lang} ${options}`;
-    }
+    const command = `teamsapp new --interactive false --app-name ${appName} --capability ${capability} --programming-language ${lang} ${options} --telemetry false`;
     const timeout = 100000;
     try {
-      if (isV3Enabled()) {
-        const { stdout } = await Executor.execute("teamsapp -v", testFolder);
-        console.log(stdout);
-      } else {
-        const { stdout } = await Executor.execute("teamsfx -v", testFolder);
-        console.log(stdout);
-      }
+      const { stdout } = await Executor.execute("teamsapp -v", testFolder);
+      console.log(stdout);
       await Executor.execute(command, testFolder);
       const message = `scaffold project to ${path.resolve(
         testFolder,

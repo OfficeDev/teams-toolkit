@@ -63,7 +63,7 @@ export class DefaultTemplateGenerator {
   }
 
   // override this method to provide information of templates to be generated
-  protected getTemplateInfos(
+  public getTemplateInfos(
     context: Context,
     inputs: Inputs,
     actionContext?: ActionContext
@@ -75,7 +75,7 @@ export class DefaultTemplateGenerator {
   }
 
   // override this method to do post process
-  protected post(
+  public post(
     context: Context,
     inputs: Inputs,
     destinationPath: string,

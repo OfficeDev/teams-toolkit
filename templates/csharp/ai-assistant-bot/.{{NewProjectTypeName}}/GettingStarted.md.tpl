@@ -1,7 +1,6 @@
 # Overview of the AI Assistant Bot template
 
-This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview).
-It showcases how to build an intelligent chat bot in Teams capable of helping users accomplish a specific task using natural language right in the Teams conversations, such as solving a math problem.
+This app template is built using [Teams AI library](https://aka.ms/teams-ai-library) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview) to help you build an intelligent chat bot in Teams that can help users accomplish a task using natural language within Teams conversations.
 
 ## Quick Start
 
@@ -16,11 +15,11 @@ It showcases how to build an intelligent chat bot in Teams capable of helping us
 
 ### Create your own OpenAI Assistant
 
-Before running or debugging your bot, please follow these steps to setup your own [OpenAI Assistant](https://platform.openai.com/docs/assistants/overview).
+Before running or debugging your bot, follow these steps to setup your own [OpenAI Assistant](https://platform.openai.com/docs/assistants/overview).
 
 **If you haven't setup any Assistant yet**
 
-> This app template provides script `Create-Assistant.ps1` to help create assistant. You can change the instructions and settings in the script to customize the assistant.
+> This app template includes a script `Create-Assistant.ps1` to help you create an assistant. You can customize the assistant by changing the instructions and settings in the script.
 > 
 > After creation, you can change and manage your assistants on [OpenAI](https://platform.openai.com/assistants).
 
@@ -28,7 +27,7 @@ Before running or debugging your bot, please follow these steps to setup your ow
    ```
    > . ./Create-Assistant.ps1 -OPENAI_API_KEY xxxxxx
    ```
-2. The above command will output the properties of the new created assistant, including the ID like "id: asst_xxx..."
+2. The above command will display the properties of the newly created assistant, including the ID like "id: asst_xxx..."
 
 ### Debug bot app in Teams Web Client
 
@@ -40,17 +39,18 @@ Before running or debugging your bot, please follow these steps to setup your ow
 2. In the debug dropdown menu, select Dev Tunnels > Create A Tunnel (set authentication type to Public) or select an existing public dev tunnel
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/create-devtunnel-button.png)
 3. Right-click the `{{NewProjectTypeName}}` project and select Teams Toolkit > Prepare Teams App Dependencies
-4. If prompted, sign in with a Microsoft 365 account for the Teams organization you want 
-to install the app to
-5. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+4. If prompted, sign in to Visual Studio with a Microsoft 365 work or school account
+5. Press F5, or select Debug > Start Debugging menu in Visual Studio to start your app
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
-6. In the launched browser, select the Add button to load the app in Teams
-7. In the chat bar, type and send anything to your bot to trigger a response
+6. In the opened web browser, select Add button to test your app in Teams
+7. In the message input field, type and send anything to your bot to get a response
 
-## Start multiple profiles
-Instead of launching the app in Teams client with default profile, you can also run your app with other profile like App Test Tool, office.com and outlook or even Copilot. You can select profile to start.
-1. Go to Tools -> Options -> Preview Features.
-2. Check "Enable Multi-Project Launch Profiles"
+## Run the app on other platforms
+
+The unified app manifest for a Teams app supports extending other experiences like Outlook and the Microsoft 365 app. To simplify this with Teams Toolkit, we use Multi-Project Launch Profiles to make other targets available for you to select. To use this feature:
+
+1. Go to Tools -> Options -> Preview Features
+2. Select 'Enable Multi-Project Launch Profiles'
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/enable-multiple-profiles-feature.png)
 
 ### Debug bot app in Teams App Test Tool
@@ -63,13 +63,13 @@ Instead of launching the app in Teams client with default profile, you can also 
    ```
 2. Select `Teams App Test Tool (browser)` in debug dropdown menu
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/switch-to-test-tool.png)
-2. Press F5, or select the Debug > Start Debugging menu in Visual Studio
+3. Press F5, or select Debug > Start Debugging menu in Visual Studio
 </br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
-4. In Teams App Test Tool from the launched browser, type and send anything to your bot to trigger a response 
+4. In Teams App Test Tool, type and send anything to your bot to trigger a response
 
 ## Extend the AI Assistant Bot template with more AI capabilities
 
-You can follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to extend the AI Assistant Bot template with more AI capabilities.
+Follow [Get started with Teams AI library](https://learn.microsoft.com/en-us/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/how-conversation-ai-get-started) to enhance the AI Assistant Bot template with advanced features.
 
 ## Additional information and references
 - [Teams AI library](https://aka.ms/teams-ai-library)
@@ -77,14 +77,12 @@ You can follow [Get started with Teams AI library](https://learn.microsoft.com/e
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
 
-## Learn more
+## Get more info
 
-New to Teams app development or Teams Toolkit? Learn more about 
-Teams app manifests, deploying to the cloud, and more in the documentation 
-at https://aka.ms/teams-toolkit-vs-docs.
+New to Teams app development or Teams Toolkit? Explore Teams app manifests, cloud deployment, and much more in the https://aka.ms/teams-toolkit-vs-docs.
 
 ## Report an issue
 
 Select Visual Studio > Help > Send Feedback > Report a Problem. 
-Or, you can create an issue directly in our GitHub repository: 
+Or, create an issue directly in our GitHub repository:
 https://github.com/OfficeDev/TeamsFx/issues.

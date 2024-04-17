@@ -50,6 +50,7 @@ import { TelemetryPropertyKey } from "./telemetry";
 import { WrapDriverContext } from "../../util/wrapUtil";
 import { hooks } from "@feathersjs/hooks";
 import { ErrorContextMW } from "../../../../core/globalVars";
+import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -252,20 +253,7 @@ export class ManifestUtils {
     }
   }
   public getCapabilities(template: TeamsAppManifest): string[] {
-    const capabilities: string[] = [];
-    if (template.staticTabs && template.staticTabs.length > 0) {
-      capabilities.push("staticTab");
-    }
-    if (template.configurableTabs && template.configurableTabs.length > 0) {
-      capabilities.push("configurableTab");
-    }
-    if (template.bots && template.bots.length > 0) {
-      capabilities.push("Bot");
-    }
-    if (template.composeExtensions) {
-      capabilities.push("MessageExtension");
-    }
-    return capabilities;
+    return checkManifestCapabilities(template);
   }
 
   /**
@@ -280,6 +268,29 @@ export class ManifestUtils {
       });
     });
     return ids;
+  }
+
+  public async getPluginFilePath(
+    manifest: TeamsAppManifest,
+    manifestPath: string
+  ): Promise<Result<string, FxError>> {
+    const pluginFile = manifest.plugins?.[0]?.file;
+    if (pluginFile) {
+      const plugin = path.resolve(path.dirname(manifestPath), pluginFile);
+      const doesFileExist = await fs.pathExists(plugin);
+      if (doesFileExist) {
+        return ok(plugin);
+      } else {
+        return err(new FileNotFoundError("ManifestUtils", pluginFile));
+      }
+    } else {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.TeamsAppRequiredPropertyMissingError.name,
+          AppStudioError.TeamsAppRequiredPropertyMissingError.message("plugins", manifestPath)
+        )
+      );
+    }
   }
 
   async getManifestV3(

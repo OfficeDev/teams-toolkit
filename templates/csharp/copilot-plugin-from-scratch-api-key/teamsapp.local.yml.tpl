@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.3/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: v1.3
+version: v1.5
 
 provision:
   # Creates a Teams app
@@ -23,7 +23,17 @@ provision:
   # Generate runtime settings to JSON file
   - uses: file/createOrUpdateJsonFile
     with:
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      target: ../local.settings.json
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      target: ../{{appName}}/local.settings.json
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
+{{^isNewProjectTypeEnabled}}
       target: ./local.settings.json
+{{/isNewProjectTypeEnabled}}
       content:
         IsEncrypted: false
         Values:
@@ -34,9 +44,9 @@ provision:
   - uses: apiKey/register
     with:
       # Name of the API Key
-      name: x-api-key
+      name: apiKey
       # Value of the API Key
-      clientSecret: ${{SECRET_API_KEY}}
+      primaryClientSecret: ${{SECRET_API_KEY}}
       # Teams app ID
       appId: ${{TEAMS_APP_ID}}
       # Path to OpenAPI description document
@@ -44,7 +54,7 @@ provision:
     # Write the registration information of API Key into environment file for
     # the specified environment variable(s).
     writeToEnvironmentFile:
-      registrationId: X_API_KEY_REGISTRATION_ID
+      registrationId: APIKEY_REGISTRATION_ID
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest
@@ -84,6 +94,7 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+{{^isNewProjectTypeEnabled}}
 
   # Create or update debug profile in lauchsettings file
   - uses: file/createOrUpdateJsonFile
@@ -100,3 +111,4 @@ provision:
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"
+{{/isNewProjectTypeEnabled}}

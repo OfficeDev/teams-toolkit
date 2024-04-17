@@ -2,7 +2,7 @@
   "name": "{{SafeProjectNameLowerCase}}",
   "version": "0.1.0",
   "engines": {
-    "node": "16 || 18"
+    "node": "18 || 20"
   },
   "private": true,
   "dependencies": {
@@ -17,7 +17,7 @@
     "react-scripts": "^5.0.1"
   },
   "devDependencies": {
-    "@types/node": "^14.0.0",
+    "@types/node": "^18.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/react-router-dom": "^5.3.3",

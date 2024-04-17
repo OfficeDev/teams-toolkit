@@ -9,9 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Notification, Timeout } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  reRunProvision,
-  runDeploy,
+  deployProject,
+  provisionProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -72,18 +71,12 @@ describe("Remote debug Tests", function () {
     async function () {
       const driver = VSBrowser.instance.driver;
       await createNewProject("bot", appName);
-      await runProvision(appName);
-      await clearNotifications();
+      await provisionProject(appName, projectPath);
       await cleanUpResourceGroup(appName, "dev");
       await createResourceGroup(appName, "dev", "westus");
-      await reRunProvision();
-      await getNotification(
-        Notification.ProvisionSucceeded,
-        Timeout.longTimeWait,
-        8,
-        ["Error", "Failed"]
-      );
-      await runDeploy(Timeout.botDeploy);
+      // rerun provision
+      await provisionProject(appName, projectPath, false);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

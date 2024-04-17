@@ -13,6 +13,6 @@ class GraphConnectorBotTestCase extends CaseFactory {}
 new GraphConnectorBotTestCase(
   TemplateProjectFolder.GraphConnectorBot,
   25178480,
-  "v-ivanchen@microsoft.com",
+  "junhan@microsoft.com",
   ["bot", "aad"]
 ).test();

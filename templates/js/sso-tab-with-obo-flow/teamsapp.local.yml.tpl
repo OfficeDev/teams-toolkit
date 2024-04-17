@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.0.0
+version: v1.5
 
 provision:
   # Creates a new Microsoft Entra app to authenticate users if
@@ -106,14 +106,12 @@ deploy:
       func:
         version: ~4.0.5455
         symlinkDir: ./devTools/func
-      dotnet: true
     # Write the information of installed development tool(s) into environment
     # file for the specified environment variable(s).
     writeToEnvironmentFile:
       sslCertFile: SSL_CRT_FILE
       sslKeyFile: SSL_KEY_FILE
       funcPath: FUNC_PATH
-      dotnetPath: DOTNET_PATH
 
   # Run npm command
   - uses: cli/runNpmCommand

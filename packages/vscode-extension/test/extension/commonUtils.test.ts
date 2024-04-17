@@ -1,4 +1,5 @@
 import * as chai from "chai";
+import * as fs from "fs-extra";
 import * as os from "os";
 import * as sinon from "sinon";
 import * as cp from "child_process";
@@ -465,6 +466,53 @@ describe("CommonUtils", () => {
         result,
         "some user stack trace at (<REDACTED: user-file-path>/fake_file:1:1)"
       );
+    });
+  });
+
+  describe("getLocalDebugMessageTemplate()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("Test Tool enabled in Windows platform", async () => {
+      sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+      sandbox.stub(fs, "pathExists").resolves(true);
+
+      const result = await commonUtils.getLocalDebugMessageTemplate(true);
+      chai.assert.isTrue(result.includes("Test Tool"));
+    });
+
+    it("Test Tool disabled in Windows platform", async () => {
+      sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+      sandbox.stub(fs, "pathExists").resolves(false);
+
+      const result = await commonUtils.getLocalDebugMessageTemplate(true);
+      chai.assert.isFalse(result.includes("Test Tool"));
+    });
+
+    it("Test Tool enabled in non-Windows platform", async () => {
+      sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+      sandbox.stub(fs, "pathExists").resolves(true);
+
+      const result = await commonUtils.getLocalDebugMessageTemplate(false);
+      chai.assert.isTrue(result.includes("Test Tool"));
+    });
+
+    it("Test Tool disabled in non-Windows platform", async () => {
+      sandbox.stub(vscode.workspace, "workspaceFolders").value([{ uri: vscode.Uri.file("test") }]);
+      sandbox.stub(fs, "pathExists").resolves(false);
+
+      const result = await commonUtils.getLocalDebugMessageTemplate(false);
+      chai.assert.isFalse(result.includes("Test Tool"));
+    });
+
+    it("No workspace folder", async () => {
+      sandbox.stub(vscode.workspace, "workspaceFolders").value([]);
+      sandbox.stub(fs, "pathExists").resolves(false);
+
+      const result = await commonUtils.getLocalDebugMessageTemplate(false);
+      chai.assert.isFalse(result.includes("Test Tool"));
     });
   });
 });

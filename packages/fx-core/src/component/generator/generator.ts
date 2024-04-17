@@ -35,7 +35,11 @@ import {
   renderTemplateFileData,
   renderTemplateFileName,
 } from "./utils";
-import { enableTestToolByDefault } from "../../common/featureFlags";
+import {
+  enableMETestToolByDefault,
+  enableTestToolByDefault,
+  isNewProjectTypeEnabled,
+} from "../../common/featureFlags";
 import { Utils } from "@microsoft/m365-spec-parser";
 
 export class Generator {
@@ -43,12 +47,14 @@ export class Generator {
     appName: string,
     safeProjectNameFromVS?: string,
     targetFramework?: string,
+    placeProjectFileInSolutionDir?: boolean,
     apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string },
     llmServiceData?: {
       llmService?: string;
       openAIKey?: string;
       azureOpenAIKey?: string;
       azureOpenAIEndpoint?: string;
+      azureOpenAIDeploymentName?: string;
     }
   ): { [key: string]: string } {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
@@ -61,17 +67,23 @@ export class Generator {
       appName: appName,
       ProjectName: appName,
       TargetFramework: targetFramework ?? "net8.0",
+      PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
       ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
-      useOpenAI: llmServiceData?.llmService === "llm-service-openAI" ? "true" : "",
-      useAzureOpenAI: llmServiceData?.llmService === "llm-service-azureOpenAI" ? "true" : "",
+      enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
+      useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",
+      useAzureOpenAI: llmServiceData?.llmService === "llm-service-azure-openai" ? "true" : "",
       openAIKey: llmServiceData?.openAIKey ?? "",
       azureOpenAIKey: llmServiceData?.azureOpenAIKey ?? "",
       azureOpenAIEndpoint: llmServiceData?.azureOpenAIEndpoint ?? "",
+      azureOpenAIDeploymentName: llmServiceData?.azureOpenAIDeploymentName ?? "",
+      isNewProjectTypeEnabled: isNewProjectTypeEnabled() ? "true" : "",
+      NewProjectTypeName: process.env.TEAMSFX_NEW_PROJECT_TYPE_NAME ?? "TeamsApp",
+      NewProjectTypeExt: process.env.TEAMSFX_NEW_PROJECT_TYPE_EXTENSION ?? "ttkproj",
     };
   }
   @hooks([
@@ -160,7 +172,7 @@ export class Generator {
     return ok(undefined);
   }
 
-  private static async generate(
+  public static async generate(
     context: GeneratorContext,
     actions: GeneratorAction[]
   ): Promise<void> {

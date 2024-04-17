@@ -1,14 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FxError, Result, ok } from "@microsoft/teamsfx-api";
 import { commands } from "vscode";
-
-import { FxError, Result } from "@microsoft/teamsfx-api";
-
+import { workspaceUri } from "./globalVariables";
 import treeViewManager from "./treeview/treeViewManager";
 import { localize } from "./utils/localizeUtils";
+import { updateProjectStatus } from "./utils/projectStatusUtils";
 
-type CommandHandler = (args?: unknown[]) => Promise<Result<unknown, FxError>>;
+type CommandHandler = (...args: unknown[]) => Promise<Result<unknown, FxError>>;
 
 interface TeamsFxCommand {
   name: string;
@@ -75,11 +75,16 @@ class CommandController {
     });
   }
 
-  public async runCommand(commandName: string, args: unknown[]) {
+  public async runCommand(commandName: string, ...args: unknown[]) {
     const command = this.commandMap.get(commandName);
     if (command) {
-      await command.callback(args);
+      const result = await command.callback(...args);
+      if (workspaceUri?.fsPath) {
+        await updateProjectStatus(workspaceUri.fsPath, commandName, result);
+      }
+      return result;
     }
+    return ok<unknown, FxError>(undefined);
   }
 
   public async lockedByOperation(operation: string) {

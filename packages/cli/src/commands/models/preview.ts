@@ -19,12 +19,13 @@ import {
 import * as constants from "../../cmds/preview/constants";
 import { localTelemetryReporter } from "../../cmds/preview/localTelemetryReporter";
 import PreviewEnv from "../../cmds/preview/previewEnv";
+import { commands } from "../../resource";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
 import { ProjectFolderOption } from "../common";
 
 export const previewCommand: CLICommand = {
   name: "preview",
-  description: "Preview the current application.",
+  description: commands.preview.description,
   options: [
     ...PreviewTeamsAppOptions.map((option) => {
       if (option.name === "teams-manifest-file") {

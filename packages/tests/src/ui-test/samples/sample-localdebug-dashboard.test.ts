@@ -31,7 +31,7 @@ class DashboardTestCase extends CaseFactory {
       teamsAppId,
       Env.username,
       Env.password,
-      undefined,
+      { dashboardFlag: true },
       true,
       true
     );

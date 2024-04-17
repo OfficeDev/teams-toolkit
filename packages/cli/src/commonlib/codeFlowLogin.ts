@@ -270,7 +270,7 @@ export class CodeFlowLogin {
           })
           .catch(async (error) => {
             CliCodeLogInstance.necessaryLog(
-              LogLevel.Error,
+              LogLevel.Debug,
               "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `" +
                 path.join(os.homedir(), ".fx", "account") +
                 "` and try again. " +
@@ -322,7 +322,7 @@ export class CodeFlowLogin {
         }
       } catch (error: any) {
         CliCodeLogInstance.necessaryLog(
-          LogLevel.Error,
+          LogLevel.Debug,
           "[Login] Failed to retrieve token silently. If you encounter this problem multiple times, you can delete `" +
             path.join(os.homedir(), ".fx", "account") +
             "` and try again. " +
@@ -366,7 +366,7 @@ export class CodeFlowLogin {
           throw error;
         } else {
           CliCodeLogInstance.necessaryLog(
-            LogLevel.Error,
+            LogLevel.Debug,
             "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can delete `" +
               path.join(os.homedir(), ".fx", "account") +
               "` and try again. " +
@@ -415,7 +415,7 @@ export class CodeFlowLogin {
               throw error;
             } else {
               CliCodeLogInstance.necessaryLog(
-                LogLevel.Error,
+                LogLevel.Debug,
                 "[Login] Failed to retrieve tenant token silently. If you encounter this problem multiple times, you can delete `" +
                   path.join(os.homedir(), ".fx", "account") +
                   "` and try again. " +

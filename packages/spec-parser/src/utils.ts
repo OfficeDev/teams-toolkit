@@ -6,281 +6,69 @@ import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { ConstantString } from "./constants";
 import {
-  AuthSchema,
-  CheckParamResult,
+  APIMap,
+  AuthInfo,
   ErrorResult,
   ErrorType,
-  Parameter,
+  ParseOptions,
+  ProjectType,
   ValidateResult,
   ValidationStatus,
   WarningResult,
   WarningType,
 } from "./interfaces";
-import { IMessagingExtensionCommand } from "@microsoft/teams-manifest";
+import { IMessagingExtensionCommand, IParameter } from "@microsoft/teams-manifest";
 
 export class Utils {
-  static checkParameters(paramObject: OpenAPIV3.ParameterObject[]): CheckParamResult {
-    const paramResult = {
-      requiredNum: 0,
-      optionalNum: 0,
-      isValid: true,
-    };
-
-    if (!paramObject) {
-      return paramResult;
-    }
-
-    for (let i = 0; i < paramObject.length; i++) {
-      const param = paramObject[i];
-      const schema = param.schema as OpenAPIV3.SchemaObject;
-      const isRequiredWithoutDefault = param.required && schema.default === undefined;
-
-      if (param.in === "header" || param.in === "cookie") {
-        if (isRequiredWithoutDefault) {
-          paramResult.isValid = false;
-        }
-        continue;
-      }
-
-      if (
-        schema.type !== "boolean" &&
-        schema.type !== "string" &&
-        schema.type !== "number" &&
-        schema.type !== "integer"
-      ) {
-        if (isRequiredWithoutDefault) {
-          paramResult.isValid = false;
-        }
-        continue;
-      }
-
-      if (param.in === "query" || param.in === "path") {
-        if (isRequiredWithoutDefault) {
-          paramResult.requiredNum = paramResult.requiredNum + 1;
-        } else {
-          paramResult.optionalNum = paramResult.optionalNum + 1;
-        }
-      }
-    }
-
-    return paramResult;
-  }
-
-  static checkPostBody(schema: OpenAPIV3.SchemaObject, isRequired = false): CheckParamResult {
-    const paramResult = {
-      requiredNum: 0,
-      optionalNum: 0,
-      isValid: true,
-    };
-
-    if (Object.keys(schema).length === 0) {
-      return paramResult;
-    }
-
-    const isRequiredWithoutDefault = isRequired && schema.default === undefined;
-
-    if (
-      schema.type === "string" ||
-      schema.type === "integer" ||
-      schema.type === "boolean" ||
-      schema.type === "number"
-    ) {
-      if (isRequiredWithoutDefault) {
-        paramResult.requiredNum = paramResult.requiredNum + 1;
-      } else {
-        paramResult.optionalNum = paramResult.optionalNum + 1;
-      }
-    } else if (schema.type === "object") {
-      const { properties } = schema;
-      for (const property in properties) {
-        let isRequired = false;
-        if (schema.required && schema.required?.indexOf(property) >= 0) {
-          isRequired = true;
-        }
-        const result = Utils.checkPostBody(
-          properties[property] as OpenAPIV3.SchemaObject,
-          isRequired
-        );
-        paramResult.requiredNum += result.requiredNum;
-        paramResult.optionalNum += result.optionalNum;
-        paramResult.isValid = paramResult.isValid && result.isValid;
-      }
-    } else {
-      if (isRequiredWithoutDefault) {
-        paramResult.isValid = false;
-      }
-    }
-    return paramResult;
-  }
-
-  /**
-   * Checks if the given API is supported.
-   * @param {string} method - The HTTP method of the API.
-   * @param {string} path - The path of the API.
-   * @param {OpenAPIV3.Document} spec - The OpenAPI specification document.
-   * @returns {boolean} - Returns true if the API is supported, false otherwise.
-   * @description The following APIs are supported:
-   * 1. only support Get/Post operation without auth property
-   * 2. parameter inside query or path only support string, number, boolean and integer
-   * 3. parameter inside post body only support string, number, boolean, integer and object
-   * 4. request body + required parameters <= 1
-   * 5. response body should be “application/json” and not empty, and response code should be 20X
-   * 6. only support request body with “application/json” content type
-   */
-  static isSupportedApi(
-    method: string,
-    path: string,
-    spec: OpenAPIV3.Document,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean
-  ): boolean {
-    const pathObj = spec.paths[path];
-    method = method.toLocaleLowerCase();
-    if (pathObj) {
-      if (
-        (method === ConstantString.PostMethod || method === ConstantString.GetMethod) &&
-        pathObj[method]
-      ) {
-        const securities = pathObj[method]!.security;
-        const authArray = Utils.getAuthArray(securities, spec);
-        if (!Utils.isSupportedAuth(authArray, allowAPIKeyAuth, allowOauth2)) {
-          return false;
-        }
-
-        const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
-        if (!allowMissingId && !operationObject.operationId) {
-          return false;
-        }
-        const paramObject = operationObject.parameters as OpenAPIV3.ParameterObject[];
-
-        const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
-        const requestJsonBody = requestBody?.content["application/json"];
-
-        const mediaTypesCount = Object.keys(requestBody?.content || {}).length;
-        if (mediaTypesCount > 1) {
-          return false;
-        }
-
-        const responseJson = Utils.getResponseJson(operationObject);
-        if (Object.keys(responseJson).length === 0) {
-          return false;
-        }
-
-        let requestBodyParamResult = {
-          requiredNum: 0,
-          optionalNum: 0,
-          isValid: true,
-        };
-
-        if (requestJsonBody) {
-          const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-          requestBodyParamResult = Utils.checkPostBody(requestBodySchema, requestBody.required);
-        }
-
-        if (!requestBodyParamResult.isValid) {
-          return false;
-        }
-
-        const paramResult = Utils.checkParameters(paramObject);
-
-        if (!paramResult.isValid) {
-          return false;
-        }
-
-        if (requestBodyParamResult.requiredNum + paramResult.requiredNum > 1) {
-          if (
-            allowMultipleParameters &&
-            requestBodyParamResult.requiredNum + paramResult.requiredNum <= 5
-          ) {
-            return true;
-          }
-          return false;
-        } else if (
-          requestBodyParamResult.requiredNum +
-            requestBodyParamResult.optionalNum +
-            paramResult.requiredNum +
-            paramResult.optionalNum ===
-          0
-        ) {
-          return false;
-        } else {
+  static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
+    if (schema.type === "object") {
+      for (const property in schema.properties) {
+        const nestedSchema = schema.properties[property] as OpenAPIV3.SchemaObject;
+        if (nestedSchema.type === "object") {
           return true;
         }
       }
     }
-
     return false;
   }
 
-  static isSupportedAuth(
-    authSchemaArray: AuthSchema[][],
-    allowAPIKeyAuth: boolean,
-    allowOauth2: boolean
+  static containMultipleMediaTypes(
+    bodyObject: OpenAPIV3.RequestBodyObject | OpenAPIV3.ResponseObject
   ): boolean {
-    if (authSchemaArray.length === 0) {
-      return true;
-    }
-
-    if (allowAPIKeyAuth || allowOauth2) {
-      // Currently we don't support multiple auth in one operation
-      if (authSchemaArray.length > 0 && authSchemaArray.every((auths) => auths.length > 1)) {
-        return false;
-      }
-
-      for (const auths of authSchemaArray) {
-        if (auths.length === 1) {
-          if (!allowOauth2 && allowAPIKeyAuth && Utils.isAPIKeyAuth(auths[0].authSchema)) {
-            return true;
-          } else if (
-            !allowAPIKeyAuth &&
-            allowOauth2 &&
-            Utils.isBearerTokenAuth(auths[0].authSchema)
-          ) {
-            return true;
-          } else if (
-            allowAPIKeyAuth &&
-            allowOauth2 &&
-            (Utils.isAPIKeyAuth(auths[0].authSchema) ||
-              Utils.isBearerTokenAuth(auths[0].authSchema))
-          ) {
-            return true;
-          }
-        }
-      }
-    }
-
-    return false;
+    return Object.keys(bodyObject?.content || {}).length > 1;
   }
 
-  static isAPIKeyAuth(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
-    return authSchema.type === "apiKey";
+  static isBearerTokenAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    return authScheme.type === "http" && authScheme.scheme === "bearer";
   }
 
-  static isBearerTokenAuth(authSchema: OpenAPIV3.SecuritySchemeObject): boolean {
-    return (
-      authSchema.type === "oauth2" ||
-      authSchema.type === "openIdConnect" ||
-      (authSchema.type === "http" && authSchema.scheme === "bearer")
+  static isAPIKeyAuth(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    return authScheme.type === "apiKey";
+  }
+
+  static isOAuthWithAuthCodeFlow(authScheme: OpenAPIV3.SecuritySchemeObject): boolean {
+    return !!(
+      authScheme.type === "oauth2" &&
+      authScheme.flows &&
+      authScheme.flows.authorizationCode
     );
   }
 
   static getAuthArray(
     securities: OpenAPIV3.SecurityRequirementObject[] | undefined,
     spec: OpenAPIV3.Document
-  ): AuthSchema[][] {
-    const result: AuthSchema[][] = [];
+  ): AuthInfo[][] {
+    const result: AuthInfo[][] = [];
     const securitySchemas = spec.components?.securitySchemes;
     if (securities && securitySchemas) {
       for (let i = 0; i < securities.length; i++) {
         const security = securities[i];
 
-        const authArray: AuthSchema[] = [];
+        const authArray: AuthInfo[] = [];
         for (const name in security) {
           const auth = securitySchemas[name] as OpenAPIV3.SecuritySchemeObject;
           authArray.push({
-            authSchema: auth,
+            authScheme: auth,
             name: name,
           });
         }
@@ -300,26 +88,29 @@ export class Utils {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
-  static getResponseJson(
-    operationObject: OpenAPIV3.OperationObject | undefined
-  ): OpenAPIV3.MediaTypeObject {
+  static getResponseJson(operationObject: OpenAPIV3.OperationObject | undefined): {
+    json: OpenAPIV3.MediaTypeObject;
+    multipleMediaType: boolean;
+  } {
     let json: OpenAPIV3.MediaTypeObject = {};
+    let multipleMediaType = false;
 
     for (const code of ConstantString.ResponseCodeFor20X) {
       const responseObject = operationObject?.responses?.[code] as OpenAPIV3.ResponseObject;
 
-      const mediaTypesCount = Object.keys(responseObject?.content || {}).length;
-      if (mediaTypesCount > 1) {
-        return {};
-      }
-
       if (responseObject?.content?.["application/json"]) {
+        multipleMediaType = false;
         json = responseObject.content["application/json"];
-        break;
+        if (Utils.containMultipleMediaTypes(responseObject)) {
+          multipleMediaType = true;
+          json = {};
+        } else {
+          break;
+        }
       }
     }
 
-    return json;
+    return { json, multipleMediaType };
   }
 
   static convertPathToCamelCase(path: string): string {
@@ -341,21 +132,21 @@ export class Utils {
     }
   }
 
-  static resolveServerUrl(url: string): string {
+  static resolveEnv(str: string): string {
     const placeHolderReg = /\${{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}/g;
-    let matches = placeHolderReg.exec(url);
-    let newUrl = url;
+    let matches = placeHolderReg.exec(str);
+    let newStr = str;
     while (matches != null) {
       const envVar = matches[1];
       const envVal = process.env[envVar];
       if (!envVal) {
         throw new Error(Utils.format(ConstantString.ResolveServerUrlFailed, envVar));
       } else {
-        newUrl = newUrl.replace(matches[0], envVal);
+        newStr = newStr.replace(matches[0], envVal);
       }
-      matches = placeHolderReg.exec(url);
+      matches = placeHolderReg.exec(str);
     }
-    return newUrl;
+    return newStr;
   }
 
   static checkServerUrl(servers: OpenAPIV3.ServerObject[]): ErrorResult[] {
@@ -363,7 +154,7 @@ export class Utils {
 
     let serverUrl;
     try {
-      serverUrl = Utils.resolveServerUrl(servers[0].url);
+      serverUrl = Utils.resolveEnv(servers[0].url);
     } catch (err) {
       errors.push({
         type: ErrorType.ResolveServerUrlFailed,
@@ -394,13 +185,7 @@ export class Utils {
     return errors;
   }
 
-  static validateServer(
-    spec: OpenAPIV3.Document,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean
-  ): ErrorResult[] {
+  static validateServer(spec: OpenAPIV3.Document, options: ParseOptions): ErrorResult[] {
     const errors: ErrorResult[] = [];
 
     let hasTopLevelServers = false;
@@ -422,22 +207,13 @@ export class Utils {
       if (methods?.servers && methods.servers.length >= 1) {
         hasPathLevelServers = true;
         const serverErrors = Utils.checkServerUrl(methods.servers);
+
         errors.push(...serverErrors);
       }
 
       for (const method in methods) {
         const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-        if (
-          Utils.isSupportedApi(
-            method,
-            path,
-            spec,
-            allowMissingId,
-            allowAPIKeyAuth,
-            allowMultipleParameters,
-            allowOauth2
-          )
-        ) {
+        if (options.allowMethods?.includes(method) && operationObject) {
           if (operationObject?.servers && operationObject.servers.length >= 1) {
             hasOperationLevelServers = true;
             const serverErrors = Utils.checkServerUrl(operationObject.servers);
@@ -446,12 +222,14 @@ export class Utils {
         }
       }
     }
+
     if (!hasTopLevelServers && !hasPathLevelServers && !hasOperationLevelServers) {
       errors.push({
         type: ErrorType.NoServerInformation,
         content: ConstantString.NoServerInformation,
       });
     }
+
     return errors;
   }
 
@@ -470,9 +248,9 @@ export class Utils {
     name: string,
     allowMultipleParameters: boolean,
     isRequired = false
-  ): [Parameter[], Parameter[]] {
-    const requiredParams: Parameter[] = [];
-    const optionalParams: Parameter[] = [];
+  ): [IParameter[], IParameter[]] {
+    const requiredParams: IParameter[] = [];
+    const optionalParams: IParameter[] = [];
 
     if (
       schema.type === "string" ||
@@ -480,7 +258,7 @@ export class Utils {
       schema.type === "boolean" ||
       schema.type === "number"
     ) {
-      const parameter = {
+      const parameter: IParameter = {
         name: name,
         title: Utils.updateFirstLetter(name).slice(0, ConstantString.ParameterTitleMaxLens),
         description: (schema.description ?? "").slice(
@@ -494,6 +272,7 @@ export class Utils {
       }
 
       if (isRequired && schema.default === undefined) {
+        parameter.isRequired = true;
         requiredParams.push(parameter);
       } else {
         optionalParams.push(parameter);
@@ -520,7 +299,7 @@ export class Utils {
     return [requiredParams, optionalParams];
   }
 
-  static updateParameterWithInputType(schema: OpenAPIV3.SchemaObject, param: Parameter): void {
+  static updateParameterWithInputType(schema: OpenAPIV3.SchemaObject, param: IParameter): void {
     if (schema.enum) {
       param.inputType = "choiceset";
       param.choices = [];
@@ -545,15 +324,15 @@ export class Utils {
 
   static parseApiInfo(
     operationItem: OpenAPIV3.OperationObject,
-    allowMultipleParameters: boolean
-  ): [IMessagingExtensionCommand, WarningResult | undefined] {
-    const requiredParams: Parameter[] = [];
-    const optionalParams: Parameter[] = [];
+    options: ParseOptions
+  ): IMessagingExtensionCommand {
+    const requiredParams: IParameter[] = [];
+    const optionalParams: IParameter[] = [];
     const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
 
     if (paramObject) {
       paramObject.forEach((param: OpenAPIV3.ParameterObject) => {
-        const parameter: Parameter = {
+        const parameter: IParameter = {
           name: param.name,
           title: Utils.updateFirstLetter(param.name).slice(0, ConstantString.ParameterTitleMaxLens),
           description: (param.description ?? "").slice(
@@ -563,12 +342,13 @@ export class Utils {
         };
 
         const schema = param.schema as OpenAPIV3.SchemaObject;
-        if (allowMultipleParameters && schema) {
+        if (options.allowMultipleParameters && schema) {
           Utils.updateParameterWithInputType(schema, parameter);
         }
 
         if (param.in !== "header" && param.in !== "cookie") {
           if (param.required && schema?.default === undefined) {
+            parameter.isRequired = true;
             requiredParams.push(parameter);
           } else {
             optionalParams.push(parameter);
@@ -585,7 +365,7 @@ export class Utils {
         const [requiredP, optionalP] = Utils.generateParametersFromSchema(
           schema,
           "requestBody",
-          allowMultipleParameters,
+          !!options.allowMultipleParameters,
           requestBody.required
         );
         requiredParams.push(...requiredP);
@@ -595,13 +375,7 @@ export class Utils {
 
     const operationId = operationItem.operationId!;
 
-    const parameters = [];
-
-    if (requiredParams.length !== 0) {
-      parameters.push(...requiredParams);
-    } else {
-      parameters.push(optionalParams[0]);
-    }
+    const parameters = [...requiredParams, ...optionalParams];
 
     const command: IMessagingExtensionCommand = {
       context: ["compose"],
@@ -614,137 +388,7 @@ export class Utils {
         ConstantString.CommandDescriptionMaxLens
       ),
     };
-    let warning: WarningResult | undefined = undefined;
-
-    if (requiredParams.length === 0 && optionalParams.length > 1) {
-      warning = {
-        type: WarningType.OperationOnlyContainsOptionalParam,
-        content: Utils.format(ConstantString.OperationOnlyContainsOptionalParam, operationId),
-        data: operationId,
-      };
-    }
-    return [command, warning];
-  }
-
-  static listSupportedAPIs(
-    spec: OpenAPIV3.Document,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean
-  ): {
-    [key: string]: OpenAPIV3.OperationObject;
-  } {
-    const paths = spec.paths;
-    const result: { [key: string]: OpenAPIV3.OperationObject } = {};
-    for (const path in paths) {
-      const methods = paths[path];
-      for (const method in methods) {
-        // For developer preview, only support GET operation with only 1 parameter without auth
-        if (
-          Utils.isSupportedApi(
-            method,
-            path,
-            spec,
-            allowMissingId,
-            allowAPIKeyAuth,
-            allowMultipleParameters,
-            allowOauth2
-          )
-        ) {
-          const operationObject = (methods as any)[method] as OpenAPIV3.OperationObject;
-          result[`${method.toUpperCase()} ${path}`] = operationObject;
-        }
-      }
-    }
-    return result;
-  }
-
-  static validateSpec(
-    spec: OpenAPIV3.Document,
-    parser: SwaggerParser,
-    isSwaggerFile: boolean,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean
-  ): ValidateResult {
-    const errors: ErrorResult[] = [];
-    const warnings: WarningResult[] = [];
-
-    if (isSwaggerFile) {
-      warnings.push({
-        type: WarningType.ConvertSwaggerToOpenAPI,
-        content: ConstantString.ConvertSwaggerToOpenAPI,
-      });
-    }
-
-    // Server validation
-    const serverErrors = Utils.validateServer(
-      spec,
-      allowMissingId,
-      allowAPIKeyAuth,
-      allowMultipleParameters,
-      allowOauth2
-    );
-    errors.push(...serverErrors);
-
-    // Remote reference not supported
-    const refPaths = parser.$refs.paths();
-
-    // refPaths [0] is the current spec file path
-    if (refPaths.length > 1) {
-      errors.push({
-        type: ErrorType.RemoteRefNotSupported,
-        content: Utils.format(ConstantString.RemoteRefNotSupported, refPaths.join(", ")),
-        data: refPaths,
-      });
-    }
-
-    // No supported API
-    const apiMap = Utils.listSupportedAPIs(
-      spec,
-      allowMissingId,
-      allowAPIKeyAuth,
-      allowMultipleParameters,
-      allowOauth2
-    );
-    if (Object.keys(apiMap).length === 0) {
-      errors.push({
-        type: ErrorType.NoSupportedApi,
-        content: ConstantString.NoSupportedApi,
-      });
-    }
-
-    // OperationId missing
-    const apisMissingOperationId: string[] = [];
-    for (const key in apiMap) {
-      const pathObjectItem = apiMap[key];
-      if (!pathObjectItem.operationId) {
-        apisMissingOperationId.push(key);
-      }
-    }
-
-    if (apisMissingOperationId.length > 0) {
-      warnings.push({
-        type: WarningType.OperationIdMissing,
-        content: Utils.format(ConstantString.MissingOperationId, apisMissingOperationId.join(", ")),
-        data: apisMissingOperationId,
-      });
-    }
-
-    let status = ValidationStatus.Valid;
-    if (warnings.length > 0 && errors.length === 0) {
-      status = ValidationStatus.Warning;
-    } else if (errors.length > 0) {
-      status = ValidationStatus.Error;
-    }
-
-    return {
-      status,
-      warnings,
-      errors,
-    };
+    return command;
   }
 
   static format(str: string, ...args: string[]): string {
@@ -767,5 +411,23 @@ export class Utils {
     }
 
     return safeRegistrationIdEnvName;
+  }
+
+  static getServerObject(
+    spec: OpenAPIV3.Document,
+    method: string,
+    path: string
+  ): OpenAPIV3.ServerObject | undefined {
+    const pathObj = spec.paths[path] as any;
+
+    const operationObject = pathObj[method] as OpenAPIV3.OperationObject;
+
+    const rootServer = spec.servers && spec.servers[0];
+    const methodServer = spec.paths[path]!.servers && spec.paths[path]!.servers![0];
+    const operationServer = operationObject.servers && operationObject.servers[0];
+
+    const serverUrl = operationServer || methodServer || rootServer;
+
+    return serverUrl;
   }
 }

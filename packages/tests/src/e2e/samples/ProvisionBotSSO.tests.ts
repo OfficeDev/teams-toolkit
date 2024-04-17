@@ -13,6 +13,6 @@ class HelloWorldBotSSOTestCase extends CaseFactory {}
 new HelloWorldBotSSOTestCase(
   TemplateProjectFolder.HelloWorldBotSSO,
   15277464,
-  "v-ivanchen@microsoft.com",
+  "yukundong@microsoft.com",
   ["bot"]
 ).test();

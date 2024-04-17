@@ -71,6 +71,10 @@ export interface Inputs extends Record<string, any> {
   projectId?: string;
   nonInteractive?: boolean;
   correlationId?: string;
+  /**
+   * whether the caller is triggered by @teams or @office agent
+   */
+  agent?: "teams" | "office";
 }
 
 export type InputsWithProjectPath = Inputs & { projectPath: string };
@@ -162,6 +166,7 @@ export interface Warning {
 export interface CreateProjectResult {
   projectPath: string;
   warnings?: Warning[];
+  shouldInvokeTeamsAgent?: boolean;
 }
 
 export interface TeamsAppInputs extends InputsWithProjectPath {

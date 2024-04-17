@@ -41,7 +41,7 @@ describe("LaunchHelper", () => {
       );
     });
 
-    it("getLaunchUrl: Teams, signed in, copilot plugin", async () => {
+    it("getLaunchUrl: Teams, signed in, API ME", async () => {
       sinon.stub(m365TokenProvider, "getStatus").resolves(
         ok({
           status: "",
@@ -55,6 +55,30 @@ describe("LaunchHelper", () => {
         HubTypes.teams,
         "test-id",
         ["MessageExtension"],
+        true,
+        true
+      );
+      chai.assert(result.isOk());
+      chai.assert.equal(
+        (result as any).value,
+        "https://teams.microsoft.com/?appTenantId=test-tid&login_hint=test-upn"
+      );
+    });
+
+    it("getLaunchUrl: Teams, signed in, copilot plugin", async () => {
+      sinon.stub(m365TokenProvider, "getStatus").resolves(
+        ok({
+          status: "",
+          accountInfo: {
+            tid: "test-tid",
+            upn: "test-upn",
+          },
+        })
+      );
+      const result = await launchHelper.getLaunchUrl(
+        HubTypes.teams,
+        "test-id",
+        ["plugin"],
         true,
         true
       );

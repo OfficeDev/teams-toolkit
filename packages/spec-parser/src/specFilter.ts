@@ -5,18 +5,16 @@
 import { OpenAPIV3 } from "openapi-types";
 import { Utils } from "./utils";
 import { SpecParserError } from "./specParserError";
-import { ErrorType } from "./interfaces";
+import { ErrorType, ParseOptions } from "./interfaces";
 import { ConstantString } from "./constants";
+import { ValidatorFactory } from "./validators/validatorFactory";
 
 export class SpecFilter {
   static specFilter(
     filter: string[],
     unResolveSpec: OpenAPIV3.Document,
     resolvedSpec: OpenAPIV3.Document,
-    allowMissingId: boolean,
-    allowAPIKeyAuth: boolean,
-    allowMultipleParameters: boolean,
-    allowOauth2: boolean
+    options: ParseOptions
   ): OpenAPIV3.Document {
     try {
       const newSpec = { ...unResolveSpec };
@@ -25,34 +23,34 @@ export class SpecFilter {
         const [method, path] = filterItem.split(" ");
         const methodName = method.toLowerCase();
 
+        const pathObj = resolvedSpec.paths?.[path] as any;
         if (
-          !Utils.isSupportedApi(
-            methodName,
-            path,
-            resolvedSpec,
-            allowMissingId,
-            allowAPIKeyAuth,
-            allowMultipleParameters,
-            allowOauth2
-          )
+          ConstantString.AllOperationMethods.includes(methodName) &&
+          pathObj &&
+          pathObj[methodName]
         ) {
-          continue;
-        }
+          const validator = ValidatorFactory.create(resolvedSpec, options);
+          const validateResult = validator.validateAPI(methodName, path);
 
-        if (!newPaths[path]) {
-          newPaths[path] = { ...unResolveSpec.paths[path] };
-          for (const m of ConstantString.AllOperationMethods) {
-            delete (newPaths[path] as any)[m];
+          if (!validateResult.isValid) {
+            continue;
           }
-        }
 
-        (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
+          if (!newPaths[path]) {
+            newPaths[path] = { ...unResolveSpec.paths[path] };
+            for (const m of ConstantString.AllOperationMethods) {
+              delete (newPaths[path] as any)[m];
+            }
+          }
 
-        // Add the operationId if missing
-        if (!(newPaths[path] as any)[methodName].operationId) {
-          (newPaths[path] as any)[
-            methodName
-          ].operationId = `${methodName}${Utils.convertPathToCamelCase(path)}`;
+          (newPaths[path] as any)[methodName] = (unResolveSpec.paths[path] as any)[methodName];
+
+          // Add the operationId if missing
+          if (!(newPaths[path] as any)[methodName].operationId) {
+            (newPaths[path] as any)[
+              methodName
+            ].operationId = `${methodName}${Utils.convertPathToCamelCase(path)}`;
+          }
         }
       }
 

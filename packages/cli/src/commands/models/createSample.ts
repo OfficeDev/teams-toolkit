@@ -9,14 +9,16 @@ import {
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
+import * as path from "path";
 import * as uuid from "uuid";
 import { getFxCore } from "../../activate";
 import { logger } from "../../commonlib/logger";
+import { commands } from "../../resource";
 import { TelemetryEvent, TelemetryProperty } from "../../telemetry/cliTelemetryEvents";
-import * as path from "path";
+
 export const createSampleCommand: CLICommand = {
   name: "sample",
-  description: "Create an app from existing sample.",
+  description: commands["create.sample"].description,
   arguments: CreateSampleProjectArguments,
   options: CreateSampleProjectOptions,
   telemetry: {

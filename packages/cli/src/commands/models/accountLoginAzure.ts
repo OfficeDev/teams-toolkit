@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { UserError, err, ok, CLICommand } from "@microsoft/teamsfx-api";
+import { CLICommand, UserError, err, ok } from "@microsoft/teamsfx-api";
 import AzureTokenProvider from "../../commonlib/azureLogin";
 import {
   codeFlowLoginFormat,
@@ -8,54 +8,54 @@ import {
   servicePrincipalLoginFormat,
   usageError,
 } from "../../commonlib/common/constant";
+import { commands } from "../../resource";
 import { TelemetryEvent } from "../../telemetry/cliTelemetryEvents";
 import { accountUtils } from "./accountShow";
 
 export const accountLoginAzureCommand: CLICommand = {
   name: "azure",
-  description: "Log in to Azure account.",
+  description: commands["auth.login.azure"].description,
   options: [
     {
       name: "tenant",
-      description: "Authenticate with a specific Microsoft Entra tenant.",
+      description: commands["auth.login.azure"].options["tenant"],
       type: "string",
       default: "",
     },
     {
       name: "service-principal",
-      description: "Authenticate Azure with a credential representing a service principal",
+      description: commands["auth.login.azure"].options["service-principal"],
       type: "boolean",
       default: false,
     },
     {
       name: "username",
       shortName: "u",
-      description: "Client ID for service principal",
+      description: commands["auth.login.azure"].options.username,
       type: "string",
       default: "",
     },
     {
       name: "password",
       shortName: "p",
-      description: "Provide client secret or a pem file with key and public certificate.",
+      description: commands["auth.login.azure"].options.password,
       type: "string",
       default: "",
     },
   ],
   examples: [
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure --interactive false --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID`,
       description: "Log in with a service principal using client secret",
     },
     {
-      command: `${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID`,
+      command: `${process.env.TEAMSFX_CLI_BIN_NAME} auth login azure --interactive false --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID`,
       description: "Log in with a service principal using client certificate",
     },
   ],
   telemetry: {
     event: TelemetryEvent.AccountLoginAzure,
   },
-  defaultInteractiveOption: false,
   handler: async (ctx) => {
     const args = ctx.optionValues;
     const isSP = args["service-principal"] as boolean;

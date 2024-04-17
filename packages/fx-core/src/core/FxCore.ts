@@ -25,6 +25,7 @@ import {
   Tools,
   err,
   ok,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
@@ -66,6 +67,7 @@ import { CreateAppPackageDriver } from "../component/driver/teamsApp/createAppPa
 import { CreateAppPackageArgs } from "../component/driver/teamsApp/interfaces/CreateAppPackageArgs";
 import { ValidateAppPackageArgs } from "../component/driver/teamsApp/interfaces/ValidateAppPackageArgs";
 import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/ValidateManifestArgs";
+import { ValidateWithTestCasesArgs } from "../component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
 import { teamsappMgr } from "../component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
 import {
@@ -74,13 +76,16 @@ import {
 } from "../component/driver/teamsApp/utils/utils";
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
+import { ValidateWithTestCasesDriver } from "../component/driver/teamsApp/validateTestCases";
 import { SSO } from "../component/feature/sso";
 import {
   ErrorResult,
   OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
+  copilotPluginParserOptions,
   generateScaffoldingSummary,
   listOperations,
+  listPluginExistingOperations,
   specParserGenerateResultAllSuccessTelemetryProperty,
   specParserGenerateResultTelemetryEvent,
   specParserGenerateResultWarningsTelemetryProperty,
@@ -97,16 +102,23 @@ import {
   FileNotFoundError,
   InjectAPIKeyActionFailedError,
   InvalidProjectError,
+  MissingRequiredInputError,
   MultipleAuthError,
   MultipleServerError,
+  UserCancelError,
   assembleError,
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { ValidateTeamsAppInputs } from "../question";
+import { ProjectTypeOptions, ValidateTeamsAppInputs } from "../question";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
-import { HubTypes, isAadMainifestContainsPlaceholder } from "../question/other";
+import {
+  HubTypes,
+  isAadMainifestContainsPlaceholder,
+  TeamsAppValidationOptions,
+} from "../question/other";
 import { QuestionNames } from "../question/questionNames";
+import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -125,6 +137,7 @@ import {
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
 import "../component/feature/sso";
+import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -148,6 +161,9 @@ export class FxCore {
   ])
   async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     const context = createContextV3();
+    if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.startWithGithubCopilot().id) {
+      return ok({ projectPath: "", shouldInvokeTeamsAgent: true });
+    }
     inputs[QuestionNames.Scratch] = ScratchOptions.yes().id;
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
@@ -501,6 +517,8 @@ export class FxCore {
   async validateApplication(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
     if (inputs["manifest-path"]) {
       return await this.validateManifest(inputs);
+    } else if (inputs[QuestionNames.ValidateMethod] === TeamsAppValidationOptions.testCases().id) {
+      return await this.validateWithTestCases(inputs);
     } else {
       return await this.validateAppPackage(inputs);
     }
@@ -543,6 +561,22 @@ export class FxCore {
       showMessage: true,
     };
     const driver: ValidateAppPackageDriver = Container.get("teamsApp/validateAppPackage");
+    return (await driver.execute(args, context)).result;
+  }
+
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "validateWithTestCases", reset: true }),
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+  ])
+  async validateWithTestCases(inputs: ValidateTeamsAppInputs): Promise<Result<any, FxError>> {
+    const context: DriverContext = createDriverContext(inputs);
+    const args: ValidateWithTestCasesArgs = {
+      appPackagePath: inputs["app-package-file-path"] as string,
+      showMessage: true,
+      showProgressBar: true,
+    };
+    const driver: ValidateWithTestCasesDriver = Container.get("teamsApp/validateWithTestCases");
     return (await driver.execute(args, context)).result;
   }
   /**
@@ -955,6 +989,8 @@ export class FxCore {
         if (match) {
           if (match[1].startsWith("TEAMSFX_ENV=")) {
             writeStream.write(`TEAMSFX_ENV=${targetEnvName}${os.EOL}`);
+          } else if (match[1].startsWith("APP_NAME_SUFFIX=")) {
+            writeStream.write(`APP_NAME_SUFFIX=${targetEnvName}${os.EOL}`);
           } else {
             writeStream.write(`${match[1]}${os.EOL}`);
           }
@@ -1216,33 +1252,65 @@ export class FxCore {
     QuestionMW("copilotPluginAddAPI"),
     ConcurrentLockerMW,
   ])
-  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<string, FxError>> {
     const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
+    const isPlugin = inputs[QuestionNames.Capabilities] === copilotPluginApiSpecOptionId;
+    const context = createContextV3();
 
     // Get API spec file path from manifest
     const manifestRes = await manifestUtils._readAppManifest(manifestPath);
     if (manifestRes.isErr()) {
       return err(manifestRes.error);
     }
-    const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
-    const outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
+
+    const confirmRes = await context.userInteraction.showMessage(
+      "warn",
+      getLocalizedString("core.addApi.confirm", AppPackageFolderName),
+      true,
+      getLocalizedString("core.addApi.continue")
+    );
+
+    if (confirmRes.isErr()) {
+      return err(confirmRes.error);
+    } else if (confirmRes.value !== getLocalizedString("core.addApi.continue")) {
+      return err(new UserCancelError());
+    }
 
     // Merge existing operations in manifest.json
-    const specParser = new SpecParser(url, {
-      allowAPIKeyAuth: isApiKeyEnabled(),
-      allowMultipleParameters: isMultipleParametersEnabled(),
-    });
-    const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
-    const apiResultList = await specParser.list();
+    const specParser = new SpecParser(
+      url,
+      isPlugin
+        ? copilotPluginParserOptions
+        : {
+            allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
+            allowMultipleParameters: isMultipleParametersEnabled(),
+          }
+    );
 
-    const existingOperations: string[] = [];
-    for (const id of existingOperationIds) {
-      const operation = apiResultList.find((item) => item.operationId === id);
-      if (operation) {
-        existingOperations.push(operation.api);
+    const listResult = await specParser.list();
+    const apiResultList = listResult.APIs.filter((value) => value.isValid);
+
+    let existingOperations: string[];
+    let outputApiSpecPath: string;
+    if (isPlugin) {
+      if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
+        return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
       }
+      outputApiSpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
+      existingOperations = await listPluginExistingOperations(
+        manifestRes.value,
+        manifestPath,
+        inputs[QuestionNames.DestinationApiSpecFilePath]
+      );
+    } else {
+      const existingOperationIds = manifestUtils.getOperationIds(manifestRes.value);
+      existingOperations = apiResultList
+        .filter((operation) => existingOperationIds.includes(operation.operationId))
+        .map((operation) => operation.api);
+      const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
+      outputApiSpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
     }
 
     const operations = [...existingOperations, ...newOperations];
@@ -1253,8 +1321,6 @@ export class FxCore {
       ResponseTemplatesFolderName
     );
 
-    const context = createContextV3();
-
     try {
       if (isApiKeyEnabled()) {
         const authNames: Set<string> = new Set();
@@ -1262,7 +1328,11 @@ export class FxCore {
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
           if (operation) {
-            if (operation.auth && operation.auth.type === "apiKey") {
+            if (
+              operation.auth &&
+              operation.auth.authScheme.type === "http" &&
+              operation.auth.authScheme.scheme === "bearer"
+            ) {
               authNames.add(operation.auth.name);
               serverUrls.add(operation.server);
             }
@@ -1283,7 +1353,7 @@ export class FxCore {
           const authName = [...authNames][0];
 
           const relativeSpecPath =
-            "./" + path.relative(inputs.projectPath!, outputAPISpecPath).replace(/\\/g, "/");
+            "./" + path.relative(inputs.projectPath!, outputApiSpecPath).replace(/\\/g, "/");
 
           await this.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
 
@@ -1293,12 +1363,29 @@ export class FxCore {
         }
       }
 
-      const generateResult = await specParser.generate(
-        manifestPath,
-        operations,
-        outputAPISpecPath,
-        adaptiveCardFolder
-      );
+      let generateResult;
+      if (!isPlugin) {
+        generateResult = await specParser.generate(
+          manifestPath,
+          operations,
+          outputApiSpecPath,
+          adaptiveCardFolder
+        );
+      } else {
+        const pluginPathRes = await manifestUtils.getPluginFilePath(
+          manifestRes.value,
+          manifestPath
+        );
+        if (pluginPathRes.isErr()) {
+          return err(pluginPathRes.error);
+        }
+        generateResult = await specParser.generateForCopilot(
+          manifestPath,
+          operations,
+          outputApiSpecPath,
+          pluginPathRes.value
+        );
+      }
 
       // Send SpecParser.generate() warnings
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
@@ -1313,7 +1400,7 @@ export class FxCore {
         const warnSummary = generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,
-          inputs.projectPath!
+          path.relative(inputs.projectPath!, outputApiSpecPath)
         );
         context.logProvider.info(warnSummary);
       }
@@ -1332,8 +1419,35 @@ export class FxCore {
       newOperations,
       inputs.projectPath
     );
-    void context.userInteraction.showMessage("info", message, false);
-    return ok(undefined);
+    if (inputs.platform !== Platform.VS) {
+      void context.userInteraction.showMessage("info", message, false);
+    }
+    return ok(message);
+  }
+
+  @hooks([
+    ErrorContextMW({ component: "FxCore", stage: "copilotPluginListApiSpecs" }),
+    ErrorHandlerMW,
+  ])
+  async listPluginApiSpecs(inputs: Inputs): Promise<Result<string[], FxError>> {
+    try {
+      const manifestPath = inputs[QuestionNames.ManifestPath];
+      const manifestRes = await manifestUtils._readAppManifest(manifestPath);
+      if (manifestRes.isErr()) {
+        return err(manifestRes.error);
+      }
+      const res = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+        manifestRes.value,
+        manifestPath
+      );
+      if (res.isOk()) {
+        return ok(res.value);
+      } else {
+        return err(res.error);
+      }
+    } catch (error) {
+      return err(error as FxError);
+    }
   }
 
   @hooks([
@@ -1353,17 +1467,21 @@ export class FxCore {
     ErrorContextMW({ component: "FxCore", stage: "copilotPluginListOperations" }),
     ErrorHandlerMW,
   ])
-  async copilotPluginListOperations(
-    inputs: Inputs
-  ): Promise<Result<ApiOperation[], ErrorResult[]>> {
-    return await listOperations(
+  async copilotPluginListOperations(inputs: Inputs): Promise<Result<ApiOperation[], FxError>> {
+    const res = await listOperations(
       createContextV3(),
       inputs.manifest,
       inputs.apiSpecUrl,
-      inputs[QuestionNames.ManifestPath],
+      inputs,
       inputs.includeExistingAPIs,
       inputs.shouldLogWarning
     );
+    if (res.isErr()) {
+      const msg = res.error.map((e) => e.content).join("\n");
+      return err(new UserError("FxCore", "ListOpenAPISpecOperationsError", msg, msg));
+    } else {
+      return ok(res.value);
+    }
   }
 
   /**

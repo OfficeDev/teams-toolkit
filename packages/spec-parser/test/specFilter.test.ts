@@ -7,8 +7,9 @@ import { SpecFilter } from "../src/specFilter";
 import { OpenAPIV3 } from "openapi-types";
 import sinon from "sinon";
 import { SpecParserError } from "../src/specParserError";
-import { ErrorType } from "../src/interfaces";
+import { ErrorType, ParseOptions, ProjectType } from "../src/interfaces";
 import { Utils } from "../src/utils";
+import { ValidatorFactory } from "../src/validators/validatorFactory";
 
 describe("specFilter", () => {
   afterEach(() => {
@@ -20,6 +21,11 @@ describe("specFilter", () => {
       title: "My API",
       version: "1.0.0",
     },
+    servers: [
+      {
+        url: "https://example.com",
+      },
+    ],
     paths: {
       "/hello": {
         get: {
@@ -96,6 +102,11 @@ describe("specFilter", () => {
         title: "My API",
         version: "1.0.0",
       },
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello": {
           get: {
@@ -148,15 +159,16 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = SpecFilter.specFilter(
-      filter,
-      unResolveSpec,
-      unResolveSpec,
-      true,
-      false,
-      false,
-      false
-    );
+    const options: ParseOptions = {
+      allowMissingId: true,
+      allowAPIKeyAuth: false,
+      allowMultipleParameters: false,
+      allowOauth2: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
+    const actualSpec = SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, options);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -168,6 +180,11 @@ describe("specFilter", () => {
         title: "My API",
         version: "1.0.0",
       },
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello": {
           get: {
@@ -197,15 +214,16 @@ describe("specFilter", () => {
       },
     };
 
-    const actualSpec = SpecFilter.specFilter(
-      filter,
-      unResolveSpec,
-      unResolveSpec,
-      true,
-      false,
-      false,
-      false
-    );
+    const options: ParseOptions = {
+      allowMissingId: true,
+      allowAPIKeyAuth: false,
+      allowMultipleParameters: false,
+      allowOauth2: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
+    const actualSpec = SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, options);
     expect(actualSpec).to.deep.equal(expectedSpec);
   });
 
@@ -213,6 +231,11 @@ describe("specFilter", () => {
     const filter = ["get /hello/{id}"];
     const unResolvedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello/{id}": {
           get: {
@@ -246,17 +269,28 @@ describe("specFilter", () => {
     };
     const expectedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {},
+    };
+
+    const options: ParseOptions = {
+      allowMissingId: false,
+      allowAPIKeyAuth: false,
+      allowMultipleParameters: false,
+      allowOauth2: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
     };
 
     const result = SpecFilter.specFilter(
       filter,
       unResolvedSpec as any,
       unResolvedSpec as any,
-      false,
-      false,
-      false,
-      false
+      options
     );
 
     expect(result).to.deep.equal(expectedSpec);
@@ -266,6 +300,11 @@ describe("specFilter", () => {
     const filter = ["get /hello/{id}"];
     const unResolvedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello/{id}": {
           get: {
@@ -299,6 +338,11 @@ describe("specFilter", () => {
     };
     const expectedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello/{id}": {
           get: {
@@ -332,14 +376,20 @@ describe("specFilter", () => {
       },
     };
 
+    const options: ParseOptions = {
+      allowMissingId: true,
+      allowAPIKeyAuth: false,
+      allowMultipleParameters: false,
+      allowOauth2: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
     const result = SpecFilter.specFilter(
       filter,
       unResolvedSpec as any,
       unResolvedSpec as any,
-      true,
-      false,
-      false,
-      false
+      options
     );
 
     expect(result).to.deep.equal(expectedSpec);
@@ -348,7 +398,17 @@ describe("specFilter", () => {
   it("should not filter anything if filter item not exist", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
+
+    const options: ParseOptions = {
+      allowMissingId: true,
+      allowAPIKeyAuth: false,
+      allowMultipleParameters: false,
+      allowOauth2: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
+    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, options);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
@@ -356,6 +416,11 @@ describe("specFilter", () => {
     const filter = ["get /nonexistent"];
     const unResolvedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {
         "/hello": {
           get: {
@@ -371,17 +436,28 @@ describe("specFilter", () => {
 
     const expectedSpec = {
       openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
       paths: {},
+    };
+
+    const options: ParseOptions = {
+      allowMissingId: true,
+      allowAPIKeyAuth: false,
+      allowMultipleParameters: false,
+      allowOauth2: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
     };
 
     const result = SpecFilter.specFilter(
       filter,
       unResolvedSpec as any,
       unResolvedSpec as any,
-      true,
-      false,
-      false,
-      false
+      options
     );
 
     expect(result).to.deep.equal(expectedSpec);
@@ -390,24 +466,60 @@ describe("specFilter", () => {
   it("should not modify the original OpenAPI spec", () => {
     const filter = ["get /hello"];
     const clonedSpec = { ...unResolveSpec };
-    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
+
+    const options: ParseOptions = {
+      allowMissingId: true,
+      allowAPIKeyAuth: false,
+      allowMultipleParameters: false,
+      allowOauth2: false,
+      projectType: ProjectType.SME,
+      allowMethods: ["get", "post"],
+    };
+
+    SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, options);
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
-  it("should throw a SpecParserError if isSupportedApi throws an error", () => {
-    const filter = ["GET /path"];
-    const unResolveSpec = {} as any;
-    const isSupportedApiStub = sinon
-      .stub(Utils, "isSupportedApi")
-      .throws(new Error("isSupportedApi error"));
+  it("should throw a SpecParserError if ValidatorFactory throws an error", () => {
+    const filter = ["GET /hello"];
+    const unResolveSpec = {
+      openapi: "3.0.0",
+      servers: [
+        {
+          url: "https://example.com",
+        },
+      ],
+      paths: {
+        "/hello": {
+          get: {
+            responses: {
+              "200": {
+                description: "OK",
+              },
+            },
+          },
+        },
+      },
+    } as any;
+
+    sinon.stub(ValidatorFactory, "create").throws(new Error("ValidatorFactory create error"));
 
     try {
-      SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, true, false, false, false);
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.SME,
+        allowMethods: ["get", "post"],
+      };
+
+      SpecFilter.specFilter(filter, unResolveSpec, unResolveSpec, options);
       expect.fail("Expected specFilter to throw a SpecParserError");
     } catch (err: any) {
       expect(err).to.be.instanceOf(SpecParserError);
       expect(err.errorType).to.equal(ErrorType.FilterSpecFailed);
-      expect(err.message).to.equal("Error: isSupportedApi error");
+      expect(err.message).to.equal("Error: ValidatorFactory create error");
     }
   });
 });

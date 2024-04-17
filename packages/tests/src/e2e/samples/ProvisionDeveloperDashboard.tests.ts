@@ -28,6 +28,6 @@ class AssistDashboardTestCase extends CaseFactory {
 new AssistDashboardTestCase(
   TemplateProjectFolder.AssistDashboard,
   24121324,
-  "v-ivanchen@microsoft.com",
+  "huimiao@microsoft.com",
   ["dashboard"]
 ).test();

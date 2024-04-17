@@ -13,6 +13,6 @@ class ContactExporterTestCase extends CaseFactory {}
 new ContactExporterTestCase(
   TemplateProjectFolder.ContactExporter,
   15277462,
-  "v-ivanchen@microsoft.com",
+  "rentu@microsoft.com",
   ["tab", "aad"]
 ).test();

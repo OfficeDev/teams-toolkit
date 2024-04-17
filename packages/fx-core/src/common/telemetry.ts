@@ -6,6 +6,8 @@ import { TelemetryConstants } from "../component/constants";
 import { TOOLS, globalVars } from "../core/globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
 import { assign } from "lodash";
+import { ProjectType } from "@microsoft/m365-spec-parser";
+import { maskSecret } from "./stringUtils";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -56,6 +58,10 @@ export enum TelemetryProperty {
   GraphPermissionHasRole = "graph-permission-has-role",
   GraphPermissionHasAdminScope = "graph-permission-has-admin-scope",
   GraphPermissionScopes = "graph-permission-scopes",
+  GraphPermissionRoles = "graph-permission-roles",
+  RscApplication = "rsc-application",
+  RscDelegated = "rsc-delegated",
+
   AadManifest = "aad-manifest",
 }
 
@@ -140,6 +146,7 @@ export enum ProjectTypeProps {
   TeamsManifestCapabilities = "manifest-capabilities",
   TeamsJs = "teams-js",
   Lauguages = "languages",
+  OfficeAddinProjectType = "office-addin-project-type",
 }
 
 export enum TelemetrySuccess {
@@ -235,8 +242,10 @@ export function fillInTelemetryPropsForFxError(
   props[TelemetryConstants.properties.errorCode] =
     props[TelemetryConstants.properties.errorCode] || errorCode;
   props[TelemetryConstants.properties.errorType] = errorType;
-  props[TelemetryConstants.properties.errorMessage] = error.message;
-  props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
+  props[TelemetryConstants.properties.errorMessage] = error.skipProcessInTelemetry
+    ? error.message
+    : maskSecret(error.message);
+  props[TelemetryConstants.properties.errorStack] = extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
   props[TelemetryConstants.properties.errorName] = error.name;
 
   // append global context properties
@@ -248,12 +257,12 @@ export function fillInTelemetryPropsForFxError(
     props[TelemetryConstants.properties.errorInnerCode] = error.innerError["code"];
   }
 
-  if (error.innerError) {
-    props[TelemetryConstants.properties.innerError] = JSON.stringify(
-      error.innerError,
-      Object.getOwnPropertyNames(error.innerError)
-    );
-  }
+  // if (error.innerError) {  // inner-error is retired
+  //   props[TelemetryConstants.properties.innerError] = JSON.stringify(
+  //     error.innerError,
+  //     Object.getOwnPropertyNames(error.innerError)
+  //   );
+  // }
 
   if (error.categories) {
     props[TelemetryConstants.properties.errorCat] = error.categories.join("|");
@@ -280,6 +289,18 @@ export function fillinProjectTypeProperties(
     [ProjectTypeProps.Lauguages]: projectTypeRes.lauguages.join(","),
     [ProjectTypeProps.TeamsManifestCapabilities]:
       projectTypeRes.manifestCapabilities?.join(",") || "",
+    [ProjectTypeProps.OfficeAddinProjectType]: projectTypeRes.officeAddinProjectType || "",
   };
   assign(props, newProps);
+}
+
+export function extractMethodNamesFromErrorStack(stack?: string): string {
+  if (!stack) return "";
+  const methodNamesRegex = /at\s([\w.<>\[\]\s]+)\s\(/g;
+  let match;
+  const methodNames: string[] = [];
+  while ((match = methodNamesRegex.exec(stack)) !== null) {
+    methodNames.push(match[1]);
+  }
+  return methodNames.join(" | ");
 }

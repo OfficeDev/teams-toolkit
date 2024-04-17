@@ -33,6 +33,7 @@ export async function execAsyncWithRetry(
         options.cwd ? options.cwd : "",
         options.env
       );
+      return result;
     } catch (e: any) {
       console.log(
         `Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`

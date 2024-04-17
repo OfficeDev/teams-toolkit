@@ -36,6 +36,7 @@ describe("Global Variables", () => {
       });
       sinon.stub(fs, "pathExistsSync").resolves(true);
       sinon.stub(projectSettingHelper, "isValidProject").returns(true);
+      sinon.stub(projectSettingHelper, "isValidOfficeAddInProject").returns(false);
       sinon.stub(globalVariables, "workspaceUri").value({ fsPath: "/test" });
       sinon.stub(fs, "readdirSync").returns([".yo-rc.json"] as any);
       sinon
@@ -65,7 +66,7 @@ describe("Global Variables", () => {
 
     it("set log folder", () => {
       sinon.stub(fs, "pathExists").resolves(false);
-      sinon.stub(fs, "mkdir").callsFake(async () => {});
+      sinon.stub(fs, "mkdirSync").callsFake(() => {});
       globalVariables.initializeGlobalVariables({
         globalState: {
           get: () => undefined,

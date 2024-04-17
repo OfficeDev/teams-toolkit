@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  provisionProject,
+  deployProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -22,7 +22,7 @@ import {
 } from "../../utils/playwrightOperation";
 import { Env } from "../../utils/env";
 import { it } from "../../utils/it";
-import { validateFileExist } from "../../utils/commonUtils";
+import { editDotEnvFile, validateFileExist } from "../../utils/commonUtils";
 
 describe("Remote debug Tests", function () {
   this.timeout(Timeout.testAzureCase);
@@ -70,8 +70,12 @@ describe("Remote debug Tests", function () {
       const driver = VSBrowser.instance.driver;
       await createNewProject("aichat", appName);
       validateFileExist(projectPath, "src/index.js");
-      await runProvision(appName);
-      await runDeploy(Timeout.botDeploy);
+      const envPath = path.resolve(projectPath, "env", ".env.dev.user");
+      editDotEnvFile(envPath, "SECRET_AZURE_OPENAI_API_KEY", "fake");
+      editDotEnvFile(envPath, "AZURE_OPENAI_ENDPOINT", "https://test.com");
+      editDotEnvFile(envPath, "AZURE_OPENAI_DEPLOYMENT_NAME", "fake");
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

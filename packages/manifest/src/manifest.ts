@@ -281,6 +281,10 @@ export interface IParameter {
    */
   inputType?: "text" | "textarea" | "number" | "date" | "time" | "toggle" | "choiceset";
   /**
+   * Indicates whether this parameter is required or not. By default, it is not.
+   */
+  isRequired?: boolean;
+  /**
    * Title of the parameter.
    */
   title: string;
@@ -360,8 +364,9 @@ export interface ITogetherModeScene {
   seatsReservedForOrganizersOrPresenters: number;
 }
 
-export interface IApiPlugin {
-  pluginFile: string;
+export interface IPlugin {
+  file: string;
+  id: string;
 }
 
 export type AppManifest = Record<string, any>;
@@ -541,7 +546,7 @@ export class TeamsAppManifest implements AppManifest {
     };
   };
   /**
-   * Pointer to PluginB manifest.
+   * Pointer to plugin manifest.
    */
-  apiPlugins?: IApiPlugin[];
+  plugins?: IPlugin[];
 }

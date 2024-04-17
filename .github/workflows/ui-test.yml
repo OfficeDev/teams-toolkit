@@ -60,18 +60,27 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
     env:
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
       TARGET_TEST_PLAN_NAME: ${{ github.event.inputs.target-testplan-name }}
-      AZURE_CLIENT_ID: ${{ secrets.TEST_AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.TEST_AZURE_CLIENT_SECRET }}
-      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      DEVTUNNEL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+      DEVTUNNEL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+      DEVTUNNEL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
 
     steps:
       - name: Init GitHub CLI
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+      
+      - uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
 
       - name: bvt (dispatch)
         id: bvt
@@ -158,6 +167,7 @@ jobs:
         run: |
           pnpm install
           testplanid=`npx ts-node src/scripts/testPlan.ts obtain vscode ${{ github.event.inputs.target-testplan-name }}`
+          echo "Testplan id is $testplanid"
           npx ts-node src/scripts/testPlan.ts archive $testplanid
 
       - name: Upload testplan to artifact
@@ -171,7 +181,7 @@ jobs:
       - name: clean devtunnel
         run: |
           curl -sL https://aka.ms/DevTunnelCliInstall | bash
-          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
           ~/bin/devtunnel delete-all -f
 
     outputs:
@@ -188,9 +198,12 @@ jobs:
   main:
     name: ${{ matrix.test-case }}|${{ matrix.os }}|node ${{ matrix.node-version }}|${{ github.ref_name }}
     needs: setup
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
     timeout-minutes: 50
     env:
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       CI_ENABLED: true
       NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
       TARGET_CLI_VERSION: ${{ needs.setup.outputs.target_cli_version }}
@@ -198,8 +211,9 @@ jobs:
       CLEAN_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
       CLEAN_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
 
-      AZURE_CLIENT_ID: ${{ secrets.TEST_AZURE_CLIENT_ID }}
-      AZURE_CLIENT_SECRET: ${{ secrets.TEST_AZURE_CLIENT_SECRET }}
+      DEVTUNNEL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
+      DEVTUNNEL_CLIENT_SECRET: ${{ secrets.TEST_CLEAN_CLIENT_SECRET }}
+      DEVTUNNEL_TENANT_ID: ${{ secrets.TEST_CLEAN_TENANT_ID }}
 
       M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_M365_PASSWORD }}
       M365_USERNAME: "test14@xxbdw.onmicrosoft.com"
@@ -224,6 +238,12 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
+
       - name: Set m365 account (unix)
         if: matrix.os != 'windows-latest'
         run: |
@@ -270,7 +290,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
         run: |
           curl -sL https://aka.ms/DevTunnelCliInstall | bash
-          ~/bin/devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ~/bin/devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
   
       - name: Install devtunnel (windows)
         if: matrix.os == 'windows-latest'
@@ -280,7 +300,7 @@ jobs:
           $currentDirectory = (Get-Location).Path
           $executablePath = Join-Path $currentDirectory "devtunnel.exe"
           [System.Environment]::SetEnvironmentVariable("Path", "$currentPath;$executablePath", [System.EnvironmentVariableTarget]::Machine)
-          ./devtunnel user login --sp-tenant-id ${{env.AZURE_TENANT_ID}} --sp-client-id ${{env.AZURE_CLIENT_ID}} --sp-secret ${{env.AZURE_CLIENT_SECRET}}
+          ./devtunnel user login --sp-tenant-id ${{env.DEVTUNNEL_TENANT_ID}} --sp-client-id ${{env.DEVTUNNEL_CLIENT_ID}} --sp-secret ${{env.DEVTUNNEL_CLIENT_SECRET}}
       
       - name: Downgrade PowerShell (win)
         if: matrix.os == 'windows-latest'
@@ -357,7 +377,7 @@ jobs:
           path: ./packages/tests/resource
 
       - name: Download samples
-        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false
+        if: startsWith(matrix.test-case, 'sample-') && contains(matrix.test-case, 'proactive-message') == false && contains(matrix.test-case,  'upgrade') == false && contains(matrix.test-case, 'chef-bot') == false
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/TeamsFx-Samples
@@ -369,6 +389,14 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: OfficeDev/Microsoft-Teams-Samples
+          ref: main
+          path: ./packages/tests/resource
+
+      - name: Download samples chef bot
+        if: contains(matrix.test-case, 'chef-bot')
+        uses: actions/checkout@v3
+        with:
+          repository: microsoft/teams-ai
           ref: main
           path: ./packages/tests/resource
 
@@ -564,7 +592,7 @@ jobs:
 
             status=`echo $jobs | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion'`
             if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
-              emails="$emails;$email;zhendr@microsoft.com"
+              emails="$emails;$email;zhendr@microsoft.com;ccdevexperiencefc@microsoft.com"
             fi
 
             status=`echo $jobs | jq --arg case "$case" -r '.[] | select(.name == $case ) | .conclusion'`

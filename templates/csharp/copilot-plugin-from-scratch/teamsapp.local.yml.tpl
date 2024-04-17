@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.1.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.1.0
+version: v1.5
 
 provision:
   # Creates a Teams app
@@ -58,6 +58,7 @@ provision:
     writeToEnvironmentFile:
       titleId: M365_TITLE_ID
       appId: M365_APP_ID
+{{^isNewProjectTypeEnabled}}
 
   # Create or update debug profile in lauchsettings file
   - uses: file/createOrUpdateJsonFile
@@ -74,3 +75,4 @@ provision:
             environmentVariables:
               ASPNETCORE_ENVIRONMENT: "Development"
             hotReloadProfile: "aspnetcore"
+{{/isNewProjectTypeEnabled}}

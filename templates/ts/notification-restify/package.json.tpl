@@ -24,13 +24,13 @@
     },
     "dependencies": {
         "@microsoft/adaptivecards-tools": "^1.0.0",
-        "@microsoft/teamsfx": "^2.3.1-alpha",
+        "@microsoft/teamsfx": "^2.3.1",
         "botbuilder": "^4.20.0",
         "restify": "^10.0.0"
     },
     "devDependencies": {
         "@types/restify": "^8.5.5",
-        "@types/node": "^14.0.0",
+        "@types/node": "^18.0.0",
         "env-cmd": "^10.1.0",
         "nodemon": "^2.0.7",
         "ts-node": "^10.4.0",

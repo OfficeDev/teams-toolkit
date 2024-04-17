@@ -1,7 +1,7 @@
-# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.1.0/yaml.schema.json
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/v1.5/yaml.schema.json
 # Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
 # Visit https://aka.ms/teamsfx-actions for details on actions
-version: 1.1.0
+version: v1.5
 
 environmentFolderPath: ./env
 
@@ -18,15 +18,19 @@ provision:
       teamsAppId: TEAMS_APP_ID
 
   # Create or reuse an existing Microsoft Entra application for bot.
-  - uses: botAadApp/create
+  - uses: aadApp/create
     with:
       # The Microsoft Entra application's display name
       name: {{appName}}${{APP_NAME_SUFFIX}}
+      generateClientSecret: true
+      signInAudience: AzureADMultipleOrgs
     writeToEnvironmentFile:
       # The Microsoft Entra application's client id created for bot.
-      botId: BOT_ID
+      clientId: BOT_ID
       # The Microsoft Entra application's client secret created for bot.
-      botPassword: SECRET_BOT_PASSWORD
+      clientSecret: SECRET_BOT_PASSWORD
+      # The Microsoft Entra application's object id created for bot.
+      objectId: BOT_OBJECT_ID
 
   - uses: arm/deploy  # Deploy given ARM templates parallelly.
     with:
@@ -82,7 +86,15 @@ provision:
 deploy:
   - uses: cli/runDotnetCommand
     with:
-      args: publish --configuration Release --runtime win-x86 --self-contained
+      args: publish --configuration Release --runtime win-x86 --self-contained {{ProjectName}}.csproj
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      workingDirectory: ..
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      workingDirectory: ../{{ProjectName}}
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}
   # Deploy your application to Azure Functions using the zip deploy feature.
   # For additional details, see at https://aka.ms/zip-deploy-to-azure-functions
   - uses: azureFunctions/zipDeploy
@@ -94,3 +106,11 @@ deploy:
       # You can replace it with your existing Azure Resource id
       # or add it to your environment variable file.
       resourceId: ${{BOT_AZURE_FUNCTION_APP_RESOURCE_ID}}
+{{#isNewProjectTypeEnabled}}
+{{#PlaceProjectFileInSolutionDir}}
+      workingDirectory: ..
+{{/PlaceProjectFileInSolutionDir}}
+{{^PlaceProjectFileInSolutionDir}}
+      workingDirectory: ../{{ProjectName}}
+{{/PlaceProjectFileInSolutionDir}}
+{{/isNewProjectTypeEnabled}}

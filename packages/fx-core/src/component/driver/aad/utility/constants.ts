@@ -30,9 +30,16 @@ export const permissionsKeys = {
 export const aadErrorCode = {
   permissionErrorCode: "CannotDeleteOrUpdateEnabledEntitlement",
   hostNameNotOnVerifiedDomain: "HostNameNotOnVerifiedDomain", // Using unverified domain in multi tenant scenario
+  credentialInvalidLifetimeAsPerAppPolicy: "CredentialInvalidLifetimeAsPerAppPolicy",
+  credentialTypeNotAllowedAsPerAppPolicy: "CredentialTypeNotAllowedAsPerAppPolicy",
 };
 
 export const constants = {
   aadAppPasswordDisplayName: "default",
   oauthAuthorityPrefix: "https://login.microsoftonline.com",
+  defaultHelpLink: "https://aka.ms/teamsfx-actions/aadapp-create",
+};
+
+export const telemetryKeys = {
+  newAadApp: "new-aad-app",
 };

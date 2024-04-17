@@ -13,6 +13,8 @@ import fs from "fs-extra";
 import * as os from "os";
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 import { expect } from "chai";
+import { Env } from "./env";
+import { EnvConstants } from "../../src/commonlib/constants";
 
 export class Executor {
   static async execute(
@@ -49,9 +51,15 @@ export class Executor {
     }
   }
 
-  static login() {
-    const command = `az login --service-principal -u ${process.env.AZURE_CLIENT_ID} -p ${process.env.AZURE_CLIENT_SECRET} -t ${process.env.AZURE_TENANT_ID}`;
-    return this.execute(command, process.cwd());
+  static async login() {
+    const command = `az login --username ${Env["azureAccountName"]} --password '${Env["azureAccountPassword"]}' --tenant ${Env["azureTenantId"]}`;
+    const { success } = await Executor.execute(command, process.cwd());
+    expect(success).to.be.true;
+
+    // set subscription
+    const subscription = Env["azureSubscriptionId"];
+    const setSubscriptionCommand = `az account set --subscription ${subscription}`;
+    return await Executor.execute(setSubscriptionCommand, process.cwd());
   }
 
   static concatProcessEnv(

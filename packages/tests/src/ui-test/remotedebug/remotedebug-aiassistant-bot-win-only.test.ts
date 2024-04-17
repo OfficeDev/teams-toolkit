@@ -9,8 +9,8 @@ import { VSBrowser } from "vscode-extension-tester";
 import { Timeout, ValidationContent } from "../../utils/constants";
 import {
   RemoteDebugTestContext,
-  runProvision,
-  runDeploy,
+  deployProject,
+  provisionProject,
 } from "./remotedebugContext";
 import {
   execCommandIfExist,
@@ -72,9 +72,9 @@ describe("Remote debug Tests", function () {
       validateFileExist(projectPath, "src/index.js");
       const envPath = path.resolve(projectPath, "env", ".env.dev.user");
       editDotEnvFile(envPath, "SECRET_OPENAI_API_KEY", "fake");
-      editDotEnvFile(envPath, "SECRET_OPENAI_ASSISTANT_ID", "fake");
-      await runProvision(appName);
-      await runDeploy(Timeout.botDeploy);
+      editDotEnvFile(envPath, "OPENAI_ASSISTANT_ID", "fake");
+      await provisionProject(appName, projectPath);
+      await deployProject(projectPath, Timeout.botDeploy);
       const teamsAppId = await remoteDebugTestContext.getTeamsAppId(
         projectPath
       );

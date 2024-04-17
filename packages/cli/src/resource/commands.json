@@ -1,0 +1,164 @@
+{
+  "root": {
+    "description": "Microsoft Teams Toolkit CLI.",
+    "options": {
+      "version": "Display Microsoft Teams Toolkit CLI version.",
+      "help": "Show Microsoft Teams Toolkit CLI help.",
+      "interactive": "Run the command in interactive mode.",
+      "debug": "Print debug information.",
+      "verbose": "Print diagnostic information.",
+      "telemetry": "Whether to enable telemetry."
+    }
+  },
+  "help": {
+    "description": "Show Microsoft Teams Toolkit CLI help.",
+    "arguments": {
+      "command": "The command to get help for."
+    }
+  },
+  "auth": {
+    "description": "Manage Microsoft 365 and Azure accounts."
+  },
+  "auth.login": {
+    "description": "Log in to Microsoft 365 or Azure account."
+  },
+  "auth.login.azure": {
+    "description": "Log in to Azure account.",
+    "options": {
+      "tenant": "Authenticate with a specific Microsoft Entra tenant.",
+      "service-principal": "Authenticate Azure with a credential representing a service principal",
+      "username": "Client ID for service principal",
+      "password": "Provide client secret or a pem file with key and public certificate."
+    }
+  },
+  "auth.login.m365": {
+    "description": "Log in to Microsoft 365 account."
+  },
+  "auth.logout": {
+    "description": "Log out of Microsoft 365 or Azure account.",
+    "arguments": {
+      "service": "Azure or Microsoft 365."
+    }
+  },
+  "auth.show": {
+    "description": "Display all connected Microsoft 365 and Azure accounts."
+  },
+  "add": {
+    "description": "Add feature to your Microsoft Teams application."
+  },
+  "add.spfx-web-part": {
+    "description": "Auto-hosted SPFx web part tightly integrated with Microsoft Teams."
+  },
+  "create": {
+    "description": "Create a new Microsoft Teams application."
+  },
+  "create.sample": {
+    "description": "Create an app from existing sample."
+  },
+  "collaborator": {
+    "description": "Check, grant and list permissions for who can access and manage Microsoft Teams application and Microsoft Entra application."
+  },
+  "collaborator.grant": {
+    "description": "Grant permission for another account."
+  },
+  "collaborator.status": {
+    "description": "Check user's permission.",
+    "options": {
+      "all": "Whether to list all collaborators."
+    }
+  },
+  "deploy": {
+    "description": "Run the deploy stage in teamsapp.yml or teamsapp.local.yml."
+  },
+  "doctor": {
+    "description": "Prerequiste checker for building Microsoft Teams apps."
+  },
+  "entra-app": {
+    "description": "Manage the Microsoft Entra app in the current application."
+  },
+  "entra-app.update": {
+    "description": "Update the Microsoft Entra app in the current application."
+  },
+  "env": {
+    "description": "Manage environments."
+  },
+  "env.add": {
+    "description": "Add a new environment by copying from the specified environment."
+  },
+  "env.list": {
+    "description": "List all environments."
+  },
+  "env.reset": {
+    "description": "Reset environment file."
+  },
+  "list": {
+    "description": "List available Microsoft Teams application templates and samples."
+  },
+  "list.samples": {
+    "description": "List available Microsoft Teams application samples.",
+    "options": {
+      "tag": "Specifies the tag to filter the samples."
+    }
+  },
+  "list.templates": {
+    "description": "List available Microsoft Teams application templates.",
+    "options": {
+      "format": "Specifies the format of the results."
+    }
+  },
+  "launchinfo": {
+    "description": "Get launch information of an acquired M365 App.",
+    "options": {
+      "title-id": "Title ID of the acquired M365 App.",
+      "manifest-id": "Manifest ID of the acquired M365 App."
+    }
+  },
+  "install": {
+    "description": "Sideload a given application package across Microsoft 365.",
+    "options": {
+      "file-path": "Path to the App manifest zip package.",
+      "xml-path": "Path to the XML manifest xml file."
+    }
+  },
+  "provision": {
+    "description": "Run the provision stage in teamsapp.yml or teamsapp.local.yml.",
+    "options": {
+      "resource-group": "Specifies resource group name.",
+      "region": "Specifies resource group region."
+    }
+  },
+  "preview": {
+    "description": "Preview the current application."
+  },
+  "package": {
+    "description": "Build your Microsoft Teams app into a package for publishing.",
+    "options": {
+      "output-zip-path": "Specifies the output path of the zipped app package, defaults to '${folder}/appPackage/build/appPackage.${env}.zip'.",
+      "output-manifest-path": "Specifies the output path of the generated manifest path, defaults to '${folder}/appPackage/build/manifest.${env}.json'"
+    }
+  },
+  "publish": {
+    "description": "Run the publish stage in teamsapp.yml."
+  },
+  "uninstall": {
+    "description": "Remove an acquired M365 App.",
+    "options": {
+      "title-id": "Title ID of the acquired M365 App.",
+      "manifest-id": "Manifest ID of the acquired M365 App."
+    }
+  },
+  "update": {
+    "description": "Update the Microsoft Teams App manifest to Teams Developer Portal."
+  },
+  "upgrade": {
+    "description": "Upgrade the project to work with the latest version of Teams Toolkit.",
+    "options": {
+      "force": "Force upgrade the project to work with the latest version of Teams Toolkit."
+    },
+    "success": "Upgrade project successfully."
+  },
+  "validate": {
+    "description": "Validate the Microsoft Teams app using manifest schema, validation rules, or test cases."
+  }
+}
+

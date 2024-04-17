@@ -11,7 +11,7 @@ import { TelemetryConstant } from "../../constant/commonConstant";
 import { performance } from "perf_hooks";
 import { TelemetryConstants } from "../../constants";
 import { isExecutionResult } from "./addStartAndEndTelemetry";
-import { maskSecretValues } from "../../utils/envUtil";
+import { maskSecretValues } from "../../../common/stringUtils";
 
 /**
  * A special telemetry middleware for SWA deployment.

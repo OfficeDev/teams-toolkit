@@ -113,17 +113,17 @@ export class ManifestUpdater {
     const paths = spec.paths;
 
     const pluginAuthObj: AuthObject = {
-      type: "none",
+      type: "None",
     };
 
     if (authInfo) {
       if (Utils.isOAuthWithAuthCodeFlow(authInfo.authScheme)) {
-        pluginAuthObj.type = "oAuthPluginVault";
+        pluginAuthObj.type = "OAuthPluginVault";
       } else if (Utils.isBearerTokenAuth(authInfo.authScheme)) {
-        pluginAuthObj.type = "apiKeyPluginVault";
+        pluginAuthObj.type = "ApiKeyPluginVault";
       }
 
-      if (pluginAuthObj.type !== "none") {
+      if (pluginAuthObj.type !== "None") {
         pluginAuthObj.reference_id = `${Utils.getSafeRegistrationIdEnvName(
           authInfo.name
         )}_REGISTRATION_ID`;
@@ -256,7 +256,7 @@ export class ManifestUpdater {
       (runtime) =>
         runtime.spec.url === specRelativePath &&
         runtime.type === "OpenApi" &&
-        (runtime.auth?.type ?? "none") === pluginAuthObj.type
+        (runtime.auth?.type ?? "None") === pluginAuthObj.type
     );
     if (index === -1) {
       apiPlugin.runtimes.push({

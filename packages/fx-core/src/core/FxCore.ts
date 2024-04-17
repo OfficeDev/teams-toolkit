@@ -1400,7 +1400,7 @@ export class FxCore {
         const warnSummary = generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,
-          outputApiSpecPath
+          path.relative(inputs.projectPath!, outputApiSpecPath)
         );
         context.logProvider.info(warnSummary);
       }

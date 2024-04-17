@@ -1458,7 +1458,7 @@ export async function ShowScaffoldingWarningSummary(
           message = generateScaffoldingSummary(
             createWarnings,
             teamsManifest,
-            apiSpecFilePathRes.value[0]
+            path.relative(workspacePath, apiSpecFilePathRes.value[0])
           );
         }
       }

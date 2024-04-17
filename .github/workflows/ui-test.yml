@@ -60,8 +60,8 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: engineering
     env:
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
       TARGET_TEST_PLAN_NAME: ${{ github.event.inputs.target-testplan-name }}
       DEVTUNNEL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
@@ -189,9 +189,9 @@ jobs:
   main:
     name: ${{ matrix.test-case }}|${{ matrix.os }}|node ${{ matrix.node-version }}|${{ github.ref_name }}
     needs: setup
+    environment: engineering
     timeout-minutes: 50
     env:
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       CI_ENABLED: true
       NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
       TARGET_CLI_VERSION: ${{ needs.setup.outputs.target_cli_version }}

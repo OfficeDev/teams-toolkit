@@ -21,6 +21,7 @@ class AiSearchBotAzureOpenAITestCase extends CaseFactory {
     const SECRET_AZURE_SEARCH_KEY = "SECRET_AZURE_SEARCH_KEY=fake";
     const AZURE_SEARCH_ENDPOINT = "AZURE_SEARCH_ENDPOINT=https://test.com";
     const KEY =
+      "\n" +
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT +
       "\n" +
       SECRET_AZURE_SEARCH_KEY +
@@ -40,6 +41,7 @@ class AiSearchBotOpenAITestCase extends CaseFactory {
     const SECRET_AZURE_SEARCH_KEY = "SECRET_AZURE_SEARCH_KEY=fake";
     const AZURE_SEARCH_ENDPOINT = "AZURE_SEARCH_ENDPOINT=https://test.com";
     const KEY =
+      "\n" +
       AZURE_OPENAI_EMBEDDING_DEPLOYMENT +
       "\n" +
       SECRET_AZURE_SEARCH_KEY +

@@ -12,8 +12,12 @@ import {
   err,
   ok,
 } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import fs from "fs-extra";
 import { cloneDeep } from "lodash";
+import path from "path";
 import { TOOLS } from "../core/globalVars";
+import { AccessGithubError, WriteFileError } from "../error/common";
 import {
   ComponentNames,
   Scenarios,
@@ -21,12 +25,8 @@ import {
   SolutionTelemetryProperty,
 } from "./constants";
 import { DriverContext } from "./driver/interface/commonArgs";
-import { getComponent, getComponentByScenario } from "./workflow";
-import AdmZip from "adm-zip";
 import { fetchZipFromUrl } from "./generator/utils";
-import { AccessGithubError, ReadFileError, WriteFileError } from "../error/common";
-import path from "path";
-import fs from "fs-extra";
+import { getComponent, getComponentByScenario } from "./workflow";
 
 export function createContextV3(): Context {
   const context: Context = {

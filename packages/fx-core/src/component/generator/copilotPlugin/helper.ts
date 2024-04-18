@@ -89,8 +89,9 @@ export const copilotPluginParserOptions: ParseOptions = {
   allowMissingId: true,
   allowSwagger: true,
   allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
-  allowResponseSemantics: true,
-  // allowConversationStarters: true  This will be in v2.2. Will enable once v2.2 is released.
+  // Will enable below two options once they are ready to consume.
+  // allowResponseSemantics: true,
+  // allowConversationStarters: true
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";

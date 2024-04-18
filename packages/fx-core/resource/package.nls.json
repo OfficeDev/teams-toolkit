@@ -857,8 +857,8 @@
   "driver.oauth.title.create": "Creating Oauth registration...",
   "driver.oauth.log.skipCreateOauth": "Environment variable %s exists. Skip creating API key.",
   "driver.oauth.log.oauthNotFound": "Environment variable %s exists but unable to retrieve Oauth registration from Developer Portal. Check manually if it exists.",
-  "driver.oauth.error.nameTooLong": "The name for Oauth is too long. The maximum length is 128.",
+  "driver.oauth.error.nameTooLong": "The Oauth name is too long. The maximum character length is 128.",
   "driver.oauth.log.successCreateOauth": "Oauth registration created successfully with id %s!",
-  "driver.oauth.error.domainInvalid": "Domain is invalid. Max %d domain per Oauth registration.",
-  "driver.apiKey.error.oauthAuthInfoInvalid": "Failed to parse oauth2 authScheme from spec. Please make sure your API specification is valid."
+  "driver.oauth.error.domainInvalid": "Maximum %d domains allowed per Oauth registration.",
+  "driver.apiKey.error.oauthAuthInfoInvalid": "Unable to parse Oauth2 authScheme from spec. Make sure your API specification is valid."
 }

@@ -88,7 +88,7 @@ export function isChatParticipantEnabled(): boolean {
 }
 
 export function isCopilotAuthEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CopilotAuth, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,6 +185,7 @@ export class FeatureFlags {
     name: FeatureFlagName.ChatParticipant,
     defaultValue: "false",
   };
+  static readonly CopilotAuth = { name: FeatureFlagName.CopilotAuth, defaultValue: "false" };
 }
 
 export class FeatureFlagManager {

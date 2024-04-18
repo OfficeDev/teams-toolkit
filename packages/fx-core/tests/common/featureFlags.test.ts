@@ -13,6 +13,7 @@ import {
   featureFlagManager,
   initializePreviewFeatureFlags,
   isApiKeyEnabled,
+  isCopilotAuthEnabled,
   isMultipleParametersEnabled,
   isTeamsFxRebrandingEnabled,
 } from "../../src/common/featureFlags";
@@ -49,6 +50,23 @@ describe("featureFlags", () => {
     it("is false", async () => {
       mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "false" });
       const res = isApiKeyEnabled();
+      chai.assert.isFalse(res);
+    });
+  });
+
+  describe("isCopilotAuthEnabled()", () => {
+    let mockedEnvRestore: RestoreFn = () => {};
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+    it("is true", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_COPILOT_AUTH: "true" });
+      const res = isCopilotAuthEnabled();
+      chai.assert.isTrue(res);
+    });
+    it("is false", async () => {
+      mockedEnvRestore = mockedEnv({ TEAMSFX_COPILOT_AUTH: "false" });
+      const res = isCopilotAuthEnabled();
       chai.assert.isFalse(res);
     });
   });

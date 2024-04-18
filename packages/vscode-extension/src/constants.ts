@@ -31,6 +31,24 @@ export enum GlobalKey {
   AutoInstallDependency = "teamsToolkit:autoInstallDependency",
 }
 
+export enum CommandKey {
+  Create = "fx-extension.create",
+  OpenWelcome = "fx-extension.openWelcome",
+  OpenDocument = "fx-extension.openDocument",
+  OpenSamples = "fx-extension.openSamples",
+  DownloadSample = "fx-extension.downloadSample",
+  ValidateGetStartedPrerequisites = "fx-extension.validate-getStarted-prerequisites",
+  OpenReadMe = "fx-extension.openReadMe",
+  DebugInTestToolFromMessage = "fx-extension.debugInTestToolFromMessage",
+  SigninM365 = "fx-extension.signinM365",
+  LocalDebug = "fx-extension.localdebug",
+  SigninAzure = "fx-extension.signinAzure",
+  Provision = "fx-extension.provision",
+  Deploy = "fx-extension.deploy",
+  Publish = "fx-extension.publish",
+  Preview = "fx-extension.preview",
+}
+
 export const environmentVariableRegex = /\${{[a-zA-Z-_]+}}/g;
 
 export const PublishAppLearnMoreLink =
@@ -39,3 +57,5 @@ export const PublishAppLearnMoreLink =
 export const DeveloperPortalHomeLink = "https://dev.teams.microsoft.com/home";
 
 export const TerminalName = "Teams Toolkit";
+
+export const InstallCopilotChatLink = "https://aka.ms/install-github-copilot-chat";

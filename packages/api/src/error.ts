@@ -24,6 +24,10 @@ export interface FxError extends Error {
    * e.g. "debug-in-test-tool"
    */
   recommendedOperation?: string;
+  /**
+   * whether to skip process (such as mask secret tokens) in telemetry collection
+   */
+  skipProcessInTelemetry?: boolean;
 }
 export interface ErrorOptionBase {
   source?: string;
@@ -33,6 +37,10 @@ export interface ErrorOptionBase {
   userData?: any;
   displayMessage?: string;
   categories?: string[];
+  /**
+   * whether to skip process (such as mask secret tokens) in telemetry collection
+   */
+  skipProcessInTelemetry?: boolean;
 }
 
 export interface UserErrorOptions extends ErrorOptionBase {
@@ -72,6 +80,11 @@ export class UserError extends Error implements FxError {
   displayMessage?: string;
 
   categories?: string[];
+
+  /**
+   * whether to skip process (such as mask secret tokens) in telemetry collection
+   */
+  skipProcessInTelemetry?: boolean;
 
   /**
    * recommended operation for user to fix the error
@@ -124,6 +137,7 @@ export class UserError extends Error implements FxError {
     this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
     this.categories = option.categories;
+    this.skipProcessInTelemetry = option.skipProcessInTelemetry;
   }
 }
 
@@ -158,6 +172,11 @@ export class SystemError extends Error implements FxError {
   displayMessage?: string;
 
   categories?: string[];
+
+  /**
+   * whether to skip process (such as mask secret tokens) in telemetry collection
+   */
+  skipProcessInTelemetry?: boolean;
 
   /**
    * recommended operation for user to fix the error
@@ -210,5 +229,6 @@ export class SystemError extends Error implements FxError {
     this.displayMessage = option.displayMessage;
     this.timestamp = new Date();
     this.categories = option.categories;
+    this.skipProcessInTelemetry = option.skipProcessInTelemetry;
   }
 }

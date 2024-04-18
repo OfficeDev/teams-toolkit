@@ -47,6 +47,9 @@ const codeOwnerMap = new Map([
   ["custom-copilot-rag-custom-api", "kuojianlu@microsoft.com"],
   ["api-plugin-from-scratch", "huimiao@microsoft.com"],
   ["api-message-extension-sso", "huimiao@microsoft.com"],
+  ["custom-copilot-rag-microsoft365", "tianyuan@microsoft.com"],
+  ["custom-copilot-rag-customize", "tianyuan@microsoft.com"],
+  ["custom-copilot-rag-azure-ai-search", "tianyuan@microsoft.com"],
 ]);
 
 async function getTemplatesDependencies() {

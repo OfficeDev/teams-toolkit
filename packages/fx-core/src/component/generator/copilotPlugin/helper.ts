@@ -87,7 +87,10 @@ export const copilotPluginParserOptions: ParseOptions = {
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
-  allowMethods: ["get", "post", "put", "delete"],
+  allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
+  // Will enable below two options once they are ready to consume.
+  // allowResponseSemantics: true,
+  // allowConversationStarters: true
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
@@ -454,18 +457,14 @@ function validateOpenAIPluginManifest(manifest: OpenAIPluginManifest): ErrorResu
 export function generateScaffoldingSummary(
   warnings: Warning[],
   teamsManifest: TeamsAppManifest,
-  projectPath: string
+  apiSpecFilePath: string
 ): string {
-  const apiSpecFileName =
-    teamsManifest.composeExtensions?.length &&
-    teamsManifest.composeExtensions[0].apiSpecificationFile
-      ? teamsManifest.composeExtensions[0].apiSpecificationFile
-      : "";
   const apiSpecWarningMessage = formatApiSpecValidationWarningMessage(
     warnings,
-    path.join(AppPackageFolderName, apiSpecFileName)
+    apiSpecFilePath,
+    teamsManifest
   );
-  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, projectPath, warnings);
+  const manifestWarningResult = validateTeamsManifestLength(teamsManifest, warnings);
   const manifestWarningMessage = manifestWarningResult.map((warn) => {
     return `${SummaryConstant.NotExecuted} ${warn}`;
   });
@@ -488,17 +487,19 @@ export function generateScaffoldingSummary(
 
 function formatApiSpecValidationWarningMessage(
   specWarnings: Warning[],
-  apiSpecFileName: string
+  apiSpecFileName: string,
+  teamsManifest: TeamsAppManifest
 ): string[] {
   const resultWarnings = [];
   const operationIdWarning = specWarnings.find((w) => w.type === WarningType.OperationIdMissing);
 
   if (operationIdWarning) {
+    const isApiMe = ManifestUtil.parseCommonProperties(teamsManifest).isApiME;
     resultWarnings.push(
       getLocalizedString(
         "core.copilotPlugin.scaffold.summary.warning.operationId",
         `${SummaryConstant.NotExecuted} ${operationIdWarning.content}`,
-        ManifestTemplateFileName
+        isApiMe ? ManifestTemplateFileName : apiSpecFileName
       )
     );
   }
@@ -520,7 +521,6 @@ function formatApiSpecValidationWarningMessage(
 
 function validateTeamsManifestLength(
   teamsManifest: TeamsAppManifest,
-  projectPath: string,
   warnings: Warning[]
 ): string[] {
   const nameShortLimit = 30;
@@ -749,6 +749,7 @@ function formatValidationErrorContent(error: ApiSpecErrorResult, inputs: Inputs)
         const messages = [];
         const invalidAPIInfo = error.data as InvalidAPIInfo[];
         for (const info of invalidAPIInfo) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
           const mes = `${info.api}: ${info.reason.map(mapInvalidReasonToMessage).join(", ")}`;
           messages.push(mes);
         }

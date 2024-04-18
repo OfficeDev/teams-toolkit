@@ -109,7 +109,7 @@ import {
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { ValidateTeamsAppInputs } from "../question";
+import { ProjectTypeOptions, ValidateTeamsAppInputs } from "../question";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
 import {
   HubTypes,
@@ -160,6 +160,9 @@ export class FxCore {
   ])
   async createProject(inputs: Inputs): Promise<Result<CreateProjectResult, FxError>> {
     const context = createContextV3();
+    if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.startWithGithubCopilot().id) {
+      return ok({ projectPath: "", shouldInvokeTeamsAgent: true });
+    }
     inputs[QuestionNames.Scratch] = ScratchOptions.yes().id;
     if (inputs.teamsAppFromTdp) {
       // should never happen as we do same check on Developer Portal.
@@ -1248,7 +1251,7 @@ export class FxCore {
     QuestionMW("copilotPluginAddAPI"),
     ConcurrentLockerMW,
   ])
-  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<undefined, FxError>> {
+  async copilotPluginAddAPI(inputs: Inputs): Promise<Result<string, FxError>> {
     const newOperations = inputs[QuestionNames.ApiOperation] as string[];
     const url = inputs[QuestionNames.ApiSpecLocation] ?? inputs.openAIPluginManifest?.api.url;
     const manifestPath = inputs[QuestionNames.ManifestPath];
@@ -1289,12 +1292,12 @@ export class FxCore {
     const apiResultList = listResult.APIs.filter((value) => value.isValid);
 
     let existingOperations: string[];
-    let outputAPISpecPath: string;
+    let outputApiSpecPath: string;
     if (isPlugin) {
       if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
         return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
       }
-      outputAPISpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
+      outputApiSpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
       existingOperations = await listPluginExistingOperations(
         manifestRes.value,
         manifestPath,
@@ -1306,7 +1309,7 @@ export class FxCore {
         .filter((operation) => existingOperationIds.includes(operation.operationId))
         .map((operation) => operation.api);
       const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
-      outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
+      outputApiSpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
     }
 
     const operations = [...existingOperations, ...newOperations];
@@ -1350,7 +1353,7 @@ export class FxCore {
           const authName = [...authNames][0];
 
           const relativeSpecPath =
-            "./" + path.relative(inputs.projectPath!, outputAPISpecPath).replace(/\\/g, "/");
+            "./" + path.relative(inputs.projectPath!, outputApiSpecPath).replace(/\\/g, "/");
 
           await this.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
 
@@ -1365,7 +1368,7 @@ export class FxCore {
         generateResult = await specParser.generate(
           manifestPath,
           operations,
-          outputAPISpecPath,
+          outputApiSpecPath,
           adaptiveCardFolder
         );
       } else {
@@ -1379,7 +1382,7 @@ export class FxCore {
         generateResult = await specParser.generateForCopilot(
           manifestPath,
           operations,
-          outputAPISpecPath,
+          outputApiSpecPath,
           pluginPathRes.value
         );
       }
@@ -1397,7 +1400,7 @@ export class FxCore {
         const warnSummary = generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,
-          inputs.projectPath!
+          path.relative(inputs.projectPath!, outputApiSpecPath)
         );
         context.logProvider.info(warnSummary);
       }
@@ -1416,8 +1419,10 @@ export class FxCore {
       newOperations,
       inputs.projectPath
     );
-    void context.userInteraction.showMessage("info", message, false);
-    return ok(undefined);
+    if (inputs.platform !== Platform.VS) {
+      void context.userInteraction.showMessage("info", message, false);
+    }
+    return ok(message);
   }
 
   @hooks([

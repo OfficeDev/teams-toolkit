@@ -26,52 +26,65 @@ export function initializePreviewFeatureFlags(): void {
 }
 
 export function isCLIDotNetEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
-}
-
-export function isV3Enabled(): boolean {
-  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
+  return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
 }
 
 export function isVideoFilterEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.VideoFilter);
 }
 
 export function isCopilotPluginEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin);
 }
 
 export function isApiCopilotPluginEnabled(): boolean {
-  // return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, true) && isCopilotPluginEnabled();
-  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
+  return (
+    featureFlagManager.getBooleanValue(FeatureFlags.ApiCopilotPlugin) && isCopilotPluginEnabled()
+  );
 }
 
 export function enableTestToolByDefault(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
+  return featureFlagManager.getBooleanValue(FeatureFlags.TestTool);
 }
 
 export function enableMETestToolByDefault(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.METestTool, true);
+  return featureFlagManager.getBooleanValue(FeatureFlags.METestTool);
+}
+
+export function isApiKeyEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.ApiKey);
+}
+
+export function isNewGeneratorEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.NewGenerator);
+}
+
+export function isMultipleParametersEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.MultipleParameters);
 }
 
 export function isOfficeJSONAddinEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin);
 }
 
 export function isTeamsFxRebrandingEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TeamsFxRebranding, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.TeamsFxRebranding);
 }
 
 export function isTdpTemplateCliTestEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest);
 }
 
 export function isAsyncAppValidationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.AsyncAppValidation, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation);
 }
 
 export function isNewProjectTypeEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
+  return featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType);
+}
+
+export function isChatParticipantEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -127,3 +140,62 @@ export function isNewProjectTypeEnabled(): boolean {
 //   4.6 generator class: OfficeAddinGenerator
 //   4.7 template link: config.json.[capabilities].[office-addin-framework-type].[programming-language]
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export interface FeatureFlag {
+  name: string;
+  defaultValue: string;
+  description?: string;
+}
+
+export class FeatureFlags {
+  static readonly CLIDotNet = { name: FeatureFlagName.CLIDotNet, defaultValue: "false" };
+  static readonly VideoFilter = { name: FeatureFlagName.VideoFilter, defaultValue: "false" };
+  static readonly CopilotPlugin = { name: FeatureFlagName.CopilotPlugin, defaultValue: "false" };
+  static readonly ApiCopilotPlugin = {
+    name: FeatureFlagName.ApiCopilotPlugin,
+    defaultValue: "false",
+  };
+  static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
+  static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
+  static readonly ApiKey = { name: FeatureFlagName.ApiKey, defaultValue: "false" };
+  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "false" };
+  static readonly MultipleParameters = {
+    name: FeatureFlagName.MultipleParameters,
+    defaultValue: "true",
+  };
+  static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
+  static readonly TeamsFxRebranding = {
+    name: FeatureFlagName.TeamsFxRebranding,
+    defaultValue: "false",
+  };
+  static readonly TdpTemplateCliTest = {
+    name: FeatureFlagName.TdpTemplateCliTest,
+    defaultValue: "false",
+  };
+  static readonly AsyncAppValidation = {
+    name: FeatureFlagName.AsyncAppValidation,
+    defaultValue: "false",
+  };
+  static readonly NewProjectType = { name: FeatureFlagName.NewProjectType, defaultValue: "true" };
+  static readonly ChatParticipant = {
+    name: FeatureFlagName.ChatParticipant,
+    defaultValue: "false",
+  };
+}
+
+export class FeatureFlagManager {
+  getBooleanValue(featureFlag: FeatureFlag): boolean {
+    return isFeatureFlagEnabled(
+      featureFlag.name,
+      featureFlag.defaultValue === "true" || featureFlag.defaultValue === "1"
+    );
+  }
+  getStringValue(featureFlag: FeatureFlag): string {
+    return process.env[featureFlag.name] || featureFlag.defaultValue;
+  }
+  list(): FeatureFlag[] {
+    return Object.values(FeatureFlags);
+  }
+}
+
+export const featureFlagManager = new FeatureFlagManager();

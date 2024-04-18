@@ -18,7 +18,6 @@ import { AdaptiveCardGenerator } from "../src/adaptiveCardGenerator";
 import { Utils } from "../src/utils";
 import jsyaml from "js-yaml";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { Validator } from "../src/validators/validator";
 import { SMEValidator } from "../src/validators/smeValidator";
 import { ValidatorFactory } from "../src/validators/validatorFactory";
 

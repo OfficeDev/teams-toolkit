@@ -434,7 +434,6 @@ jobs:
           7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
           Move-Item .\test-resources\chromedriver_win32\chromedriver .\test-resources\chromedriver
 
-
       - name: M365 Login
         working-directory: packages/tests
         run: | # rm -r -f ~/.fx/account

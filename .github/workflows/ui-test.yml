@@ -386,7 +386,6 @@ jobs:
         working-directory: packages/tests
         run: |
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1
-          npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.88.1
 
       - name: Get chromedriver(mac)
         if: matrix.os == 'macos-latest'

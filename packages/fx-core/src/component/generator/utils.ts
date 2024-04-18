@@ -1,28 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
-import AdmZip from "adm-zip";
-import axios, { AxiosError, AxiosResponse, CancelToken } from "axios";
-import * as fs from "fs-extra";
 import Mustache, { Context, Writer } from "mustache";
 import path from "path";
-import semver from "semver";
-import { SampleConfig, sampleProvider } from "../../common/samples";
-import templateConfig from "../../common/templates-config.json";
-import { deepCopy } from "../../common/tools";
-import { InvalidInputError } from "../../core/error";
-import { AccessGithubError, ReadFileError } from "../../error/common";
-import { ProgrammingLanguage } from "../../question";
+import * as fs from "fs-extra";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
   oldPlaceholderDelimiters,
   placeholderDelimiters,
+  templateFileExt,
   sampleConcurrencyLimits,
   sampleDefaultRetryLimits,
-  templateFileExt,
 } from "./constant";
+import { SampleConfig, sampleProvider } from "../../common/samples";
+import AdmZip from "adm-zip";
+import axios, { AxiosResponse, CancelToken } from "axios";
+import templateConfig from "../../common/templates-config.json";
+import semver from "semver";
+import { deepCopy } from "../../common/tools";
+import { InvalidInputError } from "../../core/error";
+import { ProgrammingLanguage } from "../../question";
+import { AxiosError } from "axios";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE

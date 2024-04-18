@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { SpecParser } from "@microsoft/m365-spec-parser";
+import { ProjectType, SpecParser } from "@microsoft/m365-spec-parser";
 import { getAbsolutePath } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
 import { CreateOauthArgs } from "../interface/createOauthArgs";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../../common/featureFlags";
+import { isCopilotAuthEnabled } from "../../../../common/featureFlags";
 import { OpenAPIV3 } from "openapi-types";
 import { isEqual } from "lodash";
 import { maxDomainPerApiKey } from "./constants";
@@ -35,8 +35,14 @@ export async function getandValidateOauthInfoFromSpec(
 ): Promise<OauthInfo> {
   const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
   const parser = new SpecParser(absolutePath, {
-    allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
-    allowMultipleParameters: isMultipleParametersEnabled(),
+    allowAPIKeyAuth: false,
+    allowBearerTokenAuth: isCopilotAuthEnabled(),
+    allowMultipleParameters: true,
+    allowOauth2: isCopilotAuthEnabled(),
+    projectType: ProjectType.Copilot,
+    allowMissingId: true,
+    allowSwagger: true,
+    allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
   });
   const listResult = await parser.list();
   const operations = listResult.APIs.filter((value) => value.isValid).filter((value) => {

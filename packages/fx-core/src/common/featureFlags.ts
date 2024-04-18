@@ -90,6 +90,10 @@ export function isChatParticipantEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.ChatParticipant, false);
 }
 
+export function isCopilotAuthEnabled(): boolean {
+  return isFeatureFlagEnabled(FeatureFlagName.CopilotAuth, false);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Notes for Office Addin Feature flags:
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false

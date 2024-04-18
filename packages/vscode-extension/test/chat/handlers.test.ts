@@ -55,6 +55,8 @@ describe("chat handlers", () => {
         command: TeamsChatCommand.Create,
         variables: [],
         location: ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
       const createCommandHandlerStub = sandbox.stub(createCommandHandler, "default");
       handler.chatRequestHandler(
@@ -81,6 +83,8 @@ describe("chat handlers", () => {
         command: TeamsChatCommand.NextStep,
         variables: [],
         location: ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
 
       const nextStepCommandHandlerStub = sandbox.stub(nextStepCommandHandler, "default");
@@ -108,6 +112,8 @@ describe("chat handlers", () => {
         command: "",
         variables: [],
         location: ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
 
       const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);

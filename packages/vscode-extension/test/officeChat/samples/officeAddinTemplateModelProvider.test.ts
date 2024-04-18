@@ -26,5 +26,8 @@ describe("OfficeTemplateModelPorvider", () => {
 
     const bm25ModelWordCached = await provider.getBM25Model("Word");
     expect(bm25ModelWordCached).to.equal(bm25ModelWord);
+
+    const bm25ModelEmptyHost = await provider.getBM25Model("" as WXPAppName);
+    expect(bm25ModelEmptyHost).to.not.exist;
   });
 });

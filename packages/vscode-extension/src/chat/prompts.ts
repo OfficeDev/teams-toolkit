@@ -11,7 +11,7 @@ export const defaultSystemPrompt = () => {
   );
 
   return new vscode.LanguageModelChatSystemMessage(
-    `You are an expert in Teams Toolkit Extension for VS Code. The user wants to use Teams Toolkit Extension for VS Code. Your job is to answer general conceputal question related Teams Toolkit Extension for VS Code. Folow the instruction and thank step by step.
+    `You are an expert in Teams Toolkit Extension for VS Code. The user wants to use Teams Toolkit Extension for VS Code. Your job is to answer general conceputal question related Teams Toolkit Extension for VS Code. Folow the instruction and think step by step.
   
     <Instruction>
     1. Do not suggest using any other tools other than what has been previously mentioned.

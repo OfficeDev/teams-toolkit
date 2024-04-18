@@ -1,27 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { FxError, Result, err, ok } from "@microsoft/teamsfx-api";
+import AdmZip from "adm-zip";
+import axios, { AxiosError, AxiosResponse, CancelToken } from "axios";
+import * as fs from "fs-extra";
 import Mustache, { Context, Writer } from "mustache";
 import path from "path";
-import * as fs from "fs-extra";
+import semver from "semver";
+import { SampleConfig, sampleProvider } from "../../common/samples";
+import templateConfig from "../../common/templates-config.json";
+import { deepCopy } from "../../common/tools";
+import { InvalidInputError } from "../../core/error";
+import { AccessGithubError, ReadFileError } from "../../error/common";
+import { ProgrammingLanguage } from "../../question";
 import {
   defaultTimeoutInMs,
   defaultTryLimits,
   oldPlaceholderDelimiters,
   placeholderDelimiters,
-  templateFileExt,
   sampleConcurrencyLimits,
   sampleDefaultRetryLimits,
+  templateFileExt,
 } from "./constant";
-import { SampleConfig, sampleProvider } from "../../common/samples";
-import AdmZip from "adm-zip";
-import axios, { AxiosResponse, CancelToken } from "axios";
-import templateConfig from "../../common/templates-config.json";
-import semver from "semver";
-import { deepCopy } from "../../common/tools";
-import { InvalidInputError } from "../../core/error";
-import { ProgrammingLanguage } from "../../question";
-import { AxiosError } from "axios";
 
 async function selectTemplateTag(getTags: () => Promise<string[]>): Promise<string | undefined> {
   const preRelease = process.env.TEAMSFX_TEMPLATE_PRERELEASE
@@ -397,4 +398,54 @@ export function isApiLimitError(error: Error): boolean {
     [403, 429].includes(error.response.status) &&
     error.response?.headers?.["x-ratelimit-remaining"] === "0"
   );
+}
+
+export async function fetchAndUnzip(
+  component: string,
+  zipUrl: string,
+  targetDir: string,
+  skipRootFolder = true
+): Promise<Result<undefined, FxError>> {
+  let zip: AdmZip;
+  let response: any;
+  try {
+    zip = await fetchZipFromUrl(zipUrl);
+  } catch (e: any) {
+    return err(new AccessGithubError(zipUrl, component, e));
+  }
+  if (!zip) {
+    return err(
+      new AccessGithubError(
+        zipUrl,
+        component,
+        new Error(
+          `Failed to fetch GitHub URL: ${response.status as string} ${
+            response.statusText as string
+          }`
+        )
+      )
+    );
+  }
+  const entries = zip.getEntries();
+  let rootFolderName = "";
+  for (const entry of entries) {
+    const entryName: string = entry.entryName;
+    if (skipRootFolder && !rootFolderName) {
+      rootFolderName = entryName;
+      continue;
+    }
+    const rawEntryData: Buffer = entry.getData();
+    const entryData: string | Buffer = rawEntryData;
+    const targetPath = path.join(targetDir, entryName.replace(rootFolderName, ""));
+    try {
+      if (entry.isDirectory) {
+        await fs.ensureDir(targetPath);
+      } else {
+        await fs.writeFile(targetPath, entryData);
+      }
+    } catch (error: any) {
+      return err(new ReadFileError(error, component));
+    }
+  }
+  return ok(undefined);
 }

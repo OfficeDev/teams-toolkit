@@ -388,6 +388,7 @@ jobs:
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1
 
       - name: Get chromedriver(mac)
+        if: matrix.os == 'macos-latest'
         working-directory: packages/tests/.test-resources
         run: |
           URL="https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/mac-x64/chromedriver-mac-x64.zip"
@@ -395,6 +396,7 @@ jobs:
           curl -o "$OUTPUT_FILE" "$URL"
 
       - name: Get chromedriver(unix)
+        if: matrix.os == 'ubuntu-latest'
         working-directory: packages/tests/.test-resources
         run: |
           URL="https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/linux64/chromedriver-linux64.zip"
@@ -402,6 +404,7 @@ jobs:
           curl -o "$OUTPUT_FILE" "$URL"
 
       - name: Get chromedriver(win)
+        if: matrix.os == 'windows-latest'
         working-directory: packages/tests/.test-resources
         run: |
           $url = "https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/win32/chromedriver-win32.zip"

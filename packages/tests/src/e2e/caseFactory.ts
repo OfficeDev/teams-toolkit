@@ -45,6 +45,7 @@ export abstract class CaseFactory {
     | "spfx"
     | "tab & bot"
   )[] = [];
+  public programmingLanguage?: ProgrammingLanguage;
   public options?: {
     skipProvision?: boolean;
     skipDeploy?: boolean;
@@ -67,6 +68,7 @@ export abstract class CaseFactory {
       | "spfx"
       | "tab & bot"
     )[] = [],
+    programmingLanguage?: ProgrammingLanguage,
     options: {
       skipProvision?: boolean;
       skipDeploy?: boolean;
@@ -79,6 +81,7 @@ export abstract class CaseFactory {
     this.testPlanCaseId = testPlanCaseId;
     this.author = author;
     this.validate = validate;
+    this.programmingLanguage = programmingLanguage;
     this.options = options;
     this.custimized = custimized;
   }
@@ -99,13 +102,14 @@ export abstract class CaseFactory {
     appName: string,
     testFolder: string,
     capability: Capability,
+    programmingLanguage?: ProgrammingLanguage,
     custimized?: Record<string, string>
   ): Promise<void> {
     await Executor.createProject(
       testFolder,
       appName,
       capability,
-      ProgrammingLanguage.TS,
+      programmingLanguage ? programmingLanguage : ProgrammingLanguage.TS,
       custimized
     );
   }
@@ -120,6 +124,7 @@ export abstract class CaseFactory {
       testPlanCaseId,
       author,
       validate,
+      programmingLanguage,
       options,
       custimized,
       onBefore,
@@ -143,7 +148,13 @@ export abstract class CaseFactory {
 
       it(capability, { testPlanCaseId, author }, async function () {
         // create project
-        await onCreate(appName, testFolder, capability, custimized);
+        await onCreate(
+          appName,
+          testFolder,
+          capability,
+          programmingLanguage,
+          custimized
+        );
         expect(fs.pathExistsSync(projectPath)).to.be.true;
 
         await onAfterCreate(projectPath);

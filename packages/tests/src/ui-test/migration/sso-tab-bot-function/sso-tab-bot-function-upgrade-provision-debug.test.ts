@@ -9,10 +9,7 @@ import {
 } from "../../../utils/constants";
 import { it } from "../../../utils/it";
 import { Env } from "../../../utils/env";
-import {
-  validateProactiveMessaging,
-  initPage,
-} from "../../../utils/playwrightOperation";
+import { validateBot, initPage } from "../../../utils/playwrightOperation";
 import { CliHelper } from "../../cliHelper";
 import {
   validateNotification,
@@ -79,10 +76,16 @@ describe("Migration Tests", function () {
       CliHelper.setV3Enable();
 
       // v3 provision
-      await mirgationDebugTestContext.provisionWithCLI("dev", true);
-      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
+      await mirgationDebugTestContext.provisionProject(
+        mirgationDebugTestContext.appName,
+        mirgationDebugTestContext.projectPath
+      );
       // v3 deploy
-      await mirgationDebugTestContext.deployWithCLI("dev");
+      await CLIVersionCheck("V3", mirgationDebugTestContext.projectPath);
+      await mirgationDebugTestContext.deployProject(
+        mirgationDebugTestContext.projectPath,
+        Timeout.botDeploy
+      );
 
       const teamsAppId = await mirgationDebugTestContext.getTeamsAppId("dev");
       // UI verify
@@ -92,7 +95,10 @@ describe("Migration Tests", function () {
         Env.username,
         Env.password
       );
-      await validateProactiveMessaging(page);
+      await validateBot(page, {
+        botCommand: "helloWorld",
+        expected: "Your Hello World Bot is Running",
+      });
     }
   );
 });

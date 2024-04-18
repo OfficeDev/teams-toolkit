@@ -44,6 +44,21 @@ Developing templates is similiar to other packages. Follow the steps below to ge
 By default, fx-core uses local template packages for scaffolding. 
 If you prefer to use the latest stable template packages from GitHub Releases, you can go to [templates-config.json](../packages/fx-core/src/common/templates-config.json), set `useLocalTemplate` to false and build the fx-core to apply the changes.
 
+## How to upgrade teamsapp.yml schema version for all templates?
+
+For example, upgrading teamsapp.yml schema version for all templates to v1.5, you can run following command:
+
+> `npm run upgrade-schema v1.5`
+
+This command finds all teamsapp yaml file, matches the following header and replaces the version in the file.
+
+```
+# yaml-language-server: $schema=https://aka.ms/teams-toolkit/${version}/yaml.schema.json
+# Visit https://aka.ms/teamsfx-v5.0-guide for details on this file
+# Visit https://aka.ms/teamsfx-actions for details on actions
+version: ${version}
+```
+
 ## What is template constraints?
 
 In order to streamline the maintenance process and reduce the risk of errors, it is necessary to address the issue of duplicate content in our templates.

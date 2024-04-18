@@ -22,6 +22,27 @@ import {
 } from "@microsoft/teamsfx-core";
 
 import {
+  CHAT_EXECUTE_COMMAND_ID,
+  CHAT_OPENURL_COMMAND_ID,
+  IsChatParticipantEnabled,
+  chatParticipantId,
+} from "./chat/consts";
+import {
+  officeChatParticipantId,
+  CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
+} from "./officeChat/consts";
+import {
+  officeChatRequestHandler,
+  chatCreateOfficeProjectCommandHandler,
+} from "./officeChat/handlers";
+import followupProvider from "./chat/followupProvider";
+import {
+  chatExecuteCommandHandler,
+  chatRequestHandler,
+  handleFeedback,
+  openUrlCommandHandler,
+} from "./chat/handlers";
+import {
   AadAppTemplateCodeLensProvider,
   ApiPluginCodeLensProvider,
   CopilotPluginCodeLensProvider,
@@ -36,7 +57,10 @@ import commandController from "./commandController";
 import AzureAccountManager from "./commonlib/azureLogin";
 import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
+import { configMgr } from "./config";
+import { CommandKey as CommandKeys } from "./constants";
 import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcomePage";
+import * as copilotChatHandlers from "./copilotChatHandlers";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
 import { TeamsfxDebugProvider } from "./debug/teamsfxDebugProvider";
@@ -47,21 +71,21 @@ import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVaria
 import {
   initializeGlobalVariables,
   isExistingUser,
+  isOfficeAddInProject,
   isSPFxProject,
   isTeamsFxProject,
-  isOfficeAddInProject,
   setUriEventHandler,
   unsetIsTeamsFxProject,
   workspaceUri,
 } from "./globalVariables";
 import * as handlers from "./handlers";
-import * as copilotChatHandlers from "./copilotChatHandlers";
-import * as officeDevHandlers from "./officeDevHandlers";
 import { ManifestTemplateHoverProvider } from "./hoverProvider";
+import * as officeDevHandlers from "./officeDevHandlers";
 import { VsCodeUI } from "./qm/vsc_ui";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryTriggerFrom } from "./telemetry/extTelemetryEvents";
 import accountTreeViewProviderInstance from "./treeview/account/accountTreeViewProvider";
+import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { UriHandler } from "./uriHandler";
 import {
@@ -74,26 +98,6 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
-import { configMgr } from "./config";
-import officeDevTreeViewManager from "./treeview/officeDevTreeViewManager";
-import {
-  CHAT_CREATE_SAMPLE_COMMAND_ID,
-  CHAT_EXECUTE_COMMAND_ID,
-  CHAT_OPENURL_COMMAND_ID,
-  IsChatParticipantEnabled,
-  chatParticipantId,
-} from "./chat/consts";
-import { officeChatParticipantId } from "./officeChat/consts";
-import followupProvider from "./chat/followupProvider";
-import {
-  chatCreateCommandHandler,
-  chatExecuteCommandHandler,
-  chatRequestHandler,
-  openUrlCommandHandler,
-  handleFeedback,
-} from "./chat/handlers";
-import { officeChatRequestHandler } from "./officeChat/handlers";
-import { CommandKey as CommandKeys } from "./constants";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -348,6 +352,12 @@ function registerInternalCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(showOutputChannel);
 
+  const createSampleCmd = vscode.commands.registerCommand(
+    CommandKeys.DownloadSample,
+    (...args: unknown[]) => Correlator.run(handlers.downloadSampleApp, ...args)
+  );
+  context.subscriptions.push(createSampleCmd);
+
   // Register backend extensions install command
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
     "fx-extension.backend-extensions-install",
@@ -422,7 +432,6 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     participant,
-    vscode.commands.registerCommand(CHAT_CREATE_SAMPLE_COMMAND_ID, chatCreateCommandHandler),
     vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler),
     vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
   );
@@ -450,9 +459,11 @@ function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
     participant,
     vscode.commands.registerCommand("fx-extension.openOfficeDevDocument", (...args) =>
       Correlator.run(officeDevHandlers.openDocumentHandler, args)
+    ),
+    vscode.commands.registerCommand(
+      CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
+      chatCreateOfficeProjectCommandHandler
     )
-    // vscode.commands.registerCommand(CHAT_EXECUTE_COMMAND_ID, chatExecuteCommandHandler)
-    // vscode.commands.registerCommand(CHAT_OPENURL_COMMAND_ID, openUrlCommandHandler)
   );
 }
 

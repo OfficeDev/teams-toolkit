@@ -3,10 +3,10 @@ import { Action } from '../common/Action';
 import { context } from '@actions/github';
 import { getRequiredInput, safeLog } from '../common/utils';
 import { Octokit as Kit } from '@octokit/rest';
+import { AzureCliCredential } from "@azure/identity";
 import { DevopsClient } from './azdo';
 
 const token = getRequiredInput('token');
-const devopsToken = getRequiredInput('devops-token');
 const org = getRequiredInput('devops-org');
 const projectId = getRequiredInput('devops-projectId');
 const owner = context.repo.owner;
@@ -37,8 +37,11 @@ class CreateMilestone extends Action {
 	}
 
 	private async createClient() {
+		let credential = new AzureCliCredential();
+		const devopsToken = await credential.getToken("https://app.vssps.visualstudio.com/.default");
+
 		let client = new DevopsClient(
-			devopsToken,
+			devopsToken.token,
 			org,
 			projectId,
 		);

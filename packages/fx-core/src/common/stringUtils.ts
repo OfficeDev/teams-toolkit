@@ -107,9 +107,9 @@ export function maskSecret(
       output += SECRET_REPLACE;
     }
   });
-  for (const token of tokens) {
-    console.log(token);
-  }
+  // for (const token of tokens) {
+  //   console.log(token);
+  // }
   return output;
 }
 

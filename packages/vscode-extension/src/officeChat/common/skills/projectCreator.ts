@@ -5,7 +5,7 @@ import { ChatResponseStream, LanguageModelChatAssistantMessage, CancellationToke
 import { ISkill } from "./iSkill";
 import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
-import { CHAT_CREATE_SAMPLE_COMMAND_ID } from "../../../chat/consts";
+import { CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID } from "../../consts";
 import { localize } from "../../../utils/localizeUtils";
 import { showOfficeTemplateFileTree } from "../../commands/create/helper";
 
@@ -49,7 +49,7 @@ export class projectCreator implements ISkill {
     );
     const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
     response.button({
-      command: CHAT_CREATE_SAMPLE_COMMAND_ID,
+      command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
       arguments: [rootFolder],
       title: sampleTitle,
     });

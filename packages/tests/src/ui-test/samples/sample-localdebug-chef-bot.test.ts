@@ -58,7 +58,7 @@ new ChefBotTestCase(
   "local",
   [LocalDebugTaskLabel.StartLocalTunnel, LocalDebugTaskLabel.StartBotApp],
   {
-    repoPath: "./resource/js/samples",
+    repoPath: "./resource/js/samples/04.ai-apps",
     testRootFolder: path.resolve(os.homedir(), "resource"),
   }
 ).test();

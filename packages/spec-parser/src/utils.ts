@@ -3,21 +3,10 @@
 "use strict";
 
 import { OpenAPIV3 } from "openapi-types";
-import SwaggerParser from "@apidevtools/swagger-parser";
 import { ConstantString } from "./constants";
-import {
-  APIMap,
-  AuthInfo,
-  ErrorResult,
-  ErrorType,
-  ParseOptions,
-  ProjectType,
-  ValidateResult,
-  ValidationStatus,
-  WarningResult,
-  WarningType,
-} from "./interfaces";
+import { AuthInfo, ErrorResult, ErrorType, ParseOptions } from "./interfaces";
 import { IMessagingExtensionCommand, IParameter } from "@microsoft/teams-manifest";
+import { SpecParserError } from "./specParserError";
 
 export class Utils {
   static hasNestedObjectInSchema(schema: OpenAPIV3.SchemaObject): boolean {
@@ -82,6 +71,32 @@ export class Utils {
     result.sort((a, b) => a[0].name.localeCompare(b[0].name));
 
     return result;
+  }
+
+  static getAuthInfo(spec: OpenAPIV3.Document): AuthInfo | undefined {
+    let authInfo: AuthInfo | undefined = undefined;
+
+    for (const url in spec.paths) {
+      for (const method in spec.paths[url]) {
+        const operation = (spec.paths[url] as any)[method] as OpenAPIV3.OperationObject;
+
+        const authArray = Utils.getAuthArray(operation.security, spec);
+
+        if (authArray && authArray.length > 0) {
+          const currentAuth = authArray[0][0];
+          if (!authInfo) {
+            authInfo = authArray[0][0];
+          } else if (authInfo.name !== currentAuth.name) {
+            throw new SpecParserError(
+              ConstantString.MultipleAuthNotSupported,
+              ErrorType.MultipleAuthNotSupported
+            );
+          }
+        }
+      }
+    }
+
+    return authInfo;
   }
 
   static updateFirstLetter(str: string): string {

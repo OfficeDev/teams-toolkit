@@ -1,7 +1,7 @@
 const { readFileSync, lstatSync, existsSync } = require("node:fs");
 const path = require("path");
 const utils = require("./utils");
-const { Ext, Path, RegExp } = require("./constants");
+const { Ext, Path, RegExps } = require("./constants");
 const yaml = require("js-yaml");
 const os = require("os");
 const { exit } = require("node:process");
@@ -17,6 +17,7 @@ const Command = {
   APPLY: "apply",
   VERIFY: "verify",
   INIT: "init",
+  UPGRADE: "upgrade-schema",
 };
 
 // The constraints are defined in mustache files.
@@ -98,8 +99,8 @@ function addLifecycle(header, actions) {
     const actionTemplate = readFileSync(actionPath, "utf8");
 
     let variables = {};
-    actionTemplate.match(RegExp.AllPlaceholders)?.map((match) => {
-      const variableName = match.replace(RegExp.AllMustacheDelimiters, "");
+    actionTemplate.match(RegExps.AllPlaceholders)?.map((match) => {
+      const variableName = match.replace(RegExps.AllMustacheDelimiters, "");
       if (isMustacheSection(match) && typeof variables[variableName] !== "string") {
         variables[variableName] = JSON.stringify(action).includes(variableName);
         return;
@@ -175,10 +176,11 @@ function solveMustache(mustachePaths) {
 }
 
 class YamlSolver {
-  constructor({ command, constraintsPath, solutionsPath }) {
+  constructor({ command, constraintsPath, solutionsPath, schemaVersion }) {
     this.command = command;
     this.mustachePaths = constraintsPath;
     this.ymlPaths = solutionsPath;
+    this.schemaVersion = schemaVersion;
   }
 
   solve() {
@@ -191,6 +193,9 @@ class YamlSolver {
         break;
       case Command.INIT:
         this.init();
+        break;
+      case Command.UPGRADE:
+        this.upgrade();
         break;
     }
   }
@@ -242,6 +247,18 @@ class YamlSolver {
       utils.writeFileSafe(mustachePath, constraint);
     });
   }
+
+  upgrade() {
+    this.ymlPaths.map((file) => {
+      const ymlData = readFileSync(file, "utf8");
+      // match `# yaml-language-server: $schema=https://aka.ms/teams-toolkit/1.0.0/yaml.schema.json
+      const newContent = ymlData.replace(
+        RegExps.SchemaVersion,
+        RegExps.SchemaVersionReplacement(this.schemaVersion)
+      );
+      utils.writeFileSafe(file, newContent);
+    });
+  }
 }
 
 function validateMustachePath(mustachePath) {
@@ -276,6 +293,16 @@ function parseInput() {
     return {
       command,
       solutionsPath: utils.filterYmlFiles(path.resolve(process.argv[3])),
+    };
+  }
+  if (command === Command.UPGRADE) {
+    if (!process.argv[3]) {
+      throw new Error("please input schema version");
+    }
+    return {
+      command,
+      solutionsPath: utils.filterYmlFiles(Path.Solution),
+      schemaVersion: process.argv[3],
     };
   }
   return {

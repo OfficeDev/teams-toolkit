@@ -856,7 +856,7 @@
   "driver.oauth.description.create": "Create an Oauth registration on Developer Portal for authentication in Open API spec.",
   "driver.oauth.title.create": "Creating Oauth registration...",
   "driver.oauth.log.skipCreateOauth": "Environment variable %s exists. Skip creating API key.",
-  "driver.oauth.log.oauthNotFound": "Environment variable %s exists but failed to retrieve Oauth registration from Developer Portal. Check manually if it exists.",
+  "driver.oauth.log.oauthNotFound": "Environment variable %s exists but unable to retrieve Oauth registration from Developer Portal. Check manually if it exists.",
   "driver.oauth.error.nameTooLong": "The name for Oauth is too long. The maximum length is 128.",
   "driver.oauth.log.successCreateOauth": "Oauth registration creted successfully with id %s!",
   "driver.oauth.error.domainInvalid": "Domain is invalid. Max %d domain per Oauth registration.",

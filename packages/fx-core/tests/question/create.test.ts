@@ -105,6 +105,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
+        [FeatureFlagName.ChatParticipant]: "false",
         [FeatureFlagName.OfficeXMLAddin]: "false",
       });
     });
@@ -3130,6 +3131,49 @@ describe("scaffold question", () => {
     });
   });
 
+  describe("createProjectQuestionNode if chatParticipant is enabled", async () => {
+    const ui = new MockUserInteraction();
+    let mockedEnvRestore: RestoreFn = () => {};
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "false",
+        [FeatureFlagName.SampleConfigBranch]: "dev",
+        [FeatureFlagName.ChatParticipant]: "true",
+      });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+
+    it("chat with Copilot Chat", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 6);
+          return ok({ type: "success", result: ProjectTypeOptions.startWithGithubCopilot().id });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [QuestionNames.ProjectType]);
+    });
+  });
   describe("getLanguageOptions", () => {
     let mockedEnvRestore: RestoreFn = () => {};
 
@@ -3479,6 +3523,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "true",
         [FeatureFlagName.ApiCopilotPlugin]: "false",
+        [FeatureFlagName.ChatParticipant]: "false",
       });
     });
 

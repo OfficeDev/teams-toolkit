@@ -149,12 +149,14 @@ export abstract class Validator {
 
     const { json, multipleMediaType } = Utils.getResponseJson(operationObject);
 
-    // only support response body only contains “application/json” content type
-    if (multipleMediaType) {
-      result.reason.push(ErrorType.ResponseContainMultipleMediaTypes);
-    } else if (Object.keys(json).length === 0) {
-      // response body should not be empty
-      result.reason.push(ErrorType.ResponseJsonIsEmpty);
+    if (this.options.projectType === ProjectType.SME) {
+      // only support response body only contains “application/json” content type
+      if (multipleMediaType) {
+        result.reason.push(ErrorType.ResponseContainMultipleMediaTypes);
+      } else if (Object.keys(json).length === 0) {
+        // response body should not be empty
+        result.reason.push(ErrorType.ResponseJsonIsEmpty);
+      }
     }
 
     return result;

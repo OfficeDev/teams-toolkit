@@ -45,6 +45,7 @@ import { WrappedAxiosClient } from "../../../../common/wrappedAxiosClient";
 import { AsyncAppValidationResponse } from "../interfaces/AsyncAppValidationResponse";
 import { AsyncAppValidationResultsResponse } from "../interfaces/AsyncAppValidationResultsResponse";
 import { AsyncAppValidationDetailsResponse } from "../interfaces/AsyncAppValidationDetailsResponse";
+import { OauthRegistration } from "../interfaces/OauthRegistration";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -836,6 +837,55 @@ export namespace AppStudioClient {
       return response?.data;
     } catch (e) {
       const error = wrapException(e, APP_STUDIO_API_NAMES.UPDATE_API_KEY);
+      throw error;
+    }
+  }
+
+  export async function getOauthRegistrationById(
+    appStudioToken: string,
+    oauthRegistrationId: string
+  ): Promise<OauthRegistration> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/v1.0/oAuthConfigurations/${oauthRegistrationId}`)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.GET_OAUTH);
+      throw error;
+    }
+  }
+
+  export async function createOauthRegistration(
+    appStudioToken: string,
+    oauthRegistration: OauthRegistration
+  ): Promise<OauthRegistration> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.post("/api/v1.0/oAuthConfigurations", oauthRegistration)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.CREATE_OAUTH);
+      throw error;
+    }
+  }
+
+  export async function updateOauthRegistration(
+    appStudioToken: string,
+    oauthRegistration: OauthRegistration,
+    oauthRegistrationId: string
+  ): Promise<OauthRegistration> {
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.patch(`/api/v1.0/oAuthConfigurations/${oauthRegistrationId}`, oauthRegistration)
+      );
+      return response?.data;
+    } catch (e) {
+      const error = wrapException(e, APP_STUDIO_API_NAMES.UPDATE_OAUTH);
       throw error;
     }
   }

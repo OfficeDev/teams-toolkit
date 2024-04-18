@@ -166,6 +166,7 @@ export interface Warning {
 export interface CreateProjectResult {
   projectPath: string;
   warnings?: Warning[];
+  shouldInvokeTeamsAgent?: boolean;
 }
 
 export interface TeamsAppInputs extends InputsWithProjectPath {

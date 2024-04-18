@@ -63,6 +63,7 @@ export enum TemplateProjectFolder {
   HelloWorldTabBackEnd = "hello-world-tab-with-backend",
   ContactExporter = "graph-toolkit-contact-exporter",
   HelloWorldBotSSO = "bot-sso",
+  BotSSODocker = "bot-sso-docker",
   TodoListSpfx = "todo-list-SPFx",
   MyFirstMetting = "hello-world-in-meeting",
   TodoListM365 = "todo-list-with-Azure-backend-M365",
@@ -82,7 +83,7 @@ export enum TemplateProjectFolder {
   OutlookTab = "hello-world-teams-tab-and-outlook-add-in",
   AssistDashboard = "developer-assist-dashboard",
   DiceRoller = "live-share-dice-roller",
-  ChefBot = "04.ai.a.teamsChefBot",
+  ChefBot = "a.teamsChefBot",
   GraphConnectorBot = "graph-connector-bot",
   SpfxProductivity = "spfx-productivity-dashboard",
   RetailDashboard = "react-retail-dashboard",
@@ -160,6 +161,7 @@ export enum Capability {
   Tab = "tab",
   // v3 only
   AiBot = "custom-copilot-basic",
+  RAG = "custom-copilot-rag",
   TaskPane = "taskpane",
 }
 

@@ -146,6 +146,7 @@ export class FeatureFlags {
   static readonly DevTunnelTest = "TEAMSFX_DEV_TUNNEL_TEST";
   static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly DevelopCopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
+  static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting
@@ -316,12 +317,16 @@ export function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Notification };
     case TelemetryTriggerFrom.WalkThrough:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.WalkThrough };
+    case TelemetryTriggerFrom.CopilotChat:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat };
     case TelemetryTriggerFrom.Auto:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Auto };
     case TelemetryTriggerFrom.ExternalUrl:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.ExternalUrl };
     case TelemetryTriggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Other };
+    case TelemetryTriggerFrom.CreateAppQuestionFlow:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CreateAppQuestionFlow };
     default:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Unknow };
   }

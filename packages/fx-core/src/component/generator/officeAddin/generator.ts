@@ -26,16 +26,19 @@ import { assembleError } from "../../../error";
 import {
   CapabilityOptions,
   OfficeAddinHostOptions,
+  ProgrammingLanguage,
   ProjectTypeOptions,
   getOfficeAddinFramework,
 } from "../../../question/create";
 import { QuestionNames } from "../../../question/questionNames";
-import { ActionExecutionMW } from "../../middleware/actionExecutionMW";
+import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { Generator } from "../generator";
 import { getOfficeAddinTemplateConfig } from "../officeXMLAddin/projectConfig";
 import { HelperMethods } from "./helperMethods";
 import { toLower } from "lodash";
 import { convertToLangKey } from "../utils";
+import { DefaultTemplateGenerator } from "../templates/templateGenerator";
+import { TemplateInfo } from "../templates/templateInfo";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -217,4 +220,41 @@ export async function getHost(addinManifestPath: string): Promise<OfficeHost> {
       break;
   }
   return host;
+}
+
+export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
+  componentName = "office-addin-generator";
+
+  // activation condition
+  public activate(context: Context, inputs: Inputs): boolean {
+    const projectType = inputs[QuestionNames.ProjectType];
+    return ProjectTypeOptions.officeAddinAllIds().includes(projectType);
+  }
+
+  public async getTemplateInfos(
+    context: Context,
+    inputs: Inputs,
+    actionContext?: ActionContext
+  ): Promise<Result<TemplateInfo[], FxError>> {
+    const projectType = inputs[QuestionNames.ProjectType];
+    const tplName =
+      projectType === ProjectTypeOptions.officeAddin().id ? templateNameForWXPO : templateName;
+    let lang = toLower(inputs[QuestionNames.ProgrammingLanguage]) as ProgrammingLanguage;
+    lang =
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.outlookAddinImport().id ||
+      inputs[QuestionNames.Capabilities] === CapabilityOptions.officeAddinImport().id
+        ? ProgrammingLanguage.TS
+        : lang;
+    const replaceMap = {};
+    return Promise.resolve(ok([{ templateName: tplName, language: lang, replaceMap }]));
+  }
+
+  public async post(
+    context: Context,
+    inputs: Inputs,
+    destinationPath: string,
+    actionContext?: ActionContext
+  ): Promise<Result<undefined, FxError>> {
+    return await OfficeAddinGenerator.doScaffolding(context, inputs, destinationPath);
+  }
 }

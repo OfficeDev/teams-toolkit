@@ -24,7 +24,10 @@ import {
   FunctionObject,
   FunctionParameters,
   FunctionParameter,
+  AuthObject,
 } from "@microsoft/teams-manifest";
+import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
+import { wrapResponseSemantics } from "./adaptiveCardWrapper";
 
 export class ManifestUpdater {
   static async updateManifestWithAiPlugin(
@@ -32,7 +35,8 @@ export class ManifestUpdater {
     outputSpecPath: string,
     apiPluginFilePath: string,
     spec: OpenAPIV3.Document,
-    options: ParseOptions
+    options: ParseOptions,
+    authInfo?: AuthInfo
   ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
@@ -53,6 +57,7 @@ export class ManifestUpdater {
       specRelativePath,
       apiPluginFilePath,
       appName,
+      authInfo,
       options
     );
 
@@ -98,6 +103,7 @@ export class ManifestUpdater {
     specRelativePath: string,
     apiPluginFilePath: string,
     appName: string,
+    authInfo: AuthInfo | undefined,
     options: ParseOptions
   ): Promise<PluginManifestSchema> {
     const functions: FunctionObject[] = [];
@@ -105,6 +111,24 @@ export class ManifestUpdater {
     const conversationStarters: string[] = [];
 
     const paths = spec.paths;
+
+    const pluginAuthObj: AuthObject = {
+      type: "None",
+    };
+
+    if (authInfo) {
+      if (Utils.isOAuthWithAuthCodeFlow(authInfo.authScheme)) {
+        pluginAuthObj.type = "OAuthPluginVault";
+      } else if (Utils.isBearerTokenAuth(authInfo.authScheme)) {
+        pluginAuthObj.type = "ApiKeyPluginVault";
+      }
+
+      if (pluginAuthObj.type !== "None") {
+        pluginAuthObj.reference_id = `${Utils.getSafeRegistrationIdEnvName(
+          authInfo.name
+        )}_REGISTRATION_ID`;
+      }
+    }
 
     for (const pathUrl in paths) {
       const pathItem = paths[pathUrl];
@@ -183,6 +207,14 @@ export class ManifestUpdater {
                 parameters: parameters,
               };
 
+              if (options.allowResponseSemantics) {
+                const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+                const responseSemantic = wrapResponseSemantics(card, jsonPath);
+                funcObj.capabilities = {
+                  response_semantics: responseSemantic,
+                };
+              }
+
               functions.push(funcObj);
               functionNames.push(operationId);
               if (description) {
@@ -199,9 +231,10 @@ export class ManifestUpdater {
       apiPlugin = await fs.readJSON(apiPluginFilePath);
     } else {
       apiPlugin = {
-        schema_version: "v2",
+        schema_version: "v2.1",
         name_for_human: "",
         description_for_human: "",
+        namespace: "",
         functions: [],
         runtimes: [],
       };
@@ -219,13 +252,16 @@ export class ManifestUpdater {
     }
 
     apiPlugin.runtimes = apiPlugin.runtimes || [];
-    const index = apiPlugin.runtimes.findIndex((runtime) => runtime.spec.url === specRelativePath);
+    const index = apiPlugin.runtimes.findIndex(
+      (runtime) =>
+        runtime.spec.url === specRelativePath &&
+        runtime.type === "OpenApi" &&
+        (runtime.auth?.type ?? "None") === pluginAuthObj.type
+    );
     if (index === -1) {
       apiPlugin.runtimes.push({
         type: "OpenApi",
-        auth: {
-          type: "none",
-        },
+        auth: pluginAuthObj,
         spec: {
           url: specRelativePath,
         },
@@ -237,6 +273,10 @@ export class ManifestUpdater {
 
     if (!apiPlugin.name_for_human) {
       apiPlugin.name_for_human = appName;
+    }
+
+    if (!apiPlugin.namespace) {
+      apiPlugin.namespace = ManifestUpdater.removeAllSpecialCharacters(appName);
     }
 
     if (!apiPlugin.description_for_human) {
@@ -406,5 +446,9 @@ export class ManifestUpdater {
       newStr = newStr.replace(matches[0], "");
     }
     return newStr;
+  }
+
+  static removeAllSpecialCharacters(str: string): string {
+    return str.toLowerCase().replace(/[^a-z0-9]/g, "");
   }
 }

@@ -35,6 +35,7 @@ export { getPermissionMap } from "./component/driver/aad/permissions/index";
 export { AppDefinition } from "./component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 export * from "./component/driver/teamsApp/utils/utils";
 export { manifestUtils } from "./component/driver/teamsApp/utils/ManifestUtils";
+export { pluginManifestUtils } from "./component/driver/teamsApp/utils/PluginManifestUtils";
 export { CollaborationConstants } from "./core/collaborator";
 export { environmentManager } from "./core/environment";
 export { environmentNameManager } from "./core/environmentName";

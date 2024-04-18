@@ -10,6 +10,7 @@ import { CaseFactory } from "../caseFactory";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
+import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 
 class AiBotTestCase extends CaseFactory {
   public override async onAfterCreate(projectPath: string): Promise<void> {
@@ -34,5 +35,6 @@ new AiBotTestCase(
   24808531,
   "qidon@microsoft.com",
   ["bot"],
+  ProgrammingLanguage.TS,
   {}
 ).test();

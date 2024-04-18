@@ -45,6 +45,7 @@ export class SpecParser {
     allowOauth2: false,
     allowMethods: ["get", "post"],
     allowConversationStarters: false,
+    allowResponseSemantics: false,
     projectType: ProjectType.SME,
   };
 

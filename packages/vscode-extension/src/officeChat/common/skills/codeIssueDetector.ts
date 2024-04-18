@@ -21,7 +21,6 @@ import {
 } from "../telemetryConsts";
 import { ChatResponseStream } from "vscode";
 import stringSimilarity = require("string-similarity");
-import { name } from "@azure/msal-node/dist/packageMetadata";
 
 export class DetectionResult {
   public compileErrors: string[] = [];
@@ -922,43 +921,6 @@ ${memberNames.join("\n")}
     return result;
   }
 
-  private findMainFunctionInvoke(): DetectionResult {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-    const result = new DetectionResult();
-    const sourceFile = this.program?.getSourceFile(CodeIssueDetector.SOURCE_FILE_NAME);
-    if (!sourceFile || !this.typeChecker) {
-      return result;
-    }
-    let hasMainCall = false;
-
-    function visit(node: ts.Node) {
-      if (
-        sourceFile &&
-        !hasMainCall &&
-        ts.isCallExpression(node) &&
-        ts.isIdentifier(node.expression) &&
-        node.expression.text === "main"
-      ) {
-        hasMainCall = true;
-        const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-        const warningMsg = `Error: Find entry function 'main' invocation at line ${line}. The entry function 'main' should not be called from the source code.`;
-        const fixSuggestion = `Fix suggestion: Remove the 'main' function invocation from source code, or comment it out.`;
-        const warning = `${warningMsg} ${fixSuggestion}`;
-        result.compileErrors.push(warning);
-      }
-      ts.forEachChild(node, visit);
-    }
-
-    try {
-      visit(sourceFile);
-    } catch (error) {
-      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands, no-secrets/no-secrets
-      console.error("findMainFunctionInvoke:" + (error as Error).toString());
-    }
-    return result;
-  }
-
   private findPropertyAccessAfterCallExpression(host: string): DetectionResult {
     const result = new DetectionResult();
 
@@ -998,8 +960,6 @@ ${memberNames.join("\n")}
   }
 
   private findOfficeAPIObjectPropertyAccess(host: string): DetectionResult {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
     const result = new DetectionResult();
     const sourceFile = this.program?.getSourceFile(CodeIssueDetector.SOURCE_FILE_NAME);
     if (!sourceFile || !this.typeChecker) {

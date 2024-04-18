@@ -24,7 +24,6 @@ import {
   MeasurementSelfReflectionExecutionTimeInTotalSec,
 } from "../telemetryConsts";
 import { customFunctionSystemPrompt, excelSystemPrompt } from "../../officePrompts";
-import { writeLogToFile } from "../utils";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -67,8 +66,8 @@ export class CodeIssueCorrector implements ISkill {
     );
 
     const model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4" = "copilot-gpt-3.5-turbo";
-    let maxRetryCount = 1;
-    let issueTolerance = 10;
+    let maxRetryCount: number;
+    let issueTolerance: number;
 
     if (spec.appendix.complexity < 25) {
       maxRetryCount = 3;
@@ -356,8 +355,6 @@ Let's think step by step.
     currentResult: DetectionResult
   ): { terminate: boolean; suggestion: string } {
     const codeLengthDelta: number = currentCodeStr.length - baselineCodeStr.length;
-    const runtimeErrorDelta: number =
-      currentResult.runtimeErrors.length - baselineResult.runtimeErrors.length;
     const compileErrorDelta: number =
       currentResult.compileErrors.length - baselineResult.compileErrors.length;
 

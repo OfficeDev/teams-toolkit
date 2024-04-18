@@ -4,7 +4,6 @@
 import {
   CancellationToken,
   ChatResponseStream,
-  LanguageModelChatAssistantMessage,
   LanguageModelChatMessage,
   LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
@@ -223,12 +222,6 @@ export class CodeGenerator implements ISkill {
       customFunctions: boolean;
       complexity: number;
       data: string[];
-    } = {
-      host: "",
-      shouldContinue: false,
-      customFunctions: false,
-      complexity: 0,
-      data: [],
     };
 
     try {

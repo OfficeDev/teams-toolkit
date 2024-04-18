@@ -7,7 +7,9 @@ import * as fs from "fs-extra";
 export async function getWholeStatus(folder?: string): Promise<WholeStatus> {
   return Status.getWholeStatus(folder).then(async (status) => {
     if (status.projectOpened) {
-      status.projectOpened.nodeModulesExist = await fs.pathExists(`${folder}/node_modules`);
+      if (folder !== undefined) {
+        status.projectOpened.nodeModulesExist = await fs.pathExists(`${folder}/node_modules`);
+      }
     }
     return status;
   });

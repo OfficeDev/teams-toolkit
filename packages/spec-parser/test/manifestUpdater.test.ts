@@ -794,6 +794,156 @@ describe("updateManifestWithAiPlugin", () => {
     });
   });
 
+  it("should update apiPlugin file with complex schema successfully", async () => {
+    const spec: any = {
+      openapi: "3.0.2",
+      info: {
+        title: "My API",
+        description: "My API description",
+      },
+      servers: [
+        {
+          url: "/v3",
+        },
+      ],
+      paths: {
+        "/pets": {
+          post: {
+            operationId: "createPet",
+            summary: "Create a pet",
+            description: "Create a new pet in the store",
+            requestBody: {
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    required: ["name"],
+                    properties: {
+                      name: {
+                        type: "string",
+                        description: "Name of the pet",
+                      },
+                      age: {
+                        type: "string",
+                        description: "Date time of the pet",
+                        format: "date-time",
+                      },
+                      status: {
+                        type: "string",
+                        description: "Status of the pet",
+                        enum: ["available", "pending", "sold"],
+                      },
+                      arrayProp: {
+                        type: "array",
+                        items: {
+                          type: "string",
+                          description: "Prop of the pet",
+                          format: "date-time",
+                          default: "2021-01-01T00:00:00Z",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const manifestPath = "/path/to/your/manifest.json";
+    const outputSpecPath = "/path/to/your/spec/outputSpec.yaml";
+    const pluginFilePath = "/path/to/your/ai-plugin.json";
+
+    const originalManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "Original Short Description", full: "Original Full Description" },
+    };
+    const expectedManifest = {
+      name: { short: "Original Name", full: "Original Full Name" },
+      description: { short: "My API", full: "My API description" },
+      plugins: [
+        {
+          file: "ai-plugin.json",
+          id: "plugin_1",
+        },
+      ],
+    };
+
+    const expectedPlugins: PluginManifestSchema = {
+      schema_version: "v2.1",
+      name_for_human: "Original Name",
+      namespace: "originalname",
+      description_for_human: "My API description",
+      functions: [
+        {
+          name: "createPet",
+          description: "Create a new pet in the store",
+          parameters: {
+            type: "object",
+            required: ["name"],
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the pet",
+              },
+              status: {
+                type: "string",
+                description: "Status of the pet",
+                enum: ["available", "pending", "sold"],
+              },
+              age: {
+                type: "string",
+                description: "Date time of the pet",
+              },
+              arrayProp: {
+                type: "array",
+                items: {
+                  type: "string",
+                  description: "Prop of the pet",
+                  default: "2021-01-01T00:00:00Z",
+                },
+              },
+            },
+          },
+        },
+      ],
+      runtimes: [
+        {
+          type: "OpenApi",
+          auth: {
+            type: "None",
+          },
+          spec: {
+            url: "spec/outputSpec.yaml",
+          },
+          run_for_functions: ["createPet"],
+        },
+      ],
+    };
+    sinon.stub(fs, "readJSON").resolves(originalManifest);
+    sinon
+      .stub(fs, "pathExists")
+      .withArgs(manifestPath)
+      .resolves(true)
+      .withArgs(pluginFilePath)
+      .resolves(false);
+
+    const options: ParseOptions = {
+      allowMethods: ["get", "post"],
+    };
+    const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(
+      manifestPath,
+      outputSpecPath,
+      pluginFilePath,
+      spec,
+      options
+    );
+
+    expect(manifest).to.deep.equal(expectedManifest);
+    expect(apiPlugin).to.deep.equal(expectedPlugins);
+  });
+
   it("should update the manifest with the correct manifest and apiPlugin files", async () => {
     const spec: any = {
       openapi: "3.0.2",

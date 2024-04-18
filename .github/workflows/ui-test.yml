@@ -382,11 +382,31 @@ jobs:
           ref: main
           path: ./packages/tests/resource
 
-      - name: Get VSCode & chromedriver
+      - name: Get VSCode
         working-directory: packages/tests
         run: |
-          npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
-          npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
+          npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1
+
+      - name: Get chromedriver(mac)
+        working-directory: packages/tests/.test-resources
+        run: |
+          URL="https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/mac-x64/chromedriver-mac-x64.zip"
+          OUTPUT_FILE="chromedriver_mac64.zip"
+          curl -o "$OUTPUT_FILE" "$URL"
+
+      - name: Get chromedriver(unix)
+        working-directory: packages/tests/.test-resources
+        run: |
+          URL="https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/linux64/chromedriver-linux64.zip"
+          OUTPUT_FILE="chromedriver_linux64.zip"
+          curl -o "$OUTPUT_FILE" "$URL"
+
+      - name: Get chromedriver(win)
+        working-directory: packages/tests/.test-resources
+        run: |
+          $url = "https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/win32/chromedriver-win32.zip"
+          $outputFile = "chromedriver_win32.zip"
+          Invoke-WebRequest -Uri $url -OutFile $outputFile
 
       - name: Extract VSCode & chromedriver(unix)
         if: matrix.os == 'ubuntu-latest'
@@ -400,6 +420,7 @@ jobs:
         working-directory: packages/tests
         run: |
           7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'
@@ -445,13 +466,13 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.78.0 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
 
       - name: Run UI Test(mac & win)
         if: matrix.os != 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.78.0 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
 
       - name: Upload test result json file
         uses: actions/upload-artifact@v3

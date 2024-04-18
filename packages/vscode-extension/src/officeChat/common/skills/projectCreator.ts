@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as tmp from "tmp";
-import * as crypto from "crypto";
 import { ChatResponseStream, LanguageModelChatAssistantMessage, CancellationToken } from "vscode";
 import { ISkill } from "./iSkill";
 import { Spec } from "./spec";

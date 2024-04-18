@@ -417,16 +417,14 @@ jobs:
         run: |
           7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
           tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
-          cd .test-resources
-          ls -a
+          mv .test-resources/chromedriver_linux64/chromedriver .test-resources/chromedriver
 
       - name: Extract VSCode & chromedriver(mac)
         if: matrix.os == 'macos-latest' 
         working-directory: packages/tests
         run: |
           7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
-          cd .test-resources
-          ls -a
+          mv .test-resources/chromedriver_mac64/chromedriver .test-resources/chromedriver
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'
@@ -434,8 +432,8 @@ jobs:
         run: |
           7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
           7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
-          cd .test-resources
-          ls
+          Move-Item .\test-resources\chromedriver_win32\chromedriver .\test-resources\chromedriver
+
 
       - name: M365 Login
         working-directory: packages/tests

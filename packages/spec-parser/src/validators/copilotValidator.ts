@@ -76,10 +76,6 @@ export class CopilotValidator extends Validator {
     const requestBody = operationObject.requestBody as OpenAPIV3.RequestBodyObject;
     const requestJsonBody = requestBody?.content["application/json"];
 
-    if (Utils.containMultipleMediaTypes(requestBody)) {
-      result.reason.push(ErrorType.PostBodyContainMultipleMediaTypes);
-    }
-
     if (requestJsonBody) {
       const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
 

@@ -2169,6 +2169,95 @@ describe("Validator", () => {
       assert.strictEqual(isValid, true);
     });
 
+    it("should return true if request body/response body contains multiple media types", () => {
+      const method = "POST";
+      const path = "/users";
+      const spec = {
+        servers: [
+          {
+            url: "https://example.com",
+          },
+        ],
+        paths: {
+          "/users": {
+            post: {
+              parameters: [
+                {
+                  in: "query",
+                  required: true,
+                  schema: { type: "string" },
+                },
+              ],
+              requestBody: {
+                content: {
+                  "application/json": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                  "application/xml": {
+                    schema: {
+                      type: "object",
+                      required: ["name"],
+                      properties: {
+                        name: {
+                          type: "string",
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                    "application/xml": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+
+      const options: ParseOptions = {
+        allowMissingId: true,
+        allowAPIKeyAuth: false,
+        allowMultipleParameters: false,
+        allowOauth2: false,
+        projectType: ProjectType.Copilot,
+        allowMethods: ["get", "post"],
+      };
+      const validator = ValidatorFactory.create(spec as any, options);
+      const { isValid } = validator.validateAPI(method, path);
+      assert.strictEqual(isValid, true);
+    });
+
     it("should return true if parameter is in header and required for copilot", () => {
       const method = "GET";
       const path = "/users";

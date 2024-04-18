@@ -394,7 +394,6 @@ jobs:
           URL="https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/mac-x64/chromedriver-mac-x64.zip"
           OUTPUT_FILE="chromedriver_mac64.zip"
           curl -o "$OUTPUT_FILE" "$URL"
-          ls -a
 
       - name: Get chromedriver(unix)
         if: matrix.os == 'ubuntu-latest'
@@ -403,7 +402,6 @@ jobs:
           URL="https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/linux64/chromedriver-linux64.zip"
           OUTPUT_FILE="chromedriver_linux64.zip"
           curl -o "$OUTPUT_FILE" "$URL"
-          ls -a
 
       - name: Get chromedriver(win)
         if: matrix.os == 'windows-latest'
@@ -412,7 +410,6 @@ jobs:
           $url = "https://storage.googleapis.com/chrome-for-testing-public/120.0.6099.109/win32/chromedriver-win32.zip"
           $outputFile = "chromedriver_win32.zip"
           Invoke-WebRequest -Uri $url -OutFile $outputFile
-          ls 
 
       - name: Extract VSCode & chromedriver(unix)
         if: matrix.os == 'ubuntu-latest'
@@ -420,12 +417,16 @@ jobs:
         run: |
           7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
           tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
+          cd .test-resources
+          ls -a
 
       - name: Extract VSCode & chromedriver(mac)
         if: matrix.os == 'macos-latest' 
         working-directory: packages/tests
         run: |
           7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+          cd .test-resources
+          ls -a
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'
@@ -433,6 +434,8 @@ jobs:
         run: |
           7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
           7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
+          cd .test-resources
+          ls
 
       - name: M365 Login
         working-directory: packages/tests

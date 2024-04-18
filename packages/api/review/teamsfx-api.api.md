@@ -25,6 +25,8 @@ export interface ApiOperation {
     // (undocumented)
     data: ApiKeyAuthInfo;
     // (undocumented)
+    detail?: string;
+    // (undocumented)
     groupName: string;
     // (undocumented)
     id: string;

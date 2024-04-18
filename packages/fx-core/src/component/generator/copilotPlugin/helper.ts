@@ -291,6 +291,13 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
       id: operation.api,
       label: operation.api,
       groupName: arr[0],
+      detail: !operation.auth
+        ? "None auth"
+        : Utils.isBearerTokenAuth(operation.auth.authScheme)
+        ? "API Key Auth"
+        : Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)
+        ? "OAuth"
+        : "",
       data: {
         serverUrl: operation.server,
       },

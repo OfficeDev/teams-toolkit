@@ -60,10 +60,9 @@ describe("App Studio API Test", () => {
     scopes: ["fake-scope"],
     clientId: "fake-client-id",
     clientSecret: "fake-client-secret",
-    tenantId: "fake-tenant-id",
-    authorizationUrl: "fake-authorization-url",
-    tokenEndpoint: "fake-token-endpoint",
-    refreshEndpoint: "fake-refresh-endpoint",
+    authorizationEndpoint: "fake-authorization-url",
+    tokenExchangeEndpoint: "fake-token-endpoint",
+    tokenRefreshEndpoint: "fake-refresh-endpoint",
     applicableToApps: OauthRegistrationAppType.AnyApp,
     targetAudience: OauthRegistrationTargetAudience.AnyTenant,
     manageableByUsers: [
@@ -72,6 +71,7 @@ describe("App Studio API Test", () => {
         accessType: OauthRegistrationUserAccessType.ReadWrite,
       },
     ],
+    targetUrlsShouldStartWith: ["fake-domain"],
   };
 
   beforeEach(() => {

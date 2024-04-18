@@ -527,9 +527,10 @@ ${memberNames.join("\n")}
             const validType = matches[2];
             // return `The given argument is unexpected. It could be used a wrong object, or you should use an alternative format of the object, in order to match the expected type '${validType}'.`;
             suggestion = `Find a property or method of the type '${invalidType}' it server for a similar purpose, and result to the type '${validType}', rewrite the code to use the property or method. Or rewrite the code using an alternative approach to achieve the same purpose.`;
+          } else {
+            suggestion =
+              "Rewrite relevant code, or use an alternative approach to achieve the same purpose.";
           }
-          suggestion =
-            "Rewrite relevant code, or use an alternative approach to achieve the same purpose.";
         }
 
         return suggestion;

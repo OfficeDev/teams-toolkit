@@ -423,7 +423,6 @@ jobs:
         working-directory: packages/tests
         run: |
           7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
-          tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'
@@ -436,12 +435,6 @@ jobs:
         working-directory: packages/tests
         run: | # rm -r -f ~/.fx/account
           npx ts-node src/scripts/m365Login.ts -- '${{ env.M365_ACCOUNT_NAME }}' '${{ env.M365_ACCOUNT_PASSWORD }}'
-
-      - name: Azure Login(win)
-        if: matrix.os == 'windows-latest'
-        working-directory: packages/tests
-        run: |
-          npx ts-node src/scripts/azureLogin.ts -- '${{ env.AZURE_ACCOUNT_NAME }}' '${{ env.AZURE_ACCOUNT_PASSWORD }}'
 
       - name: Build
         working-directory: packages/tests

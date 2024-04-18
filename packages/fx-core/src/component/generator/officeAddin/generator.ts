@@ -141,7 +141,7 @@ export class OfficeAddinGenerator {
 
         // Copy project template files from project repository
         if (projectLink) {
-          await HelperMethods.downloadProjectTemplateZipFile(addinRoot, projectLink);
+          await HelperMethods.fetchAndUnzip("office-addin-generator", projectLink, addinRoot);
           let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
             cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;

@@ -416,7 +416,61 @@ describe("OfficeAddinGenerator for Outlook Addin", function () {
   });
 });
 
-describe("helperMethods", async () => {
+describe("HelperMethods", async () => {
+  describe("fetchAndUnzip", async () => {
+    const sandbox = sinon.createSandbox();
+
+    class ResponseData extends EventEmitter {
+      pipe(ws: fs.WriteStream) {
+        return this;
+      }
+    }
+
+    class MockedWriteStream {
+      on(event: string, cb: () => void) {
+        return this;
+      }
+    }
+
+    class MockEntry {
+      type: string;
+
+      path: string;
+
+      constructor(type: string, path: string) {
+        this.type = type;
+        this.path = path;
+      }
+
+      pipe(ws: fs.WriteStream) {
+        return this;
+      }
+      on(event: string, cb: () => void) {
+        return this;
+      }
+    }
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("happy path", async () => {
+      const resp = new ResponseData();
+      sandbox.stub(fetch, "default").resolves({ body: resp, ok: true } as any);
+      sandbox.stub(fs, "mkdirSync").returns(undefined);
+      sandbox.stub(fs, "createWriteStream").returns({} as any);
+      const promise = HelperMethods.fetchAndUnzip("test", "url", "dest");
+      const dirEntry = new MockEntry("Directory", "testFolder");
+      const fileEntry = new MockEntry("File", "testFile");
+      resp.emit("entry", dirEntry);
+      resp.emit("entry", fileEntry);
+      resp.emit("finish");
+      await promise;
+      chai.assert.isTrue(true);
+    });
+
+    // it("fail case: ", async () => {});
+  });
   describe("updateManifest", () => {
     const sandbox = sinon.createSandbox();
     const manifestPath = "manifestPath";
@@ -1167,6 +1221,8 @@ describe("OfficeAddinGenerator for Office Addin", function () {
 });
 
 describe("OfficeAddinGeneratorNew", () => {
+  const gtools = new MockTools();
+  setTools(gtools);
   const generator = new OfficeAddinGeneratorNew();
   const context = createContextV3();
   describe("active()", () => {

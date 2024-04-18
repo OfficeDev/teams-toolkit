@@ -7,15 +7,66 @@
 import { ManifestUtil, devPreview } from "@microsoft/teamsfx-api";
 import fs from "fs";
 import fse from "fs-extra";
+import fetch from "node-fetch";
 import * as path from "path";
 import * as unzip from "unzipper";
+import { Entry } from "unzipper";
+import { AccessGithubError, ReadFileError, WriteFileError } from "../../../error/common";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import fetch from "node-fetch";
-import { AccessGithubError, ReadFileError } from "../../../error/common";
 
 const zipFile = "project.zip";
 
 export class HelperMethods {
+  static async fetchAndUnzip(
+    component: string,
+    zipUrl: string,
+    targetDir: string,
+    skipRootFolder = true
+  ): Promise<void> {
+    let response: any;
+    try {
+      response = await fetch(zipUrl, { method: "GET" });
+    } catch (e: any) {
+      throw new AccessGithubError(zipUrl, component, e);
+    }
+    if (!response.ok) {
+      throw new AccessGithubError(
+        zipUrl,
+        component,
+        new Error(
+          `Failed to fetch GitHub URL: ${response.status as string} ${
+            response.statusText as string
+          }`
+        )
+      );
+    }
+    const zipStream = response.body;
+    let rootFolderName: string;
+    await new Promise<void>((resolve, reject) => {
+      zipStream
+        .pipe(unzip.Parse())
+        .on("entry", (entry: Entry) => {
+          if (skipRootFolder && !rootFolderName) {
+            rootFolderName = entry.path;
+            return;
+          }
+          const targetPath = path.join(targetDir, entry.path.replace(rootFolderName, ""));
+          console.log(`Extracting 'zip://${entry.path}' to '${targetPath}'`);
+          if (entry.type === "Directory") {
+            fs.mkdirSync(targetPath, { recursive: true });
+          } else {
+            entry
+              .pipe(fs.createWriteStream(targetPath))
+              .on("finish", () => {})
+              .on("error", (err: Error) => {
+                new WriteFileError(err, component);
+              });
+          }
+        })
+        .on("error", (err: Error) => reject(new ReadFileError(err, component)))
+        .on("finish", () => resolve());
+    });
+  }
   static async downloadProjectTemplateZipFile(
     projectFolder: string,
     projectRepo: string

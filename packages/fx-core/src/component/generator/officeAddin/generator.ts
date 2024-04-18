@@ -36,9 +36,10 @@ import { Generator } from "../generator";
 import { getOfficeAddinTemplateConfig } from "../officeXMLAddin/projectConfig";
 import { HelperMethods } from "./helperMethods";
 import { toLower } from "lodash";
-import { convertToLangKey, fetchAndUnzip } from "../utils";
+import { convertToLangKey } from "../utils";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
+import { fetchAndUnzip } from "../../utils";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";

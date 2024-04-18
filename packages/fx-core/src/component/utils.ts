@@ -2,7 +2,16 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { Context, FxError, Inputs, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
+import {
+  Context,
+  FxError,
+  Inputs,
+  Result,
+  TelemetryReporter,
+  UserError,
+  err,
+  ok,
+} from "@microsoft/teamsfx-api";
 import { cloneDeep } from "lodash";
 import { TOOLS } from "../core/globalVars";
 import {
@@ -13,6 +22,11 @@ import {
 } from "./constants";
 import { DriverContext } from "./driver/interface/commonArgs";
 import { getComponent, getComponentByScenario } from "./workflow";
+import AdmZip from "adm-zip";
+import { fetchZipFromUrl } from "./generator/utils";
+import { AccessGithubError, ReadFileError, WriteFileError } from "../error/common";
+import path from "path";
+import fs from "fs-extra";
 
 export function createContextV3(): Context {
   const context: Context = {
@@ -110,4 +124,49 @@ export function sendErrorTelemetryThenReturnError(
 
   reporter?.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   return error;
+}
+
+export async function fetchAndUnzip(
+  component: string,
+  zipUrl: string,
+  targetDir: string,
+  skipRootFolder = true
+): Promise<Result<undefined, FxError>> {
+  let zip: AdmZip;
+  try {
+    zip = await fetchZipFromUrl(zipUrl);
+  } catch (e: any) {
+    return err(new AccessGithubError(zipUrl, component, e));
+  }
+  if (!zip) {
+    return err(
+      new AccessGithubError(
+        zipUrl,
+        component,
+        new Error(`Failed to fetch zip from url: ${zipUrl}, result is undefined.`)
+      )
+    );
+  }
+  const entries = zip.getEntries();
+  let rootFolderName = "";
+  for (const entry of entries) {
+    const entryName: string = entry.entryName;
+    if (skipRootFolder && !rootFolderName) {
+      rootFolderName = entryName;
+      continue;
+    }
+    const rawEntryData: Buffer = entry.getData();
+    const entryData: string | Buffer = rawEntryData;
+    const targetPath = path.join(targetDir, entryName.replace(rootFolderName, ""));
+    try {
+      if (entry.isDirectory) {
+        await fs.ensureDir(targetPath);
+      } else {
+        await fs.writeFile(targetPath, entryData);
+      }
+    } catch (error: any) {
+      return err(new WriteFileError(error, component));
+    }
+  }
+  return ok(undefined);
 }

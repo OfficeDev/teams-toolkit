@@ -88,17 +88,10 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 ## Extend the template
 
 - Follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the template with more AI capabilities.
-- Follow Understand more about [how to add additional APIs](https://aka.ms/teamsfx-rag-bot#add-more-api-for-custom-api-as-data-source).
+- Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#microsoft-365-as-data-source).
 
 ## Additional information and references
 
-- [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
-- [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
-- [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)
-
-## Additional information and references
-
-- [Teams AI library](https://aka.ms/teams-ai-library)
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

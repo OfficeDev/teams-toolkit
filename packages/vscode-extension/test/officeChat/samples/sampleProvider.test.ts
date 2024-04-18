@@ -23,4 +23,20 @@ describe("SampleProvider", () => {
     expect(topKSamples).to.have.lengthOf(k);
     // Add more assertions based on what you expect the topKSamples to be
   });
+
+  it("not valid host", async () => {
+    const k = 2;
+    const scenario = "insert annotation into document";
+    const host = "FakeHost";
+    const topKSamples = await provider.getTopKMostRelevantScenarioSampleCodes(
+      null as any,
+      host,
+      scenario,
+      k
+    );
+    expect(topKSamples).to.exist;
+    expect(topKSamples).to.be.an("array");
+    expect(topKSamples).to.have.lengthOf(0);
+    // Add more assertions based on what you expect the topKSamples to be
+  });
 });

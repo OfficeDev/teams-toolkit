@@ -2347,6 +2347,40 @@ describe("scaffold question", () => {
                 isValid: true,
                 reason: [],
               },
+              {
+                api: "get operation3",
+                server: "https://server",
+                operationId: "getOperation3",
+                isValid: true,
+                reason: [],
+                auth: {
+                  name: "authName",
+                  authScheme: {
+                    type: "oauth2",
+                    flows: {
+                      authorizationCode: {
+                        authorizationUrl: "url",
+                        tokenUrl: "url",
+                        scopes: {},
+                      },
+                    },
+                  },
+                },
+              },
+              {
+                api: "get operation4",
+                server: "https://server",
+                operationId: "getOperation4",
+                isValid: true,
+                reason: [],
+                auth: {
+                  name: "",
+                  authScheme: {
+                    type: "openIdConnect",
+                    openIdConnectUrl: "url",
+                  },
+                },
+              },
             ],
             allAPICount: 2,
             validAPICount: 2,
@@ -2359,6 +2393,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
+              detail: "API key auth",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2368,9 +2403,28 @@ describe("scaffold question", () => {
             {
               id: "get operation2",
               label: "get operation2",
+              detail: "None auth",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
+              },
+            },
+            {
+              id: "get operation3",
+              label: "get operation3",
+              detail: "OAuth",
+              groupName: "GET",
+              data: {
+                serverUrl: "https://server",
+              },
+            },
+            {
+              id: "get operation4",
+              label: "get operation4",
+              detail: "",
+              groupName: "GET",
+              data: {
+                serverUrl: "https://server",
               },
             },
           ]);
@@ -2422,6 +2476,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
+              detail: "API key auth",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2431,6 +2486,7 @@ describe("scaffold question", () => {
             {
               id: "get operation2",
               label: "get operation2",
+              detail: "None auth",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2626,6 +2682,7 @@ describe("scaffold question", () => {
             {
               id: "GET /store/order",
               label: "GET /store/order",
+              detail: "None auth",
               groupName: "GET",
               data: {
                 serverUrl: "https://server2",
@@ -2747,6 +2804,7 @@ describe("scaffold question", () => {
                 serverUrl: "https://server",
               },
               groupName: "GET",
+              detail: "None auth",
               id: "GET /user/{userId}",
               label: "GET /user/{userId}",
             },

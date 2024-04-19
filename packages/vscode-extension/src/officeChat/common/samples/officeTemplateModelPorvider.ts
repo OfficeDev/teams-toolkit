@@ -27,7 +27,7 @@ export class OfficeTemplateModelPorvider {
     return OfficeTemplateModelPorvider.instance;
   }
 
-  private async getSamples(name: WXPAppName): Promise<SampleData[]> {
+  public async getSamples(name: WXPAppName): Promise<SampleData[]> {
     const returnData: SampleData[] = [];
     const fullUrl = sampleDirectoryUrl + name;
     let directoryResponse = null;

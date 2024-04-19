@@ -6,6 +6,7 @@ import { ISkill } from "./iSkill";
 import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
 import { isOutputHarmful } from "../../utils";
+import { localize } from "../../../utils/localizeUtils";
 
 export class Printer implements ISkill {
   name: string | undefined;
@@ -33,19 +34,19 @@ export class Printer implements ISkill {
     spec: Spec
   ): Promise<{ result: ExecutionResultEnum; spec: Spec }> {
     const template = `
-For your question:\n
+${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.intro")}\n
 ${spec.userInput}
 
-Here is a code snippet using Office JavaScript API and TypeScript to help you get started:
+${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.codeIntro")}\n
 \`\`\`typescript
 ${spec.appendix.codeSnippet}
 \`\`\`
 
-The code above powered by AI, so surprises and mistakes are possible. Make sure to verify any generated code or suggestions.
+${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.ending")}\n
 `;
     const isHarmful = await isOutputHarmful(template, token);
     if (isHarmful) {
-      response.markdown("The response is filtered by Responsible AI service.");
+      response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.printer.raiBlock"));
       return { result: ExecutionResultEnum.Failure, spec: spec };
     } else {
       response.markdown(template);

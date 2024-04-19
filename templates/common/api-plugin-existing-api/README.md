@@ -1,11 +1,17 @@
-# Overview of Copilot plugin template
+# Overview of the Copilot Plugin template
 
-## Build a Copilot plugin from OpenAPI description document
+## Build a Copilot Plugin from OpenAPI description document
 
-This app template allows Copilot to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Copilot to:
+With Copilot extensibility, you can augment Copilot for Microsoft 365 with custom skills and organizational knowledge specific to your enterprise and users to enable truly spectacular AI scenarios. For example:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.
+
+When you extend Copilot for Microsoft 365, you maximize the efficiency of your apps and data with AI, by:
+
+- Enriching the data estate of your enterprise with industry-leading AI.
+- Keeping your users in the flow of their work, start to finish.
+- Inheriting world-class security, compliance, and privacy policies.
 
 ## Get started with the template
 
@@ -21,7 +27,7 @@ This app template allows Copilot to interact directly with third-party data, app
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 2. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 3. Create Teams app by clicking `Provision` in "Lifecycle" section.
-4. Select `Preivew in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
+4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
 5. Open the `Copilot` app and send a prompt to trigger your plugin.
 
 ## What's included in the template
@@ -41,3 +47,6 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 ## Addition information and references
 
 - [Extend Microsoft Copilot for Microsoft 365](https://aka.ms/teamsfx-copilot-plugin)
+- [Message extensions for Microsoft Copilot for Microsoft 365](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-message-extension-bot)
+- [Microsoft Graph Connectors for Microsoft Copilot for Microsoft 365](https://learn.microsoft.com/microsoft-365-copilot/extensibility/overview-graph-connector)
+- [Microsoft Copilot for Microsoft 365 extensibility samples](https://learn.microsoft.com/microsoft-365-copilot/extensibility/samples)

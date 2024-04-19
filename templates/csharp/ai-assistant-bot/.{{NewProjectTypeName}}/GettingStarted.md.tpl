@@ -47,25 +47,7 @@ Before running or debugging your bot, follow these steps to setup your own [Open
 
 ## Run the app on other platforms
 
-The unified app manifest for a Teams app supports extending other experiences like Outlook and the Microsoft 365 app. To simplify this with Teams Toolkit, we use Multi-Project Launch Profiles to make other targets available for you to select. To use this feature:
-
-1. Go to Tools -> Options -> Preview Features
-2. Select 'Enable Multi-Project Launch Profiles'
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/enable-multiple-profiles-feature.png)
-
-### Debug bot app in Teams App Test Tool
-1. Fill in both OpenAI API Key and the created Assistant ID into `appsettings.TestTool.json`
-   ```
-   "OpenAI": {
-      "ApiKey": "<your-openai-api-key>",
-      "AssistantId": "<your-openai-assistant-id>"
-   }
-   ```
-2. Select `Teams App Test Tool (browser)` in debug dropdown menu
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/switch-to-test-tool.png)
-3. Press F5, or select Debug > Start Debugging menu in Visual Studio
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
-4. In Teams App Test Tool, type and send anything to your bot to trigger a response
+The Teams app can run in other platforms like Outlook and Microsoft 365 app. See https://aka.ms/vs-ttk-debug-multi-profiles for more details.
 
 ## Extend the AI Assistant Bot template with more AI capabilities
 

@@ -51,16 +51,8 @@ export function enableMETestToolByDefault(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.METestTool);
 }
 
-export function isApiKeyEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.ApiKey);
-}
-
 export function isNewGeneratorEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.NewGenerator);
-}
-
-export function isMultipleParametersEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.MultipleParameters);
 }
 
 export function isOfficeJSONAddinEnabled(): boolean {
@@ -161,12 +153,7 @@ export class FeatureFlags {
   };
   static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
   static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
-  static readonly ApiKey = { name: FeatureFlagName.ApiKey, defaultValue: "false" };
   static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "false" };
-  static readonly MultipleParameters = {
-    name: FeatureFlagName.MultipleParameters,
-    defaultValue: "true",
-  };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
   static readonly TeamsFxRebranding = {
     name: FeatureFlagName.TeamsFxRebranding,

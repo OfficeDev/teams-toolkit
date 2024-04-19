@@ -1764,15 +1764,12 @@ describe("scaffold question", () => {
       });
 
       describe("list operations", async () => {
-        let mockedEnvRestore: RestoreFn = () => {};
+        const mockedEnvRestore: RestoreFn = () => {};
 
         afterEach(() => {
           mockedEnvRestore();
         });
         it("list operations successfully", async () => {
-          mockedEnvRestore = mockedEnv({
-            [FeatureFlagName.ApiKey]: "false",
-          });
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -1806,7 +1803,7 @@ describe("scaffold question", () => {
           assert.isTrue(options[1].id === "operation2");
           assert.equal(
             placeholder,
-            getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+            getLocalizedString("core.createProjectQuestion.apiSpec.operation.apikey.placeholder")
           );
           assert.equal(
             title,
@@ -2125,9 +2122,6 @@ describe("scaffold question", () => {
         });
 
         it(" validate operations with auth successfully", async () => {
-          mockedEnvRestore = mockedEnv({
-            [FeatureFlagName.ApiKey]: "true",
-          });
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,

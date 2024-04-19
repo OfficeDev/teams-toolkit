@@ -425,7 +425,7 @@ export class CreateAppPackageDriver implements StepDriver {
    */
   private async addPluginRelatedFiles(
     zip: AdmZip,
-    pluginFile: string, // relative path to app directory
+    pluginFile: string,
     appDirectory: string,
     context: WrapDriverContext
   ): Promise<Result<undefined, FxError>> {

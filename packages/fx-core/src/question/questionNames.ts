@@ -41,7 +41,8 @@ export enum QuestionNames {
   ApiSpecApiKeyConfirm = "api-key-confirm",
   ApiMEAuth = "api-me-auth",
   OauthClientSecret = "oauth-client-secret",
-  OauthClientSecretConfirm = "oauth-client-secret-confirm",
+  OauthClientId = "oauth-client-id",
+  OauthConfirm = "oauth-confirm",
 
   CustomCopilotRag = "custom-copilot-rag",
   CustomCopilotAssistant = "custom-copilot-agent",

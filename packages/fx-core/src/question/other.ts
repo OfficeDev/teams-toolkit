@@ -995,57 +995,95 @@ export function apiSpecApiKeyQuestion(): IQTreeNode {
   };
 }
 
-export function OauthClientSecretConfirmQestion(): ConfirmQuestion {
+export function oauthQuestion(): IQTreeNode {
   return {
-    name: QuestionNames.OauthClientSecretConfirm,
+    data: { type: "group" },
+    condition: (inputs: Inputs) => {
+      return (
+        inputs.outputEnvVarNames && !process.env[inputs.outputEnvVarNames.get("registrationId")]
+      );
+    },
+    children: [
+      {
+        data: oauthClientIdQuestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientId;
+        },
+      },
+      {
+        data: oauthClientSecretQuestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientSecret;
+        },
+      },
+      {
+        data: oauthConfirmQestion(),
+        condition: (inputs: Inputs) => {
+          return !inputs.clientSecret || !inputs.clientId;
+        },
+      },
+    ],
+  };
+}
+
+function oauthClientIdQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.OauthClientId,
+    cliShortName: "i",
+    title: getLocalizedString("core.createProjectQuestion.OauthClientId"),
+    cliDescription: "Oauth client id for OpenAPI spec.",
+    forgetLastValue: true,
+    additionalValidationOnAccept: {
+      validFunc: (input: string, inputs?: Inputs): string | undefined => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+
+        process.env[QuestionNames.OauthClientId] = input;
+        return;
+      },
+    },
+  };
+}
+
+function oauthConfirmQestion(): ConfirmQuestion {
+  return {
+    name: QuestionNames.OauthConfirm,
     title: getLocalizedString("core.createProjectQuestion.OauthClientSecretConfirm"),
     type: "confirm",
     default: true,
   };
 }
 
-export function oauthClientSecretQuestion(): IQTreeNode {
+function oauthClientSecretQuestion(): TextInputQuestion {
   return {
-    data: {
-      type: "text",
-      name: QuestionNames.OauthClientSecret,
-      cliShortName: "c",
-      title: getLocalizedString("core.createProjectQuestion.OauthClientSecret"),
-      cliDescription: "Oauth client secret for OpenAPI spec.",
-      forgetLastValue: true,
-      validation: {
-        validFunc: (input: string): string | undefined => {
-          const pattern = /^(\w){10,128}/g;
-          const match = pattern.test(input);
+    type: "text",
+    name: QuestionNames.OauthClientSecret,
+    cliShortName: "c",
+    title: getLocalizedString("core.createProjectQuestion.OauthClientSecret"),
+    cliDescription: "Oauth client secret for OpenAPI spec.",
+    forgetLastValue: true,
+    validation: {
+      validFunc: (input: string): string | undefined => {
+        const pattern = /^(\w){10,128}/g;
+        const match = pattern.test(input);
 
-          const result = match
-            ? undefined
-            : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
-          return result;
-        },
-      },
-      additionalValidationOnAccept: {
-        validFunc: (input: string, inputs?: Inputs): string | undefined => {
-          if (!inputs) {
-            throw new Error("inputs is undefined"); // should never happen
-          }
-
-          process.env[QuestionNames.OauthClientSecret] = input;
-          return;
-        },
+        const result = match
+          ? undefined
+          : getLocalizedString("core.createProjectQuestion.invalidApiKey.message");
+        return result;
       },
     },
-    condition: (inputs: Inputs) => {
-      return (
-        inputs.outputEnvVarNames &&
-        !process.env[inputs.outputEnvVarNames.get("registrationId")] &&
-        !inputs.clientSecret
-      );
-    },
-    children: [
-      {
-        data: OauthClientSecretConfirmQestion(),
+    additionalValidationOnAccept: {
+      validFunc: (input: string, inputs?: Inputs): string | undefined => {
+        if (!inputs) {
+          throw new Error("inputs is undefined"); // should never happen
+        }
+
+        process.env[QuestionNames.OauthClientSecret] = input;
+        return;
       },
-    ],
+    },
   };
 }

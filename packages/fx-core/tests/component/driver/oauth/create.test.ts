@@ -133,7 +133,7 @@ describe("CreateOauthDriver", () => {
     }
   });
 
-  it("happy path: read refreshurl from input, clientSecret from env", async () => {
+  it("happy path: read refreshurl from input, client and clientSecret from env", async () => {
     sinon
       .stub(AppStudioClient, "createOauthRegistration")
       .callsFake(async (token, oauthRegistration) => {
@@ -193,13 +193,13 @@ describe("CreateOauthDriver", () => {
 
     envRestore = mockedEnv({
       ["oauth-client-secret"]: "mockedClientSecret",
+      ["oauth-client-id"]: "mockedClientId",
     });
 
     const args: any = {
       name: "test",
       appId: "mockedAppId",
       apiSpecPath: "mockedPath",
-      clientId: "mockedClientId",
       flow: "authorizationCode",
       refreshUrl: "mockedRefreshUrl",
     };

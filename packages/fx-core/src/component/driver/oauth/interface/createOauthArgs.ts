@@ -9,7 +9,7 @@ export interface CreateOauthArgs {
   targetAudience?: string; // What tenant can access the api key. Values can be "HomeTenant" or "AnyTenant". Default is "HomeTenant".
 
   flow: string; // Authentication Flow. Currently only support Authorization Code Flow.
-  clientId: string; // Client id for Oauth
+  clientId?: string; // Client id for Oauth
   clientSecret?: string; // Client secret for Oauth
   refreshUrl?: string; // Refresh url
 }

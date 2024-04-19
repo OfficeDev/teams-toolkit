@@ -78,6 +78,11 @@ export class CreateOauthDriver implements StepDriver {
           );
         }
       } else {
+        const clientId = process.env[QuestionNames.OauthClientId];
+        if (clientId) {
+          args.clientId = clientId;
+        }
+
         const clientSecret = process.env[QuestionNames.OauthClientSecret];
         if (clientSecret) {
           args.clientSecret = clientSecret;

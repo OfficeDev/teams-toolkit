@@ -10,17 +10,7 @@
 
 ## Run the app on other platforms
 
-The unified app manifest for a Teams app supports extending other experiences like Outlook and the Microsoft 365 app. To simplify this with Teams Toolkit, we use Multi-Project Launch Profiles to make other targets available for you to select. To use this feature:
-
-1. Go to Tools -> Options -> Preview Features
-2. Select 'Enable Multi-Project Launch Profiles'
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/enable-multiple-profiles-feature.png)
-
-### Start the app in Outlook
-1. Select `Outlook (browser)` in debug dropdown menu
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/switch-to-outlook.png)
-2. Press F5, or select Debug > Start Debugging menu in Visual Studio
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
+The Teams app can run in other platforms like Outlook and Microsoft 365 app. See https://aka.ms/vs-ttk-debug-multi-profiles for more details.
 
 ## Get more info
 

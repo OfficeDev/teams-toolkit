@@ -35,34 +35,7 @@ The app template is built using the Teams AI library, which helps build AI-based
 
 ## Run the app on other platforms
 
-The unified app manifest for a Teams app supports extending other experiences like Outlook and the Microsoft 365 app. To simplify this with Teams Toolkit, we use Multi-Project Launch Profiles to make other targets available for you to select. To use this feature:
-
-1. Go to Tools -> Options -> Preview Features
-2. Select 'Enable Multi-Project Launch Profiles'
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/enable-multiple-profiles-feature.png)
-
-### Debug bot app in Teams App Test Tool
-
-1. Fill in your OpenAI API Key or Azure OpenAI settings in `appsettings.TestTool.json`
-    ```
-    # If using OpenAI
-    "OpenAI": {
-      "ApiKey": "<your-openai-api-key>"
-    },
-
-    # If using Azure OpenAI
-    "Azure": {
-      "OpenAIApiKey": "<your-azure-openai-api-key>",
-      "OpenAIEndpoint": "<your-azure-openai-endpoint>"
-    }
-    ```
-
-2. If using Azure OpenAI, update "gpt-35-turbo" in `Program.cs` to your own model deployment name
-3. Select `Teams App Test Tool (browser)` in debug dropdown menu
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/switch-to-test-tool.png)
-4. Press F5, or select Debug > Start Debugging menu in Visual Studio to start your app
-</br>![image](https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/docs/images/visualstudio/debug/debug-button.png)
-5. In Teams App Test Tool, type and send anything to your bot to get a response
+The Teams app can run in other platforms like Outlook and Microsoft 365 app. See https://aka.ms/vs-ttk-debug-multi-profiles for more details.
 
 ## Extend AI Chat Bot template with more AI capabilities
 

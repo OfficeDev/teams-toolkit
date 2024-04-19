@@ -6,11 +6,12 @@ import { performance } from "perf_hooks";
 import * as util from "util";
 import * as vscode from "vscode";
 
-import { ProductName, UserError } from "@microsoft/teamsfx-api";
+import { ProductName, UserError, err, ok } from "@microsoft/teamsfx-api";
 import {
   Correlator,
   getHashedEnv,
   Hub,
+  isValidOfficeAddInProject,
   isValidProject,
   TaskCommand,
 } from "@microsoft/teamsfx-core";
@@ -43,6 +44,8 @@ import {
 import { localTelemetryReporter, sendDebugAllEvent } from "./localTelemetryReporter";
 import { BaseTunnelTaskTerminal } from "./taskTerminal/baseTunnelTaskTerminal";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
+import { updateProjectStatus } from "../utils/projectStatusUtils";
+import { CommandKey } from "../constants";
 
 class NpmInstallTaskInfo {
   private startTime: number;
@@ -419,7 +422,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
 }
 
 async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
-  if (globalVariables.workspaceUri && isValidProject(globalVariables.workspaceUri.fsPath)) {
+  if (globalVariables.workspaceUri && (isValidProject(globalVariables.workspaceUri.fsPath))) {
     const debugConfig = event.configuration as TeamsfxDebugConfiguration;
     if (
       debugConfig &&
@@ -492,6 +495,33 @@ async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promis
         });
       }
     }
+  } else if (globalVariables.workspaceUri && isValidOfficeAddInProject(globalVariables.workspaceUri.fsPath)) {
+    // Handle cases that some services failed immediately after start.
+    const currentSession = getLocalDebugSession();
+    if (currentSession.id !== DebugNoSessionId && currentSession.failedServices.length > 0) {
+      terminateAllRunningTeamsfxTasks();
+      await vscode.debug.stopDebugging();
+      if (globalVariables.workspaceUri?.fsPath) {
+        await updateProjectStatus(
+          globalVariables.workspaceUri.fsPath,
+          CommandKey.LocalDebug,
+          err(new UserError({
+            source: ExtensionSource,
+            name: ExtensionErrors.DebugServiceFailedBeforeStartError,
+          })),
+          true
+        );
+      }
+      endLocalDebugSession();
+      return;
+    }
+
+    await updateProjectStatus(
+      globalVariables.workspaceUri.fsPath,
+      CommandKey.LocalDebug,
+      ok(undefined),
+      true
+    );
   }
 }
 

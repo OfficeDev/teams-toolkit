@@ -12,7 +12,7 @@ describe("SampleProvider", () => {
     const k = 2;
     const scenario = "insert annotation into document";
     const host = "Word";
-    const topKSamples = await provider.getTopKMostRelevantScenarioSampleCodes(
+    const topKSamples = await provider.getTopKMostRelevantScenarioSampleCodesBM25(
       null as any,
       host,
       scenario,
@@ -28,7 +28,7 @@ describe("SampleProvider", () => {
     const k = 2;
     const scenario = "insert annotation into document";
     const host = "FakeHost";
-    const topKSamples = await provider.getTopKMostRelevantScenarioSampleCodes(
+    const topKSamples = await provider.getTopKMostRelevantScenarioSampleCodesBM25(
       null as any,
       host,
       scenario,

@@ -75,7 +75,7 @@ export class CodeIssueCorrector implements ISkill {
       `Baseline: [C] ${baseLineResuult.compileErrors.length}, [R] ${baseLineResuult.runtimeErrors.length}.`
     );
 
-    const model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4" = "copilot-gpt-4";
+    const model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4" = "copilot-gpt-3.5-turbo";
     let maxRetryCount: number;
     let issueTolerance: number;
 

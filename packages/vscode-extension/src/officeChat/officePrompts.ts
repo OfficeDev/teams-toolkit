@@ -692,3 +692,36 @@ export function getFixSuggestionExcelA1NotationInStringLiteralGeneral(
 ) {
   return `Double check: Excel A1 Notation in String Literal: ${fullExpression} at line ${line}. Ensure the ${fullExpression} has the expected size. If it size is not fixed, you must update code by reading the size from the variable, object property or the function return value, convert the string literal to a template string, or use the string interpolation. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
 }
+
+export function getTopKMostRelevantScenarioSampleCodesLLMPrompt(
+  scenario: string,
+  k: number,
+  sampleDatas: { description: string }[]
+) {
+  return `
+  # Role:
+  You are an expert in Office JavaScript Add-ins, and you are familiar with scenario and the capabilities of Office JavaScript Add-ins. You need to offer the user a suggestion based on the user's ask.
+
+  # Context:
+  You should give suggestions as an JSON object, and the output must be the JSON object and it will contain the following keys:
+  - selectedSampleCodes. value is a string array.
+  
+  Beyond this JSON object, you should not add anything else to the output. Do not explain, do not provide additional context, do not add any other information to the output.
+
+  # Your tasks:
+  For the given function description: '${scenario}', ignore those description of the declaration of the function(name, parameter, return type), focus on the core function intention and summarize that into a short phrase in no more than five words. For each strings listed below, you should also summarize them into a short phrase in no more than five words.
+  Using that summarization from given function description, and short phrases from candidate strings below, find strings those short phrase has strong similarity with the summarization. You can pick from 0 up to ${k} strings, and put them into an array of string. If you don't find any relevant strings, you should return an empty array. For the array of string, it should be the value of the key 'selectedSampleCodes' in the return object.
+
+  # The candidate strings:
+  ${sampleDatas
+    .map((sampleData, index) => (index + 1).toString() + ". " + sampleData.description)
+    .join("\n")}
+
+  # The format of output:
+  Beyond the JSON object. You should not add anything else to the output.
+  The example of output you must to follow: 
+  { 
+    selectedSampleCodes: ["string1", "string2"] 
+  }
+  `;
+}

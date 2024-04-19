@@ -987,7 +987,47 @@ describe("teamsApp/createAppPackage", async () => {
       }
     });
 
-    it("should return error when placeholder is not resolved in gpt manifest", async () => {
+    it("error if parse gpt manifest error ", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+
+      const manifest = new TeamsAppManifest();
+      manifest.copilotGpts = [
+        {
+          file: "resources/gpt.json",
+          id: "plugin1",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+      sinon.stub(fs, "readFile").callsFake(async (file: fs.PathLike | number) => {
+        if (file.toString().includes("gpt.json")) {
+          return "" as any;
+        } else {
+          return JSON.stringify({});
+        }
+      });
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+
+      chai.assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof JSONSyntaxError);
+      }
+    });
+
+    it("error when placeholder is not resolved in gpt manifest", async () => {
       const args: CreateAppPackageArgs = {
         manifestPath:
           "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
@@ -1023,6 +1063,44 @@ describe("teamsApp/createAppPackage", async () => {
           result.error.name === "MissingEnvironmentVariablesError" &&
           result.error.message.includes("APP_NAME_SUFFIX")
       );
+    });
+
+    it("error when add files for plugin failed", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+
+      const manifest = new TeamsAppManifest();
+      manifest.copilotGpts = [
+        {
+          file: "resources/gpt.json",
+          id: "plugin1",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+      delete process.env[openapiServerPlaceholder];
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+
+      chai.assert.isTrue(result.isErr());
+      if (result.isErr()) {
+        chai.assert(
+          result.isErr() &&
+            result.error.name === "MissingEnvironmentVariablesError" &&
+            result.error.message.includes(openapiServerPlaceholder)
+        );
+      }
     });
   });
 });

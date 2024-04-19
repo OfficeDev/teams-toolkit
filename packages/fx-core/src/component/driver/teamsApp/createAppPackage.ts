@@ -381,7 +381,7 @@ export class CreateAppPackageDriver implements StepDriver {
    */
   private async addPlugin(
     zip: AdmZip,
-    pluginRelativePath: string, // relative path to app directory
+    pluginRelativePath: string,
     appDirectory: string,
     context: WrapDriverContext
   ): Promise<Result<undefined, FxError>> {
@@ -415,6 +415,14 @@ export class CreateAppPackageDriver implements StepDriver {
     }
   }
 
+  /**
+   * Add plugin related files (OpenAPI spec) to zip.
+   * @param zip zip.
+   * @param pluginFile plugin file path relative to app package folder.
+   * @param appDirectory app package folder.
+   * @param context context.
+   * @returns results whether add files related to plugin is successful.
+   */
   private async addPluginRelatedFiles(
     zip: AdmZip,
     pluginFile: string, // relative path to app directory

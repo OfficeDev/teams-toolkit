@@ -917,6 +917,8 @@ describe("teamsApp/createAppPackage", async () => {
       if (outputExist) {
         const zip = new AdmZip(args.outputZipPath);
         let gptManifestContent = "";
+        let plugin = "";
+        let apiSpec = "";
 
         const entries = zip.getEntries();
         entries.forEach((e) => {
@@ -924,13 +926,19 @@ describe("teamsApp/createAppPackage", async () => {
           if (name.endsWith("gpt.json")) {
             const data = e.getData();
             gptManifestContent = data.toString("utf8");
+          } else if (name.endsWith("ai-plugin.json")) {
+            const data = e.getData();
+            plugin = data.toString("utf8");
+          } else if (name.endsWith("openai.yml")) {
+            const data = e.getData();
+            apiSpec = data.toString("utf8");
           }
         });
 
-        console.log(gptManifestContent);
-
         chai.assert(
-          gptManifestContent &&
+          plugin &&
+            apiSpec &&
+            gptManifestContent &&
             gptManifestContent.search("APP_NAME_SUFFIX") < 0 &&
             gptManifestContent.search("test") > 0
         );
@@ -962,7 +970,13 @@ describe("teamsApp/createAppPackage", async () => {
       sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
       sinon.stub(fs, "chmod").callsFake(async () => {});
       sinon.stub(fs, "writeFile").callsFake(async () => {});
-      sinon.stub(fs, "pathExists").resolves(false);
+      sinon.stub(fs, "pathExists").callsFake(async (path: string) => {
+        if (path.endsWith("gpt.json")) {
+          return false;
+        } else {
+          return true;
+        }
+      });
 
       const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
 

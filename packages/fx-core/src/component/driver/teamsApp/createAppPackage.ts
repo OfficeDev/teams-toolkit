@@ -247,6 +247,29 @@ export class CreateAppPackageDriver implements StepDriver {
       }
     }
 
+    // Copilot GPT
+    if (manifest.copilotGpts && manifest.copilotGpts.length > 0 && manifest.copilotGpts[0].file) {
+      const copilotGptManifestFile = path.resolve(appDirectory, manifest.copilotGpts[0].file);
+      const checkExistenceRes = await this.validateReferencedFile(
+        copilotGptManifestFile,
+        appDirectory
+      );
+      if (checkExistenceRes.isErr()) {
+        return err(checkExistenceRes.error);
+      }
+
+      const addFileWithVariableRes = await this.addFileWithVariable(
+        zip,
+        manifest.copilotGpts[0].file,
+        copilotGptManifestFile,
+        TelemetryPropertyKey.customizedAIPluginKeys,
+        context
+      );
+      if (addFileWithVariableRes.isErr()) {
+        return err(addFileWithVariableRes.error);
+      }
+    }
+
     zip.writeZip(zipFileName);
 
     if (await fs.pathExists(jsonFileName)) {

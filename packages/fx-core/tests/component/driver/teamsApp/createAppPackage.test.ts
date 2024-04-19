@@ -880,4 +880,135 @@ describe("teamsApp/createAppPackage", async () => {
       chai.assert.isTrue(result.error instanceof InvalidFileOutsideOfTheDirectotryError);
     }
   });
+
+  describe("copilotGpt", async () => {
+    it("happy path ", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+
+      const manifest = new TeamsAppManifest();
+      manifest.copilotGpts = [
+        {
+          file: "resources/gpt.json",
+          id: "plugin1",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+      if (result.isErr()) {
+        console.log(result.error);
+      }
+      chai.assert.isTrue(result.isOk());
+      const outputExist = await fs.pathExists(args.outputZipPath);
+      chai.assert.isTrue(outputExist);
+      if (outputExist) {
+        const zip = new AdmZip(args.outputZipPath);
+        let gptManifestContent = "";
+
+        const entries = zip.getEntries();
+        entries.forEach((e) => {
+          const name = e.entryName;
+          if (name.endsWith("gpt.json")) {
+            const data = e.getData();
+            gptManifestContent = data.toString("utf8");
+          }
+        });
+
+        console.log(gptManifestContent);
+
+        chai.assert(
+          gptManifestContent &&
+            gptManifestContent.search("APP_NAME_SUFFIX") < 0 &&
+            gptManifestContent.search("test") > 0
+        );
+        await fs.remove(args.outputZipPath);
+      }
+    });
+
+    it("error if gpt manifest does not exist ", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+
+      const manifest = new TeamsAppManifest();
+      manifest.copilotGpts = [
+        {
+          file: "resources/gpt.json",
+          id: "plugin1",
+        },
+      ];
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+      sinon.stub(fs, "pathExists").resolves(false);
+
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+
+      chai.assert.isTrue(result.isErr());
+
+      if (result.isErr()) {
+        chai.assert.isTrue(result.error instanceof FileNotFoundError);
+      }
+    });
+
+    it("should return error when placeholder is not resolved in gpt manifest", async () => {
+      const args: CreateAppPackageArgs = {
+        manifestPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/templates/appPackage/v3.manifest.template.json",
+        outputZipPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/appPackage.dev.zip",
+        outputJsonPath:
+          "./tests/plugins/resource/appstudio/resources-multi-env/build/appPackage/manifest.dev.json",
+      };
+      sinon.stub(fs, "pathExists").callsFake((filePath) => {
+        return true;
+      });
+
+      const manifest = new TeamsAppManifest();
+      manifest.icons = {
+        color: "resources/color.png",
+        outline: "resources/outline.png",
+      };
+      manifest.copilotGpts = [
+        {
+          file: "resources/gpt.json",
+          id: "plugin1",
+        },
+      ];
+      sinon.stub(manifestUtils, "getManifestV3").resolves(ok(manifest));
+      sinon.stub(fs, "chmod").callsFake(async () => {});
+      sinon.stub(fs, "writeFile").callsFake(async () => {});
+
+      delete process.env["APP_NAME_SUFFIX"];
+      const result = (await teamsAppDriver.execute(args, mockedDriverContext)).result;
+
+      chai.assert(
+        result.isErr() &&
+          result.error.name === "MissingEnvironmentVariablesError" &&
+          result.error.message.includes("APP_NAME_SUFFIX")
+      );
+    });
+  });
 });

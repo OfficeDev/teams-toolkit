@@ -477,10 +477,6 @@ describe("Collaborator APIs for V3", () => {
 
   describe("loadDotEnvFile v3", () => {
     let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
       mockedEnvRestore();
       sandbox.restore();
@@ -524,13 +520,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("getTeamsAppIdAndAadObjectId v3", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 
@@ -712,10 +702,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("collaboration v3", () => {
-    let mockedEnvRestore: RestoreFn;
-
     beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
       sandbox.stub(tokenProvider.m365TokenProvider, "getJsonObject").resolves(
         ok({
           tid: "mock_project_tenant_id",
@@ -726,7 +713,6 @@ describe("Collaborator APIs for V3", () => {
       );
     });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 
@@ -1291,13 +1277,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("loadManifestId v3", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 
@@ -1333,13 +1313,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("requireEnvQuestion", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 

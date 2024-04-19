@@ -6,16 +6,15 @@ import AdmZip from "adm-zip";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import { RestoreFn } from "mocked-env";
 import { createSandbox } from "sinon";
 import { Container } from "typedi";
-import { FeatureFlagName } from "../../../src/common/constants";
-import * as templateUtils from "../../../src/component/generator/utils";
 import { ComponentNames } from "../../../src/component/constants";
+import "../../../src/component/feature/sso";
+import * as templateUtils from "../../../src/component/generator/utils";
 import * as utils from "../../../src/component/utils";
 import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
-import "../../../src/component/feature/sso";
 
 describe("SSO can add in VS V3 project", () => {
   let mockedEnvRestore: RestoreFn;
@@ -24,10 +23,6 @@ describe("SSO can add in VS V3 project", () => {
   setTools(tools);
   const appName = `unittest${randomAppName()}`;
   const context = utils.createContextV3();
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-  });
-
   afterEach(() => {
     mockedEnvRestore();
     sandbox.restore();

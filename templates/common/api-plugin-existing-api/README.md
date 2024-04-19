@@ -1,8 +1,8 @@
-# Overview of Custom Search Results app template
+# Overview of Copilot plugin template
 
-## Build a message extension from OpenAPI description document
+## Build a Copilot plugin from OpenAPI description document
 
-This app template allows Teams to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:
+This app template allows Copilot to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Copilot to:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.
@@ -29,7 +29,7 @@ This app template allows Teams to interact directly with third-party data, apps,
 | Folder       | Contents                                     |
 | ------------ | -------------------------------------------- |
 | `.vscode`    | VSCode files for debugging                   |
-| `appPackage` | Templates for the Teams application manifest, the API specification and response templates for API responses |
+| `appPackage` | Templates for the Teams application manifest, the plugin manifest and the API specification |
 | `env`        | Environment files                            |
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.

@@ -63,6 +63,7 @@
   ],
   "enabledApiProposals": [
     "chatParticipant",
+    "chatParticipantAdditions",
     "chatProvider",
     "chatVariableResolver",
     "languageModels"

@@ -74,7 +74,10 @@ export default async function createCommandHandler(
     const describeProjectChatMessages = [
       describeProjectSystemPrompt,
       new LanguageModelChatUserMessage(
-        `The project you are looking for is '${JSON.stringify(firstMatch)}'.`
+        `The project you are looking for is '${JSON.stringify({
+          name: firstMatch.name,
+          description: firstMatch.description,
+        })}'.`
       ),
     ];
     chatTelemetryData.chatMessages.push(...describeProjectChatMessages);

@@ -13,11 +13,11 @@ export const enum OfficeChatCommand {
 
 export function getTokenLimitation(model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4"): number {
   if (model === "copilot-gpt-3.5-turbo") {
-    return 3990;
+    return 3500;
   } else if (model === "copilot-gpt-4") {
     // This is strange for gt4, the limit is less than 4k
-    return 3990;
+    return 3500;
   }
 
-  return 3900;
+  return 3500;
 }

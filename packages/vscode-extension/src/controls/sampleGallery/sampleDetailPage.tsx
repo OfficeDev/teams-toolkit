@@ -30,11 +30,11 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
     });
   }
 
-  public componentDidUpdate(
+  public async componentDidUpdate(
     prevProps: Readonly<SampleProps>,
     _prevState: Readonly<SampleDetailState>,
     _snapshot?: any
-  ): void {
+  ) {
     // Reload the sample readme when sampleId is changed
     if (this.props.sample.id !== prevProps.sample.id) {
       vscode.postMessage({
@@ -42,6 +42,7 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
         data: this.props.sample,
       });
     }
+    await mermaid.run();
   }
 
   public render() {

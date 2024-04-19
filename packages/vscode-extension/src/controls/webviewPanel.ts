@@ -357,8 +357,6 @@ export class WebviewPanel {
             <script nonce="${nonce}" type="module" src="${scriptUri.toString()}"></script>
             <script nonce="${nonce}" type="text/javascript" src="${dompurifyUri.toString()}"></script>
             <script nonce="${nonce}" type="text/javascript" src="${mermaidUri.toString()}">
-              import mermaid from "${mermaidUri.toString()}";
-              mermaid.initialize({ startOnLoad: true });
             </script>
           </body>
         </html>`;

@@ -8,5 +8,8 @@ declare const vscode: vscode;
 declare const DOMPurify: {
   sanitize(source: string | Node): string;
 };
+declare const mermaid: {
+  run(): Promise<void>;
+};
 declare const panelType: string;
 declare const containerType: string;

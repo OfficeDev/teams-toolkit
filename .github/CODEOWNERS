@@ -316,7 +316,5 @@
 /templates/**/sso-tab-with-obo-flow @Yimin-Jin @hund030 @huimiu @eriolchan
 /templates/**/workflow @kimizhu @dooriya @swatDong
 /templates/constraints/yml/actions @hund030 @eriolchan @huimiu
-/templates/python/* @adashen @blackchoey @frankqianms 
-/templates/python/custom-copilot-basic @frankqianms @blackchoey
-/templates/python/custom-copilot-rag-azure-ai-search @frankqianms @blackchoey
+/templates/python @adashen @blackchoey @frankqianms
 /templates/scripts @hund030 @eriolchan @huimiu

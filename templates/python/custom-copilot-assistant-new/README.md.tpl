@@ -1,15 +1,19 @@
-# Overview of the Chat With Your Data (Custom Data Source) template
+# Overview of the AI Agent template
 
-This app template showcases how to build one of the most powerful applications enabled by LLM - sophisticated question-answering (Q&A) chat bots that can answer questions about specific source information right in the Microsoft Teams.
-This app template also demonstrates usage of techniques like: 
-- [Retrieval Augmented Generation](https://python.langchain.com/docs/use_cases/question_answering/#what-is-rag), or RAG.
-- [Teams AI Library](https://learn.microsoft.com/microsoftteams/platform/bots/how-to/teams%20conversational%20ai/teams-conversation-ai-overview)
+This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library).
+It showcases how to build an AI agent in Teams capable of chatting with users and helping users accomplish a specific task using natural language right in the Teams conversations, such as managing tasks.
 
-## Get started with the template
+- [Overview of the AI Agent template](#overview-of-the-ai-agent-template)
+  - [Get started with the AI Agent template](#get-started-with-the-ai-agent-template)
+  - [What's included in the template](#whats-included-in-the-template)
+  - [Extend the AI Agent template with more AI capabilities](#extend-the-ai-agent-template-with-more-ai-capabilities)
+  - [Additional information and references](#additional-information-and-references)
+
+## Get started with the AI Agent template
 
 > **Prerequisites**
 >
-> To run the template in your local dev machine, you will need:
+> To run the Basic AI Agent template in your local dev machine, you will need:
 >
 > - [Python](https://www.python.org/), version 3.8 to 3.11.
 > - [Python extension](https://code.visualstudio.com/docs/languages/python), version v2024.0.1 or higher.
@@ -35,7 +39,7 @@ This app template also demonstrates usage of techniques like:
 {{/useAzureOpenAI}}
 {{#useOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
-1. In this template, default model name is `gpt-3.5-turbo`. If you want to use different models from OpenAI, fill in your model names in [src/config.py](./src/config.py).
+1. In this template, default model name is `gpt-3.5-turbo`. If you want to use a different model from OpenAI, fill in your model name in [src/config.py](./src/config.py).
 {{/useOpenAI}}
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
@@ -44,29 +48,29 @@ This app template also demonstrates usage of techniques like:
 {{/useAzureOpenAI}}
 {{#useOpenAI}}
 1. In file *env/.env.local.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY`. 
-1. In this template, default model name is `gpt-3.5-turbo`. If you want to use different models from OpenAI, fill in your model names in [src/config.py](./src/config.py).
+1. In this template, default model name is `gpt-3.5-turbo`. If you want to use a different model from OpenAI, fill in your model name in [src/config.py](./src/config.py).
 {{/useOpenAI}}
 {{/enableTestToolByDefault}}
 
 ### Conversation with bot
 1. Select the Teams Toolkit icon on the left in the VS Code toolbar.
+{{#enableTestToolByDefault}}
+1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
+{{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
 1. In the Account section, sign in with your [Microsoft 365 account](https://docs.microsoft.com/microsoftteams/platform/toolkit/accounts) if you haven't already.
 1. Press F5 to start debugging which launches your app in Teams using a web browser. Select `Debug in Teams (Edge)` or `Debug in Teams (Chrome)`.
 1. When Teams launches in the browser, select the Add button in the dialog to install your app to Teams.
-{{/enableTestToolByDefault}}
-{{#enableTestToolByDefault}}
-1. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser. Select `Debug in Test Tool (Preview)`.
 {{/enableTestToolByDefault}}
 1. You will receive a welcome message from the bot, or send any message to get a response.
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
 {{#enableTestToolByDefault}}
-![alt text](https://github.com/OfficeDev/TeamsFx/assets/109947924/6658f342-6c27-447a-b791-2f2c400d48f9)
+![ai agent](https://github.com/OfficeDev/Microsoft-Teams-Samples/assets/109947924/6a362379-5c22-40d4-8087-9fc37bc96800)
 {{/enableTestToolByDefault}}
 {{^enableTestToolByDefault}}
-![alt text](https://github.com/OfficeDev/TeamsFx/assets/109947924/d4f9b455-dbb0-4e14-8557-59f9be5c1200)
+![ai agent](https://github.com/OfficeDev/TeamsFx/assets/109947924/775a0fde-f2ba-4198-a94d-a43c598d6e9b)
 {{/enableTestToolByDefault}}
 
 ## What's included in the template
@@ -83,13 +87,13 @@ The following files can be customized and demonstrate an example implementation 
 
 | File                                 | Contents                                           |
 | - | - |
-|`src/bot.py`| Handles business logics for the Basic RAG Bot.|
+|`src/app.py`| Hosts an aiohttp api server and exports an app module.|
+|`src/bot.py`| Handles business logics for the AI Agent.|
 |`src/config.py`| Defines the environment variables.|
-|`src/app.py`| Main module of the Basic RAG Bot, hosts a aiohttp api server for the app.|
-|`src/my_data_source.py`| Handles local customized text data search logics.|
-|`src/data/*.md`| Raw text data source.|
-|`src/prompts/chat/skprompt.txt`| Defines the prompt.|
-|`src/prompts/chat/config.json`| Configures the prompt.|
+|`src/state.py`| Defines the app state of AI Agent.|
+|`src/prompts/planner/skprompt.txt`| Defines the prompt.|
+|`src/prompts/planner/config.json`| Configures the prompt.|
+|`src/prompts/planner/action.json`| Configures the actions.|
 
 The following are Teams Toolkit specific project files. You can [visit a complete guide on Github](https://github.com/OfficeDev/TeamsFx/wiki/Teams-Toolkit-Visual-Studio-Code-v5-Guide#overview) to understand how Teams Toolkit works.
 
@@ -99,13 +103,13 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the template
+## Extend the AI Agent template with more AI capabilities
 
-- Follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the template with more AI capabilities.
-- Understand more about [build your own data ingestion](https://aka.ms/teamsfx-rag-bot#build-your-own-data-ingestion).
+You can follow [Build an AI Agent in Teams](https://aka.ms/teamsfx-ai-agent) to extend the AI Agent template with more AI capabilities, like:
+- [Add functions](https://aka.ms/teamsfx-ai-agent#add-functions-build-new)
 
 ## Additional information and references
-
+- [Teams AI library](https://aka.ms/teams-ai-library)
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

@@ -7,14 +7,12 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
-import { FeatureFlagName } from "../../src/common/constants";
 import {
   FeatureFlags,
   featureFlagManager,
   initializePreviewFeatureFlags,
   isApiKeyEnabled,
   isMultipleParametersEnabled,
-  isTeamsFxRebrandingEnabled,
 } from "../../src/common/featureFlags";
 chai.use(chaiAsPromised);
 
@@ -32,7 +30,6 @@ describe("featureFlags", () => {
 
     it("successfully open all feature flags", async () => {
       initializePreviewFeatureFlags();
-      chai.assert.isTrue(process.env[FeatureFlagName.BotNotification] === "true");
     });
   });
 

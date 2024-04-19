@@ -30,6 +30,7 @@ import {
   isAadMainifestContainsPlaceholder,
   newEnvNameValidation,
   newResourceGroupOption,
+  oauthClientSecretQuestion,
   resourceGroupQuestionNode,
   selectAadAppManifestQuestionNode,
   selectAadManifestQuestion,
@@ -1012,6 +1013,72 @@ describe("apiKeyQuestion", async () => {
 
   it("validation failed due to length", async () => {
     const question = apiSpecApiKeyQuestion();
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("abc");
+    assert.equal(
+      result,
+      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
+    );
+  });
+});
+
+describe("oauthQuestion", async () => {
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn = () => {};
+  afterEach(() => {
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("will pop up question", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthClientSecretQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, true);
+    const confirmQuesion = question.children![0];
+    assert.equal(confirmQuesion.data.name, "oauth-client-secret-confirm");
+  });
+
+  it("will not pop up question due to api key exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    inputs.outputEnvVarNames.set("registrationId", "registrationId");
+    mockedEnvRestore = mockedEnv({
+      registrationId: "fake-id",
+    });
+    const question = oauthClientSecretQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, false);
+  });
+
+  it("will not pop up question due to secret exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientSecret: "fakeClientSecret",
+    };
+    const question = oauthClientSecretQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, false);
+  });
+
+  it("validation passed", async () => {
+    const question = oauthClientSecretQuestion();
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientSecret");
+    assert.equal(result, undefined);
+  });
+
+  it("validation failed due to length", async () => {
+    const question = oauthClientSecretQuestion();
     const validation = (question.data as TextInputQuestion).validation;
     const result = (validation as FuncValidation<string>).validFunc("abc");
     assert.equal(

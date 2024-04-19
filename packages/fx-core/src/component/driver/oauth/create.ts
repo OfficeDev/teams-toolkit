@@ -24,6 +24,8 @@ import {
 import { OauthNameTooLongError } from "./error/oauthNameTooLong";
 import { GraphScopes } from "../../../common/tools";
 import { OauthInfo, getandValidateOauthInfoFromSpec } from "./utility/utility";
+import { QuestionMW } from "../../middleware/questionMW";
+import { QuestionNames } from "../../../question/questionNames";
 
 const actionName = "oauth/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-register";
@@ -33,7 +35,7 @@ export class CreateOauthDriver implements StepDriver {
   description = getLocalizedString("driver.oauth.description.create");
   readonly progressTitle = getLocalizedString("driver.oauth.title.create");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([QuestionMW("oauth", true), addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateOauthArgs,
     context: DriverContext,
@@ -76,7 +78,11 @@ export class CreateOauthDriver implements StepDriver {
           );
         }
       } else {
-        // TODO: handle secret from question model.
+        const clientSecret = process.env[QuestionNames.OauthClientSecret];
+        if (clientSecret) {
+          args.clientSecret = clientSecret;
+        }
+
         this.validateArgs(args);
 
         const authInfo = await getandValidateOauthInfoFromSpec(args, context, actionName);

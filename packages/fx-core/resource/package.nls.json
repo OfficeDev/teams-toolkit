@@ -363,6 +363,8 @@
   "core.createProjectQuestion.OpenAIPluginDomain.placeholder": "Enter your website domain or manifest URL",
   "core.createProjectQuestion.ApiKey": "Enter API Key in OpenAPI Description Document",
   "core.createProjectQuestion.ApiKeyConfirm": "Teams Toolkit will upload the API key to Teams Developer Portal. The API key will be used by Teams client to securely access your API in runtime when API-Based Message Extension is triggered. Teams Toolkit will not store your API key.",
+  "core.createProjectQuestion.OauthClientSecret": "Enter client secret for Oauth registration in OpenAPI Description Document",
+  "core.createProjectQuestion.OauthClientSecretConfirm": "Teams Toolkit will upload the client secret for Oauth Registration to Teams Developer Portal. The client secret will be used by Teams client to securely access your API in runtime when API-Based Message Extension is triggered. Teams Toolkit will not store your client secret.",
   "core.createProjectQuestion.apiMessageExtensionAuth.title": "Authentication Type",
   "core.createProjectQuestion.apiMessageExtensionAuth.placeholder": "Select an authentication type",
   "core.createProjectQuestion.invalidApiKey.message": "Client secret is invalid. The length of secret should be >= 10 and <= 128",

@@ -15,6 +15,7 @@ import {
   deployAadManifestQuestionNode,
   grantPermissionQuestionNode,
   listCollaboratorQuestionNode,
+  oauthClientSecretQuestion,
   previewWithTeamsAppManifestQuestionNode,
   selectTeamsAppManifestQuestionNode,
   validateTeamsAppQuestionNode,
@@ -66,6 +67,9 @@ export class QuestionNodes {
   }
   apiKey(): IQTreeNode {
     return apiSpecApiKeyQuestion();
+  }
+  oauth(): IQTreeNode {
+    return oauthClientSecretQuestion();
   }
 }
 

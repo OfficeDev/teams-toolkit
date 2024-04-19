@@ -23,6 +23,7 @@ import {
   ensureExtensionActivated,
 } from "../../utils/vscodeOperation";
 import { getScreenshotName } from "../../utils/nameUtil";
+import { createVscodeArgvFile } from "../../utils/commonUtils";
 
 export class TreeViewTestContext extends TestContext {
   public testName: string;
@@ -34,6 +35,7 @@ export class TreeViewTestContext extends TestContext {
 
   public async before() {
     await fs.ensureDir(this.testRootFolder);
+    createVscodeArgvFile();
     await VSBrowser.instance.waitForWorkbench();
     await VSBrowser.instance.driver.sleep(Timeout.reloadWindow);
     await VSBrowser.instance.takeScreenshot(getScreenshotName("before"));

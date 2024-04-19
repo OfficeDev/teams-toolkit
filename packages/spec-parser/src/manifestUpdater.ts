@@ -229,8 +229,11 @@ export class ManifestUpdater {
               const funcObj: FunctionObject = {
                 name: operationId,
                 description: description,
-                parameters: parameters,
               };
+
+              if (paramObject || requestBody) {
+                funcObj.parameters = parameters;
+              }
 
               if (options.allowResponseSemantics) {
                 const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operationItem);

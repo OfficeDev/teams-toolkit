@@ -999,6 +999,10 @@ describe("updateManifestWithAiPlugin", () => {
                 },
               },
             },
+            delete: {
+              operationId: "deletePet",
+              description: "Delete a pet in the store",
+            },
           },
         },
       };
@@ -1066,6 +1070,16 @@ describe("updateManifestWithAiPlugin", () => {
               },
             },
           },
+          {
+            name: "deletePet",
+            description: "Delete a pet in the store",
+            capabilities: {
+              confirmation: {
+                type: "AdaptiveCard",
+                title: "Delete a pet in the store",
+              },
+            },
+          },
         ],
         runtimes: [
           {
@@ -1076,7 +1090,7 @@ describe("updateManifestWithAiPlugin", () => {
             spec: {
               url: "spec/outputSpec.yaml",
             },
-            run_for_functions: ["getPets", "createPet"],
+            run_for_functions: ["getPets", "createPet", "deletePet"],
           },
         ],
       };
@@ -1089,7 +1103,7 @@ describe("updateManifestWithAiPlugin", () => {
         .resolves(false);
 
       const options: ParseOptions = {
-        allowMethods: ["get", "post"],
+        allowMethods: ["get", "post", "delete"],
         allowConfirmation: true,
       };
       const [manifest, apiPlugin] = await ManifestUpdater.updateManifestWithAiPlugin(

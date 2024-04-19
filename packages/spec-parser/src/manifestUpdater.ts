@@ -157,6 +157,7 @@ export class ManifestUpdater {
         for (const method in operations) {
           if (options.allowMethods!.includes(method)) {
             const operationItem = (operations as any)[method] as OpenAPIV3.OperationObject;
+            const confirmationBodies: string[] = [];
             if (operationItem) {
               const operationId = operationItem.operationId!;
               const description = operationItem.description ?? "";
@@ -180,6 +181,8 @@ export class ManifestUpdater {
                     method,
                     pathUrl
                   );
+
+                  confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(param.name));
 
                   if (param.required) {
                     parameters.required.push(param.name);
@@ -207,6 +210,8 @@ export class ManifestUpdater {
                       method,
                       pathUrl
                     );
+
+                    confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(property));
                   }
                 } else {
                   throw new SpecParserError(
@@ -224,8 +229,11 @@ export class ManifestUpdater {
               const funcObj: FunctionObject = {
                 name: operationId,
                 description: description,
-                parameters: parameters,
               };
+
+              if (paramObject || requestBody) {
+                funcObj.parameters = parameters;
+              }
 
               if (options.allowResponseSemantics) {
                 const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
@@ -233,6 +241,21 @@ export class ManifestUpdater {
                 funcObj.capabilities = {
                   response_semantics: responseSemantic,
                 };
+              }
+
+              if (options.allowConfirmation && method !== ConstantString.GetMethod) {
+                if (!funcObj.capabilities) {
+                  funcObj.capabilities = {};
+                }
+
+                funcObj.capabilities.confirmation = {
+                  type: "AdaptiveCard",
+                  title: operationItem.summary ?? description,
+                };
+
+                if (confirmationBodies.length > 0) {
+                  funcObj.capabilities.confirmation.body = confirmationBodies.join("\n");
+                }
               }
 
               functions.push(funcObj);
@@ -470,5 +493,9 @@ export class ManifestUpdater {
 
   static removeAllSpecialCharacters(str: string): string {
     return str.toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  static getConfirmationBodyItem(paramName: string): string {
+    return `* **${Utils.updateFirstLetter(paramName)}**: {{function.parameters.${paramName}}}`;
   }
 }

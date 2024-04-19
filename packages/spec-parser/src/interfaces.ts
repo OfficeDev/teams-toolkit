@@ -245,6 +245,11 @@ export interface ParseOptions {
   allowResponseSemantics?: boolean;
 
   /**
+   * If true, the paser will allow confirmation in plugin file. Only take effect in Copilot project
+   */
+  allowConfirmation?: boolean;
+
+  /**
    * The type of project that the parser is being used for.
    * Project can be SME/Copilot/TeamsAi
    */

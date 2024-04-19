@@ -21,8 +21,8 @@ dependencies:
     specifier: ^3.0.7
     version: 3.0.7(@azure/identity@2.0.1)(@azure/msal-browser@3.0.2)
   '@microsoft/teams-js':
-    specifier: ^2.13.0
-    version: 2.13.0(supports-color@9.4.0)
+    specifier: ^2.19.0
+    version: 2.19.0(supports-color@9.4.0)
   axios:
     specifier: ^1.6.7
     version: 1.6.7
@@ -981,8 +981,8 @@ packages:
     engines: {node: '>=10.3.0'}
     dev: false
 
-  /@microsoft/teams-js@2.13.0(supports-color@9.4.0):
-    resolution: {integrity: sha512-g1t7YxFQVrTXQdhS3PlV9TXIdwRHKJw3qlk9hvbIrzztlqMQHDThYYjvVxBqXdSfJEmaqZvNNW6GKlQHQNLguQ==}
+  /@microsoft/teams-js@2.19.0(supports-color@9.4.0):
+    resolution: {integrity: sha512-QpAK8JO6s9D5qOiW//fwS4bUgzhLr1GDxHCRw+BEs9Uuw5Z9YhwMClhtFlI5P7HlH5SFC4QSsh44HaV31ORXJA==}
     dependencies:
       debug: 4.3.4(supports-color@9.4.0)
     transitivePeerDependencies:

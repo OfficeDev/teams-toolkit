@@ -38,24 +38,8 @@ export class OutlookClientId {
   static readonly Web2 = "bc59ab01-8403-45c6-8796-ac3ef710b3e3";
 }
 export class FeatureFlagName {
-  static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
-  // This will default to true and this environment is only for tests. It does not expose to user.
-  static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-  static readonly VSCallingCLI = "VS_CALLING_CLI";
-  static readonly ExistingTabApp = "TEAMSFX_INIT_APP";
-  static readonly AadManifest = "TEAMSFX_AAD_MANIFEST";
-  static readonly DebugTemplate = "TEAMSFX_DEBUG_TEMPLATE";
-  static readonly BotNotification = "BOT_NOTIFICATION_ENABLED";
-  static readonly M365App = "TEAMSFX_M365_APP";
-  static readonly ApiConnect = "TEAMSFX_API_CONNECT_ENABLE";
-  static readonly DeployManifest = "TEAMSFX_DEPLOY_MANIFEST";
-  static readonly Preview = "TEAMSFX_PREVIEW";
   static readonly CLIDotNet = "TEAMSFX_CLI_DOTNET";
-  static readonly V3 = "TEAMSFX_V3";
-  static readonly V3Migration = "TEAMSFX_V3_MIGRATION";
-  static readonly VideoFilter = "TEAMSFX_VIDEO_FILTER";
   static readonly OfficeAddin = "TEAMSFX_OFFICE_ADDIN";
-  static readonly OfficeXMLAddin = "TEAMSFX_OFFICE_XML_ADDIN";
   static readonly CopilotPlugin = "DEVELOP_COPILOT_PLUGIN";
   static readonly ApiCopilotPlugin = "API_COPILOT_PLUGIN";
   static readonly SampleConfigBranch = "TEAMSFX_SAMPLE_CONFIG_BRANCH";

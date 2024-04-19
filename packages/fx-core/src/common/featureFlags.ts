@@ -15,22 +15,10 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 /**
  * Update all preview feature flags.
  */
-export function initializePreviewFeatureFlags(): void {
-  process.env[FeatureFlagName.BotNotification] = "true";
-  process.env[FeatureFlagName.M365App] = "true";
-  process.env[FeatureFlagName.AadManifest] = "true";
-  process.env[FeatureFlagName.ApiConnect] = "true";
-  process.env[FeatureFlagName.DeployManifest] = "true";
-  // Force the feature to close until it needs to be released.
-  process.env[FeatureFlagName.OfficeAddin] = "false";
-}
+export function initializePreviewFeatureFlags(): void {}
 
 export function isCLIDotNetEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
-}
-
-export function isVideoFilterEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.VideoFilter);
 }
 
 export function isCopilotPluginEnabled(): boolean {
@@ -65,10 +53,6 @@ export function isMultipleParametersEnabled(): boolean {
 
 export function isOfficeJSONAddinEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin);
-}
-
-export function isTeamsFxRebrandingEnabled(): boolean {
-  return featureFlagManager.getBooleanValue(FeatureFlags.TeamsFxRebranding);
 }
 
 export function isTdpTemplateCliTestEnabled(): boolean {
@@ -149,7 +133,6 @@ export interface FeatureFlag {
 
 export class FeatureFlags {
   static readonly CLIDotNet = { name: FeatureFlagName.CLIDotNet, defaultValue: "false" };
-  static readonly VideoFilter = { name: FeatureFlagName.VideoFilter, defaultValue: "false" };
   static readonly CopilotPlugin = { name: FeatureFlagName.CopilotPlugin, defaultValue: "false" };
   static readonly ApiCopilotPlugin = {
     name: FeatureFlagName.ApiCopilotPlugin,
@@ -164,10 +147,6 @@ export class FeatureFlags {
     defaultValue: "true",
   };
   static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
-  static readonly TeamsFxRebranding = {
-    name: FeatureFlagName.TeamsFxRebranding,
-    defaultValue: "false",
-  };
   static readonly TdpTemplateCliTest = {
     name: FeatureFlagName.TdpTemplateCliTest,
     defaultValue: "false",

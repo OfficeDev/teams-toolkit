@@ -69,23 +69,6 @@ describe("featureFlags", () => {
       chai.assert.isFalse(res);
     });
   });
-
-  describe("isTeamsFxRebrandingEnabled()", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-    it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_REBRANDING: "true" });
-      const res = isTeamsFxRebrandingEnabled();
-      chai.assert.isTrue(res);
-    });
-    it("is false", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_REBRANDING: "false" });
-      const res = isTeamsFxRebrandingEnabled();
-      chai.assert.isFalse(res);
-    });
-  });
 });
 
 describe("FeatureFlagManager", () => {

@@ -20,7 +20,7 @@ import { ChatTelemetryData } from "../../../chat/telemetry";
 import { matchOfficeProject, showOfficeSampleFileTree, showOfficeTemplateFileTree } from "./helper";
 import { localize } from "../../../utils/localizeUtils";
 import { Planner } from "../../common/planner";
-import { CHAT_CREATE_SAMPLE_COMMAND_ID } from "../../../chat/consts";
+import { CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID } from "../../consts";
 
 export default async function officeCreateCommandHandler(
   request: ChatRequest,
@@ -37,6 +37,22 @@ export default async function officeCreateCommandHandler(
     TelemetryEvent.CopilotChatStart,
     officeChatTelemetryData.properties
   );
+  if (request.prompt.trim() === "") {
+    response.markdown(localize("teamstoolkit.chatParticipants.create.noPromptAnswer"));
+
+    officeChatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      officeChatTelemetryData.properties,
+      officeChatTelemetryData.measurements
+    );
+    return {
+      metadata: {
+        command: OfficeChatCommand.Create,
+        requestId: officeChatTelemetryData.requestId,
+      },
+    };
+  }
   const isHarmful = await isInputHarmful(request, token);
   if (!isHarmful) {
     const matchedResult = await matchOfficeProject(request, token, officeChatTelemetryData);
@@ -59,7 +75,7 @@ export default async function officeCreateCommandHandler(
         const folder = await showOfficeSampleFileTree(matchedResult, response);
         const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         response.button({
-          command: CHAT_CREATE_SAMPLE_COMMAND_ID,
+          command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
           arguments: [folder],
           title: sampleTitle,
         });
@@ -70,7 +86,7 @@ export default async function officeCreateCommandHandler(
         const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data, response);
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         response.button({
-          command: CHAT_CREATE_SAMPLE_COMMAND_ID,
+          command: CHAT_CREATE_OFFICE_PROJECT_COMMAND_ID,
           arguments: [tmpFolder],
           title: templateTitle,
         });

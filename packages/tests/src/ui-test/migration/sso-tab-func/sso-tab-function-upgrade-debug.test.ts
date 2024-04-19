@@ -99,7 +99,7 @@ describe("Migration Tests", function () {
       );
       await validateTab(page, {
         displayName: Env.displayName,
-        includeFunction: false,
+        includeFunction: true,
       });
     }
   );

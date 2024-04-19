@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
 import {
   CancellationToken,
   ChatContext,
@@ -8,6 +9,10 @@ import {
   ChatResponseStream,
   LanguageModelChatUserMessage,
   ProviderResult,
+  Uri,
+  commands,
+  window,
+  workspace,
 } from "vscode";
 import { OfficeChatCommand, officeChatParticipantId } from "./consts";
 import followupProvider from "../chat/followupProvider";
@@ -20,6 +25,7 @@ import generatecodeCommandHandler from "./commands/generatecode/generatecodeComm
 import officeNextStepCommandHandler from "./commands/nextStep/officeNextstepCommandHandler";
 import { defaultOfficeSystemPrompt } from "./officePrompts";
 import { verbatimCopilotInteraction } from "../chat/utils";
+import { localize } from "../utils/localizeUtils";
 
 export function officeChatRequestHandler(
   request: ChatRequest,
@@ -62,4 +68,57 @@ async function officeDefaultHandler(
     chatTelemetryData.measurements
   );
   return { metadata: { command: undefined, requestId: chatTelemetryData.requestId } };
+}
+
+export async function chatCreateOfficeProjectCommandHandler(folder: string) {
+  // Let user choose the project folder
+  let dstPath = "";
+  let folderChoice: string | undefined = undefined;
+  if (workspace.workspaceFolders !== undefined && workspace.workspaceFolders.length > 0) {
+    folderChoice = await window.showQuickPick([
+      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace"),
+      localize("teamstoolkit.qm.browse"),
+    ]);
+    if (!folderChoice) {
+      return;
+    }
+    if (
+      folderChoice ===
+      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace")
+    ) {
+      dstPath = workspace.workspaceFolders[0].uri.fsPath;
+    }
+  }
+  if (dstPath === "") {
+    const customFolder = await window.showOpenDialog({
+      title: localize("teamstoolkit.chatParticipants.officeAddIn.create.selectFolder.title"),
+      openLabel: localize("teamstoolkit.chatParticipants.officeAddIn.create.selectFolder.label"),
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+    });
+    if (!customFolder) {
+      return;
+    }
+    dstPath = customFolder[0].fsPath;
+  }
+  try {
+    await fs.copy(folder, dstPath);
+    if (
+      folderChoice !==
+      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace")
+    ) {
+      void commands.executeCommand("vscode.openFolder", Uri.file(dstPath));
+    } else {
+      void window.showInformationMessage(
+        localize("teamstoolkit.chatParticipants.officeAddIn.create.successfullyCreated")
+      );
+      void commands.executeCommand("workbench.view.extension.teamsfx");
+    }
+  } catch (error) {
+    console.error("Error copying files:", error);
+    void window.showErrorMessage(
+      localize("teamstoolkit.chatParticipants.officeAddIn.create.failToCreate")
+    );
+  }
 }

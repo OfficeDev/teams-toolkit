@@ -47,8 +47,10 @@ export interface ActionContext {
 }
 export function ActionExecutionMW(action: ActionOption): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
-    const componentName = action.componentName || ctx.self?.constructor.name;
+    const componentName =
+      action.componentName || ctx.self?.componentName || ctx.self?.constructor.name;
     const telemetryComponentName = action.telemetryComponentName || componentName;
+    const errorSource = action.errorSource || componentName;
     const methodName = ctx.method!;
     const eventName = action.telemetryEventName || methodName;
     const telemetryProps = {
@@ -118,7 +120,7 @@ export function ActionExecutionMW(action: ActionOption): Middleware {
       await progressBar?.end(false);
       const fxError = assembleError(e);
       if (fxError.source === "unknown") {
-        fxError.source = action.errorSource || fxError.source;
+        fxError.source = errorSource || fxError.source;
         if (fxError instanceof UserError) {
           fxError.helpLink = fxError.helpLink || action.errorHelpLink;
         }

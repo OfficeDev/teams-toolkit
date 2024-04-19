@@ -68,4 +68,5 @@ export class FeatureFlagName {
   static readonly AsyncAppValidation = "TEAMSFX_ASYNC_APP_VALIDATION";
   static readonly NewProjectType = "TEAMSFX_NEW_PROJECT_TYPE";
   static readonly ChatParticipant = "TEAMSFX_CHAT_PARTICIPANT";
+  static readonly NewGenerator = "TEAMSFX_NEW_GENERATOR";
 }

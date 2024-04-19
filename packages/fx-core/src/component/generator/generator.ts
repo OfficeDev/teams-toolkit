@@ -172,7 +172,7 @@ export class Generator {
     return ok(undefined);
   }
 
-  private static async generate(
+  public static async generate(
     context: GeneratorContext,
     actions: GeneratorAction[]
   ): Promise<void> {

@@ -37,10 +37,11 @@ export class LaunchHelper {
       case HubTypes.teams: {
         let installAppPackage = true;
         if (
-          isApiME &&
-          !capabilities.includes("staticTab") &&
-          !capabilities.includes("configurableTab") &&
-          !capabilities.includes("Bot")
+          (isApiME &&
+            !capabilities.includes("staticTab") &&
+            !capabilities.includes("configurableTab") &&
+            !capabilities.includes("Bot")) ||
+          (capabilities.length === 1 && capabilities.includes("plugin"))
         ) {
           installAppPackage = false;
         }

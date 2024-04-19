@@ -9,6 +9,8 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 
 import { FeatureFlagName } from "../../src/common/constants";
 import {
+  FeatureFlags,
+  featureFlagManager,
   initializePreviewFeatureFlags,
   isApiKeyEnabled,
   isMultipleParametersEnabled,
@@ -83,5 +85,32 @@ describe("featureFlags", () => {
       const res = isTeamsFxRebrandingEnabled();
       chai.assert.isFalse(res);
     });
+  });
+});
+
+describe("FeatureFlagManager", () => {
+  let mockedEnvRestore: RestoreFn = () => {};
+  afterEach(() => {
+    mockedEnvRestore();
+  });
+  it("getBooleanValue, getStringValue is true", async () => {
+    mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "true" });
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.ApiKey);
+    chai.assert.isTrue(booleanRes);
+    const stringRes = featureFlagManager.getStringValue(FeatureFlags.ApiKey);
+    chai.assert.equal(stringRes, "true");
+  });
+  it("getBooleanValue, getStringValue is false", async () => {
+    mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "false" });
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.ApiKey);
+    chai.assert.isFalse(booleanRes);
+    const stringRes = featureFlagManager.getStringValue(FeatureFlags.ApiKey);
+    chai.assert.equal(stringRes, "false");
+  });
+  it("list", async () => {
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.ApiKey);
+    chai.assert.isFalse(booleanRes);
+    const list = featureFlagManager.list();
+    chai.assert.deepEqual(list, Object.values(FeatureFlags));
   });
 });

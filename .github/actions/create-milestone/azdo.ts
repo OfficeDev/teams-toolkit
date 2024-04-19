@@ -25,7 +25,7 @@ export class DevopsClient {
 	}
 
 	private async getApi(serverUrl: string): Promise<vm.WebApi> {
-		let authHandler = vm.getPersonalAccessTokenHandler(this.token);
+		let authHandler = vm.getHandlerFromToken(this.token);
 		let vsts: vm.WebApi = new vm.WebApi(serverUrl, authHandler);
 		await vsts.connect();
 		return vsts;

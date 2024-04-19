@@ -87,7 +87,7 @@ export class UpdateApiKeyDriver implements StepDriver {
         args.registrationId
       );
 
-      await context.ui!.showMessage(
+      void context.ui!.showMessage(
         "info",
         getLocalizedString("driver.apiKey.info.update", diffMsgs.join(",\n")),
         false

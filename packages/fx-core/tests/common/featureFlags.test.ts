@@ -11,8 +11,7 @@ import {
   FeatureFlags,
   featureFlagManager,
   initializePreviewFeatureFlags,
-  isApiKeyEnabled,
-  isMultipleParametersEnabled,
+  isCopilotAuthEnabled,
 } from "../../src/common/featureFlags";
 chai.use(chaiAsPromised);
 
@@ -33,36 +32,19 @@ describe("featureFlags", () => {
     });
   });
 
-  describe("isApiKeyEnabled()", () => {
+  describe("isCopilotAuthEnabled()", () => {
     let mockedEnvRestore: RestoreFn = () => {};
     afterEach(() => {
       mockedEnvRestore();
     });
     it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "true" });
-      const res = isApiKeyEnabled();
+      mockedEnvRestore = mockedEnv({ TEAMSFX_COPILOT_AUTH: "true" });
+      const res = isCopilotAuthEnabled();
       chai.assert.isTrue(res);
     });
     it("is false", async () => {
-      mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "false" });
-      const res = isApiKeyEnabled();
-      chai.assert.isFalse(res);
-    });
-  });
-
-  describe("isMultipleParametersEnabled()", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-    it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "true" });
-      const res = isMultipleParametersEnabled();
-      chai.assert.isTrue(res);
-    });
-    it("is false", async () => {
-      mockedEnvRestore = mockedEnv({ API_COPILOT_MULTIPLE_PARAMETERS: "false" });
-      const res = isMultipleParametersEnabled();
+      mockedEnvRestore = mockedEnv({ TEAMSFX_COPILOT_AUTH: "false" });
+      const res = isCopilotAuthEnabled();
       chai.assert.isFalse(res);
     });
   });
@@ -74,21 +56,21 @@ describe("FeatureFlagManager", () => {
     mockedEnvRestore();
   });
   it("getBooleanValue, getStringValue is true", async () => {
-    mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "true" });
-    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.ApiKey);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_COPILOT_AUTH: "true" });
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
     chai.assert.isTrue(booleanRes);
-    const stringRes = featureFlagManager.getStringValue(FeatureFlags.ApiKey);
+    const stringRes = featureFlagManager.getStringValue(FeatureFlags.CopilotAuth);
     chai.assert.equal(stringRes, "true");
   });
   it("getBooleanValue, getStringValue is false", async () => {
-    mockedEnvRestore = mockedEnv({ API_COPILOT_API_KEY: "false" });
-    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.ApiKey);
+    mockedEnvRestore = mockedEnv({ TEAMSFX_COPILOT_AUTH: "false" });
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
     chai.assert.isFalse(booleanRes);
-    const stringRes = featureFlagManager.getStringValue(FeatureFlags.ApiKey);
+    const stringRes = featureFlagManager.getStringValue(FeatureFlags.CopilotAuth);
     chai.assert.equal(stringRes, "false");
   });
   it("list", async () => {
-    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.ApiKey);
+    const booleanRes = featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
     chai.assert.isFalse(booleanRes);
     const list = featureFlagManager.list();
     chai.assert.deepEqual(list, Object.values(FeatureFlags));

@@ -2,7 +2,7 @@
 
 ## Build a Copilot Plugin from a new API with Azure Functions
 
-This app template allows Microsoft Copilot for Microsoft 365 to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Teams to:
+This app template allows Microsoft Copilot for Microsoft 365 to interact directly with third-party data, apps, and services, enhancing its capabilities and broadening its range of capabilities. It allows Copilot to:
 
 - Retrieve real-time information, for example, latest news coverage on a product launch.
 - Retrieve knowledge-based information, for example, my team’s design files in Figma.
@@ -26,12 +26,12 @@ This app template allows Microsoft Copilot for Microsoft 365 to interact directl
 ## What's included in the template
 
 | Folder       | Contents                                                                                                    |
-| ------------ | ----------------------------------------------------------------------------------------------------------- |
-| `.vscode`    | VSCode files for debugging                                                                                  |
-| `appPackage` | Templates for the Teams application manifest, the API specification and response template for API responses |
-| `env`        | Environment files                                                                                           |
-| `infra`      | Templates for provisioning Azure resources                                                                  |
-| `src`        | The source code for the repair API                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------- |
+| `.vscode`    | VSCode files for debugging                                                                  |
+| `appPackage` | Templates for the Teams application manifest, the plugin manifest and the API specification |
+| `env`        | Environment files                                                                           |
+| `infra`      | Templates for provisioning Azure resources                                                  |
+| `src`        | The source code for the repair API                                                          |
 
 The following files can be customized and demonstrate an example implementation to get you started.
 

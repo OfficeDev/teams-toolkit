@@ -6,7 +6,6 @@ import { getAbsolutePath } from "../../../utils/common";
 import { DriverContext } from "../../interface/commonArgs";
 import { CreateApiKeyArgs } from "../interface/createApiKeyArgs";
 import { UpdateApiKeyArgs } from "../interface/updateApiKeyArgs";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../../common/featureFlags";
 import { maxDomainPerApiKey } from "./constants";
 import { ApiKeyDomainInvalidError } from "../error/apiKeyDomainInvalid";
 import { ApiKeyFailedToGetDomainError } from "../error/apiKeyFailedToGetDomain";
@@ -29,8 +28,8 @@ export async function getDomain(
 ): Promise<string[]> {
   const absolutePath = getAbsolutePath(args.apiSpecPath, context.projectPath);
   const parser = new SpecParser(absolutePath, {
-    allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
-    allowMultipleParameters: isMultipleParametersEnabled(),
+    allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+    allowMultipleParameters: true,
   });
   const listResult = await parser.list();
   const operations = listResult.APIs.filter((value) => value.isValid);

@@ -34,6 +34,8 @@ async def get_doc_data(embeddings):
 async def get_embedding_vector(text: str, embeddings):
     result = await embeddings.create_embeddings(text)
     if (result.status != 'success' or not result.output):
-        raise Exception(f"Failed to generate embeddings for description: {text}")
+        if result.status == 'error':
+            raise Exception(f"Failed to generate embeddings for description: <{text[:200]+'...'}>\n\nError: {result.output}")
+        raise Exception(f"Failed to generate embeddings for description: <{text[:200]+'...'}>")
     
     return result.output[0]

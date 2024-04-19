@@ -43,7 +43,7 @@ import {
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { CapabilityOptions, ProgrammingLanguage } from "../../../question/create";
+import { ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import {
@@ -55,7 +55,6 @@ import {
 } from "@microsoft/m365-spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 import { merge } from "lodash";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
@@ -290,8 +289,8 @@ export class CopilotPluginGenerator {
       });
 
       // validate API spec
-      const allowAPIKeyAuth = isApiKeyEnabled();
-      const allowMultipleParameters = isMultipleParametersEnabled();
+      const allowAPIKeyAuth = true;
+      const allowMultipleParameters = true;
       const specParser = new SpecParser(
         url,
         isPlugin

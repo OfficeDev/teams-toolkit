@@ -80,19 +80,39 @@ export class ManifestUpdater {
     pathUrl: string
   ): FunctionParameter {
     let parameter: FunctionParameter;
-    if (
+
+    if (schema.type === "array") {
+      const items = schema.items as OpenAPIV3.SchemaObject;
+      parameter = {
+        type: "array",
+        items: ManifestUpdater.mapOpenAPISchemaToFuncParam(items, method, pathUrl),
+      };
+    } else if (
       schema.type === "string" ||
       schema.type === "boolean" ||
       schema.type === "integer" ||
-      schema.type === "number" ||
-      schema.type === "array"
+      schema.type === "number"
     ) {
-      parameter = schema as any;
+      parameter = {
+        type: schema.type,
+      };
     } else {
       throw new SpecParserError(
         Utils.format(ConstantString.UnsupportedSchema, method, pathUrl, JSON.stringify(schema)),
         ErrorType.UpdateManifestFailed
       );
+    }
+
+    if (schema.enum) {
+      parameter.enum = schema.enum;
+    }
+
+    if (schema.description) {
+      parameter.description = schema.description;
+    }
+
+    if (schema.default) {
+      parameter.default = schema.default;
     }
 
     return parameter;

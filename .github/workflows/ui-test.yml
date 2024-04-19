@@ -387,6 +387,8 @@ jobs:
         run: |
           npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1
           npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.88.1
+          cd .test-resources
+          ls
   
       - name: Extract VSCode & chromedriver(unix)
         if: matrix.os == 'ubuntu-latest'

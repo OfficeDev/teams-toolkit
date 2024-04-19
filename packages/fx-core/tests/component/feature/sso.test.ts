@@ -6,7 +6,6 @@ import AdmZip from "adm-zip";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import { RestoreFn } from "mocked-env";
 import { createSandbox } from "sinon";
 import { Container } from "typedi";
 import { ComponentNames } from "../../../src/component/constants";
@@ -17,14 +16,12 @@ import { setTools } from "../../../src/core/globalVars";
 import { MockTools, randomAppName } from "../../core/utils";
 
 describe("SSO can add in VS V3 project", () => {
-  let mockedEnvRestore: RestoreFn;
   const sandbox = createSandbox();
   const tools = new MockTools();
   setTools(tools);
   const appName = `unittest${randomAppName()}`;
   const context = utils.createContextV3();
   afterEach(() => {
-    mockedEnvRestore();
     sandbox.restore();
   });
 

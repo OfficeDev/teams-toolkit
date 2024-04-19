@@ -21,6 +21,38 @@ import {
 } from "../telemetryConsts";
 import { ChatResponseStream } from "vscode";
 import stringSimilarity = require("string-similarity");
+import {
+  getFixSuggestionArgumentCountMismatchGeneral,
+  getFixSuggestionArgumentCountMismatchHasSignature,
+  getFixSuggestionArgumentCountMismatchWithoutSignature,
+  getFixSuggestionArgumentTypeMismatchGeneral,
+  getFixSuggestionArgumentTypeMismatchWithDeclaration,
+  getFixSuggestionArgumentTypeMismatchWithTypeDetail,
+  getFixSuggestionCannotAssignToReadOnlyProperty,
+  getFixSuggestionCannotFindModule,
+  getFixSuggestionCannotFindName,
+  getFixSuggestionConvertTypeToTypeMistake,
+  getFixSuggestionExcelA1NotationInStringInterpolationBinaryExpressionGeneral,
+  getFixSuggestionExcelA1NotationInStringInterpolationBinaryExpressionLeftNumberLiteral,
+  getFixSuggestionExcelA1NotationInStringInterpolationBinaryExpressionRightNumberLiteral,
+  getFixSuggestionExcelA1NotationInStringInterpolationPropertyAccess,
+  getFixSuggestionExcelA1NotationInStringLiteralGeneral,
+  getFixSuggestionExpressionExpectedHandlder,
+  getFixSuggestionNoFunctionReturnOrNoimplementation,
+  getFixSuggestionOperatorAddOnTypeMismatch,
+  getFixSuggestionOverloadMismatchGeneral,
+  getFixSuggestionOverloadMismatchWithDeclaration,
+  getFixSuggestionPropertyDoesNotExistOnTypeFoundCandidateOfFixing,
+  getFixSuggestionPropertyDoesNotExistOnTypeFoundConcreateMembership,
+  getFixSuggestionPropertyDoesNotExistOnTypeFoundGeneralSuggestion,
+  getFixSuggestionPropertyDoesNotExistOnTypeNoDetailSuggestion,
+  getFixSuggestionPropertyDoesNotExistOnTypeUnionTypePrompt,
+  getFixSuggestionTopLevelExpressionForbiden,
+  getFixSuggestionTypeIsNotAssignableToType,
+  getSuggestionOnAPIObjectPropertyAccessBeforeLoad,
+  getSuggestionOnExcelA1NotationInStringConcatenationLeft,
+  getSuggestionOnExcelA1NotationInStringConcatenationRight,
+} from "../../officePrompts";
 
 export class DetectionResult {
   public compileErrors: string[] = [];
@@ -75,7 +107,6 @@ export class CodeIssueDetector {
     }
   ): Promise<DetectionResult> {
     const result = new DetectionResult();
-    response.progress("Reviewing code...");
     // order is matther, don't swith the order
     await this.buildTypeDefAst(host);
     this.buildProgram(codeSnippet);
@@ -145,8 +176,8 @@ export class CodeIssueDetector {
       allowJs: true,
       checkJs: true,
       noEmitOnError: true,
-      target: ts.ScriptTarget.ES2017,
-      lib: ["lib.es2017.d.ts", "lib.dom.d.ts"],
+      target: ts.ScriptTarget.ES2015,
+      lib: ["lib.es2015.d.ts", "lib.dom.d.ts"],
     };
 
     const originalHost = ts.createCompilerHost(compilerOptions);
@@ -293,9 +324,7 @@ export class CodeIssueDetector {
           className = className.replace("typeof", "").trim(); // some type names have 'typeof' prefix
           const singleTypes = className.split("|"); // some types are union types like 'string | number'
           if (singleTypes.length > 1) {
-            return `The type is a union type. Add code convert the union type to a single type using "as" keyword, then use the property of the type. You should pick the most relevant one of the types to convert: ${singleTypes.join(
-              ", "
-            )}.`;
+            return getFixSuggestionPropertyDoesNotExistOnTypeUnionTypePrompt(singleTypes);
           } else {
             const memberNames: string[] = [];
             if (self.definionFile) {
@@ -308,9 +337,10 @@ export class CodeIssueDetector {
               });
             }
             if (memberNames.length === 0) {
-              return `
-The type '${className}' is not a valid Office JavaScript API type, and '${invalidProperty}' is invalid property or method of the type '${className}'. You may incorrectly use a namespace, or other raw JavaScript type. You should fix that by rewrite relevant code snippet with different approach.
-              `;
+              return getFixSuggestionPropertyDoesNotExistOnTypeNoDetailSuggestion(
+                className,
+                invalidProperty
+              );
             }
             const localPropertyMethodNames =
               memberNames.map((name) => name.split("property/method:")[1] ?? "") || [];
@@ -345,15 +375,12 @@ The type '${className}' is not a valid Office JavaScript API type, and '${invali
                 sortedSimilarStringsLocal.split("property/method:")[0].trim(),
                 sortedSimilarStringsLocal.split("property/method:")[1].trim()
               );
-              return `
-'${invalidProperty}' is invalid property or method of the type '${className}'. 
-You should fix that by using the listed method or property below.
-method or property of type '${className}':
-\`\`\`typescript
-${declarationWithComments.comments || ""}
-${declarationWithComments.declaration || ""}
-\`\`\`\n
-              `;
+              return getFixSuggestionPropertyDoesNotExistOnTypeFoundConcreateMembership(
+                className,
+                invalidProperty,
+                declarationWithComments.comments,
+                declarationWithComments.declaration
+              );
             } else {
               sortedSimilarStringsGlobal.unshift(sortedSimilarStringsLocal);
               const suggestioons = sortedSimilarStringsGlobal.map((suggestion, index) => {
@@ -362,26 +389,19 @@ ${declarationWithComments.declaration || ""}
                   suggestion.split("property/method:")[0].trim(),
                   suggestion.split("property/method:")[1].trim()
                 );
-                return `
-${index + 1}. Candidate for fixing:
-  \`\`\`typescript
-  // This is method or property of type '${declarationWithComments.class}'
-  ${declarationWithComments.comments || ""}
-  ${declarationWithComments.declaration || ""}
-  \`\`\`\n
-                `;
+                return getFixSuggestionPropertyDoesNotExistOnTypeFoundCandidateOfFixing(
+                  index,
+                  declarationWithComments.class,
+                  declarationWithComments.comments,
+                  declarationWithComments.declaration
+                );
               });
-              return `
-'${invalidProperty}' is invalid property or method of the type '${className}'. 
-Based on the purpose of that line of code, you can refer potential possible relevant properties or method below. It may need more than one intermediate steps to get there, using your knownledge and the list below to find the path.
-
-${suggestioons.join("\n")}
-
-You may able to use the property or method of the type '${className}' as the start of the intermediate steps. The class indicates the type of the object, and the property or method indicates the action or the property of the object.
-\`\`\`typescript
-${memberNames.join("\n")}
-\`\`\`\n
-              `;
+              return getFixSuggestionPropertyDoesNotExistOnTypeFoundGeneralSuggestion(
+                className,
+                invalidProperty,
+                suggestioons,
+                memberNames
+              );
             }
           }
         }
@@ -409,7 +429,7 @@ ${memberNames.join("\n")}
         telemetryData.measurements[
           MeasurementCompilieErrorPropertyDoesNotExistOnTypeWithSuggestionCount
         ] += 1;
-        return "Make sure the function be implemented and returns a value.";
+        return getFixSuggestionNoFunctionReturnOrNoimplementation();
       },
     };
     treatments.push(noFunctionReturnOrNoimplementation);
@@ -423,7 +443,7 @@ ${memberNames.join("\n")}
           telemetryData.measurements[MeasurementCompilieErrorCannotFindModuleCount] = 0;
         }
         telemetryData.measurements[MeasurementCompilieErrorCannotFindModuleCount] += 1;
-        return "Remove the module import statement from the code.";
+        return getFixSuggestionCannotFindModule();
       },
     };
     treatments.push(cannotFindModule);
@@ -448,7 +468,7 @@ ${memberNames.join("\n")}
         const callExpression = node;
 
         if (!ts.isCallExpression(callExpression)) {
-          return "Rewrite the code with the correct number of arguments."; // something wrong
+          return getFixSuggestionArgumentCountMismatchGeneral();
         }
 
         const expression = callExpression.expression;
@@ -471,17 +491,21 @@ ${memberNames.join("\n")}
               const expected = signature.parameters.length;
               // Get the number of arguments in the CallExpression
               const actual = callExpression.arguments.length;
-              suggestion = `The method expects ${expected} arguments, but you provided ${actual}. Rewrite the code with the correct number of arguments. Following is the method signature: \n\`\`\`typescript\n${signature
-                .getDeclaration()
-                .getText()}\n\`\`\`\n`;
+              suggestion = getFixSuggestionArgumentCountMismatchHasSignature(
+                expected,
+                actual,
+                signature.getDeclaration().getText()
+              );
             } else {
-              suggestion = `Rewrite the code with the correct number of arguments. Following is the method signature: \n\`\`\`typescript\n${declaration.getText()}\n\`\`\`\n`;
+              suggestion = getFixSuggestionArgumentCountMismatchWithoutSignature(
+                declaration.getText()
+              );
             }
             return suggestion;
           }
         }
 
-        return "Rewrite the code with the correct number of arguments.";
+        return getFixSuggestionArgumentCountMismatchGeneral();
       },
     };
     treatments.push(argumentCountMismatch);
@@ -515,7 +539,9 @@ ${memberNames.join("\n")}
             if (declarations && declarations.length > 0) {
               // Get the first declaration
               const declaration = declarations[0];
-              suggestion = `You make the method call with invalid arugment, or the type of arugment does not match the expected type. If the source type is a union type, and union type could convert to the target type, then convert it to the single type match the expected type using "as" keyword. Otherwise, rewrite method invocation follow the method declaration below: \n\`\`\`typescript\n${declaration.getFullText()}\n\`\`\`\n`;
+              suggestion = getFixSuggestionArgumentTypeMismatchWithDeclaration(
+                declaration.getFullText()
+              );
             }
           }
         } else {
@@ -526,10 +552,9 @@ ${memberNames.join("\n")}
             const invalidType = matches[1];
             const validType = matches[2];
             // return `The given argument is unexpected. It could be used a wrong object, or you should use an alternative format of the object, in order to match the expected type '${validType}'.`;
-            suggestion = `Find a property or method of the type '${invalidType}' it server for a similar purpose, and result to the type '${validType}', rewrite the code to use the property or method. Or rewrite the code using an alternative approach to achieve the same purpose.`;
+            suggestion = getFixSuggestionArgumentTypeMismatchWithTypeDetail(invalidType, validType);
           } else {
-            suggestion =
-              "Rewrite relevant code, or use an alternative approach to achieve the same purpose.";
+            suggestion = getFixSuggestionArgumentTypeMismatchGeneral();
           }
         }
 
@@ -547,7 +572,7 @@ ${memberNames.join("\n")}
           telemetryData.measurements[MeasurementCompilieErrorOperatorAddOnTypeMismatchCount] = 0;
         }
         telemetryData.measurements[MeasurementCompilieErrorOperatorAddOnTypeMismatchCount] += 1;
-        return "You should understand the purpose of that operation. The left-hand operand or the right-hand operand is unexpected, You use wrong object, or should use an alternative format of that object, in order to make two objects type compatible for the operator.";
+        return getFixSuggestionOperatorAddOnTypeMismatch();
       },
     };
     treatments.push(operatorAddOnTypeMismatch);
@@ -561,7 +586,7 @@ ${memberNames.join("\n")}
           telemetryData.measurements[MeasurementCompilieErrorTypeIsNotAssignableToTypeCount] = 0;
         }
         telemetryData.measurements[MeasurementCompilieErrorTypeIsNotAssignableToTypeCount] += 1;
-        return "You should understand the purpose of that assignment. The right-hand operand is unexpected. You use wrong object, or you should not assign the right-hand operand to the left because the right-hand operand is not assignable (like 'void'), or should use an alternative format of that object in order to make two objects type compatible for the operator.";
+        return getFixSuggestionTypeIsNotAssignableToType();
       },
     };
     treatments.push(typeIsNotAssignableToType);
@@ -577,7 +602,7 @@ ${memberNames.join("\n")}
           telemetryData.measurements[MeasurementCompilieErrorConvertTypeToTypeMistakeCount] = 0;
         }
         telemetryData.measurements[MeasurementCompilieErrorConvertTypeToTypeMistakeCount] += 1;
-        return "You should understand the purpose of that expression. The right-hand operand is unexpected, You use wrong object, or should use an alternative format of that object, in order to make two objects type compatible for the operator.";
+        return getFixSuggestionConvertTypeToTypeMistake();
       },
     };
     treatments.push(convertTypeToTypeMistake);
@@ -611,7 +636,9 @@ ${memberNames.join("\n")}
             if (declarations && declarations.length > 0) {
               // Get the first declaration
               const declaration = declarations[0];
-              suggestion = `You have mixed several overload forms of the method. Rewrite the code follow this method declaration: \n\`\`\`typescript\n${declaration.getFullText()}\n\`\`\`\n`;
+              suggestion = getFixSuggestionOverloadMismatchWithDeclaration(
+                declaration.getFullText()
+              );
             }
           }
         } else {
@@ -622,10 +649,9 @@ ${memberNames.join("\n")}
             // let currentOverload = match[1];
             // let inTotalOverload = match[2];
             const methodDeclaration = match[3];
-            suggestion = `You have mixed several overload forms of the method. You use wrong object, or you should use an alternative format of that object, in order to match this method declaration "${methodDeclaration}".`;
+            suggestion = getFixSuggestionOverloadMismatchWithDeclaration(methodDeclaration);
           } else {
-            suggestion =
-              "You have mixed several overload forms of the method. You use wrong object, or you should use an alternative format of that object, in order to match the first overload.";
+            suggestion = getFixSuggestionOverloadMismatchGeneral();
           }
         }
 
@@ -643,7 +669,7 @@ ${memberNames.join("\n")}
           telemetryData.measurements[MeasurementCompilieErrorCannotFindNameCount] = 0;
         }
         telemetryData.measurements[MeasurementCompilieErrorCannotFindNameCount] += 1;
-        return "Declare the variable before using it or implement the missing function.";
+        return getFixSuggestionCannotFindName();
       },
     };
     treatments.push(cannotFindName);
@@ -663,7 +689,7 @@ ${memberNames.join("\n")}
         telemetryData.measurements[
           MeasurementCompilieErrorCannotAssignToReadOnlyPropertyCount
         ] += 1;
-        return "Remove the assignment statement, or find a method available to change the value.";
+        return getFixSuggestionCannotAssignToReadOnlyProperty();
       },
     };
     treatments.push(cannotAssignToReadOnlyProperty);
@@ -679,7 +705,7 @@ ${memberNames.join("\n")}
           telemetryData.measurements[MeasurementCompilieErrorTopLevelExpressionForbidenCount] = 0;
         }
         telemetryData.measurements[MeasurementCompilieErrorTopLevelExpressionForbidenCount] += 1;
-        return "Wrap the await expression in an async function, or wrap all the code in an async function.";
+        return getFixSuggestionTopLevelExpressionForbiden();
       },
     };
     treatments.push(topLevelExpressionForbiden);
@@ -693,7 +719,7 @@ ${memberNames.join("\n")}
           telemetryData.measurements[MeasurementCompilieErrorExpressionExpectedCount] = 0;
         }
         telemetryData.measurements[MeasurementCompilieErrorExpressionExpectedCount] += 1;
-        return "The expression is incomplete, finish that using Hypothetical implementation.";
+        return getFixSuggestionExpressionExpectedHandlder();
       },
     };
     treatments.push(expressionExpectedHandlder);
@@ -975,7 +1001,11 @@ ${memberNames.join("\n")}
           const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
 
           if (!accessObjStr) {
-            const warningMsg = `Double check: Office API Object Property Access: ${accessObjStr.toString()}.${propertyStr} at line ${line}. You'd make sure the ${propertyStr} been loaded from ${accessObjStr.toString()} using the load function if that is necessary.`;
+            const warningMsg = getSuggestionOnAPIObjectPropertyAccessBeforeLoad(
+              accessObjStr.toString(),
+              propertyStr,
+              line
+            );
             result.runtimeErrors.push(warningMsg);
           }
         }
@@ -1006,14 +1036,22 @@ ${memberNames.join("\n")}
           const rightType = checker.getTypeAtLocation(node.right);
           if (checker.typeToString(rightType) === "number" && !!sourceFile) {
             const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-            const warningMsg = `Double check: Excel A1 Notation in String Concatenation: '${node.getText()}' at line ${line}. Based on the Excel A1 notation string definition, and code context, double check if the ${node.right.getFullText()} represent the expected row size. And expression '${node.getText()}' present the expected range size. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
+            const warningMsg = getSuggestionOnExcelA1NotationInStringConcatenationRight(
+              node.getText(),
+              line,
+              node.right.getFullText()
+            );
             result.runtimeErrors.push(warningMsg);
           }
         } else if (ts.isStringLiteral(node.right) && self.isValidExcelA1Notation(node.right.text)) {
           const leftType = checker.getTypeAtLocation(node.left);
           if (checker.typeToString(leftType) === "number" && !!sourceFile) {
             const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-            const warningMsg = `Double check: Excel A1 Notation in String Concatenation: '${node.getText()}' at line ${line}. Based on the Excel A1 notation string definition, and code context, double check if the ${node.left.getFullText()} represent the expected row size. And expression '${node.getText()}' present the expected range size. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
+            const warningMsg = getSuggestionOnExcelA1NotationInStringConcatenationLeft(
+              node.getText(),
+              line,
+              node.left.getFullText()
+            );
             result.runtimeErrors.push(warningMsg);
           }
         }
@@ -1048,7 +1086,11 @@ ${memberNames.join("\n")}
             const type = checker.getTypeAtLocation(span.expression.name);
             if (!!sourceFile && checker.typeToString(type) === "number") {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Based on the Excel A1 notation string definition, and code context, Double check the ${expressionStr} represent the expected size. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
+              const warningMsg = getFixSuggestionExcelA1NotationInStringInterpolationPropertyAccess(
+                node.getText(),
+                line,
+                expressionStr
+              );
               result.runtimeErrors.push(warningMsg);
             }
           } else if (
@@ -1065,7 +1107,14 @@ ${memberNames.join("\n")}
               !!sourceFile
             ) {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus a number '${rightType.value.toString()}' on the '${span.expression.left.getFullText()}'. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
+              const warningMsg =
+                getFixSuggestionExcelA1NotationInStringInterpolationBinaryExpressionLeftNumberLiteral(
+                  node.getText(),
+                  line,
+                  expressionStr,
+                  rightType.value.toString(),
+                  span.expression.left.getFullText()
+                );
               result.runtimeErrors.push(warningMsg);
             } else if (
               checker.typeToString(rightType) === "number" &&
@@ -1073,12 +1122,26 @@ ${memberNames.join("\n")}
               !!sourceFile
             ) {
               const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus a number '${leftType.value.toString()}' on the '${span.expression.right.getFullText()}'.Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
+              const warningMsg =
+                getFixSuggestionExcelA1NotationInStringInterpolationBinaryExpressionRightNumberLiteral(
+                  node.getText(),
+                  line,
+                  expressionStr,
+                  leftType.value.toString(),
+                  span.expression.right.getFullText()
+                );
               result.runtimeErrors.push(warningMsg);
             } else {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               const line = sourceFile!.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-              const warningMsg = `Double check: Excel A1 Notation in String Interpolation: ${node.getText()} at line ${line}. Double check the '${expressionStr}' has the expected size, because you're try to plus or minus '${span.expression.right.getFullText()}' on '${span.expression.left.getFullText()}'. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
+              const warningMsg =
+                getFixSuggestionExcelA1NotationInStringInterpolationBinaryExpressionGeneral(
+                  node.getText(),
+                  line,
+                  expressionStr,
+                  span.expression.right.getFullText(),
+                  span.expression.left.getFullText()
+                );
               result.runtimeErrors.push(warningMsg);
             }
           }
@@ -1106,7 +1169,7 @@ ${memberNames.join("\n")}
     function visit(node: ts.Node, checker: ts.TypeChecker): void {
       if (sourceFile && ts.isStringLiteral(node) && self.isValidExcelA1Notation(node.text)) {
         const line = sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
-        const warningMsg = `Double check: Excel A1 Notation in String Literal: ${node.text} at line ${line}. Ensure the ${node.text} has the expected size. If it size is not fixed, you must update code by reading the size from the variable, object property or the function return value, convert the string literal to a template string, or use the string interpolation. Double check if the A1 notation intended to represent the expected range size, like contains the range of headers, or just range of data. If the A1 notation contains header, make sure you always count on that header in following places. If the size is not expected, update the code to match the expected size.`;
+        const warningMsg = getFixSuggestionExcelA1NotationInStringLiteralGeneral(node.text, line);
         result.runtimeErrors.push(warningMsg);
       }
       ts.forEachChild(node, (child) => visit(child, checker));

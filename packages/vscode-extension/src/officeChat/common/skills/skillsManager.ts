@@ -38,11 +38,11 @@ export class SkillsManager {
     const capableSkills: ISkill[] = [];
     switch (capability) {
       case OfficeChatCommand.GenerateCode:
-        capableSkills.push(new SkillSet([this.codeGenerator, this.codeIssueCorrector], 1));
+        capableSkills.push(new SkillSet([this.codeGenerator, this.codeIssueCorrector], 2));
         capableSkills.push(this.printer);
         break;
       case OfficeChatCommand.Create:
-        capableSkills.push(new SkillSet([this.codeGenerator, this.codeIssueCorrector], 1));
+        capableSkills.push(new SkillSet([this.codeGenerator, this.codeIssueCorrector], 2));
         capableSkills.push(this.printer);
         capableSkills.push(this.projectCreator);
         break;

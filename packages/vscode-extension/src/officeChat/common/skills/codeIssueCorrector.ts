@@ -8,7 +8,6 @@ import {
   LanguageModelChatSystemMessage,
   LanguageModelChatUserMessage,
 } from "vscode";
-import { getCodeGenerateGuidance } from "./codeGuidance";
 import { CodeIssueDetector, DetectionResult } from "./codeIssueDetector";
 import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec"; // Add the missing import statement
@@ -23,7 +22,18 @@ import {
   MeasurementSystemSelfReflectionAttemptSucceeded,
   MeasurementSelfReflectionExecutionTimeInTotalSec,
 } from "../telemetryConsts";
-import { customFunctionSystemPrompt, excelSystemPrompt } from "../../officePrompts";
+import {
+  customFunctionSystemPrompt,
+  excelSystemPrompt,
+  getFixIssueDefaultSystemPrompt,
+  getFixIssueUserPrompt,
+  getGenerateCodeSamplePrompt,
+} from "../../officePrompts";
+import { add } from "lodash";
+import { localize } from "../../../utils/localizeUtils";
+import { SampleData } from "../samples/sampleData";
+import { SampleProvider } from "../samples/sampleProvider";
+import { getTokenLimitation } from "../../consts";
 
 export class CodeIssueCorrector implements ISkill {
   static MAX_TRY_COUNT = 10; // From the observation from a small set of test, fix over 2 rounds leads to worse result, set it to a smal number so we can fail fast
@@ -65,7 +75,7 @@ export class CodeIssueCorrector implements ISkill {
       `Baseline: [C] ${baseLineResuult.compileErrors.length}, [R] ${baseLineResuult.runtimeErrors.length}.`
     );
 
-    const model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4" = "copilot-gpt-3.5-turbo";
+    const model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4" = "copilot-gpt-4";
     let maxRetryCount: number;
     let issueTolerance: number;
 
@@ -95,6 +105,48 @@ export class CodeIssueCorrector implements ISkill {
       return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
     }
 
+    let samplesPrompt = getGenerateCodeSamplePrompt();
+    const scenarioSamples = new Map<string, SampleData>();
+    // Then let's query if any code examples relevant to the user's ask that we can put as examples
+    for (const task of codeTaskBreakdown) {
+      if (task.includes("function named 'main'")) {
+        continue;
+      }
+
+      const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesLLM(
+        token,
+        host,
+        task,
+        2 // Get top 2 most relevant samples for now
+      );
+
+      for (const [key, value] of samples) {
+        if (!scenarioSamples.has(key)) {
+          scenarioSamples.set(key, value);
+        }
+      }
+    }
+
+    if (scenarioSamples.size > 0) {
+      const codeSnippets: string[] = [];
+      scenarioSamples.forEach((sample, api) => {
+        console.debug(`[Code corrector] Sample matched: ${sample.description}`);
+        codeSnippets.push(`
+- ${sample.description}:
+\`\`\`typescript
+${sample.codeSample}
+\`\`\`\n
+`);
+      });
+
+      if (codeSnippets.length > 0) {
+        samplesPrompt = samplesPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
+      }
+    }
+    const sampleMessage: LanguageModelChatSystemMessage = new LanguageModelChatSystemMessage(
+      samplesPrompt
+    );
+
     let fixedCode: string | null = codeSnippet;
     const historicalErrors: string[] = [];
     let additionalInfo = "";
@@ -110,18 +162,9 @@ export class CodeIssueCorrector implements ISkill {
         break;
       }
       console.debug(`Self reflection iteration ${index + 1}.`);
-      let statusString;
-      if (baseLineResuult.compileErrors.length <= 2) {
-        statusString = "Almost there...";
-      } else if (baseLineResuult.compileErrors.length <= 5) {
-        statusString = "It may takes a little bit longer...";
-      } else if (baseLineResuult.compileErrors.length <= 10) {
-        statusString = "It will takes a while, you may want to grab a cup of coffee ;-)";
-      } else {
-        statusString = "It will takes a long time...";
-      }
-      statusString = "fixing code issues... " + statusString;
-      response.progress(statusString);
+      response.progress(
+        localize("teamstoolkit.chatParticipants.officeAddIn.issueDetector.fixingErrors")
+      );
       fixedCode = await this.fixIssueAsync(
         token,
         host,
@@ -132,7 +175,8 @@ export class CodeIssueCorrector implements ISkill {
         baseLineResuult.runtimeErrors,
         historicalErrors,
         additionalInfo,
-        model
+        model,
+        sampleMessage
       );
       if (!fixedCode) {
         // something wrong, just to the next round
@@ -228,71 +272,20 @@ export class CodeIssueCorrector implements ISkill {
     warningMessage: string[],
     historicalErrors: string[],
     additionalInfo: string,
-    model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4"
+    model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
+    sampleMessage: LanguageModelChatSystemMessage
   ) {
     if (errorMessages.length === 0) {
       return codeSnippet;
     }
-    const tempUserInput = `
-# Role:
-You're a professional and senior Office JavaScript Add-ins developer with a lot of experience and know all best practice on TypeScript, JavaScript, popular algorithm, Office Add-ins API, and deep understanding on the feature of Office applications (Word, Excel, PowerPoint). You need to offer the assistance to fix the code issue in the user given code snippet.
+    const tempUserInput = getFixIssueUserPrompt(codeSnippet, additionalInfo, historicalErrors);
 
-# Context:
-Given a Office JavaScript add-in code snippet. It have some errors and warnings in the code snippet. You should make code changes on my given code snippet to fix those errors and warnings. You are allowed to change the function body, but not allowed to change the function signature, function name, and function parameters. And you're not allowed to remove the function.
-\`\`\`typescript
-${codeSnippet};
-\`\`\`
-${
-  !!additionalInfo
-    ? "The prior fix is inapprioriate, some details as '" +
-      additionalInfo +
-      "', you should learn from your past errors and avoid same problem in this try."
-    : ""
-}
-
-${
-  historicalErrors.length > 0
-    ? "The historical errors you made in previous tries that you should avoid:\n- " +
-      historicalErrors.join("\n\n- ")
-    : ""
-}
-
-# Your tasks:
-Fix all errors on the given code snippet then return the updated code snippet back. 
-
-Let's think step by step.
-    `;
-
-    const defaultSystemPrompt = `
-The following content written using Markdown syntax, using "Bold" style to highlight the key information.
-
-# Context:
-The user given code snippet generated based on steps below, you should make some code changes on the code snippet, then return the code snippet with changes back.
-- ${substeps.join("\n- ")}
-
-# Your task:
-1. Fix listed errors and warining below all together. Don't introduce new errors.
-- ${errorMessages.join("\n- ")}
-- ${warningMessage.join("\n- ")}
-2. update the user given code snippet with prior fixes.
-3. Return the updated user given code snippet.
-**You must always strickly follow the coding rule, and format of output**.
-
-${getCodeGenerateGuidance(host)}
-
-Format of output:
-- The output should only contains code snippet. Beyond that, nothing else should be included in the output. 
-- The code output should be in one single markdown code block. 
-- Don't explain the code changes, just return the fixed code snippet.
-
-Example of output:
-That code snippet should surrounded by a pair of triple backticks, and must follow with a string "typescript". For example:
-\`\`\`typescript
-// The code snippet
-\`\`\`
-
-Let's think step by step.
-    `;
+    const defaultSystemPrompt = getFixIssueDefaultSystemPrompt(
+      host,
+      substeps,
+      errorMessages,
+      warningMessage
+    );
 
     let referenceUserPrompt = "";
     switch (host) {
@@ -309,19 +302,20 @@ Let's think step by step.
     }
 
     // Perform the desired operation
+    // The order in array is matter, don't change it unless you know what you are doing
     const messages: LanguageModelChatMessage[] = [
-      new LanguageModelChatSystemMessage(defaultSystemPrompt),
       new LanguageModelChatUserMessage(tempUserInput),
+      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+      sampleMessage,
+      new LanguageModelChatSystemMessage(referenceUserPrompt),
     ];
-    const referenceMessage: LanguageModelChatSystemMessage = new LanguageModelChatSystemMessage(
-      referenceUserPrompt
-    );
-    const referMsgCount = countMessageTokens(referenceMessage);
-    const msgCount = countMessagesTokens(messages);
-    console.log(`token count: ${msgCount + referMsgCount}`);
-    if (msgCount + referMsgCount < 3500) {
-      messages.unshift(referenceMessage);
+
+    let msgCount = countMessagesTokens(messages);
+    while (msgCount > getTokenLimitation(model)) {
+      messages.pop();
+      msgCount = countMessagesTokens(messages);
     }
+    console.debug(`token count: ${msgCount}, number of messages remains: ${messages.length}.`);
     const copilotResponse = await getCopilotResponseAsString(model, messages, token);
 
     // extract the code snippet

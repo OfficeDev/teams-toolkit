@@ -17,7 +17,6 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { FeatureFlagName } from "../../src/common/constants";
 import { CollaborationState } from "../../src/common/permissionInterface";
 import { SolutionError } from "../../src/component/constants";
 import { AadCollaboration, TeamsCollaboration } from "../../src/component/feature/collaboration";
@@ -1334,13 +1333,7 @@ describe("Collaborator APIs for V3", () => {
   });
 
   describe("parseManifestId", () => {
-    let mockedEnvRestore: RestoreFn;
-
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ [FeatureFlagName.V3]: "true" });
-    });
     afterEach(() => {
-      mockedEnvRestore();
       sandbox.restore();
     });
 

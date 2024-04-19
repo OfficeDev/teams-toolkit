@@ -1157,4 +1157,26 @@ describe("oauthQuestion", async () => {
       "Client secret is invalid. The length of secret should be >= 10 and <= 128"
     );
   });
+
+  it("client id additionalValidationOnAccept passed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthQuestion().children![0];
+    const validation = (question.data as TextInputQuestion).additionalValidationOnAccept;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientId", inputs);
+    assert.equal(result, undefined);
+  });
+
+  it("client secret additionalValidationOnAccept passed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthQuestion().children![1];
+    const validation = (question.data as TextInputQuestion).additionalValidationOnAccept;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientSecret", inputs);
+    assert.equal(result, undefined);
+  });
 });

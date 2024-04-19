@@ -365,7 +365,7 @@
   "core.createProjectQuestion.ApiKeyConfirm": "Teams Toolkit will upload the API key to Teams Developer Portal. The API key will be used by Teams client to securely access your API in runtime when API-Based Message Extension is triggered. Teams Toolkit will not store your API key.",
   "core.createProjectQuestion.OauthClientId": "Enter client id for Oauth registration in OpenAPI Description Document",
   "core.createProjectQuestion.OauthClientSecret": "Enter client secret for Oauth registration in OpenAPI Description Document",
-  "core.createProjectQuestion.OauthClientSecretConfirm": "Teams Toolkit will upload the client id/secret for Oauth Registration to Teams Developer Portal. The client id/secret will be used by Teams client to securely access your API in runtime when API-Based Message Extension is triggered. Teams Toolkit will not store your client id/secret.",
+  "core.createProjectQuestion.OauthClientSecretConfirm": "Teams Toolkit uploads the client id/secret for Oauth Registration to Teams Developer Portal. It is used by Teams client to securely access your API at runtime when API-Based Message Extension is triggered. Teams Toolkit doesn't store your client id/secret.",
   "core.createProjectQuestion.apiMessageExtensionAuth.title": "Authentication Type",
   "core.createProjectQuestion.apiMessageExtensionAuth.placeholder": "Select an authentication type",
   "core.createProjectQuestion.invalidApiKey.message": "Client secret is invalid. The length of secret should be >= 10 and <= 128",

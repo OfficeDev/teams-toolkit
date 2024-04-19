@@ -208,8 +208,8 @@ devDependencies:
     specifier: ^8.3.2
     version: 8.3.2
   vscode-extension-tester:
-    specifier: ^5.9.1
-    version: 5.9.1(mocha@10.2.0)(typescript@5.0.4)
+    specifier: ^8.0.2
+    version: 8.0.2
 
 packages:
 

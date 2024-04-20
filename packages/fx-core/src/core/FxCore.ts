@@ -2,16 +2,19 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
+import { SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
 import {
   ApiOperation,
   AppPackageFolderName,
   BuildFolderName,
   Context,
   CoreCallbackEvent,
+  CreateProjectInputs,
   CreateProjectResult,
   CryptoProvider,
   Func,
   FxError,
+  IGenerator,
   IQTreeNode,
   Inputs,
   InputsWithProjectPath,
@@ -23,12 +26,13 @@ import {
   Stage,
   TeamsAppInputs,
   Tools,
+  UserError,
   err,
   ok,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import { DotenvParseOutput } from "dotenv";
 import fs from "fs-extra";
+import * as jsonschema from "jsonschema";
 import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
@@ -41,7 +45,6 @@ import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
 import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -69,6 +72,7 @@ import { ValidateManifestArgs } from "../component/driver/teamsApp/interfaces/Va
 import { ValidateWithTestCasesArgs } from "../component/driver/teamsApp/interfaces/ValidateWithTestCasesArgs";
 import { teamsappMgr } from "../component/driver/teamsApp/teamsappMgr";
 import { manifestUtils } from "../component/driver/teamsApp/utils/ManifestUtils";
+import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 import {
   containsUnsupportedFeature,
   getFeaturesFromAppDefinition,
@@ -76,9 +80,9 @@ import {
 import { ValidateManifestDriver } from "../component/driver/teamsApp/validate";
 import { ValidateAppPackageDriver } from "../component/driver/teamsApp/validateAppPackage";
 import { ValidateWithTestCasesDriver } from "../component/driver/teamsApp/validateTestCases";
+import "../component/feature/sso";
 import { SSO } from "../component/feature/sso";
 import {
-  ErrorResult,
   OpenAIPluginManifestHelper,
   convertSpecParserErrorToFxError,
   copilotPluginParserOptions,
@@ -100,6 +104,7 @@ import { settingsUtil } from "../component/utils/settingsUtil";
 import {
   FileNotFoundError,
   InjectAPIKeyActionFailedError,
+  InputValidationError,
   InvalidProjectError,
   MissingRequiredInputError,
   MultipleAuthError,
@@ -109,15 +114,15 @@ import {
 } from "../error/common";
 import { NoNeedUpgradeError } from "../error/upgrade";
 import { YamlFieldMissingError } from "../error/yml";
-import { ProjectTypeOptions, ValidateTeamsAppInputs } from "../question";
+import { AppNamePattern, ProjectTypeOptions, ValidateTeamsAppInputs } from "../question";
+import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { SPFxVersionOptionIds, ScratchOptions, createProjectCliHelpNode } from "../question/create";
 import {
   HubTypes,
-  isAadMainifestContainsPlaceholder,
   TeamsAppValidationOptions,
+  isAadMainifestContainsPlaceholder,
 } from "../question/other";
 import { QuestionNames } from "../question/questionNames";
-import { copilotPluginApiSpecOptionId } from "../question/constants";
 import { CallbackRegistry } from "./callback";
 import { checkPermission, grantPermission, listCollaborator } from "./collaborator";
 import { LocalCrypto } from "./crypto";
@@ -135,8 +140,6 @@ import {
 } from "./middleware/utils/v3MigrationUtils";
 import { CoreTelemetryComponentName, CoreTelemetryEvent, CoreTelemetryProperty } from "./telemetry";
 import { CoreHookContext, PreProvisionResForVS, VersionCheckRes } from "./types";
-import "../component/feature/sso";
-import { pluginManifestUtils } from "../component/driver/teamsApp/utils/PluginManifestUtils";
 
 export type CoreCallbackFunc = (name: string, err?: FxError, data?: any) => void | Promise<void>;
 
@@ -180,6 +183,47 @@ export class FxCore {
     const res = await coordinator.create(context, inputs);
     inputs.projectPath = context.projectPath;
     return res;
+  }
+
+  @hooks([
+    ErrorContextMW({
+      component: "FxCore",
+      stage: "createProjectByCustomizedGenerator",
+      reset: true,
+    }),
+    ErrorHandlerMW,
+  ])
+  async createProjectByCustomizedGenerator(
+    inputs: CreateProjectInputs,
+    generator: IGenerator
+  ): Promise<Result<CreateProjectResult, FxError>> {
+    let folder = inputs["folder"];
+    if (!folder) {
+      return err(new MissingRequiredInputError("folder"));
+    }
+    folder = path.resolve(folder);
+    // create from new
+    const appName = inputs["app-name"];
+    if (undefined === appName) return err(new MissingRequiredInputError(QuestionNames.AppName));
+    const validateResult = jsonschema.validate(appName, {
+      pattern: AppNamePattern,
+    });
+    if (validateResult.errors && validateResult.errors.length > 0) {
+      return err(new InputValidationError(QuestionNames.AppName, validateResult.errors[0].message));
+    }
+    const projectPath = path.join(folder, appName);
+    const context = createContextV3();
+    const genRes = await generator.run(context, inputs, projectPath);
+    if (genRes.isErr()) return err(genRes.error);
+    // generate unique projectId in teamsapp.yaml (optional)
+    const ymlPath = path.join(projectPath, MetadataV3.configFile);
+    const result: CreateProjectResult = { projectPath: projectPath };
+    if (fs.pathExistsSync(ymlPath)) {
+      const ensureRes = await coordinator.ensureTrackingId(projectPath, inputs.projectId);
+      if (ensureRes.isErr()) return err(ensureRes.error);
+      result.projectId = ensureRes.value;
+    }
+    return ok(result);
   }
 
   /**

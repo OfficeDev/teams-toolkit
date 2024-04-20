@@ -79,6 +79,8 @@ export interface Inputs extends Record<string, any> {
 
 export type InputsWithProjectPath = Inputs & { projectPath: string };
 
+export type CreateProjectInputs = Inputs & { "app-name": string; folder: string };
+
 // This type has not been supported by TypeScript yet.
 // Check here https://github.com/microsoft/TypeScript/issues/13923.
 export type DeepReadonly<T> = {
@@ -167,6 +169,7 @@ export interface CreateProjectResult {
   projectPath: string;
   warnings?: Warning[];
   shouldInvokeTeamsAgent?: boolean;
+  projectId?: string;
 }
 
 export interface TeamsAppInputs extends InputsWithProjectPath {

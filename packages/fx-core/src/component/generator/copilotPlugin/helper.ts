@@ -288,6 +288,13 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
       id: operation.api,
       label: operation.api,
       groupName: arr[0],
+      detail: !operation.auth
+        ? getLocalizedString("core.copilotPlugin.api.noAuth")
+        : Utils.isBearerTokenAuth(operation.auth.authScheme)
+        ? getLocalizedString("core.copilotPlugin.api.apiKeyAuth")
+        : Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)
+        ? "OAuth"
+        : "",
       data: {
         serverUrl: operation.server,
       },

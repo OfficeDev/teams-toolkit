@@ -275,7 +275,8 @@ export class WebviewPanel {
       return;
     }
     if (this.panel && this.panel.webview) {
-      const readme = this.replaceRelativeImagePaths(htmlContent, sample);
+      let readme = this.replaceRelativeImagePaths(htmlContent, sample);
+      readme = this.replaceMermaidRelatedContent(readme);
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleReadme,
         readme: readme,
@@ -294,10 +295,15 @@ export class WebviewPanel {
   private replaceRelativeImagePaths(htmlContent: string, sample: SampleConfig) {
     const urlInfo = sample.downloadUrlInfo;
     const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/${sample.thumbnailPath}?raw=1`;
-    const imageRegex = /img\s+src="([^"]+)"/gm;
+    const imageRegex = /img\s+src="(?!https:\/\/camo\.githubusercontent\.com\/.)([^"]+)"/gm;
+    return htmlContent.replace(imageRegex, `img src="${imageUrl}"`);
+  }
+
+  private replaceMermaidRelatedContent(htmlContent: string): string {
     const mermaidRegex = /<pre lang="mermaid"/gm;
-    const replaceMermaidClass = htmlContent.replace(mermaidRegex, `<pre class="mermaid"`);
-    return replaceMermaidClass.replace(imageRegex, `img src="${imageUrl}"`);
+    const loaderRegex = /<span(.*)>\s.*\s*<circle(.*)<\/circle>\s.*<\/path>\s.*\s*<\/span>/gm;
+    const loaderRemovedHtmlContent = htmlContent.replace(loaderRegex, "");
+    return loaderRemovedHtmlContent.replace(mermaidRegex, `<pre class="mermaid"`);
   }
 
   private getWebpageTitle(panelType: PanelType): string {

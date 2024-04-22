@@ -9,6 +9,7 @@ declare const DOMPurify: {
   sanitize(source: string | Node): string;
 };
 declare const mermaid: {
+  initialize: (configs?: { theme: string }) => void;
   run(): Promise<void>;
 };
 declare const panelType: string;

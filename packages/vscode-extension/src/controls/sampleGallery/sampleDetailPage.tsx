@@ -42,6 +42,14 @@ export default class SampleDetailPage extends React.Component<SampleProps, Sampl
         data: this.props.sample,
       });
     }
+
+    let currentTheme = document.body.className;
+    if (currentTheme.includes("dark") || currentTheme.includes("high-contrast")) {
+      currentTheme = "dark";
+    } else {
+      currentTheme = "default";
+    }
+    mermaid.initialize({ theme: currentTheme });
     await mermaid.run();
   }
 

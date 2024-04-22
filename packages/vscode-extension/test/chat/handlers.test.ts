@@ -34,6 +34,7 @@ import { Correlator } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import { openUrlCommandHandler } from "../../src/chat/handlers";
 import { request } from "http";
+import { CommandKey } from "../../src/constants";
 
 describe("chat handlers", () => {
   const sandbox = sinon.createSandbox();
@@ -168,7 +169,7 @@ describe("chat handlers", () => {
       sandbox.stub(telemetry.ChatTelemetryData, "get").returns(undefined);
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const executeCommandStub = sandbox.stub(commands, "executeCommand");
-      await handler.chatExecuteCommandHandler("fakeCommand", "fakeRequestId", ["fakeArgs"]);
+      await handler.chatExecuteCommandHandler(CommandKey.OpenReadMe, "fakeRequestId", ["fakeArgs"]);
 
       chai.expect(sendTelemetryEventStub.called).to.equal(false);
       chai.expect(executeCommandStub.calledOnce).to.equal(true);

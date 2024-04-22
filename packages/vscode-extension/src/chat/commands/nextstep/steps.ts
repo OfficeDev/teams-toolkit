@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { CommandKey } from "../../../constants";
-import { CHAT_EXECUTE_COMMAND_ID } from "../../consts";
+import { CHAT_EXECUTE_COMMAND_ID, CHAT_OPENURL_COMMAND_ID } from "../../consts";
 import {
   canPreviewInTestTool,
   isAzureAccountLogin,
@@ -58,14 +58,16 @@ export const allSteps: () => NextStep[] = () => [
         command: CHAT_EXECUTE_COMMAND_ID,
         arguments: [CommandKey.OpenSamples],
       },
-    ],
-    followUps: [
       {
-        label: "@teams /create",
-        command: "create",
-        prompt: "",
+        title: "@teams /create",
+        command: CHAT_EXECUTE_COMMAND_ID,
+        arguments: [
+          "workbench.action.chat.open",
+          { query: "@teams /create", isPartialQuery: true },
+        ],
       },
     ],
+    followUps: [],
     condition: (status: WholeStatus) => !isProjectOpened(status),
     priority: 0,
   },
@@ -77,14 +79,14 @@ export const allSteps: () => NextStep[] = () => [
       let description = "";
       let findFirstSharp = false;
       for (const line of readme.split("\n")) {
+        if (findFirstSharp && line.trim().startsWith("#")) {
+          break;
+        }
         if (line.trim().startsWith("#")) {
           findFirstSharp = true;
         }
         if (!findFirstSharp) {
           continue;
-        }
-        if (line.toLocaleLowerCase().includes("prerequisite")) {
-          break;
         }
         description += line.trim() + " ";
       }
@@ -150,8 +152,11 @@ export const allSteps: () => NextStep[] = () => [
     commands: [
       {
         title: "Join Microsoft 365 Developer Program",
-        command: "teamsAgent.openUrlCommand",
-        arguments: ["https://developer.microsoft.com/en-us/microsoft-365/dev-program"],
+        command: CHAT_EXECUTE_COMMAND_ID,
+        arguments: [
+          CHAT_OPENURL_COMMAND_ID,
+          "https://developer.microsoft.com/en-us/microsoft-365/dev-program",
+        ],
       },
     ],
     followUps: [],

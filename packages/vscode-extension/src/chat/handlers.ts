@@ -32,6 +32,7 @@ import { defaultSystemPrompt } from "./prompts";
 import { ChatTelemetryData } from "./telemetry";
 import { ICopilotChatResult, ITelemetryData } from "./types";
 import { verbatimCopilotInteraction } from "./utils";
+import { CommandKey } from "../constants";
 
 export function chatRequestHandler(
   request: ChatRequest,
@@ -94,12 +95,15 @@ export async function chatExecuteCommandHandler(
       chatTelemetryData.measurements
     );
   }
-  return await commands.executeCommand<Result<unknown, FxError>>(
-    command,
-    correlationId,
-    TelemetryTriggerFrom.CopilotChat,
-    ...args
-  );
+  if (command in CommandKey) {
+    return await commands.executeCommand<Result<unknown, FxError>>(
+      command,
+      correlationId,
+      TelemetryTriggerFrom.CopilotChat,
+      ...args
+    );
+  }
+  return await commands.executeCommand(command, ...args);
 }
 
 export async function openUrlCommandHandler(url: string) {

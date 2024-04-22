@@ -30,7 +30,8 @@ import {
   isOfficeJSONAddinEnabled,
   isTdpTemplateCliTestEnabled,
   isChatParticipantEnabled,
-  isCustomizeGptEnabled,
+  featureFlagManager,
+  FeatureFlags,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -224,7 +225,10 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
 
-      if (CLIPlatforms.includes(inputs.platform) && isCustomizeGptEnabled()) {
+      if (
+        CLIPlatforms.includes(inputs.platform) &&
+        featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)
+      ) {
         // Show in CLI only
         staticOptions.push(ProjectTypeOptions.customizeGpt());
       }
@@ -684,7 +688,7 @@ export class CapabilityOptions {
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
-    if (isCustomizeGptEnabled()) {
+    if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
       capabilityOptions.push(...CapabilityOptions.customizeGptOptions());
     }
     capabilityOptions.push(...CapabilityOptions.customCopilots());
@@ -2576,6 +2580,7 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
             inputs[QuestionNames.Capabilities] !==
               CapabilityOptions.copilotPluginOpenAIPlugin().id &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
             inputs[QuestionNames.CustomizeGptWithPluginStart] !==
               CapabilityOptions.copilotPluginApiSpec().id &&
             inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&

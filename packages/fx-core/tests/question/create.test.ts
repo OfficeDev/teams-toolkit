@@ -3165,8 +3165,6 @@ describe("scaffold question", () => {
               typeof question.title === "function" ? await question.title(inputs) : question.title;
             assert.equal(title, "Choose the GPT type");
             return ok({ type: "success", result: CapabilityOptions.customizeGptBasic().id });
-          } else if (question.name === QuestionNames.ProgrammingLanguage) {
-            return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.AppName) {
             return ok({ type: "success", result: "test001" });
           } else if (question.name === QuestionNames.Folder) {
@@ -3178,7 +3176,6 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.ProgrammingLanguage,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);
@@ -4045,7 +4042,7 @@ describe("scaffold question", () => {
         assert.isDefined(officeAddinOption);
       }
     });
-    it("show customize GPT if CLI and enable isCustomizeGptEnabled() ", async () => {
+    it("show customize GPT if CLI and enable declarative GPT() ", async () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CustomizeGpt]: "true",
       });

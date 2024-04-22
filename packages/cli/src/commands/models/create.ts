@@ -14,9 +14,10 @@ import {
   CliQuestionName,
   CreateProjectInputs,
   CreateProjectOptions,
+  FeatureFlags,
   MeArchitectureOptions,
   QuestionNames,
-  isCustomizeGptEnabled,
+  featureFlagManager,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -44,7 +45,7 @@ function adjustOptions(options: CLICommandOption[]) {
       break;
     }
   }
-  if (!isCustomizeGptEnabled()) {
+  if (!featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
     //skip customize GPT questions if customize GPT is not enabled.
     const customizeGptQuestionNames = [QuestionNames.CustomizeGptWithPluginStart];
     options = options.filter(

@@ -1299,13 +1299,7 @@ export async function autoOpenProjectHandler(): Promise<void> {
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
     await openReadMeHandler(TelemetryTriggerFrom.Auto);
-    if (globalVariables.workspaceUri?.fsPath) {
-      await updateProjectStatus(
-        globalVariables.workspaceUri.fsPath,
-        CommandKey.OpenReadMe,
-        ok(null)
-      );
-    }
+    await updateProjectStatus(globalVariables.workspaceUri.fsPath, CommandKey.OpenReadMe, ok(null));
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
     await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);

@@ -95,7 +95,7 @@ export async function chatExecuteCommandHandler(
       chatTelemetryData.measurements
     );
   }
-  if (command in CommandKey) {
+  if (Object.values(CommandKey).includes(command as CommandKey)) {
     return await commands.executeCommand<Result<unknown, FxError>>(
       command,
       correlationId,

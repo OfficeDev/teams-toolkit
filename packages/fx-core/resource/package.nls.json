@@ -859,5 +859,9 @@
   "driver.oauth.error.nameTooLong": "The Oauth name is too long. The maximum character length is 128.",
   "driver.oauth.log.successCreateOauth": "Oauth registration created successfully with id %s!",
   "driver.oauth.error.domainInvalid": "Maximum %d domains allowed per Oauth registration.",
-  "driver.apiKey.error.oauthAuthInfoInvalid": "Unable to parse Oauth2 authScheme from spec. Make sure your API specification is valid."
+  "driver.apiKey.error.oauthAuthInfoInvalid": "Unable to parse Oauth2 authScheme from spec. Make sure your API specification is valid.",
+  "driver.oauth.log.skipUpdateApiKey": "Skip updating Oauth registration as the same property exists.",
+  "driver.oauth.confirm.update": "The following parameters will be updated:\n%s\nDo you want to continue?",
+  "driver.oauth.log.successUpdateOauth": "Oauth registration updated successfully!",
+  "driver.oauth.info.update": "Oauth registration updated successfully! The following parameters have been updated:\n%s"
 }

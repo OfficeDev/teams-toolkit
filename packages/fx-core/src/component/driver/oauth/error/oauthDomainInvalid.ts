@@ -3,7 +3,7 @@
 
 import { UserError } from "@microsoft/teamsfx-api";
 import { getDefaultString, getLocalizedString } from "../../../../common/localizeUtils";
-import { maxDomainPerApiKey } from "../utility/constants";
+import { maxDomainPerOauth } from "../utility/constants";
 
 const errorCode = "OauthDomainInvalid";
 const messageKey = "driver.oauth.error.domainInvalid";
@@ -14,7 +14,7 @@ export class OauthDomainInvalidError extends UserError {
       source: actionName,
       name: errorCode,
       message: getDefaultString(messageKey),
-      displayMessage: getLocalizedString(messageKey, maxDomainPerApiKey),
+      displayMessage: getLocalizedString(messageKey, maxDomainPerOauth),
     });
   }
 }

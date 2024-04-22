@@ -67,6 +67,10 @@ export function isCopilotAuthEnabled(): boolean {
   return featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
 }
 
+export function isCustomizeGptEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Notes for Office Addin Feature flags:
 // Case 1: TEAMSFX_OFFICE_ADDIN = false, TEAMSFX_OFFICE_XML_ADDIN = false
@@ -152,6 +156,7 @@ export class FeatureFlags {
     defaultValue: "false",
   };
   static readonly CopilotAuth = { name: FeatureFlagName.CopilotAuth, defaultValue: "false" };
+  static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
 }
 
 export class FeatureFlagManager {

@@ -16,6 +16,7 @@ import {
   CreateProjectOptions,
   MeArchitectureOptions,
   QuestionNames,
+  isCustomizeGptEnabled,
 } from "@microsoft/teamsfx-core";
 import chalk from "chalk";
 import { assign } from "lodash";
@@ -42,6 +43,13 @@ function adjustOptions(options: CLICommandOption[]) {
       option.choices = MeArchitectureOptions.all().map((o: OptionItem) => o.id);
       break;
     }
+  }
+  if (!isCustomizeGptEnabled()) {
+    //skip customize GPT questions if customize GPT is not enabled.
+    const customizeGptQuestionNames = [QuestionNames.CustomizeGptWithPluginStart];
+    options = options.filter(
+      (option) => !customizeGptQuestionNames.includes(option.name as QuestionNames)
+    );
   }
   return options;
 }

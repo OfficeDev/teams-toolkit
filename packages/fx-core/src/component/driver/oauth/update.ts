@@ -19,10 +19,12 @@ import {
 import { AppStudioClient } from "../teamsApp/clients/appStudioClient";
 import { AppStudioScopes } from "../teamsApp/constants";
 import { getandValidateOauthInfoFromSpec } from "./utility/utility";
+import { Service } from "typedi";
 
 const actionName = "oauth/update"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-update";
 
+@Service(actionName)
 export class UpdateOauthDriver implements StepDriver {
   description = getLocalizedString("driver.oauth.description.create");
   readonly progressTitle = getLocalizedString("driver.oauth.title.create");

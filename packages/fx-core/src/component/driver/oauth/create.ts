@@ -26,11 +26,13 @@ import { GraphScopes } from "../../../common/tools";
 import { OauthInfo, getandValidateOauthInfoFromSpec } from "./utility/utility";
 import { QuestionMW } from "../../middleware/questionMW";
 import { QuestionNames } from "../../../question/questionNames";
+import { Service } from "typedi";
 
 const actionName = "oauth/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-register";
 const supportedFlows = ["authorizationCode"];
 
+@Service(actionName)
 export class CreateOauthDriver implements StepDriver {
   description = getLocalizedString("driver.oauth.description.create");
   readonly progressTitle = getLocalizedString("driver.oauth.title.create");

@@ -15,71 +15,56 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 /**
  * Update all preview feature flags.
  */
-export function initializePreviewFeatureFlags(): void {
-  process.env[FeatureFlagName.BotNotification] = "true";
-  process.env[FeatureFlagName.M365App] = "true";
-  process.env[FeatureFlagName.AadManifest] = "true";
-  process.env[FeatureFlagName.ApiConnect] = "true";
-  process.env[FeatureFlagName.DeployManifest] = "true";
-  // Force the feature to close until it needs to be released.
-  process.env[FeatureFlagName.OfficeAddin] = "false";
-}
+export function initializePreviewFeatureFlags(): void {}
 
 export function isCLIDotNetEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CLIDotNet, false);
-}
-
-export function isV3Enabled(): boolean {
-  return process.env.TEAMSFX_V3 ? process.env.TEAMSFX_V3 === "true" : true;
-}
-
-export function isVideoFilterEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.VideoFilter, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.CLIDotNet);
 }
 
 export function isCopilotPluginEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.CopilotPlugin, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotPlugin);
 }
 
 export function isApiCopilotPluginEnabled(): boolean {
-  // return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, true) && isCopilotPluginEnabled();
-  return isFeatureFlagEnabled(FeatureFlagName.ApiCopilotPlugin, false) && isCopilotPluginEnabled();
+  return (
+    featureFlagManager.getBooleanValue(FeatureFlags.ApiCopilotPlugin) && isCopilotPluginEnabled()
+  );
 }
 
 export function enableTestToolByDefault(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TestTool, true);
+  return featureFlagManager.getBooleanValue(FeatureFlags.TestTool);
 }
 
 export function enableMETestToolByDefault(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.METestTool, true);
+  return featureFlagManager.getBooleanValue(FeatureFlags.METestTool);
 }
 
-export function isApiKeyEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.ApiKey, false);
-}
-
-export function isMultipleParametersEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.MultipleParameters, true);
+export function isNewGeneratorEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.NewGenerator);
 }
 
 export function isOfficeJSONAddinEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.OfficeAddin, false);
-}
-
-export function isTeamsFxRebrandingEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TeamsFxRebranding, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.OfficeAddin);
 }
 
 export function isTdpTemplateCliTestEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.TdpTemplateCliTest, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.TdpTemplateCliTest);
 }
 
 export function isAsyncAppValidationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.AsyncAppValidation, false);
+  return featureFlagManager.getBooleanValue(FeatureFlags.AsyncAppValidation);
 }
 
 export function isNewProjectTypeEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.NewProjectType, true);
+  return featureFlagManager.getBooleanValue(FeatureFlags.NewProjectType);
+}
+
+export function isChatParticipantEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.ChatParticipant);
+}
+
+export function isCopilotAuthEnabled(): boolean {
+  return featureFlagManager.getBooleanValue(FeatureFlags.CopilotAuth);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,3 +120,53 @@ export function isNewProjectTypeEnabled(): boolean {
 //   4.6 generator class: OfficeAddinGenerator
 //   4.7 template link: config.json.[capabilities].[office-addin-framework-type].[programming-language]
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export interface FeatureFlag {
+  name: string;
+  defaultValue: string;
+  description?: string;
+}
+
+export class FeatureFlags {
+  static readonly CLIDotNet = { name: FeatureFlagName.CLIDotNet, defaultValue: "false" };
+  static readonly CopilotPlugin = { name: FeatureFlagName.CopilotPlugin, defaultValue: "false" };
+  static readonly ApiCopilotPlugin = {
+    name: FeatureFlagName.ApiCopilotPlugin,
+    defaultValue: "false",
+  };
+  static readonly TestTool = { name: FeatureFlagName.TestTool, defaultValue: "true" };
+  static readonly METestTool = { name: FeatureFlagName.METestTool, defaultValue: "true" };
+  static readonly NewGenerator = { name: FeatureFlagName.NewGenerator, defaultValue: "false" };
+  static readonly OfficeAddin = { name: FeatureFlagName.OfficeAddin, defaultValue: "false" };
+  static readonly TdpTemplateCliTest = {
+    name: FeatureFlagName.TdpTemplateCliTest,
+    defaultValue: "false",
+  };
+  static readonly AsyncAppValidation = {
+    name: FeatureFlagName.AsyncAppValidation,
+    defaultValue: "false",
+  };
+  static readonly NewProjectType = { name: FeatureFlagName.NewProjectType, defaultValue: "true" };
+  static readonly ChatParticipant = {
+    name: FeatureFlagName.ChatParticipant,
+    defaultValue: "false",
+  };
+  static readonly CopilotAuth = { name: FeatureFlagName.CopilotAuth, defaultValue: "false" };
+}
+
+export class FeatureFlagManager {
+  getBooleanValue(featureFlag: FeatureFlag): boolean {
+    return isFeatureFlagEnabled(
+      featureFlag.name,
+      featureFlag.defaultValue === "true" || featureFlag.defaultValue === "1"
+    );
+  }
+  getStringValue(featureFlag: FeatureFlag): string {
+    return process.env[featureFlag.name] || featureFlag.defaultValue;
+  }
+  list(): FeatureFlag[] {
+    return Object.values(FeatureFlags);
+  }
+}
+
+export const featureFlagManager = new FeatureFlagManager();

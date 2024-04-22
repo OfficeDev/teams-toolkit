@@ -49,9 +49,9 @@ export class ConstantString {
   static readonly AdaptiveCardSchema = "http://adaptivecards.io/schemas/adaptive-card.json";
   static readonly AdaptiveCardType = "AdaptiveCard";
   static readonly TextBlockType = "TextBlock";
+  static readonly ImageType = "Image";
   static readonly ContainerType = "Container";
   static readonly RegistrationIdPostfix = "REGISTRATION_ID";
-  static readonly OAuthRegistrationIdPostFix = "OAUTH_REGISTRATION_ID";
   static readonly ResponseCodeFor20X = [
     "200",
     "201",

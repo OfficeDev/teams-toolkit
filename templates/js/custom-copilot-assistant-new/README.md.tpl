@@ -1,19 +1,13 @@
 # Overview of the AI Agent template
 
-This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library).
+This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library). 
 It showcases how to build an AI agent in Teams capable of chatting with users and helping users accomplish a specific task using natural language right in the Teams conversations, such as managing tasks.
 
-- [Overview of the AI Agent template](#overview-of-the-ai-agent-template)
-  - [Get started with the AI Agent template](#get-started-with-the-ai-agent-template)
-  - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Agent template with more AI capabilities](#extend-the-ai-agent-template-with-more-ai-capabilities)
-  - [Additional information and references](#additional-information-and-references)
-
-## Get started with the AI Agent template
+## Get started with the template
 
 > **Prerequisites**
 >
-> To run the AI Agent template in your local dev machine, you will need:
+> To run the template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 {{^enableTestToolByDefault}}

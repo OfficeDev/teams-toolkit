@@ -60,8 +60,11 @@ permissions:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
     env:
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       AUTO_TEST_PLAN_ID: ${{ github.event.inputs.source-testplan-id }}
       TARGET_TEST_PLAN_NAME: ${{ github.event.inputs.target-testplan-name }}
       DEVTUNNEL_CLIENT_ID: ${{ secrets.TEST_CLEAN_CLIENT_ID }}
@@ -72,6 +75,12 @@ jobs:
       - name: Init GitHub CLI
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+      
+      - uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
 
       - name: bvt (dispatch)
         id: bvt
@@ -189,9 +198,12 @@ jobs:
   main:
     name: ${{ matrix.test-case }}|${{ matrix.os }}|node ${{ matrix.node-version }}|${{ github.ref_name }}
     needs: setup
+    environment: engineering
+    permissions:
+      id-token: write
+      contents: read
     timeout-minutes: 50
     env:
-      ADO_TOKEN: ${{ secrets.ADO_PAT }}
       CI_ENABLED: true
       NGROK_TOKEN: ${{ secrets.NGROK_TOKEN }}
       TARGET_CLI_VERSION: ${{ needs.setup.outputs.target_cli_version }}
@@ -226,6 +238,12 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: azure/login@v1
+        with:
+          client-id: ${{secrets.DEVOPS_CLIENT_ID}}
+          tenant-id: ${{secrets.DEVOPS_TENANT_ID}}
+          subscription-id: ${{secrets.DEVOPS_SUB_ID}}
+
       - name: Set m365 account (unix)
         if: matrix.os != 'windows-latest'
         run: |
@@ -385,39 +403,35 @@ jobs:
       - name: Get VSCode & chromedriver
         working-directory: packages/tests
         run: |
-          npx extest get-vscode --storage .test-resources --type stable --code_version 1.78.0
-          npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.78.0
-
+          npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1
+          npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.88.1
+          cd .test-resources
+          ls
+  
       - name: Extract VSCode & chromedriver(unix)
         if: matrix.os == 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver_linux64.zip" -o".test-resources" -y
+          7z x ".test-resources/chromedriver-linux64.zip" -o".test-resources" -y
           tar xzvf ".test-resources/stable.tar.gz" --directory ".test-resources"
 
       - name: Extract VSCode & chromedriver(mac)
         if: matrix.os == 'macos-latest' 
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver_mac64.zip" -o".test-resources" -y
+          7z x ".test-resources/chromedriver-mac-x64.zip" -o".test-resources" -y
 
       - name: Extract VSCode & chromedriver(win)
         if: matrix.os == 'windows-latest'
         working-directory: packages/tests
         run: |
-          7z x ".test-resources/chromedriver_win32.zip" -o".test-resources" -y
+          7z x ".test-resources/chromedriver-win64.zip" -o".test-resources" -y
           7z x ".test-resources/stable.zip" -o".test-resources/VSCode-win32-x64-archive" -y
 
       - name: M365 Login
         working-directory: packages/tests
         run: | # rm -r -f ~/.fx/account
           npx ts-node src/scripts/m365Login.ts -- '${{ env.M365_ACCOUNT_NAME }}' '${{ env.M365_ACCOUNT_PASSWORD }}'
-
-      - name: Azure Login(win)
-        if: matrix.os == 'windows-latest'
-        working-directory: packages/tests
-        run: |
-          npx ts-node src/scripts/azureLogin.ts -- '${{ env.AZURE_ACCOUNT_NAME }}' '${{ env.AZURE_ACCOUNT_PASSWORD }}'
 
       - name: Build
         working-directory: packages/tests
@@ -445,14 +459,14 @@ jobs:
           sudo apt-get install xvfb
           export DISPLAY=:99.0
           Xvfb -ac :99 -screen 0 1920x1080x16 &
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.78.0 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
-
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+     
       - name: Run UI Test(mac & win)
         if: matrix.os != 'ubuntu-latest'
         working-directory: packages/tests
         run: |
-          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.78.0 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
-
+          npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ matrix.test-case }}.test.js
+      
       - name: Upload test result json file
         uses: actions/upload-artifact@v3
         if: ${{ github.event_name != 'schedule' || success() || (failure() && github.run_attempt >= 5) }}

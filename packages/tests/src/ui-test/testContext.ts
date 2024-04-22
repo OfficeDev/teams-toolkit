@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
 import * as path from "path";
 import * as fs from "fs-extra";
 import { VSBrowser } from "vscode-extension-tester";
@@ -15,6 +16,7 @@ import {
 import { getAppName, getScreenshotName } from "../utils/nameUtil";
 import { dotenvUtil } from "../utils/envUtil";
 import { Env } from "../utils/env";
+import { createVscodeArgvFile } from "../utils/commonUtils";
 
 export class TestContext {
   public browser?: Browser;
@@ -29,6 +31,7 @@ export class TestContext {
 
   public async before(): Promise<void> {
     await fs.ensureDir(this.testRootFolder);
+    createVscodeArgvFile();
     await VSBrowser.instance.waitForWorkbench();
     this.browser = await chromium.launch({
       headless: false,

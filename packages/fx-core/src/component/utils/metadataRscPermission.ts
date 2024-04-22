@@ -38,7 +38,7 @@ class MetadataRscPermissionUtil {
     }
 
     try {
-      const result = await manifestUtils.readAppManifest(manifestPath);
+      const result = await manifestUtils._readAppManifest(manifestPath);
       if (result.isErr()) {
         return;
       }

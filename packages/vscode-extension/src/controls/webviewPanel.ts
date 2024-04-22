@@ -2,35 +2,26 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import * as uuid from "uuid";
 import * as vscode from "vscode";
 
-import { Inputs } from "@microsoft/teamsfx-api";
-import {
-  Correlator,
-  SampleConfig,
-  isValidOfficeAddInProject,
-  sampleProvider,
-} from "@microsoft/teamsfx-core";
+import { Correlator, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
-import { downloadSample, getSystemInputs, openFolder } from "../handlers";
+import { downloadSampleApp } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetrySuccess,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
+import { isTriggerFromWalkThrough } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
 import { PanelType } from "./PanelType";
-import { isTriggerFromWalkThrough } from "../utils/commonUtils";
-import { openOfficeDevFolder } from "../officeDevHandlers";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -140,7 +131,7 @@ export class WebviewPanel {
             break;
           case Commands.CloneSampleApp:
             await Correlator.run(async () => {
-              await this.downloadSampleApp(msg);
+              await downloadSampleApp(TelemetryTriggerFrom.Webview, msg.data.appFolder);
             });
             break;
           case Commands.DisplayCommands:
@@ -180,6 +171,12 @@ export class WebviewPanel {
               },
             });
             break;
+          case Commands.InvokeTeamsAgent:
+            await vscode.commands.executeCommand(
+              "fx-extension.invokeChat",
+              TelemetryTriggerFrom.Webview
+            );
+            break;
           default:
             break;
         }
@@ -191,34 +188,6 @@ export class WebviewPanel {
     // Set the webview's initial html content
     this.panel.webview.html = this.getHtmlForWebview(panelType);
     this.panel.iconPath = this.getWebviewPanelIconPath(panelType);
-  }
-
-  private async downloadSampleApp(msg: any) {
-    const props: any = {
-      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-      [TelemetryProperty.SampleAppName]: msg.data.appFolder,
-    };
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
-    const inputs: Inputs = getSystemInputs();
-    inputs["samples"] = msg.data.appFolder;
-    inputs.projectId = inputs.projectId ?? uuid.v4();
-
-    const res = await downloadSample(inputs);
-    if (inputs.projectId) {
-      props[TelemetryProperty.NewProjectId] = inputs.projectId;
-    }
-    if (res.isOk()) {
-      props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      if (isValidOfficeAddInProject((res.value as vscode.Uri).fsPath)) {
-        await openOfficeDevFolder(res.value, true);
-      } else {
-        await openFolder(res.value, true);
-      }
-    } else {
-      props[TelemetryProperty.Success] = TelemetrySuccess.No;
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
-    }
   }
 
   private async LoadSampleCollection() {

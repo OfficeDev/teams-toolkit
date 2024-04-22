@@ -1,4 +1,3 @@
-import { AppYmlGenerator } from "./../../src/core/middleware/utils/appYmlGenerator";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ErrorType, SpecParser, ValidationStatus, WarningType } from "@microsoft/m365-spec-parser";
@@ -27,9 +26,11 @@ import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import { sampleProvider } from "../../src/common/samples";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
+import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXMLAddin/projectConfig";
 import { convertToLangKey } from "../../src/component/generator/utils";
 import * as utils from "../../src/component/utils";
 import { setTools } from "../../src/core/globalVars";
@@ -53,19 +54,16 @@ import {
   createSampleProjectQuestionNode,
   folderQuestion,
   getLanguageOptions,
+  officeAddinFrameworkQuestion,
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
-  officeAddinFrameworkQuestion,
-  getAddinFrameworkOptions,
   projectTypeQuestion,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
-import { sampleProvider } from "../../src/common/samples";
-import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXMLAddin/projectConfig";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   try {
@@ -105,7 +103,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
-        [FeatureFlagName.OfficeXMLAddin]: "false",
+        [FeatureFlagName.ChatParticipant]: "false",
       });
     });
     afterEach(() => {
@@ -574,9 +572,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode Office XML addin", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -646,7 +641,6 @@ describe("scaffold question", () => {
         QuestionNames.Folder,
         QuestionNames.AppName,
       ]);
-      mockedEnvRestoreLocal();
     });
     it("traverse in vscode Office addin", async () => {
       const inputs: Inputs = {
@@ -1506,7 +1500,7 @@ describe("scaffold question", () => {
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             const select = question as SingleSelectQuestion;
             const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
+            assert.isTrue(options.length === 3);
             return ok({ type: "success", result: "typescript" });
           } else if (question.name === QuestionNames.LLMService) {
             const select = question as SingleSelectQuestion;
@@ -1763,15 +1757,12 @@ describe("scaffold question", () => {
       });
 
       describe("list operations", async () => {
-        let mockedEnvRestore: RestoreFn = () => {};
+        const mockedEnvRestore: RestoreFn = () => {};
 
         afterEach(() => {
           mockedEnvRestore();
         });
         it("list operations successfully", async () => {
-          mockedEnvRestore = mockedEnv({
-            [FeatureFlagName.ApiKey]: "false",
-          });
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -1805,7 +1796,7 @@ describe("scaffold question", () => {
           assert.isTrue(options[1].id === "operation2");
           assert.equal(
             placeholder,
-            getLocalizedString("core.createProjectQuestion.apiSpec.operation.placeholder")
+            getLocalizedString("core.createProjectQuestion.apiSpec.operation.apikey.placeholder")
           );
           assert.equal(
             title,
@@ -2124,9 +2115,6 @@ describe("scaffold question", () => {
         });
 
         it(" validate operations with auth successfully", async () => {
-          mockedEnvRestore = mockedEnv({
-            [FeatureFlagName.ApiKey]: "true",
-          });
           const question = apiOperationQuestion();
           const inputs: Inputs = {
             platform: Platform.VSCode,
@@ -3130,6 +3118,49 @@ describe("scaffold question", () => {
     });
   });
 
+  describe("createProjectQuestionNode if chatParticipant is enabled", async () => {
+    const ui = new MockUserInteraction();
+    let mockedEnvRestore: RestoreFn = () => {};
+
+    beforeEach(() => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlagName.CopilotPlugin]: "false",
+        [FeatureFlagName.SampleConfigBranch]: "dev",
+        [FeatureFlagName.ChatParticipant]: "true",
+      });
+    });
+    afterEach(() => {
+      mockedEnvRestore();
+    });
+
+    it("chat with Copilot Chat", async () => {
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+      };
+      const questions: string[] = [];
+      const visitor: QuestionTreeVisitor = async (
+        question: Question,
+        ui: UserInteraction,
+        inputs: Inputs,
+        step?: number,
+        totalSteps?: number
+      ) => {
+        questions.push(question.name);
+
+        await callFuncs(question, inputs);
+
+        if (question.name === QuestionNames.ProjectType) {
+          const select = question as SingleSelectQuestion;
+          const options = await select.dynamicOptions!(inputs);
+          assert.isTrue(options.length === 6);
+          return ok({ type: "success", result: ProjectTypeOptions.startWithGithubCopilot().id });
+        }
+        return ok({ type: "success", result: undefined });
+      };
+      await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
+      assert.deepEqual(questions, [QuestionNames.ProjectType]);
+    });
+  });
   describe("getLanguageOptions", () => {
     let mockedEnvRestore: RestoreFn = () => {};
 
@@ -3479,6 +3510,7 @@ describe("scaffold question", () => {
       mockedEnvRestore = mockedEnv({
         [FeatureFlagName.CopilotPlugin]: "true",
         [FeatureFlagName.ApiCopilotPlugin]: "false",
+        [FeatureFlagName.ChatParticipant]: "false",
       });
     });
 
@@ -3567,9 +3599,6 @@ describe("scaffold question", () => {
     });
 
     it("office xml addin: normal project have ts and js", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.CLI,
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
@@ -3584,13 +3613,9 @@ describe("scaffold question", () => {
           { label: "JavaScript", id: "javascript" },
         ]);
       }
-      mockedEnvRestoreLocal();
     });
 
     it("office xml addin: manifest-only project only have js option as default", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.CLI,
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
@@ -3602,7 +3627,6 @@ describe("scaffold question", () => {
         const options = await question.dynamicOptions(inputs);
         assert.deepEqual(options, [{ label: "JavaScript", id: "javascript" }]);
       }
-      mockedEnvRestoreLocal();
     });
 
     it("office addin: should have typescript as options", async () => {

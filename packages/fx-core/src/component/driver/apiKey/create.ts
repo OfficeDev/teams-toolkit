@@ -4,14 +4,11 @@
 import { hooks } from "@feathersjs/hooks";
 import { M365TokenProvider, SystemError, UserError, err, ok } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../../../common/featureFlags";
 import { getLocalizedString } from "../../../common/localizeUtils";
-import { SpecParser } from "@microsoft/m365-spec-parser";
 import { AppStudioScopes, GraphScopes } from "../../../common/tools";
 import { InvalidActionInputError, assembleError } from "../../../error";
 import { QuestionNames } from "../../../question";
 import { QuestionMW } from "../../middleware/questionMW";
-import { getAbsolutePath } from "../../utils/common";
 import { OutputEnvironmentVariableUndefinedError } from "../error/outputEnvironmentVariableUndefinedError";
 import { DriverContext } from "../interface/commonArgs";
 import { ExecutionResult, StepDriver } from "../interface/stepDriver";
@@ -25,8 +22,6 @@ import {
 } from "../teamsApp/interfaces/ApiSecretRegistration";
 import { ApiSecretRegistrationClientSecret } from "../teamsApp/interfaces/ApiSecretRegistrationClientSecret";
 import { ApiKeyClientSecretInvalidError } from "./error/apiKeyClientSecretInvalid";
-import { ApiKeyDomainInvalidError } from "./error/apiKeyDomainInvalid";
-import { ApiKeyFailedToGetDomainError } from "./error/apiKeyFailedToGetDomain";
 import { ApiKeyNameTooLongError } from "./error/apiKeyNameTooLong";
 import { CreateApiKeyArgs } from "./interface/createApiKeyArgs";
 import { CreateApiKeyOutputs, OutputKeys } from "./interface/createApiKeyOutputs";

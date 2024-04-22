@@ -3,7 +3,7 @@
 
 import { performance } from "perf_hooks";
 
-import { FxError } from "@microsoft/teamsfx-api";
+import { FxError, err, ok } from "@microsoft/teamsfx-api";
 import {
   LocalEnvManager,
   LocalTelemetryReporter,
@@ -23,6 +23,8 @@ import {
 import { getLocalDebugSession } from "./commonUtils";
 import { TeamsfxTaskProvider } from "./teamsfxTaskProvider";
 import { TeamsFxNpmCommands } from "@microsoft/teamsfx-core";
+import { updateProjectStatus } from "../utils/projectStatusUtils";
+import { CommandKey } from "../constants";
 
 function saveEventTime(eventName: string, time: number) {
   const session = getLocalDebugSession();
@@ -87,6 +89,15 @@ export async function sendDebugAllEvent(
 ): Promise<void> {
   const session = getLocalDebugSession();
   const now = performance.now();
+
+  if (globalVariables.workspaceUri?.fsPath) {
+    await updateProjectStatus(
+      globalVariables.workspaceUri.fsPath,
+      CommandKey.LocalDebug,
+      error ? err(error) : ok(undefined),
+      true
+    );
+  }
 
   let duration = -1;
   const startTime = session.eventTimes[TelemetryEvent.DebugAllStart];

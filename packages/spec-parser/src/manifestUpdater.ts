@@ -144,9 +144,11 @@ export class ManifestUpdater {
       }
 
       if (pluginAuthObj.type !== "None") {
-        pluginAuthObj.reference_id = `${Utils.getSafeRegistrationIdEnvName(
-          authInfo.name
-        )}_REGISTRATION_ID`;
+        const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
+          `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+        );
+
+        pluginAuthObj.reference_id = `\${{${safeRegistrationIdName}}}`;
       }
     }
 
@@ -375,6 +377,9 @@ export class ManifestUpdater {
 
         if (authInfo) {
           const auth = authInfo.authScheme;
+          const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
+            `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+          );
           if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
             const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
               `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
@@ -382,18 +387,14 @@ export class ManifestUpdater {
             (composeExtension as any).authorization = {
               authType: "apiSecretServiceAuth",
               apiSecretServiceAuthConfiguration: {
-                apiSecretRegistrationId: `\${{${safeApiSecretRegistrationId}}}`,
+                apiSecretRegistrationId: `\${{${safeRegistrationIdName}}}`,
               },
             };
           } else if (Utils.isOAuthWithAuthCodeFlow(auth)) {
-            const safeOAuth2RegistrationId = Utils.getSafeRegistrationIdEnvName(
-              `${authInfo.name}_${ConstantString.OAuthRegistrationIdPostFix}`
-            );
-
             (composeExtension as any).authorization = {
               authType: "oAuth2.0",
               oAuthConfiguration: {
-                oauthConfigurationId: `\${{${safeOAuth2RegistrationId}}}`,
+                oauthConfigurationId: `\${{${safeRegistrationIdName}}}`,
               },
             };
 

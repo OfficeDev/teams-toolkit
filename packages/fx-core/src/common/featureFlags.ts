@@ -152,6 +152,7 @@ export class FeatureFlags {
     defaultValue: "false",
   };
   static readonly CopilotAuth = { name: FeatureFlagName.CopilotAuth, defaultValue: "false" };
+  static readonly CustomizeGpt = { name: FeatureFlagName.CustomizeGpt, defaultValue: "false" };
 }
 
 export class FeatureFlagManager {

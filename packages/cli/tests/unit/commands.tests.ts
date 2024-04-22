@@ -1,6 +1,7 @@
 import { CLIContext, err, ok } from "@microsoft/teamsfx-api";
 import {
   CollaborationStateResult,
+  FeatureFlags,
   FuncToolChecker,
   FxCore,
   ListCollaboratorResult,
@@ -84,6 +85,7 @@ describe("CLI commands", () => {
     it("happy path", async () => {
       mockedEnvRestore = mockedEnv({
         DEVELOP_COPILOT_PLUGIN: "false",
+        [FeatureFlags.CustomizeGpt.name]: "false",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
@@ -104,10 +106,11 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
 
-    it("createProjectOptions - API copilot plugin disabled but bot Copilot plugin enabled", async () => {
+    it("createProjectOptions - need to adjust options when feature flag is enabled", async () => {
       mockedEnvRestore = mockedEnv({
         DEVELOP_COPILOT_PLUGIN: "true",
         API_COPILOT_PLUGIN: "false",
+        [FeatureFlags.CustomizeGpt.name]: "true",
       });
       sandbox.stub(activate, "getFxCore").returns(new FxCore({} as any));
       sandbox.stub(FxCore.prototype, "createProject").resolves(ok({ projectPath: "..." }));
@@ -120,9 +123,9 @@ describe("CLI commands", () => {
         telemetryProperties: {},
       };
 
-      const copilotPluginQuestionNames = [QuestionNames.OpenAIPluginManifest.toString()];
+      const filteredQuestionNames = [QuestionNames.CustomizeGptWithPluginStart.toString()];
       assert.isTrue(
-        ctx.command.options?.filter((o) => copilotPluginQuestionNames.includes(o.name)).length === 0
+        ctx.command.options?.filter((o) => filteredQuestionNames.includes(o.name)).length === 1
       );
       const res = await getCreateCommand().handler!(ctx);
       assert.isTrue(res.isOk());

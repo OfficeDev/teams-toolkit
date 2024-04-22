@@ -78,6 +78,7 @@ export enum QuestionNames {
 
   collaborationAppType = "collaborationType",
   DestinationApiSpecFilePath = "destination-api-spec-location",
+  CustomizeGptWithPluginStart = "customize-gpt-with-plugin-start",
 }
 
 export enum CliQuestionName {

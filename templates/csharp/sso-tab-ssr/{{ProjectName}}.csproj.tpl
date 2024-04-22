@@ -18,10 +18,10 @@
 
 {{/isNewProjectTypeEnabled}}
   <ItemGroup>
-	  <PackageReference Include="Azure.Identity" Version="1.11.2" />
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
-	  <PackageReference Include="Microsoft.Graph" Version="5.38.0" />
-	  <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.5.0" />
+    <PackageReference Include="Azure.Identity" Version="1.11.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Graph" Version="5.38.0" />
+    <PackageReference Include="Microsoft.Fast.Components.FluentUI" Version="3.5.0" />
     <PackageReference Include="Microsoft.TeamsFx" Version="2.4.*" />
   </ItemGroup>
 

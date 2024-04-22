@@ -7,7 +7,12 @@ import {
   CodeIssueDetector,
   DetectionResult,
 } from "../../../../src/officeChat/common/skills/codeIssueDetector";
-import { CancellationToken, ChatResponseStream, LanguageModelChatUserMessage } from "vscode";
+import {
+  CancellationToken,
+  ChatResponseStream,
+  LanguageModelChatUserMessage,
+  LanguageModelChatSystemMessage,
+} from "vscode";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 
 describe("CodeIssueCorrector", () => {
@@ -102,6 +107,9 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync no error return codeSnippet", async () => {
     const corrector = new CodeIssueCorrector();
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+      content: "some sample message",
+    };
 
     const result = await corrector.fixIssueAsync(
       {
@@ -116,7 +124,8 @@ describe("CodeIssueCorrector", () => {
       ["warning1", "warning2"], // warningMessage
       [], // historical errors
       "additional info", // additionalInfo
-      "copilot-gpt-3.5-turbo" // model
+      "copilot-gpt-3.5-turbo", // model
+      fakeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, "original code snippet");
@@ -124,6 +133,9 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync error with the LLM output and Excel host, isCustomFunctions false", async () => {
     const corrector = new CodeIssueCorrector();
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+      content: "some sample message",
+    };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(
@@ -148,7 +160,8 @@ describe("CodeIssueCorrector", () => {
       ["warning1", "warning2"], // warningMessage
       [], // historical errors
       "additional info", // additionalInfo
-      "copilot-gpt-3.5-turbo" // model
+      "copilot-gpt-3.5-turbo", // model
+      fakeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, null);
@@ -156,6 +169,10 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync error with the LLM output and Excel host, isCustomFunctions true", async () => {
     const corrector = new CodeIssueCorrector();
+
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+      content: "some sample message",
+    };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(
@@ -180,7 +197,8 @@ describe("CodeIssueCorrector", () => {
       ["warning1", "warning2"], // warningMessage
       [], // historical errors
       "additional info", // additionalInfo
-      "copilot-gpt-3.5-turbo" // model
+      "copilot-gpt-3.5-turbo", // model
+      fakeLanguageModelChatSystemMessage // sampleMessage
     );
 
     chai.assert.equal(result, null);
@@ -188,6 +206,9 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync error with the LLM output and other host", async () => {
     const corrector = new CodeIssueCorrector();
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+      content: "some sample message",
+    };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(
@@ -212,7 +233,8 @@ describe("CodeIssueCorrector", () => {
       ["warning1", "warning2"], // warningMessage
       [], // historical errors
       "additional info", // additionalInfo
-      "copilot-gpt-3.5-turbo" // model
+      "copilot-gpt-3.5-turbo", // model
+      fakeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, null);
@@ -220,6 +242,9 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync error with code length reduced too much", async () => {
     const corrector = new CodeIssueCorrector();
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+      content: "some sample message",
+    };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(
@@ -245,7 +270,8 @@ describe("CodeIssueCorrector", () => {
       ["warning1", "warning2"], // warningMessage
       [], // historical errors
       "additional info", // additionalInfo
-      "copilot-gpt-3.5-turbo" // model
+      "copilot-gpt-3.5-turbo", // model
+      fakeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, null);
@@ -253,6 +279,9 @@ describe("CodeIssueCorrector", () => {
 
   it("fixIssueAsync return newCodeStr", async () => {
     const corrector = new CodeIssueCorrector();
+    const fakeLanguageModelChatSystemMessage: LanguageModelChatSystemMessage = {
+      content: "some sample message",
+    };
 
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(
@@ -277,7 +306,8 @@ describe("CodeIssueCorrector", () => {
       ["warning1", "warning2"], // warningMessage
       [], // historical errors
       "additional info", // additionalInfo
-      "copilot-gpt-3.5-turbo" // model
+      "copilot-gpt-3.5-turbo", // model
+      fakeLanguageModelChatSystemMessage
     );
 
     chai.assert.equal(result, "++++++++");

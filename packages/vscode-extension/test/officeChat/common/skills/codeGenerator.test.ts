@@ -356,7 +356,7 @@ describe("codeGenerator", () => {
 
     const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
       SampleProvider.prototype,
-      "getTopKMostRelevantScenarioSampleCodes"
+      "getTopKMostRelevantScenarioSampleCodesLLM"
     );
 
     const scenarioSamples = new Map<string, SampleData>();

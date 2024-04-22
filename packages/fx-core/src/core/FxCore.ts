@@ -1327,8 +1327,9 @@ export class FxCore {
         const authNames: Set<string> = new Set();
         const serverUrls: Set<string> = new Set();
         for (const api of operations) {
-          const operation = apiResultList.find((op) => op.api === api)!;
+          const operation = apiResultList.find((op) => op.api === api);
           if (
+            operation &&
             operation.auth &&
             (Utils.isBearerTokenAuth(operation.auth.authScheme) ||
               Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme))

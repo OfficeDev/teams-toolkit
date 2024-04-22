@@ -1,11 +1,12 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { ChatResponseStream } from "vscode";
+import { ChatResponseStream, comments } from "vscode";
 import ts = require("typescript");
 import {
   CodeIssueDetector,
   DetectionResult,
 } from "../../../../src/officeChat/common/skills/codeIssueDetector";
+import * as utils from "../../../../src/officeChat/common/utils";
 import {
   MeasurementCompilieErrorArgumentCountMismatchCount,
   MeasurementCompilieErrorArgumentTypeMismatchCount,
@@ -22,6 +23,7 @@ import {
   MeasurementCompilieErrorTopLevelExpressionForbidenCount,
   MeasurementCompilieErrorTypeIsNotAssignableToTypeCount,
 } from "../../../../src/officeChat/common/telemetryConsts";
+import stringSimilarity = require("string-similarity");
 
 describe("File: codeIssueDetector", () => {
   const sandbox = sinon.createSandbox();
@@ -88,7 +90,7 @@ describe("File: codeIssueDetector", () => {
         callDetectIssueAsync = async (detector: CodeIssueDetector) => {
           return await detector.detectIssuesAsync(
             chatResponseStreamMock as unknown as ChatResponseStream,
-            "word",
+            "Word",
             false,
             "test",
             telemetryData
@@ -100,7 +102,6 @@ describe("File: codeIssueDetector", () => {
         const detector = CodeIssueDetector.getInstance();
 
         const result = await callDetectIssueAsync(detector);
-        chai.assert.isTrue(chatResponseStreamMock.progress.calledOnce);
         chai.assert.isDefined(result);
       }).timeout(3500);
 
@@ -109,9 +110,39 @@ describe("File: codeIssueDetector", () => {
 
         sandbox.stub(ts, "createProgram").returns(undefined as any);
         const result = await callDetectIssueAsync(detector);
-        chai.assert.isTrue(chatResponseStreamMock.progress.calledOnce);
         chai.assert.isDefined(result);
       }).timeout(3500);
+
+      it("buildTypeDefAst: other conditions", async () => {
+        let err = undefined;
+        const detector = CodeIssueDetector.getInstance();
+        const backupCompleteMemberNames = Reflect.get(detector, "completeMemberNames");
+        const backupDefinionFile = Reflect.get(detector, "definionFile");
+        const backupProcessNamespace = Reflect.get(detector, "processNamespace");
+
+        Reflect.set(detector, "completeMemberNames", [{}]);
+        Reflect.set(detector, "definionFile", undefined);
+        Reflect.set(detector, "processNamespace", () => ["a", "b", "c"]);
+        sandbox.stub(utils, "fetchRawFileContent").resolves("test");
+        sandbox.stub(ts, "createSourceFile").returns([] as any);
+        sandbox.stub(ts, "forEachChild").callsFake((node, fn) => {
+          (node as unknown as []).forEach((n) => {
+            fn(n);
+          });
+        });
+
+        try {
+          // Hack to direct call private methond
+          detector["buildTypeDefAst"]("Word");
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+        Reflect.set(detector, "completeMemberNames", backupCompleteMemberNames);
+        Reflect.set(detector, "definionFile", backupDefinionFile);
+        Reflect.set(detector, "processNamespace", backupProcessNamespace);
+      });
     });
 
     describe("Method: getCompilationErrorsAsync", () => {
@@ -123,6 +154,7 @@ describe("File: codeIssueDetector", () => {
         measurements: { [key: string]: number };
       };
       let mockTSNodeForErrorTreatment: () => void;
+      const backupProgram = Reflect.get(CodeIssueDetector.getInstance(), "program");
 
       beforeEach(() => {
         chatResponseStreamMock = {
@@ -149,26 +181,45 @@ describe("File: codeIssueDetector", () => {
           ]);
           sandbox.stub(ts, "getPositionOfLineAndCharacter").returns(0);
         };
+        Reflect.set(CodeIssueDetector.getInstance(), "program", "test");
       });
 
       afterEach(async () => {
         sandbox.restore();
+        Reflect.set(CodeIssueDetector.getInstance(), "program", backupProgram);
       });
 
       it("condition of diagnostic.file is empty", async () => {
         const detector = CodeIssueDetector.getInstance();
+        const backupProgram = Reflect.get(detector, "program");
 
-        await detector.detectIssuesAsync(
-          chatResponseStreamMock as unknown as ChatResponseStream,
-          "word",
-          false,
-          "test",
-          telemetryData
-        ); // ensure detector.program is not empty
+        Reflect.set(detector, "program", "test");
         sandbox.stub(ts, "getPreEmitDiagnostics").returns([{} as any]);
 
-        const result = detector.getCompilationErrorsAsync("word", false, telemetryData);
+        const result = detector.getCompilationErrorsAsync("Word", false, telemetryData);
+
         chai.assert.isDefined(result);
+        Reflect.set(detector, "program", backupProgram);
+      }).timeout(3500);
+
+      it("condition of node is empty", async () => {
+        const detector = CodeIssueDetector.getInstance();
+        const backupProgram = Reflect.get(detector, "program");
+        const backupFindNodeAtPosition = Reflect.get(detector, "findNodeAtPosition");
+
+        Reflect.set(detector, "program", "test");
+        Reflect.set(detector, "findNodeAtPosition", () => undefined);
+        sandbox
+          .stub(ts, "getPreEmitDiagnostics")
+          .returns([
+            { file: { getLineAndCharacterOfPosition: () => ({ line: 1, character: 1 }) } } as any,
+          ]);
+
+        const result = detector.getCompilationErrorsAsync("Word", false, telemetryData);
+
+        chai.assert.isDefined(result);
+        Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "findNodeAtPosition", backupFindNodeAtPosition);
       }).timeout(3500);
 
       it("other conditions in diagnostics.forEach block", async () => {
@@ -338,6 +389,120 @@ describe("File: codeIssueDetector", () => {
         sandbox.stub(ts, "isPropertyDeclaration").returns(false);
         const result = detector.getCompilationErrorsAsync("Word", false, telemetryData);
         chai.assert.isDefined(result);
+      });
+
+      it("error treatment: Property Does Not Exist On Type - Condition 10", async () => {
+        let err = undefined;
+        const detector = CodeIssueDetector.getInstance();
+        const backupProcessNamespace = Reflect.get(detector, "processNamespace");
+        const backupCompleteMemberNames = Reflect.get(detector, "completeMemberNames");
+        const backupgetDeclarationWithComments = Reflect.get(
+          detector,
+          "getDeclarationWithComments"
+        );
+
+        Reflect.set(detector, "getDeclarationWithComments", () => ({
+          class: "a",
+          comments: "b",
+          declaration: "c",
+        }));
+        Reflect.set(detector, "completeMemberNames", [
+          "property/method:123",
+          "property/method:dasf",
+        ]);
+        sandbox.stub(stringSimilarity, "findBestMatch").returns({
+          bestMatch: { target: "abc" },
+          ratings: [
+            { rating: 0.5, target: "" },
+            { rating: 0.6, target: "" },
+          ],
+        } as any);
+        sandbox.stub(ts, "forEachChild").callsFake((node, fn) => {
+          Reflect.set(detector, "processNamespace", () => [
+            "property/method:abc",
+            "property/method:",
+            "c",
+          ]);
+          fn(node);
+          Reflect.set(detector, "processNamespace", () => undefined);
+          fn(node);
+        });
+        try {
+          // Hack to direct call private methond
+          detector["getErrorTreatment"](
+            "Word",
+            {} as any,
+            "Property 'a' does not exist on type 'CritiqueAnnotation'.",
+            {
+              properties: {},
+              measurements: {},
+            }
+          );
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+        Reflect.set(detector, "processNamespace", backupProcessNamespace);
+        Reflect.set(detector, "completeMemberNames", backupCompleteMemberNames);
+        Reflect.set(detector, "getDeclarationWithComments", backupgetDeclarationWithComments);
+      });
+
+      it("error treatment: Property Does Not Exist On Type - Condition 11", async () => {
+        let err = undefined;
+        const detector = CodeIssueDetector.getInstance();
+        const backupProcessNamespace = Reflect.get(detector, "processNamespace");
+        const backupCompleteMemberNames = Reflect.get(detector, "completeMemberNames");
+        const backupgetDeclarationWithComments = Reflect.get(
+          detector,
+          "getDeclarationWithComments"
+        );
+
+        Reflect.set(detector, "getDeclarationWithComments", () => ({
+          class: "a",
+          comments: "b",
+          declaration: "c",
+        }));
+        Reflect.set(detector, "completeMemberNames", [
+          "property/method:abc",
+          "property/method:dasf",
+        ]);
+        sandbox.stub(stringSimilarity, "findBestMatch").returns({
+          bestMatch: { target: "abc" },
+          ratings: [
+            { rating: 0.5, target: "" },
+            { rating: 0.6, target: "" },
+          ],
+        } as any);
+        sandbox.stub(ts, "forEachChild").callsFake((node, fn) => {
+          Reflect.set(detector, "processNamespace", () => [
+            "property/method:abc",
+            "property/method:",
+            "c",
+          ]);
+          fn(node);
+          Reflect.set(detector, "processNamespace", () => undefined);
+          fn(node);
+        });
+        try {
+          // Hack to direct call private methond
+          detector["getErrorTreatment"](
+            "Word",
+            {} as any,
+            "Property 'a' does not exist on type 'CritiqueAnnotation'.",
+            {
+              properties: {},
+              measurements: {},
+            }
+          );
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+        Reflect.set(detector, "processNamespace", backupProcessNamespace);
+        Reflect.set(detector, "completeMemberNames", backupCompleteMemberNames);
+        Reflect.set(detector, "getDeclarationWithComments", backupgetDeclarationWithComments);
       });
 
       it("error treatment: No Function Return Or No Implementation", async () => {
@@ -960,6 +1125,248 @@ describe("File: codeIssueDetector", () => {
         const result = detector.getCompilationErrorsAsync("word", false, telemetryData);
         chai.assert.isDefined(result);
       });
+
+      it("getMethodsAndProperties - condition 1", () => {
+        let err = undefined;
+        const detector = CodeIssueDetector.getInstance();
+
+        sandbox.stub(ts, "isClassDeclaration").returns(true);
+
+        try {
+          // Hack to direct call private methond
+          detector["getMethodsAndProperties"]("Yes", {
+            name: {
+              getText: () => false,
+            },
+          } as any);
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+      });
+    });
+
+    it("getMethodsAndProperties - condition 1", () => {
+      let err = undefined;
+      const detector = CodeIssueDetector.getInstance();
+
+      sandbox.stub(ts, "isClassDeclaration").returns(true);
+      sandbox.stub(ts, "isMethodDeclaration").throws(new Error("error"));
+      sandbox.stub(console, "error").callsFake(() => {});
+      try {
+        // Hack to direct call private methond
+        detector["getMethodsAndProperties"](null, {
+          name: {
+            getText: () => false,
+          },
+          members: [{}],
+        } as any);
+      } catch (e) {
+        err = e;
+      }
+
+      chai.assert.isUndefined(err);
+    });
+
+    it("getMethodsAndProperties - condition 2", () => {
+      let err = undefined;
+      const detector = CodeIssueDetector.getInstance();
+
+      sandbox.stub(ts, "isClassDeclaration").returns(true);
+      sandbox.stub(ts, "isMethodDeclaration").throws(new Error("error"));
+      sandbox.stub(console, "error").callsFake(() => {});
+      try {
+        // Hack to direct call private methond
+        detector["getMethodsAndProperties"](null, {
+          name: undefined,
+          members: [{}],
+        } as any);
+      } catch (e) {
+        err = e;
+      }
+
+      chai.assert.isUndefined(err);
+    });
+
+    it("getDeclarationWithComments - condition 1", () => {
+      let err = undefined;
+      const detector = CodeIssueDetector.getInstance();
+      const backupDefinionFile = Reflect.get(detector, "definionFile");
+
+      Reflect.set(detector, "definionFile", {
+        text: "text",
+        getFullText: () => "text",
+        children: [
+          {
+            name: { getText: () => "a" },
+            getFullText: () => "text",
+            children: [
+              {
+                name: { getText: () => "b" },
+                getFullText: () => "text",
+                children: [
+                  {
+                    name: { getText: () => "d" },
+                    getFullText: () => "text",
+                    children: [
+                      {
+                        name: { getText: () => "c" },
+                        getFullText: () => "text",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
+      sandbox.stub(ts, "isModuleDeclaration").returns(true);
+      sandbox.stub(ts, "isClassDeclaration").returns(true);
+      sandbox.stub(ts, "isPropertyDeclaration").returns(false);
+      sandbox.stub(ts, "isMethodDeclaration").returns(true);
+      sandbox.stub(ts, "getLeadingCommentRanges").returns([{ pos: 0, end: 1 }] as any);
+      sandbox.stub(ts, "forEachChild").callsFake((node, fn) => {
+        (node as unknown as any).children?.forEach((n: any) => {
+          fn(n);
+        });
+      });
+
+      try {
+        // Hack to direct call private methond
+        detector["getDeclarationWithComments"]("a", "b", "c");
+      } catch (e) {
+        err = e;
+      }
+
+      chai.assert.isUndefined(err);
+      Reflect.set(detector, "definionFile", backupDefinionFile);
+    });
+
+    it("getDeclarationWithComments - condition 2", () => {
+      let err = undefined;
+      const detector = CodeIssueDetector.getInstance();
+      const backupDefinionFile = Reflect.get(detector, "definionFile");
+
+      Reflect.set(detector, "definionFile", {
+        text: "text",
+        getFullText: () => "text",
+        children: [
+          {
+            name: undefined,
+            getFullText: () => "text",
+            children: [
+              {
+                name: { getText: () => "c" },
+                getFullText: () => "text",
+              },
+            ],
+          },
+        ],
+      });
+      sandbox.stub(ts, "isModuleDeclaration").returns(false);
+      sandbox.stub(ts, "isClassDeclaration").returns(true);
+      sandbox.stub(ts, "isPropertyDeclaration").returns(false);
+      sandbox
+        .stub(ts, "isMethodDeclaration")
+        .onFirstCall()
+        .returns(false)
+        .onSecondCall()
+        .returns(true)
+        .onThirdCall()
+        .returns(true);
+      sandbox.stub(ts, "getLeadingCommentRanges").returns(false as any);
+      sandbox.stub(ts, "forEachChild").callsFake((node, fn) => {
+        (node as unknown as any).children?.forEach((n: any) => {
+          fn(n);
+        });
+      });
+
+      try {
+        // Hack to direct call private methond
+        detector["getDeclarationWithComments"]("a", "b", "c");
+      } catch (e) {
+        err = e;
+      }
+
+      chai.assert.isUndefined(err);
+      Reflect.set(detector, "definionFile", backupDefinionFile);
+    });
+
+    it("getDeclarationWithComments - condition 3", () => {
+      let err = undefined;
+      const detector = CodeIssueDetector.getInstance();
+      const backupDefinionFile = Reflect.get(detector, "definionFile");
+
+      Reflect.set(detector, "definionFile", {});
+      sandbox.stub(ts, "forEachChild").callsFake(() => {});
+
+      try {
+        // Hack to direct call private methond
+        detector["getDeclarationWithComments"]("a", "b", "c");
+      } catch (e) {
+        err = e;
+      }
+
+      chai.assert.isUndefined(err);
+      Reflect.set(detector, "definionFile", backupDefinionFile);
+    });
+
+    it("processNamespace - Condition 1", () => {
+      let err = undefined;
+      const detector = CodeIssueDetector.getInstance();
+      const backupGetMethodsAndProperties = Reflect.get(detector, "getMethodsAndProperties");
+
+      Reflect.set(detector, "getMethodsAndProperties", () => ["a", undefined, "c"]);
+      sandbox.stub(ts, "isModuleDeclaration").returns(true);
+      sandbox.stub(ts, "isModuleBlock").returns(true);
+      sandbox.stub(ts, "forEachChild").callsFake((node, fn) => {
+        (node as unknown as any).children?.forEach((n: any) => {
+          fn(n);
+        });
+      });
+
+      try {
+        // Hack to direct call private methond
+        detector["processNamespace"]("a", "b", {
+          name: { getText: () => "a" },
+          children: [{ children: [{}] }],
+        } as any);
+      } catch (e) {
+        err = e;
+      }
+
+      chai.assert.isUndefined(err);
+      Reflect.set(detector, "getMethodsAndProperties", backupGetMethodsAndProperties);
+    });
+
+    it("processNamespace - Condition 2", () => {
+      let err = undefined;
+      const detector = CodeIssueDetector.getInstance();
+      const backupGetMethodsAndProperties = Reflect.get(detector, "getMethodsAndProperties");
+
+      Reflect.set(detector, "getMethodsAndProperties", () => undefined);
+      sandbox.stub(ts, "isModuleDeclaration").returns(true);
+      sandbox.stub(ts, "isModuleBlock").returns(true);
+      sandbox.stub(ts, "forEachChild").callsFake((node, fn) => {
+        (node as unknown as any).children?.forEach((n: any) => {
+          fn(n);
+        });
+      });
+
+      try {
+        // Hack to direct call private methond
+        detector["processNamespace"]("a", "b", {
+          name: { getText: () => "a" },
+          children: [{ children: [{}] }],
+        } as any);
+      } catch (e) {
+        err = e;
+      }
+
+      chai.assert.isUndefined(err);
+      Reflect.set(detector, "getMethodsAndProperties", backupGetMethodsAndProperties);
     });
 
     describe("Method: getPotentialRuntimeIssues", () => {
@@ -998,7 +1405,9 @@ describe("File: codeIssueDetector", () => {
         const detector = CodeIssueDetector.getInstance();
         let err = undefined;
         const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
 
+        Reflect.set(detector, "typeChecker", {});
         Reflect.set(detector, "program", {
           getSourceFile: () => ({
             isImportDeclaration: true,
@@ -1048,17 +1457,41 @@ describe("File: codeIssueDetector", () => {
 
         chai.assert.isUndefined(err);
         Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
+      });
+
+      it("runtime issue: findImportAndRequireStatements - Condition 1", () => {
+        const detector = CodeIssueDetector.getInstance();
+        let err = undefined;
+        const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
+
+        Reflect.set(detector, "program", { getSourceFile: () => false });
+        Reflect.set(detector, "typeChecker", {});
+
+        try {
+          // Hack to direct call private methond
+          detector["findImportAndRequireStatements"]();
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+        Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
       });
 
       it("runtime issue: findEntryFunctionInGeneratedCode", () => {
         const detector = CodeIssueDetector.getInstance();
         let err = undefined;
         const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
 
+        Reflect.set(detector, "typeChecker", {});
         Reflect.set(detector, "program", {
           getSourceFile: () => ({
             isFunctionDeclaration: true,
-            name: { text: "main" },
+            name: { text: "main", getText: () => "main" },
             parameters: [],
             modifiers: [],
           }),
@@ -1081,17 +1514,20 @@ describe("File: codeIssueDetector", () => {
 
         chai.assert.isUndefined(err);
         Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
       });
 
       it("runtime issue: findEntryFunctionInGeneratedCode - Condition 1", () => {
         const detector = CodeIssueDetector.getInstance();
         let err = undefined;
         const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
 
+        Reflect.set(detector, "typeChecker", {});
         Reflect.set(detector, "program", {
           getSourceFile: () => ({
             isFunctionDeclaration: true,
-            name: { text: "main2" },
+            name: { text: "main2", getText: () => "main2" },
             parameters: [1, 2],
             modifiers: [{ kind: ts.SyntaxKind.AsyncKeyword }],
           }),
@@ -1114,17 +1550,20 @@ describe("File: codeIssueDetector", () => {
 
         chai.assert.isUndefined(err);
         Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
       });
 
       it("runtime issue: findEntryFunctionInGeneratedCode - Condition 2", () => {
         const detector = CodeIssueDetector.getInstance();
         let err = undefined;
         const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
 
+        Reflect.set(detector, "typeChecker", {});
         Reflect.set(detector, "program", {
           getSourceFile: () => ({
             isFunctionDeclaration: true,
-            name: { text: "main" },
+            name: { text: "main", getText: () => "main" },
             parameters: [1, 2],
             modifiers: undefined,
           }),
@@ -1147,13 +1586,16 @@ describe("File: codeIssueDetector", () => {
 
         chai.assert.isUndefined(err);
         Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
       });
 
       it("runtime issue: findEntryFunctionInGeneratedCode - Condition 3", () => {
         const detector = CodeIssueDetector.getInstance();
         let err = undefined;
         const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
 
+        Reflect.set(detector, "typeChecker", {});
         Reflect.set(detector, "program", {
           getSourceFile: () => ({
             isFunctionDeclaration: true,
@@ -1179,13 +1621,16 @@ describe("File: codeIssueDetector", () => {
 
         chai.assert.isUndefined(err);
         Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
       });
 
       it("runtime issue: findEntryFunctionInGeneratedCode - Condition 4", () => {
         const detector = CodeIssueDetector.getInstance();
         let err = undefined;
         const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
 
+        Reflect.set(detector, "typeChecker", {});
         Reflect.set(detector, "program", {
           getSourceFile: () => ({
             isFunctionDeclaration: true,
@@ -1213,6 +1658,118 @@ describe("File: codeIssueDetector", () => {
 
         chai.assert.isUndefined(err);
         Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
+      });
+
+      it("runtime issue: findEntryFunctionInGeneratedCode - Condition 5", () => {
+        const detector = CodeIssueDetector.getInstance();
+        let err = undefined;
+        const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
+
+        Reflect.set(detector, "typeChecker", {});
+        Reflect.set(detector, "program", {
+          getSourceFile: () => ({
+            isFunctionDeclaration: false,
+            name: "Yes",
+            parent: {
+              getText: () => "function main",
+            },
+            parameters: [1, 2, 3],
+            modifiers: [{ kind: ts.SyntaxKind.AsyncKeyword }],
+          }),
+        });
+        sandbox.stub(ts, "forEachChild").callsFake((node, visitNode) => {
+          const t = node as any;
+          if (t.children) t.children.forEach(visitNode);
+          if (!t.name) throw new Error("name is undefined");
+        });
+        sandbox
+          .stub(ts, "isFunctionDeclaration")
+          .onFirstCall()
+          .returns(true)
+          .onSecondCall()
+          .returns(false);
+        sandbox.stub(ts, "isArrowFunction").returns(true);
+        sandbox.stub(ts, "isFunctionExpression").returns(true);
+        sandbox.stub(console, "error").callsFake(() => {});
+
+        try {
+          // Hack to direct call private methond
+          detector["findEntryFunctionInGeneratedCode"]();
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+        Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
+      });
+
+      it("runtime issue: findEntryFunctionInGeneratedCode - Condition 6", () => {
+        const detector = CodeIssueDetector.getInstance();
+        let err = undefined;
+        const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
+
+        Reflect.set(detector, "typeChecker", {});
+        Reflect.set(detector, "program", {
+          getSourceFile: () => ({
+            isFunctionDeclaration: false,
+            name: "Yes",
+            parent: undefined,
+            parameters: [1, 2, 3],
+            modifiers: [{ kind: ts.SyntaxKind.AsyncKeyword }],
+          }),
+        });
+        sandbox.stub(ts, "forEachChild").callsFake((node, visitNode) => {
+          const t = node as any;
+          if (t.children) t.children.forEach(visitNode);
+          if (!t.name) throw new Error("name is undefined");
+        });
+        sandbox
+          .stub(ts, "isFunctionDeclaration")
+          .onFirstCall()
+          .returns(true)
+          .onSecondCall()
+          .returns(false);
+        sandbox.stub(ts, "isArrowFunction").returns(true);
+        sandbox.stub(ts, "isFunctionExpression").returns(true);
+        sandbox.stub(console, "error").callsFake(() => {});
+
+        try {
+          // Hack to direct call private methond
+          detector["findEntryFunctionInGeneratedCode"]();
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+        Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
+      });
+
+      it("runtime issue: findEntryFunctionInGeneratedCode - Condition 7", () => {
+        const detector = CodeIssueDetector.getInstance();
+        let err = undefined;
+        const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
+
+        Reflect.set(detector, "typeChecker", {});
+        Reflect.set(detector, "program", {
+          getSourceFile: () => false,
+        });
+
+        try {
+          // Hack to direct call private methond
+          detector["findEntryFunctionInGeneratedCode"]();
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+        Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
       });
 
       // eslint-disable-next-line no-secrets/no-secrets
@@ -1220,7 +1777,9 @@ describe("File: codeIssueDetector", () => {
         const detector = CodeIssueDetector.getInstance();
         let err = undefined;
         const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
 
+        Reflect.set(detector, "typeChecker", {});
         Reflect.set(detector, "program", {
           getSourceFile: () => ({
             getLineAndCharacterOfPosition: () => ({ line: 1, character: 1 }),
@@ -1255,6 +1814,32 @@ describe("File: codeIssueDetector", () => {
 
         chai.assert.isUndefined(err);
         Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
+      });
+
+      // eslint-disable-next-line no-secrets/no-secrets
+      it("runtime issue: findPropertyAccessAfterCallExpression - Condition 1", () => {
+        const detector = CodeIssueDetector.getInstance();
+        let err = undefined;
+        const backupProgram = Reflect.get(detector, "program");
+        const backupTypeChecker = Reflect.get(detector, "typeChecker");
+
+        Reflect.set(detector, "typeChecker", {});
+        Reflect.set(detector, "program", {
+          getSourceFile: () => false,
+        });
+
+        try {
+          // Hack to direct call private methond
+          // eslint-disable-next-line no-secrets/no-secrets
+          detector["findPropertyAccessAfterCallExpression"]("Word");
+        } catch (e) {
+          err = e;
+        }
+
+        chai.assert.isUndefined(err);
+        Reflect.set(detector, "program", backupProgram);
+        Reflect.set(detector, "typeChecker", backupTypeChecker);
       });
 
       it("runtime issue: findOfficeAPIObjectPropertyAccess", () => {

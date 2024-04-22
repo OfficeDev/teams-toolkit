@@ -12,15 +12,15 @@ import { MockTools, randomAppName } from "../../core/utils";
 import { Generator } from "../../../src/component/generator/generator";
 import {
   TemplateNames,
-  inputs2TemplateName,
+  inputsToTemplateName,
 } from "../../../src/component/generator/templates/templateNames";
 import { setTools } from "../../../src/core/globalVars";
 import { DefaultTemplateGenerator } from "../../../src/component/generator/templates/templateGenerator";
 import { TemplateInfo } from "../../../src/component/generator/templates/templateInfo";
 
 describe("TemplateGenerator", () => {
-  const testInputs2TemplateName = [
-    ...inputs2TemplateName,
+  const testInputsToTemplateName = [
+    ...inputsToTemplateName,
     {
       name: TemplateNames.TabSSR,
       inputs: {
@@ -76,7 +76,7 @@ describe("TemplateGenerator", () => {
     sandbox.restore();
   });
 
-  testInputs2TemplateName.forEach(async (pair) => {
+  testInputsToTemplateName.forEach(async (pair) => {
     it(`scaffolding ${pair.name}`, async () => {
       inputs = { ...inputs, ...pair.inputs };
       const res = await Generators.find((g) => g.activate(ctx, inputs))?.run(

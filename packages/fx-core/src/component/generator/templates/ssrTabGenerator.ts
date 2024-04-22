@@ -5,15 +5,15 @@ import { Context, FxError, Inputs, Result, ok } from "@microsoft/teamsfx-api";
 import { DefaultTemplateGenerator } from "./templateGenerator";
 import { TemplateInfo } from "./templateInfo";
 import { CapabilityOptions, ProgrammingLanguage, QuestionNames } from "../../../question";
-import { getTemplateReplaceMap } from "./templateReplaceMap";
 import { TemplateNames } from "./templateNames";
 
+// For the APS.NET server-side rendering tab
 export class SsrTabGenerator extends DefaultTemplateGenerator {
   capabilities2TemplateNames = {
     [CapabilityOptions.nonSsoTab().id]: TemplateNames.TabSSR,
     [CapabilityOptions.tab().id]: TemplateNames.SsoTabSSR,
   };
-  public activate(context: Context, inputs: Inputs): boolean {
+  override activate(context: Context, inputs: Inputs): boolean {
     const capability = inputs.capabilities as string;
     return (
       this.capabilities2TemplateNames[capability] !== undefined &&
@@ -22,7 +22,7 @@ export class SsrTabGenerator extends DefaultTemplateGenerator {
       inputs.targetFramework !== "net7.0"
     );
   }
-  public getTemplateInfos(
+  override getTemplateInfos(
     context: Context,
     inputs: Inputs
   ): Promise<Result<TemplateInfo[], FxError>> {
@@ -31,7 +31,6 @@ export class SsrTabGenerator extends DefaultTemplateGenerator {
         {
           templateName: this.capabilities2TemplateNames[inputs.capabilities as string],
           language: ProgrammingLanguage.CSharp,
-          replaceMap: getTemplateReplaceMap(inputs),
         },
       ])
     );

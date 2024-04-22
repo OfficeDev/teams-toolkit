@@ -46,6 +46,7 @@ export class DefaultTemplateGenerator {
 
     const templateInfos = preResult.value;
     for (const templateInfo of templateInfos) {
+      templateInfo.replaceMap = { ...getTemplateReplaceMap(inputs), ...templateInfo.replaceMap };
       await this.scaffolding(context, templateInfo, destinationPath, actionContext);
     }
 
@@ -63,8 +64,7 @@ export class DefaultTemplateGenerator {
   ): Promise<Result<TemplateInfo[], FxError>> {
     const templateName = getTemplateName(inputs);
     const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
-    const replaceMap = getTemplateReplaceMap(inputs);
-    return Promise.resolve(ok([{ templateName, language, replaceMap }]));
+    return Promise.resolve(ok([{ templateName, language }]));
   }
 
   // override this method to do post process

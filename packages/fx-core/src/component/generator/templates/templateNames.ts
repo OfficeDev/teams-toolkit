@@ -130,7 +130,7 @@ export const Feature2TemplateName = {
 };
 
 export function tryGetTemplateName(inputs: Inputs): TemplateNames | undefined {
-  return inputs2TemplateName.find((item) =>
+  return inputsToTemplateName.find((item) =>
     Object.keys(item.inputs).every((key) => item.inputs[key] === inputs[key])
   )?.name;
 }
@@ -144,7 +144,7 @@ export function getTemplateName(inputs: Inputs): TemplateNames {
 }
 
 // When multiple template name matches, only the top one will be picked.
-export const inputs2TemplateName: { inputs: { [key: string]: any }; name: TemplateNames }[] = [
+export const inputsToTemplateName: { inputs: { [key: string]: any }; name: TemplateNames }[] = [
   {
     inputs: { [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id },
     name: TemplateNames.Tab,

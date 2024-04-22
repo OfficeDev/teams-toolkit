@@ -10,7 +10,7 @@ chai.use(chaiPromised);
 const titles = {
   gettingStarted: "Getting started with Teams Toolkit",
   createOrOpenProject: "Create a new project or open an existing project",
-  summarizeReadme: "Summarize the README here",
+  summarizeReadme: "Learn more about the project with README",
   previewInTestTool: "Preview in Test Tool",
   signInM365Account: "Sign in to Microsoft 365 Account",
   joinM365DeveloperProgram: "Join Microsoft 365 Developer Program",
@@ -96,21 +96,21 @@ describe("next steps", () => {
 
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       sandbox.stub(condition, "isHaveReadMe").returns(true);
-      const step = steps.find((s) => s.title === "Summarize the README here");
+      const step = steps.find((s) => s.title === titles.summarizeReadme);
       chai.assert.isNotEmpty(step);
       chai.assert.isTrue(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - no project opened", () => {
       sandbox.stub(condition, "isProjectOpened").returns(false);
-      const step = steps.find((s) => s.title === "Summarize the README here");
+      const step = steps.find((s) => s.title === titles.summarizeReadme);
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
 
-      const step = steps.find((s) => s.title === "Summarize the README here");
+      const step = steps.find((s) => s.title === titles.summarizeReadme);
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
@@ -118,7 +118,7 @@ describe("next steps", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
 
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      const step = steps.find((s) => s.title === "Summarize the README here");
+      const step = steps.find((s) => s.title === titles.summarizeReadme);
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
 
@@ -127,7 +127,7 @@ describe("next steps", () => {
 
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       sandbox.stub(condition, "isHaveReadMe").returns(false);
-      const step = steps.find((s) => s.title === "Summarize the README here");
+      const step = steps.find((s) => s.title === titles.summarizeReadme);
       chai.assert.isFalse(step?.condition({} as WholeStatus));
     });
   });

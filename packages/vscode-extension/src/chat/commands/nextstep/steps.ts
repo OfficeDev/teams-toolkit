@@ -70,7 +70,7 @@ export const allSteps: () => NextStep[] = () => [
     priority: 0,
   },
   {
-    title: "Summarize the README here",
+    title: "Learn more about the project with README",
     description: (status: WholeStatus) => {
       // readme must exist because the condition has checked it
       const readme = status.projectOpened!.readmeContent!;

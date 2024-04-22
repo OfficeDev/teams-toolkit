@@ -7,8 +7,10 @@ export const logMessageKeys = {
   skipCreateOauth: "driver.oauth.log.skipCreateOauth",
   oauthNotFound: "driver.oauth.log.oauthNotFound",
   successCreateOauth: "driver.oauth.log.successCreateOauth",
+  skipUpdateOauth: "driver.oauth.log.skipUpdateOauth",
+  successUpdateOauth: "driver.oauth.log.successUpdateOauth",
 };
 
 export const maxSecretLength = 128;
 export const minSecretLength = 10;
-export const maxDomainPerApiKey = 1;
+export const maxDomainPerOauth = 1;

@@ -582,11 +582,11 @@ describe("HelperMethods", async () => {
 describe("OfficeAddinGenerator for Office Addin", function () {
   const testFolder = path.resolve("./tmp");
   let context: Context;
-  let mockedEnvRestore: RestoreFn;
+  let mockedEnvRestore: RestoreFn = () => {};
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_V3: "true" }, { clear: true });
+    mockedEnvRestore = mockedEnv({ clear: true });
     const gtools = new MockTools();
     setTools(gtools);
     context = createContextV3();

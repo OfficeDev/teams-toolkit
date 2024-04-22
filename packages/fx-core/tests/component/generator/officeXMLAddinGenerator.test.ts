@@ -16,10 +16,8 @@ import { OfficeAddinManifest } from "office-addin-manifest";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as uuid from "uuid";
-import { FeatureFlagName } from "../../../src/common/constants";
 import { cpUtils } from "../../../src/common/deps-checker";
 import { Generator } from "../../../src/component/generator/generator";
-import { HelperMethods } from "../../../src/component/generator/officeAddin/helperMethods";
 import { OfficeXMLAddinGenerator } from "../../../src/component/generator/officeXMLAddin/generator";
 import { getOfficeAddinTemplateConfig } from "../../../src/component/generator/officeXMLAddin/projectConfig";
 import * as componentUtils from "../../../src/component/utils";
@@ -35,10 +33,7 @@ describe("OfficeXMLAddinGenerator", function () {
   const mockedError = new SystemError("mockedSource", "mockedError", "mockedMessage");
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv(
-      { TEAMSFX_V3: "true", [FeatureFlagName.OfficeXMLAddin]: "true" },
-      { clear: true }
-    );
+    mockedEnvRestore = mockedEnv({ clear: true });
     const gtools = new MockTools();
     setTools(gtools);
     context = createContextV3();

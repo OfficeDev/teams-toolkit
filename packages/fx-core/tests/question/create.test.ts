@@ -1,4 +1,3 @@
-import { AppYmlGenerator } from "./../../src/core/middleware/utils/appYmlGenerator";
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ErrorType, SpecParser, ValidationStatus, WarningType } from "@microsoft/m365-spec-parser";
@@ -27,9 +26,11 @@ import sinon from "sinon";
 import { FeatureFlagName } from "../../src/common/constants";
 import { isApiCopilotPluginEnabled } from "../../src/common/featureFlags";
 import { getLocalizedString } from "../../src/common/localizeUtils";
+import { sampleProvider } from "../../src/common/samples";
 import { AppDefinition } from "../../src/component/driver/teamsApp/interfaces/appdefinitions/appDefinition";
 import { manifestUtils } from "../../src/component/driver/teamsApp/utils/ManifestUtils";
 import { pluginManifestUtils } from "../../src/component/driver/teamsApp/utils/PluginManifestUtils";
+import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXMLAddin/projectConfig";
 import { convertToLangKey } from "../../src/component/generator/utils";
 import * as utils from "../../src/component/utils";
 import { setTools } from "../../src/core/globalVars";
@@ -53,19 +54,16 @@ import {
   createSampleProjectQuestionNode,
   folderQuestion,
   getLanguageOptions,
+  officeAddinFrameworkQuestion,
   officeAddinHostingQuestion,
   openAIPluginManifestLocationQuestion,
   programmingLanguageQuestion,
-  officeAddinFrameworkQuestion,
-  getAddinFrameworkOptions,
   projectTypeQuestion,
 } from "../../src/question/create";
 import { QuestionNames } from "../../src/question/questionNames";
 import { QuestionTreeVisitor, traverse } from "../../src/ui/visitor";
 import { MockTools, MockUserInteraction, randomAppName } from "../core/utils";
 import { MockedLogProvider, MockedUserInteraction } from "../plugins/solution/util";
-import { sampleProvider } from "../../src/common/samples";
-import { OfficeAddinProjectConfig } from "../../src/component/generator/officeXMLAddin/projectConfig";
 
 export async function callFuncs(question: Question, inputs: Inputs, answer?: string) {
   try {
@@ -106,7 +104,6 @@ describe("scaffold question", () => {
         [FeatureFlagName.CopilotPlugin]: "false",
         [FeatureFlagName.SampleConfigBranch]: "dev",
         [FeatureFlagName.ChatParticipant]: "false",
-        [FeatureFlagName.OfficeXMLAddin]: "false",
       });
     });
     afterEach(() => {
@@ -575,9 +572,6 @@ describe("scaffold question", () => {
       ]);
     });
     it("traverse in vscode Office XML addin", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
       };
@@ -647,7 +641,6 @@ describe("scaffold question", () => {
         QuestionNames.Folder,
         QuestionNames.AppName,
       ]);
-      mockedEnvRestoreLocal();
     });
     it("traverse in vscode Office addin", async () => {
       const inputs: Inputs = {
@@ -3606,9 +3599,6 @@ describe("scaffold question", () => {
     });
 
     it("office xml addin: normal project have ts and js", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.CLI,
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
@@ -3623,13 +3613,9 @@ describe("scaffold question", () => {
           { label: "JavaScript", id: "javascript" },
         ]);
       }
-      mockedEnvRestoreLocal();
     });
 
     it("office xml addin: manifest-only project only have js option as default", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.CLI,
         [QuestionNames.ProjectType]: ProjectTypeOptions.officeXMLAddin().id,
@@ -3641,7 +3627,6 @@ describe("scaffold question", () => {
         const options = await question.dynamicOptions(inputs);
         assert.deepEqual(options, [{ label: "JavaScript", id: "javascript" }]);
       }
-      mockedEnvRestoreLocal();
     });
 
     it("office addin: should have typescript as options", async () => {

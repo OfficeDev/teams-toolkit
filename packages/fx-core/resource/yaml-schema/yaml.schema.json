@@ -1692,12 +1692,12 @@
             },
             "applicableToApps": {
               "type": "string",
-              "description": "Which app can access the API key? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
+              "description": "Which app can access the Oauth registration? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
               "enum": ["SpecificApp", "AnyApp"]
             },
             "targetAudience": {
               "type": "string",
-              "description": "Which tenant can access the API key? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
+              "description": "Which tenant can access the Oauth registration? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
               "enum": ["HomeTenant", "AnyTenant"]
             },
             "flow": {
@@ -1726,7 +1726,7 @@
           "required": ["registrationId"],
           "properties": {
             "registrationId": {
-              "description": "Required. The registration id of created API key.",
+              "description": "Required. The registration id of created Oauth registration.",
               "$ref": "#/definitions/envVarName"
             }
           }
@@ -1768,12 +1768,12 @@
             },
             "applicableToApps": {
               "type": "string",
-              "description": "Which app can access the API key? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
+              "description": "Which app can access the Oauth registration? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
               "enum": ["SpecificApp", "AnyApp"]
             },
             "targetAudience": {
               "type": "string",
-              "description": "Which tenant can access the API key? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
+              "description": "Which tenant can access the Oauth registration? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
               "enum": ["HomeTenant", "AnyTenant"]
             }
           }

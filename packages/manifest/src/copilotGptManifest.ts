@@ -4,7 +4,7 @@
 import { ConversationStarter } from "./pluginManifest";
 
 export interface CopilotGptManifestSchema {
-  id: string;
+  id?: string;
   name: string;
   description: string;
   instructions?: string;

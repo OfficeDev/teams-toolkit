@@ -197,12 +197,12 @@ export class FxCore {
     inputs: CreateProjectInputs,
     generator: IGenerator
   ): Promise<Result<CreateProjectResult, FxError>> {
+    //1. input validation
     let folder = inputs["folder"];
     if (!folder) {
       return err(new MissingRequiredInputError("folder"));
     }
     folder = path.resolve(folder);
-    // create from new
     const appName = inputs["app-name"];
     if (undefined === appName) return err(new MissingRequiredInputError(QuestionNames.AppName));
     const validateResult = jsonschema.validate(appName, {
@@ -212,13 +212,15 @@ export class FxCore {
       return err(new InputValidationError(QuestionNames.AppName, validateResult.errors[0].message));
     }
     const projectPath = path.join(folder, appName);
+
+    //2. run generator
     const context = createContextV3();
     const genRes = await generator.run(context, inputs, projectPath);
     if (genRes.isErr()) return err(genRes.error);
-    // generate unique projectId in teamsapp.yaml (optional)
+    //3. ensure unique projectId in teamsapp.yaml (optional)
     const ymlPath = path.join(projectPath, MetadataV3.configFile);
     const result: CreateProjectResult = { projectPath: projectPath };
-    if (fs.pathExistsSync(ymlPath)) {
+    if (await fs.pathExists(ymlPath)) {
       const ensureRes = await coordinator.ensureTrackingId(projectPath, inputs.projectId);
       if (ensureRes.isErr()) return err(ensureRes.error);
       result.projectId = ensureRes.value;

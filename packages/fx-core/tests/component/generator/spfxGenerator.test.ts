@@ -63,7 +63,7 @@ describe("SPFxGenerator", function () {
         return {
           $schema:
             "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
-          manifestVersion: "1.16",
+          manifestVersion: "1.17",
           id: "fakedId",
           name: {
             short: "thisisaverylongappnametotestifitwillbetruncated",

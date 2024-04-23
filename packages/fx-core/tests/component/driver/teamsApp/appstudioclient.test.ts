@@ -985,7 +985,11 @@ describe("App Studio API Test", () => {
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
-        data: fakeOauthRegistration,
+        data: {
+          configurationId: {
+            oAuthConfigId: "fakeId",
+          },
+        },
       };
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
 
@@ -993,7 +997,7 @@ describe("App Studio API Test", () => {
         appStudioToken,
         fakeOauthRegistration
       );
-      chai.assert.equal(res, fakeOauthRegistration);
+      chai.assert.equal(res.configurationId.oAuthConfigId, "fakeId");
     });
 
     it("Graph API failure", async () => {

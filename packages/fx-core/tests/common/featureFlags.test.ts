@@ -7,13 +7,11 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import mockedEnv, { RestoreFn } from "mocked-env";
 
-import { FeatureFlagName } from "../../src/common/constants";
 import {
   FeatureFlags,
   featureFlagManager,
   initializePreviewFeatureFlags,
   isCopilotAuthEnabled,
-  isTeamsFxRebrandingEnabled,
 } from "../../src/common/featureFlags";
 chai.use(chaiAsPromised);
 
@@ -31,7 +29,6 @@ describe("featureFlags", () => {
 
     it("successfully open all feature flags", async () => {
       initializePreviewFeatureFlags();
-      chai.assert.isTrue(process.env[FeatureFlagName.BotNotification] === "true");
     });
   });
 
@@ -48,23 +45,6 @@ describe("featureFlags", () => {
     it("is false", async () => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_COPILOT_AUTH: "false" });
       const res = isCopilotAuthEnabled();
-      chai.assert.isFalse(res);
-    });
-  });
-
-  describe("isTeamsFxRebrandingEnabled()", () => {
-    let mockedEnvRestore: RestoreFn = () => {};
-    afterEach(() => {
-      mockedEnvRestore();
-    });
-    it("is true", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_REBRANDING: "true" });
-      const res = isTeamsFxRebrandingEnabled();
-      chai.assert.isTrue(res);
-    });
-    it("is false", async () => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_REBRANDING: "false" });
-      const res = isTeamsFxRebrandingEnabled();
       chai.assert.isFalse(res);
     });
   });

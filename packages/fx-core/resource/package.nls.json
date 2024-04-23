@@ -261,6 +261,8 @@
   "core.TabSPFxOption.detailNew": "Build UI with SharePoint Framework",
   "core.TabNonSso.label": "Basic Tab",
   "core.TabNonSso.detail": "A simple implementation of a web app that's ready to customize",
+  "core.copilotPlugin.api.noAuth": "None auth",
+  "core.copilotPlugin.api.apiKeyAuth": "API key auth",
   "core.copilotPlugin.validate.apiSpec.summary": "Teams Toolkit has checked your OpenAPI description document:\n\nSummary:\n%s.\n%s\n%s",
   "core.copilotPlugin.validate.openAIPluginManifest.summary": "Teams Toolkit has checked your OpenAI plugin manifest:\n\nSummary:\n%s.\n%s\n%s",
   "core.copilotPlugin.validate.summary.validate.failed": "%s failed",
@@ -363,6 +365,9 @@
   "core.createProjectQuestion.OpenAIPluginDomain.placeholder": "Enter your website domain or manifest URL",
   "core.createProjectQuestion.ApiKey": "Enter API Key in OpenAPI Description Document",
   "core.createProjectQuestion.ApiKeyConfirm": "Teams Toolkit will upload the API key to Teams Developer Portal. The API key will be used by Teams client to securely access your API in runtime when API-Based Message Extension is triggered. Teams Toolkit will not store your API key.",
+  "core.createProjectQuestion.OauthClientId": "Enter client id for Oauth registration in OpenAPI Description Document",
+  "core.createProjectQuestion.OauthClientSecret": "Enter client secret for Oauth registration in OpenAPI Description Document",
+  "core.createProjectQuestion.OauthClientSecretConfirm": "Teams Toolkit uploads the client id/secret for Oauth Registration to Teams Developer Portal. It is used by Teams client to securely access your API at runtime when API-Based Message Extension is triggered. Teams Toolkit doesn't store your client id/secret.",
   "core.createProjectQuestion.apiMessageExtensionAuth.title": "Authentication Type",
   "core.createProjectQuestion.apiMessageExtensionAuth.placeholder": "Select an authentication type",
   "core.createProjectQuestion.invalidApiKey.message": "Client secret is invalid. The length of secret should be >= 10 and <= 128",
@@ -859,5 +864,9 @@
   "driver.oauth.error.nameTooLong": "The Oauth name is too long. The maximum character length is 128.",
   "driver.oauth.log.successCreateOauth": "Oauth registration created successfully with id %s!",
   "driver.oauth.error.domainInvalid": "Maximum %d domains allowed per Oauth registration.",
-  "driver.apiKey.error.oauthAuthInfoInvalid": "Unable to parse Oauth2 authScheme from spec. Make sure your API specification is valid."
+  "driver.apiKey.error.oauthAuthInfoInvalid": "Unable to parse Oauth2 authScheme from spec. Make sure your API specification is valid.",
+  "driver.oauth.log.skipUpdateOauth": "Skip updating Oauth registration as the same property exists.",
+  "driver.oauth.confirm.update": "The following parameters will be updated:\n%s\nDo you want to continue?",
+  "driver.oauth.log.successUpdateOauth": "Oauth registration updated successfully!",
+  "driver.oauth.info.update": "Oauth registration updated successfully! The following parameters have been updated:\n%s"
 }

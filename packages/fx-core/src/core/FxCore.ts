@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks";
-import { SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
+import { SpecParser, SpecParserError, Utils } from "@microsoft/m365-spec-parser";
 import {
   ApiOperation,
   AppPackageFolderName,
@@ -1261,6 +1261,7 @@ export class FxCore {
           if (item.get("uses") === "teamsApp/create") {
             const teamsAppId = item.get("writeToEnvironmentFile")?.get("teamsAppId") as string;
             if (teamsAppId) {
+              const envName = Utils.getSafeRegistrationIdEnvName(`${authName}_REGISTRATION_ID`);
               provisionNode.items.splice(i + 1, 0, {
                 uses: "apiKey/register",
                 with: {
@@ -1269,7 +1270,7 @@ export class FxCore {
                   apiSpecPath: specRelativePath,
                 },
                 writeToEnvironmentFile: {
-                  registrationId: `${authName.toUpperCase()}_REGISTRATION_ID`,
+                  registrationId: envName,
                 },
               });
               added = true;
@@ -1371,15 +1372,14 @@ export class FxCore {
         const serverUrls: Set<string> = new Set();
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
-          if (operation) {
-            if (
-              operation.auth &&
-              operation.auth.authScheme.type === "http" &&
-              operation.auth.authScheme.scheme === "bearer"
-            ) {
-              authNames.add(operation.auth.name);
-              serverUrls.add(operation.server);
-            }
+          if (
+            operation &&
+            operation.auth &&
+            (Utils.isBearerTokenAuth(operation.auth.authScheme) ||
+              Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme))
+          ) {
+            authNames.add(operation.auth.name);
+            serverUrls.add(operation.server);
           }
         }
 

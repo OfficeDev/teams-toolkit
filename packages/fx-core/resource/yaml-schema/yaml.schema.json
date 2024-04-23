@@ -73,7 +73,9 @@
           { "$ref": "#/definitions/script" },
           { "$ref": "#/definitions/apiKeyRegister"},
           { "$ref": "#/definitions/azureStaticWebAppGetDeploymentKey"},
-          { "$ref": "#/definitions/apiKeyUpdate"}
+          { "$ref": "#/definitions/apiKeyUpdate"},
+          { "$ref": "#/definitions/oauthRegister"},
+          { "$ref": "#/definitions/oauthUpdate"}
         ]
       }
     },
@@ -1653,6 +1655,125 @@
             "targetAudience": {
               "type": "string",
               "description": "Which tenant can access the API key? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
+              "enum": ["HomeTenant", "AnyTenant"]
+            }
+          }
+        }
+      }
+    },
+    "oauthRegister": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Create an Oauth registration.",
+      "required": ["uses", "with", "writeToEnvironmentFile"],
+      "properties": {
+        "uses": {
+          "type": "string",
+          "description": "Register Oauth registration. Refer to https://aka.ms/teamsfx-actions/oauth-register for more details.",
+          "const": "oauth/register"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Parameters for this action",
+          "required": ["name", "appId", "apiSpecPath", "flow"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of Oauth registration."
+            },
+            "appId": {
+              "type": "string",
+              "description": "The app ID of Oauth registration."
+            },
+            "apiSpecPath": {
+              "type": "string",
+              "description": "The path of API specification file."
+            },
+            "applicableToApps": {
+              "type": "string",
+              "description": "Which app can access the Oauth registration? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
+              "enum": ["SpecificApp", "AnyApp"]
+            },
+            "targetAudience": {
+              "type": "string",
+              "description": "Which tenant can access the Oauth registration? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
+              "enum": ["HomeTenant", "AnyTenant"]
+            },
+            "flow": {
+              "type": "string",
+              "description": "The flow of Oauth registration. Values can be \"authorizationCode\" .",
+              "enum": ["authorizationCode"]
+            },
+            "clientId": {
+              "type": "string",
+              "description": "The client id of Oauth registration."
+            },
+            "clientSecret": {
+              "type": "string",
+              "description": "The client secret of Oauth registration."
+            },
+            "refreshUrl": {
+              "type": "string",
+              "description": "The refresh url of Oauth registration."
+            }
+          }
+        },
+        "writeToEnvironmentFile": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Write environment variables to environment file",
+          "required": ["configurationId"],
+          "properties": {
+            "configurationId": {
+              "description": "Required. The configuration id of created Oauth registration.",
+              "$ref": "#/definitions/envVarName"
+            }
+          }
+        }
+      }
+    },
+    "oauthUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Update an Oauth registration.",
+      "required": ["uses", "with"],
+      "properties": {
+        "uses": {
+          "type": "string",
+          "description": "Updagte Oauth registration. Refer to https://aka.ms/teamsfx-actions/oauth-update for more details.",
+          "const": "oauth/update"
+        },
+        "with": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Parameters for this action",
+          "required": ["name", "appId", "apiSpecPath", "configurationId"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of Oauth registration."
+            },
+            "appId": {
+              "type": "string",
+              "description": "The app ID of Oauth registration."
+            },
+            "apiSpecPath": {
+              "type": "string",
+              "description": "The path of API specification file."
+            },
+            "configurationId": {
+              "type": "string",
+              "description": "The configuration id of Oauth registration."
+            },
+            "applicableToApps": {
+              "type": "string",
+              "description": "Which app can access the Oauth registration? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
+              "enum": ["SpecificApp", "AnyApp"]
+            },
+            "targetAudience": {
+              "type": "string",
+              "description": "Which tenant can access the Oauth registration? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
               "enum": ["HomeTenant", "AnyTenant"]
             }
           }

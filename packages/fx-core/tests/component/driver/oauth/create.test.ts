@@ -26,7 +26,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 
 const outputKeys = {
-  registrationId: "REGISTRATION_ID",
+  configurationId: "REGISTRATION_ID",
 };
 const outputEnvVarNames = new Map<string, string>(Object.entries(outputKeys));
 
@@ -76,15 +76,9 @@ describe("CreateOauthDriver", () => {
         );
         expect(oauthRegistration.specificAppId).to.equal("");
         return {
-          oAuthConfigId: "mockedRegistrationId",
-          clientId: "mockedClientId",
-          clientSecret: "mockedClientSecret",
-          targetUrlsShouldStartWith: ["https://test"],
-          applicableToApps: OauthRegistrationAppType.AnyApp,
-          authorizationEndpoint: "mockedAuthorizationUrl",
-          tokenExchangeEndpoint: "mockedTokenUrl",
-          tokenRefreshEndpoint: "mockedRefreshUrl",
-          scopes: ["mockedScope"],
+          configurationId: {
+            oAuthConfigId: "mockedRegistrationId",
+          },
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -128,7 +122,79 @@ describe("CreateOauthDriver", () => {
     const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isOk()).to.be.true;
     if (result.result.isOk()) {
-      expect(result.result.value.get(outputKeys.registrationId)).to.equal("mockedRegistrationId");
+      expect(result.result.value.get(outputKeys.configurationId)).to.equal("mockedRegistrationId");
+      expect(result.summaries.length).to.equal(1);
+    }
+  });
+
+  it("happy path: read refreshurl from input, client and clientSecret from env", async () => {
+    sinon
+      .stub(AppStudioClient, "createOauthRegistration")
+      .callsFake(async (token, oauthRegistration) => {
+        expect(oauthRegistration.clientId).to.equals("mockedClientId");
+        expect(oauthRegistration.clientSecret).to.equals("mockedClientSecret");
+        expect(oauthRegistration.description).to.equals("test");
+        expect(oauthRegistration.authorizationEndpoint).to.equals("mockedAuthorizationUrl");
+        expect(oauthRegistration.scopes[0]).to.equals("mockedScope");
+        expect(oauthRegistration.targetUrlsShouldStartWith[0]).to.equals("https://test");
+        expect(oauthRegistration.tokenExchangeEndpoint).to.equals("mockedTokenUrl");
+        expect(oauthRegistration.tokenRefreshEndpoint).to.equal("mockedRefreshUrl");
+        expect(oauthRegistration.applicableToApps).to.equals(OauthRegistrationAppType.AnyApp);
+        expect(oauthRegistration.targetAudience).to.equals(
+          OauthRegistrationTargetAudience.AnyTenant
+        );
+        expect(oauthRegistration.specificAppId).to.equal("");
+        return {
+          configurationId: {
+            oAuthConfigId: "mockedRegistrationId",
+          },
+        };
+      });
+    sinon.stub(SpecParser.prototype, "list").resolves({
+      APIs: [
+        {
+          api: "api",
+          server: "https://test",
+          operationId: "get",
+          auth: {
+            name: "test",
+            authScheme: {
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "mockedAuthorizationUrl",
+                  tokenUrl: "mockedTokenUrl",
+                  scopes: {
+                    mockedScope: "description for mocked scope",
+                  },
+                },
+              },
+            },
+          },
+          isValid: true,
+          reason: [],
+        },
+      ],
+      allAPICount: 1,
+      validAPICount: 1,
+    });
+
+    envRestore = mockedEnv({
+      ["oauth-client-secret"]: "mockedClientSecret",
+      ["oauth-client-id"]: "mockedClientId",
+    });
+
+    const args: any = {
+      name: "test",
+      appId: "mockedAppId",
+      apiSpecPath: "mockedPath",
+      flow: "authorizationCode",
+      refreshUrl: "mockedRefreshUrl",
+    };
+    const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
+    expect(result.result.isOk()).to.be.true;
+    if (result.result.isOk()) {
+      expect(result.result.value.get(outputKeys.configurationId)).to.equal("mockedRegistrationId");
       expect(result.summaries.length).to.equal(1);
     }
   });
@@ -151,15 +217,9 @@ describe("CreateOauthDriver", () => {
         );
         expect(oauthRegistration.specificAppId).to.equal("");
         return {
-          oAuthConfigId: "mockedRegistrationId",
-          clientId: "mockedClientId",
-          clientSecret: "mockedClientSecret",
-          targetUrlsShouldStartWith: ["https://test"],
-          applicableToApps: OauthRegistrationAppType.AnyApp,
-          authorizationEndpoint: "mockedAuthorizationUrl",
-          tokenExchangeEndpoint: "mockedTokenUrl",
-          tokenRefreshEndpoint: "mockedRefreshUrl",
-          scopes: ["mockedScope"],
+          configurationId: {
+            oAuthConfigId: "mockedRegistrationId",
+          },
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -204,7 +264,7 @@ describe("CreateOauthDriver", () => {
     const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isOk()).to.be.true;
     if (result.result.isOk()) {
-      expect(result.result.value.get(outputKeys.registrationId)).to.equal("mockedRegistrationId");
+      expect(result.result.value.get(outputKeys.configurationId)).to.equal("mockedRegistrationId");
       expect(result.summaries.length).to.equal(1);
     }
   });
@@ -227,15 +287,9 @@ describe("CreateOauthDriver", () => {
           OauthRegistrationTargetAudience.HomeTenant
         );
         return {
-          oAuthConfigId: "mockedRegistrationId",
-          clientId: "mockedClientId",
-          clientSecret: "mockedClientSecret",
-          targetUrlsShouldStartWith: ["https://test"],
-          applicableToApps: OauthRegistrationAppType.AnyApp,
-          authorizationEndpoint: "mockedAuthorizationUrl",
-          tokenExchangeEndpoint: "mockedTokenUrl",
-          tokenRefreshEndpoint: "mockedRefreshUrl",
-          scopes: ["mockedScope"],
+          configurationId: {
+            oAuthConfigId: "mockedRegistrationId",
+          },
         };
       });
     sinon.stub(SpecParser.prototype, "list").resolves({
@@ -281,7 +335,7 @@ describe("CreateOauthDriver", () => {
     const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isOk()).to.be.true;
     if (result.result.isOk()) {
-      expect(result.result.value.get(outputKeys.registrationId)).to.equal("mockedRegistrationId");
+      expect(result.result.value.get(outputKeys.configurationId)).to.equal("mockedRegistrationId");
       expect(result.summaries.length).to.equal(1);
     }
   });
@@ -307,7 +361,7 @@ describe("CreateOauthDriver", () => {
       refreshUrl: "mockedRefreshUrl",
     };
     envRestore = mockedEnv({
-      [outputKeys.registrationId]: "existing value",
+      [outputKeys.configurationId]: "existing value",
     });
     const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isOk()).to.be.true;
@@ -369,7 +423,7 @@ describe("CreateOauthDriver", () => {
       refreshUrl: "mockedRefreshUrl",
     };
     envRestore = mockedEnv({
-      [outputKeys.registrationId]: "existing value",
+      [outputKeys.configurationId]: "existing value",
     });
     const result = await createOauthDriver.execute(args, mockedDriverContext, outputEnvVarNames);
     expect(result.result.isOk()).to.be.true;

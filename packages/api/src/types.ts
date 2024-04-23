@@ -157,6 +157,7 @@ export interface ApiOperation {
   label: string;
   groupName: string;
   data: ApiKeyAuthInfo;
+  detail?: string;
 }
 
 export interface Warning {

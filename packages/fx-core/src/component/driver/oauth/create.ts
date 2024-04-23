@@ -24,16 +24,20 @@ import {
 import { OauthNameTooLongError } from "./error/oauthNameTooLong";
 import { GraphScopes } from "../../../common/tools";
 import { OauthInfo, getandValidateOauthInfoFromSpec } from "./utility/utility";
+import { QuestionMW } from "../../middleware/questionMW";
+import { QuestionNames } from "../../../question/questionNames";
+import { Service } from "typedi";
 
 const actionName = "oauth/register"; // DO NOT MODIFY the name
 const helpLink = "https://aka.ms/teamsfx-actions/oauth-register";
 const supportedFlows = ["authorizationCode"];
 
+@Service(actionName)
 export class CreateOauthDriver implements StepDriver {
   description = getLocalizedString("driver.oauth.description.create");
   readonly progressTitle = getLocalizedString("driver.oauth.title.create");
 
-  @hooks([addStartAndEndTelemetry(actionName, actionName)])
+  @hooks([QuestionMW("oauth", true), addStartAndEndTelemetry(actionName, actionName)])
   public async execute(
     args: CreateOauthArgs,
     context: DriverContext,
@@ -58,25 +62,34 @@ export class CreateOauthDriver implements StepDriver {
       }
       const appStudioToken = appStudioTokenRes.value;
 
-      if (state && state.registrationId) {
+      if (state && state.configurationId) {
         try {
-          await AppStudioClient.getOauthRegistrationById(appStudioToken, state.registrationId);
+          await AppStudioClient.getOauthRegistrationById(appStudioToken, state.configurationId);
           context.logProvider?.info(
             getLocalizedString(
               logMessageKeys.skipCreateOauth,
-              outputEnvVarNames.get(OutputKeys.registrationId)
+              outputEnvVarNames.get(OutputKeys.configurationId)
             )
           );
         } catch (error) {
           context.logProvider?.warning(
             getLocalizedString(
               logMessageKeys.oauthNotFound,
-              outputEnvVarNames.get(OutputKeys.registrationId)
+              outputEnvVarNames.get(OutputKeys.configurationId)
             )
           );
         }
       } else {
-        // TODO: handle secret from question model.
+        const clientId = process.env[QuestionNames.OauthClientId];
+        if (clientId) {
+          args.clientId = clientId;
+        }
+
+        const clientSecret = process.env[QuestionNames.OauthClientSecret];
+        if (clientSecret) {
+          args.clientSecret = clientSecret;
+        }
+
         this.validateArgs(args);
 
         const authInfo = await getandValidateOauthInfoFromSpec(args, context, actionName);
@@ -92,13 +105,13 @@ export class CreateOauthDriver implements StepDriver {
           oauthRegistration
         );
         outputs.set(
-          outputEnvVarNames.get(OutputKeys.registrationId)!,
-          oauthRegistrationRes.oAuthConfigId!
+          outputEnvVarNames.get(OutputKeys.configurationId)!,
+          oauthRegistrationRes.configurationId.oAuthConfigId
         );
 
         const summary = getLocalizedString(
           logMessageKeys.successCreateOauth,
-          oauthRegistrationRes.oAuthConfigId!
+          oauthRegistrationRes.configurationId.oAuthConfigId
         );
         context.logProvider?.info(summary);
         summaries.push(summary);

@@ -46,7 +46,7 @@ CI_ENABLED=true
 ```
 
 - (**Required**) Run `npx extest get-vscode --storage .test-resources --type stable --code_version 1.88.1` to download vscode
-- (**Required**) Run `npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.88.1` to download chromedriver(known issue: current chromedriver version may not availble, you can use another lower version or download it manually and replace it in .test-resources https://googlechromelabs.github.io/chrome-for-testing/)
+- (**Required**) Run `npx extest get-chromedriver --storage .test-resources --type stable --code_version 1.88.1` to download chromedriver
 - (**Required**) Download TeamsFx vsix file to this project root folder. You can download it from the [artifacts of TeamsFx CD action](https://github.com/OfficeDev/TeamsFx/actions/workflows/cd.yml). Remember to unzip.
 - (**Required**) Run `npx extest install-vsix --storage .test-resources --extensions_dir .test-resources --type stable --vsix_file ${{ YOUR VSIX FILE NAME }} ` to install Teams Toolkit
 - (**Required**) Run `npx extest run-tests --storage .test-resources --extensions_dir .test-resources --type stable --code_version 1.88.1 --code_settings ./settings.json ./out/ui-test/**/${{ YOUR TEST CASE }}.test.js` to execute your case

@@ -51,9 +51,16 @@ export async function ensureExtensionActivated(): Promise<void> {
           const sidebar = await driver.findElement(
             By.id("workbench.parts.sidebar")
           );
-          const welcomeView = await sidebar.findElement(
-            By.className("welcome-view-content")
-          );
+          let welcomeView: WebElement;
+          try {
+            welcomeView = await sidebar.findElement(
+              By.className("welcome-view-content")
+            );
+          } catch (error) {
+            welcomeView = await sidebar.findElement(
+              By.className("split-view-container")
+            );
+          }
           if (welcomeView) {
             const welcomeContent = await welcomeView.getText();
             if (welcomeContent.includes(Extension.sidebarWelcomeContentName)) {

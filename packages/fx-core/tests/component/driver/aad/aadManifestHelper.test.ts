@@ -242,7 +242,7 @@ describe("Microsoft Entra manifest helper Test", () => {
         AadManifestHelper.processRequiredResourceAccessInManifest(manifest);
       })
       .to.throw(
-        "Unknown resourceAccess id: Sites.Read.All, try to use permission id instead of resourceAccess id."
+        "Unknown resourceAccess id: User.Read, try to use permission id instead of resourceAccess id."
       );
 
     manifest = {

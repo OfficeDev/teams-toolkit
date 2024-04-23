@@ -1,18 +1,18 @@
 import * as chai from "chai";
 import * as sinon from "sinon";
-import officeNextStepCommandHandler from "../../../src/officeChat/commands/nextStep/officeNextstepCommandHandler";
-import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
-import * as telemetry from "../../../src/chat/telemetry";
-import { CancellationToken } from "../../mocks/vsc";
+import officeNextStepCommandHandler from "../../../../src/officeChat/commands/nextStep/officeNextstepCommandHandler";
+import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
+import * as telemetry from "../../../../src/chat/telemetry";
+import { CancellationToken } from "../../../mocks/vsc";
 import * as vscode from "vscode";
-import * as globalVariables from "../../../src/globalVariables";
+import * as globalVariables from "../../../../src/globalVariables";
 import * as core from "@microsoft/teamsfx-core";
-import { NextStep, WholeStatus } from "../../../src/chat/commands/nextstep/types";
-import * as status from "../../../src/officeChat/commands/nextStep/status";
-import { TeamsFollowupProvider } from "../../../src/chat/followupProvider";
-import * as util from "../../../src/chat/utils";
-import * as officeSteps from "../../../src/officeChat/commands/nextStep/officeSteps";
-import { CHAT_EXECUTE_COMMAND_ID, CHAT_OPENURL_COMMAND_ID } from "../../../src/chat/consts";
+import { NextStep, WholeStatus } from "../../../../src/chat/commands/nextstep/types";
+import * as status from "../../../../src/officeChat/commands/nextStep/status";
+import { TeamsFollowupProvider } from "../../../../src/chat/followupProvider";
+import * as util from "../../../../src/chat/utils";
+import * as officeSteps from "../../../../src/officeChat/commands/nextStep/officeSteps";
+import { CHAT_EXECUTE_COMMAND_ID, CHAT_OPENURL_COMMAND_ID } from "../../../../src/chat/consts";
 
 describe("office steps: officeNextStepCommandHandler", () => {
   const sandbox = sinon.createSandbox();

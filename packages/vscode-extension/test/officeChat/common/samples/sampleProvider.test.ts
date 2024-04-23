@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { SampleProvider } from "../../../src/officeChat/common/samples/sampleProvider";
+import { SampleProvider } from "../../../../src/officeChat/common/samples/sampleProvider";
 
 describe("SampleProvider", () => {
   let provider: SampleProvider;

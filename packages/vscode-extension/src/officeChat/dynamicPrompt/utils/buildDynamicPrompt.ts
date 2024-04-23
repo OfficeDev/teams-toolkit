@@ -44,14 +44,7 @@ export function buildDynamicPromptInternal(
 
   return template.replace(/{{[^{}]+}}/g, (macker) => {
     const subExpression = macker.substring(2, macker.length - 2).trim();
-    const replacement = buildDynamicPromptInternal(subExpression, params);
-    if (typeof replacement !== "string") {
-      throw new Error(
-        `The value of expression "${subExpression}" is not a string. (Executing "${expression}".)`
-      );
-    }
-
-    return replacement;
+    return buildDynamicPromptInternal(subExpression, params);
   });
 }
 

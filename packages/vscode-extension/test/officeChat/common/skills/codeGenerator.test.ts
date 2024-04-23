@@ -281,6 +281,13 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "debug");
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
     // Act
     const result = await codeGenerator.generateCode(
@@ -305,6 +312,13 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "debug");
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
     // Act
     const result = await codeGenerator.generateCode(
@@ -329,6 +343,13 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "debug");
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(Promise.resolve("```typescript\n// Some code\n```"));
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
     // Act
     const result = await codeGenerator.generateCode(
@@ -409,6 +430,13 @@ describe("codeGenerator", () => {
     sandbox.stub(console, "error");
     const getCopilotResponseAsStringStub = sandbox.stub(utils, "getCopilotResponseAsString");
     getCopilotResponseAsStringStub.returns(Promise.resolve("..."));
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+
+    const scenarioSamples = new Map<string, SampleData>();
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
     // Act
     const result = await codeGenerator.generateCode(

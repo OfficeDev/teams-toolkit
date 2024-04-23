@@ -110,20 +110,9 @@ describe("projectCreator", () => {
     sandbox.stub(vscode.commands, "executeCommand");
 
     /* mergeCFCode */
-    ///store original fs
-    const originalFs = Reflect.get(vscode.workspace, "fs");
-    //fakeWorkspace
-    const readFileStub = () => {
-      return new Uint8Array();
-    };
-    const writeFileStub = () => {};
-    const fakeFs = {
-      readFile: readFileStub,
-      writeFile: writeFileStub,
-    };
-
-    Reflect.set(vscode.workspace, "fs", fakeFs);
-
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
+    sandbox.stub(fs, "writeFile").resolves();
     /* traverseFiles */
     sandbox.stub(path, "relative").returns("relative path");
     sandbox.stub(helper, "fileTreeAdd");
@@ -154,7 +143,6 @@ describe("projectCreator", () => {
     chai.expect(spec).to.equal(spec);
 
     //restore reflect functions
-    Reflect.set(vscode.workspace, "fs", originalFs);
     Reflect.set(fs, "readdirSync", originalReaddirSync);
   });
 
@@ -167,21 +155,9 @@ describe("projectCreator", () => {
     sandbox.stub(vscode.commands, "executeCommand");
 
     /* mergeCFCode */
-    ///store original fs
-    const originalFs = Reflect.get(vscode.workspace, "fs");
-    //fakeWorkspace
-    const readFileStub = () => {
-      return new Uint8Array();
-    };
-    const writeFileStub = () => {
-      throw new Error("write file error");
-    };
-    const fakeFs = {
-      readFile: readFileStub,
-      writeFile: writeFileStub,
-    };
-
-    Reflect.set(vscode.workspace, "fs", fakeFs);
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
+    sandbox.stub(fs, "writeFile").rejects(Error("write file error"));
 
     /* traverseFiles */
     sandbox.stub(path, "relative").returns("relative path");
@@ -207,13 +183,14 @@ describe("projectCreator", () => {
     } as fs.Stats;
     lstatSyncStub.onCall(1).returns(fakeStats1);
 
-    const result = await project_creator.invoke(model, fakeResponse, fakeToken, spec);
-
-    chai.expect(result.result).to.equal(ExecutionResultEnum.Success);
-    chai.expect(spec).to.equal(spec);
+    try {
+      await project_creator.invoke(model, fakeResponse, fakeToken, spec);
+      chai.assert.fail("should not reach here");
+    } catch (error) {
+      chai.assert.strictEqual((error as Error).message, "Failed to merge the CF project.");
+    }
 
     //restore reflect functions
-    Reflect.set(vscode.workspace, "fs", originalFs);
     Reflect.set(fs, "readdirSync", originalReaddirSync);
   });
 
@@ -226,19 +203,9 @@ describe("projectCreator", () => {
     sandbox.stub(vscode.commands, "executeCommand");
 
     /* mergeTaskpaneCode */
-    ///store original fs
-    const originalFs = Reflect.get(vscode.workspace, "fs");
-    //fakeWorkspace
-    const readFileStub = () => {
-      return new Uint8Array();
-    };
-    const writeFileStub = () => {};
-    const fakeFs = {
-      readFile: readFileStub,
-      writeFile: writeFileStub,
-    };
-
-    Reflect.set(vscode.workspace, "fs", fakeFs);
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
+    sandbox.stub(fs, "writeFile").resolves();
 
     /* traverseFiles */
     sandbox.stub(path, "relative").returns("relative path");
@@ -270,7 +237,6 @@ describe("projectCreator", () => {
     chai.expect(spec).to.equal(spec);
 
     //restore reflect functions
-    Reflect.set(vscode.workspace, "fs", originalFs);
     Reflect.set(fs, "readdirSync", originalReaddirSync);
   });
 
@@ -284,20 +250,9 @@ describe("projectCreator", () => {
 
     /* mergeTaskpaneCode */
     ///store original fs
-    const originalFs = Reflect.get(vscode.workspace, "fs");
-    //fakeWorkspace
-    const readFileStub = () => {
-      return new Uint8Array();
-    };
-    const writeFileStub = () => {
-      throw new Error("write file error");
-    };
-    const fakeFs = {
-      readFile: readFileStub,
-      writeFile: writeFileStub,
-    };
-
-    Reflect.set(vscode.workspace, "fs", fakeFs);
+    sandbox.stub(fs, "ensureDir").resolves();
+    sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
+    sandbox.stub(fs, "writeFile").rejects(Error("write file error"));
 
     /* traverseFiles */
     sandbox.stub(path, "relative").returns("relative path");
@@ -323,13 +278,14 @@ describe("projectCreator", () => {
     } as fs.Stats;
     lstatSyncStub.onCall(1).returns(fakeStats1);
 
-    const result = await project_creator.invoke(model, fakeResponse, fakeToken, spec);
-
-    chai.expect(result.result).to.equal(ExecutionResultEnum.Success);
-    chai.expect(spec).to.equal(spec);
+    try {
+      await project_creator.invoke(model, fakeResponse, fakeToken, spec);
+      chai.assert.fail("should not reach here");
+    } catch (error) {
+      chai.assert.strictEqual((error as Error).message, "Failed to merge the taskpane project.");
+    }
 
     //restore reflect functions
-    Reflect.set(vscode.workspace, "fs", originalFs);
     Reflect.set(fs, "readdirSync", originalReaddirSync);
   });
 });

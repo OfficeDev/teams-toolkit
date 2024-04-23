@@ -4,6 +4,7 @@
 import axios from "axios";
 import { sendRequestWithTimeout } from "@microsoft/teamsfx-core/build/component/generator/utils";
 import { SampleConfig } from "@microsoft/teamsfx-core";
+import { AccessGithubError } from "@microsoft/teamsfx-core";
 
 const OfficeSampleCofigOwner = "OfficeDev";
 const OfficeSampleRepo = "Office-Samples";
@@ -36,37 +37,36 @@ class OfficeSampleProvider {
 
   private async loadOfficeSamples(): Promise<OfficeSampleCollection> {
     const officeSamplesConfig =
-      (await this.featchSamplesConfigFileContent()) as OfficeSampleConfigType;
-    const officeSamples =
-      officeSamplesConfig.samples.map((sample) => {
-        return {
-          ...sample,
-          onboardDate: new Date(sample["onboardDate"] as string),
-          downloadUrlInfo: {
-            owner: OfficeSampleCofigOwner,
-            repository: OfficeSampleRepo,
-            ref: OfficeSampleConfigBranch,
-            dir: sample["id"] as string,
-          },
-          gifUrl:
-            sample["gifPath"] !== undefined
-              ? `https://raw.githubusercontent.com/${OfficeSampleCofigOwner}/${OfficeSampleRepo}/${OfficeSampleConfigBranch}/${
-                  sample["id"] as string
-                }/${sample["gifPath"] as string}`
-              : undefined,
-        } as SampleConfig;
-      }) || [];
+      (await this.featchOfficeSamplesConfigFileContent()) as OfficeSampleConfigType;
+    const officeSamples = officeSamplesConfig.samples.map((sample) => {
+      return {
+        ...sample,
+        onboardDate: new Date(sample["onboardDate"] as string),
+        downloadUrlInfo: {
+          owner: OfficeSampleCofigOwner,
+          repository: OfficeSampleRepo,
+          ref: OfficeSampleConfigBranch,
+          dir: sample["id"] as string,
+        },
+        gifUrl:
+          sample["gifPath"] !== undefined
+            ? `https://raw.githubusercontent.com/${OfficeSampleCofigOwner}/${OfficeSampleRepo}/${OfficeSampleConfigBranch}/${
+                sample["id"] as string
+              }/${sample["gifPath"] as string}`
+            : undefined,
+      } as SampleConfig;
+    });
     return {
       samples: officeSamples,
       fileterOptions: {
-        capabilities: officeSamplesConfig.filterOptions["capabilities"] || [],
-        languages: officeSamplesConfig.filterOptions["languages"] || [],
-        technologies: officeSamplesConfig.filterOptions["technologies"] || [],
+        capabilities: officeSamplesConfig.filterOptions["capabilities"],
+        languages: officeSamplesConfig.filterOptions["languages"],
+        technologies: officeSamplesConfig.filterOptions["technologies"],
       },
     };
   }
 
-  private async featchSamplesConfigFileContent(): Promise<unknown> {
+  private async featchOfficeSamplesConfigFileContent(): Promise<unknown> {
     const url = `https://raw.githubusercontent.com/${OfficeSampleCofigOwner}/${OfficeSampleRepo}/${OfficeSampleConfigBranch}/${OfficeSampleConfigFile}`;
     try {
       const fileResponse = await sendRequestWithTimeout(
@@ -80,7 +80,7 @@ class OfficeSampleProvider {
         return fileResponse.data;
       }
     } catch (e) {
-      throw new Error(`Cannot fetch ${url}.`);
+      throw new AccessGithubError(url, "OfficeSampleProvider", e);
     }
   }
 }

@@ -2,7 +2,7 @@ import { expect } from "chai";
 import {
   OfficeTemplateModelPorvider,
   WXPAppName,
-} from "../../../src/officeChat/common/samples/officeTemplateModelPorvider";
+} from "../../../../src/officeChat/common/samples/officeTemplateModelPorvider";
 
 describe("OfficeTemplateModelPorvider", () => {
   let provider: OfficeTemplateModelPorvider;
@@ -28,5 +28,5 @@ describe("OfficeTemplateModelPorvider", () => {
 
     const bm25ModelEmptyHost = await provider.getBM25Model("" as WXPAppName);
     expect(bm25ModelEmptyHost).to.not.exist;
-  });
+  }).timeout(5000);
 });

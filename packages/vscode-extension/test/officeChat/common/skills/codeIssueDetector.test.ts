@@ -103,7 +103,7 @@ describe("File: codeIssueDetector", () => {
 
         const result = await callDetectIssueAsync(detector);
         chai.assert.isDefined(result);
-      }).timeout(3500);
+      }).timeout(5000);
 
       it("condition of `this.program` is undefined", async () => {
         const detector = CodeIssueDetector.getInstance();

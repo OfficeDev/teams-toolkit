@@ -40,12 +40,15 @@ export class ManifestUpdater {
   ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
-    manifest.plugins = [
-      {
-        file: apiPluginRelativePath,
-        id: ConstantString.DefaultPluginId,
-      },
-    ];
+    // Insert plugins in manifest.json if it is plugin for Copilot.
+    if (!options.isGptPlugin) {
+      manifest.plugins = [
+        {
+          file: apiPluginRelativePath,
+          id: ConstantString.DefaultPluginId,
+        },
+      ];
+    }
 
     const appName = this.removeEnvs(manifest.name.short);
 

@@ -254,6 +254,11 @@ export interface ParseOptions {
    * Project can be SME/Copilot/TeamsAi
    */
   projectType?: ProjectType;
+
+  /**
+   * If true, we will generate files of plugin for GPT (Declarative Extensions in a Copilot Extension). Otherwise, we will generate files of plugin for Copilot.
+   */
+  isGptPlugin?: boolean;
 }
 
 export enum ProjectType {

@@ -43,7 +43,7 @@ import {
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { ProgrammingLanguage } from "../../../question/create";
+import { CapabilityOptions, ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import {
@@ -73,6 +73,7 @@ const pluginManifestFileName = "ai-plugin.json";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
+const declarativeCopilotTemplateName = "declarative-copilot-existing-api";
 
 const failedToUpdateCustomApiTemplateErrorName = "failed-to-update-custom-api-template";
 
@@ -145,7 +146,11 @@ export class CopilotPluginGenerator {
       (api) => !!api.data.authName && apiOperations.includes(api.id)
     );
 
-    const templateName = apiPluginFromApiSpecTemplateName;
+    const templateName =
+      inputs[QuestionNames.CustomizeGptWithPluginStart] ===
+      CapabilityOptions.copilotPluginApiSpec().id
+        ? declarativeCopilotTemplateName
+        : apiPluginFromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
     merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });

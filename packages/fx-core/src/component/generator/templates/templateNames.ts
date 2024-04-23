@@ -48,6 +48,8 @@ export enum TemplateNames {
   CustomCopilotRagMicrosoft365 = "custom-copilot-rag-microsoft365",
   CustomCopilotAssistantNew = "custom-copilot-assistant-new",
   CustomCopilotAssistantAssistantsApi = "custom-copilot-assistant-assistants-api",
+  BasicGpt = "copilot-gpt-basic",
+  GptWithPluginFromScratch = "copilot-gpt-from-scratch-plugin",
 }
 
 export const Feature2TemplateName = {

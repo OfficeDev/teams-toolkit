@@ -52,6 +52,7 @@ import {
   ValidationStatus,
   WarningType,
   ProjectType,
+  Utils,
 } from "@microsoft/m365-spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
@@ -249,6 +250,9 @@ export class CopilotPluginGenerator {
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
       if (apiKeyAuthData?.authName) {
+        const envName = Utils.getSafeRegistrationIdEnvName(
+          `${apiKeyAuthData.authName}_REGISTRATION_ID`
+        );
         context.templateVariables = Generator.getDefaultVariables(
           appName,
           safeProjectNameFromVS,
@@ -259,7 +263,7 @@ export class CopilotPluginGenerator {
             openapiSpecPath: normalizePath(
               path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
             ),
-            registrationIdEnvName: `${apiKeyAuthData.authName.toUpperCase()}_REGISTRATION_ID`,
+            registrationIdEnvName: envName,
           }
         );
       } else {

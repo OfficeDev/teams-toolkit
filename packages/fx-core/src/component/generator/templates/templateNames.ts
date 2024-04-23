@@ -125,4 +125,7 @@ export const Feature2TemplateName = {
   [`${CapabilityOptions.customCopilotAssistant().id}:undefined:${
     CustomCopilotAssistantOptions.assistantsApi().id
   }`]: TemplateNames.CustomCopilotAssistantAssistantsApi,
+  [`${CapabilityOptions.customizeGptBasic().id}:undefined`]: TemplateNames.BasicGpt,
+  [`${CapabilityOptions.customizeGptWithPlugin().id}:undefined`]:
+    TemplateNames.GptWithPluginFromScratch,
 };

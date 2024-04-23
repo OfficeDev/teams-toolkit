@@ -53,10 +53,12 @@ import {
   WarningType,
   ProjectType,
   Utils,
+  ParseOptions,
 } from "@microsoft/m365-spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { merge } from "lodash";
+import { TemplateNames } from "../templates/templateNames";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
@@ -73,7 +75,6 @@ const pluginManifestFileName = "ai-plugin.json";
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
 const apiPluginFromApiSpecTemplateName = "api-plugin-existing-api";
-const declarativeCopilotTemplateName = "declarative-copilot-existing-api";
 
 const failedToUpdateCustomApiTemplateErrorName = "failed-to-update-custom-api-template";
 
@@ -149,7 +150,7 @@ export class CopilotPluginGenerator {
     const templateName =
       inputs[QuestionNames.CustomizeGptWithPluginStart] ===
       CapabilityOptions.copilotPluginApiSpec().id
-        ? declarativeCopilotTemplateName
+        ? TemplateNames.BasicGpt
         : apiPluginFromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
@@ -298,15 +299,17 @@ export class CopilotPluginGenerator {
       });
 
       // validate API spec
-      const allowAPIKeyAuth = true;
-      const allowMultipleParameters = true;
+      const isGptPlugin = templateName === TemplateNames.BasicGpt;
       const specParser = new SpecParser(
         url,
         isPlugin
-          ? copilotPluginParserOptions
+          ? {
+              ...copilotPluginParserOptions,
+              isGptPlugin,
+            }
           : {
-              allowBearerTokenAuth: allowAPIKeyAuth, // Currently, API key auth support is actually bearer token auth
-              allowMultipleParameters,
+              allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+              allowMultipleParameters: true,
               projectType: type,
             }
       );

@@ -25,6 +25,15 @@ export class CopilotGptManifestUtils {
       return err(new JSONSyntaxError(path, e, "CopilotGptManifestUtils"));
     }
   }
+
+  public async writeCopilotGptManifestFile(
+    manifest: CopilotGptManifestSchema,
+    path: string
+  ): Promise<Result<undefined, FxError>> {
+    const content = JSON.stringify(manifest, undefined, 4);
+    await fs.writeFile(path, content);
+    return ok(undefined);
+  }
 }
 
 export const copilotGptManifestUtils = new CopilotGptManifestUtils();

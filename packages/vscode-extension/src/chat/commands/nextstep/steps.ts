@@ -22,8 +22,7 @@ export const allSteps: () => NextStep[] = () => [
   {
     title: "Getting started with Teams Toolkit",
     description: `Teams Toolkit makes it simple to get started with app development for Microsoft Teams using Visual Studio Code. You can start with a project template for a common custom app built for your org (LOB app) scenarios or from a sample. You can save setup time with automated app registration and configuration. You can run and debug your app in Teams directly from familiar tools. You can smart defaults for hosting in Azure using infrastructure-as-code and Bicep. You can create unique configurations like dev, test, and prod using the environment features.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/install-teams-toolkit?tabs=vscode&pivots=visual-studio-code-v5",
+    docLink: "https://aka.ms/vsc-ttk-v5-install",
     commands: [
       {
         title: "Open Get-Started Page",
@@ -50,8 +49,7 @@ export const allSteps: () => NextStep[] = () => [
     title: "Create a new project or open an existing project",
     description:
       "You have the option to create a new Teams Toolkit project, or open one that already exists. For new projects, you can start with @teams /create to use the built-in Teams app templates or click the button below to use the official Teams app samples in Teams Toolkit. Also, Teams Toolkit v5 allows you to use Outlook Add-in templates to build your own Outlook Add-ins.",
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/create-new-project?pivots=visual-studio-code-v5",
+    docLink: "https://aka.ms/teamsfx-create-project",
     commands: [
       {
         title: "Open Sample Gallery",
@@ -105,8 +103,7 @@ export const allSteps: () => NextStep[] = () => [
   {
     title: "Preview in Test Tool",
     description: `Teams App Test Tool (Test Tool) makes debugging bot-based apps effortless. You can chat with your bot and see its messages and Adaptive Cards as they appear in Teams. You don't need a Microsoft 365 developer account, tunneling, or Teams app and bot registration to use Test Tool. When previewing with Test Tool, it will check all required prerequisites and guide you to fix them in output.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-your-teams-app-test-tool?tabs=vscode%2Cclijs",
+    docLink: "https://aka.ms/vsc-ttk-teams-app-test-tool",
     commands: [
       {
         title: "Preview in Test Tool",
@@ -125,8 +122,7 @@ export const allSteps: () => NextStep[] = () => [
   {
     title: "Sign in to Microsoft 365 Account",
     description: `Preview in Teams requires a Microsoft 365 developer account. If you have a Visual Studio Enterprise or Professional subscription, both programs include a free Microsoft 365 developer subscription. It's active as long as your Visual Studio subscription is active.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#microsoft-365-developer-program",
+    docLink: "https://aka.ms/vsc-ttk-m365-dev-program",
     commands: [
       {
         title: "Sign in to Microsoft 365 Account",
@@ -145,8 +141,7 @@ export const allSteps: () => NextStep[] = () => [
   {
     title: "Join Microsoft 365 Developer Program",
     description: `If you don't have any Microsoft 365 tenant, you might qualify for a Microsoft 365 E5 developer subscription through the Microsoft 365 Developer Program; Alternatively, you can sign up for a 1-month free trial or purchase a Microsoft 365 plan.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#microsoft-365-developer-program",
+    docLink: "https://aka.ms/vsc-ttk-m365-dev-program",
     commands: [
       {
         title: "Join Microsoft 365 Developer Program",
@@ -165,8 +160,7 @@ export const allSteps: () => NextStep[] = () => [
   {
     title: "Preview in Microsoft Teams",
     description: `Teams Toolkit helps you to debug and preview your Microsoft Teams app locally. During the debugging process, Teams Toolkit automatically starts app services, launches debuggers, and uploads Teams app. You can preview your Teams app in Teams web client locally after debugging. When previewing with Microsoft Teams, it will check all required prerequisites and guide you to fix them in output.`,
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=Windows%2CWindows1&pivots=visual-studio-code-v5",
+    docLink: "https://aka.ms/vsc-ttk-debug-local",
     commands: [
       {
         title: "Preview in Microsoft Teams",
@@ -214,7 +208,7 @@ export const allSteps: () => NextStep[] = () => [
     title: "Set up CI/CD Pipelines",
     description:
       "TeamsFx helps to automate your development workflow while building Teams application. The tools and templates to set up CI/CD pipelines are create workflow templates and customize CI/CD workflow with GitHub, Azure DevOps, Jenkins, and other platforms.",
-    docLink: "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/use-cicd-template",
+    docLink: "https://aka.ms/teamsfx-add-cicd-new",
     commands: [],
     followUps: [], // TODO: point to S3
     condition: (status: WholeStatus) =>
@@ -227,8 +221,7 @@ export const allSteps: () => NextStep[] = () => [
     title: "Deploy Your App using Your Azure Account",
     description:
       "An Azure account allows you to host a Teams app or the back-end resources for your Teams app to Azure. You can do this using Teams Toolkit in Visual Studio Code. You must have an Azure subscription in the following scenarios: If you already have an existing app on a different cloud provider other than Azure, and you want to integrate the app on Teams platform. If you want to host the back-end resources for your app using another cloud provider, or on your own servers if they're available in the public domain.",
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/tools-prerequisites#azure-account",
+    docLink: "https://aka.ms/vsc-ttk-azure-account",
     commands: [
       {
         title: "Sign in to Azure Account",
@@ -249,8 +242,7 @@ export const allSteps: () => NextStep[] = () => [
     title: "Provision Azure resources",
     description:
       "Teams Toolkit integrates with Azure and the Microsoft 365 cloud, which allows you to place your app in Azure with a single command. Teams Toolkit integrates with Azure Resource Manager (ARM) to set up Azure resources that your application needs, following a code-driven approach.",
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/provision?pivots=visual-studio-code-v5",
+    docLink: "https://aka.ms/teamsfx-provision",
     commands: [
       {
         title: "Provision Azure resources",
@@ -270,8 +262,7 @@ export const allSteps: () => NextStep[] = () => [
   {
     title: "Deploy to Azure",
     description: `Teams Toolkit helps to deploy or upload the front-end and back-end code in your app to your provisioned cloud resources in Azure. You can deploy to the following types of cloud resources: Azure App Services, Azure Functions, Azure Storage (as static website) and SharePoint`,
-    docLink:
-      "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/deploy?pivots=visual-studio-code-v5",
+    docLink: "https://aka.ms/teamsfx-deploy",
     commands: [
       {
         title: "Deploy to Azure",
@@ -292,7 +283,7 @@ export const allSteps: () => NextStep[] = () => [
     title: "Publish Your App",
     description:
       "After creating the app, you can distribute your app to different scopes, such as an individual, a team, or an organization. The distribution depends on multiple factors such as needs, business and technical requirements, and your goal for the app. Distribution to different scope may need different review processes. In general, the bigger the scope, the more review the app needs to go through for security and compliance concerns.",
-    docLink: "https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/publish",
+    docLink: "https://aka.ms/teamsfx-publish",
     commands: [
       {
         title: "Publish Your App",

@@ -1723,10 +1723,10 @@
           "type": "object",
           "additionalProperties": false,
           "description": "Write environment variables to environment file",
-          "required": ["registrationId"],
+          "required": ["configurationId"],
           "properties": {
-            "registrationId": {
-              "description": "Required. The registration id of created Oauth registration.",
+            "configurationId": {
+              "description": "Required. The configuration id of created Oauth registration.",
               "$ref": "#/definitions/envVarName"
             }
           }
@@ -1748,7 +1748,7 @@
           "type": "object",
           "additionalProperties": false,
           "description": "Parameters for this action",
-          "required": ["name", "appId", "apiSpecPath", "registrationId"],
+          "required": ["name", "appId", "apiSpecPath", "configurationId"],
           "properties": {
             "name": {
               "type": "string",
@@ -1762,9 +1762,9 @@
               "type": "string",
               "description": "The path of API specification file."
             },
-            "registrationId": {
+            "configurationId": {
               "type": "string",
-              "description": "The registration id of Oauth registration."
+              "description": "The configuration id of Oauth registration."
             },
             "applicableToApps": {
               "type": "string",

@@ -53,7 +53,7 @@ export class UpdateOauthDriver implements StepDriver {
       const appStudioToken = appStudioTokenRes.value;
       const getOauthRes = await AppStudioClient.getOauthRegistrationById(
         appStudioToken,
-        args.registrationId
+        args.configurationId
       );
 
       const diffMsgs = this.compareOauthRegistration(getOauthRes, args, domain);
@@ -86,7 +86,7 @@ export class UpdateOauthDriver implements StepDriver {
       const updateApiKeyRes = await AppStudioClient.updateOauthRegistration(
         appStudioToken,
         oauth,
-        args.registrationId
+        args.configurationId
       );
 
       void context.ui!.showMessage(
@@ -126,7 +126,7 @@ export class UpdateOauthDriver implements StepDriver {
 
   private validateArgs(args: UpdateOauthArgs): void {
     const invalidParameters: string[] = [];
-    if (typeof args.registrationId !== "string" || !args.registrationId) {
+    if (typeof args.configurationId !== "string" || !args.configurationId) {
       invalidParameters.push("registrationId");
     }
 

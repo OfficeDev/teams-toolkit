@@ -143,7 +143,7 @@ describe("CreateOauthDriver", () => {
       apiSpecPath: "mockedPath",
       targetAudience: "HomeTenant",
       applicableToApps: "SpecificApp",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
 
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
@@ -224,7 +224,7 @@ describe("CreateOauthDriver", () => {
       apiSpecPath: "mockedPath",
       targetAudience: "AnyTenant",
       applicableToApps: "AnyApp",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
 
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
@@ -321,7 +321,7 @@ describe("CreateOauthDriver", () => {
       apiSpecPath: "mockedPath",
       targetAudience: "AnyTenant",
       applicableToApps: "AnyApp",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
 
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
@@ -406,7 +406,7 @@ describe("CreateOauthDriver", () => {
       apiSpecPath: "mockedPath",
       targetAudience: "HomeTenant",
       applicableToApps: "SpecificApp",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
 
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
@@ -421,7 +421,7 @@ describe("CreateOauthDriver", () => {
       name: "",
       appId: "mockedAppId",
       apiSpecPath: "mockedPath",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
@@ -435,7 +435,7 @@ describe("CreateOauthDriver", () => {
       name: "a".repeat(129),
       appId: "mockedAppId",
       apiSpecPath: "mockedPath",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
@@ -448,7 +448,7 @@ describe("CreateOauthDriver", () => {
     const args: any = {
       name: "",
       apiSpecPath: "mockedPath",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
@@ -461,7 +461,7 @@ describe("CreateOauthDriver", () => {
     const args: any = {
       name: "",
       appId: "mockedAppId",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
     const result = await updateOauthDriver.execute(args, mockedDriverContext);
     expect(result.result.isErr()).to.be.true;
@@ -487,7 +487,7 @@ describe("CreateOauthDriver", () => {
     const args: any = {
       name: "name",
       appId: "mockedAppId",
-      regirstrationid: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
       apiSpecPath: "mockedPath",
       applicableToApps: "test",
     };
@@ -502,7 +502,7 @@ describe("CreateOauthDriver", () => {
     const args: any = {
       name: "name",
       appId: "mockedAppId",
-      regirstrationid: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
       apiSpecPath: "mockedPath",
       targetAudience: "test",
     };
@@ -571,7 +571,7 @@ describe("CreateOauthDriver", () => {
       apiSpecPath: "mockedPath",
       targetAudience: "HomeTenant",
       applicableToApps: "SpecificApp",
-      registrationId: "mockedRegistrationId",
+      configurationId: "mockedRegistrationId",
     };
 
     const result = await updateOauthDriver.execute(args, mockedDriverContext);

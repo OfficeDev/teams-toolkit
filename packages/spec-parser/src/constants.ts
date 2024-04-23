@@ -13,7 +13,8 @@ export class ConstantString {
 
   static readonly AdditionalPropertiesNotSupported =
     "'additionalProperties' is not supported, and will be ignored.";
-  static readonly SchemaNotSupported = "'oneOf', 'anyOf', and 'not' schema are not supported: %s.";
+  static readonly SchemaNotSupported =
+    "'oneOf', 'allOf', 'anyOf', and 'not' schema are not supported: %s.";
   static readonly UnknownSchema = "Unknown schema: %s.";
 
   static readonly UrlProtocolNotSupported =

@@ -571,12 +571,6 @@
     "commands": [
       {
         "command": "fx-extension.create",
-        "title": "TeamsToolkit TTK: A temp command",
-        "enablement": "!fx-extension.commandLocked",
-        "category": "Teams"
-      },
-      {
-        "command": "fx-extension.create",
         "title": "%teamstoolkit.commands.createProject.title%",
         "enablement": "!fx-extension.commandLocked",
         "category": "Teams"

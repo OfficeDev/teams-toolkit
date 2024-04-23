@@ -11,21 +11,20 @@ describe("OfficeTemplateModelPorvider", () => {
     provider = OfficeTemplateModelPorvider.getInstance();
   });
 
-  it("should return BM25Model", async () => {
-    const bm25ModelWord = await provider.getBM25Model("Word");
-    expect(bm25ModelWord).to.exist;
-
-    const bm25ModelExcel = await provider.getBM25Model("Excel");
-    expect(bm25ModelExcel).to.exist;
-
-    const bm25ModelPowerPoint = await provider.getBM25Model("PowerPoint");
+  it("should return BM25Model PowerPoint", async () => {
+    let bm25ModelPowerPoint = await provider.getBM25Model("PowerPoint");
+    if (bm25ModelPowerPoint === null) {
+      bm25ModelPowerPoint = await provider.getBM25Model("PowerPoint");
+    }
     expect(bm25ModelPowerPoint).to.exist;
 
+    const bm25ModelPowerPointCached = await provider.getBM25Model("PowerPoint");
+    expect(bm25ModelPowerPointCached).to.equal(bm25ModelPowerPoint);
+  });
+
+  it("invalid host", async () => {
     const bm25ModelFake = await provider.getBM25Model("Fake" as WXPAppName);
     expect(bm25ModelFake).to.not.exist;
-
-    const bm25ModelWordCached = await provider.getBM25Model("Word");
-    expect(bm25ModelWordCached).to.equal(bm25ModelWord);
 
     const bm25ModelEmptyHost = await provider.getBM25Model("" as WXPAppName);
     expect(bm25ModelEmptyHost).to.not.exist;

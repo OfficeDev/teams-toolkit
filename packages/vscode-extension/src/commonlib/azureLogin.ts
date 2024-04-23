@@ -115,13 +115,16 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
         );
       }
       if (await globalStateGet(showAzureSignOutHelp, true)) {
-        const userClicked = await vscode.window.showInformationMessage(
-          localize("teamstoolkit.commands.azureAccount.signOutHelp"),
-          "Got it"
-        );
-        if (userClicked === "Got it") {
-          await globalStateUpdate(showAzureSignOutHelp, false);
-        }
+        void vscode.window
+          .showInformationMessage(
+            localize("teamstoolkit.commands.azureAccount.signOutHelp"),
+            "Got it"
+          )
+          .then(async (userClicked) => {
+            if (userClicked === "Got it") {
+              await globalStateUpdate(showAzureSignOutHelp, false);
+            }
+          });
       }
     } catch (e) {
       AzureAccountManager.currentStatus = loggedOut;

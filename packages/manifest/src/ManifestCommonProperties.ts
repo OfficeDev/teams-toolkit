@@ -3,7 +3,7 @@
 
 export interface ManifestCommonProperties {
   /**
-   * Capabilities, e.g. "staticTab" | "configurableTab" | "MessageExtension" | "WebApplicationInfo"
+   * Capabilities, e.g. "staticTab" | "configurableTab" | "MessageExtension" | "WebApplicationInfo" | "plugin" | "copilotGpt"
    */
   capabilities: string[];
   /**

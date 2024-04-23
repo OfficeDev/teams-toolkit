@@ -36,13 +36,12 @@ import { Container } from "typedi";
 import { pathToFileURL } from "url";
 import { parse, parseDocument } from "yaml";
 import { VSCodeExtensionCommand } from "../common/constants";
-import { isApiKeyEnabled, isMultipleParametersEnabled } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { LaunchHelper } from "../common/m365/launchHelper";
 import { ListCollaboratorResult, PermissionsResult } from "../common/permissionInterface";
 import { isValidProjectV2, isValidProjectV3 } from "../common/projectSettingsHelper";
 import { ProjectTypeResult, projectTypeChecker } from "../common/projectTypeChecker";
-import { SpecParser, SpecParserError } from "@microsoft/m365-spec-parser";
+import { SpecParser, SpecParserError, Utils } from "@microsoft/m365-spec-parser";
 import { TelemetryEvent, fillinProjectTypeProperties } from "../common/telemetry";
 import { MetadataV3, VersionSource, VersionState } from "../common/versionMetadata";
 import { ILifecycle, LifecycleName } from "../component/configManager/interface";
@@ -1218,6 +1217,7 @@ export class FxCore {
           if (item.get("uses") === "teamsApp/create") {
             const teamsAppId = item.get("writeToEnvironmentFile")?.get("teamsAppId") as string;
             if (teamsAppId) {
+              const envName = Utils.getSafeRegistrationIdEnvName(`${authName}_REGISTRATION_ID`);
               provisionNode.items.splice(i + 1, 0, {
                 uses: "apiKey/register",
                 with: {
@@ -1226,7 +1226,7 @@ export class FxCore {
                   apiSpecPath: specRelativePath,
                 },
                 writeToEnvironmentFile: {
-                  registrationId: `${authName.toUpperCase()}_REGISTRATION_ID`,
+                  registrationId: envName,
                 },
               });
               added = true;
@@ -1284,8 +1284,8 @@ export class FxCore {
       isPlugin
         ? copilotPluginParserOptions
         : {
-            allowBearerTokenAuth: isApiKeyEnabled(), // Currently, API key auth support is actually bearer token auth
-            allowMultipleParameters: isMultipleParametersEnabled(),
+            allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+            allowMultipleParameters: true,
           }
     );
 
@@ -1293,12 +1293,12 @@ export class FxCore {
     const apiResultList = listResult.APIs.filter((value) => value.isValid);
 
     let existingOperations: string[];
-    let outputAPISpecPath: string;
+    let outputApiSpecPath: string;
     if (isPlugin) {
       if (!inputs[QuestionNames.DestinationApiSpecFilePath]) {
         return err(new MissingRequiredInputError(QuestionNames.DestinationApiSpecFilePath));
       }
-      outputAPISpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
+      outputApiSpecPath = inputs[QuestionNames.DestinationApiSpecFilePath];
       existingOperations = await listPluginExistingOperations(
         manifestRes.value,
         manifestPath,
@@ -1310,7 +1310,7 @@ export class FxCore {
         .filter((operation) => existingOperationIds.includes(operation.operationId))
         .map((operation) => operation.api);
       const apiSpecificationFile = manifestRes.value.composeExtensions![0].apiSpecificationFile;
-      outputAPISpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
+      outputApiSpecPath = path.join(path.dirname(manifestPath), apiSpecificationFile!);
     }
 
     const operations = [...existingOperations, ...newOperations];
@@ -1322,20 +1322,20 @@ export class FxCore {
     );
 
     try {
-      if (isApiKeyEnabled()) {
+      // TODO: type b will support auth
+      if (!isPlugin) {
         const authNames: Set<string> = new Set();
         const serverUrls: Set<string> = new Set();
         for (const api of operations) {
           const operation = apiResultList.find((op) => op.api === api);
-          if (operation) {
-            if (
-              operation.auth &&
-              operation.auth.authScheme.type === "http" &&
-              operation.auth.authScheme.scheme === "bearer"
-            ) {
-              authNames.add(operation.auth.name);
-              serverUrls.add(operation.server);
-            }
+          if (
+            operation &&
+            operation.auth &&
+            (Utils.isBearerTokenAuth(operation.auth.authScheme) ||
+              Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme))
+          ) {
+            authNames.add(operation.auth.name);
+            serverUrls.add(operation.server);
           }
         }
 
@@ -1353,7 +1353,7 @@ export class FxCore {
           const authName = [...authNames][0];
 
           const relativeSpecPath =
-            "./" + path.relative(inputs.projectPath!, outputAPISpecPath).replace(/\\/g, "/");
+            "./" + path.relative(inputs.projectPath!, outputApiSpecPath).replace(/\\/g, "/");
 
           await this.injectCreateAPIKeyAction(ymlPath, authName, relativeSpecPath);
 
@@ -1368,7 +1368,7 @@ export class FxCore {
         generateResult = await specParser.generate(
           manifestPath,
           operations,
-          outputAPISpecPath,
+          outputApiSpecPath,
           adaptiveCardFolder
         );
       } else {
@@ -1382,7 +1382,7 @@ export class FxCore {
         generateResult = await specParser.generateForCopilot(
           manifestPath,
           operations,
-          outputAPISpecPath,
+          outputApiSpecPath,
           pluginPathRes.value
         );
       }
@@ -1400,7 +1400,7 @@ export class FxCore {
         const warnSummary = generateScaffoldingSummary(
           generateResult.warnings,
           manifestRes.value,
-          inputs.projectPath!
+          path.relative(inputs.projectPath!, outputApiSpecPath)
         );
         context.logProvider.info(warnSummary);
       }

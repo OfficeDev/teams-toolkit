@@ -13,7 +13,8 @@ export class ConstantString {
 
   static readonly AdditionalPropertiesNotSupported =
     "'additionalProperties' is not supported, and will be ignored.";
-  static readonly SchemaNotSupported = "'oneOf', 'anyOf', and 'not' schema are not supported: %s.";
+  static readonly SchemaNotSupported =
+    "'oneOf', 'allOf', 'anyOf', and 'not' schema are not supported: %s.";
   static readonly UnknownSchema = "Unknown schema: %s.";
 
   static readonly UrlProtocolNotSupported =
@@ -52,7 +53,6 @@ export class ConstantString {
   static readonly ImageType = "Image";
   static readonly ContainerType = "Container";
   static readonly RegistrationIdPostfix = "REGISTRATION_ID";
-  static readonly OAuthRegistrationIdPostFix = "OAUTH_REGISTRATION_ID";
   static readonly ResponseCodeFor20X = [
     "200",
     "201",

@@ -2,35 +2,26 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import * as uuid from "uuid";
 import * as vscode from "vscode";
 
-import { Inputs } from "@microsoft/teamsfx-api";
-import {
-  Correlator,
-  SampleConfig,
-  isValidOfficeAddInProject,
-  sampleProvider,
-} from "@microsoft/teamsfx-core";
+import { Correlator, SampleConfig, sampleProvider } from "@microsoft/teamsfx-core";
 
 import * as extensionPackage from "../../package.json";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import * as globalVariables from "../globalVariables";
-import { downloadSample, getSystemInputs, openFolder } from "../handlers";
+import { downloadSampleApp } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
   InProductGuideInteraction,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetrySuccess,
   TelemetryTriggerFrom,
 } from "../telemetry/extTelemetryEvents";
+import { isTriggerFromWalkThrough } from "../utils/commonUtils";
 import { localize } from "../utils/localizeUtils";
 import { compare } from "../utils/versionUtil";
 import { Commands } from "./Commands";
 import { PanelType } from "./PanelType";
-import { isTriggerFromWalkThrough } from "../utils/commonUtils";
-import { openOfficeDevFolder } from "../officeDevHandlers";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -140,7 +131,7 @@ export class WebviewPanel {
             break;
           case Commands.CloneSampleApp:
             await Correlator.run(async () => {
-              await this.downloadSampleApp(msg);
+              await downloadSampleApp(TelemetryTriggerFrom.Webview, msg.data.appFolder);
             });
             break;
           case Commands.DisplayCommands:
@@ -199,34 +190,6 @@ export class WebviewPanel {
     this.panel.iconPath = this.getWebviewPanelIconPath(panelType);
   }
 
-  private async downloadSampleApp(msg: any) {
-    const props: any = {
-      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.Webview,
-      [TelemetryProperty.SampleAppName]: msg.data.appFolder,
-    };
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
-    const inputs: Inputs = getSystemInputs();
-    inputs["samples"] = msg.data.appFolder;
-    inputs.projectId = inputs.projectId ?? uuid.v4();
-
-    const res = await downloadSample(inputs);
-    if (inputs.projectId) {
-      props[TelemetryProperty.NewProjectId] = inputs.projectId;
-    }
-    if (res.isOk()) {
-      props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
-      if (isValidOfficeAddInProject((res.value as vscode.Uri).fsPath)) {
-        await openOfficeDevFolder(res.value, true);
-      } else {
-        await openFolder(res.value, true);
-      }
-    } else {
-      props[TelemetryProperty.Success] = TelemetrySuccess.No;
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
-    }
-  }
-
   private async LoadSampleCollection() {
     try {
       await sampleProvider.refreshSampleConfig();
@@ -281,7 +244,8 @@ export class WebviewPanel {
       return;
     }
     if (this.panel && this.panel.webview) {
-      const readme = this.replaceRelativeImagePaths(htmlContent, sample);
+      let readme = this.replaceRelativeImagePaths(htmlContent, sample);
+      readme = this.replaceMermaidRelatedContent(readme);
       await this.panel.webview.postMessage({
         message: Commands.LoadSampleReadme,
         readme: readme,
@@ -300,8 +264,15 @@ export class WebviewPanel {
   private replaceRelativeImagePaths(htmlContent: string, sample: SampleConfig) {
     const urlInfo = sample.downloadUrlInfo;
     const imageUrl = `https://github.com/${urlInfo.owner}/${urlInfo.repository}/blob/${urlInfo.ref}/${urlInfo.dir}/${sample.thumbnailPath}?raw=1`;
-    const imageRegex = /img\s+src="([^"]+)"/gm;
+    const imageRegex = /img\s+src="(?!https:\/\/camo\.githubusercontent\.com\/.)([^"]+)"/gm;
     return htmlContent.replace(imageRegex, `img src="${imageUrl}"`);
+  }
+
+  private replaceMermaidRelatedContent(htmlContent: string): string {
+    const mermaidRegex = /<pre lang="mermaid"/gm;
+    const loaderRegex = /<span(.*)>\s.*\s*<circle(.*)<\/circle>\s.*<\/path>\s.*\s*<\/span>/gm;
+    const loaderRemovedHtmlContent = htmlContent.replace(loaderRegex, "");
+    return loaderRemovedHtmlContent.replace(mermaidRegex, `<pre class="mermaid"`);
   }
 
   private getWebpageTitle(panelType: PanelType): string {
@@ -337,6 +308,9 @@ export class WebviewPanel {
     const dompurifyUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "purify.min.js")
     );
+    const mermaidUri = this.panel.webview.asWebviewUri(
+      vscode.Uri.joinPath(globalVariables.context.extensionUri, "out", "resource", "mermaid.min.js")
+    );
 
     // Use a nonce to to only allow specific scripts to be run
     const nonce = this.getNonce();
@@ -357,6 +331,8 @@ export class WebviewPanel {
             </script>
             <script nonce="${nonce}" type="module" src="${scriptUri.toString()}"></script>
             <script nonce="${nonce}" type="text/javascript" src="${dompurifyUri.toString()}"></script>
+            <script nonce="${nonce}" type="text/javascript" src="${mermaidUri.toString()}">
+            </script>
           </body>
         </html>`;
   }

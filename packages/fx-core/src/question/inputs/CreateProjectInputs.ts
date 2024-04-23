@@ -45,6 +45,8 @@ export interface CreateProjectInputs extends Inputs {
     | "message-extension"
     | "BotAndMessageExtension"
     | "TabNonSsoAndBot"
+    | "customize-gpt-basic"
+    | "customize-gpt-with-plugin"
     | "json-taskpane"
     | "office-content-addin"
     | "word-taskpane"
@@ -78,6 +80,8 @@ export interface CreateProjectInputs extends Inputs {
   "spfx-webpart-name"?: string;
   /** @description SPFx solution folder */
   "spfx-folder"?: string;
+  /** @description Copilot Plugin */
+  "customize-gpt-with-plugin-start"?: "copilot-plugin-new-api" | "copilot-plugin-existing-api";
   /** @description Architecture of Search Based Message Extension */
   "me-architecture"?: "new-api" | "api-spec" | "bot-plugin" | "bot";
   /** @description OpenAPI Description Document */

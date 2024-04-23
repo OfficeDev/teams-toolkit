@@ -12,14 +12,9 @@ import {
 import * as util from "util";
 import { CommandKey } from "../../../constants";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
-import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
+import { TelemetryEvent, TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
 import { localize } from "../../../utils/localizeUtils";
-import {
-  CHAT_CREATE_SAMPLE_COMMAND_ID,
-  CHAT_EXECUTE_COMMAND_ID,
-  TeamsChatCommand,
-  chatParticipantId,
-} from "../../consts";
+import { CHAT_EXECUTE_COMMAND_ID, TeamsChatCommand, chatParticipantId } from "../../consts";
 import { brieflyDescribeProjectSystemPrompt, describeProjectSystemPrompt } from "../../prompts";
 import { ChatTelemetryData } from "../../telemetry";
 import { ICopilotChatResult } from "../../types";
@@ -79,7 +74,10 @@ export default async function createCommandHandler(
     const describeProjectChatMessages = [
       describeProjectSystemPrompt,
       new LanguageModelChatUserMessage(
-        `The project you are looking for is '${JSON.stringify(firstMatch)}'.`
+        `The project you are looking for is '${JSON.stringify({
+          name: firstMatch.name,
+          description: firstMatch.description,
+        })}'.`
       ),
     ];
     chatTelemetryData.chatMessages.push(...describeProjectChatMessages);
@@ -94,8 +92,8 @@ export default async function createCommandHandler(
       const folder = await helper.showFileTree(firstMatch, response);
       const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
       response.button({
-        command: CHAT_CREATE_SAMPLE_COMMAND_ID,
-        arguments: [folder],
+        command: CommandKey.DownloadSample,
+        arguments: [TelemetryTriggerFrom.CopilotChat, firstMatch.id],
         title: sampleTitle,
       });
     } else if (firstMatch.type === "template") {
@@ -146,8 +144,8 @@ export default async function createCommandHandler(
       if (project.type === "sample") {
         const sampleTitle = localize("teamstoolkit.chatParticipants.create.sample");
         response.button({
-          command: CHAT_CREATE_SAMPLE_COMMAND_ID,
-          arguments: [project],
+          command: CommandKey.DownloadSample,
+          arguments: [TelemetryTriggerFrom.CopilotChat, project.id],
           title: sampleTitle,
         });
       } else if (project.type === "template") {

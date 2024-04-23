@@ -46,6 +46,7 @@ import { AsyncAppValidationResponse } from "../interfaces/AsyncAppValidationResp
 import { AsyncAppValidationResultsResponse } from "../interfaces/AsyncAppValidationResultsResponse";
 import { AsyncAppValidationDetailsResponse } from "../interfaces/AsyncAppValidationDetailsResponse";
 import { OauthRegistration } from "../interfaces/OauthRegistration";
+import { OauthConfigurationId } from "../interfaces/OauthConfigurationId";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -860,7 +861,7 @@ export namespace AppStudioClient {
   export async function createOauthRegistration(
     appStudioToken: string,
     oauthRegistration: OauthRegistration
-  ): Promise<OauthRegistration> {
+  ): Promise<OauthConfigurationId> {
     const requester = createRequesterWithToken(appStudioToken);
     try {
       const response = await RetryHandler.Retry(() =>

@@ -62,20 +62,20 @@ export class CreateOauthDriver implements StepDriver {
       }
       const appStudioToken = appStudioTokenRes.value;
 
-      if (state && state.registrationId) {
+      if (state && state.configurationId) {
         try {
-          await AppStudioClient.getOauthRegistrationById(appStudioToken, state.registrationId);
+          await AppStudioClient.getOauthRegistrationById(appStudioToken, state.configurationId);
           context.logProvider?.info(
             getLocalizedString(
               logMessageKeys.skipCreateOauth,
-              outputEnvVarNames.get(OutputKeys.registrationId)
+              outputEnvVarNames.get(OutputKeys.configurationId)
             )
           );
         } catch (error) {
           context.logProvider?.warning(
             getLocalizedString(
               logMessageKeys.oauthNotFound,
-              outputEnvVarNames.get(OutputKeys.registrationId)
+              outputEnvVarNames.get(OutputKeys.configurationId)
             )
           );
         }
@@ -105,13 +105,13 @@ export class CreateOauthDriver implements StepDriver {
           oauthRegistration
         );
         outputs.set(
-          outputEnvVarNames.get(OutputKeys.registrationId)!,
-          oauthRegistrationRes.oAuthConfigId!
+          outputEnvVarNames.get(OutputKeys.configurationId)!,
+          oauthRegistrationRes.configurationId.oAuthConfigId
         );
 
         const summary = getLocalizedString(
           logMessageKeys.successCreateOauth,
-          oauthRegistrationRes.oAuthConfigId!
+          oauthRegistrationRes.configurationId.oAuthConfigId
         );
         context.logProvider?.info(summary);
         summaries.push(summary);

@@ -14,6 +14,8 @@ const sampleDirectoryUrl =
 export class OfficeTemplateModelPorvider {
   private static instance: OfficeTemplateModelPorvider;
 
+  private samples: { [x: string]: SampleData[] } = {};
+
   private bm25Models: { [x: string]: BM25 } = {};
 
   private constructor() {
@@ -28,6 +30,9 @@ export class OfficeTemplateModelPorvider {
   }
 
   public async getSamples(name: WXPAppName): Promise<SampleData[]> {
+    if (this.samples[name]) {
+      return this.samples[name];
+    }
     const returnData: SampleData[] = [];
     const fullUrl = sampleDirectoryUrl + name;
     let directoryResponse = null;
@@ -94,6 +99,7 @@ export class OfficeTemplateModelPorvider {
         }
       }
     }
+    this.samples[name] = returnData;
     return returnData;
   }
 

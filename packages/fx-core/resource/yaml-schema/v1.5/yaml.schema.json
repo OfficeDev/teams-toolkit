@@ -1664,12 +1664,12 @@
     "oauthRegister": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Create an Oauth registration.",
+      "description": "Create an OAuth registration.",
       "required": ["uses", "with", "writeToEnvironmentFile"],
       "properties": {
         "uses": {
           "type": "string",
-          "description": "Register Oauth registration. Refer to https://aka.ms/teamsfx-actions/oauth-register for more details.",
+          "description": "Register OAuth registration. Refer to https://aka.ms/teamsfx-actions/oauth-register for more details.",
           "const": "oauth/register"
         },
         "with": {
@@ -1680,11 +1680,11 @@
           "properties": {
             "name": {
               "type": "string",
-              "description": "The name of Oauth registration."
+              "description": "The name of OAuth registration."
             },
             "appId": {
               "type": "string",
-              "description": "The app ID of Oauth registration."
+              "description": "The app ID of OAuth registration."
             },
             "apiSpecPath": {
               "type": "string",
@@ -1692,30 +1692,30 @@
             },
             "applicableToApps": {
               "type": "string",
-              "description": "Which app can access the Oauth registration? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
+              "description": "Which app can access the OAuth registration? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
               "enum": ["SpecificApp", "AnyApp"]
             },
             "targetAudience": {
               "type": "string",
-              "description": "Which tenant can access the Oauth registration? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
+              "description": "Which tenant can access the OAuth registration? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
               "enum": ["HomeTenant", "AnyTenant"]
             },
             "flow": {
               "type": "string",
-              "description": "The flow of Oauth registration. Values can be \"authorizationCode\" .",
+              "description": "The flow of OAuth registration. Values can be \"authorizationCode\" .",
               "enum": ["authorizationCode"]
             },
             "clientId": {
               "type": "string",
-              "description": "The client id of Oauth registration."
+              "description": "The client id of OAuth registration."
             },
             "clientSecret": {
               "type": "string",
-              "description": "The client secret of Oauth registration."
+              "description": "The client secret of OAuth registration."
             },
             "refreshUrl": {
               "type": "string",
-              "description": "The refresh url of Oauth registration."
+              "description": "The refresh url of OAuth registration."
             }
           }
         },
@@ -1726,7 +1726,7 @@
           "required": ["configurationId"],
           "properties": {
             "configurationId": {
-              "description": "Required. The configuration id of created Oauth registration.",
+              "description": "Required. The configuration id of created OAuth registration.",
               "$ref": "#/definitions/envVarName"
             }
           }
@@ -1736,12 +1736,12 @@
     "oauthUpdate": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Update an Oauth registration.",
+      "description": "Update an OAuth registration.",
       "required": ["uses", "with"],
       "properties": {
         "uses": {
           "type": "string",
-          "description": "Updagte Oauth registration. Refer to https://aka.ms/teamsfx-actions/oauth-update for more details.",
+          "description": "Updagte OAuth registration. Refer to https://aka.ms/teamsfx-actions/oauth-update for more details.",
           "const": "oauth/update"
         },
         "with": {
@@ -1752,11 +1752,11 @@
           "properties": {
             "name": {
               "type": "string",
-              "description": "The name of Oauth registration."
+              "description": "The name of OAuth registration."
             },
             "appId": {
               "type": "string",
-              "description": "The app ID of Oauth registration."
+              "description": "The app ID of OAuth registration."
             },
             "apiSpecPath": {
               "type": "string",
@@ -1764,16 +1764,16 @@
             },
             "configurationId": {
               "type": "string",
-              "description": "The configuration id of Oauth registration."
+              "description": "The configuration id of OAuth registration."
             },
             "applicableToApps": {
               "type": "string",
-              "description": "Which app can access the Oauth registration? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
+              "description": "Which app can access the OAuth registration? Values can be \"SpecificApp\" or \"AnyApp\". Default is \"AnyApp\".",
               "enum": ["SpecificApp", "AnyApp"]
             },
             "targetAudience": {
               "type": "string",
-              "description": "Which tenant can access the Oauth registration? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
+              "description": "Which tenant can access the OAuth registration? Values can be \"HomeTenant\" or \"AnyTenant\". Default is \"AnyTenant\".",
               "enum": ["HomeTenant", "AnyTenant"]
             }
           }

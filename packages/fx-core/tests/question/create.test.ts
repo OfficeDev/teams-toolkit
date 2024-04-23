@@ -3265,7 +3265,7 @@ describe("scaffold question", () => {
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
 
-            return ok({ type: "success", result: CapabilityOptions.cusomizeGptWithPlugin().id });
+            return ok({ type: "success", result: CapabilityOptions.customizeGptWithPlugin().id });
           } else if (question.name === QuestionNames.CustomizeGptWithPluginStart) {
             const select = question as SingleSelectQuestion;
             const options = await select.staticOptions;
@@ -3318,7 +3318,7 @@ describe("scaffold question", () => {
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
 
-            return ok({ type: "success", result: CapabilityOptions.cusomizeGptWithPlugin().id });
+            return ok({ type: "success", result: CapabilityOptions.customizeGptWithPlugin().id });
           } else if (question.name === QuestionNames.CustomizeGptWithPluginStart) {
             const select = question as SingleSelectQuestion;
             const options = await select.staticOptions;

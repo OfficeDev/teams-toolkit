@@ -69,7 +69,7 @@ export function getKeyVaultNameFromResourceId(
 
 export function getContainerNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(
-    /\/containerApps\/([^\/]*)\//i,
+    /providers\/Microsoft.App\/containerApps\/([^\/]*)/i,
     resourceId
   );
   if (!result) {

@@ -11,6 +11,7 @@ import {
   getContainerAppProperties,
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
+  getContainerNameFromResourceId,
 } from "./utilities";
 import { Executor } from "../utils/executor";
 import { Env } from "../utils/env";
@@ -32,7 +33,7 @@ export class ContainerAppValidator {
     chai.assert.exists(this.subscriptionId);
     this.rg = getResourceGroupNameFromResourceId(resourceId);
     chai.assert.exists(this.rg);
-    this.containerAppName = this.ctx[EnvConstants.AZURE_CONTAINER_APP_NAME];
+    this.containerAppName = getContainerNameFromResourceId(resourceId);
     chai.assert.exists(this.containerAppName);
     process.env[EnvConstants.AZURE_CONTAINER_APP_NAME] = this.containerAppName;
 

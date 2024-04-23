@@ -67,6 +67,19 @@ export function getKeyVaultNameFromResourceId(
   return result;
 }
 
+export function getContainerNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /\/containerApps\/([^\/]*)\//i,
+    resourceId
+  );
+  if (!result) {
+    throw new Error(
+      failedToParseResourceIdErrorMessage("container app name", resourceId)
+    );
+  }
+  return result;
+}
+
 export function parseFromResourceId(
   pattern: RegExp,
   resourceId: string

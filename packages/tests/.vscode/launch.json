@@ -16,7 +16,7 @@
         "--type",
         "stable",
         "--code_version",
-        "1.88.1",
+        "1.78.0",
         "--code_settings",
         "./settings.json",
         "./out/ui-test/**/${{ YOUR TEST CASE }}.test.js"

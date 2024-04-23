@@ -34,6 +34,35 @@ export class CopilotGptManifestUtils {
     await fs.writeFile(path, content);
     return ok(undefined);
   }
+
+  public async addPlugin(
+    copilotGptPath: string,
+    id: string,
+    pluginFile: string
+  ): Promise<Result<CopilotGptManifestSchema, FxError>> {
+    const gptManifestRes = await copilotGptManifestUtils.readCopilotGptManifestFile(copilotGptPath);
+    if (gptManifestRes.isErr()) {
+      return err(gptManifestRes.error);
+    } else {
+      const gptManifest = gptManifestRes.value;
+      if (!gptManifest.actions) {
+        gptManifest.actions = [];
+      }
+      gptManifest.actions?.push({
+        id,
+        file: pluginFile,
+      });
+      const updateGptManifestRes = await copilotGptManifestUtils.writeCopilotGptManifestFile(
+        gptManifest,
+        copilotGptPath
+      );
+      if (updateGptManifestRes.isErr()) {
+        return err(updateGptManifestRes.error);
+      } else {
+        return ok(gptManifest);
+      }
+    }
+  }
 }
 
 export const copilotGptManifestUtils = new CopilotGptManifestUtils();

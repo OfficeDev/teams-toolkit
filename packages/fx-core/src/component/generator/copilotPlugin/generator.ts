@@ -59,6 +59,7 @@ import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { merge } from "lodash";
 import { TemplateNames } from "../templates/templateNames";
+import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
@@ -71,6 +72,7 @@ const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 const pluginManifestFileName = "ai-plugin.json";
+const defaultPluginId = "plugin_1";
 
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
@@ -416,6 +418,25 @@ export class CopilotPluginGenerator {
           manifestPath
         );
         if (updateManifestRes.isErr()) return err(updateManifestRes.error);
+      }
+
+      // update gpt.json including plugins
+      if (isGptPlugin && teamsManifest.copilotGpts && teamsManifest.copilotGpts.length > 0) {
+        const copilotGptPath = path.join(
+          destinationPath,
+          AppPackageFolderName,
+          teamsManifest.copilotGpts[0].file
+        );
+        await fs.ensureFile(copilotGptPath);
+        const addPluginRes = await copilotGptManifestUtils.addPlugin(
+          copilotGptPath,
+          defaultPluginId,
+          pluginManifestFileName
+        );
+
+        if (addPluginRes.isErr()) {
+          return err(addPluginRes.error);
+        }
       }
 
       if (componentName === forCustomCopilotRagCustomApi) {

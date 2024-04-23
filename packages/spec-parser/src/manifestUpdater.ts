@@ -48,11 +48,10 @@ export class ManifestUpdater {
           id: ConstantString.DefaultPluginId,
         },
       ];
+      ManifestUpdater.updateManifestDescription(manifest, spec);
     }
 
     const appName = this.removeEnvs(manifest.name.short);
-
-    ManifestUpdater.updateManifestDescription(manifest, spec);
 
     const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
     const apiPlugin = await ManifestUpdater.generatePluginManifestSchema(

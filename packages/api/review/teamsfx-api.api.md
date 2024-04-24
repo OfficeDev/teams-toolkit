@@ -259,7 +259,15 @@ export enum CoreCallbackEvent {
 }
 
 // @public (undocumented)
+export type CreateProjectInputs = Inputs & {
+    "app-name": string;
+    folder: string;
+};
+
+// @public (undocumented)
 export interface CreateProjectResult {
+    // (undocumented)
+    projectId?: string;
     // (undocumented)
     projectPath: string;
     // (undocumented)
@@ -378,6 +386,14 @@ export interface Group {
     name?: string;
     // (undocumented)
     type: "group";
+}
+
+// @public (undocumented)
+export interface IGenerator {
+    // (undocumented)
+    componentName: string;
+    // (undocumented)
+    run(context: Context, inputs: Inputs, destinationPath: string): Promise<Result<undefined, FxError>>;
 }
 
 // @public

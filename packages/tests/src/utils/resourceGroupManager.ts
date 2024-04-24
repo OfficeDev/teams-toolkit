@@ -3,10 +3,9 @@
 
 "use strict";
 
-import * as arm from "azure-arm-resource";
-import * as msRestAzure from "ms-rest-azure";
+import { ResourceManagementClient } from "@azure/arm-resources";
+import { UsernamePasswordCredential } from "@azure/identity";
 import { Env } from "./env";
-
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -15,7 +14,7 @@ function delay(ms: number) {
 export class ResourceGroupManager {
   private static instance: ResourceGroupManager;
 
-  private static client?: arm.ResourceManagementClient.ResourceManagementClient;
+  private static client?: ResourceManagementClient;
 
   private constructor() {
     ResourceGroupManager.client = undefined;
@@ -24,18 +23,16 @@ export class ResourceGroupManager {
   public static async init(): Promise<ResourceGroupManager> {
     if (!ResourceGroupManager.instance) {
       ResourceGroupManager.instance = new ResourceGroupManager();
-      const c = await msRestAzure.loginWithUsernamePassword(
+      const credential = new UsernamePasswordCredential(
+        Env.azureTenantId,
+        Env.AZURE_CLIENT_ID,
         Env.azureAccountName,
-        Env.azureAccountPassword,
-        {
-          domain: Env.azureTenantId,
-        }
+        Env.azureAccountPassword
       );
-      ResourceGroupManager.client =
-        new arm.ResourceManagementClient.ResourceManagementClient(
-          c,
-          Env.azureSubscriptionId
-        );
+      ResourceGroupManager.client = new ResourceManagementClient(
+        credential,
+        Env.azureSubscriptionId
+      );
     }
     return Promise.resolve(ResourceGroupManager.instance);
   }
@@ -54,8 +51,17 @@ export class ResourceGroupManager {
   }
 
   public async searchResourceGroups(contain: string) {
-    const groups = await ResourceGroupManager.client!.resourceGroups.list();
-    return groups.filter((group) => group.name?.includes(contain));
+    // const groups = await ResourceGroupManager.client!.resourceGroups.list();
+    // return groups.filter((group) => group.name?.includes(contain));
+    const results: string[] = [];
+    const res = ResourceGroupManager.client!.resourceGroups.list();
+    let result;
+    do {
+      result = await res.next();
+      if (result.value?.name?.includes(contain))
+        results.push(result.value.name);
+    } while (!result.done);
+    return results;
   }
 
   public async createResourceGroup(
@@ -91,7 +97,7 @@ export class ResourceGroupManager {
     return new Promise<boolean>(async (resolve) => {
       for (let i = 0; i < retryTimes; ++i) {
         try {
-          await ResourceGroupManager.client!.resourceGroups.deleteMethod(name);
+          await ResourceGroupManager.client!.resourceGroups.beginDelete(name);
           return resolve(true);
         } catch (e) {
           await delay(2000);

@@ -4,10 +4,10 @@
 
 ## IConfigurableTab.scopes property
 
-Specifies whether the tab offers an experience in the context of a channel in a team, in a 1:1 or group chat, or in an experience scoped to an individual user alone. These options are non-exclusive. Currently, configurable tabs are only supported in the teams and groupchats scopes.
+Specifies whether the tab offers an experience in the context of a channel in a team, in a 1:1 or group chat, or in an experience scoped to an individual user alone. These options are non-exclusive. Currently, configurable tabs are only supported in the teams and groupChats scopes.
 
 <b>Signature:</b>
 
 ```typescript
-scopes: ("team" | "groupchat")[];
+scopes: ("team" | "groupChat")[];
 ```

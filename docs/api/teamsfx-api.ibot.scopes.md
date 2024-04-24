@@ -9,5 +9,5 @@ Specifies whether the bot offers an experience in the context of a channel in a 
 <b>Signature:</b>
 
 ```typescript
-scopes: ("team" | "personal" | "groupchat")[];
+scopes: ("team" | "personal" | "groupChat")[];
 ```

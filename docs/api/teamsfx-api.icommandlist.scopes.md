@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-scopes: ("team" | "personal" | "groupchat")[];
+scopes: ("team" | "personal" | "groupChat")[];
 ```

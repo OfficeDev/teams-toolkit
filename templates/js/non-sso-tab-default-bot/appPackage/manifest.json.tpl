@@ -28,7 +28,7 @@
             "scopes": [
                 "personal",
                 "team",
-                "groupchat"
+                "groupChat"
             ],
             "supportsFiles": false,
             "isNotificationOnly": false,
@@ -37,7 +37,7 @@
                     "scopes": [
                         "personal",
                         "team",
-                        "groupchat"
+                        "groupChat"
                     ],
                     "commands": [
                         {
@@ -60,7 +60,7 @@
             "canUpdateConfiguration": true,
             "scopes": [
                 "team",
-                "groupchat"
+                "groupChat"
             ]
         }
     ],

@@ -30,7 +30,7 @@
             "canUpdateConfiguration": true,
             "scopes": [
                 "team",
-                "groupchat"
+                "groupChat"
             ]
         }
     ],

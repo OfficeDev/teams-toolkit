@@ -15,5 +15,5 @@ export interface ICommandList
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [commands](./teamsfx-api.icommandlist.commands.md) | [ICommand](./teamsfx-api.icommand.md)<!-- -->\[\] |  |
-|  [scopes](./teamsfx-api.icommandlist.scopes.md) | ("team" \| "personal" \| "groupchat")\[\] |  |
+|  [scopes](./teamsfx-api.icommandlist.scopes.md) | ("team" \| "personal" \| "groupChat")\[\] |  |
 

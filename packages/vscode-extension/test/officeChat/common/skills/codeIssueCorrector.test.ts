@@ -14,6 +14,8 @@ import {
   LanguageModelChatSystemMessage,
 } from "vscode";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
+import { SampleProvider } from "../../../../src/officeChat/common/samples/sampleProvider";
+import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
 
 describe("CodeIssueCorrector", () => {
   const sandbox = sinon.createSandbox();
@@ -424,6 +426,35 @@ describe("CodeIssueCorrector", () => {
 
     spec.appendix.complexity = 80;
     sandbox.stub(corrector, "fixIssueAsync").returns(Promise.resolve(null));
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hello, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+    scenarioSamples.set(
+      "sample2",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hi, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 
@@ -447,6 +478,36 @@ describe("CodeIssueCorrector", () => {
     sandbox.stub(corrector, "fixIssueAsync").returns(Promise.resolve("less"));
     const detectorInstance = CodeIssueDetector.getInstance();
     sandbox.stub(detectorInstance, "detectIssuesAsync").returns(Promise.resolve(detectionResult));
+
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hello, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+    scenarioSamples.set(
+      "sample2",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hi, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 
@@ -489,6 +550,36 @@ describe("CodeIssueCorrector", () => {
     detectIssuesStub.onCall(2).returns(Promise.resolve(detetionResultIncreaseError));
     detectIssuesStub.onCall(3).returns(Promise.resolve(detectionResultFinal));
 
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hello, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+    scenarioSamples.set(
+      "sample2",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hi, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
+
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 
     chai.expect(result.result).to.equal(ExecutionResultEnum.Success);
@@ -529,6 +620,36 @@ describe("CodeIssueCorrector", () => {
     detectIssuesStub.onCall(2).returns(Promise.resolve(detetionResultIncreaseError));
     detectIssuesStub.onCall(3).returns(Promise.resolve(detectionResultFinal));
 
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hello, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+    scenarioSamples.set(
+      "sample2",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hi, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
+
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 
     chai.expect(result.result).to.equal(ExecutionResultEnum.Success);
@@ -568,6 +689,36 @@ describe("CodeIssueCorrector", () => {
     detectIssuesStub.onCall(1).returns(Promise.resolve(detectionResultAfterFix));
     detectIssuesStub.onCall(2).returns(Promise.resolve(detetionResultIncreaseError));
     detectIssuesStub.onCall(3).returns(Promise.resolve(detectionResultFinal));
+
+    const getTopKMostRelevantScenarioSampleCodesStub = sandbox.stub(
+      SampleProvider.prototype,
+      "getTopKMostRelevantScenarioSampleCodesLLM"
+    );
+    const scenarioSamples = new Map<string, SampleData>();
+    scenarioSamples.set(
+      "sample1",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hello, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+    scenarioSamples.set(
+      "sample2",
+      new SampleData(
+        "Sample Name",
+        "https://docs.example.com",
+        'const example = "Hi, world!";',
+        "This is a sample description.",
+        "This is a sample definition.",
+        "This is a sample usage."
+      )
+    );
+
+    getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
     const result = await corrector.invoke(model, fakeResponse, fakeToken, spec);
 

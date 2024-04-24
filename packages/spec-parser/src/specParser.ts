@@ -58,6 +58,7 @@ export class SpecParser {
     allowResponseSemantics: false,
     allowConfirmation: false,
     projectType: ProjectType.SME,
+    isGptPlugin: false,
   };
 
   /**

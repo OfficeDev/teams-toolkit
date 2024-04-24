@@ -13,6 +13,7 @@ import { MockLogProvider } from "../../core/utils";
 import { PackageService } from "../../../src/common/m365/packageService";
 import { UnhandledError } from "../../../src/error/common";
 import { setTools } from "../../../src/core/globalVars";
+import { NotExtendedToM365Error } from "../../../src/common/m365/errors";
 
 chai.use(chaiAsPromised);
 
@@ -738,7 +739,16 @@ describe("Package Service", () => {
 
     chai.assert.deepEqual(launchInfo, { foo: "bar" });
   });
-
+  it("getLaunchInfoByManifestId throws expected error", async () => {
+    sandbox.stub(testAxiosInstance, "post").rejects({ response: { status: 404 } });
+    const packageService = new PackageService("https://test-endpoint");
+    try {
+      await packageService.getLaunchInfoByManifestId("test-token", "test-manifest-id");
+      chai.assert.fail("should not reach here");
+    } catch (e) {
+      chai.assert.isTrue(e instanceof NotExtendedToM365Error);
+    }
+  });
   it("getLaunchInfoByTitleId throws expected error", async () => {
     axiosGetResponses["/config/v1/environment"] = {
       data: {

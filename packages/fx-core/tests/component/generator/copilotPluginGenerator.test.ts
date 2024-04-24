@@ -786,7 +786,7 @@ describe("copilotPluginGenerator", function () {
           data: {
             serverUrl: "https://server1",
             authName: "auth",
-            authType: "authorizationCode",
+            authType: "oauth2",
           },
         },
       ] as ApiOperation[],

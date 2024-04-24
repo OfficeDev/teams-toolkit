@@ -77,6 +77,7 @@ import {
   MetadataV3,
   CapabilityOptions,
   isChatParticipantEnabled,
+  pluginManifestUtils,
 } from "@microsoft/teamsfx-core";
 import { ExtensionContext, QuickPickItem, Uri, commands, env, window, workspace } from "vscode";
 
@@ -87,6 +88,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
   AzurePortalUrl,
+  CommandKey,
   DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
@@ -143,6 +145,7 @@ import {
 } from "./debug/constants";
 import { openOfficeDevFolder } from "./officeDevHandlers";
 import { invokeTeamsAgent } from "./copilotChatHandlers";
+import { updateProjectStatus } from "./utils/projectStatusUtils";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -385,7 +388,7 @@ export async function createNewProjectHandler(...args: any[]): Promise<Result<an
   }
   const projectPathUri = Uri.file(res.projectPath);
   // If it is triggered in @office /create for code gen, then do no open the temp folder.
-  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.isFromCodeGen) {
+  if (isValidOfficeAddInProject(projectPathUri.fsPath) && inputs?.agent === "office") {
     return result;
   }
   // show local debug button by default
@@ -826,6 +829,31 @@ export async function runCommand(
   await processResult(eventName, result, inputs, telemetryProperties);
 
   return result;
+}
+
+export async function downloadSampleApp(...args: unknown[]) {
+  const sampleId = args[1] as string;
+  const props: any = {
+    [TelemetryProperty.TriggerFrom]: getTriggerFromProperty(args),
+    [TelemetryProperty.SampleAppName]: sampleId,
+  };
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
+  const inputs: Inputs = getSystemInputs();
+  inputs["samples"] = sampleId;
+  inputs.projectId = inputs.projectId ?? uuid.v4();
+
+  const res = await downloadSample(inputs);
+  if (inputs.projectId) {
+    props[TelemetryProperty.NewProjectId] = inputs.projectId;
+  }
+  if (res.isOk()) {
+    props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
+    await openFolder(res.value, true);
+  } else {
+    props[TelemetryProperty.Success] = TelemetrySuccess.No;
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
+  }
 }
 
 export async function downloadSample(inputs: Inputs): Promise<Result<any, FxError>> {
@@ -1274,7 +1302,8 @@ export async function autoOpenProjectHandler(): Promise<void> {
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
-    await openReadMeHandler([TelemetryTriggerFrom.Auto]);
+    await openReadMeHandler(TelemetryTriggerFrom.Auto);
+    await updateProjectStatus(globalVariables.workspaceUri.fsPath, CommandKey.OpenReadMe, ok(null));
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
     await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);
@@ -1443,18 +1472,40 @@ export async function ShowScaffoldingWarningSummary(
     const manifestRes = await manifestUtils._readAppManifest(
       path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
     );
+    let message;
     if (manifestRes.isOk()) {
-      if (ManifestUtil.parseCommonProperties(manifestRes.value).isApiME) {
-        const message = generateScaffoldingSummary(
+      const teamsManifest = manifestRes.value;
+      const commonProperties = ManifestUtil.parseCommonProperties(teamsManifest);
+      if (commonProperties.capabilities.includes("plugin")) {
+        const apiSpecFilePathRes = await pluginManifestUtils.getApiSpecFilePathFromTeamsManifest(
+          teamsManifest,
+          path.join(workspacePath, AppPackageFolderName, ManifestTemplateFileName)
+        );
+        if (apiSpecFilePathRes.isErr()) {
+          ExtTelemetry.sendTelemetryErrorEvent(
+            TelemetryEvent.ShowScaffoldingWarningSummaryError,
+            apiSpecFilePathRes.error
+          );
+        } else {
+          message = generateScaffoldingSummary(
+            createWarnings,
+            teamsManifest,
+            path.relative(workspacePath, apiSpecFilePathRes.value[0])
+          );
+        }
+      }
+      if (commonProperties.isApiME) {
+        message = generateScaffoldingSummary(
           createWarnings,
           manifestRes.value,
-          workspacePath
+          teamsManifest.composeExtensions?.[0].apiSpecificationFile ?? ""
         );
-        if (message) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
-          VsCodeLogInstance.outputChannel.show();
-          void VsCodeLogInstance.info(message);
-        }
+      }
+
+      if (message) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowScaffoldingWarningSummary);
+        VsCodeLogInstance.outputChannel.show();
+        void VsCodeLogInstance.info(message);
       }
     } else {
       ExtTelemetry.sendTelemetryErrorEvent(

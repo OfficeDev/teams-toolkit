@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CancellationToken } from "vscode";
+import { CancellationToken, LanguageModelChatUserMessage } from "vscode";
 import { BM25, BMDocument } from "../../retrievalUtil/BM25";
 import { OfficeTemplateModelPorvider, WXPAppName } from "./officeTemplateModelPorvider";
 import { SampleData } from "./sampleData";
 import { prepareDiscription } from "../../retrievalUtil/retrievalUtil";
+import { getCopilotResponseAsString } from "../../../chat/utils";
+import { getTopKMostRelevantScenarioSampleCodesLLMPrompt } from "../../officePrompts";
 
 // TODO: adjust the score threshold
 const scoreThreshold = 0.5;
@@ -24,7 +26,7 @@ export class SampleProvider {
     return SampleProvider.instance;
   }
 
-  public async getTopKMostRelevantScenarioSampleCodes(
+  public async getTopKMostRelevantScenarioSampleCodesBM25(
     token: CancellationToken,
     host: string,
     scenario: string,
@@ -45,6 +47,43 @@ export class SampleProvider {
         }
       }
     }
+    return new Promise<Map<string, SampleData>>((resolve, reject) => {
+      resolve(samples);
+    });
+  }
+
+  public async getTopKMostRelevantScenarioSampleCodesLLM(
+    token: CancellationToken,
+    host: string,
+    scenario: string,
+    k: number
+  ): Promise<Map<string, SampleData>> {
+    const sampleDatas = await OfficeTemplateModelPorvider.getInstance().getSamples(
+      host as WXPAppName
+    );
+    const samplesPrompt = getTopKMostRelevantScenarioSampleCodesLLMPrompt(scenario, k, sampleDatas);
+    const samples: Map<string, SampleData> = new Map<string, SampleData>();
+    const sampleMessage: LanguageModelChatUserMessage = new LanguageModelChatUserMessage(
+      samplesPrompt
+    );
+
+    const copilotResponse = await getCopilotResponseAsString(
+      "copilot-gpt-4", // "copilot-gpt-3.5-turbo", // "copilot-gpt-4",
+      [sampleMessage],
+      token
+    );
+
+    const returnObject: { selectedSampleCodes: string[] } = JSON.parse(copilotResponse);
+    returnObject.selectedSampleCodes.forEach((value: string) => {
+      sampleDatas.find((sampleData) => {
+        if (sampleData.description.endsWith(value)) {
+          samples.set(sampleData.description, sampleData);
+          return true;
+        }
+        return false;
+      });
+    });
+
     return new Promise<Map<string, SampleData>>((resolve, reject) => {
       resolve(samples);
     });

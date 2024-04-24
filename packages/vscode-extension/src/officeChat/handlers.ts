@@ -1,38 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as fs from "fs-extra";
 import {
   CancellationToken,
   ChatContext,
   ChatRequest,
   ChatResponseStream,
-  commands,
   LanguageModelChatUserMessage,
   ProviderResult,
   Uri,
+  commands,
   window,
   workspace,
 } from "vscode";
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as uuid from "uuid";
 import { OfficeChatCommand, officeChatParticipantId } from "./consts";
 import followupProvider from "../chat/followupProvider";
 import { ICopilotChatResult } from "../chat/types";
 import { ChatTelemetryData } from "../chat/telemetry";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import {
-  TelemetryTriggerFrom,
-  TelemetryEvent,
-  TelemetryProperty,
-} from "../telemetry/extTelemetryEvents";
-import { localize } from "../utils/localizeUtils";
+import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import officeCreateCommandHandler from "./commands/create/officeCreateCommandHandler";
 import generatecodeCommandHandler from "./commands/generatecode/generatecodeCommandHandler";
 import officeNextStepCommandHandler from "./commands/nextStep/officeNextstepCommandHandler";
 import { defaultOfficeSystemPrompt } from "./officePrompts";
 import { verbatimCopilotInteraction } from "../chat/utils";
-import { FxError, Result } from "@microsoft/teamsfx-api";
+import { localize } from "../utils/localizeUtils";
 
 export function officeChatRequestHandler(
   request: ChatRequest,
@@ -77,53 +70,55 @@ async function officeDefaultHandler(
   return { metadata: { command: undefined, requestId: chatTelemetryData.requestId } };
 }
 
-export async function chatCreateOfficeTemplateCommandHandler(
-  command: string,
-  requestId: string,
-  data: any
-) {
-  const officeChatTelemetryData = ChatTelemetryData.get(requestId);
-  const correlationId = uuid.v4();
-  if (officeChatTelemetryData) {
-    ExtTelemetry.sendTelemetryEvent(
-      TelemetryEvent.CopilotChatClickButton,
-      {
-        ...officeChatTelemetryData.properties,
-        [TelemetryProperty.CopilotChatRunCommandId]: OfficeChatCommand.Create,
-        [TelemetryProperty.CorrelationId]: correlationId,
-      },
-      officeChatTelemetryData.measurements
-    );
-  }
-  const customFolder = await window.showOpenDialog({
-    title: localize("teamstoolkit.chatParticipants.create.selectFolder.title"),
-    openLabel: localize("teamstoolkit.chatParticipants.create.selectFolder.label"),
-    defaultUri: Uri.file(workspace.workspaceFolders![0].uri.fsPath),
-    canSelectFiles: false,
-    canSelectFolders: true,
-    canSelectMany: false,
-  });
-  if (!customFolder) {
-    return;
-  } else {
-    const dstPath = customFolder[0].fsPath;
-    const baseName: string = data.name;
-    let projectName = baseName;
-    let index = 0;
-    while (fs.existsSync(path.join(dstPath, projectName))) {
-      projectName = `${baseName} ${++index}`;
+export async function chatCreateOfficeProjectCommandHandler(folder: string) {
+  // Let user choose the project folder
+  let dstPath = "";
+  let folderChoice: string | undefined = undefined;
+  if (workspace.workspaceFolders !== undefined && workspace.workspaceFolders.length > 0) {
+    folderChoice = await window.showQuickPick([
+      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace"),
+      localize("teamstoolkit.qm.browse"),
+    ]);
+    if (!folderChoice) {
+      return;
     }
-    const inputs = {
-      ...data,
-      "programming-language": "typescript",
-      folder: dstPath,
-      "app-name": projectName,
-    };
-    return await commands.executeCommand<Result<unknown, FxError>>(
-      command,
-      correlationId,
-      TelemetryTriggerFrom.CopilotChat,
-      inputs
+    if (
+      folderChoice ===
+      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace")
+    ) {
+      dstPath = workspace.workspaceFolders[0].uri.fsPath;
+    }
+  }
+  if (dstPath === "") {
+    const customFolder = await window.showOpenDialog({
+      title: localize("teamstoolkit.chatParticipants.officeAddIn.create.selectFolder.title"),
+      openLabel: localize("teamstoolkit.chatParticipants.officeAddIn.create.selectFolder.label"),
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false,
+    });
+    if (!customFolder) {
+      return;
+    }
+    dstPath = customFolder[0].fsPath;
+  }
+  try {
+    await fs.copy(folder, dstPath);
+    if (
+      folderChoice !==
+      localize("teamstoolkit.chatParticipants.officeAddIn.create.quickPick.workspace")
+    ) {
+      void commands.executeCommand("vscode.openFolder", Uri.file(dstPath));
+    } else {
+      void window.showInformationMessage(
+        localize("teamstoolkit.chatParticipants.officeAddIn.create.successfullyCreated")
+      );
+      void commands.executeCommand("workbench.view.extension.teamsfx");
+    }
+  } catch (error) {
+    console.error("Error copying files:", error);
+    void window.showErrorMessage(
+      localize("teamstoolkit.chatParticipants.officeAddIn.create.failToCreate")
     );
   }
 }

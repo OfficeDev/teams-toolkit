@@ -18,8 +18,9 @@ import { ChatTelemetryData } from "../../../chat/telemetry";
 import { ICopilotChatResult } from "../../../chat/types";
 import { describeStep } from "../../../chat/commands/nextstep/nextstepCommandHandler";
 import { officeSteps } from "./officeSteps";
-import { getWholeStatus } from "../../../chat/commands/nextstep/status";
 import { WholeStatus } from "../../../chat/commands/nextstep/types";
+import { getWholeStatus } from "./status";
+import { localize } from "../../../utils/localizeUtils";
 
 export default async function officeNextStepCommandHandler(
   request: ChatRequest,
@@ -38,10 +39,7 @@ export default async function officeNextStepCommandHandler(
   );
 
   if (request.prompt) {
-    response.markdown(`
-This command provides guidance on your next steps based on your workspace.
-
-E.g. If you're unsure what to do after creating a project, simply ask Copilot by using @office /nextstep.`);
+    response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.nextStep.promptAnswer"));
     officeChatTelemetryData.markComplete("unsupportedPrompt");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,

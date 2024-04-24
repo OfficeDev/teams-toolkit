@@ -8,7 +8,6 @@ import { OpenAPIV3 } from "openapi-types";
 import sinon from "sinon";
 import { SpecParserError } from "../src/specParserError";
 import { ErrorType, ParseOptions, ProjectType } from "../src/interfaces";
-import { Utils } from "../src/utils";
 import { ValidatorFactory } from "../src/validators/validatorFactory";
 
 describe("specFilter", () => {

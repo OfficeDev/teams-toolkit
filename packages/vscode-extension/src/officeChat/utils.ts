@@ -11,6 +11,7 @@ import {
 import { buildDynamicPrompt } from "./dynamicPrompt";
 import { inputRai, outputRai } from "./dynamicPrompt/formats";
 import { getCopilotResponseAsString } from "../chat/utils";
+import { officeSampleProvider } from "./commands/create/officeSamples";
 
 export async function purifyUserMessage(
   message: string,
@@ -90,4 +91,13 @@ async function isContentHarmful(
   const results = await Promise.all(promises);
   const isHarmful = results.filter((result) => result === true).length > 0;
   return isHarmful;
+}
+
+export async function getOfficeSampleDownloadUrlInfo(sampleId: string) {
+  const sampleCollection = await officeSampleProvider.OfficeSampleCollection;
+  const sample = sampleCollection.samples.find((sample) => sample.id === sampleId);
+  if (!sample) {
+    throw new Error("Sample not found");
+  }
+  return sample.downloadUrlInfo;
 }

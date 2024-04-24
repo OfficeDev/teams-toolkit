@@ -240,10 +240,25 @@ export interface ParseOptions {
   allowConversationStarters?: boolean;
 
   /**
+   * If true, the parser will allow response semantics in plugin file. Only take effect in Copilot project
+   */
+  allowResponseSemantics?: boolean;
+
+  /**
+   * If true, the paser will allow confirmation in plugin file. Only take effect in Copilot project
+   */
+  allowConfirmation?: boolean;
+
+  /**
    * The type of project that the parser is being used for.
    * Project can be SME/Copilot/TeamsAi
    */
   projectType?: ProjectType;
+
+  /**
+   * If true, we will generate files of plugin for GPT (Declarative Extensions in a Copilot Extension). Otherwise, we will generate files of plugin for Copilot.
+   */
+  isGptPlugin?: boolean;
 }
 
 export enum ProjectType {
@@ -298,4 +313,10 @@ export interface AuthInfo {
 export interface InvalidAPIInfo {
   api: string;
   reason: ErrorType[];
+}
+
+export interface InferredProperties {
+  title?: string;
+  subtitle?: string;
+  imageUrl?: string;
 }

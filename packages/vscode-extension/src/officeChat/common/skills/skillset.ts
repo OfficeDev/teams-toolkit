@@ -59,6 +59,7 @@ export class SkillSet implements ISkill {
           isSuccessed = false;
         }
         if (result === ExecutionResultEnum.FailedAndGoNext) {
+          isSuccessed = false;
           isFailedAndGoNext = true;
         }
         if (result === ExecutionResultEnum.Success) {

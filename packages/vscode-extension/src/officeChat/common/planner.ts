@@ -26,6 +26,7 @@ import {
   PropertySystemRequestSucceeded,
 } from "./telemetryConsts";
 import { purifyUserMessage } from "../utils";
+import { localize } from "../../utils/localizeUtils";
 
 export class Planner {
   private static instance: Planner;
@@ -115,9 +116,10 @@ export class Planner {
         console.log(`Skill ${candidate.name || "unknown"} is executed.`);
       }
     } catch (error) {
-      const errorDetails = `
-I can't assist you with this request.
-      `;
+      console.error(error);
+      const errorDetails = localize(
+        "teamstoolkit.chatParticipants.officeAddIn.default.canNotAssist"
+      );
       response.markdown(errorDetails);
     }
     const t1 = performance.now();

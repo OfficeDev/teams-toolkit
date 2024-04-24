@@ -3,17 +3,12 @@
 This app template is built on top of [Teams AI library](https://aka.ms/teams-ai-library) and [OpenAI Assistants API](https://platform.openai.com/docs/assistants/overview).
 It showcases how to build an AI agent in Teams capable of helping users accomplish specific tasks using natural language right in the Teams conversations, such as solving a math problem, call functions to get city weather, etc.
 
-- [Overview of the AI Agent template](#overview-of-the-ai-agent-template)
-  - [Get started with the AI Agent template](#get-started-with-the-ai-agent-template)
-  - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the AI Agent template with more AI capabilities](#extend-the-ai-agent-template-with-more-ai-capabilities)
-  - [Additional information and references](#additional-information-and-references)
 
-## Get started with the AI Agent template
+## Get started with the template
 
 > **Prerequisites**
 >
-> To run the AI Agent template in your local dev machine, you will need:
+> To run the template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 {{^enableTestToolByDefault}}
@@ -112,14 +107,14 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the AI Agent template with more AI capabilities
+## Extend the template
 
 You can follow [Build an AI Agent in Teams](https://aka.ms/teamsfx-ai-agent) to extend the AI Agent template with more AI capabilities, like:
 - [Customize assistant creation](https://aka.ms/teamsfx-ai-agent#customize-assistant-creation)
 - [Add functions](https://aka.ms/teamsfx-ai-agent#add-functions-with-assistants-api)
 
 ## Additional information and references
-- [Teams AI library](https://aka.ms/teams-ai-library)
+
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

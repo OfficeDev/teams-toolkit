@@ -3,7 +3,6 @@
 
 import axios from "axios";
 import { sendRequestWithTimeout } from "@microsoft/teamsfx-core/build/component/generator/utils";
-import { officeSampleProvider } from "../commands/create/officeSamples";
 
 export async function fetchRawFileContent(url: string): Promise<string> {
   try {
@@ -69,13 +68,4 @@ export function correctPropertyLoadSpelling(codeSnippet: string): string {
 
 export function deepClone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
-}
-
-export async function getOfficeSampleDownloadUrlInfo(sampleId: string) {
-  const sampleCollection = await officeSampleProvider.OfficeSampleCollection;
-  const sample = sampleCollection.samples.find((sample) => sample.id === sampleId);
-  if (!sample) {
-    throw new Error("Sample not found");
-  }
-  return sample.downloadUrlInfo;
 }

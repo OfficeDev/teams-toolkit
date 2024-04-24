@@ -11,11 +11,7 @@ import {
 import { CodeIssueDetector, DetectionResult } from "./codeIssueDetector";
 import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec"; // Add the missing import statement
-import {
-  countMessageTokens,
-  countMessagesTokens,
-  getCopilotResponseAsString,
-} from "../../../chat/utils";
+import { countMessagesTokens, getCopilotResponseAsString } from "../../../chat/utils";
 import { ExecutionResultEnum } from "./executionResultEnum";
 import {
   MeasurementSystemSelfReflectionAttemptCount,
@@ -29,7 +25,6 @@ import {
   getFixIssueUserPrompt,
   getGenerateCodeSamplePrompt,
 } from "../../officePrompts";
-import { add } from "lodash";
 import { localize } from "../../../utils/localizeUtils";
 import { SampleData } from "../samples/sampleData";
 import { SampleProvider } from "../samples/sampleProvider";

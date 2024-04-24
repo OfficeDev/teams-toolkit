@@ -1,7 +1,7 @@
 import * as chai from "chai";
-import { WholeStatus } from "../../../src/chat/commands/nextstep/types";
-import { canOfficeAddInPreviewInLocalEnv } from "../../../src/officeChat/commands/nextStep/condition";
-import * as condition from "../../../src/officeChat/commands/nextStep/condition";
+import { WholeStatus } from "../../../../src/chat/commands/nextstep/types";
+import { canOfficeAddInPreviewInLocalEnv } from "../../../../src/officeChat/commands/nextStep/condition";
+import * as condition from "../../../../src/officeChat/commands/nextStep/condition";
 
 describe("office steps: canOfficeAddInPreviewInLocalEnv", () => {
   it('should return true when launchJSONContent includes "desktop (edge legacy)" or "desktop (edge chromium)"', () => {

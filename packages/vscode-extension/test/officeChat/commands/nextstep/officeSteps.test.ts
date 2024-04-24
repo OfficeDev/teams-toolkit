@@ -1,10 +1,10 @@
 import * as chai from "chai";
 import * as chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
-import { officeSteps } from "../../../src/officeChat/commands/nextStep/officeSteps";
-import * as condition from "../../../src/chat/commands/nextstep/condition";
-import * as officeCondition from "../../../src/officeChat/commands/nextStep/condition";
-import { DescripitionFunc, WholeStatus } from "../../../src/chat/commands/nextstep/types";
+import { officeSteps } from "../../../../src/officeChat/commands/nextStep/officeSteps";
+import * as condition from "../../../../src/chat/commands/nextstep/condition";
+import * as officeCondition from "../../../../src/officeChat/commands/nextStep/condition";
+import { DescripitionFunc, WholeStatus } from "../../../../src/chat/commands/nextstep/types";
 
 describe("office steps", () => {
   const sandbox = sinon.createSandbox();

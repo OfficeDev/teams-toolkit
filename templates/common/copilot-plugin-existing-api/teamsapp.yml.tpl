@@ -16,6 +16,18 @@ provision:
     # the specified environment variable(s).
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
+{{#AuthType}}
+  - uses: oauth/register
+    with:
+      name: {{ApiSpecAuthName}}
+      flow: authorizationCode
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{ApiSpecPath}}}
+    writeToEnvironmentFile:
+      configurationId: {{ApiSpecAuthRegistrationIdEnvName}}
+{{/AuthType}}
 
   # Validate using manifest schema
   - uses: teamsApp/validateManifest

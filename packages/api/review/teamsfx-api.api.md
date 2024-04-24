@@ -17,6 +17,8 @@ export interface ApiKeyAuthInfo {
     // (undocumented)
     authName?: string;
     // (undocumented)
+    authType?: string;
+    // (undocumented)
     serverUrl: string;
 }
 

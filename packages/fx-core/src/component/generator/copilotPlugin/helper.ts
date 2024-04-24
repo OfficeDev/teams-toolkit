@@ -55,6 +55,7 @@ import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
 import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
 import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -199,6 +200,7 @@ export async function listOperations(
         : {
             allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
             allowMultipleParameters: true,
+            allowOauth2: isCopilotAuthEnabled(),
           }
     );
     const validationRes = await specParser.validate();
@@ -306,6 +308,10 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
       operation.auth.authScheme.scheme === "bearer"
     ) {
       result.data.authName = operation.auth.name;
+      result.data.authType = "apiKey";
+    } else if (operation.auth && Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)) {
+      result.data.authName = operation.auth.name;
+      result.data.authType = "authorizationCode";
     }
     operationsWithSeparator.push(result);
   }
@@ -1023,4 +1029,13 @@ export async function updateForCustomApi(
 
   // 4. update code
   await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
+}
+
+const EnvNameMapping: { [authType: string]: string } = {
+  apiKey: "REGISTRATION_ID",
+  authorizationCode: "CONFIGURATION_ID",
+};
+
+export function getEnvName(authName: string, authType?: string): string {
+  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNameMapping[authType ?? "apiKey"]}`);
 }

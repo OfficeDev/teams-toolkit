@@ -150,6 +150,7 @@ export interface OpenAIPluginManifest {
 export interface ApiKeyAuthInfo {
   serverUrl: string;
   authName?: string;
+  authType?: string;
 }
 
 export interface ApiOperation {

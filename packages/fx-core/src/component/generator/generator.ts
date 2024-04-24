@@ -48,7 +48,12 @@ export class Generator {
     safeProjectNameFromVS?: string,
     targetFramework?: string,
     placeProjectFileInSolutionDir?: boolean,
-    apiKeyAuthData?: { authName: string; openapiSpecPath: string; registrationIdEnvName: string },
+    apiKeyAuthData?: {
+      authName: string;
+      openapiSpecPath: string;
+      registrationIdEnvName: string;
+      authType?: string;
+    },
     llmServiceData?: {
       llmService?: string;
       openAIKey?: string;
@@ -73,6 +78,7 @@ export class Generator {
       ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
       ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
+      AuthType: apiKeyAuthData?.authType ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
       enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
       useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",

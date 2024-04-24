@@ -40,6 +40,7 @@ import {
   invalidApiSpecErrorName,
   copilotPluginParserOptions,
   updateForCustomApi,
+  getEnvName,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -60,6 +61,7 @@ import { isValidHttpUrl } from "../../../question/util";
 import { merge } from "lodash";
 import { TemplateNames } from "../templates/templateNames";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
@@ -84,6 +86,7 @@ const enum telemetryProperties {
   templateName = "template-name",
   generateType = "generate-type",
   isRemoteUrlTelemetryProperty = "remote-url",
+  authType = "auth-type",
 }
 
 function normalizePath(path: string): string {
@@ -110,14 +113,20 @@ export class CopilotPluginGenerator {
     actionContext?: ActionContext
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     const apiOperations = inputs[QuestionNames.ApiOperation] as string[];
-    const authApi = (inputs.supportedApisFromApiSpec as ApiOperation[]).find(
-      (api) => !!api.data.authName && apiOperations.includes(api.id)
-    );
+    const authApis = (inputs.supportedApisFromApiSpec as ApiOperation[])
+      .filter((api) => !!api.data.authName && apiOperations.includes(api.id))
+      .map((api) => api.data);
+    const isApiKey = authApis.find((api) => !api.authType || api.authType === "apiKey");
 
-    const templateName = authApi ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName;
+    // TODO: Will merge these two templates into one in the future
+    const templateName =
+      authApis.length > 0 && isApiKey ? fromApiSpecWithApiKeyTemplateName : fromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
-    merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
+    merge(actionContext?.telemetryProps, {
+      [telemetryProperties.templateName]: templateName,
+      [telemetryProperties.authType]: authApis.length > 0 ? authApis[0].authType : undefined,
+    });
 
     return await this.generate(
       context,
@@ -126,7 +135,7 @@ export class CopilotPluginGenerator {
       templateName,
       componentName,
       false,
-      authApi?.data
+      authApis ? authApis[0] : undefined
     );
   }
 
@@ -258,9 +267,7 @@ export class CopilotPluginGenerator {
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
       if (apiKeyAuthData?.authName) {
-        const envName = Utils.getSafeRegistrationIdEnvName(
-          `${apiKeyAuthData.authName}_REGISTRATION_ID`
-        );
+        const envName = getEnvName(apiKeyAuthData.authName, apiKeyAuthData.authType);
         context.templateVariables = Generator.getDefaultVariables(
           appName,
           safeProjectNameFromVS,
@@ -272,6 +279,10 @@ export class CopilotPluginGenerator {
               path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
             ),
             registrationIdEnvName: envName,
+            authType:
+              templateName === fromApiSpecWithApiKeyTemplateName
+                ? undefined
+                : apiKeyAuthData.authType,
           }
         );
       } else {
@@ -313,6 +324,7 @@ export class CopilotPluginGenerator {
               allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
               allowMultipleParameters: true,
               projectType: type,
+              allowOauth2: isCopilotAuthEnabled(),
             }
       );
       const validationRes = await specParser.validate();

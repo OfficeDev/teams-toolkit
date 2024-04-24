@@ -20,6 +20,8 @@ This app template has a search command, an action command and a link unfurling.
 {{/enableMETestToolByDefault}}
 > - [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) version 5.0.0 and higher or [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#enableMETestToolByDefault}}
 2. Press F5 to start debugging which launches your app in Teams App Test Tool using a web browser.

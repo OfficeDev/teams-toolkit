@@ -21,6 +21,8 @@ This app template also demonstrates usage of techniques like:
 > - Prepare your own [Azure OpenAI](https://aka.ms/oai/access) resource and [Azure AI Search](https://azure.microsoft.com/en-us/products/ai-services/ai-search).
 {{/useAzureOpenAI}}
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+
 1. First, select the Teams Toolkit icon on the left in the VS Code toolbar.
 {{#useOpenAI}}
 1. In file *env/.env.testtool.user*, fill in your OpenAI key `SECRET_OPENAI_API_KEY=<your-key>`. And fill in your Azure AI search key `SECRET_AZURE_SEARCH_KEY=<your--ai-search-key>` and endpoint `AZURE_SEARCH_ENDPOINT=<your-ai-search-endpoint>`.

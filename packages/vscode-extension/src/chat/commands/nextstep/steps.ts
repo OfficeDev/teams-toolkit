@@ -59,11 +59,11 @@ export const allSteps: () => NextStep[] = () => [
         arguments: [CommandKey.OpenSamples],
       },
       {
-        title: "@teams /create",
+        title: "Create Teams App: Find Templates/Samples",
         command: CHAT_EXECUTE_COMMAND_ID,
         arguments: [
           "workbench.action.chat.open",
-          { query: "@teams /create", isPartialQuery: true },
+          { query: "@teams /create ", isPartialQuery: true },
         ],
       },
     ],

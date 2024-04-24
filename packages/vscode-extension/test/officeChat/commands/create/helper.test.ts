@@ -149,7 +149,7 @@ describe("File: office chat create helper", () => {
       sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
       sandbox.stub(fs, "writeFile").resolves();
       sandbox.stub(vscode.commands, "executeCommand");
-      sandbox.stub(officeChathelper, "traverseFiles");
+      sandbox.stub(fs, "readdirSync").returns([]);
     });
     afterEach(() => {
       sandbox.restore();

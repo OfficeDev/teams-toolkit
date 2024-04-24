@@ -54,7 +54,7 @@ describe("Debug V3 command-and-response template", () => {
     async function () {
       // create
       const myRecordAzOpenAI: Record<string, string> = {};
-      myRecordAzOpenAI["language"] = "python ";
+      myRecordAzOpenAI["programming-language"] = "python ";
       myRecordAzOpenAI["llm-service"] = "llm-service-azure-openai";
       myRecordAzOpenAI["azure-openai-key"] = "fake";
       myRecordAzOpenAI["azure-openai-deployment-name"] = "fake";

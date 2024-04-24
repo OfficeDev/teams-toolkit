@@ -72,8 +72,8 @@ describe("Debug V3 command-and-response template", () => {
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
       // create venv and pip install
-      const command = `python3 -m venv ./venv && source ./venv/bin/activate && pip install -r ./src/requirements.txt`;
-      const timeout = 120000;
+      const command = `python3 -m venv ./venv && . ./venv/bin/activate && pip install -r ./src/requirements.txt`;
+      const timeout = 200000;
       await execAsync(command, {
         cwd: projectPath,
         env: process.env,

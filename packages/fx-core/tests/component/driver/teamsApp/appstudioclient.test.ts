@@ -60,10 +60,9 @@ describe("App Studio API Test", () => {
     scopes: ["fake-scope"],
     clientId: "fake-client-id",
     clientSecret: "fake-client-secret",
-    tenantId: "fake-tenant-id",
-    authorizationUrl: "fake-authorization-url",
-    tokenEndpoint: "fake-token-endpoint",
-    refreshEndpoint: "fake-refresh-endpoint",
+    authorizationEndpoint: "fake-authorization-url",
+    tokenExchangeEndpoint: "fake-token-endpoint",
+    tokenRefreshEndpoint: "fake-refresh-endpoint",
     applicableToApps: OauthRegistrationAppType.AnyApp,
     targetAudience: OauthRegistrationTargetAudience.AnyTenant,
     manageableByUsers: [
@@ -72,6 +71,7 @@ describe("App Studio API Test", () => {
         accessType: OauthRegistrationUserAccessType.ReadWrite,
       },
     ],
+    targetUrlsShouldStartWith: ["fake-domain"],
   };
 
   beforeEach(() => {
@@ -985,7 +985,11 @@ describe("App Studio API Test", () => {
       sinon.stub(axios, "create").returns(fakeAxiosInstance);
 
       const response = {
-        data: fakeOauthRegistration,
+        data: {
+          configurationId: {
+            oAuthConfigId: "fakeId",
+          },
+        },
       };
       sinon.stub(fakeAxiosInstance, "post").resolves(response);
 
@@ -993,7 +997,7 @@ describe("App Studio API Test", () => {
         appStudioToken,
         fakeOauthRegistration
       );
-      chai.assert.equal(res, fakeOauthRegistration);
+      chai.assert.equal(res.configurationId.oAuthConfigId, "fakeId");
     });
 
     it("Graph API failure", async () => {

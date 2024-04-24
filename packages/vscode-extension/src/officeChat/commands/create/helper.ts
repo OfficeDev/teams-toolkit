@@ -18,15 +18,13 @@ import {
 import { IChatTelemetryData } from "../../../chat/types";
 import { ProjectMetadata } from "../../../chat/commands/create/types";
 import { getCopilotResponseAsString } from "../../../chat/utils";
-import { BM25, BMDocument, DocumentWithmetadata } from "../../retrievalUtil/BM25";
-import { prepareDiscription } from "../../retrievalUtil/retrievalUtil";
 import { getOfficeProjectMatchSystemPrompt } from "../../officePrompts";
 import { officeSampleProvider } from "./officeSamples";
 import { CommandKey } from "../../../constants";
 import { TelemetryTriggerFrom } from "../../../telemetry/extTelemetryEvents";
 import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { fileTreeAdd, buildFileTree } from "../../../chat/commands/create/helper";
-import { getOfficeSampleDownloadUrlInfo } from "../../common/utils";
+import { getOfficeSampleDownloadUrlInfo } from "../../utils";
 import { getSampleFileInfo } from "@microsoft/teamsfx-core/build/component/generator/utils";
 
 export async function matchOfficeProject(
@@ -157,6 +155,7 @@ export async function buildTemplateFileTree(
     name: rootFolder,
     children: [],
   };
+  await fs.ensureDir(rootFolder);
   traverseFiles(rootFolder, (fullPath) => {
     const relativePath = path.relative(rootFolder, fullPath);
     fileTreeAdd(root, relativePath);
@@ -164,35 +163,7 @@ export async function buildTemplateFileTree(
   return root.children ?? [];
 }
 
-export async function matchOfficeProjectByBM25(
-  request: ChatRequest
-): Promise<ProjectMetadata | undefined> {
-  const allOfficeProjectMetadata = [
-    ...getOfficeTemplateMetadata(),
-    ...(await getOfficeSampleMetadata()),
-  ];
-  const documents: DocumentWithmetadata[] = allOfficeProjectMetadata.map((sample) => {
-    return {
-      documentText: prepareDiscription(sample.description.toLowerCase()).join(" "),
-      metadata: sample,
-    };
-  });
-
-  const bm25 = new BM25(documents);
-  const query = prepareDiscription(request.prompt.toLowerCase());
-
-  // at most match one sample or template
-  const matchedDocuments: BMDocument[] = bm25.search(query, 3);
-
-  // adjust score when more samples added
-  if (matchedDocuments.length === 1 && matchedDocuments[0].score > 1) {
-    return matchedDocuments[0].document.metadata as ProjectMetadata;
-  }
-
-  return undefined;
-}
-
-function traverseFiles(dir: string, callback: (relativePath: string) => void): void {
+export function traverseFiles(dir: string, callback: (relativePath: string) => void): void {
   fs.readdirSync(dir).forEach((file) => {
     const fullPath = path.join(dir, file);
     if (fs.lstatSync(fullPath).isDirectory()) {
@@ -203,15 +174,15 @@ function traverseFiles(dir: string, callback: (relativePath: string) => void): v
   });
 }
 
-async function mergeTaskpaneCode(filePath: string, generatedCode: string) {
-  const tsFileUri = vscode.Uri.file(path.join(filePath, "src", "taskpane", "taskpane.ts"));
-  const htmlFileUri = vscode.Uri.file(path.join(filePath, "src", "taskpane", "taskpane.html"));
+export async function mergeTaskpaneCode(filePath: string, generatedCode: string) {
+  const tsFilePath = path.join(filePath, "src", "taskpane", "taskpane.ts");
+  const htmlFilePath = path.join(filePath, "src", "taskpane", "taskpane.html");
 
   try {
     // Read the file
-    const tsFileData = await vscode.workspace.fs.readFile(tsFileUri);
+    const tsFileData = await fs.readFile(tsFilePath, "utf8");
     const tsFileContent: string = tsFileData.toString();
-    const htmlFileData = await vscode.workspace.fs.readFile(htmlFileUri);
+    const htmlFileData = await fs.readFile(htmlFilePath, "utf8");
     const htmlFileContent: string = htmlFileData.toString();
 
     // Replace the code snippet part in taskpane.ts
@@ -237,25 +208,55 @@ async function mergeTaskpaneCode(filePath: string, generatedCode: string) {
 
     // Write the modified content back to the file
     const encoder = new TextEncoder();
-    await vscode.workspace.fs.writeFile(tsFileUri, encoder.encode(modifiedTSContent));
-    await vscode.workspace.fs.writeFile(htmlFileUri, encoder.encode(modifiedHtmlContent));
+    await fs.writeFile(tsFilePath, encoder.encode(modifiedTSContent), "utf8");
+    await fs.writeFile(htmlFilePath, encoder.encode(modifiedHtmlContent), "utf8");
   } catch (error) {
     console.error("Failed to modify file", error);
+    throw new Error("Failed to merge the taskpane project.");
   }
 }
 
-async function mergeCFCode(filePath: string, generatedCode: string) {
-  const functionFileUri = vscode.Uri.file(path.join(filePath, "src", "functions", "functions.ts"));
+export async function mergeCFCode(filePath: string, generatedCode: string) {
+  const functionFilePath = path.join(filePath, "src", "functions", "functions.ts");
   try {
     // Read the file
-    const functionFileData = await vscode.workspace.fs.readFile(functionFileUri);
-    const functionFileContent: string = functionFileData.toString();
+    const functionFileContent = await fs.readFile(functionFilePath, "utf8");
     // Add the new function to functions.ts
     const modifiedFunctionContent = "\n" + functionFileContent + generatedCode + "\n";
     // Write the modified content back to the file
-    const encoder = new TextEncoder();
-    await vscode.workspace.fs.writeFile(functionFileUri, encoder.encode(modifiedFunctionContent));
+    await fs.writeFile(functionFilePath, modifiedFunctionContent, "utf8");
   } catch (error) {
     console.error("Failed to modify file", error);
+    throw new Error("Failed to merge the CF project.");
   }
 }
+
+// export async function matchOfficeProjectByBM25(
+//   request: ChatRequest
+// ): Promise<ProjectMetadata | undefined> {
+//   const allOfficeProjectMetadata = [
+//     ...getOfficeTemplateMetadata(),
+//     ...(await getOfficeSampleMetadata()),
+//   ];
+//   const documents: DocumentWithmetadata[] = allOfficeProjectMetadata.map((sample) => {
+//     return {
+//       documentText: prepareDiscription(sample.description.toLowerCase()).join(" "),
+//       metadata: sample,
+//     };
+//   });
+
+//   const bm25 = new BM25(documents);
+//   const query = prepareDiscription(request.prompt.toLowerCase());
+
+//   // at most match one sample or template
+//   const matchedDocuments: BMDocument[] = bm25.search(query, 3);
+
+//   let result: ProjectMetadata | undefined;
+
+//   // adjust score when more samples added
+//   if (matchedDocuments.length === 1 && matchedDocuments[0].score > 1) {
+//     result = matchedDocuments[0].document.metadata as ProjectMetadata;
+//   }
+
+//   return result;
+// }

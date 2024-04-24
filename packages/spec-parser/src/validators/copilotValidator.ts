@@ -11,7 +11,6 @@ import {
   SpecValidationResult,
 } from "../interfaces";
 import { Validator } from "./validator";
-import { Utils } from "../utils";
 
 export class CopilotValidator extends Validator {
   constructor(spec: OpenAPIV3.Document, options: ParseOptions) {

@@ -39,6 +39,7 @@ import { toLower } from "lodash";
 import { convertToLangKey } from "../utils";
 import { DefaultTemplateGenerator } from "../templates/templateGenerator";
 import { TemplateInfo } from "../templates/templateInfo";
+import { fetchAndUnzip } from "../../utils";
 
 const componentName = "office-addin";
 const telemetryEvent = "generate";
@@ -141,7 +142,10 @@ export class OfficeAddinGenerator {
 
         // Copy project template files from project repository
         if (projectLink) {
-          await HelperMethods.downloadProjectTemplateZipFile(addinRoot, projectLink);
+          const fetchRes = await fetchAndUnzip("office-addin-generator", projectLink, addinRoot);
+          if (fetchRes.isErr()) {
+            return err(fetchRes.error);
+          }
           let cmdLine = ""; // Call 'convert-to-single-host' npm script in generated project, passing in host parameter
           if (inputs[QuestionNames.ProjectType] === ProjectTypeOptions.officeAddin().id) {
             cmdLine = `npm run convert-to-single-host --if-present -- ${host} json`;

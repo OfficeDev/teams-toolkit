@@ -15,18 +15,19 @@ import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import followupProvider from "../../../chat/followupProvider";
 import { ChatTelemetryData } from "../../../chat/telemetry";
-import { ICopilotChatResult } from "../../../chat/types";
 import { describeStep } from "../../../chat/commands/nextstep/nextstepCommandHandler";
 import { officeSteps } from "./officeSteps";
-import { WholeStatus } from "../../../chat/commands/nextstep/types";
+import { OfficeWholeStatus } from "./types";
 import { getWholeStatus } from "./status";
+import { localize } from "../../../utils/localizeUtils";
+import { ICopilotChatOfficeResult } from "../../types";
 
 export default async function officeNextStepCommandHandler(
   request: ChatRequest,
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ICopilotChatResult> {
+): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     OfficeChatCommand.NextStep,
@@ -38,10 +39,7 @@ export default async function officeNextStepCommandHandler(
   );
 
   if (request.prompt) {
-    response.markdown(`
-This command provides guidance on your next steps based on your workspace.
-
-E.g. If you're unsure what to do after creating a project, simply ask Copilot by using @office /nextstep.`);
+    response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.nextStep.promptAnswer"));
     officeChatTelemetryData.markComplete("unsupportedPrompt");
     ExtTelemetry.sendTelemetryEvent(
       TelemetryEvent.CopilotChat,
@@ -58,7 +56,7 @@ E.g. If you're unsure what to do after creating a project, simply ask Copilot by
 
   const workspace = workspaceUri?.fsPath;
   const officeAddInApp = isValidOfficeAddInProject(workspace) ? workspace : undefined;
-  const status: WholeStatus = await getWholeStatus(officeAddInApp);
+  const status: OfficeWholeStatus = await getWholeStatus(officeAddInApp);
   const steps = officeSteps()
     .filter((s) => s.condition(status))
     .sort((a, b) => a.priority - b.priority);

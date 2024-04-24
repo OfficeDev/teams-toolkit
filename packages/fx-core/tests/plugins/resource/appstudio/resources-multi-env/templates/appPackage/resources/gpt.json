@@ -1,0 +1,15 @@
+{
+    "name": "name${{APP_NAME_SUFFIX}}",
+    "description": "description",
+    "instructions": "instruction",
+    "conversation_starters": [
+        { "text": "text1"},
+        { "text": "text2"}
+    ],
+    "actions": [
+        {
+            "file": "ai-plugin.json",
+            "id": "plugin1"
+        }
+    ]
+}

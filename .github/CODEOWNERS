@@ -124,6 +124,7 @@
 /packages/fx-core/src/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong
 /packages/fx-core/src/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/src/component/driver/apiKey @KennethBWSong @SLdragon
+/packages/fx-core/src/component/driver/oauth @KennethBWSong @SLdragon
 /packages/fx-core/src/component/driver/arm @xzf0587 @blackchoey
 /packages/fx-core/src/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong
 /packages/fx-core/src/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
@@ -178,6 +179,7 @@
 /packages/fx-core/tests/component/driver/aad @blackchoey @wenytang-ms @KennethBWSong
 /packages/fx-core/tests/component/driver/add @HuihuiWu-Microsoft @yuqizhou77 @nliu-ms @jayzhang
 /packages/fx-core/tests/component/driver/apiKey @KennethBWSong @SLdragon
+/packages/fx-core/tests/component/driver/oauth @KennethBWSong @SLdragon
 /packages/fx-core/tests/component/driver/arm @xzf0587 @blackchoey
 /packages/fx-core/tests/component/driver/botAadApp @blackchoey @wenytang-ms @KennethBWSong
 /packages/fx-core/tests/component/driver/botFramework @swatDong @XiaofuHuang @kuojianlu @kimizhu
@@ -259,6 +261,7 @@
 /packages/vscode-extension/package.nls.json @timngmsft @sffamily @therealjohn @supkasar
 /packages/vscode-extension/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
+/packages/vscode-extension/src/debug/officeTaskHandler.ts @swatDong @jayzhang @tecton
 /packages/vscode-extension/src/debug/taskTerminal/officeDevTerminal.ts @tecton @swatDong
 /packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
 /packages/vscode-extension/test/localdebug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @dooriya
@@ -269,6 +272,9 @@
 /templates/**/ai-bot @kimizhu @swatDong @kuojianlu
 /templates/**/api-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/api-plugin-from-scratch @hund030 @eriolchan @huimiu
+/templates/**/copilot-gpt-basic @hund030 @eriolchan @huimiu
+/templates/**/copilot-gpt-existing-api @hund030 @eriolchan @huimiu
+/templates/**/copilot-gpt-from-scratch-plugin @hund030 @eriolchan @huimiu
 /templates/**/command-and-response @kimizhu @dooriya @swatDong
 /templates/**/copilot-plugin-existing-api @yuqizhou77 @Alive-Fish @jayzhang
 /templates/**/copilot-plugin-existing-api-api-key @yuqizhou77 @Alive-Fish @jayzhang
@@ -316,7 +322,5 @@
 /templates/**/sso-tab-with-obo-flow @Yimin-Jin @hund030 @huimiu @eriolchan
 /templates/**/workflow @kimizhu @dooriya @swatDong
 /templates/constraints/yml/actions @hund030 @eriolchan @huimiu
-/templates/python/* @adashen @blackchoey @frankqianms 
-/templates/python/custom-copilot-basic @frankqianms @blackchoey
-/templates/python/custom-copilot-rag-azure-ai-search @frankqianms @blackchoey
+/templates/python @adashen @blackchoey @frankqianms
 /templates/scripts @hund030 @eriolchan @huimiu

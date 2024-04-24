@@ -34,6 +34,7 @@ import { Correlator } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import { openUrlCommandHandler } from "../../src/chat/handlers";
 import { request } from "http";
+import { CommandKey } from "../../src/constants";
 
 describe("chat handlers", () => {
   const sandbox = sinon.createSandbox();
@@ -55,6 +56,8 @@ describe("chat handlers", () => {
         command: TeamsChatCommand.Create,
         variables: [],
         location: ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
       const createCommandHandlerStub = sandbox.stub(createCommandHandler, "default");
       handler.chatRequestHandler(
@@ -81,6 +84,8 @@ describe("chat handlers", () => {
         command: TeamsChatCommand.NextStep,
         variables: [],
         location: ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
 
       const nextStepCommandHandlerStub = sandbox.stub(nextStepCommandHandler, "default");
@@ -108,6 +113,8 @@ describe("chat handlers", () => {
         command: "",
         variables: [],
         location: ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
 
       const chatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
@@ -162,7 +169,7 @@ describe("chat handlers", () => {
       sandbox.stub(telemetry.ChatTelemetryData, "get").returns(undefined);
       const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
       const executeCommandStub = sandbox.stub(commands, "executeCommand");
-      await handler.chatExecuteCommandHandler("fakeCommand", "fakeRequestId", ["fakeArgs"]);
+      await handler.chatExecuteCommandHandler(CommandKey.OpenReadMe, "fakeRequestId", ["fakeArgs"]);
 
       chai.expect(sendTelemetryEventStub.called).to.equal(false);
       chai.expect(executeCommandStub.calledOnce).to.equal(true);

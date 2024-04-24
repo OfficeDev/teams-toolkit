@@ -46,22 +46,100 @@ export const brieflyDescribeProjectSystemPrompt = new vscode.LanguageModelChatSy
 export const describeScenarioSystemPrompt = new vscode.LanguageModelChatSystemMessage(
   `You are an advisor for Teams App developers. You need to describe the project based on the name and description field of user's JSON content. You should control the output between 50 and 80 words.`
 );
+export const describeStepSystemPrompt = new vscode.LanguageModelChatSystemMessage(
+  `You are an advisor for Teams App developers. You need to reorganize the content. You should control the output between 30 and 50 words. Don't split the content into multiple sentences.`
+);
 
-export function getProjectMatchSystemPrompt(
+export function getTemplateMatchChatMessages(
   projectMetadata: ProjectMetadata[],
-  examples: Array<{ user: string; app: string }>
+  examples: Array<{ user: string; app: string }>,
+  userPrompt: string
 ) {
   const appsDescription = projectMetadata
     .map((config) => `'${config.id}' (${config.description})`)
     .join(", ");
-  const exampleDescription = examples
-    .map(
-      (example, index) =>
-        `${index + 1}. User asks: ${example.user}, return { "app": [ { "id": ${
-          example.app
-        }, "score": 1.0 }]}.`
-    )
-    .join(" ");
-  return new vscode.LanguageModelChatSystemMessage(`You are an expert in determining which of the following apps the user is interested in. The apps are: ${appsDescription}. Your job is to determine which app would most help the user based on their query. Choose the best matched apps. Only respond with a JSON object containing the apps you choose with a float number between 0-1.0 representing confidence. Do not respond in a conversational tone, only JSON. For example: ${exampleDescription}
-  `);
+  const chatMessages = [
+    new vscode.LanguageModelChatSystemMessage(
+      `You're an assistant designed to find matched Teams template projects based on user's input and templates. The users will describe their requirement and application scenario in user ask. Follow the instructions and think step by step. You'll respond with IDs you've found from the templates as a JSON object. Respond result contains the app IDs you choose with a float number between 0-1.0 representing confidence. Here's an example of your output format:
+      {"app": [{"id": "", "score": 1.0}]}
+      
+      <Instruction>
+      1. Analyze keywords and features from template description.
+      2. Match the user ask with matched templates according to previous analysis.
+      3. Don't assume the template is too generic to adapt to user described requirement.
+      4. Don't mix related concepts, e.g. don't suggest an outlook addin template when user asks for a work addin.
+      5. If there are multiple matches, return all of them.
+      </Instruction>
+      
+      <Template>
+      ${appsDescription}
+      </Template>`
+    ),
+  ];
+  for (const example of examples) {
+    chatMessages.push(
+      new vscode.LanguageModelChatUserMessage(
+        `Find the related templates based on following user ask.
+        ---
+        USER ASK
+        ${example.user}`
+      )
+    );
+    chatMessages.push(new vscode.LanguageModelChatAssistantMessage(example.app));
+  }
+  chatMessages.push(
+    new vscode.LanguageModelChatUserMessage(`Find the related templates based on following user ask.
+  ---
+  USER ASK
+  ${userPrompt}`)
+  );
+  return chatMessages;
+}
+
+export function getSampleMatchChatMessages(
+  projectMetadata: ProjectMetadata[],
+  examples: Array<{ user: string; app: string }>,
+  userPrompt: string
+) {
+  const appsDescription = projectMetadata
+    .map((config) => `'${config.id}' (${config.description})`)
+    .join(", ");
+  const chatMessages = [
+    new vscode.LanguageModelChatSystemMessage(
+      `You're an assistant designed to find matched Teams application projects based on user's input and a list of existing application descriptions. Users will paste in a string of text that describes their requirement and application scenario. Follow the instructions and think step by step. You'll respond with IDs you've found from the existing application list as a JSON object. Respond result contains the app IDs you choose with a float number between 0-1.0 representing confidence. Here's an example of your output format:
+      {"app": [{"id": "", "score": 1.0}]}
+      
+      <Instruction>
+      1. Extract keywords from application description.
+      2. Try to match the user ask with keywords in description.
+      3. If there's no matching keywords, try to understand the scenario and check if they matches.
+      4. Do not assume the application description is too generic to adapt to user described requirement.
+      5. If user ask for a certain type of template, just return empty result.
+      6. Don't mix related concepts, e.g. don't suggest an office addin template when user asks for a work addin.
+      7. If there are multiple matches, return all of them.
+      </Instruction>
+      
+      <Existing Application Description>
+      ${appsDescription}
+      </Existing Application Description>`
+    ),
+  ];
+  for (const example of examples) {
+    chatMessages.push(
+      new vscode.LanguageModelChatUserMessage(
+        `Find the related project based on following user ask.
+        ---
+        USER ASK
+        ${example.user}`
+      )
+    );
+    chatMessages.push(new vscode.LanguageModelChatAssistantMessage(example.app));
+  }
+  chatMessages.push(
+    new vscode.LanguageModelChatUserMessage(`Find the related project based on following user ask.
+  ---
+  USER ASK
+  ${userPrompt}`)
+  );
+  return chatMessages;
 }

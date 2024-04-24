@@ -28,7 +28,7 @@ import {
   TemplateActionSeq,
 } from "../../../src/component/generator/generatorAction";
 import * as generatorUtils from "../../../src/component/generator/utils";
-import mockedEnv from "mocked-env";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import { sampleProvider, SampleConfig } from "../../../src/common/samples";
 import templateConfig from "../../../src/common/templates-config.json";
 import {
@@ -101,7 +101,7 @@ const mockedExternalSampleConfig = {
 describe("Generator utils", () => {
   const tmpDir = path.join(__dirname, "tmp");
   const sandbox = createSandbox();
-  let mockedEnvRestore = mockedEnv({});
+  let mockedEnvRestore: RestoreFn = () => {};
 
   afterEach(async () => {
     sandbox.restore();

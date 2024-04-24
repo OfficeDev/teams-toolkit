@@ -88,6 +88,7 @@ import VsCodeLogInstance from "./commonlib/log";
 import M365TokenInstance from "./commonlib/m365Login";
 import {
   AzurePortalUrl,
+  CommandKey,
   DeveloperPortalHomeLink,
   GlobalKey,
   PublishAppLearnMoreLink,
@@ -144,6 +145,7 @@ import {
 } from "./debug/constants";
 import { openOfficeDevFolder } from "./officeDevHandlers";
 import { invokeTeamsAgent } from "./copilotChatHandlers";
+import { updateProjectStatus } from "./utils/projectStatusUtils";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1300,7 +1302,8 @@ export async function autoOpenProjectHandler(): Promise<void> {
   }
   if (isOpenReadMe === globalVariables.workspaceUri?.fsPath) {
     await showLocalDebugMessage();
-    await openReadMeHandler([TelemetryTriggerFrom.Auto]);
+    await openReadMeHandler(TelemetryTriggerFrom.Auto);
+    await updateProjectStatus(globalVariables.workspaceUri.fsPath, CommandKey.OpenReadMe, ok(null));
     await globalStateUpdate(GlobalKey.OpenReadMe, "");
 
     await ShowScaffoldingWarningSummary(globalVariables.workspaceUri.fsPath, createWarnings);

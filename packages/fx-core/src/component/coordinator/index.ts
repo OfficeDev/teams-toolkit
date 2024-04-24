@@ -186,7 +186,11 @@ class Coordinator {
             const res = await OfficeAddinGenerator.generate(context, inputs, projectPath);
             if (res.isErr()) return err(res.error);
           }
-        } else if (capability === CapabilityOptions.copilotPluginApiSpec().id) {
+        } else if (
+          capability === CapabilityOptions.copilotPluginApiSpec().id ||
+          inputs[QuestionNames.CustomizeGptWithPluginStart] ===
+            CapabilityOptions.copilotPluginApiSpec().id
+        ) {
           const res = await CopilotPluginGenerator.generatePluginFromApiSpec(
             context,
             inputs,

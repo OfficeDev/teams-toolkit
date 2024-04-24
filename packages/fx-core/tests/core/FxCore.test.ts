@@ -1489,6 +1489,7 @@ describe("getQuestions", async () => {
         "spfx-framework-type",
         "spfx-webpart-name",
         "spfx-folder",
+        "customize-gpt-with-plugin-start",
         "me-architecture",
         "openapi-spec-location",
         "api-operation",
@@ -1530,6 +1531,7 @@ describe("getQuestions", async () => {
         "spfx-framework-type",
         "spfx-webpart-name",
         "spfx-folder",
+        "customize-gpt-with-plugin-start",
         "me-architecture",
         "openapi-spec-location",
         "api-operation",
@@ -1571,6 +1573,7 @@ describe("getQuestions", async () => {
         "spfx-framework-type",
         "spfx-webpart-name",
         "spfx-folder",
+        "customize-gpt-with-plugin-start",
         "me-architecture",
         "openapi-spec-location",
         "api-operation",
@@ -1613,6 +1616,7 @@ describe("getQuestions", async () => {
         "spfx-framework-type",
         "spfx-webpart-name",
         "spfx-folder",
+        "customize-gpt-with-plugin-start",
         "me-architecture",
         "openapi-spec-location",
         "api-operation",
@@ -1931,12 +1935,10 @@ describe("copilotPlugin", async () => {
       assert.equal(result.error.name, "testError");
     }
   });
-
   it("add API - return multiple auth error", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -1976,10 +1978,18 @@ describe("copilotPlugin", async () => {
           server: "https://server",
           api: "GET /store/order",
           auth: {
-            name: "bearerAuth2",
+            name: "oauth",
             authScheme: {
-              type: "http",
-              scheme: "bearer",
+              type: "oauth2",
+              flows: {
+                authorizationCode: {
+                  authorizationUrl: "mockedAuthorizationUrl",
+                  tokenUrl: "mockedTokenUrl",
+                  scopes: {
+                    mockedScope: "description for mocked scope",
+                  },
+                },
+              },
             },
           },
           isValid: true,
@@ -2010,7 +2020,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2084,7 +2093,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2164,7 +2172,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2253,7 +2260,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2351,7 +2357,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2489,7 +2494,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2598,7 +2602,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2747,7 +2750,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -2891,7 +2893,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -3038,7 +3039,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,
@@ -3174,7 +3174,6 @@ describe("copilotPlugin", async () => {
     const appName = await mockV3Project();
     mockedEnvRestore = mockedEnv({
       TEAMSFX_CLI_DOTNET: "false",
-      [FeatureFlagName.ApiKey]: "true",
     });
     const inputs: Inputs = {
       platform: Platform.VSCode,

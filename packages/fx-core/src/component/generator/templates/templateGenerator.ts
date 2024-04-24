@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { Context, FxError, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
+import { Context, FxError, IGenerator, Inputs, Result, err, ok } from "@microsoft/teamsfx-api";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
@@ -21,7 +21,7 @@ import { TemplateInfo } from "./templateInfo";
 import { Feature2TemplateName } from "./templateNames";
 import { getTemplateReplaceMap } from "./templateReplaceMap";
 
-export class DefaultTemplateGenerator {
+export class DefaultTemplateGenerator implements IGenerator {
   // override this property to send telemetry event with different component name
   componentName = componentName;
 

@@ -13,16 +13,15 @@ import { localize } from "../../../utils/localizeUtils";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { Planner } from "../../common/planner";
 import { ChatTelemetryData } from "../../../chat/telemetry";
-import { ICopilotChatResult } from "../../../chat/types";
 import { isInputHarmful } from "../../utils";
+import { ICopilotChatOfficeResult } from "../../types";
 
-// TODO: Implement the function.
 export default async function generatecodeCommandHandler(
   request: ChatRequest,
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ICopilotChatResult> {
+): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     OfficeChatCommand.GenerateCode,
@@ -32,6 +31,25 @@ export default async function generatecodeCommandHandler(
     TelemetryEvent.CopilotChatStart,
     officeChatTelemetryData.properties
   );
+
+  if (request.prompt.trim() === "") {
+    response.markdown(
+      localize("teamstoolkit.chatParticipants.officeAddIn.generateCode.noPromptAnswer")
+    );
+
+    officeChatTelemetryData.markComplete();
+    ExtTelemetry.sendTelemetryEvent(
+      TelemetryEvent.CopilotChat,
+      officeChatTelemetryData.properties,
+      officeChatTelemetryData.measurements
+    );
+    return {
+      metadata: {
+        command: OfficeChatCommand.GenerateCode,
+        requestId: officeChatTelemetryData.requestId,
+      },
+    };
+  }
 
   if (process.env.NODE_ENV === "development") {
     const localScenarioHandlers = await import("../../../../test/officeChat/mocks/localTuning");

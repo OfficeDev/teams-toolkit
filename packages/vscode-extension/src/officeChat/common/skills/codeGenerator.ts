@@ -12,11 +12,7 @@ import { correctPropertyLoadSpelling } from "../utils";
 import { SampleProvider } from "../samples/sampleProvider";
 import { ISkill } from "./iSkill"; // Add the missing import statement
 import { Spec } from "./spec";
-import {
-  countMessageTokens,
-  countMessagesTokens,
-  getCopilotResponseAsString,
-} from "../../../chat/utils";
+import { countMessagesTokens, getCopilotResponseAsString } from "../../../chat/utils";
 import { ExecutionResultEnum } from "./executionResultEnum";
 import {
   MeasurementCodeGenAttemptCount,

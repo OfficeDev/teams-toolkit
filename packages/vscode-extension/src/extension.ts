@@ -34,6 +34,7 @@ import {
 import {
   officeChatRequestHandler,
   chatCreateOfficeProjectCommandHandler,
+  handleOfficeFeedback,
 } from "./officeChat/handlers";
 import followupProvider from "./chat/followupProvider";
 import {
@@ -98,6 +99,7 @@ import { loadLocalizedStrings } from "./utils/localizeUtils";
 import { checkProjectTypeAndSendTelemetry } from "./utils/projectChecker";
 import { ReleaseNote } from "./utils/releaseNote";
 import { ExtensionSurvey } from "./utils/survey";
+import { registerOfficeTaskAndDebugEvents } from "./debug/officeTaskHandler";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -228,6 +230,9 @@ function activateOfficeDevRegistration(context: vscode.ExtensionContext) {
   if (vscode.workspace.isTrusted) {
     registerOfficeDevCodeLensProviders(context);
   }
+
+  // Register task and debug event handlers, as well as sending telemetries
+  registerOfficeTaskAndDebugEvents();
 }
 
 /**
@@ -447,13 +452,12 @@ function registerChatParticipant(context: vscode.ExtensionContext) {
  * Copilot Chat Participant for Office Add-in
  */
 function registerOfficeChatParticipant(context: vscode.ExtensionContext) {
-  const participant = vscode.chat.createChatParticipant(
-    officeChatParticipantId,
-    officeChatRequestHandler
+  const participant = vscode.chat.createChatParticipant(officeChatParticipantId, (...args) =>
+    Correlator.run(officeChatRequestHandler, ...args)
   );
   participant.iconPath = vscode.Uri.joinPath(context.extensionUri, "media", "office.png");
   participant.followupProvider = followupProvider;
-  participant.onDidReceiveFeedback((e) => handleFeedback(e));
+  participant.onDidReceiveFeedback((...args) => Correlator.run(handleOfficeFeedback, ...args));
 
   context.subscriptions.push(
     participant,

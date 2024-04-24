@@ -11,7 +11,7 @@ import { OfficeChatCommand } from "../consts";
 import { ISkill } from "./skills/iSkill";
 import { SkillsManager } from "./skills/skillsManager";
 import { Spec } from "./skills/spec";
-import { ICopilotChatResult } from "../../chat/types";
+import { ICopilotChatOfficeResult } from "../types";
 import { ChatTelemetryData } from "../../chat/telemetry";
 import { TelemetryEvent } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
@@ -49,7 +49,7 @@ export class Planner {
     token: CancellationToken,
     command: OfficeChatCommand,
     telemetryData: ChatTelemetryData
-  ): Promise<ICopilotChatResult> {
+  ): Promise<ICopilotChatOfficeResult> {
     const candidates: ISkill[] = SkillsManager.getInstance().getCapableSkills(command);
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, telemetryData.properties);
     const t0 = performance.now();
@@ -63,7 +63,7 @@ export class Planner {
       telemetryData.markComplete();
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChat, telemetryData.properties);
     });
-    const chatResult: ICopilotChatResult = {
+    const chatResult: ICopilotChatOfficeResult = {
       metadata: {
         command: command,
         requestId: telemetryData.requestId,

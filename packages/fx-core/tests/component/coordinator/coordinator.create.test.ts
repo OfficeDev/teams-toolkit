@@ -227,9 +227,6 @@ const V3Version = MetadataV3.projectVersion;
       }
     });
     it("create project for new office XML Addin MissingRequiredInputError missing App name", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
         ignoreLockByUT: true,
@@ -243,12 +240,8 @@ const V3Version = MetadataV3.projectVersion;
       if (res.isErr()) {
         assert.isTrue(res.error instanceof MissingRequiredInputError);
       }
-      mockedEnvRestoreLocal();
     });
     it("create project for new office XML Addin InputValidationError invalid App name", async () => {
-      const mockedEnvRestoreLocal = mockedEnv({
-        [FeatureFlagName.OfficeXMLAddin]: "true",
-      });
       const inputs: Inputs = {
         platform: Platform.VSCode,
         ignoreLockByUT: true,
@@ -263,7 +256,6 @@ const V3Version = MetadataV3.projectVersion;
       if (res.isErr()) {
         assert.isTrue(res.error instanceof InputValidationError);
       }
-      mockedEnvRestoreLocal();
     });
     it("create project for new office JSON Addin MissingRequiredInputError missing App name", async () => {
       const inputs: Inputs = {
@@ -874,15 +866,12 @@ const V3Version = MetadataV3.projectVersion;
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "false",
-    });
   });
 
   afterEach(() => {
@@ -965,15 +954,12 @@ describe("Office Addin", async () => {
 describe("Office XML Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "true",
-    });
   });
 
   afterEach(() => {
@@ -1048,15 +1034,12 @@ describe("Office XML Addin", async () => {
 describe("Office Addin", async () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
-  let mockedEnvRestore: RestoreFn = () => {};
+  const mockedEnvRestore: RestoreFn = () => {};
   tools.ui = new MockedUserInteraction();
   setTools(tools);
 
   beforeEach(() => {
     sandbox.stub(fs, "ensureDir").resolves();
-    mockedEnvRestore = mockedEnv({
-      [FeatureFlagName.OfficeXMLAddin]: "false",
-    });
   });
 
   afterEach(() => {

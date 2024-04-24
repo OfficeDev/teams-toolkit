@@ -12,7 +12,7 @@ import {
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { verbatimCopilotInteraction } from "../../../chat/utils";
 import { isInputHarmful } from "../../utils";
-import { ICopilotChatResult } from "../../../chat/types";
+import { ICopilotChatOfficeResult } from "../../types";
 import { describeOfficeProjectSystemPrompt } from "../../officePrompts";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
@@ -27,7 +27,7 @@ export default async function officeCreateCommandHandler(
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ICopilotChatResult> {
+): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     OfficeChatCommand.Create,
@@ -37,8 +37,9 @@ export default async function officeCreateCommandHandler(
     TelemetryEvent.CopilotChatStart,
     officeChatTelemetryData.properties
   );
+
   if (request.prompt.trim() === "") {
-    response.markdown(localize("teamstoolkit.chatParticipants.create.noPromptAnswer"));
+    response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.create.noPromptAnswer"));
 
     officeChatTelemetryData.markComplete();
     ExtTelemetry.sendTelemetryEvent(
@@ -53,10 +54,14 @@ export default async function officeCreateCommandHandler(
       },
     };
   }
+
   const isHarmful = await isInputHarmful(request, token);
   if (!isHarmful) {
     const matchedResult = await matchOfficeProject(request, token, officeChatTelemetryData);
     if (matchedResult) {
+      response.markdown(
+        localize("teamstoolkit.chatParticipants.officeAddIn.create.projectMatched")
+      );
       const describeProjectChatMessages = [
         describeOfficeProjectSystemPrompt,
         new LanguageModelChatUserMessage(
@@ -79,10 +84,7 @@ export default async function officeCreateCommandHandler(
           arguments: [folder],
           title: sampleTitle,
         });
-      } else if (matchedResult.type === "template") {
-        response.markdown(
-          "\nWe've found a template project that matches your description. Take a look at it below."
-        );
+      } else {
         const tmpFolder = await showOfficeTemplateFileTree(matchedResult.data, response);
         const templateTitle = localize("teamstoolkit.chatParticipants.create.template");
         response.button({
@@ -92,7 +94,7 @@ export default async function officeCreateCommandHandler(
         });
       }
     } else {
-      return await Planner.getInstance().processRequest(
+      const chatResult = await Planner.getInstance().processRequest(
         new LanguageModelChatUserMessage(request.prompt),
         request,
         response,
@@ -100,6 +102,13 @@ export default async function officeCreateCommandHandler(
         OfficeChatCommand.Create,
         officeChatTelemetryData
       );
+      officeChatTelemetryData.markComplete();
+      ExtTelemetry.sendTelemetryEvent(
+        TelemetryEvent.CopilotChat,
+        officeChatTelemetryData.properties,
+        officeChatTelemetryData.measurements
+      );
+      return chatResult;
     }
   } else {
     response.markdown(localize("teamstoolkit.chatParticipants.officeAddIn.harmfulInputResponse"));

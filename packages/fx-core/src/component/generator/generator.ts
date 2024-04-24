@@ -48,7 +48,7 @@ export class Generator {
     safeProjectNameFromVS?: string,
     targetFramework?: string,
     placeProjectFileInSolutionDir?: boolean,
-    apiKeyAuthData?: {
+    authData?: {
       authName: string;
       openapiSpecPath: string;
       registrationIdEnvName: string;
@@ -65,7 +65,7 @@ export class Generator {
     const safeProjectName = safeProjectNameFromVS ?? convertToAlphanumericOnly(appName);
 
     const safeRegistrationIdEnvName = Utils.getSafeRegistrationIdEnvName(
-      apiKeyAuthData?.registrationIdEnvName ?? ""
+      authData?.registrationIdEnvName ?? ""
     );
 
     return {
@@ -75,10 +75,10 @@ export class Generator {
       PlaceProjectFileInSolutionDir: placeProjectFileInSolutionDir ? "true" : "",
       SafeProjectName: safeProjectName,
       SafeProjectNameLowerCase: safeProjectName.toLocaleLowerCase(),
-      ApiSpecAuthName: apiKeyAuthData?.authName ?? "",
+      ApiSpecAuthName: authData?.authName ?? "",
       ApiSpecAuthRegistrationIdEnvName: safeRegistrationIdEnvName,
-      ApiSpecPath: apiKeyAuthData?.openapiSpecPath ?? "",
-      AuthType: apiKeyAuthData?.authType ?? "",
+      ApiSpecPath: authData?.openapiSpecPath ?? "",
+      AuthType: authData?.authType ?? "",
       enableTestToolByDefault: enableTestToolByDefault() ? "true" : "",
       enableMETestToolByDefault: enableMETestToolByDefault() ? "true" : "",
       useOpenAI: llmServiceData?.llmService === "llm-service-openai" ? "true" : "",

@@ -19,7 +19,7 @@ describe("updateManifestWithAiPlugin", () => {
   });
 
   describe("responseSemantics", () => {
-    it("should generate default response semantics", async () => {
+    it("should not generate response semantics when response is empty", async () => {
       const spec: any = {
         openapi: "3.0.2",
         info: {
@@ -88,23 +88,6 @@ describe("updateManifestWithAiPlugin", () => {
                 },
               },
               required: ["limit"],
-            },
-            capabilities: {
-              response_semantics: {
-                data_path: "$",
-                static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-                  body: [
-                    {
-                      text: "success",
-                      type: "TextBlock",
-                      wrap: true,
-                    },
-                  ],
-                  type: "AdaptiveCard",
-                  version: "1.5",
-                },
-              },
             },
           },
         ],
@@ -1167,6 +1150,22 @@ describe("updateManifestWithAiPlugin", () => {
                   },
                 },
               },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -1209,23 +1208,6 @@ describe("updateManifestWithAiPlugin", () => {
               },
               required: ["limit"],
             },
-            capabilities: {
-              response_semantics: {
-                data_path: "$",
-                static_template: {
-                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-                  type: "AdaptiveCard",
-                  version: "1.5",
-                  body: [
-                    {
-                      type: "TextBlock",
-                      text: "success",
-                      wrap: true,
-                    },
-                  ],
-                },
-              },
-            },
           },
           {
             name: "createPet",
@@ -1248,17 +1230,20 @@ describe("updateManifestWithAiPlugin", () => {
               },
               response_semantics: {
                 data_path: "$",
+                properties: {
+                  title: "$.name",
+                },
                 static_template: {
                   $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
-                  type: "AdaptiveCard",
-                  version: "1.5",
                   body: [
                     {
+                      text: "name: ${if(name, name, 'N/A')}",
                       type: "TextBlock",
-                      text: "success",
                       wrap: true,
                     },
                   ],
+                  type: "AdaptiveCard",
+                  version: "1.5",
                 },
               },
             },

@@ -240,11 +240,15 @@ export class ManifestUpdater {
               }
 
               if (options.allowResponseSemantics) {
-                const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
-                const responseSemantic = wrapResponseSemantics(card, jsonPath);
-                funcObj.capabilities = {
-                  response_semantics: responseSemantic,
-                };
+                const { json } = Utils.getResponseJson(operationItem);
+                if (json.schema) {
+                  const [card, jsonPath] =
+                    AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+                  const responseSemantic = wrapResponseSemantics(card, jsonPath);
+                  funcObj.capabilities = {
+                    response_semantics: responseSemantic,
+                  };
+                }
               }
 
               if (options.allowConfirmation && method !== ConstantString.GetMethod) {

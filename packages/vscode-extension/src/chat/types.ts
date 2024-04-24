@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 import { LanguageModelChatMessage, ChatResult } from "vscode";
 import { TeamsChatCommand } from "./consts";
-import { OfficeChatCommand } from "../officeChat/consts";
 
 export interface ITelemetryData {
   properties: { [key: string]: string };
@@ -22,7 +21,7 @@ export interface IChatTelemetryData {
 }
 
 export interface ICopilotChatResultMetadata {
-  readonly command: TeamsChatCommand | OfficeChatCommand | undefined;
+  readonly command: TeamsChatCommand | undefined;
   readonly requestId: string;
 }
 

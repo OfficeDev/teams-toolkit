@@ -15,6 +15,12 @@ import { URI } from "../mocks/vsc/uri";
 import { OfficeChatCommand } from "../../src/officeChat/consts";
 import { CancellationToken } from "../mocks/vsc";
 import { ExtTelemetry } from "../../src/telemetry/extTelemetry";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../../src/telemetry/extTelemetryEvents";
+import { Correlator } from "@microsoft/teamsfx-core";
 
 chai.use(chaipromised);
 
@@ -273,6 +279,65 @@ describe("File: officeChat/handlers.ts", () => {
       chai.expect(consoleLogStub.calledOnce).to.equal(true);
       chai.expect(showErrorMessageStub.args[0]).to.deep.equal(["Fail to Create"]);
       chai.expect(showErrorMessageStub.calledOnce).to.equal(true);
+    });
+  });
+
+  describe("Method: handleOfficeFeedback", () => {
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    it("handle feedback with undefined request id and command", async () => {
+      const fakedFeedback: vscode.ChatResultFeedback = {
+        result: {},
+        kind: 1,
+      };
+      sandbox.stub(Correlator, "getId").returns("testCorrelationId");
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      handler.handleOfficeFeedback(fakedFeedback);
+
+      chai.expect(sendTelemetryEventStub.calledOnce).to.equal(true);
+      chai.expect(sendTelemetryEventStub.args[0]).to.deep.equal([
+        TelemetryEvent.CopilotChatFeedback,
+        {
+          [TelemetryProperty.CopilotChatRequestId]: "",
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+          [TelemetryProperty.CopilotChatCommand]: "",
+          [TelemetryProperty.CorrelationId]: "testCorrelationId",
+        },
+        {
+          [TelemetryProperty.CopilotChatFeedbackHelpful]: 1,
+        },
+      ]);
+    });
+
+    it("handle feedback with request id and command", async () => {
+      const fakeFeedback: vscode.ChatResultFeedback = {
+        result: {
+          metadata: {
+            requestId: "testRequestId",
+            command: "testCommand",
+          },
+        },
+        kind: 0,
+      };
+      sandbox.stub(Correlator, "getId").returns("testCorrelationId");
+      const sendTelemetryEventStub = sandbox.stub(ExtTelemetry, "sendTelemetryEvent");
+      handler.handleOfficeFeedback(fakeFeedback);
+
+      chai.expect(sendTelemetryEventStub.calledOnce).to.equal(true);
+      chai.expect(sendTelemetryEventStub.args[0]).to.deep.equal([
+        TelemetryEvent.CopilotChatFeedback,
+        {
+          [TelemetryProperty.CopilotChatRequestId]: "testRequestId",
+          [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+          [TelemetryProperty.CopilotChatCommand]: "testCommand",
+          [TelemetryProperty.CorrelationId]: "testCorrelationId",
+        },
+        {
+          [TelemetryProperty.CopilotChatFeedbackHelpful]: 0,
+        },
+      ]);
     });
   });
 });

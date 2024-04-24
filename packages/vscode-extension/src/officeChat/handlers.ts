@@ -7,6 +7,7 @@ import {
   ChatContext,
   ChatRequest,
   ChatResponseStream,
+  ChatResultFeedback,
   LanguageModelChatUserMessage,
   ProviderResult,
   Uri,
@@ -15,24 +16,30 @@ import {
   workspace,
 } from "vscode";
 import { OfficeChatCommand, officeChatParticipantId } from "./consts";
+import { Correlator } from "@microsoft/teamsfx-core";
 import followupProvider from "../chat/followupProvider";
-import { ICopilotChatResult } from "../chat/types";
 import { ChatTelemetryData } from "../chat/telemetry";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetryTriggerFrom,
+} from "../telemetry/extTelemetryEvents";
 import officeCreateCommandHandler from "./commands/create/officeCreateCommandHandler";
 import generatecodeCommandHandler from "./commands/generatecode/generatecodeCommandHandler";
 import officeNextStepCommandHandler from "./commands/nextStep/officeNextstepCommandHandler";
 import { defaultOfficeSystemPrompt } from "./officePrompts";
 import { verbatimCopilotInteraction } from "../chat/utils";
 import { localize } from "../utils/localizeUtils";
+import { ICopilotChatOfficeResult } from "./types";
+import { ITelemetryData } from "../chat/types";
 
 export function officeChatRequestHandler(
   request: ChatRequest,
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): ProviderResult<ICopilotChatResult> {
+): ProviderResult<ICopilotChatOfficeResult> {
   followupProvider.clearFollowups();
   if (request.command == OfficeChatCommand.Create) {
     return officeCreateCommandHandler(request, context, response, token);
@@ -50,7 +57,7 @@ async function officeDefaultHandler(
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ICopilotChatResult> {
+): Promise<ICopilotChatOfficeResult> {
   const chatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     "",
@@ -121,4 +128,25 @@ export async function chatCreateOfficeProjectCommandHandler(folder: string) {
       localize("teamstoolkit.chatParticipants.officeAddIn.create.failToCreate")
     );
   }
+}
+
+export function handleOfficeFeedback(e: ChatResultFeedback): void {
+  const result = e.result as ICopilotChatOfficeResult;
+  const telemetryData: ITelemetryData = {
+    properties: {
+      [TelemetryProperty.CopilotChatRequestId]: result.metadata?.requestId ?? "",
+      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+      [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
+      [TelemetryProperty.CorrelationId]: Correlator.getId(),
+    },
+    measurements: {
+      [TelemetryProperty.CopilotChatFeedbackHelpful]: e.kind,
+    },
+  };
+
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChatFeedback,
+    telemetryData.properties,
+    telemetryData.measurements
+  );
 }

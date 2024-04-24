@@ -96,6 +96,7 @@ export const copilotPluginParserOptions: ParseOptions = {
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
 export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
+export const specParserGenerateAuthTypeTelemetryProperty = "auth-type";
 
 export const invalidApiSpecErrorName = "invalid-api-spec";
 const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";
@@ -300,13 +301,15 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
       },
     };
 
-    if (
-      operation.auth &&
-      operation.auth.authScheme.type === "http" &&
-      operation.auth.authScheme.scheme === "bearer"
-    ) {
+    if (operation.auth) {
       result.data.authName = operation.auth.name;
+      if (Utils.isBearerTokenAuth(operation.auth.authScheme)) {
+        result.data.authType = "apiKey";
+      } else if (Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)) {
+        result.data.authType = "oauth2";
+      }
     }
+
     operationsWithSeparator.push(result);
   }
 

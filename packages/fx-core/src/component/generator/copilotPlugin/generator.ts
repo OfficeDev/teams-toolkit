@@ -20,7 +20,7 @@ import {
   AppPackageFolderName,
   Warning,
   ApiOperation,
-  ApiKeyAuthInfo,
+  AuthInfo,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
@@ -40,6 +40,7 @@ import {
   invalidApiSpecErrorName,
   copilotPluginParserOptions,
   updateForCustomApi,
+  specParserGenerateAuthTypeTelemetryProperty,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -222,7 +223,7 @@ export class CopilotPluginGenerator {
     templateName: string,
     componentName: string,
     isPlugin: boolean,
-    apiKeyAuthData?: ApiKeyAuthInfo
+    authData?: AuthInfo
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
@@ -257,17 +258,15 @@ export class CopilotPluginGenerator {
       const openapiSpecFileName = isYaml ? apiSpecYamlFileName : apiSpecJsonFileName;
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
-      if (apiKeyAuthData?.authName) {
-        const envName = Utils.getSafeRegistrationIdEnvName(
-          `${apiKeyAuthData.authName}_REGISTRATION_ID`
-        );
+      if (authData?.authName) {
+        const envName = Utils.getSafeRegistrationIdEnvName(`${authData.authName}_REGISTRATION_ID`);
         context.templateVariables = Generator.getDefaultVariables(
           appName,
           safeProjectNameFromVS,
           inputs.targetFramework,
           inputs.placeProjectFileInSolutionDir === "true",
           {
-            authName: apiKeyAuthData.authName,
+            authName: authData.authName,
             openapiSpecPath: normalizePath(
               path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
             ),
@@ -389,6 +388,7 @@ export class CopilotPluginGenerator {
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
         [telemetryProperties.generateType]: type.toString(),
         [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
+        [specParserGenerateAuthTypeTelemetryProperty]: authData?.authName ?? "None",
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)
           .join(";"),

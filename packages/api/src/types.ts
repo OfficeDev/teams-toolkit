@@ -147,16 +147,17 @@ export interface OpenAIPluginManifest {
   legal_info_url: string;
 }
 
-export interface ApiKeyAuthInfo {
+export interface AuthInfo {
   serverUrl: string;
   authName?: string;
+  authType?: "apiKey" | "oauth2";
 }
 
 export interface ApiOperation {
   id: string;
   label: string;
   groupName: string;
-  data: ApiKeyAuthInfo;
+  data: AuthInfo;
   detail?: string;
 }
 

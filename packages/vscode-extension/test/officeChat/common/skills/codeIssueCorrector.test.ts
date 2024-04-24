@@ -46,7 +46,7 @@ describe("CodeIssueCorrector", () => {
         name: undefined,
       };
 
-      const fakeResponse: ChatResponseStream = {
+      const fakeResponse = {
         markdown: sandbox.stub(),
         anchor: sandbox.stub(),
         button: sandbox.stub(),
@@ -54,7 +54,7 @@ describe("CodeIssueCorrector", () => {
         progress: sandbox.stub(),
         reference: sandbox.stub(),
         push: sandbox.stub(),
-      };
+      } as unknown as ChatResponseStream;
 
       const fakeToken: CancellationToken = {
         isCancellationRequested: false,

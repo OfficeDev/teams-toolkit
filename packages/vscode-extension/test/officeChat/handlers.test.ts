@@ -37,6 +37,8 @@ describe("File: officeChat/handlers.ts", () => {
         command: OfficeChatCommand.Create,
         variables: [],
         location: vscode.ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
       const officeCreateCommandHandlerStub = sandbox.stub(officeCreateCommandHandler, "default");
       handler.officeChatRequestHandler(
@@ -54,6 +56,8 @@ describe("File: officeChat/handlers.ts", () => {
         command: OfficeChatCommand.GenerateCode,
         variables: [],
         location: vscode.ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
       const generatecodeCommandHandlerStub = sandbox.stub(generatecodeCommandHandler, "default");
       handler.officeChatRequestHandler(
@@ -71,6 +75,8 @@ describe("File: officeChat/handlers.ts", () => {
         command: OfficeChatCommand.NextStep,
         variables: [],
         location: vscode.ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
       const officeNextStepCommandHandlerStub = sandbox.stub(
         officeNextStepCommandHandler,
@@ -91,6 +97,8 @@ describe("File: officeChat/handlers.ts", () => {
         command: "",
         variables: [],
         location: vscode.ChatLocation.Panel,
+        attempt: 0,
+        enableCommandDetection: false,
       };
       const officeChatTelemetryDataMock = sandbox.createStubInstance(telemetry.ChatTelemetryData);
       sandbox.stub(officeChatTelemetryDataMock, "properties").get(function getterFn() {

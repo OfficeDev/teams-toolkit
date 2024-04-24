@@ -73,7 +73,7 @@
     "@microsoft/teamsapp-cli": "workspace:*",
     "@microsoft/teamsfx-api": "workspace:*",
     "@types/semver": "^7.3.8",
-    "axios": "^1.6.2",
+    "axios": "^1.6.8",
     "azure-arm-resource": "^7.4.0",
     "dotenv": "^8.2.0",
     "fs-extra": "^7.0.1",

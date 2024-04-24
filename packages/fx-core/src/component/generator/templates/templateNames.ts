@@ -130,9 +130,11 @@ export const Feature2TemplateName = {
 };
 
 export function tryGetTemplateName(inputs: Inputs): TemplateNames | undefined {
-  return inputsToTemplateName.find((item) =>
-    Object.keys(item.inputs).every((key) => item.inputs[key] === inputs[key])
-  )?.name;
+  for (const [key, value] of inputsToTemplateName) {
+    if (Object.keys(key).every((k) => key[k] === inputs[k])) {
+      return value;
+    }
+  }
 }
 
 export function getTemplateName(inputs: Inputs): TemplateNames {
@@ -144,238 +146,198 @@ export function getTemplateName(inputs: Inputs): TemplateNames {
 }
 
 // When multiple template name matches, only the top one will be picked.
-export const inputsToTemplateName: { inputs: { [key: string]: any }; name: TemplateNames }[] = [
-  {
-    inputs: { [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id },
-    name: TemplateNames.Tab,
-  },
-  {
-    inputs: { [QuestionNames.Capabilities]: CapabilityOptions.tab().id },
-    name: TemplateNames.SsoTab,
-  },
-  {
-    inputs: { [QuestionNames.Capabilities]: CapabilityOptions.m365SsoLaunchPage().id },
-    name: TemplateNames.SsoTabObo,
-  },
-  {
-    inputs: { [QuestionNames.Capabilities]: CapabilityOptions.dashboardTab().id },
-    name: TemplateNames.DashboardTab,
-  },
-  {
-    inputs: {
+export const inputsToTemplateName: Map<{ [key: string]: any }, TemplateNames> = new Map([
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id }, TemplateNames.Tab],
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.tab().id }, TemplateNames.SsoTab],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.m365SsoLaunchPage().id },
+    TemplateNames.SsoTabObo,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.dashboardTab().id },
+    TemplateNames.DashboardTab,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.appService().id,
     },
-    name: TemplateNames.NotificationRestify,
-  },
-  {
-    inputs: {
+    TemplateNames.NotificationRestify,
+  ],
+  [
+    {
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.appServiceForVS().id,
     },
-    name: TemplateNames.NotificationWebApi,
-  },
-  {
-    inputs: {
+    TemplateNames.NotificationWebApi,
+  ],
+  [
+    {
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.functionsHttpTrigger().id,
       ["isIsolated"]: true,
     },
-    name: TemplateNames.NotificationHttpTriggerIsolated,
-  },
-  {
-    inputs: {
+    TemplateNames.NotificationHttpTriggerIsolated,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.functionsHttpTrigger().id,
     },
-    name: TemplateNames.NotificationHttpTrigger,
-  },
-  {
-    inputs: {
+    TemplateNames.NotificationHttpTrigger,
+  ],
+  [
+    {
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.functionsTimerTrigger().id,
       ["isIsolated"]: true,
     },
-    name: TemplateNames.NotificationTimerTriggerIsolated,
-  },
-  {
-    inputs: {
+    TemplateNames.NotificationTimerTriggerIsolated,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.functionsTimerTrigger().id,
     },
-    name: TemplateNames.NotificationTimerTrigger,
-  },
-  {
-    inputs: {
+    TemplateNames.NotificationTimerTrigger,
+  ],
+  [
+    {
       [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.functionsHttpAndTimerTrigger().id,
       ["isIsolated"]: true,
     },
-    name: TemplateNames.NotificationHttpTimerTriggerIsolated,
-  },
-  {
-    inputs: {
+    TemplateNames.NotificationHttpTimerTriggerIsolated,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.notificationBot().id,
       [QuestionNames.BotTrigger]: NotificationTriggerOptions.functionsHttpAndTimerTrigger().id,
     },
-    name: TemplateNames.NotificationHttpTimerTrigger,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.commandBot().id,
-    },
-    name: TemplateNames.CommandAndResponse,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.workflowBot().id,
-    },
-    name: TemplateNames.Workflow,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id,
-    },
-    name: TemplateNames.DefaultBot,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.me().id,
-    },
-    name: TemplateNames.MessageExtension,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.collectFormMe().id,
-    },
-    name: TemplateNames.MessageExtensionAction,
-  },
-  {
-    inputs: { [QuestionNames.Capabilities]: CapabilityOptions.SearchMe().id },
-    name: TemplateNames.MessageExtensionSearch,
-  },
-  {
-    inputs: {
+    TemplateNames.NotificationHttpTimerTrigger,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.commandBot().id },
+    TemplateNames.CommandAndResponse,
+  ],
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.workflowBot().id }, TemplateNames.Workflow],
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.basicBot().id }, TemplateNames.DefaultBot],
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.me().id }, TemplateNames.MessageExtension],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.collectFormMe().id },
+    TemplateNames.MessageExtensionAction,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.SearchMe().id },
+    TemplateNames.MessageExtensionSearch,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.botPlugin().id,
     },
-    name: TemplateNames.MessageExtensionCopilot,
-  },
-  {
-    inputs: {
+    TemplateNames.MessageExtensionCopilot,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.botMe().id,
     },
-    name: TemplateNames.M365MessageExtension,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTabAndBot().id,
-    },
-    name: TemplateNames.TabAndDefaultBot,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.botAndMe().id,
-    },
-    name: TemplateNames.BotAndMessageExtension,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.linkUnfurling().id,
-    },
-    name: TemplateNames.LinkUnfurling,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.aiBot().id,
-    },
-    name: TemplateNames.AIBot,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.aiAssistantBot().id,
-    },
-    name: TemplateNames.AIAssistantBot,
-  },
-  {
-    inputs: {
-      [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id,
-    },
-    name: TemplateNames.ApiPluginFromScratch,
-  },
-  {
-    inputs: {
+    TemplateNames.M365MessageExtension,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTabAndBot().id },
+    TemplateNames.TabAndDefaultBot,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.botAndMe().id },
+    TemplateNames.BotAndMessageExtension,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.linkUnfurling().id },
+    TemplateNames.LinkUnfurling,
+  ],
+  [{ [QuestionNames.Capabilities]: CapabilityOptions.aiBot().id }, TemplateNames.AIBot],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.aiAssistantBot().id },
+    TemplateNames.AIAssistantBot,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.copilotPluginNewApi().id },
+    TemplateNames.ApiPluginFromScratch,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
       [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.none().id,
     },
-    name: TemplateNames.CopilotPluginFromScratch,
-  },
-  {
-    inputs: {
+    TemplateNames.CopilotPluginFromScratch,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
       [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.apiKey().id,
     },
-    name: TemplateNames.CopilotPluginFromScratchApiKey,
-  },
-  {
-    inputs: {
+    TemplateNames.CopilotPluginFromScratchApiKey,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.m365SearchMe().id,
       [QuestionNames.MeArchitectureType]: MeArchitectureOptions.newApi().id,
       [QuestionNames.ApiMEAuth]: ApiMessageExtensionAuthOptions.microsoftEntra().id,
     },
-    name: TemplateNames.ApiMessageExtensionSso,
-  },
-  {
-    inputs: { [QuestionNames.Capabilities]: CapabilityOptions.customCopilotBasic().id },
-    name: TemplateNames.CustomCopilotBasic,
-  },
-  {
-    inputs: {
+    TemplateNames.ApiMessageExtensionSso,
+  ],
+  [
+    { [QuestionNames.Capabilities]: CapabilityOptions.customCopilotBasic().id },
+    TemplateNames.CustomCopilotBasic,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
       [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customize().id,
     },
-    name: TemplateNames.CustomCopilotRagCustomize,
-  },
-  {
-    inputs: {
+    TemplateNames.CustomCopilotRagCustomize,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
       [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.azureAISearch().id,
     },
-    name: TemplateNames.CustomCopilotRagAzureAISearch,
-  },
-  {
-    inputs: {
+    TemplateNames.CustomCopilotRagAzureAISearch,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
       [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.customApi().id,
     },
-    name: TemplateNames.CustomCopilotRagCustomApi,
-  },
-  {
-    inputs: {
+    TemplateNames.CustomCopilotRagCustomApi,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.customCopilotRag().id,
       [QuestionNames.CustomCopilotRag]: CustomCopilotRagOptions.microsoft365().id,
     },
-    name: TemplateNames.CustomCopilotRagMicrosoft365,
-  },
-  {
-    inputs: {
+    TemplateNames.CustomCopilotRagMicrosoft365,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.customCopilotAssistant().id,
       [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.new().id,
     },
-    name: TemplateNames.CustomCopilotAssistantNew,
-  },
-  {
-    inputs: {
+    TemplateNames.CustomCopilotAssistantNew,
+  ],
+  [
+    {
       [QuestionNames.Capabilities]: CapabilityOptions.customCopilotAssistant().id,
       [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.assistantsApi().id,
     },
-    name: TemplateNames.CustomCopilotAssistantAssistantsApi,
-  },
-];
+    TemplateNames.CustomCopilotAssistantAssistantsApi,
+  ],
+]);

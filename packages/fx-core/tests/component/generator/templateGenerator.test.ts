@@ -19,41 +19,41 @@ import { DefaultTemplateGenerator } from "../../../src/component/generator/templ
 import { TemplateInfo } from "../../../src/component/generator/templates/templateInfo";
 
 describe("TemplateGenerator", () => {
-  const testInputsToTemplateName = [
+  const testInputsToTemplateName = new Map([
     ...inputsToTemplateName,
-    {
-      name: TemplateNames.TabSSR,
-      inputs: {
-        capabilities: CapabilityOptions.nonSsoTab().id,
+    [
+      {
+        [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
         [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
         targetFramework: "net8.0",
       },
-    },
-    {
-      name: TemplateNames.SsoTabSSR,
-      inputs: {
-        capabilities: CapabilityOptions.tab().id,
+      TemplateNames.SsoTabSSR,
+    ],
+    [
+      {
+        [QuestionNames.Capabilities]: CapabilityOptions.tab().id,
+        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
+        targetFramework: "net6.0",
+      },
+      TemplateNames.SsoTab,
+    ],
+    [
+      {
+        [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
         [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
         targetFramework: "net8.0",
       },
-    },
-    {
-      name: TemplateNames.Tab,
-      inputs: {
-        capabilities: CapabilityOptions.nonSsoTab().id,
+      TemplateNames.TabSSR,
+    ],
+    [
+      {
+        [QuestionNames.Capabilities]: CapabilityOptions.nonSsoTab().id,
         [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
         targetFramework: "net6.0",
       },
-    },
-    {
-      name: TemplateNames.SsoTab,
-      inputs: {
-        capabilities: CapabilityOptions.tab().id,
-        [QuestionNames.ProgrammingLanguage]: ProgrammingLanguage.CSharp,
-        targetFramework: "net6.0",
-      },
-    },
-  ];
+      TemplateNames.Tab,
+    ],
+  ]);
 
   setTools(new MockTools());
   const ctx = createContextV3();
@@ -76,9 +76,9 @@ describe("TemplateGenerator", () => {
     sandbox.restore();
   });
 
-  testInputsToTemplateName.forEach(async (pair) => {
-    it(`scaffolding ${pair.name}`, async () => {
-      inputs = { ...inputs, ...pair.inputs };
+  testInputsToTemplateName.forEach(async (templateName, _inputs) => {
+    it(`scaffolding ${templateName}`, async () => {
+      inputs = { ...inputs, ..._inputs };
       const res = await Generators.find((g) => g.activate(ctx, inputs))?.run(
         ctx,
         inputs,
@@ -87,10 +87,10 @@ describe("TemplateGenerator", () => {
 
       assert.isTrue(res?.isOk());
       assert.isTrue(scaffoldingSpy.calledOnce);
-      assert.equal((scaffoldingSpy.args[0][1] as TemplateInfo).templateName, pair.name);
+      assert.equal((scaffoldingSpy.args[0][1] as TemplateInfo).templateName, templateName);
       assert.equal(
         (scaffoldingSpy.args[0][1] as TemplateInfo).language,
-        pair.inputs?.[QuestionNames.ProgrammingLanguage] || ProgrammingLanguage.JS
+        inputs?.[QuestionNames.ProgrammingLanguage] || ProgrammingLanguage.JS
       );
     });
   });

@@ -1,5 +1,5 @@
 {
-  "schema_version": "v2",
+  "schema_version": "v2.1",
   "name_for_human": "{{appName}}${{APP_NAME_SUFFIX}}",
   "description_for_human": "Track your repair records",
   "description_for_model": "Plugin for searching a repair list, you can search by who's assigned to the repair.",
@@ -17,20 +17,7 @@
         },
         "required": [
           "assignedTo"
-      ]
-      },
-      "states": {
-          "reasoning": {
-              "description": "Returns the repair records.",
-              "instructions": [
-                "Here are the parameters:",
-                "  assignedTo: The person assigned to the repair."
-              ]
-          },
-          "responding": {
-              "description": "Returns the repair result in JSON format.",
-              "instructions": "Extract and include as much relevant information as possible from the JSON result to meet the user's needs."
-          }
+        ]
       }
     }    
   ],
@@ -38,7 +25,7 @@
     {
       "type": "OpenApi",
       "auth": {
-        "type": "none"
+        "type": "None"
       },
       "spec": {
         "url": "apiSpecificationFile/repair.yml",

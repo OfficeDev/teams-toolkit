@@ -30,6 +30,7 @@ import {
   isAadMainifestContainsPlaceholder,
   newEnvNameValidation,
   newResourceGroupOption,
+  oauthQuestion,
   resourceGroupQuestionNode,
   selectAadAppManifestQuestionNode,
   selectAadManifestQuestion,
@@ -1018,5 +1019,164 @@ describe("apiKeyQuestion", async () => {
       result,
       "Client secret is invalid. The length of secret should be >= 10 and <= 128"
     );
+  });
+});
+
+describe("oauthQuestion", async () => {
+  const sandbox = sinon.createSandbox();
+  let mockedEnvRestore: RestoreFn = () => {};
+  afterEach(() => {
+    sandbox.restore();
+    mockedEnvRestore();
+  });
+
+  it("will pop up question for client id, client secret and confirm", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthQuestion();
+
+    const clientIdQuestion = question.children![0];
+    const clientIdCondition = clientIdQuestion.condition;
+    const clientIdRes = await (clientIdCondition as ConditionFunc)(inputs);
+    assert.equal(clientIdRes, true);
+
+    const clientSecretQuestion = question.children![1];
+    const clientSecretCondition = clientSecretQuestion.condition;
+    const clientSecretRes = await (clientSecretCondition as ConditionFunc)(inputs);
+    assert.equal(clientSecretRes, true);
+
+    const confirmQuesion = question.children![2];
+    const confirmCondition = confirmQuesion.condition;
+    const confirmRes = await (confirmCondition as ConditionFunc)(inputs);
+    assert.equal(confirmRes, true);
+  });
+
+  it("will pop up question for client id, and confirm", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientSecret: "fakeClientSecret",
+    };
+    const question = oauthQuestion();
+
+    const clientIdQuestion = question.children![0];
+    const clientIdCondition = clientIdQuestion.condition;
+    const clientIdRes = await (clientIdCondition as ConditionFunc)(inputs);
+    assert.equal(clientIdRes, true);
+
+    const clientSecretQuestion = question.children![1];
+    const clientSecretCondition = clientSecretQuestion.condition;
+    const clientSecretRes = await (clientSecretCondition as ConditionFunc)(inputs);
+    assert.equal(clientSecretRes, false);
+
+    const confirmQuesion = question.children![2];
+    const confirmCondition = confirmQuesion.condition;
+    const confirmRes = await (confirmCondition as ConditionFunc)(inputs);
+    assert.equal(confirmRes, true);
+  });
+
+  it("will pop up question for client secret, and confirm", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientId: "fakeClientId",
+    };
+    const question = oauthQuestion();
+
+    const clientIdQuestion = question.children![0];
+    const clientIdCondition = clientIdQuestion.condition;
+    const clientIdRes = await (clientIdCondition as ConditionFunc)(inputs);
+    assert.equal(clientIdRes, false);
+
+    const clientSecretQuestion = question.children![1];
+    const clientSecretCondition = clientSecretQuestion.condition;
+    const clientSecretRes = await (clientSecretCondition as ConditionFunc)(inputs);
+    assert.equal(clientSecretRes, true);
+
+    const confirmQuesion = question.children![2];
+    const confirmCondition = confirmQuesion.condition;
+    const confirmRes = await (confirmCondition as ConditionFunc)(inputs);
+    assert.equal(confirmRes, true);
+  });
+
+  it("will not pop up question since client id, client secret exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+      clientId: "fakeClientId",
+      clientSecret: "fakeClientSecret",
+    };
+    const question = oauthQuestion();
+
+    const clientIdQuestion = question.children![0];
+    const clientIdCondition = clientIdQuestion.condition;
+    const clientIdRes = await (clientIdCondition as ConditionFunc)(inputs);
+    assert.equal(clientIdRes, false);
+
+    const clientSecretQuestion = question.children![1];
+    const clientSecretCondition = clientSecretQuestion.condition;
+    const clientSecretRes = await (clientSecretCondition as ConditionFunc)(inputs);
+    assert.equal(clientSecretRes, false);
+
+    const confirmQuesion = question.children![2];
+    const confirmCondition = confirmQuesion.condition;
+    const confirmRes = await (confirmCondition as ConditionFunc)(inputs);
+    assert.equal(confirmRes, false);
+  });
+
+  it("will not pop up question due to registrationId exists", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    inputs.outputEnvVarNames.set("registrationId", "registrationId");
+    mockedEnvRestore = mockedEnv({
+      registrationId: "fake-id",
+    });
+    const question = oauthQuestion();
+    const condition = question.condition;
+    const res = await (condition as ConditionFunc)(inputs);
+    assert.equal(res, false);
+  });
+
+  it("client secret validation passed", async () => {
+    const question = oauthQuestion().children![1];
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientSecret");
+    assert.equal(result, undefined);
+  });
+
+  it("client secret validation failed due to length", async () => {
+    const question = oauthQuestion().children![1];
+    const validation = (question.data as TextInputQuestion).validation;
+    const result = (validation as FuncValidation<string>).validFunc("abc");
+    assert.equal(
+      result,
+      "Client secret is invalid. The length of secret should be >= 10 and <= 128"
+    );
+  });
+
+  it("client id additionalValidationOnAccept passed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthQuestion().children![0];
+    const validation = (question.data as TextInputQuestion).additionalValidationOnAccept;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientId", inputs);
+    assert.equal(result, undefined);
+  });
+
+  it("client secret additionalValidationOnAccept passed", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      outputEnvVarNames: new Map<string, string>(),
+    };
+    const question = oauthQuestion().children![1];
+    const validation = (question.data as TextInputQuestion).additionalValidationOnAccept;
+    const result = (validation as FuncValidation<string>).validFunc("mockedClientSecret", inputs);
+    assert.equal(result, undefined);
   });
 });

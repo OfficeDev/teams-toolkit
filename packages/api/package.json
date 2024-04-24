@@ -45,7 +45,7 @@
     "chai-spies": "^1.0.0",
     "copyfiles": "^2.4.1",
     "cpy-cli": "^4.0.0",
-    "eslint": "^7.22.0",
+    "eslint": "^7.29.0",
     "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-no-secrets": "^0.8.9",
@@ -64,7 +64,7 @@
   "dependencies": {
     "@azure/core-auth": "^1.4.0",
     "@microsoft/teams-manifest": "workspace:*",
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "chai": "^4.3.4",
     "jsonschema": "^1.4.0",
     "neverthrow": "^3.2.0",

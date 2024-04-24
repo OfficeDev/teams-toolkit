@@ -25,13 +25,13 @@ import { ConstantString } from "../common/constants";
 import { Correlator } from "../common/correlator";
 import {
   isApiCopilotPluginEnabled,
-  isApiKeyEnabled,
   isCLIDotNetEnabled,
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
-  isOfficeXMLAddinEnabled,
   isTdpTemplateCliTestEnabled,
-  isApiMeSSOEnabled,
+  isChatParticipantEnabled,
+  featureFlagManager,
+  FeatureFlags,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -94,6 +94,7 @@ export class ProjectTypeOptions {
         "core.TabOption.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.tab.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
 
@@ -104,6 +105,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.bot.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.bot.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
 
@@ -118,6 +120,7 @@ export class ProjectTypeOptions {
             "core.createProjectQuestion.projectType.messageExtension.copilotEnabled.detail"
           )
         : getLocalizedString("core.createProjectQuestion.projectType.messageExtension.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
 
@@ -128,6 +131,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.outlookAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.outlookAddin.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
 
@@ -138,6 +142,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.officeXMLAddin.mainEntry.title"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.officeXMLAddin.mainEntry.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
 
@@ -148,6 +153,7 @@ export class ProjectTypeOptions {
         "core.createProjectQuestion.projectType.officeAddin.label"
       )}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.officeAddin.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
 
@@ -166,6 +172,7 @@ export class ProjectTypeOptions {
         platform === Platform.VSCode ? "$(teamsfx-copilot-plugin) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.label")}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
 
@@ -176,11 +183,32 @@ export class ProjectTypeOptions {
         platform === Platform.VSCode ? "$(teamsfx-custom-copilot) " : ""
       }${getLocalizedString("core.createProjectQuestion.projectType.customCopilot.label")}`,
       detail: getLocalizedString("core.createProjectQuestion.projectType.customCopilot.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+    };
+  }
+
+  static startWithGithubCopilot(): OptionItem {
+    return {
+      id: "start-with-github-copilot",
+      label: `$(comment-discussion) ${getLocalizedString(
+        "core.createProjectQuestion.projectType.copilotHelp.label"
+      )}`,
+      detail: getLocalizedString("core.createProjectQuestion.projectType.copilotHelp.detail"),
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.copilotGroup.title"),
+    };
+  }
+
+  static customizeGpt(): OptionItem {
+    return {
+      id: "customize-gpt-type",
+      label: "Customize GPT", // TODO: localize until we have an idea for naming
+      detail: "Author a Copilot GPT",
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
 }
 
-function projectTypeQuestion(): SingleSelectQuestion {
+export function projectTypeQuestion(): SingleSelectQuestion {
   const staticOptions: StaticOptions = [
     ProjectTypeOptions.bot(Platform.CLI),
     ProjectTypeOptions.tab(Platform.CLI),
@@ -196,6 +224,14 @@ function projectTypeQuestion(): SingleSelectQuestion {
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
+
+      if (
+        CLIPlatforms.includes(inputs.platform) &&
+        featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)
+      ) {
+        // Show in CLI only
+        staticOptions.push(ProjectTypeOptions.customizeGpt());
+      }
 
       if (isApiCopilotPluginEnabled()) {
         staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
@@ -213,13 +249,24 @@ function projectTypeQuestion(): SingleSelectQuestion {
           return [projectType];
         }
       } else {
-        staticOptions.push(
-          isOfficeXMLAddinEnabled() && !isOfficeJSONAddinEnabled()
-            ? ProjectTypeOptions.officeXMLAddin(inputs.platform)
-            : isOfficeJSONAddinEnabled()
-            ? ProjectTypeOptions.officeAddin(inputs.platform)
-            : ProjectTypeOptions.outlookAddin(inputs.platform)
-        );
+        if (inputs.agent === "office") {
+          //only for @office agent, officeXMLAddin are supported
+          staticOptions.push(ProjectTypeOptions.officeXMLAddin(inputs.platform));
+        } else {
+          if (isOfficeJSONAddinEnabled()) {
+            staticOptions.push(ProjectTypeOptions.officeAddin(inputs.platform));
+          } else {
+            staticOptions.push(ProjectTypeOptions.outlookAddin(inputs.platform));
+          }
+        }
+      }
+
+      if (
+        inputs.platform === Platform.VSCode &&
+        isChatParticipantEnabled() &&
+        !inputs.teamsAppFromTdp
+      ) {
+        staticOptions.push(ProjectTypeOptions.startWithGithubCopilot());
       }
       return staticOptions;
     },
@@ -608,6 +655,10 @@ export class CapabilityOptions {
     ];
   }
 
+  static customizeGptOptions(): OptionItem[] {
+    return [CapabilityOptions.customizeGptBasic(), CapabilityOptions.customizeGptWithPlugin()];
+  }
+
   /**
    * static capability list, which does not depend on any feature flags
    */
@@ -619,6 +670,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
+      ...CapabilityOptions.customizeGptOptions(),
     ];
     capabilityOptions.push(...CapabilityOptions.officeAddinStaticCapabilities());
     return capabilityOptions;
@@ -636,6 +688,9 @@ export class CapabilityOptions {
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
     }
+    if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
+      capabilityOptions.push(...CapabilityOptions.customizeGptOptions());
+    }
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (isTdpTemplateCliTestEnabled()) {
       // test templates that are used by TDP integration only
@@ -644,17 +699,6 @@ export class CapabilityOptions {
     capabilityOptions.push(
       ...CapabilityOptions.officeAddinDynamicCapabilities(inputs?.projectType, inputs?.host)
     );
-    // if (isOfficeXMLAddinEnabled()) {
-    //   capabilityOptions.push(
-    //     ...[
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("word"),
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("excel"),
-    //       ...CapabilityOptions.officeAddinStaticCapabilities("powerpoint"),
-    //     ]
-    //   );
-    // } else {
-    //   capabilityOptions.push(...CapabilityOptions.officeAddinStaticCapabilities("json"));
-    // }
     return capabilityOptions;
   }
 
@@ -816,6 +860,23 @@ export class CapabilityOptions {
       ),
     };
   }
+
+  // customize GPT
+  static customizeGptBasic(): OptionItem {
+    return {
+      id: "customize-gpt-basic",
+      label: "Basic GPT",
+      detail: "A simple GPT skeleton you can author without any plugin",
+    };
+  }
+
+  static customizeGptWithPlugin(): OptionItem {
+    return {
+      id: "customize-gpt-with-plugin",
+      label: "GPT with a plugin",
+      detail: "A GPT containing a Copilot plugin",
+    };
+  }
 }
 
 export function capabilityQuestion(): SingleSelectQuestion {
@@ -859,6 +920,8 @@ export function capabilityQuestion(): SingleSelectQuestion {
           return getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title");
         case ProjectTypeOptions.customCopilot().id:
           return getLocalizedString("core.createProjectQuestion.projectType.customCopilot.title");
+        case ProjectTypeOptions.customizeGpt().id:
+          return "Choose the GPT type";
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
@@ -904,6 +967,8 @@ export function capabilityQuestion(): SingleSelectQuestion {
         return CapabilityOptions.copilotPlugins();
       } else if (projectType === ProjectTypeOptions.customCopilot().id) {
         return CapabilityOptions.customCopilots();
+      } else if (projectType === ProjectTypeOptions.customizeGpt().id) {
+        return CapabilityOptions.customizeGptOptions();
       } else {
         return CapabilityOptions.all(inputs);
       }
@@ -1351,6 +1416,23 @@ export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion
   };
 }
 
+function CustomizeGptWithPluginStartQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.CustomizeGptWithPluginStart,
+    title: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title"),
+    type: "singleSelect",
+    staticOptions: GptWithPluginStartOptions(),
+    cliDescription: "Copilot Plugin.",
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
+    ),
+  };
+}
+
+function GptWithPluginStartOptions(): OptionItem[] {
+  return [CapabilityOptions.copilotPluginNewApi(), CapabilityOptions.copilotPluginApiSpec()];
+}
+
 export function officeAddinHostingQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.OfficeAddinHost,
@@ -1461,7 +1543,17 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
   if (capabilities === CapabilityOptions.SPFxTab().id) {
     // SPFx only supports typescript
     return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
-  } else if (capabilitiesHavePythonOption.includes(capabilities)) {
+  } else if (
+    capabilitiesHavePythonOption.includes(
+      inputs[capabilities] ? inputs[capabilities] : capabilities
+    ) &&
+    !(
+      capabilities == CapabilityOptions.customCopilotRag().id &&
+      (inputs[CapabilityOptions.customCopilotRag().id] ==
+        CustomCopilotRagOptions.microsoft365().id ||
+        inputs[CapabilityOptions.customCopilotRag().id] == CustomCopilotRagOptions.customApi().id)
+    )
+  ) {
     // support python language
     return [
       { id: ProgrammingLanguage.JS, label: "JavaScript" },
@@ -2045,16 +2137,7 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
     ),
     cliDescription: "The authentication type for the API.",
     staticOptions: ApiMessageExtensionAuthOptions.all(),
-    dynamicOptions: () => {
-      const options: OptionItem[] = [ApiMessageExtensionAuthOptions.none()];
-      if (isApiKeyEnabled()) {
-        options.push(ApiMessageExtensionAuthOptions.apiKey());
-      }
-      if (isApiMeSSOEnabled()) {
-        options.push(ApiMessageExtensionAuthOptions.microsoftEntra());
-      }
-      return options;
-    },
+    dynamicOptions: () => ApiMessageExtensionAuthOptions.all(),
     default: ApiMessageExtensionAuthOptions.none().id,
   };
 }
@@ -2088,13 +2171,9 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         );
       } else if (isPlugin) {
         placeholder = ""; // TODO: add placeholder for api plugin
-      } else if (isApiKeyEnabled()) {
-        placeholder = getLocalizedString(
-          "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
-        );
       } else {
         placeholder = getLocalizedString(
-          "core.createProjectQuestion.apiSpec.operation.placeholder"
+          "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
         );
       }
 
@@ -2208,10 +2287,10 @@ export class CustomCopilotRagOptions {
 
   static all(): OptionItem[] {
     return [
-      // CustomCopilotRagOptions.customize(),
+      CustomCopilotRagOptions.customize(),
       CustomCopilotRagOptions.azureAISearch(),
-      // CustomCopilotRagOptions.customApi(),
-      // CustomCopilotRagOptions.microsoft365(),
+      CustomCopilotRagOptions.customApi(),
+      CustomCopilotRagOptions.microsoft365(),
     ];
   }
 }
@@ -2350,6 +2429,19 @@ function azureOpenAIEndpointQuestion(): TextInputQuestion {
   };
 }
 
+function azureOpenAIDeploymentNameQuestion(): TextInputQuestion {
+  return {
+    type: "text",
+    name: QuestionNames.AzureOpenAIDeploymentName,
+    title: getLocalizedString(
+      "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.title"
+    ),
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.llmService.azureOpenAIDeploymentName.placeholder"
+    ),
+  };
+}
+
 export function capabilitySubTree(): IQTreeNode {
   const node: IQTreeNode = {
     data: capabilityQuestion(),
@@ -2405,6 +2497,11 @@ export function capabilitySubTree(): IQTreeNode {
           },
         ],
       },
+      // Customize GPT with plugin
+      {
+        condition: { equals: CapabilityOptions.customizeGptWithPlugin().id },
+        data: CustomizeGptWithPluginStartQuestion(),
+      },
       {
         // Search ME sub-tree
         condition: { equals: CapabilityOptions.m365SearchMe().id },
@@ -2415,6 +2512,8 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return (
             inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+            inputs[QuestionNames.CustomizeGptWithPluginStart] ===
+              CapabilityOptions.copilotPluginApiSpec().id ||
             inputs[QuestionNames.Capabilities] ===
               CapabilityOptions.copilotPluginOpenAIPlugin().id ||
             inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
@@ -2423,13 +2522,6 @@ export function capabilitySubTree(): IQTreeNode {
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
-            condition: (inputs: Inputs) => {
-              return (
-                inputs[QuestionNames.Capabilities] ===
-                  CapabilityOptions.copilotPluginApiSpec().id ||
-                inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
-              );
-            },
             data: apiSpecLocationQuestion(),
           },
           // {
@@ -2443,10 +2535,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       {
         condition: (inputs: Inputs) => {
-          return (
-            (isApiKeyEnabled() || isApiMeSSOEnabled()) &&
-            inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id
-          );
+          return inputs[QuestionNames.MeArchitectureType] == MeArchitectureOptions.newApi().id;
         },
         data: apiMessageExtensionAuthQuestion(),
       },
@@ -2491,6 +2580,9 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
             inputs[QuestionNames.Capabilities] !==
               CapabilityOptions.copilotPluginOpenAIPlugin().id &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
+            inputs[QuestionNames.CustomizeGptWithPluginStart] !==
+              CapabilityOptions.copilotPluginApiSpec().id &&
             inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id
@@ -2516,6 +2608,14 @@ export function capabilitySubTree(): IQTreeNode {
                   return inputs[QuestionNames.AzureOpenAIKey]?.length > 0;
                 },
                 data: azureOpenAIEndpointQuestion(),
+                children: [
+                  {
+                    condition: (inputs: Inputs) => {
+                      return inputs[QuestionNames.AzureOpenAIEndpoint]?.length > 0;
+                    },
+                    data: azureOpenAIDeploymentNameQuestion(),
+                  },
+                ],
               },
             ],
           },
@@ -2544,6 +2644,9 @@ export function capabilitySubTree(): IQTreeNode {
         data: appNameQuestion(),
       },
     ],
+    condition: (inputs: Inputs) => {
+      return inputs[QuestionNames.ProjectType] !== ProjectTypeOptions.startWithGithubCopilot().id;
+    },
   };
   return node;
 }

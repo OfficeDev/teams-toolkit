@@ -51,9 +51,16 @@ export async function ensureExtensionActivated(): Promise<void> {
           const sidebar = await driver.findElement(
             By.id("workbench.parts.sidebar")
           );
-          const welcomeView = await sidebar.findElement(
-            By.className("welcome-view-content")
-          );
+          let welcomeView: WebElement;
+          try {
+            welcomeView = await sidebar.findElement(
+              By.className("welcome-view-content")
+            );
+          } catch (error) {
+            welcomeView = await sidebar.findElement(
+              By.className("split-view-container")
+            );
+          }
           if (welcomeView) {
             const welcomeContent = await welcomeView.getText();
             if (welcomeContent.includes(Extension.sidebarWelcomeContentName)) {
@@ -75,7 +82,10 @@ export async function ensureExtensionActivated(): Promise<void> {
               .getText();
             const treeViewActivated =
               sectionTitle === Extension.activatedItemName &&
-              sectionText.includes(Extension.sidebarCommandContentName);
+              (sectionText.includes(Extension.sidebarCommandContentName) ||
+                sectionText.includes(
+                  Extension.sidebarCommandContentNameOfficeDev
+                ));
             if (treeViewActivated) {
               // wait for activation
               await driver.sleep(Timeout.shortTimeLoading);
@@ -863,8 +873,9 @@ export async function createNewProject(
       break;
     }
     case "aichat": {
-      await input.selectQuickPick(CreateProjectQuestion.Bot);
-      await input.selectQuickPick("AI Chat Bot");
+      await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("Basic AI Chatbot");
       await driver.sleep(Timeout.input);
       // Choose programming language
       if (lang) {
@@ -872,11 +883,27 @@ export async function createNewProject(
       } else {
         await input.selectQuickPick("JavaScript");
       }
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("Azure OpenAI");
+      await driver.sleep(Timeout.input);
+      // input fake Azure OpenAI Key
+      await input.setText("fake");
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
+      // input fake Azure OpenAI Endpoint
+      await input.setText("https://test.com");
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
       break;
     }
     case "aiassist": {
-      await input.selectQuickPick(CreateProjectQuestion.Bot);
-      await input.selectQuickPick("AI Assistant Bot");
+      await input.selectQuickPick(CreateProjectQuestion.CustomCopilot);
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("AI Agent");
+      await driver.sleep(Timeout.input);
+      await input.selectQuickPick("Build with Assistants API");
       await driver.sleep(Timeout.input);
       // Choose programming language
       if (lang) {
@@ -884,6 +911,12 @@ export async function createNewProject(
       } else {
         await input.selectQuickPick("JavaScript");
       }
+      await driver.sleep(Timeout.input);
+      // input fake OpenAI Key
+      await input.setText("fake");
+      await driver.sleep(Timeout.input);
+      await input.confirm();
+      await driver.sleep(Timeout.input);
       break;
     }
     case "msgnewapi": {

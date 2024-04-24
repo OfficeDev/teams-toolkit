@@ -10,6 +10,7 @@ import * as fs from "fs-extra";
 import * as globalVariables from "../../src/globalVariables";
 import { Uri } from "vscode";
 import * as globalState from "@microsoft/teamsfx-core/build/common/globalState";
+import { extractMethodNamesFromErrorStack, maskSecret } from "@microsoft/teamsfx-core";
 
 chai.use(spies);
 const spy = chai.spy;
@@ -151,8 +152,8 @@ describe("ExtTelemetry", () => {
           "settings-version": "1.0.0",
           "error-type": "user",
           "error-name": "UserTestError",
-          // "error-message": error.message,
-          // "error-stack": error.stack,
+          "err-message": maskSecret(error.message),
+          "err-stack": extractMethodNamesFromErrorStack(error.stack),
           "error-code": "test.UserTestError",
           "error-component": "",
           "error-method": "",

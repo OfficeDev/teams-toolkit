@@ -127,9 +127,21 @@ export async function openReportIssues(args?: any[]): Promise<Result<boolean, Fx
 }
 
 export async function openScriptLabLink(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_scriptLab",
+  });
   return VS_CODE_UI.openUrl(
     "https://learn.microsoft.com/office/dev/add-ins/overview/explore-with-script-lab"
   );
+}
+
+export async function openPromptLibraryLink(args?: any[]): Promise<Result<boolean, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, {
+    ...getTriggerFromProperty(args),
+    [TelemetryProperty.DocumentationName]: "office_promptLibrary",
+  });
+  return VS_CODE_UI.openUrl("https://aka.ms/OfficeAddinsPromptLibrary");
 }
 
 export function validateOfficeAddInManifest(args?: any[]): Promise<Result<null, FxError>> {

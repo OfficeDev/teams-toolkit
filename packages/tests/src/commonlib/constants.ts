@@ -167,4 +167,8 @@ export class EnvConstants {
   static readonly FUNCTION_ID_2 = "API_FUNCTION_RESOURCE_ID";
   static readonly FUNCTION_ENDPOINT = "FUNCTION_ENDPOINT";
   static readonly FUNCTION_ENDPOINT_2 = "API_FUNCTION_ENDPOINT";
+  // Container App
+  static readonly AZURE_CONTAINER_APP_NAME = "AZURE_CONTAINER_APP_NAME";
+  static readonly AZURE_CONTAINER_APP_RESOURCE_ID =
+    "AZURE_CONTAINER_APP_RESOURCE_ID";
 }

@@ -7,6 +7,7 @@ import { TOOLS, globalVars } from "../core/globalVars";
 import { ProjectTypeResult } from "./projectTypeChecker";
 import { assign } from "lodash";
 import { ProjectType } from "@microsoft/m365-spec-parser";
+import { maskSecret } from "./stringUtils";
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -62,6 +63,14 @@ export enum TelemetryProperty {
   RscDelegated = "rsc-delegated",
 
   AadManifest = "aad-manifest",
+
+  CustomCopilotAgent = "custom-copilot-agent",
+  CustomCopilotRAG = "custom-copilot-rag",
+  LlmService = "llm-service",
+  HasAzureOpenAIKey = "has-azure-openai-key",
+  HasAzureOpenAIEndpoint = "has-azure-openai-endpoint",
+  HasAzureOpenAIDeploymentName = "has-azure-openai-deployment-name",
+  HasOpenAIKey = "has-openai-key",
 }
 
 export enum TelemetryEvent {
@@ -241,8 +250,10 @@ export function fillInTelemetryPropsForFxError(
   props[TelemetryConstants.properties.errorCode] =
     props[TelemetryConstants.properties.errorCode] || errorCode;
   props[TelemetryConstants.properties.errorType] = errorType;
-  // props[TelemetryConstants.properties.errorMessage] = error.message;  // error-message is retired
-  // props[TelemetryConstants.properties.errorStack] = error.stack !== undefined ? error.stack : ""; // error stack will not append in error-message any more
+  props[TelemetryConstants.properties.errorMessage] = error.skipProcessInTelemetry
+    ? error.message
+    : maskSecret(error.message);
+  props[TelemetryConstants.properties.errorStack] = extractMethodNamesFromErrorStack(error.stack); // error stack will not append in error-message any more
   props[TelemetryConstants.properties.errorName] = error.name;
 
   // append global context properties
@@ -289,4 +300,15 @@ export function fillinProjectTypeProperties(
     [ProjectTypeProps.OfficeAddinProjectType]: projectTypeRes.officeAddinProjectType || "",
   };
   assign(props, newProps);
+}
+
+export function extractMethodNamesFromErrorStack(stack?: string): string {
+  if (!stack) return "";
+  const methodNamesRegex = /at\s([\w.<>\[\]\s]+)\s\(/g;
+  let match;
+  const methodNames: string[] = [];
+  while ((match = methodNamesRegex.exec(stack)) !== null) {
+    methodNames.push(match[1]);
+  }
+  return methodNames.join(" | ");
 }

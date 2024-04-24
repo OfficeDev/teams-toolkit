@@ -365,7 +365,13 @@ export interface ITogetherModeScene {
 }
 
 export interface IPlugin {
-  pluginFile: string;
+  file: string;
+  id: string;
+}
+
+export interface ICopilotGpt {
+  file: string;
+  id: string;
 }
 
 export type AppManifest = Record<string, any>;
@@ -548,4 +554,8 @@ export class TeamsAppManifest implements AppManifest {
    * Pointer to plugin manifest.
    */
   plugins?: IPlugin[];
+  /**
+   * Pointer to copilot GPTs.
+   */
+  copilotGpts?: ICopilotGpt[];
 }

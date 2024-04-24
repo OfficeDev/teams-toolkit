@@ -21,7 +21,11 @@ function filterFiles(dir, fileList = [], filter = () => true) {
 }
 
 function filterYmlFiles(dir, fileList = []) {
-  return filterFiles(dir, fileList, (file) => file.endsWith(Ext.Yml) || file.endsWith(Ext.YmlTpl));
+  return filterFiles(
+    dir,
+    fileList,
+    (file) => file.startsWith("teamsapp") && (file.endsWith(Ext.Yml) || file.endsWith(Ext.YmlTpl))
+  );
 }
 
 function filterMustacheFiles(dir, fileList = []) {

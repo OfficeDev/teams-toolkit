@@ -8,7 +8,7 @@ import { OpenAPIV3 } from "openapi-types";
 import sinon from "sinon";
 import { SpecParserError } from "../src/specParserError";
 import { ErrorType, ParseOptions, ProjectType } from "../src/interfaces";
-import { Utils } from "../src/utils";
+import { ValidatorFactory } from "../src/validators/validatorFactory";
 
 describe("specFilter", () => {
   afterEach(() => {
@@ -479,7 +479,7 @@ describe("specFilter", () => {
     expect(clonedSpec).to.deep.equal(unResolveSpec);
   });
 
-  it("should throw a SpecParserError if isSupportedApi throws an error", () => {
+  it("should throw a SpecParserError if ValidatorFactory throws an error", () => {
     const filter = ["GET /hello"];
     const unResolveSpec = {
       openapi: "3.0.0",
@@ -500,9 +500,8 @@ describe("specFilter", () => {
         },
       },
     } as any;
-    const isSupportedApiStub = sinon
-      .stub(Utils, "isSupportedApi")
-      .throws(new Error("isSupportedApi error"));
+
+    sinon.stub(ValidatorFactory, "create").throws(new Error("ValidatorFactory create error"));
 
     try {
       const options: ParseOptions = {
@@ -519,7 +518,7 @@ describe("specFilter", () => {
     } catch (err: any) {
       expect(err).to.be.instanceOf(SpecParserError);
       expect(err.errorType).to.equal(ErrorType.FilterSpecFailed);
-      expect(err.message).to.equal("Error: isSupportedApi error");
+      expect(err.message).to.equal("Error: ValidatorFactory create error");
     }
   });
 });

@@ -18,7 +18,7 @@
       "value": "{{appName}}"
     },
     "staticWebAppSku": {
-      "value": "Free",
+      "value": "Free"
     }
   }
 }

@@ -119,6 +119,7 @@ class CLIUserInteraction implements UserInteraction {
         type: "input",
         name: name,
         message: message,
+        default: defaultValue,
         validate: validate,
       },
     ]);

@@ -53,6 +53,8 @@ export const CreateProjectOptions: CLICommandOption[] = [
       "message-extension",
       "BotAndMessageExtension",
       "TabNonSsoAndBot",
+      "customize-gpt-basic",
+      "customize-gpt-with-plugin",
       "json-taskpane",
       "office-content-addin",
       "word-taskpane",
@@ -121,6 +123,12 @@ export const CreateProjectOptions: CLICommandOption[] = [
     description: "Directory or Path that contains the existing SharePoint Framework solution.",
   },
   {
+    name: "customize-gpt-with-plugin-start",
+    type: "string",
+    description: "Copilot Plugin.",
+    choices: ["copilot-plugin-new-api", "copilot-plugin-existing-api"],
+  },
+  {
     name: "me-architecture",
     type: "string",
     shortName: "m",
@@ -152,7 +160,12 @@ export const CreateProjectOptions: CLICommandOption[] = [
     type: "string",
     description: "Chat With Your Data",
     default: "custom-copilot-rag-customize",
-    choices: ["custom-copilot-rag-azureAISearch"],
+    choices: [
+      "custom-copilot-rag-customize",
+      "custom-copilot-rag-azureAISearch",
+      "custom-copilot-rag-customApi",
+      "custom-copilot-rag-microsoft365",
+    ],
   },
   {
     name: "custom-copilot-agent",
@@ -185,6 +198,11 @@ export const CreateProjectOptions: CLICommandOption[] = [
     name: "azure-openai-endpoint",
     type: "string",
     description: "Azure OpenAI Endpoint",
+  },
+  {
+    name: "azure-openai-deployment-name",
+    type: "string",
+    description: "Azure OpenAI Deployment Name",
   },
   {
     name: "openai-key",

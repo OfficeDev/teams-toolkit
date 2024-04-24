@@ -50,6 +50,7 @@ import { TelemetryPropertyKey } from "./telemetry";
 import { WrapDriverContext } from "../../util/wrapUtil";
 import { hooks } from "@feathersjs/hooks";
 import { ErrorContextMW } from "../../../../core/globalVars";
+import { getCapabilities as checkManifestCapabilities } from "../../../../common/projectTypeChecker";
 
 export class ManifestUtils {
   async readAppManifest(projectPath: string): Promise<Result<TeamsAppManifest, FxError>> {
@@ -252,20 +253,7 @@ export class ManifestUtils {
     }
   }
   public getCapabilities(template: TeamsAppManifest): string[] {
-    const capabilities: string[] = [];
-    if (template.staticTabs && template.staticTabs.length > 0) {
-      capabilities.push("staticTab");
-    }
-    if (template.configurableTabs && template.configurableTabs.length > 0) {
-      capabilities.push("configurableTab");
-    }
-    if (template.bots && template.bots.length > 0) {
-      capabilities.push("Bot");
-    }
-    if (template.composeExtensions) {
-      capabilities.push("MessageExtension");
-    }
-    return capabilities;
+    return checkManifestCapabilities(template);
   }
 
   /**
@@ -286,7 +274,7 @@ export class ManifestUtils {
     manifest: TeamsAppManifest,
     manifestPath: string
   ): Promise<Result<string, FxError>> {
-    const pluginFile = manifest.plugins?.[0]?.pluginFile;
+    const pluginFile = manifest.plugins?.[0]?.file;
     if (pluginFile) {
       const plugin = path.resolve(path.dirname(manifestPath), pluginFile);
       const doesFileExist = await fs.pathExists(plugin);

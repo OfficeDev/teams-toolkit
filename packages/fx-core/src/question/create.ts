@@ -201,8 +201,8 @@ export class ProjectTypeOptions {
   static customizeGpt(): OptionItem {
     return {
       id: "customize-gpt-type",
-      label: "Customize GPT", // TODO: localize until we have an idea for naming
-      detail: "Author a Copilot GPT",
+      label: getLocalizedString("core.createProjectQuestion.projectType.gpt.label"),
+      detail: getLocalizedString("core.createProjectQuestion.projectType.gpt.detail"),
       groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
     };
   }
@@ -865,16 +865,20 @@ export class CapabilityOptions {
   static customizeGptBasic(): OptionItem {
     return {
       id: "customize-gpt-basic",
-      label: "Basic GPT",
-      detail: "A simple GPT skeleton you can author without any plugin",
+      label: getLocalizedString("core.createProjectQuestion.capability.basicCustomizeGpt.label"),
+      detail: getLocalizedString("core.createProjectQuestion.capability.basicCustomizeGpt.detail"),
     };
   }
 
   static customizeGptWithPlugin(): OptionItem {
     return {
       id: "customize-gpt-with-plugin",
-      label: "GPT with a plugin",
-      detail: "A GPT containing a Copilot plugin",
+      label: getLocalizedString(
+        "core.createProjectQuestion.capability.customizeGptWithPlugin.label"
+      ),
+      detail: getLocalizedString(
+        "core.createProjectQuestion.capability.customizeGptWithPlugin.detail"
+      ),
     };
   }
 }
@@ -921,7 +925,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         case ProjectTypeOptions.customCopilot().id:
           return getLocalizedString("core.createProjectQuestion.projectType.customCopilot.title");
         case ProjectTypeOptions.customizeGpt().id:
-          return "Choose the GPT type";
+          return getLocalizedString("core.createProjectQuestion.projectType.gpt.title");
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }

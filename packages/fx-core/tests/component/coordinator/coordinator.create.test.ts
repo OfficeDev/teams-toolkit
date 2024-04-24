@@ -877,7 +877,6 @@ const V3Version = MetadataV3.projectVersion;
         [QuestionNames.CustomCopilotAssistant]: CustomCopilotAssistantOptions.new().id,
         [QuestionNames.ApiSpecLocation]: "spec",
         [QuestionNames.ApiOperation]: "test",
-        [QuestionNames.LLMService]: "llm-service-azure-openai",
         [QuestionNames.AzureOpenAIKey]: "mockedAzureOpenAIKey",
         [QuestionNames.AzureOpenAIEndpoint]: "mockedAzureOpenAIEndpoint",
         [QuestionNames.AzureOpenAIDeploymentName]: "mockedAzureOpenAIDeploymentName",

@@ -20,7 +20,7 @@ import {
   AppPackageFolderName,
   Warning,
   ApiOperation,
-  ApiKeyAuthInfo,
+  AuthInfo,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
@@ -84,6 +84,7 @@ const enum telemetryProperties {
   templateName = "template-name",
   generateType = "generate-type",
   isRemoteUrlTelemetryProperty = "remote-url",
+  authType = "auth-type",
 }
 
 function normalizePath(path: string): string {
@@ -222,7 +223,7 @@ export class CopilotPluginGenerator {
     templateName: string,
     componentName: string,
     isPlugin: boolean,
-    apiKeyAuthData?: ApiKeyAuthInfo
+    authData?: AuthInfo
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
@@ -257,17 +258,15 @@ export class CopilotPluginGenerator {
       const openapiSpecFileName = isYaml ? apiSpecYamlFileName : apiSpecJsonFileName;
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
-      if (apiKeyAuthData?.authName) {
-        const envName = Utils.getSafeRegistrationIdEnvName(
-          `${apiKeyAuthData.authName}_REGISTRATION_ID`
-        );
+      if (authData?.authName) {
+        const envName = Utils.getSafeRegistrationIdEnvName(`${authData.authName}_REGISTRATION_ID`);
         context.templateVariables = Generator.getDefaultVariables(
           appName,
           safeProjectNameFromVS,
           inputs.targetFramework,
           inputs.placeProjectFileInSolutionDir === "true",
           {
-            authName: apiKeyAuthData.authName,
+            authName: authData.authName,
             openapiSpecPath: normalizePath(
               path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
             ),
@@ -298,6 +297,7 @@ export class CopilotPluginGenerator {
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
         [telemetryProperties.generateType]: type.toString(),
+        [telemetryProperties.authType]: authData?.authName ?? "None",
       });
 
       // validate API spec

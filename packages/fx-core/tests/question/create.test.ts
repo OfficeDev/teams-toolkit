@@ -2386,6 +2386,7 @@ describe("scaffold question", () => {
               data: {
                 authName: "bearerAuth",
                 serverUrl: "https://server",
+                authType: "apiKey",
               },
             },
             {
@@ -2404,6 +2405,8 @@ describe("scaffold question", () => {
               groupName: "GET",
               data: {
                 serverUrl: "https://server",
+                authType: "oauth2",
+                authName: "authName",
               },
             },
             {
@@ -2469,6 +2472,7 @@ describe("scaffold question", () => {
               data: {
                 authName: "bearerAuth",
                 serverUrl: "https://server",
+                authType: "apiKey",
               },
             },
             {

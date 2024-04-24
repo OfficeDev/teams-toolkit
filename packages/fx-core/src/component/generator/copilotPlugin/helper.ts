@@ -300,13 +300,16 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
       },
     };
 
-    if (
-      operation.auth &&
-      operation.auth.authScheme.type === "http" &&
-      operation.auth.authScheme.scheme === "bearer"
-    ) {
-      result.data.authName = operation.auth.name;
+    if (operation.auth) {
+      if (Utils.isBearerTokenAuth(operation.auth.authScheme)) {
+        result.data.authType = "apiKey";
+        result.data.authName = operation.auth.name;
+      } else if (Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)) {
+        result.data.authType = "oauth2";
+        result.data.authName = operation.auth.name;
+      }
     }
+
     operationsWithSeparator.push(result);
   }
 

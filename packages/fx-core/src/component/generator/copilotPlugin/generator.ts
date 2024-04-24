@@ -40,6 +40,7 @@ import {
   invalidApiSpecErrorName,
   copilotPluginParserOptions,
   updateForCustomApi,
+  getEnvName,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -259,7 +260,7 @@ export class CopilotPluginGenerator {
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
       if (authData?.authName) {
-        const envName = Utils.getSafeRegistrationIdEnvName(`${authData.authName}_REGISTRATION_ID`);
+        const envName = getEnvName(authData.authName, authData.authType);
         context.templateVariables = Generator.getDefaultVariables(
           appName,
           safeProjectNameFromVS,
@@ -271,6 +272,7 @@ export class CopilotPluginGenerator {
               path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
             ),
             registrationIdEnvName: envName,
+            authType: authData.authType,
           }
         );
       } else {

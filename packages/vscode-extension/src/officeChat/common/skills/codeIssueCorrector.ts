@@ -29,10 +29,7 @@ import {
   getFixIssueUserPrompt,
   getGenerateCodeSamplePrompt,
 } from "../../officePrompts";
-import { add } from "lodash";
 import { localize } from "../../../utils/localizeUtils";
-import { SampleData } from "../samples/sampleData";
-import { SampleProvider } from "../samples/sampleProvider";
 import { getTokenLimitation } from "../../consts";
 
 export class CodeIssueCorrector implements ISkill {
@@ -80,17 +77,17 @@ export class CodeIssueCorrector implements ISkill {
     let issueTolerance: number;
 
     if (spec.appendix.complexity < 25) {
-      maxRetryCount = 3;
-      issueTolerance = 3;
+      maxRetryCount = 2;
+      issueTolerance = 2;
     } else if (spec.appendix.complexity < 50) {
+      maxRetryCount = 2;
+      issueTolerance = 2;
+    } else if (spec.appendix.complexity < 75) {
       maxRetryCount = 3;
       issueTolerance = 3;
-    } else if (spec.appendix.complexity < 75) {
-      maxRetryCount = 4;
-      issueTolerance = 4;
     } else {
-      maxRetryCount = 4;
-      issueTolerance = 4;
+      maxRetryCount = 3;
+      issueTolerance = 3;
     }
 
     if (baseLineResuult.compileErrors.length === 0 && baseLineResuult.runtimeErrors.length === 0) {
@@ -106,30 +103,10 @@ export class CodeIssueCorrector implements ISkill {
     }
 
     let samplesPrompt = getGenerateCodeSamplePrompt();
-    const scenarioSamples = new Map<string, SampleData>();
-    // Then let's query if any code examples relevant to the user's ask that we can put as examples
-    for (const task of codeTaskBreakdown) {
-      if (task.includes("function named 'main'")) {
-        continue;
-      }
 
-      const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesLLM(
-        token,
-        host,
-        task,
-        2 // Get top 2 most relevant samples for now
-      );
-
-      for (const [key, value] of samples) {
-        if (!scenarioSamples.has(key)) {
-          scenarioSamples.set(key, value);
-        }
-      }
-    }
-
-    if (scenarioSamples.size > 0) {
+    if (spec.appendix.apiDeclarationsReference.size > 0) {
       const codeSnippets: string[] = [];
-      scenarioSamples.forEach((sample, api) => {
+      spec.appendix.apiDeclarationsReference.forEach((sample, api) => {
         console.debug(`[Code corrector] Sample matched: ${sample.description}`);
         codeSnippets.push(`
 - ${sample.description}:
@@ -190,8 +167,6 @@ ${sample.codeSample}
           fixedCode,
           spec.appendix.telemetryData
         );
-      // await writeLogToFile("\n# compileErrors:\n" + issuesAfterFix.compileErrors.join("\n\n"));
-      // await writeLogToFile("\n# runtimeErrors:\n" + issuesAfterFix.runtimeErrors.join("\n\n"));
       historicalErrors.push(
         ...baseLineResuult.compileErrors.map(
           (item) => item.replace(/at Char \d+-\d+:/g, "").split("\nFix suggestion")[0]

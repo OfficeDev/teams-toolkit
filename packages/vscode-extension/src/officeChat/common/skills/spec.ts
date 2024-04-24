@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { SampleData } from "../samples/sampleData";
 import { deepClone } from "../utils";
 
 export class Spec {
@@ -14,12 +15,15 @@ export class Spec {
     codeSnippet: string;
     codeExplanation: string;
     codeTaskBreakdown: string[];
+    codeSample: string;
+    apiDeclarationsReference: Map<string, SampleData>;
     isCustomFunction: boolean;
     telemetryData: {
       properties: { [key: string]: string };
       measurements: { [key: string]: number };
     };
     complexity: number;
+    shouldContinue: boolean;
   };
 
   constructor(userInput: string) {
@@ -33,12 +37,15 @@ export class Spec {
       codeSnippet: "",
       codeExplanation: "",
       codeTaskBreakdown: [],
+      codeSample: "",
+      apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: false,
       telemetryData: {
         properties: {},
         measurements: {},
       },
       complexity: 0,
+      shouldContinue: false,
     };
   }
 

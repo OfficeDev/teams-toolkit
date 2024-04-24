@@ -129,6 +129,7 @@ export class Planner {
       spec.appendix.telemetryData.properties,
       spec.appendix.telemetryData.measurements
     );
+    console.log("User ask processing time cost: ", duration, " seconds.");
 
     return chatResult;
   }

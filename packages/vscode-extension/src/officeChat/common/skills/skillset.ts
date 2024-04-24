@@ -37,12 +37,12 @@ export class SkillSet implements ISkill {
       return { result: ExecutionResultEnum.Success, spec: spec };
     }
     const specCopy = new Spec("");
+    specCopy.clone(spec);
     let retried = 0;
     let isSuccessed = true;
     let isFailedAndGoNext = false;
     while (retried < this.retriableTimes) {
       retried++;
-      specCopy.clone(spec);
 
       for (const skill of this.skills) {
         if (!skill.canInvoke(specCopy)) {
@@ -64,8 +64,8 @@ export class SkillSet implements ISkill {
         }
         if (result === ExecutionResultEnum.Success) {
           isSuccessed = true;
-          specCopy.clone(newSpec);
         }
+        specCopy.clone(newSpec);
       }
 
       if (isSuccessed) {

@@ -35,7 +35,7 @@ export class LaunchHelper {
     switch (hub) {
       case HubTypes.teams: {
         let installAppPackage = true;
-        if (capabilities.includes("plugin")) {
+        if (capabilities.length === 1 && capabilities.includes("plugin")) {
           installAppPackage = false;
         }
         const baseUrl = installAppPackage

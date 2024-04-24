@@ -118,7 +118,7 @@ describe("LaunchHelper", () => {
       const result = await launchHelper.getLaunchUrl(
         HubTypes.teams,
         "test-id",
-        ["MessageExtension", "Bot"],
+        ["MessageExtension", "Bot", "plugin"],
         true
       );
       chai.assert(result.isOk());

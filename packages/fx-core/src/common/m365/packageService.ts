@@ -255,13 +255,10 @@ export class PackageService {
     } catch (error: any) {
       this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
-        // this.logger?.error(JSON.stringify(error.response.data));
         if (error.response.status === 404) {
           throw new NotExtendedToM365Error(M365ErrorSource);
         }
         error = this.traceError(error);
-      } else {
-        // this.logger?.error(error.message);
       }
       throw assembleError(error, M365ErrorSource);
     }
@@ -295,14 +292,9 @@ export class PackageService {
       });
       this.logger?.verbose("Unacquiring done.");
     } catch (error: any) {
-      // this.logger?.error("Unacquire failed.");
       if (error.response) {
-        // this.logger?.error(JSON.stringify(error.response.data));
         error = this.traceError(error);
-      } else {
-        // this.logger?.error(error.message);
       }
-
       throw assembleError(error, M365ErrorSource);
     }
   }
@@ -328,14 +320,9 @@ export class PackageService {
       this.logger?.info(JSON.stringify(launchInfo.data));
       return launchInfo.data;
     } catch (error: any) {
-      // this.logger?.error("Get LaunchInfo failed.");
       if (error.response) {
-        // this.logger?.error(JSON.stringify(error.response.data));
         error = this.traceError(error);
-      } else {
-        // this.logger?.error(error.message);
       }
-
       throw assembleError(error, M365ErrorSource);
     }
   }
@@ -377,14 +364,9 @@ export class PackageService {
 
       return activeExperiences;
     } catch (error: any) {
-      // this.logger?.error("Fail to get active experiences.");
       if (error.response) {
-        // this.logger?.error(JSON.stringify(error.response.data));
         error = this.traceError(error);
-      } else {
-        // this.logger?.error(error.message);
       }
-
       throw assembleError(error, M365ErrorSource);
     }
   }

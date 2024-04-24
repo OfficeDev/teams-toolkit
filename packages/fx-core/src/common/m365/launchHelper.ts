@@ -35,12 +35,7 @@ export class LaunchHelper {
     switch (hub) {
       case HubTypes.teams: {
         let installAppPackage = true;
-        if (
-          (!capabilities.includes("staticTab") &&
-            !capabilities.includes("configurableTab") &&
-            !capabilities.includes("Bot")) ||
-          (capabilities.length === 1 && capabilities.includes("plugin"))
-        ) {
+        if (capabilities.includes("plugin")) {
           installAppPackage = false;
         }
         const baseUrl = installAppPackage

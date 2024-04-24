@@ -82,7 +82,7 @@ enum OpenAIPluginManifestErrorType {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: false,
+  allowBearerTokenAuth: isCopilotAuthEnabled(),
   allowMultipleParameters: true,
   allowOauth2: isCopilotAuthEnabled(),
   projectType: ProjectType.Copilot,

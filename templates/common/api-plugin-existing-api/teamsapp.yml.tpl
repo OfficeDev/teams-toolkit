@@ -17,7 +17,23 @@ provision:
     writeToEnvironmentFile:
       teamsAppId: TEAMS_APP_ID
 
-{{#AuthType}}
+{{#ApiKey}}
+  # Register API KEY
+  - uses: apiKey/register
+    with:
+      # Name of the API Key
+      name: {{ApiSpecAuthName}}
+      # Teams app ID
+      appId: ${{TEAMS_APP_ID}}
+      # Path to OpenAPI description document
+      apiSpecPath: {{{ApiSpecPath}}}
+    # Write the registration information of API Key into environment file for
+    # the specified environment variable(s).
+    writeToEnvironmentFile:
+      registrationId: {{ApiSpecAuthRegistrationIdEnvName}}
+{{/ApiKey}}
+
+{{#OAuth}}
   - uses: oauth/register
     with:
       name: {{ApiSpecAuthName}}
@@ -28,7 +44,7 @@ provision:
       apiSpecPath: {{{ApiSpecPath}}}
     writeToEnvironmentFile:
       configurationId: {{ApiSpecAuthRegistrationIdEnvName}}
-{{/AuthType}}
+{{/OAuth}}
 
   # Build Teams app package with latest env value
   - uses: teamsApp/zipAppPackage

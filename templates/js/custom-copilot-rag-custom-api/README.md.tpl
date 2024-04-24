@@ -1,20 +1,13 @@
-# Overview of the Custom Copilot from Custom API template
+# Overview of the Chat With Your Data (Using Custom API) template
 
-This template showcases an AI-powered intelligent chatbot that can understand natural language to invoke the API defined in the OpenAPI description document.
-
+This template showcases how to build an AI-powered intelligent chatbot that can understand natural language to invoke the API defined in the OpenAPI description document, so you can enable your users to chat with the data provided through API service.
 The app template is built using the Teams AI library, which provides the capabilities to build AI-based Teams applications.
- 
-- [Overview of the Custom Copilot from Custom API template](#overview-of-the-basic-ai-chatbot-template)
-  - [Get started with the Custom Copilot from Custom API template](#get-started-with-the-basic-ai-chatbot-template)
-  - [What's included in the template](#whats-included-in-the-template)
-  - [Extend the Custom Copilot from Custom API template with more APIs](#extend-the-custom-copilot-from-custom-api-template-with-more-apis)
-  - [Additional information and references](#additional-information-and-references)
 
-## Get started with the Custom Copilot from Custom API template
+## Get started with the template
 
 > **Prerequisites**
 >
-> To run the Custom Copilot from Custom API template in your local dev machine, you will need:
+> To run the template in your local dev machine, you will need:
 >
 > - [Node.js](https://nodejs.org/), supported versions: 16, 18
 {{^enableTestToolByDefault}}
@@ -80,7 +73,7 @@ The following files can be customized and demonstrate an example implementation 
 |`src/config.js`| Defines the environment variables.|
 |`src/prompts/chat/skprompt.txt`| Defines the prompt.|
 |`src/prompts/chat/config.json`| Configures the prompt.|
-|`src.primpts/chat/actions.json`| List of available actions.| 
+|`src.prompts/chat/actions.json`| List of available actions.| 
 |`src/app/app.js`| Handles business logics for the AI bot.|
 |`src/app/utility.js`| Utility methods for the AI bot.|
 
@@ -92,75 +85,13 @@ The following are Teams Toolkit specific project files. You can [visit a complet
 |`teamsapp.local.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging.|
 |`teamsapp.testtool.yml`|This overrides `teamsapp.yml` with actions that enable local execution and debugging in Teams App Test Tool.|
 
-## Extend the Custom Copilot from Custom API template with more APIs
+## Extend the template
 
-You can follow the following steps to extend the Custom Copilot from Custom API template with more APIs.
-
-1. Update `./appPackage/apiSpecificationFile/openapi.*`
-
-    Copy corresponding part of the API you want to add from your spec, and append to `./appPackage/apiSpecificationFile/openapi.*`.
-
-1. Update `./src/prompts/chat/actions.json`
-
-    Fill necessary info and properties for path, query and/or body for the API in the following object, and add it in the array in `./src/prompts/chat/actions.json`.
-    ```
-    {
-      "name": "${{YOUR-API-NAME}}",
-      "description": "${{YOUR-API-DESCRIPTION}}",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "query": {
-            "type": "object",
-            "properties": {
-              "${{YOUR-PROPERTY-NAME}}": {
-                "type": "${{YOUR-PROPERTY-TYPE}}",
-                "description": "${{YOUR-PROPERTY-DESCRIPTION}}",
-              }
-              // You can add more query properties here
-            }
-          },
-          "path": {
-            // Same as query properties
-          },
-          "body": {
-            // Same as query properties
-          }
-        }
-      }
-    }
-    ```
-
-1. Update `./src/adaptiveCards`
-
-    Create a new file with name `${{YOUR-API-NAME}}.json`, and fill in the adaptive card for the API response of your API.
-
-1. Update `./src/app/app.js`
-
-    Add following code before `module.exports = app;`. Remember to replace necessary info.
-
-    ```
-    app.ai.action(${{YOUR-API-NAME}}, async (context: TurnContext, state: ApplicationTurnState, parameter: any) => {
-      const client = await api.getClient();
-      
-      const path = client.paths[${{YOUR-API-PATH}}];
-      if (path && path.${{YOUR-API-METHOD}}) {
-        const result = await path.${{YOUR-API-METHOD}}(parameter.path, parameter.body, {
-          params: parameter.query,
-        });
-        const card = generateAdaptiveCard("../adaptiveCards/${{YOUR-API-NAME}}.json", result);
-        await context.sendActivity({ attachments: [card] });
-      } else {
-        await context.sendActivity("no result");
-      }
-      return "result";
-    });
-    ```
-
-1. Run `Local Debug` or `Provision` and `Deploy` to run this app again.
+- Follow [Build a Basic AI Chatbot in Teams](https://aka.ms/teamsfx-basic-ai-chatbot) to extend the template with more AI capabilities.
+- Understand more about [Azure AI Search as data source](https://aka.ms/teamsfx-rag-bot#microsoft-365-as-data-source).
 
 ## Additional information and references
-- [Teams AI library](https://aka.ms/teams-ai-library)
+
 - [Teams Toolkit Documentations](https://docs.microsoft.com/microsoftteams/platform/toolkit/teams-toolkit-fundamentals)
 - [Teams Toolkit CLI](https://aka.ms/teamsfx-toolkit-cli)
 - [Teams Toolkit Samples](https://github.com/OfficeDev/TeamsFx-Samples)

@@ -10,11 +10,10 @@ export interface OauthRegistration {
 
   clientId: string;
   clientSecret: string;
-  tenantId: string;
 
-  authorizationUrl: string;
-  tokenEndpoint: string;
-  refreshEndpoint: string;
+  authorizationEndpoint: string;
+  tokenExchangeEndpoint: string;
+  tokenRefreshEndpoint?: string;
   scopes: string[];
 
   /**
@@ -27,6 +26,11 @@ export interface OauthRegistration {
    */
   targetAudience?: OauthRegistrationTargetAudience;
   manageableByUsers?: OauthRegistrationUser[];
+
+  /**
+   * Currently max length 1
+   */
+  targetUrlsShouldStartWith: string[];
 }
 
 export enum OauthRegistrationAppType {

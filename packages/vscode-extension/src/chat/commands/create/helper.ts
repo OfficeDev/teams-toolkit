@@ -18,14 +18,13 @@ import {
   ChatRequest,
   ChatResponseFileTree,
   ChatResponseStream,
-  LanguageModelChatSystemMessage,
-  LanguageModelChatUserMessage,
+  LanguageModelChatMessage,
   Uri,
 } from "vscode";
-import { getProjectMatchSystemPrompt } from "../../prompts";
+import { getSampleMatchChatMessages, getTemplateMatchChatMessages } from "../../prompts";
 import { IChatTelemetryData } from "../../types";
 import {
-  countMessageTokens,
+  countMessagesTokens,
   getCopilotResponseAsString,
   getSampleDownloadUrlInfo,
 } from "../../utils";
@@ -33,7 +32,7 @@ import * as teamsTemplateMetadata from "./templateMetadata.json";
 import { ProjectMetadata } from "./types";
 
 const TOKEN_LIMITS = 2700;
-const SCORE_LIMIT = 0.8;
+const SCORE_LIMIT = 0.6;
 
 export async function matchProject(
   request: ChatRequest,
@@ -41,10 +40,12 @@ export async function matchProject(
   telemetryMetadata: IChatTelemetryData
 ): Promise<ProjectMetadata[]> {
   const allProjectMetadata = [...getTeamsTemplateMetadata(), ...(await getTeamsSampleMetadata())];
-  const matchedProjects = [
-    ...(await matchSamples(request, token, telemetryMetadata)),
-    ...(await matchTemplates(request, token, telemetryMetadata)),
-  ];
+  const matchedProjects = [...(await matchTemplates(request, token, telemetryMetadata))];
+  // using hard-coded "template" to narrow down search scope
+  if (!request.prompt.includes("template")) {
+    // also search in samples
+    matchedProjects.push(...(await matchSamples(request, token, telemetryMetadata)));
+  }
   matchedProjects.sort((a, b) => b.score - a.score);
   const result: ProjectMetadata[] = [];
   const matchedProjectIds = new Set<string>();
@@ -69,21 +70,24 @@ async function matchTemplates(
   const templateExamples = [
     {
       user: "an app shown in sharepoint",
-      app: "tab-spfx",
+      app: '{"app":[{"id":"tab-spfx","score":1.0}]}',
     },
     {
-      user: "a tab app",
-      app: "tab-non-sso",
+      user: "an office addin",
+      app: '{"app":[{"id":"outlook-addin-type","score":1.0}]}',
     },
     {
-      user: "a bot that accepts commands",
-      app: "command-bot",
+      user: "a bot app",
+      app: '{"app":[{"id":"bot","score":1.0},{"id":"notification","score":0.7},{"id":"command-bot","score": 0.8},{"id":"workflow-bot","score":0.8}]}',
+    },
+    {
+      user: "a Word addin",
+      app: '{"app": []}',
     },
   ];
   const templateMetadata = getTeamsTemplateMetadata();
   const matchedTemplates = await sendCopilotMatchRequest(
-    getProjectMatchSystemPrompt(templateMetadata, templateExamples),
-    request,
+    getTemplateMatchChatMessages(templateMetadata, templateExamples, request.prompt),
     token,
     telemetryMetadata
   );
@@ -99,11 +103,15 @@ async function matchSamples(
   const sampleExamples = [
     {
       user: "an app that manages to-do list and works in Outlook",
-      app: "todo-list-with-Azure-backend-M365",
+      app: '{"app": [{"id": "todo-list-with-Azure-backend-M365", "score": 1.0}]}',
     },
     {
       user: "an app to send notification to a lot of users",
-      app: "large-scale-notification",
+      app: '{"app": [{"id": "large-scale-notification", "score": 1.0}]}',
+    },
+    {
+      user: "a calculator app",
+      app: '{"app": []}',
     },
   ];
   const exampleIds = sampleExamples.map((example) => example.app);
@@ -117,20 +125,17 @@ async function matchSamples(
   while (index < remainingSampleMetadata.length) {
     projectMetadata.push(remainingSampleMetadata[index]);
     index += 1;
-    const systemPrompt = getProjectMatchSystemPrompt(projectMetadata, sampleExamples);
-    const tokenNumber = countMessageTokens(systemPrompt);
+    const messages = getSampleMatchChatMessages(projectMetadata, sampleExamples, request.prompt);
+    const tokenNumber = countMessagesTokens(messages);
     if (tokenNumber > TOKEN_LIMITS) {
-      matchedSamples.push(
-        ...(await sendCopilotMatchRequest(systemPrompt, request, token, telemetryMetadata))
-      );
+      matchedSamples.push(...(await sendCopilotMatchRequest(messages, token, telemetryMetadata)));
       projectMetadata = [...sampleExampleMetadata];
     }
   }
   if (projectMetadata.length > sampleExampleMetadata.length) {
     matchedSamples.push(
       ...(await sendCopilotMatchRequest(
-        getProjectMatchSystemPrompt(projectMetadata, sampleExamples),
-        request,
+        getSampleMatchChatMessages(projectMetadata, sampleExamples, request.prompt),
         token,
         telemetryMetadata
       ))
@@ -140,15 +145,13 @@ async function matchSamples(
 }
 
 async function sendCopilotMatchRequest(
-  systemPrompt: LanguageModelChatSystemMessage,
-  request: ChatRequest,
+  messages: LanguageModelChatMessage[],
   token: CancellationToken,
   telemetryMetadata: IChatTelemetryData
 ) {
-  const messages = [systemPrompt, new LanguageModelChatUserMessage(request.prompt)];
   telemetryMetadata.chatMessages.push(...messages);
 
-  const response = await getCopilotResponseAsString("copilot-gpt-3.5-turbo", messages, token);
+  const response = await getCopilotResponseAsString("copilot-gpt-4", messages, token);
 
   if (response) {
     try {

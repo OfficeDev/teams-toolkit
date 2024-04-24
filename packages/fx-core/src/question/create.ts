@@ -25,12 +25,13 @@ import { ConstantString } from "../common/constants";
 import { Correlator } from "../common/correlator";
 import {
   isApiCopilotPluginEnabled,
-  isApiKeyEnabled,
   isCLIDotNetEnabled,
   isCopilotPluginEnabled,
   isOfficeJSONAddinEnabled,
   isTdpTemplateCliTestEnabled,
   isChatParticipantEnabled,
+  featureFlagManager,
+  FeatureFlags,
 } from "../common/featureFlags";
 import { getLocalizedString } from "../common/localizeUtils";
 import { sampleProvider } from "../common/samples";
@@ -196,6 +197,15 @@ export class ProjectTypeOptions {
       groupName: getLocalizedString("core.createProjectQuestion.projectType.copilotGroup.title"),
     };
   }
+
+  static customizeGpt(): OptionItem {
+    return {
+      id: "customize-gpt-type",
+      label: "Customize GPT", // TODO: localize until we have an idea for naming
+      detail: "Author a Copilot GPT",
+      groupName: getLocalizedString("core.createProjectQuestion.projectType.createGroup.title"),
+    };
+  }
 }
 
 export function projectTypeQuestion(): SingleSelectQuestion {
@@ -214,6 +224,14 @@ export function projectTypeQuestion(): SingleSelectQuestion {
     staticOptions: staticOptions,
     dynamicOptions: (inputs: Inputs) => {
       const staticOptions: OptionItem[] = [];
+
+      if (
+        CLIPlatforms.includes(inputs.platform) &&
+        featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)
+      ) {
+        // Show in CLI only
+        staticOptions.push(ProjectTypeOptions.customizeGpt());
+      }
 
       if (isApiCopilotPluginEnabled()) {
         staticOptions.push(ProjectTypeOptions.copilotPlugin(inputs.platform));
@@ -637,6 +655,10 @@ export class CapabilityOptions {
     ];
   }
 
+  static customizeGptOptions(): OptionItem[] {
+    return [CapabilityOptions.customizeGptBasic(), CapabilityOptions.customizeGptWithPlugin()];
+  }
+
   /**
    * static capability list, which does not depend on any feature flags
    */
@@ -648,6 +670,7 @@ export class CapabilityOptions {
       ...CapabilityOptions.copilotPlugins(),
       ...CapabilityOptions.customCopilots(),
       ...CapabilityOptions.tdpIntegrationCapabilities(),
+      ...CapabilityOptions.customizeGptOptions(),
     ];
     capabilityOptions.push(...CapabilityOptions.officeAddinStaticCapabilities());
     return capabilityOptions;
@@ -664,6 +687,9 @@ export class CapabilityOptions {
     ];
     if (isApiCopilotPluginEnabled()) {
       capabilityOptions.push(...CapabilityOptions.copilotPlugins());
+    }
+    if (featureFlagManager.getBooleanValue(FeatureFlags.CustomizeGpt)) {
+      capabilityOptions.push(...CapabilityOptions.customizeGptOptions());
     }
     capabilityOptions.push(...CapabilityOptions.customCopilots());
     if (isTdpTemplateCliTestEnabled()) {
@@ -834,6 +860,23 @@ export class CapabilityOptions {
       ),
     };
   }
+
+  // customize GPT
+  static customizeGptBasic(): OptionItem {
+    return {
+      id: "customize-gpt-basic",
+      label: "Basic GPT",
+      detail: "A simple GPT skeleton you can author without any plugin",
+    };
+  }
+
+  static customizeGptWithPlugin(): OptionItem {
+    return {
+      id: "customize-gpt-with-plugin",
+      label: "GPT with a plugin",
+      detail: "A GPT containing a Copilot plugin",
+    };
+  }
 }
 
 export function capabilityQuestion(): SingleSelectQuestion {
@@ -877,6 +920,8 @@ export function capabilityQuestion(): SingleSelectQuestion {
           return getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title");
         case ProjectTypeOptions.customCopilot().id:
           return getLocalizedString("core.createProjectQuestion.projectType.customCopilot.title");
+        case ProjectTypeOptions.customizeGpt().id:
+          return "Choose the GPT type";
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }
@@ -922,6 +967,8 @@ export function capabilityQuestion(): SingleSelectQuestion {
         return CapabilityOptions.copilotPlugins();
       } else if (projectType === ProjectTypeOptions.customCopilot().id) {
         return CapabilityOptions.customCopilots();
+      } else if (projectType === ProjectTypeOptions.customizeGpt().id) {
+        return CapabilityOptions.customizeGptOptions();
       } else {
         return CapabilityOptions.all(inputs);
       }
@@ -1369,6 +1416,23 @@ export function SPFxImportFolderQuestion(hasDefaultFunc = false): FolderQuestion
   };
 }
 
+function CustomizeGptWithPluginStartQuestion(): SingleSelectQuestion {
+  return {
+    name: QuestionNames.CustomizeGptWithPluginStart,
+    title: getLocalizedString("core.createProjectQuestion.projectType.copilotPlugin.title"),
+    type: "singleSelect",
+    staticOptions: GptWithPluginStartOptions(),
+    cliDescription: "Copilot Plugin.",
+    placeholder: getLocalizedString(
+      "core.createProjectQuestion.projectType.copilotPlugin.placeholder"
+    ),
+  };
+}
+
+function GptWithPluginStartOptions(): OptionItem[] {
+  return [CapabilityOptions.copilotPluginNewApi(), CapabilityOptions.copilotPluginApiSpec()];
+}
+
 export function officeAddinHostingQuestion(): SingleSelectQuestion {
   return {
     name: QuestionNames.OfficeAddinHost,
@@ -1480,7 +1544,9 @@ export function getLanguageOptions(inputs: Inputs): OptionItem[] {
     // SPFx only supports typescript
     return [{ id: ProgrammingLanguage.TS, label: "TypeScript" }];
   } else if (
-    capabilitiesHavePythonOption.includes(capabilities) &&
+    capabilitiesHavePythonOption.includes(
+      inputs[capabilities] ? inputs[capabilities] : capabilities
+    ) &&
     !(
       capabilities == CapabilityOptions.customCopilotRag().id &&
       (inputs[CapabilityOptions.customCopilotRag().id] ==
@@ -2105,13 +2171,9 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         );
       } else if (isPlugin) {
         placeholder = ""; // TODO: add placeholder for api plugin
-      } else if (isApiKeyEnabled()) {
-        placeholder = getLocalizedString(
-          "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
-        );
       } else {
         placeholder = getLocalizedString(
-          "core.createProjectQuestion.apiSpec.operation.placeholder"
+          "core.createProjectQuestion.apiSpec.operation.apikey.placeholder"
         );
       }
 
@@ -2435,6 +2497,11 @@ export function capabilitySubTree(): IQTreeNode {
           },
         ],
       },
+      // Customize GPT with plugin
+      {
+        condition: { equals: CapabilityOptions.customizeGptWithPlugin().id },
+        data: CustomizeGptWithPluginStartQuestion(),
+      },
       {
         // Search ME sub-tree
         condition: { equals: CapabilityOptions.m365SearchMe().id },
@@ -2445,6 +2512,8 @@ export function capabilitySubTree(): IQTreeNode {
         condition: (inputs: Inputs) => {
           return (
             inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id ||
+            inputs[QuestionNames.CustomizeGptWithPluginStart] ===
+              CapabilityOptions.copilotPluginApiSpec().id ||
             inputs[QuestionNames.Capabilities] ===
               CapabilityOptions.copilotPluginOpenAIPlugin().id ||
             inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
@@ -2453,13 +2522,6 @@ export function capabilitySubTree(): IQTreeNode {
         data: { type: "group", name: QuestionNames.CopilotPluginExistingApi },
         children: [
           {
-            condition: (inputs: Inputs) => {
-              return (
-                inputs[QuestionNames.Capabilities] ===
-                  CapabilityOptions.copilotPluginApiSpec().id ||
-                inputs[QuestionNames.MeArchitectureType] === MeArchitectureOptions.apiSpec().id
-              );
-            },
             data: apiSpecLocationQuestion(),
           },
           // {
@@ -2518,6 +2580,9 @@ export function capabilitySubTree(): IQTreeNode {
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.copilotPluginApiSpec().id &&
             inputs[QuestionNames.Capabilities] !==
               CapabilityOptions.copilotPluginOpenAIPlugin().id &&
+            inputs[QuestionNames.Capabilities] !== CapabilityOptions.customizeGptBasic().id &&
+            inputs[QuestionNames.CustomizeGptWithPluginStart] !==
+              CapabilityOptions.copilotPluginApiSpec().id &&
             inputs[QuestionNames.MeArchitectureType] !== MeArchitectureOptions.apiSpec().id &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.officeAddinImport().id &&
             inputs[QuestionNames.Capabilities] !== CapabilityOptions.outlookAddinImport().id

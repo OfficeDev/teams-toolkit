@@ -62,7 +62,7 @@
     "tslib": "^2.3.1",
     "typescript": "^5.0.4",
     "uuid": "^8.3.2",
-    "vscode-extension-tester": "^5.9.1"
+    "vscode-extension-tester": "^8.0.2"
   },
   "dependencies": {
     "@azure/arm-apimanagement": "^8.0.0",
@@ -73,7 +73,7 @@
     "@microsoft/teamsapp-cli": "workspace:*",
     "@microsoft/teamsfx-api": "workspace:*",
     "@types/semver": "^7.3.8",
-    "axios": "^1.6.2",
+    "axios": "^1.6.8",
     "azure-arm-resource": "^7.4.0",
     "dotenv": "^8.2.0",
     "fs-extra": "^7.0.1",

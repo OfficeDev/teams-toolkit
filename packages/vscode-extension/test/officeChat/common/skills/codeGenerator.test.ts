@@ -316,7 +316,6 @@ describe("codeGenerator", () => {
       SampleProvider.prototype,
       "getTopKMostRelevantScenarioSampleCodesLLM"
     );
-
     const scenarioSamples = new Map<string, SampleData>();
     getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
@@ -347,7 +346,6 @@ describe("codeGenerator", () => {
       SampleProvider.prototype,
       "getTopKMostRelevantScenarioSampleCodesLLM"
     );
-
     const scenarioSamples = new Map<string, SampleData>();
     getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 
@@ -434,7 +432,6 @@ describe("codeGenerator", () => {
       SampleProvider.prototype,
       "getTopKMostRelevantScenarioSampleCodesLLM"
     );
-
     const scenarioSamples = new Map<string, SampleData>();
     getTopKMostRelevantScenarioSampleCodesStub.returns(Promise.resolve(scenarioSamples));
 

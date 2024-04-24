@@ -740,8 +740,9 @@ describe("Package Service", () => {
     chai.assert.deepEqual(launchInfo, { foo: "bar" });
   });
   it("getLaunchInfoByManifestId throws expected error", async () => {
-    sandbox.stub(testAxiosInstance, "post").rejects({ response: { status: 404 } });
     const packageService = new PackageService("https://test-endpoint");
+    sandbox.stub(testAxiosInstance, "post").rejects({ response: { status: 404 } });
+    sandbox.stub(packageService, "getTitleServiceUrl").resolves("https://test-url");
     try {
       await packageService.getLaunchInfoByManifestId("test-token", "test-manifest-id");
       chai.assert.fail("should not reach here");

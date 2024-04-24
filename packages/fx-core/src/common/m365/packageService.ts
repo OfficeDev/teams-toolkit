@@ -52,7 +52,7 @@ export class PackageService {
     this.logger = logger;
   }
   @hooks([ErrorContextMW({ source: M365ErrorSource, component: M365ErrorComponent })])
-  private async getTitleServiceUrl(token: string): Promise<string> {
+  public async getTitleServiceUrl(token: string): Promise<string> {
     try {
       try {
         new URL(this.initEndpoint);

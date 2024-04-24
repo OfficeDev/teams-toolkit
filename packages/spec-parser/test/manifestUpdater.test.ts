@@ -1150,6 +1150,22 @@ describe("updateManifestWithAiPlugin", () => {
                   },
                 },
               },
+              responses: {
+                200: {
+                  content: {
+                    "application/json": {
+                      schema: {
+                        type: "object",
+                        properties: {
+                          name: {
+                            type: "string",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
           },
         },
@@ -1211,6 +1227,24 @@ describe("updateManifestWithAiPlugin", () => {
                 type: "AdaptiveCard",
                 title: "Create a pet",
                 body: "* **Name**: {{function.parameters.name}}",
+              },
+              response_semantics: {
+                data_path: "$",
+                properties: {
+                  title: "$.name",
+                },
+                static_template: {
+                  $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                  body: [
+                    {
+                      text: "name: ${if(name, name, 'N/A')}",
+                      type: "TextBlock",
+                      wrap: true,
+                    },
+                  ],
+                  type: "AdaptiveCard",
+                  version: "1.5",
+                },
               },
             },
           },

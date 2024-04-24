@@ -96,7 +96,6 @@ export const copilotPluginParserOptions: ParseOptions = {
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
 export const specParserGenerateResultAllSuccessTelemetryProperty = "all-success";
 export const specParserGenerateResultWarningsTelemetryProperty = "warnings";
-export const specParserGenerateAuthTypeTelemetryProperty = "auth-type";
 
 export const invalidApiSpecErrorName = "invalid-api-spec";
 const apiSpecNotUsedInPlugin = "api-spec-not-used-in-plugin";

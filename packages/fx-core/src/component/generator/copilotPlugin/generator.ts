@@ -40,7 +40,6 @@ import {
   invalidApiSpecErrorName,
   copilotPluginParserOptions,
   updateForCustomApi,
-  specParserGenerateAuthTypeTelemetryProperty,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
@@ -85,6 +84,7 @@ const enum telemetryProperties {
   templateName = "template-name",
   generateType = "generate-type",
   isRemoteUrlTelemetryProperty = "remote-url",
+  authType = "auth-type",
 }
 
 function normalizePath(path: string): string {
@@ -297,6 +297,7 @@ export class CopilotPluginGenerator {
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
         [telemetryProperties.generateType]: type.toString(),
+        [telemetryProperties.authType]: authData?.authName ?? "None",
       });
 
       // validate API spec
@@ -388,7 +389,6 @@ export class CopilotPluginGenerator {
       context.telemetryReporter.sendTelemetryEvent(specParserGenerateResultTelemetryEvent, {
         [telemetryProperties.generateType]: type.toString(),
         [specParserGenerateResultAllSuccessTelemetryProperty]: generateResult.allSuccess.toString(),
-        [specParserGenerateAuthTypeTelemetryProperty]: authData?.authName ?? "None",
         [specParserGenerateResultWarningsTelemetryProperty]: generateResult.warnings
           .map((w) => w.type.toString() + ": " + w.content)
           .join(";"),

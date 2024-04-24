@@ -1,10 +1,9 @@
 import * as chai from "chai";
-import * as chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { officeSteps } from "../../../../src/officeChat/commands/nextStep/officeSteps";
-import * as condition from "../../../../src/chat/commands/nextstep/condition";
-import * as officeCondition from "../../../../src/officeChat/commands/nextStep/condition";
-import { DescripitionFunc, WholeStatus } from "../../../../src/chat/commands/nextstep/types";
+import * as condition from "../../../../src/officeChat/commands/nextStep/condition";
+import { DescripitionFunc } from "../../../../src/chat/commands/nextstep/types";
+import { OfficeWholeStatus } from "../../../../src/officeChat/commands/nextStep/types";
 
 describe("office steps", () => {
   const sandbox = sinon.createSandbox();
@@ -19,13 +18,13 @@ describe("office steps", () => {
       sandbox.stub(condition, "isFirstInstalled").returns(true);
       const step = steps.find((s) => s.title === "Teams Toolkit");
       chai.assert.isNotEmpty(step);
-      chai.assert.isTrue(step?.condition({} as WholeStatus));
+      chai.assert.isTrue(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected", () => {
       sandbox.stub(condition, "isFirstInstalled").returns(false);
       const step = steps.find((s) => s.title === "Teams Toolkit");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
   });
 
@@ -38,13 +37,13 @@ describe("office steps", () => {
       sandbox.stub(condition, "isProjectOpened").returns(false);
       const step = steps.find((s) => s.title === "New Project");
       chai.assert.isNotEmpty(step);
-      chai.assert.isTrue(step?.condition({} as WholeStatus));
+      chai.assert.isTrue(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       const step = steps.find((s) => s.title === "New Project");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
   });
 
@@ -69,7 +68,7 @@ describe("office steps", () => {
 
             > **Prerequisites**`,
           },
-        } as WholeStatus).includes("123456")
+        } as OfficeWholeStatus).includes("123456")
       );
     });
 
@@ -80,20 +79,20 @@ describe("office steps", () => {
       sandbox.stub(condition, "isHaveReadMe").returns(true);
       const step = steps.find((s) => s.title === "Summary of README");
       chai.assert.isNotEmpty(step);
-      chai.assert.isTrue(step?.condition({} as WholeStatus));
+      chai.assert.isTrue(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - no project opened", () => {
       sandbox.stub(condition, "isProjectOpened").returns(false);
       const step = steps.find((s) => s.title === "Summary of README");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - prerequisite check failed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
 
       const step = steps.find((s) => s.title === "Summary of README");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - did action before", () => {
@@ -101,7 +100,7 @@ describe("office steps", () => {
 
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
       const step = steps.find((s) => s.title === "Summary of README");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - had no readme content", () => {
@@ -110,7 +109,7 @@ describe("office steps", () => {
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
       sandbox.stub(condition, "isHaveReadMe").returns(false);
       const step = steps.find((s) => s.title === "Summary of README");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
   });
 
@@ -122,17 +121,17 @@ describe("office steps", () => {
     it("condition: selected - project opened, did action after scaffolded, dependencies not installed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(false);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(false);
 
       const step = steps.find((s) => s.title === "Install Dependencies");
-      chai.assert.isTrue(step?.condition({} as WholeStatus));
+      chai.assert.isTrue(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - project not opened", () => {
       sandbox.stub(condition, "isProjectOpened").returns(false);
 
       const step = steps.find((s) => s.title === "Install Dependencies");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - did no action after scaffolded", () => {
@@ -140,16 +139,16 @@ describe("office steps", () => {
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
 
       const step = steps.find((s) => s.title === "Install Dependencies");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - dependencies installed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
 
       const step = steps.find((s) => s.title === "Install Dependencies");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
   });
 
@@ -161,19 +160,19 @@ describe("office steps", () => {
     it("condition: selected - project opened, did action after scaffolded, dependencies installed, can preview in local env, debug not succeeded after source code changed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
-      sandbox.stub(officeCondition, "canOfficeAddInPreviewInLocalEnv").returns(true);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(condition, "canOfficeAddInPreviewInLocalEnv").returns(true);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
-      chai.assert.isTrue(step?.condition({} as WholeStatus));
+      chai.assert.isTrue(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - project not opened", () => {
       sandbox.stub(condition, "isProjectOpened").returns(false);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - did no action after scaffolded", () => {
@@ -181,37 +180,37 @@ describe("office steps", () => {
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - dependencies not installed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(false);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(false);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - cannot preview in local env", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
-      sandbox.stub(officeCondition, "canOfficeAddInPreviewInLocalEnv").returns(false);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(condition, "canOfficeAddInPreviewInLocalEnv").returns(false);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - debug succeeded after source code changed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
-      sandbox.stub(officeCondition, "canOfficeAddInPreviewInLocalEnv").returns(true);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(condition, "canOfficeAddInPreviewInLocalEnv").returns(true);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
 
       const step = steps.find((s) => s.title === "Preview in Local Environment");
-      chai.assert.isFalse(step?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.condition({} as OfficeWholeStatus));
     });
   });
 
@@ -223,20 +222,20 @@ describe("office steps", () => {
     it("condition: selected - project opened, did action after scaffolded, dependencies installed, debug succeeded after source code changed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(true);
 
       const step = steps.filter((s) => s.title === "Publish to App Source" || s.title === "Deploy");
-      chai.assert.isTrue(step?.[0]?.condition({} as WholeStatus));
-      chai.assert.isTrue(step?.[1]?.condition({} as WholeStatus));
+      chai.assert.isTrue(step?.[0]?.condition({} as OfficeWholeStatus));
+      chai.assert.isTrue(step?.[1]?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - project not opened", () => {
       sandbox.stub(condition, "isProjectOpened").returns(false);
 
       const step = steps.filter((s) => s.title === "Publish to App Source" || s.title === "Deploy");
-      chai.assert.isFalse(step?.[0]?.condition({} as WholeStatus));
-      chai.assert.isFalse(step?.[1]?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.[0]?.condition({} as OfficeWholeStatus));
+      chai.assert.isFalse(step?.[1]?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - did no action after scaffolded", () => {
@@ -244,29 +243,29 @@ describe("office steps", () => {
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(true);
 
       const step = steps.filter((s) => s.title === "Publish to App Source" || s.title === "Deploy");
-      chai.assert.isFalse(step?.[0]?.condition({} as WholeStatus));
-      chai.assert.isFalse(step?.[1]?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.[0]?.condition({} as OfficeWholeStatus));
+      chai.assert.isFalse(step?.[1]?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - dependencies not installed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(false);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(false);
 
       const step = steps.filter((s) => s.title === "Publish to App Source" || s.title === "Deploy");
-      chai.assert.isFalse(step?.[0]?.condition({} as WholeStatus));
-      chai.assert.isFalse(step?.[1]?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.[0]?.condition({} as OfficeWholeStatus));
+      chai.assert.isFalse(step?.[1]?.condition({} as OfficeWholeStatus));
     });
 
     it("condition: not selected - debug not succeeded after source code changed", () => {
       sandbox.stub(condition, "isProjectOpened").returns(true);
       sandbox.stub(condition, "isDidNoActionAfterScaffolded").returns(false);
-      sandbox.stub(officeCondition, "isDependenciesInstalled").returns(true);
+      sandbox.stub(condition, "isDependenciesInstalled").returns(true);
       sandbox.stub(condition, "isDebugSucceededAfterSourceCodeChanged").returns(false);
 
       const step = steps.filter((s) => s.title === "Publish to App Source" || s.title === "Deploy");
-      chai.assert.isFalse(step?.[0]?.condition({} as WholeStatus));
-      chai.assert.isFalse(step?.[1]?.condition({} as WholeStatus));
+      chai.assert.isFalse(step?.[0]?.condition({} as OfficeWholeStatus));
+      chai.assert.isFalse(step?.[1]?.condition({} as OfficeWholeStatus));
     });
   });
 });

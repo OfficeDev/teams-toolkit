@@ -2,10 +2,10 @@ import * as chai from "chai";
 import * as chaiPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import * as helper from "../../../../src/chat/commands/nextstep/helper";
-import { WholeStatus } from "../../../../src/chat/commands/nextstep/types";
 import * as projectStatusUtils from "../../../../src/utils/projectStatusUtils";
 import * as status from "../../../../src/officeChat/commands/nextStep/status";
 import * as fx from "fs-extra";
+import { OfficeWholeStatus } from "../../../../src/officeChat/commands/nextStep/types";
 
 chai.use(chaiPromised);
 
@@ -45,6 +45,6 @@ describe("office steps: getWholeStatus", () => {
         launchJSONContent: undefined,
         nodeModulesExist: true,
       },
-    } as WholeStatus);
+    } as OfficeWholeStatus);
   });
 });

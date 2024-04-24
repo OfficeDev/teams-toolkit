@@ -18,7 +18,7 @@ import { ChatTelemetryData } from "../../../chat/telemetry";
 import { ICopilotChatResult } from "../../../chat/types";
 import { describeStep } from "../../../chat/commands/nextstep/nextstepCommandHandler";
 import { officeSteps } from "./officeSteps";
-import { WholeStatus } from "../../../chat/commands/nextstep/types";
+import { OfficeWholeStatus } from "./types";
 import { getWholeStatus } from "./status";
 import { localize } from "../../../utils/localizeUtils";
 
@@ -56,7 +56,7 @@ export default async function officeNextStepCommandHandler(
 
   const workspace = workspaceUri?.fsPath;
   const officeAddInApp = isValidOfficeAddInProject(workspace) ? workspace : undefined;
-  const status: WholeStatus = await getWholeStatus(officeAddInApp);
+  const status: OfficeWholeStatus = await getWholeStatus(officeAddInApp);
   const steps = officeSteps()
     .filter((s) => s.condition(status))
     .sort((a, b) => a.priority - b.priority);

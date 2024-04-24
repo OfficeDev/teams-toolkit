@@ -1,7 +1,9 @@
 import * as chai from "chai";
-import { WholeStatus } from "../../../../src/chat/commands/nextstep/types";
-import { canOfficeAddInPreviewInLocalEnv } from "../../../../src/officeChat/commands/nextStep/condition";
-import * as condition from "../../../../src/officeChat/commands/nextStep/condition";
+import {
+  canOfficeAddInPreviewInLocalEnv,
+  isDependenciesInstalled,
+} from "../../../../src/officeChat/commands/nextStep/condition";
+import { OfficeWholeStatus } from "../../../../src/officeChat/commands/nextStep/types";
 
 describe("office steps: canOfficeAddInPreviewInLocalEnv", () => {
   it('should return true when launchJSONContent includes "desktop (edge legacy)" or "desktop (edge chromium)"', () => {
@@ -9,7 +11,7 @@ describe("office steps: canOfficeAddInPreviewInLocalEnv", () => {
       projectOpened: {
         launchJSONContent: "desktop (edge legacy)",
       },
-    } as WholeStatus);
+    } as OfficeWholeStatus);
     chai.assert.isTrue(result);
   });
 
@@ -18,12 +20,12 @@ describe("office steps: canOfficeAddInPreviewInLocalEnv", () => {
       projectOpened: {
         launchJSONContent: "",
       },
-    } as WholeStatus);
+    } as OfficeWholeStatus);
     chai.assert.isFalse(result);
   });
 
   it("should return false when projectOpened or launchJSONContent is not defined", () => {
-    const result = canOfficeAddInPreviewInLocalEnv({} as WholeStatus);
+    const result = canOfficeAddInPreviewInLocalEnv({} as OfficeWholeStatus);
     chai.assert.isFalse(result);
   });
 });
@@ -31,23 +33,23 @@ describe("office steps: canOfficeAddInPreviewInLocalEnv", () => {
 describe("office steps: isDependenciesInstalled", () => {
   it("isDependenciesInstalled", () => {
     chai.assert.isTrue(
-      condition.isDependenciesInstalled({
+      isDependenciesInstalled({
         projectOpened: {
           nodeModulesExist: true,
         },
         machineStatus: {},
-      } as WholeStatus)
+      } as OfficeWholeStatus)
     );
 
     chai.assert.isFalse(
-      condition.isDependenciesInstalled({
+      isDependenciesInstalled({
         projectOpened: {
           nodeModulesExist: false,
         },
         machineStatus: {},
-      } as WholeStatus)
+      } as OfficeWholeStatus)
     );
 
-    chai.assert.isFalse(condition.isDependenciesInstalled({} as WholeStatus));
+    chai.assert.isFalse(isDependenciesInstalled({} as OfficeWholeStatus));
   });
 });

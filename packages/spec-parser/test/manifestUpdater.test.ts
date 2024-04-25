@@ -413,7 +413,7 @@ describe("updateManifestWithAiPlugin", () => {
             type: "OpenApi",
             auth: {
               type: "OAuthPluginVault",
-              reference_id: "${{OAUTH_REGISTRATION_ID}}",
+              reference_id: "${{OAUTH_CONFIGURATION_ID}}",
             },
             spec: {
               url: "spec/outputSpec.yaml",
@@ -3685,7 +3685,7 @@ describe("manifestUpdater", () => {
           authorization: {
             authType: "oAuth2.0",
             oAuthConfiguration: {
-              oauthConfigurationId: "${{OAUTH_AUTH_REGISTRATION_ID}}",
+              oauthConfigurationId: "${{OAUTH_AUTH_CONFIGURATION_ID}}",
             },
           },
           commands: [

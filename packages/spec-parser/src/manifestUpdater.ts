@@ -147,7 +147,7 @@ export class ManifestUpdater {
 
       if (pluginAuthObj.type !== "None") {
         const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
-          `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+          `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
         );
 
         pluginAuthObj.reference_id = `\${{${safeRegistrationIdName}}}`;
@@ -384,11 +384,11 @@ export class ManifestUpdater {
         if (authInfo) {
           const auth = authInfo.authScheme;
           const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
-            `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+            `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
           );
           if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
             const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
-              `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+              `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
             );
             (composeExtension as any).authorization = {
               authType: "apiSecretServiceAuth",

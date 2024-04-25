@@ -302,7 +302,7 @@
   "core.createProjectQuestion.projectType.copilotPlugin.detail": "Create a plugin to extend Microsoft Copilot for Microsoft 365 using your APIs",
   "core.createProjectQuestion.projectType.copilotPlugin.label": "Copilot Plugin",
   "core.createProjectQuestion.projectType.copilotPlugin.title": "Copilot Plugin",
-  "core.createProjectQuestion.projectType.gpt.title": "Choose the GPT type",
+  "core.createProjectQuestion.projectType.gpt.title": "Choose GPT type",
   "core.createProjectQuestion.projectType.copilotPlugin.placeholder": "Select an option",
   "core.createProjectQuestion.projectType.customCopilot.detail": "Build intelligent chatbot in Microsoft Teams easily using Teams AI Library",
   "core.createProjectQuestion.projectType.customCopilot.label": "Custom Copilot",

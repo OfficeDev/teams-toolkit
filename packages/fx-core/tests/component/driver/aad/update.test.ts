@@ -153,7 +153,7 @@ describe("aadAppUpdate", async () => {
     const informationSpy = sinon.spy(mockedDriverContext.logProvider, "info");
     const result = await updateAadAppDriver.execute(args, mockedDriverContext);
     chai.assert.isTrue(informationSpy.called);
-    chai.assert.equal(informationSpy.getCall(0).args[0], "Executing action aadApp/update");
+    chai.assert.equal(informationSpy.getCall(0).args[0], "Execution of action aadApp/update is in progress...");
     const manifestOutputFilePath = path.join(
       mockedDriverContext.projectPath,
       outputRoot,

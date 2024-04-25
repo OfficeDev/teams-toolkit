@@ -195,7 +195,7 @@ describe("copilotPluginGenerator", function () {
     );
 
     assert.isTrue(result.isOk());
-    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api-api-key");
+    assert.equal(downloadTemplate.args[0][2], "copilot-plugin-existing-api");
     assert.isTrue(downloadTemplate.calledOnce);
     assert.isTrue(generateBasedOnSpec.calledOnce);
   });

@@ -418,6 +418,8 @@ export interface InputResult<T> {
 export interface Inputs extends Record<string, any> {
     agent?: "teams" | "office";
     // (undocumented)
+    apiAuthData?: AuthInfo;
+    // (undocumented)
     correlationId?: string;
     // (undocumented)
     nonInteractive?: boolean;

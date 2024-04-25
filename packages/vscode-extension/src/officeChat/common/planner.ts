@@ -51,7 +51,6 @@ export class Planner {
     telemetryData: ChatTelemetryData
   ): Promise<ICopilotChatOfficeResult> {
     const candidates: ISkill[] = SkillsManager.getInstance().getCapableSkills(command);
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, telemetryData.properties);
     const t0 = performance.now();
     token.onCancellationRequested(() => {
       const t1 = performance.now();

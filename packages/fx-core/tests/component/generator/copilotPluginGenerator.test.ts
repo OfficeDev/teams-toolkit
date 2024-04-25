@@ -157,7 +157,12 @@ describe("copilotPluginGenerator", function () {
     const result = await CopilotPluginGenerator.generateMeFromApiSpec(
       context,
       inputs,
-      "projectPath"
+      "projectPath",
+      {
+        telemetryProps: {
+          "project-id": "test",
+        },
+      }
     );
 
     assert.isTrue(result.isOk());

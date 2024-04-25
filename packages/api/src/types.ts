@@ -75,6 +75,9 @@ export interface Inputs extends Record<string, any> {
    * whether the caller is triggered by @teams or @office agent
    */
   agent?: "teams" | "office";
+  /**
+   * Auth info about user selected APIs.
+   */
   apiAuthData?: AuthInfo;
 }
 

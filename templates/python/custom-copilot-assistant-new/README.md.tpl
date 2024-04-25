@@ -60,6 +60,8 @@ It showcases how to build an AI agent in Teams capable of chatting with users an
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+
 {{#enableTestToolByDefault}}
 ![ai agent](https://github.com/OfficeDev/Microsoft-Teams-Samples/assets/109947924/6a362379-5c22-40d4-8087-9fc37bc96800)
 {{/enableTestToolByDefault}}

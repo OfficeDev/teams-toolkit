@@ -10,6 +10,8 @@ to install the app to
 5. In the launched browser, select the Add button to load the app in Teams
 6. You can trigger "create card" command from compose message area, the command box, or directly from a message.
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+
 ## Learn more
 
 New to Teams app development or Teams Toolkit? Learn more about 

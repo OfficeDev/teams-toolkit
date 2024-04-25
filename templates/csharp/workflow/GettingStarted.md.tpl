@@ -16,6 +16,8 @@ to install the app to
 6. In the chat bar, type and send "helloWorld" to your app to trigger a response
 {{/enableTestToolByDefault}}
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+
 ## Learn more
 
 New to Teams app development or Teams Toolkit? Learn more about 

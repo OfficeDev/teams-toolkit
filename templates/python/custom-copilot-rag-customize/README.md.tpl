@@ -62,6 +62,8 @@ This app template also demonstrates usage of techniques like:
 
 **Congratulations**! You are running an application that can now interact with users in Teams:
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+
 {{#enableTestToolByDefault}}
 ![alt text](https://github.com/OfficeDev/TeamsFx/assets/109947924/6658f342-6c27-447a-b791-2f2c400d48f9)
 {{/enableTestToolByDefault}}

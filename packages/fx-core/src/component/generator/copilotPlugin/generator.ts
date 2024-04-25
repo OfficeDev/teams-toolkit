@@ -20,7 +20,7 @@ import {
   AppPackageFolderName,
   Warning,
   ApiOperation,
-  ApiKeyAuthInfo,
+  AuthInfo,
   SystemError,
 } from "@microsoft/teamsfx-api";
 import { Generator } from "../generator";
@@ -40,10 +40,11 @@ import {
   invalidApiSpecErrorName,
   copilotPluginParserOptions,
   updateForCustomApi,
+  getEnvName,
 } from "./helper";
 import { getLocalizedString } from "../../../common/localizeUtils";
 import { manifestUtils } from "../../driver/teamsApp/utils/ManifestUtils";
-import { ProgrammingLanguage } from "../../../question/create";
+import { CapabilityOptions, ProgrammingLanguage } from "../../../question/create";
 import * as fs from "fs-extra";
 import { assembleError } from "../../../error";
 import {
@@ -53,10 +54,13 @@ import {
   WarningType,
   ProjectType,
   Utils,
+  ParseOptions,
 } from "@microsoft/m365-spec-parser";
 import * as util from "util";
 import { isValidHttpUrl } from "../../../question/util";
 import { merge } from "lodash";
+import { TemplateNames } from "../templates/templateNames";
+import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
@@ -69,6 +73,7 @@ const apiSpecFolderName = "apiSpecificationFile";
 const apiSpecYamlFileName = "openapi.yaml";
 const apiSpecJsonFileName = "openapi.json";
 const pluginManifestFileName = "ai-plugin.json";
+const defaultPluginId = "plugin_1";
 
 const copilotPluginExistingApiSpecUrlTelemetryEvent = "copilot-plugin-existing-api-spec-url";
 
@@ -80,6 +85,7 @@ const enum telemetryProperties {
   templateName = "template-name",
   generateType = "generate-type",
   isRemoteUrlTelemetryProperty = "remote-url",
+  authType = "auth-type",
 }
 
 function normalizePath(path: string): string {
@@ -145,7 +151,11 @@ export class CopilotPluginGenerator {
       (api) => !!api.data.authName && apiOperations.includes(api.id)
     );
 
-    const templateName = apiPluginFromApiSpecTemplateName;
+    const templateName =
+      inputs[QuestionNames.CustomizeGptWithPluginStart] ===
+      CapabilityOptions.copilotPluginApiSpec().id
+        ? TemplateNames.BasicGpt
+        : apiPluginFromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
     merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
@@ -214,7 +224,7 @@ export class CopilotPluginGenerator {
     templateName: string,
     componentName: string,
     isPlugin: boolean,
-    apiKeyAuthData?: ApiKeyAuthInfo
+    authData?: AuthInfo
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
     try {
       const appName = inputs[QuestionNames.AppName];
@@ -249,21 +259,20 @@ export class CopilotPluginGenerator {
       const openapiSpecFileName = isYaml ? apiSpecYamlFileName : apiSpecJsonFileName;
       const openapiSpecPath = path.join(apiSpecFolderPath, openapiSpecFileName);
 
-      if (apiKeyAuthData?.authName) {
-        const envName = Utils.getSafeRegistrationIdEnvName(
-          `${apiKeyAuthData.authName}_REGISTRATION_ID`
-        );
+      if (authData?.authName) {
+        const envName = getEnvName(authData.authName, authData.authType);
         context.templateVariables = Generator.getDefaultVariables(
           appName,
           safeProjectNameFromVS,
           inputs.targetFramework,
           inputs.placeProjectFileInSolutionDir === "true",
           {
-            authName: apiKeyAuthData.authName,
+            authName: authData.authName,
             openapiSpecPath: normalizePath(
               path.join(AppPackageFolderName, apiSpecFolderName, openapiSpecFileName)
             ),
             registrationIdEnvName: envName,
+            authType: authData.authType,
           }
         );
       } else {
@@ -290,18 +299,21 @@ export class CopilotPluginGenerator {
       context.telemetryReporter.sendTelemetryEvent(copilotPluginExistingApiSpecUrlTelemetryEvent, {
         [telemetryProperties.isRemoteUrlTelemetryProperty]: isValidHttpUrl(url).toString(),
         [telemetryProperties.generateType]: type.toString(),
+        [telemetryProperties.authType]: authData?.authName ?? "None",
       });
 
       // validate API spec
-      const allowAPIKeyAuth = true;
-      const allowMultipleParameters = true;
+      const isGptPlugin = templateName === TemplateNames.BasicGpt;
       const specParser = new SpecParser(
         url,
         isPlugin
-          ? copilotPluginParserOptions
+          ? {
+              ...copilotPluginParserOptions,
+              isGptPlugin,
+            }
           : {
-              allowBearerTokenAuth: allowAPIKeyAuth, // Currently, API key auth support is actually bearer token auth
-              allowMultipleParameters,
+              allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
+              allowMultipleParameters: true,
               projectType: type,
             }
       );
@@ -408,6 +420,25 @@ export class CopilotPluginGenerator {
           manifestPath
         );
         if (updateManifestRes.isErr()) return err(updateManifestRes.error);
+      }
+
+      // update gpt.json including plugins
+      if (isGptPlugin && teamsManifest.copilotGpts && teamsManifest.copilotGpts.length > 0) {
+        const copilotGptPath = path.join(
+          destinationPath,
+          AppPackageFolderName,
+          teamsManifest.copilotGpts[0].file
+        );
+        await fs.ensureFile(copilotGptPath);
+        const addPluginRes = await copilotGptManifestUtils.addPlugin(
+          copilotGptPath,
+          defaultPluginId,
+          pluginManifestFileName
+        );
+
+        if (addPluginRes.isErr()) {
+          return err(addPluginRes.error);
+        }
       }
 
       if (componentName === forCustomCopilotRagCustomApi) {

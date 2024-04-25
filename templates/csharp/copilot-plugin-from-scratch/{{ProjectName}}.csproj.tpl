@@ -15,7 +15,6 @@
   </ItemGroup>
 {{/isNewProjectTypeEnabled}}
 
-{{^isNewProjectTypeEnabled}}
   <ItemGroup>
     <None Include="appPackage/**/*" />
     <None Include="infra/**/*" />

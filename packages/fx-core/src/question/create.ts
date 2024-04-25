@@ -656,7 +656,7 @@ export class CapabilityOptions {
   }
 
   static customizeGptOptions(): OptionItem[] {
-    return [CapabilityOptions.customizeGptBasic(), CapabilityOptions.cusomizeGptWithPlugin()];
+    return [CapabilityOptions.customizeGptBasic(), CapabilityOptions.customizeGptWithPlugin()];
   }
 
   /**
@@ -870,7 +870,7 @@ export class CapabilityOptions {
     };
   }
 
-  static cusomizeGptWithPlugin(): OptionItem {
+  static customizeGptWithPlugin(): OptionItem {
     return {
       id: "customize-gpt-with-plugin",
       label: "GPT with a plugin",
@@ -2499,7 +2499,7 @@ export function capabilitySubTree(): IQTreeNode {
       },
       // Customize GPT with plugin
       {
-        condition: { equals: CapabilityOptions.cusomizeGptWithPlugin().id },
+        condition: { equals: CapabilityOptions.customizeGptWithPlugin().id },
         data: CustomizeGptWithPluginStartQuestion(),
       },
       {

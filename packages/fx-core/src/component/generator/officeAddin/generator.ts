@@ -249,8 +249,7 @@ export class OfficeAddinGeneratorNew extends DefaultTemplateGenerator {
       inputs[QuestionNames.Capabilities] === CapabilityOptions.officeAddinImport().id
         ? ProgrammingLanguage.TS
         : lang;
-    const replaceMap = {};
-    return Promise.resolve(ok([{ templateName: tplName, language: lang, replaceMap }]));
+    return Promise.resolve(ok([{ templateName: tplName, language: lang }]));
   }
 
   public async post(

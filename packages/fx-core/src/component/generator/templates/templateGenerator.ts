@@ -7,18 +7,13 @@ import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { ProgressMessages, ProgressTitles } from "../../messages";
 import { ActionContext, ActionExecutionMW } from "../../middleware/actionExecutionMW";
 import { commonTemplateName, componentName } from "../constant";
-import {
-  CapabilityOptions,
-  MeArchitectureOptions,
-  ProgrammingLanguage,
-  QuestionNames,
-} from "../../../question";
+import { ProgrammingLanguage, QuestionNames } from "../../../question";
 import { Generator, templateDefaultOnActionError } from "../generator";
 import { convertToLangKey, renderTemplateFileData, renderTemplateFileName } from "../utils";
 import { merge } from "lodash";
 import { GeneratorContext, TemplateActionSeq } from "../generatorAction";
 import { TemplateInfo } from "./templateInfo";
-import { Feature2TemplateName } from "./templateNames";
+import { getTemplateName, tryGetTemplateName } from "./templateNames";
 import { getTemplateReplaceMap } from "./templateReplaceMap";
 
 export class DefaultTemplateGenerator implements IGenerator {
@@ -27,9 +22,7 @@ export class DefaultTemplateGenerator implements IGenerator {
 
   // override this method to determine whether to run this generator
   public activate(context: Context, inputs: Inputs): boolean {
-    return Object.keys(Feature2TemplateName).some((feature) =>
-      feature.startsWith(inputs.capabilities)
-    );
+    return tryGetTemplateName(inputs) !== undefined;
   }
 
   // The main entry of the generator. Do not override this method.
@@ -53,6 +46,7 @@ export class DefaultTemplateGenerator implements IGenerator {
 
     const templateInfos = preResult.value;
     for (const templateInfo of templateInfos) {
+      templateInfo.replaceMap = { ...getTemplateReplaceMap(inputs), ...templateInfo.replaceMap };
       await this.scaffolding(context, templateInfo, destinationPath, actionContext);
     }
 
@@ -68,10 +62,9 @@ export class DefaultTemplateGenerator implements IGenerator {
     inputs: Inputs,
     actionContext?: ActionContext
   ): Promise<Result<TemplateInfo[], FxError>> {
-    const templateName = this.getTemplateName(inputs);
+    const templateName = getTemplateName(inputs);
     const language = inputs[QuestionNames.ProgrammingLanguage] as ProgrammingLanguage;
-    const replaceMap = getTemplateReplaceMap(inputs);
-    return Promise.resolve(ok([{ templateName, language, replaceMap }]));
+    return Promise.resolve(ok([{ templateName, language }]));
   }
 
   // override this method to do post process
@@ -82,56 +75,6 @@ export class DefaultTemplateGenerator implements IGenerator {
     actionContext?: ActionContext
   ): Promise<Result<undefined, FxError>> {
     return Promise.resolve(ok(undefined));
-  }
-
-  private getTemplateName(inputs: Inputs) {
-    const language = inputs[QuestionNames.ProgrammingLanguage];
-    const capability = inputs.capabilities as string;
-    const meArchitecture = inputs[QuestionNames.MeArchitectureType] as string;
-    const apiMEAuthType = inputs[QuestionNames.ApiMEAuth] as string;
-    const trigger = inputs[QuestionNames.BotTrigger] as string;
-    let feature = `${capability}:${trigger}`;
-    if (
-      capability === CapabilityOptions.m365SsoLaunchPage().id ||
-      capability === CapabilityOptions.m365SearchMe().id
-    ) {
-      inputs.isM365 = true;
-    }
-
-    if (
-      language === "csharp" &&
-      capability === CapabilityOptions.notificationBot().id &&
-      inputs.isIsolated === true
-    ) {
-      feature += "-isolated";
-    }
-
-    if (meArchitecture) {
-      feature = `${feature}:${meArchitecture}`;
-    }
-    if (
-      inputs.targetFramework &&
-      inputs.targetFramework !== "net6.0" &&
-      inputs.targetFramework !== "net7.0" &&
-      (capability === CapabilityOptions.nonSsoTab().id || capability === CapabilityOptions.tab().id)
-    ) {
-      feature = `${capability}:ssr`;
-    }
-
-    if (
-      capability === CapabilityOptions.m365SearchMe().id &&
-      meArchitecture === MeArchitectureOptions.newApi().id
-    ) {
-      feature = `${feature}:${apiMEAuthType}`;
-    }
-
-    if (capability === CapabilityOptions.customCopilotRag().id) {
-      feature = `${feature}:${inputs[QuestionNames.CustomCopilotRag] as string}`;
-    } else if (capability === CapabilityOptions.customCopilotAssistant().id) {
-      feature = `${feature}:${inputs[QuestionNames.CustomCopilotAssistant] as string}`;
-    }
-
-    return Feature2TemplateName[feature];
   }
 
   private async scaffolding(

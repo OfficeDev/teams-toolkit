@@ -28,5 +28,6 @@
         "identity",
         "messageTeamMembers"
     ],
+    "copilotGpts" [],
     "validDomains": []
 }

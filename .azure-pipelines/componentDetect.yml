@@ -1,0 +1,33 @@
+# Node.js
+trigger:
+  - dev
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "18.x"
+    displayName: "Install Node.js"
+
+  - script: |
+      npm install -g pnpm
+      npm run setup
+    displayName: "setup project"
+
+  - task: ManifestGeneratorTask@0
+    inputs:
+      BuildDropPath: "$(System.ArtifactsDirectory)/"
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: "$(System.ArtifactsDirectory)/"
+      ArtifactName: "drop"
+      publishLocation: "Container"
+
+  - task: ComponentGovernanceComponentDetection@0
+    inputs:
+      scanType: "Register"
+      verbosity: "Verbose"
+      alertWarningLevel: "High"

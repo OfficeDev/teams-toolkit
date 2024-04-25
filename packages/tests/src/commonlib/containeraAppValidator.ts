@@ -38,7 +38,8 @@ export class ContainerAppValidator {
       EnvConstants.AZURE_CONTAINER_APP_NAME,
       EnvConstants.BACKEND_APP_NAME,
       EnvConstants.FRONTEND_APP_NAME,
-    ].filter((name) => this.ctx[name] && this.ctx[name].length > 0);
+    ].filter((name) => this.ctx[name] && this.ctx[name].length > 0)
+    .map((name) => this.ctx[name]);
 
     chai.assert.isTrue(
       this.containerAppNames && this.containerAppNames.length > 0

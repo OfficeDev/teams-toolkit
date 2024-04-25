@@ -1,17 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { NextStep } from "../../../chat/commands/nextstep/types";
+import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
+import { CommandKey } from "../../../constants";
 import {
+  canOfficeAddInPreviewInLocalEnv,
   isDebugSucceededAfterSourceCodeChanged,
+  isDependenciesInstalled,
   isDidNoActionAfterScaffolded,
   isFirstInstalled,
   isHaveReadMe,
   isProjectOpened,
-} from "../../../chat/commands/nextstep/condition";
-import { NextStep, WholeStatus } from "../../../chat/commands/nextstep/types";
-import { CHAT_EXECUTE_COMMAND_ID } from "../../../chat/consts";
-import { CommandKey } from "../../../constants";
-import { canOfficeAddInPreviewInLocalEnv, isDependenciesInstalled } from "./condition";
+} from "./condition";
+import { OfficeWholeStatus } from "./types";
 
 // TODO: align the description with PM
 export const officeSteps: () => NextStep[] = () => [
@@ -35,7 +37,7 @@ export const officeSteps: () => NextStep[] = () => [
       },
     ],
     followUps: [],
-    condition: (status: WholeStatus) => isFirstInstalled(status),
+    condition: (status: OfficeWholeStatus) => isFirstInstalled(status),
     priority: 0,
   },
   {
@@ -57,12 +59,12 @@ export const officeSteps: () => NextStep[] = () => [
         prompt: "",
       },
     ],
-    condition: (status: WholeStatus) => !isProjectOpened(status),
+    condition: (status: OfficeWholeStatus) => !isProjectOpened(status),
     priority: 0,
   },
   {
     title: "Summary of README",
-    description: (status: WholeStatus) => {
+    description: (status: OfficeWholeStatus) => {
       // readme must exist because the condition has checked it
       const readme = status.projectOpened!.readmeContent!;
       let description = "";
@@ -89,7 +91,7 @@ export const officeSteps: () => NextStep[] = () => [
       },
     ],
     followUps: [],
-    condition: (status: WholeStatus) =>
+    condition: (status: OfficeWholeStatus) =>
       isProjectOpened(status) && isDidNoActionAfterScaffolded(status) && isHaveReadMe(status),
     priority: 1,
   },
@@ -105,7 +107,7 @@ export const officeSteps: () => NextStep[] = () => [
       },
     ],
     followUps: [],
-    condition: (status: WholeStatus) =>
+    condition: (status: OfficeWholeStatus) =>
       isProjectOpened(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       !isDependenciesInstalled(status),
@@ -123,7 +125,7 @@ export const officeSteps: () => NextStep[] = () => [
       },
     ],
     followUps: [],
-    condition: (status: WholeStatus) =>
+    condition: (status: OfficeWholeStatus) =>
       isProjectOpened(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDependenciesInstalled(status) &&
@@ -144,7 +146,7 @@ export const officeSteps: () => NextStep[] = () => [
       },
     ],
     followUps: [],
-    condition: (status: WholeStatus) =>
+    condition: (status: OfficeWholeStatus) =>
       isProjectOpened(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDependenciesInstalled(status) &&
@@ -164,7 +166,7 @@ export const officeSteps: () => NextStep[] = () => [
       },
     ],
     followUps: [],
-    condition: (status: WholeStatus) =>
+    condition: (status: OfficeWholeStatus) =>
       isProjectOpened(status) &&
       !isDidNoActionAfterScaffolded(status) &&
       isDependenciesInstalled(status) &&

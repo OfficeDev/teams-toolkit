@@ -17,7 +17,6 @@ import { ExtTelemetry } from "../../../../src/telemetry/extTelemetry";
 import { CancellationToken } from "../../../mocks/vsc";
 import { officeSampleProvider } from "../../../../src/officeChat/commands/create/officeSamples";
 import { ProjectMetadata } from "../../../../src/chat/commands/create/types";
-import { PathLike } from "fs-extra";
 
 chai.use(chaiPromised);
 
@@ -149,6 +148,8 @@ describe("File: office chat create helper", () => {
       sandbox.stub(fs, "ensureDir").resolves();
       sandbox.stub(fs, "readFile").resolves(Buffer.from(""));
       sandbox.stub(fs, "writeFile").resolves();
+      sandbox.stub(vscode.commands, "executeCommand");
+      sandbox.stub(fs, "readdirSync").returns([]);
     });
     afterEach(() => {
       sandbox.restore();

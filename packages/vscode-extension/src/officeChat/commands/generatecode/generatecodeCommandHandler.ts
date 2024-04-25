@@ -13,15 +13,15 @@ import { localize } from "../../../utils/localizeUtils";
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { Planner } from "../../common/planner";
 import { ChatTelemetryData } from "../../../chat/telemetry";
-import { ICopilotChatResult } from "../../../chat/types";
 import { isInputHarmful } from "../../utils";
+import { ICopilotChatOfficeResult } from "../../types";
 
 export default async function generatecodeCommandHandler(
   request: ChatRequest,
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ICopilotChatResult> {
+): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     OfficeChatCommand.GenerateCode,

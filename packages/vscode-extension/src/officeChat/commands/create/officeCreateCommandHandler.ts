@@ -12,7 +12,7 @@ import {
 import { OfficeChatCommand, officeChatParticipantId } from "../../consts";
 import { verbatimCopilotInteraction } from "../../../chat/utils";
 import { isInputHarmful } from "../../utils";
-import { ICopilotChatResult } from "../../../chat/types";
+import { ICopilotChatOfficeResult } from "../../types";
 import { describeOfficeProjectSystemPrompt } from "../../officePrompts";
 import { TelemetryEvent } from "../../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../../telemetry/extTelemetry";
@@ -27,7 +27,7 @@ export default async function officeCreateCommandHandler(
   context: ChatContext,
   response: ChatResponseStream,
   token: CancellationToken
-): Promise<ICopilotChatResult> {
+): Promise<ICopilotChatOfficeResult> {
   const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     OfficeChatCommand.Create,

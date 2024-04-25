@@ -377,8 +377,6 @@ export enum TelemetryProperty {
   CopilotChatFeedbackHelpful = "copilot-chat-helpful",
   CopilotChatUserAction = "copilot-chat-action",
   CopilotChatHasCodeBlock = "copilot-chat-has-code-block",
-  CopilotChatCopiedCharacters = "copilot-chat-copied-characters",
-  CopilotChatTotalCharacters = "copilot-chat-total-characters",
   CopilotChatCommand = "copilot-chat-command",
   CopilotChatRequestId = "copilot-chat-request-id",
   CopilotChatRunCommandId = "copilot-chat-run-command-id", // the id of clicked button in the response

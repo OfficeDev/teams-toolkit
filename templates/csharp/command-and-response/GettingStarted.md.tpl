@@ -15,6 +15,8 @@
 6. In the message input field, type and send "helloWorld" to your app to get a response
 {{/enableTestToolByDefault}}
 
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
+
 ## Get more info
 
 New to Teams app development or Teams Toolkit? Explore Teams app manifests, cloud deployment, and much more in the https://aka.ms/teams-toolkit-vs-docs.

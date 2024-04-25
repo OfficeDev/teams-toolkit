@@ -20,6 +20,7 @@ It showcases how to build an AI agent in Teams capable of helping users accompli
 > **Note**
 >
 > The `AssistantsPlanner` in Teams AI Library is currently in preview version.
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ### Create your own OpenAI Assistant
 

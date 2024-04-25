@@ -175,6 +175,10 @@ describe("copilotPluginGenerator", function () {
       [QuestionNames.ApiSpecLocation]: "test.json",
       [QuestionNames.ApiOperation]: ["operation2"],
       supportedApisFromApiSpec: apiOperations,
+      apiAuthData: {
+        authType: "apiKey",
+        serverUrl: "",
+      },
     };
     const context = createContextV3();
     sandbox

@@ -15,7 +15,7 @@ to install the app to
 6. In the chat bar, type and send anything to your bot to trigger a response
 {{/enableTestToolByDefault}}
 
-> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ## Learn more
 

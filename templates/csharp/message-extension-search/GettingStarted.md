@@ -10,7 +10,7 @@ to install the app to
 5. In the launched browser, select the Add button to load the app in Teams
 6. You can search nuget package from compose message area, or from the command box.
 
-> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ## Learn more
 

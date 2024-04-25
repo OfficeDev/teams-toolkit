@@ -25,7 +25,7 @@ It showcases how to build an intelligent chat bot in Teams capable of helping us
 > **Note**
 >
 > The `AssistantsPlanner` in Teams AI Library is currently in preview version.
-> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ### Create your own OpenAI Assistant
 

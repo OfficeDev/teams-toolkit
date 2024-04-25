@@ -10,7 +10,7 @@ to install the app to
 5. In the launched browser, select the Add button to load the app in Teams
 6. You can play with this app to create an adaptive card, search for an NuGet package or unfurl links from ".botframework.com" domain.
 
-> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit for debugging](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-local?tabs=cli).
+> For local debugging using Teams Toolkit CLI, you need to do some extra steps described in [Set up your Teams Toolkit CLI for local debugging](https://aka.ms/teamsfx-cli-debugging).
 
 ## Learn more
 

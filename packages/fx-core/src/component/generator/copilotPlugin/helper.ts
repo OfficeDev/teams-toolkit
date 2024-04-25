@@ -55,6 +55,7 @@ import { copilotPluginApiSpecOptionId } from "../../../question/constants";
 import { OpenAPIV3 } from "openapi-types";
 import { CustomCopilotRagOptions, ProgrammingLanguage } from "../../../question";
 import { ListAPIInfo } from "@microsoft/m365-spec-parser/dist/src/interfaces";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 
 const manifestFilePath = "/.well-known/ai-plugin.json";
 const componentName = "OpenAIPluginManifestHelper";
@@ -81,9 +82,9 @@ enum OpenAIPluginManifestErrorType {
 
 export const copilotPluginParserOptions: ParseOptions = {
   allowAPIKeyAuth: false,
-  allowBearerTokenAuth: false,
+  allowBearerTokenAuth: isCopilotAuthEnabled(),
   allowMultipleParameters: true,
-  allowOauth2: false,
+  allowOauth2: isCopilotAuthEnabled(),
   projectType: ProjectType.Copilot,
   allowMissingId: true,
   allowSwagger: true,
@@ -1026,4 +1027,13 @@ export async function updateForCustomApi(
 
   // 4. update code
   await updateCodeForCustomApi(specItems, language, destinationPath, openapiSpecFileName, needAuth);
+}
+
+const EnvNameMapping: { [authType: string]: string } = {
+  apiKey: "REGISTRATION_ID",
+  oauth2: "CONFIGURATION_ID",
+};
+
+export function getEnvName(authName: string, authType?: string): string {
+  return Utils.getSafeRegistrationIdEnvName(`${authName}_${EnvNameMapping[authType ?? "apiKey"]}`);
 }

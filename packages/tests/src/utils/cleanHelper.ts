@@ -612,11 +612,7 @@ export async function deleteResourceGroupByName(
 export async function filterResourceGroupByName(contains: string) {
   const manager = await ResourceGroupManager.init();
   const groups = await manager.searchResourceGroups(contains);
-  const rgNameGroup: string[] = [];
-  groups.map((rg: { name?: string }) => {
-    rgNameGroup.push(rg.name!);
-  });
-  return rgNameGroup;
+  return groups;
 }
 
 export async function cleanUpAadApp(

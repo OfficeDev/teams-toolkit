@@ -162,6 +162,7 @@ export enum Capability {
   // v3 only
   AiBot = "custom-copilot-basic",
   RAG = "custom-copilot-rag",
+  Agent = "custom-copilot-agent",
   TaskPane = "taskpane",
 }
 

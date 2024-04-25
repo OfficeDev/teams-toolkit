@@ -11,7 +11,6 @@ import {
   getContainerAppProperties,
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
-  getContainerNameFromResourceId,
 } from "./utilities";
 import { Executor } from "../utils/executor";
 import { Env } from "../utils/env";
@@ -20,7 +19,9 @@ export class ContainerAppValidator {
   private ctx: any;
   private subscriptionId: string;
   private rg: string;
-  private containerAppName: string;
+  private containerAppNames: string[];
+
+  private static readonly CONTAINER_NAME_LIST = "CONTAINER_NAME_LIST";
 
   constructor(ctx: any) {
     console.log("Start to init validator for Azure Container App.");
@@ -33,9 +34,19 @@ export class ContainerAppValidator {
     chai.assert.exists(this.subscriptionId);
     this.rg = getResourceGroupNameFromResourceId(resourceId);
     chai.assert.exists(this.rg);
-    this.containerAppName = getContainerNameFromResourceId(resourceId);
-    chai.assert.exists(this.containerAppName);
-    process.env[EnvConstants.AZURE_CONTAINER_APP_NAME] = this.containerAppName;
+    this.containerAppNames = [
+      EnvConstants.AZURE_CONTAINER_APP_NAME,
+      EnvConstants.BACKEND_APP_NAME,
+      EnvConstants.FRONTEND_APP_NAME,
+    ].filter((name) => this.ctx[name] && this.ctx[name].length > 0);
+
+    chai.assert.isTrue(
+      this.containerAppNames && this.containerAppNames.length > 0
+    );
+
+    process.env[ContainerAppValidator.CONTAINER_NAME_LIST] = JSON.stringify(
+      this.containerAppNames
+    );
 
     console.log("Successfully init validator for Azure Container App.");
   }
@@ -47,27 +58,36 @@ export class ContainerAppValidator {
     const tokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const token = (await tokenCredential?.getToken(AzureScopes))?.token;
 
-    const response = await getContainerAppProperties(
-      this.subscriptionId,
-      this.rg,
-      this.containerAppName,
-      token as string
-    );
-    chai.assert.exists(response);
+    for (const containerAppName of this.containerAppNames) {
+      const response = await getContainerAppProperties(
+        this.subscriptionId,
+        this.rg,
+        containerAppName,
+        token as string
+      );
+      chai.assert.exists(
+        response,
+        `Response for ${containerAppName} should exist`
+      );
+    }
+
     console.log("Successfully validate Azure Container App Provision.");
   }
 
   static async validateContainerAppStatus(): Promise<void> {
-    const command = `az containerapp show --name ${
-      process.env[EnvConstants.AZURE_CONTAINER_APP_NAME]
-    } --resource-group ${Env["azureResourceGroup"]} --subscription ${
-      Env["azureSubscriptionId"]
-    }`;
-
-    const { stdout, success } = await Executor.execute(command, process.cwd());
-    chai.assert.isTrue(success);
-    const result = JSON.parse(stdout);
-    const status = result.properties?.runningStatus;
-    chai.assert.strictEqual(status, "Running", "Status should be 'Running'");
+    const containerAppNames = JSON.parse(
+      process.env[ContainerAppValidator.CONTAINER_NAME_LIST] || "[]"
+    );
+    for (const containerAppName of containerAppNames) {
+      const command = `az containerapp show --name ${containerAppName} --resource-group ${Env["azureResourceGroup"]} --subscription ${Env["azureSubscriptionId"]}`;
+      const { stdout, success } = await Executor.execute(
+        command,
+        process.cwd()
+      );
+      chai.assert.isTrue(success);
+      const result = JSON.parse(stdout);
+      const status = result.properties?.runningStatus;
+      chai.assert.strictEqual(status, "Running", "Status should be 'Running'");
+    }
   }
 }

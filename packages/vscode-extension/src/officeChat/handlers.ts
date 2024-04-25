@@ -8,6 +8,7 @@ import {
   ChatRequest,
   ChatResponseStream,
   ChatResultFeedback,
+  ChatUserActionEvent,
   LanguageModelChatUserMessage,
   ProviderResult,
   Uri,
@@ -58,23 +59,26 @@ async function officeDefaultHandler(
   response: ChatResponseStream,
   token: CancellationToken
 ): Promise<ICopilotChatOfficeResult> {
-  const chatTelemetryData = ChatTelemetryData.createByParticipant(
+  const officeChatTelemetryData = ChatTelemetryData.createByParticipant(
     officeChatParticipantId,
     "",
     request.location
   );
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CopilotChatStart, chatTelemetryData.properties);
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChatStart,
+    officeChatTelemetryData.properties
+  );
   const messages = [defaultOfficeSystemPrompt(), new LanguageModelChatUserMessage(request.prompt)];
-  chatTelemetryData.chatMessages.push(...messages);
+  officeChatTelemetryData.chatMessages.push(...messages);
   await verbatimCopilotInteraction("copilot-gpt-4", messages, response, token);
 
-  chatTelemetryData.markComplete();
+  officeChatTelemetryData.markComplete();
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChat,
-    chatTelemetryData.properties,
-    chatTelemetryData.measurements
+    officeChatTelemetryData.properties,
+    officeChatTelemetryData.measurements
   );
-  return { metadata: { command: undefined, requestId: chatTelemetryData.requestId } };
+  return { metadata: { command: undefined, requestId: officeChatTelemetryData.requestId } };
 }
 
 export async function chatCreateOfficeProjectCommandHandler(folder: string) {
@@ -146,6 +150,25 @@ export function handleOfficeFeedback(e: ChatResultFeedback): void {
 
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.CopilotChatFeedback,
+    telemetryData.properties,
+    telemetryData.measurements
+  );
+}
+
+export function handleOfficeUserAction(e: ChatUserActionEvent): void {
+  const result = e.result as ICopilotChatOfficeResult;
+  const telemetryData: ITelemetryData = {
+    properties: {
+      [TelemetryProperty.CopilotChatRequestId]: result.metadata?.requestId ?? "",
+      [TelemetryProperty.TriggerFrom]: TelemetryTriggerFrom.CopilotChat,
+      [TelemetryProperty.CopilotChatCommand]: result.metadata?.command ?? "",
+      [TelemetryProperty.CorrelationId]: Correlator.getId(),
+      [TelemetryProperty.CopilotChatUserAction]: e.action.kind,
+    },
+    measurements: {},
+  };
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.CopilotChatUserAction,
     telemetryData.properties,
     telemetryData.measurements
   );

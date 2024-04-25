@@ -264,6 +264,7 @@ export enum TelemetryEvent {
   CopilotChat = "copilot-chat",
   CopilotChatFeedback = "copilot-chat-feedback",
   CopilotChatClickButton = "copilot-chat-click-button",
+  CopilotChatUserAction = "copilot-chat-action",
 
   //Office add-in related
   validateAddInManifest = "validate-addin-manifest",
@@ -374,6 +375,8 @@ export enum TelemetryProperty {
   CopilotChatTokenCount = "copilot-chat-token-count",
   CopilotChatTimeToComplete = "copilot-chat-time-to-complete",
   CopilotChatFeedbackHelpful = "copilot-chat-helpful",
+  CopilotChatUserAction = "copilot-chat-action",
+  CopilotChatHasCodeBlock = "copilot-chat-has-code-block",
   CopilotChatCommand = "copilot-chat-command",
   CopilotChatRequestId = "copilot-chat-request-id",
   CopilotChatRunCommandId = "copilot-chat-run-command-id", // the id of clicked button in the response

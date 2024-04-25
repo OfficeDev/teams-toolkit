@@ -7,6 +7,7 @@ import { Spec } from "./spec";
 import { ExecutionResultEnum } from "./executionResultEnum";
 import { isOutputHarmful } from "../../utils";
 import { localize } from "../../../utils/localizeUtils";
+import { TelemetryProperty } from "../../../telemetry/extTelemetryEvents";
 
 export class Printer implements ISkill {
   name: string | undefined;
@@ -50,6 +51,7 @@ ${localize("teamstoolkit.chatParticipants.officeAddIn.printer.outputTemplate.end
       return { result: ExecutionResultEnum.Failure, spec: spec };
     } else {
       response.markdown(template);
+      spec.appendix.telemetryData.properties[TelemetryProperty.CopilotChatHasCodeBlock] = "true";
       return { result: ExecutionResultEnum.Success, spec: spec };
     }
   }

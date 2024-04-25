@@ -21,8 +21,6 @@ export class ContainerAppValidator {
   private rg: string;
   private containerAppNames: string[];
 
-  private static readonly CONTAINER_NAME_LIST = "CONTAINER_NAME_LIST";
-
   constructor(ctx: any) {
     console.log("Start to init validator for Azure Container App.");
 
@@ -38,15 +36,12 @@ export class ContainerAppValidator {
       EnvConstants.AZURE_CONTAINER_APP_NAME,
       EnvConstants.BACKEND_APP_NAME,
       EnvConstants.FRONTEND_APP_NAME,
-    ].filter((name) => this.ctx[name] && this.ctx[name].length > 0)
-    .map((name) => this.ctx[name]);
+    ]
+      .map((name) => this.ctx[name])
+      .filter((value) => !!value);
 
     chai.assert.isTrue(
       this.containerAppNames && this.containerAppNames.length > 0
-    );
-
-    process.env[ContainerAppValidator.CONTAINER_NAME_LIST] = JSON.stringify(
-      this.containerAppNames
     );
 
     console.log("Successfully init validator for Azure Container App.");
@@ -75,11 +70,8 @@ export class ContainerAppValidator {
     console.log("Successfully validate Azure Container App Provision.");
   }
 
-  static async validateContainerAppStatus(): Promise<void> {
-    const containerAppNames = JSON.parse(
-      process.env[ContainerAppValidator.CONTAINER_NAME_LIST] || "[]"
-    );
-    for (const containerAppName of containerAppNames) {
+  public async validateContainerAppStatus(): Promise<void> {
+    for (const containerAppName of this.containerAppNames) {
       const command = `az containerapp show --name ${containerAppName} --resource-group ${Env["azureResourceGroup"]} --subscription ${Env["azureSubscriptionId"]}`;
       const { stdout, success } = await Executor.execute(
         command,

@@ -1845,6 +1845,21 @@ describe("scaffold question", () => {
           );
         });
 
+        it("validate operations error: missing inputs", async () => {
+          const question = apiOperationQuestion();
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+
+          let hasError = false;
+          try {
+            await validationSchema.validFunc!(["operation1", "operation2"], undefined);
+          } catch (e) {
+            hasError = true;
+          }
+
+          assert.isTrue(hasError);
+        });
+
         it(" validate operations successfully", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {

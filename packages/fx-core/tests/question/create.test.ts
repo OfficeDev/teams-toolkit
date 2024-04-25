@@ -2386,6 +2386,7 @@ describe("scaffold question", () => {
               data: {
                 authName: "bearerAuth",
                 serverUrl: "https://server",
+                authType: "apiKey",
               },
             },
             {
@@ -2404,6 +2405,8 @@ describe("scaffold question", () => {
               groupName: "GET",
               data: {
                 serverUrl: "https://server",
+                authType: "oauth2",
+                authName: "authName",
               },
             },
             {
@@ -2469,6 +2472,7 @@ describe("scaffold question", () => {
               data: {
                 authName: "bearerAuth",
                 serverUrl: "https://server",
+                authType: "apiKey",
               },
             },
             {
@@ -3265,7 +3269,7 @@ describe("scaffold question", () => {
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
 
-            return ok({ type: "success", result: CapabilityOptions.cusomizeGptWithPlugin().id });
+            return ok({ type: "success", result: CapabilityOptions.customizeGptWithPlugin().id });
           } else if (question.name === QuestionNames.CustomizeGptWithPluginStart) {
             const select = question as SingleSelectQuestion;
             const options = await select.staticOptions;
@@ -3318,7 +3322,7 @@ describe("scaffold question", () => {
             const options = await select.dynamicOptions!(inputs);
             assert.isTrue(options.length === 2);
 
-            return ok({ type: "success", result: CapabilityOptions.cusomizeGptWithPlugin().id });
+            return ok({ type: "success", result: CapabilityOptions.customizeGptWithPlugin().id });
           } else if (question.name === QuestionNames.CustomizeGptWithPluginStart) {
             const select = question as SingleSelectQuestion;
             const options = await select.staticOptions;

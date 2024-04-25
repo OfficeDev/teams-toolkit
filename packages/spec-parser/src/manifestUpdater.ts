@@ -40,16 +40,18 @@ export class ManifestUpdater {
   ): Promise<[TeamsAppManifest, PluginManifestSchema]> {
     const manifest: TeamsAppManifest = await fs.readJSON(manifestPath);
     const apiPluginRelativePath = ManifestUpdater.getRelativePath(manifestPath, apiPluginFilePath);
-    manifest.plugins = [
-      {
-        file: apiPluginRelativePath,
-        id: ConstantString.DefaultPluginId,
-      },
-    ];
+    // Insert plugins in manifest.json if it is plugin for Copilot.
+    if (!options.isGptPlugin) {
+      manifest.plugins = [
+        {
+          file: apiPluginRelativePath,
+          id: ConstantString.DefaultPluginId,
+        },
+      ];
+      ManifestUpdater.updateManifestDescription(manifest, spec);
+    }
 
     const appName = this.removeEnvs(manifest.name.short);
-
-    ManifestUpdater.updateManifestDescription(manifest, spec);
 
     const specRelativePath = ManifestUpdater.getRelativePath(manifestPath, outputSpecPath);
     const apiPlugin = await ManifestUpdater.generatePluginManifestSchema(
@@ -145,7 +147,7 @@ export class ManifestUpdater {
 
       if (pluginAuthObj.type !== "None") {
         const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
-          `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+          `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
         );
 
         pluginAuthObj.reference_id = `\${{${safeRegistrationIdName}}}`;
@@ -238,11 +240,15 @@ export class ManifestUpdater {
               }
 
               if (options.allowResponseSemantics) {
-                const [card, jsonPath] = AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
-                const responseSemantic = wrapResponseSemantics(card, jsonPath);
-                funcObj.capabilities = {
-                  response_semantics: responseSemantic,
-                };
+                const { json } = Utils.getResponseJson(operationItem);
+                if (json.schema) {
+                  const [card, jsonPath] =
+                    AdaptiveCardGenerator.generateAdaptiveCard(operationItem);
+                  const responseSemantic = wrapResponseSemantics(card, jsonPath);
+                  funcObj.capabilities = {
+                    response_semantics: responseSemantic,
+                  };
+                }
               }
 
               if (options.allowConfirmation && method !== ConstantString.GetMethod) {
@@ -378,11 +384,11 @@ export class ManifestUpdater {
         if (authInfo) {
           const auth = authInfo.authScheme;
           const safeRegistrationIdName = Utils.getSafeRegistrationIdEnvName(
-            `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+            `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
           );
           if (Utils.isAPIKeyAuth(auth) || Utils.isBearerTokenAuth(auth)) {
             const safeApiSecretRegistrationId = Utils.getSafeRegistrationIdEnvName(
-              `${authInfo.name}_${ConstantString.RegistrationIdPostfix}`
+              `${authInfo.name}_${ConstantString.RegistrationIdPostfix[authInfo.authScheme.type]}`
             );
             (composeExtension as any).authorization = {
               authType: "apiSecretServiceAuth",

@@ -52,7 +52,12 @@ export class ConstantString {
   static readonly TextBlockType = "TextBlock";
   static readonly ImageType = "Image";
   static readonly ContainerType = "Container";
-  static readonly RegistrationIdPostfix = "REGISTRATION_ID";
+  static readonly RegistrationIdPostfix: { [key: string]: string } = {
+    apiKey: "REGISTRATION_ID",
+    oauth2: "CONFIGURATION_ID",
+    http: "REGISTRATION_ID",
+    openIdConnect: "REGISTRATION_ID",
+  };
   static readonly ResponseCodeFor20X = [
     "200",
     "201",

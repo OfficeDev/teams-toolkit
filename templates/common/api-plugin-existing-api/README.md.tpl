@@ -30,6 +30,16 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 4. Select `Preview in Copilot (Edge)` or `Preview in Copilot (Chrome)` from the launch configuration dropdown.
 5. Open the `Copilot` app and send a prompt to trigger your plugin.
 
+{{#ApiKey}}
+> [!NOTE]
+> Teams Toolkit will ask you for your API key during provision. The API key will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.
+{{/ApiKey}}
+
+{{#OAuth}}
+> [!NOTE]
+> Teams Toolkit will ask you for your Client ID and Client Secret for Oauth2 during provision. These information will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.
+{{/OAuth}}
+
 ## What's included in the template
 
 | Folder       | Contents                                     |

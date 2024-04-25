@@ -269,7 +269,7 @@ export class ManifestUpdater {
 
               functions.push(funcObj);
               functionNames.push(operationId);
-              const conversationStarterStr = (summary ?? description)?.slice(
+              const conversationStarterStr = (summary ?? description).slice(
                 0,
                 ConstantString.ConversationStarterMaxLens
               );

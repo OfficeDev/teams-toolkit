@@ -375,7 +375,7 @@ describe("aadAppCreate", async () => {
       .is.instanceOf(MissingEnvUserError)
       .and.has.property(
         "message",
-        "Cannot generate client secret. Environment variable AAD_APP_OBJECT_ID is not set."
+        "Unable to generate client secret. Environment variable AAD_APP_OBJECT_ID is not set."
       );
   });
 

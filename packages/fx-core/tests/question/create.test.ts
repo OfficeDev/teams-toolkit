@@ -2381,7 +2381,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth",
+              detail: "API key auth(Bearer token auth)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",
@@ -2401,7 +2401,7 @@ describe("scaffold question", () => {
             {
               id: "get operation3",
               label: "get operation3",
-              detail: "OAuth",
+              detail: "OAuth(Auth code flow)",
               groupName: "GET",
               data: {
                 serverUrl: "https://server",
@@ -2467,7 +2467,7 @@ describe("scaffold question", () => {
             {
               id: "get operation1",
               label: "get operation1",
-              detail: "API key auth",
+              detail: "API key auth(Bearer token auth)",
               groupName: "GET",
               data: {
                 authName: "bearerAuth",

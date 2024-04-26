@@ -119,7 +119,7 @@
     "node-fetch": "2.7.0",
     "node-forge": "^1.3.1",
     "office-addin-manifest": "^1.12.10",
-    "office-addin-project": "^0.7.0",
+    "office-addin-project": "^0.8.1",
     "openapi-types": "^7.2.3",
     "proper-lockfile": "^4.1.2",
     "read-package-json-fast": "^2.0.3",

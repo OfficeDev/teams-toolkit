@@ -26,6 +26,7 @@ import {
   accountLogoutCommand,
   accountShowCommand,
   accountUtils,
+  addCommand,
   addSPFxWebpartCommand,
   createSampleCommand,
   deployCommand,
@@ -63,6 +64,7 @@ import * as settingHelper from "@microsoft/teamsfx-core/build/common/projectSett
 import { entraAppUpdateCommand } from "../../src/commands/models/entraAppUpdate";
 import AzureTokenCIProvider from "../../src/commonlib/azureLoginCI";
 import { envResetCommand } from "../../src/commands/models/envReset";
+import { addPluginCommand } from "../../src/commands/models/addPlugin";
 
 describe("CLI commands", () => {
   const sandbox = sinon.createSandbox();
@@ -234,6 +236,42 @@ describe("CLI commands", () => {
       assert.isTrue(res.isOk());
     });
   });
+
+  describe("addPluginCommand", async () => {
+    it("success", async () => {
+      sandbox.stub(FxCore.prototype, "addPlugin").resolves(ok(undefined));
+      const ctx: CLIContext = {
+        command: { ...addPluginCommand, fullName: "add copilot-plugin" },
+        optionValues: {},
+        globalOptionValues: {},
+        argumentValues: [],
+        telemetryProperties: {},
+      };
+      const res = await addPluginCommand.handler!(ctx);
+      assert.isTrue(res.isOk());
+    });
+  });
+
+  describe("getAddCommand", async () => {
+    it("customize GPT is not enabled", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlags.CustomizeGpt.name]: "false",
+      });
+
+      const commands = addCommand();
+      assert.isTrue(commands.commands?.length === 1);
+    });
+
+    it("customize GPT is enabled", async () => {
+      mockedEnvRestore = mockedEnv({
+        [FeatureFlags.CustomizeGpt.name]: "true",
+      });
+
+      const commands = addCommand();
+      assert.isTrue(commands.commands?.length === 2);
+    });
+  });
+
   describe("deployCommand", async () => {
     it("success", async () => {
       sandbox.stub(FxCore.prototype, "deployArtifacts").resolves(ok(undefined));

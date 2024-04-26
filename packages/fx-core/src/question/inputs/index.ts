@@ -10,3 +10,4 @@ export * from "./PreviewTeamsAppInputs";
 export * from "./PermissionGrantInputs";
 export * from "./PermissionListInputs";
 export * from "./DeployAadManifestInputs";
+export * from "./AddPluginInputs";

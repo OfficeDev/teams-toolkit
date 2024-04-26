@@ -2126,13 +2126,18 @@ export function apiMessageExtensionAuthQuestion(): SingleSelectQuestion {
   };
 }
 
-export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQuestion {
+export function apiOperationQuestion(
+  includeExistingAPIs = true,
+  isAddPlugin = false
+): MultiSelectQuestion {
   // export for unit test
   let placeholder = "";
 
   const isPlugin = (inputs?: Inputs): boolean => {
     return (
-      !!inputs && inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id
+      isAddPlugin ||
+      (!!inputs &&
+        inputs[QuestionNames.Capabilities] === CapabilityOptions.copilotPluginApiSpec().id)
     );
   };
 
@@ -2144,7 +2149,9 @@ export function apiOperationQuestion(includeExistingAPIs = true): MultiSelectQue
         ? getLocalizedString("core.createProjectQuestion.apiSpec.copilotOperation.title")
         : getLocalizedString("core.createProjectQuestion.apiSpec.operation.title");
     },
-    cliDescription: "Select Operation(s) Teams Can Interact with.",
+    cliDescription: isAddPlugin
+      ? "Select Operation(s) Copilot Can Interact with."
+      : "Select Operation(s) Teams Can Interact with.",
     cliShortName: "o",
     placeholder: (inputs: Inputs) => {
       const isPlugin =

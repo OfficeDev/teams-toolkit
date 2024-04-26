@@ -89,9 +89,9 @@ export const copilotPluginParserOptions: ParseOptions = {
   allowMissingId: true,
   allowSwagger: true,
   allowMethods: ["get", "post", "put", "delete", "patch", "head", "connect", "options", "trace"],
-  // Will enable below two options once they are ready to consume.
-  // allowResponseSemantics: true,
-  // allowConversationStarters: true
+  allowResponseSemantics: true,
+  allowConversationStarters: true,
+  allowConfirmation: true,
 };
 
 export const specParserGenerateResultTelemetryEvent = "spec-parser-generate-result";
@@ -294,7 +294,7 @@ function sortOperations(operations: ListAPIInfo[]): ApiOperation[] {
         : Utils.isBearerTokenAuth(operation.auth.authScheme)
         ? getLocalizedString("core.copilotPlugin.api.apiKeyAuth")
         : Utils.isOAuthWithAuthCodeFlow(operation.auth.authScheme)
-        ? "OAuth"
+        ? getLocalizedString("core.copilotPlugin.api.oauth")
         : "",
       data: {
         serverUrl: operation.server,

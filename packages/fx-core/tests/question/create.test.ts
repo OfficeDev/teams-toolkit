@@ -1845,6 +1845,21 @@ describe("scaffold question", () => {
           );
         });
 
+        it("validate operations error: missing inputs", async () => {
+          const question = apiOperationQuestion();
+
+          const validationSchema = question.validation as FuncValidation<string[]>;
+
+          let hasError = false;
+          try {
+            await validationSchema.validFunc!(["operation1", "operation2"], undefined);
+          } catch (e) {
+            hasError = true;
+          }
+
+          assert.isTrue(hasError);
+        });
+
         it(" validate operations successfully", async () => {
           const question = apiOperationQuestion();
           const inputs: Inputs = {
@@ -1857,6 +1872,7 @@ describe("scaffold question", () => {
                 groupName: "1",
                 data: {
                   serverUrl: "https://server1",
+                  authName: "oauth2",
                 },
               },
               {
@@ -1865,6 +1881,7 @@ describe("scaffold question", () => {
                 groupName: "2",
                 data: {
                   serverUrl: "https://server1",
+                  authName: "oauth2",
                 },
               },
             ],
@@ -1873,6 +1890,10 @@ describe("scaffold question", () => {
           const validationSchema = question.validation as FuncValidation<string[]>;
           const res = await validationSchema.validFunc!(["operation1", "operation2"], inputs);
 
+          assert.deepEqual(inputs.apiAuthData, {
+            serverUrl: "https://server1",
+            authName: "oauth2",
+          });
           assert.isUndefined(res);
         });
 

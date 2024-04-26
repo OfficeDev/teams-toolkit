@@ -629,7 +629,7 @@
   "driver.aadApp.description.create": "Create a Microsoft Entra app to authenticate users",
   "driver.aadApp.description.update": "Apply Microsoft Entra app manifest to an existing app",
   "driver.aadApp.error.missingEnv": "Environment variable %s is not set.",
-  "driver.aadApp.error.generateSecretFailed": "Cannot generate client secret.",
+  "driver.aadApp.error.generateSecretFailed": "Unable to generate client secret.",
   "driver.aadApp.error.invalidFieldInManifest": "Field %s is missing or invalid in Microsoft Entra app manifest.",
   "driver.aadApp.error.appNameTooLong": "The Microsoft Entra app name is too long. Maximum character length is 120.",
   "driver.aadApp.error.credentialInvalidLifetimeAsPerAppPolicy": "The client secret lifetime is too long for your tenant. Use a shorter value with the clientSecretExpireDays parameter.",

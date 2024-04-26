@@ -38,6 +38,9 @@ dependencies:
   '@microsoft/tiktokenizer':
     specifier: ^1.0.4
     version: 1.0.4
+  '@microsoft/tsdoc':
+    specifier: ^0.14.2
+    version: 0.14.2
   '@microsoft/vscode-ui':
     specifier: workspace:*
     version: link:../vscode-ui
@@ -2268,6 +2271,10 @@ packages:
     engines: {node: '>=18.0.0'}
     dependencies:
       lru-cache: 9.1.2
+    dev: false
+
+  /@microsoft/tsdoc@0.14.2:
+    resolution: {integrity: sha512-9b8mPpKrfeGRuhFH5iO1iwCLeIIsV6+H1sRfxbkoGXIyQE2BTsPd9zqSqQJ+pv5sJ/hT5M1zvOFL02MnEezFug==}
     dev: false
 
   /@nodelib/fs.scandir@2.1.5:

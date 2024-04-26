@@ -17,22 +17,22 @@ import { ExecutionResultEnum } from "./executionResultEnum";
 import {
   MeasurementCodeGenAttemptCount,
   MeasurementCodeGenExecutionTimeInTotalSec,
-  MeasurementScenarioBasedSampleMatchedCount,
-  PropertySystemCodeGenIsCustomFunction,
   PropertySystemCodeGenResult,
-  PropertySystemCodeGenTargetedOfficeHostApplication,
   MeasurementSystemCodegenTaskBreakdownAttemptFailedCount,
 } from "../telemetryConsts";
 import {
   excelSystemPrompt,
   customFunctionSystemPrompt,
   getUserInputBreakdownTaskUserPrompt,
-  getUserInputBreakdownTaskSystemPrompt,
+  getUserAskPreScanningSystemPrompt,
+  getUserComplexAskBreakdownTaskSystemPrompt,
+  getUserSimpleAskBreakdownTaskSystemPrompt,
   getGenerateCodeUserPrompt,
   getGenerateCodeSamplePrompt,
+  getCodeSamplePrompt,
+  getGenerateCodeDeclarationPrompt,
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
-import { SampleData } from "../samples/sampleData";
 import { getTokenLimitation } from "../../consts";
 
 export class CodeGenerator implements ISkill {
@@ -57,33 +57,71 @@ export class CodeGenerator implements ISkill {
     const t0 = performance.now();
 
     response.progress("Identify code-generation scenarios...");
-    const breakdownResult = await this.userInputBreakdownTaskAsync(spec, token);
-
-    console.debug(breakdownResult?.data.map((task) => `- ${task}`).join("\n"));
-    if (!breakdownResult) {
-      if (
-        !spec.appendix.telemetryData.measurements[
-          MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
-        ]
-      ) {
-        spec.appendix.telemetryData.measurements[
-          MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
-        ] = 0;
+    if (
+      (!spec.appendix.host || spec.appendix.host.length === 0) &&
+      spec.appendix.complexity === 0
+    ) {
+      const scanResult = await this.userAskPreScanningAsync(spec, token);
+      if (!scanResult) {
+        return { result: ExecutionResultEnum.Failure, spec: spec };
       }
-      spec.appendix.telemetryData.measurements[
-        MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
-      ] += 1;
-      return { result: ExecutionResultEnum.Failure, spec: spec };
+      spec.appendix.host = scanResult.host;
+      spec.appendix.isCustomFunction = scanResult.customFunctions;
+      spec.appendix.complexity = scanResult.complexity;
+      spec.appendix.shouldContinue = scanResult.shouldContinue;
     }
-    if (!breakdownResult.shouldContinue) {
+
+    if (!spec.appendix.shouldContinue) {
       // Reject will make the whole request rejected
-      spec.sections = breakdownResult.data;
       return { result: ExecutionResultEnum.Rejected, spec: spec };
     }
-    spec.appendix.host = breakdownResult.host;
-    spec.appendix.codeTaskBreakdown = breakdownResult.data;
-    spec.appendix.isCustomFunction = breakdownResult.customFunctions;
-    spec.appendix.complexity = breakdownResult.complexity;
+
+    if (!spec.appendix.codeSample || spec.appendix.codeSample.length === 0) {
+      const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesBM25(
+        token,
+        spec.appendix.host,
+        spec.userInput,
+        1
+      );
+      if (samples.size > 0) {
+        console.debug(`Sample code found: ${Array.from(samples.keys())[0]}`);
+        spec.appendix.codeSample = Array.from(samples.values())[0].codeSample;
+      }
+    }
+
+    if (
+      spec.appendix.codeTaskBreakdown.length === 0 &&
+      spec.appendix.codeExplanation.length === 0
+    ) {
+      const breakdownResult = await this.userAskBreakdownAsync(
+        token,
+        spec.appendix.complexity,
+        spec.appendix.isCustomFunction,
+        spec.appendix.host,
+        spec.userInput,
+        spec.appendix.codeSample
+      );
+
+      console.debug(`functional spec: ${breakdownResult?.spec || ""}`);
+      console.debug(breakdownResult?.funcs.map((task) => `- ${task}`).join("\n"));
+      if (!breakdownResult || !breakdownResult.spec || breakdownResult.funcs.length === 0) {
+        if (
+          !spec.appendix.telemetryData.measurements[
+            MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
+          ]
+        ) {
+          spec.appendix.telemetryData.measurements[
+            MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
+          ] = 0;
+        }
+        spec.appendix.telemetryData.measurements[
+          MeasurementSystemCodegenTaskBreakdownAttemptFailedCount
+        ] += 1;
+        return { result: ExecutionResultEnum.Failure, spec: spec };
+      }
+      spec.appendix.codeTaskBreakdown = breakdownResult.funcs;
+      spec.appendix.codeExplanation = breakdownResult.spec;
+    }
 
     if (!spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount]) {
       spec.appendix.telemetryData.measurements[MeasurementCodeGenAttemptCount] = 0;
@@ -106,9 +144,11 @@ export class CodeGenerator implements ISkill {
     codeSnippet = await this.generateCode(
       token,
       spec.appendix.host,
+      spec,
+      spec.appendix.codeExplanation,
       spec.appendix.isCustomFunction,
       spec.appendix.codeTaskBreakdown,
-      spec
+      spec.appendix.codeSample
     );
     const t1 = performance.now();
     const duration = (t1 - t0) / 1000;
@@ -130,18 +170,17 @@ export class CodeGenerator implements ISkill {
     return { result: ExecutionResultEnum.Success, spec: spec };
   }
 
-  async userInputBreakdownTaskAsync(
+  async userAskPreScanningAsync(
     spec: Spec,
     token: CancellationToken
   ): Promise<null | {
     host: string;
     shouldContinue: boolean;
     customFunctions: boolean;
-    data: string[];
     complexity: number;
   }> {
     const userPrompt = getUserInputBreakdownTaskUserPrompt(spec.userInput);
-    const defaultSystemPrompt = getUserInputBreakdownTaskSystemPrompt();
+    const defaultSystemPrompt = getUserAskPreScanningSystemPrompt();
 
     // Perform the desired operation
     const messages: LanguageModelChatMessage[] = [
@@ -149,7 +188,7 @@ export class CodeGenerator implements ISkill {
       new LanguageModelChatUserMessage(userPrompt),
     ];
     const copilotResponse = await getCopilotResponseAsString(
-      "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
+      "copilot-gpt-3.5-turbo", // "copilot-gpt-4", // "copilot-gpt-3.5-turbo",
       messages,
       token
     );
@@ -158,7 +197,6 @@ export class CodeGenerator implements ISkill {
       shouldContinue: boolean;
       customFunctions: boolean;
       complexity: number;
-      data: string[];
     };
 
     try {
@@ -174,40 +212,72 @@ export class CodeGenerator implements ISkill {
       }
       console.log(`The complexity score: ${copilotRet.complexity}`);
     } catch (error) {
-      console.error("[User task breakdown] Failed to parse the response from Copilot:", error);
+      console.error("[User task scanning] Failed to parse the response from Copilot:", error);
       return null;
     }
 
-    if (!copilotRet.shouldContinue) {
-      // The user ask is rejected
-      return copilotRet;
+    return copilotRet;
+  }
+
+  async userAskBreakdownAsync(
+    token: CancellationToken,
+    complexity: number,
+    isCustomFunctions: boolean,
+    host: string,
+    userInput: string,
+    sampleCode: string
+  ): Promise<null | {
+    spec: string;
+    funcs: string[];
+  }> {
+    const userPrompt = getUserInputBreakdownTaskUserPrompt(userInput);
+    const defaultSystemPrompt =
+      complexity >= 50
+        ? getUserComplexAskBreakdownTaskSystemPrompt(userInput)
+        : getUserSimpleAskBreakdownTaskSystemPrompt(userInput);
+
+    // Perform the desired operation
+    const messages: LanguageModelChatMessage[] = [
+      new LanguageModelChatUserMessage(userPrompt),
+      new LanguageModelChatSystemMessage(defaultSystemPrompt),
+    ];
+
+    if (sampleCode.length > 0) {
+      messages.push(new LanguageModelChatSystemMessage(getCodeSamplePrompt(sampleCode)));
+    }
+
+    const copilotResponse = await getCopilotResponseAsString(
+      "copilot-gpt-3.5-turbo", //"copilot-gpt-4", // "copilot-gpt-3.5-turbo",
+      messages,
+      token
+    );
+    let copilotRet: {
+      spec: string;
+      funcs: string[];
+    };
+
+    try {
+      if (!copilotResponse) {
+        return null; // The response is empty
+      }
+      const codeSnippetRet = copilotResponse.match(/```json([\s\S]*?)```/);
+      if (!codeSnippetRet) {
+        // try if the LLM already give a json object
+        copilotRet = JSON.parse(copilotResponse.trim());
+      } else {
+        copilotRet = JSON.parse(codeSnippetRet[1].trim());
+      }
+    } catch (error) {
+      console.error("[User task breakdown] Failed to parse the response from Copilot:", error);
+      return null;
     }
     // We're not able to control the LLM output very precisely, so we need to do some post-processing here
     // For non-custom functions, we need to make sure the entry function 'main' is included in the task breakdown
     // For custom functions, we need to make sure the entry function 'main' is not included in the task breakdown
-    if (
-      !copilotRet.customFunctions &&
-      !copilotRet.data.find((task: string) => {
-        return task.includes("function named 'main'");
-      })
-    ) {
-      console.debug(
-        `[User task breakdown] The entry function 'main' is missing from task breakdown.`
-      );
-      copilotRet.data.push(
+    if (!isCustomFunctions) {
+      copilotRet.funcs.push(
         "Create an entry function named 'main'. This function doesn't take any parameters and will call other functions in the list in right order. The function should be declared as 'async function'."
       );
-    }
-
-    if (
-      copilotRet.customFunctions &&
-      copilotRet.data.find((task: string) => {
-        return task.includes("entry function named 'main'");
-      })
-    ) {
-      copilotRet.data = copilotRet.data.filter((task: string) => {
-        return !task.includes("entry function named 'main'");
-      });
     }
 
     return copilotRet;
@@ -216,15 +286,13 @@ export class CodeGenerator implements ISkill {
   async generateCode(
     token: CancellationToken,
     host: string,
+    spec: Spec,
+    codeSpec: string,
     isCustomFunctions: boolean,
     suggestedFunction: string[],
-    spec: Spec
+    sampleCode: string
   ) {
-    const userPrompt = getGenerateCodeUserPrompt(spec.userInput, host, suggestedFunction);
-    spec.appendix.telemetryData.properties[PropertySystemCodeGenTargetedOfficeHostApplication] =
-      host;
-    spec.appendix.telemetryData.properties[PropertySystemCodeGenIsCustomFunction] =
-      isCustomFunctions.toString();
+    const userPrompt = getGenerateCodeUserPrompt(codeSpec, host, suggestedFunction);
     let referenceUserPrompt = "";
     switch (host) {
       case "Excel":
@@ -239,57 +307,36 @@ export class CodeGenerator implements ISkill {
         break;
     }
 
-    let samplesPrompt = getGenerateCodeSamplePrompt();
-    const scenarioSamples = new Map<string, SampleData>();
-    // Then let's query if any code examples relevant to the user's ask that we can put as examples
-    for (const task of suggestedFunction) {
-      if (task.includes("function named 'main'")) {
-        continue;
-      }
+    const declarations = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+      token,
+      host,
+      codeSpec,
+      sampleCode
+    );
 
-      const k = host.toLowerCase() == "powerpoint" ? 2 : 1;
-      const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesLLM(
-        token,
-        host,
-        task,
-        k // Get top 2 most relevant samples for now
-      );
+    spec.appendix.apiDeclarationsReference = declarations;
 
-      for (const [key, value] of samples) {
-        if (!scenarioSamples.has(key)) {
-          scenarioSamples.set(key, value);
-        }
-      }
+    let declarationPrompt = getGenerateCodeDeclarationPrompt();
+    if (declarations.size > 0) {
+      declarationPrompt += Array.from(declarations.values())
+        .map((declaration) => `- ${declaration.definition}`)
+        .join("\n");
     }
 
-    if (scenarioSamples.size > 0) {
-      const codeSnippets: string[] = [];
-      scenarioSamples.forEach((sample, api) => {
-        console.debug(`[Code generation] Sample matched: ${sample.description}`);
-        codeSnippets.push(`
-- ${sample.description}:
-\`\`\`typescript
-${sample.codeSample}
-\`\`\`\n
-`);
-      });
-
-      if (codeSnippets.length > 0) {
-        samplesPrompt = samplesPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
-      }
+    let samplePrompt = getGenerateCodeSamplePrompt();
+    if (sampleCode.length > 0) {
+      samplePrompt += `
+      \`\`\`typescript
+      ${sampleCode}
+      \`\`\`
+      `;
     }
-
-    if (!spec.appendix.telemetryData.measurements[MeasurementScenarioBasedSampleMatchedCount]) {
-      spec.appendix.telemetryData.measurements[MeasurementScenarioBasedSampleMatchedCount] = 0;
-    }
-    spec.appendix.telemetryData.measurements[MeasurementScenarioBasedSampleMatchedCount] +=
-      scenarioSamples.size > 0 ? 1 : 0;
-
     // Perform the desired operation
     // The order in array is matter, don't change it unless you know what you are doing
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatUserMessage(userPrompt),
-      new LanguageModelChatSystemMessage(samplesPrompt),
+      new LanguageModelChatSystemMessage(declarationPrompt),
+      new LanguageModelChatSystemMessage(samplePrompt),
       new LanguageModelChatSystemMessage(referenceUserPrompt),
     ];
     const model: "copilot-gpt-4" | "copilot-gpt-3.5-turbo" = "copilot-gpt-4";

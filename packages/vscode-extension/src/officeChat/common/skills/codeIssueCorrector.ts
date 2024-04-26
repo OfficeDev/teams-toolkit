@@ -21,13 +21,13 @@ import {
 import {
   customFunctionSystemPrompt,
   excelSystemPrompt,
+  getCodeSamplePrompt,
+  getDeclarationsPrompt,
   getFixIssueDefaultSystemPrompt,
   getFixIssueUserPrompt,
   getGenerateCodeSamplePrompt,
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
-import { SampleData } from "../samples/sampleData";
-import { SampleProvider } from "../samples/sampleProvider";
 import { getTokenLimitation } from "../../consts";
 
 export class CodeIssueCorrector implements ISkill {
@@ -75,17 +75,17 @@ export class CodeIssueCorrector implements ISkill {
     let issueTolerance: number;
 
     if (spec.appendix.complexity < 25) {
-      maxRetryCount = 3;
-      issueTolerance = 3;
+      maxRetryCount = 2;
+      issueTolerance = 2;
     } else if (spec.appendix.complexity < 50) {
+      maxRetryCount = 2;
+      issueTolerance = 2;
+    } else if (spec.appendix.complexity < 75) {
       maxRetryCount = 3;
       issueTolerance = 3;
-    } else if (spec.appendix.complexity < 75) {
-      maxRetryCount = 4;
-      issueTolerance = 4;
     } else {
-      maxRetryCount = 4;
-      issueTolerance = 4;
+      maxRetryCount = 3;
+      issueTolerance = 3;
     }
 
     if (baseLineResuult.compileErrors.length === 0 && baseLineResuult.runtimeErrors.length === 0) {
@@ -100,34 +100,14 @@ export class CodeIssueCorrector implements ISkill {
       return { result: ExecutionResultEnum.FailedAndGoNext, spec: spec };
     }
 
-    let samplesPrompt = getGenerateCodeSamplePrompt();
-    const scenarioSamples = new Map<string, SampleData>();
-    // Then let's query if any code examples relevant to the user's ask that we can put as examples
-    for (const task of codeTaskBreakdown) {
-      if (task.includes("function named 'main'")) {
-        continue;
-      }
+    let setDeclartionPrompt = getDeclarationsPrompt();
 
-      const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesLLM(
-        token,
-        host,
-        task,
-        2 // Get top 2 most relevant samples for now
-      );
-
-      for (const [key, value] of samples) {
-        if (!scenarioSamples.has(key)) {
-          scenarioSamples.set(key, value);
-        }
-      }
-    }
-
-    if (scenarioSamples.size > 0) {
+    if (spec.appendix.apiDeclarationsReference.size > 0) {
       const codeSnippets: string[] = [];
-      scenarioSamples.forEach((sample, api) => {
-        console.debug(`[Code corrector] Sample matched: ${sample.description}`);
+      spec.appendix.apiDeclarationsReference.forEach((sample, api) => {
+        console.debug(`[Code corrector] Declaration matched: ${sample.description}`);
         codeSnippets.push(`
-- ${sample.description}:
+- [Description] ${sample.description}:
 \`\`\`typescript
 ${sample.codeSample}
 \`\`\`\n
@@ -135,12 +115,18 @@ ${sample.codeSample}
       });
 
       if (codeSnippets.length > 0) {
-        samplesPrompt = samplesPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
+        setDeclartionPrompt = setDeclartionPrompt.concat(`\n${codeSnippets.join("\n")}\n\n`);
       }
     }
-    const sampleMessage: LanguageModelChatSystemMessage = new LanguageModelChatSystemMessage(
-      samplesPrompt
-    );
+    const declarationMessage: LanguageModelChatSystemMessage | null =
+      spec.appendix.apiDeclarationsReference.size > 0
+        ? new LanguageModelChatSystemMessage(setDeclartionPrompt)
+        : null;
+
+    const sampleMessage: LanguageModelChatSystemMessage | null =
+      spec.appendix.codeSample.length > 0
+        ? new LanguageModelChatSystemMessage(getCodeSamplePrompt(spec.appendix.codeSample))
+        : null;
 
     let fixedCode: string | null = codeSnippet;
     const historicalErrors: string[] = [];
@@ -171,6 +157,7 @@ ${sample.codeSample}
         historicalErrors,
         additionalInfo,
         model,
+        declarationMessage,
         sampleMessage
       );
       if (!fixedCode) {
@@ -185,8 +172,6 @@ ${sample.codeSample}
           fixedCode,
           spec.appendix.telemetryData
         );
-      // await writeLogToFile("\n# compileErrors:\n" + issuesAfterFix.compileErrors.join("\n\n"));
-      // await writeLogToFile("\n# runtimeErrors:\n" + issuesAfterFix.runtimeErrors.join("\n\n"));
       historicalErrors.push(
         ...baseLineResuult.compileErrors.map(
           (item) => item.replace(/at Char \d+-\d+:/g, "").split("\nFix suggestion")[0]
@@ -268,7 +253,8 @@ ${sample.codeSample}
     historicalErrors: string[],
     additionalInfo: string,
     model: "copilot-gpt-3.5-turbo" | "copilot-gpt-4",
-    sampleMessage: LanguageModelChatSystemMessage
+    declarationMessage: LanguageModelChatSystemMessage | null,
+    sampleMessage: LanguageModelChatSystemMessage | null
   ) {
     if (errorMessages.length === 0) {
       return codeSnippet;
@@ -301,9 +287,17 @@ ${sample.codeSample}
     const messages: LanguageModelChatMessage[] = [
       new LanguageModelChatUserMessage(tempUserInput),
       new LanguageModelChatSystemMessage(defaultSystemPrompt),
-      sampleMessage,
-      new LanguageModelChatSystemMessage(referenceUserPrompt),
     ];
+
+    if (!!sampleMessage) {
+      messages.push(sampleMessage);
+    }
+
+    if (!!declarationMessage) {
+      messages.push(declarationMessage);
+    }
+
+    messages.push(new LanguageModelChatSystemMessage(referenceUserPrompt));
 
     let msgCount = countMessagesTokens(messages);
     while (msgCount > getTokenLimitation(model)) {

@@ -5,6 +5,7 @@ import { Spec } from "../../../../src/officeChat/common/skills/spec";
 import { CancellationToken, ChatResponseStream, LanguageModelChatUserMessage } from "vscode";
 import * as utils from "../../../../src/chat/utils";
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
+import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
 
 describe("CodeExplainer", () => {
   let invokeParametersInit: () => any;
@@ -22,12 +23,15 @@ describe("CodeExplainer", () => {
         codeSnippet: "some code",
         codeExplanation: "some explanation",
         codeTaskBreakdown: ["task1", "task2"],
+        codeSample: "",
+        apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
         complexity: 0,
+        shouldContinue: false,
       };
 
       const model: LanguageModelChatUserMessage = {
@@ -78,6 +82,8 @@ describe("CodeExplainer", () => {
       codeSnippet: "Some code snippet",
       codeExplanation: "Some code explanation",
       codeTaskBreakdown: ["task1", "task2"],
+      codeSample: "",
+      apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: true,
       telemetryData: {
         properties: {
@@ -90,6 +96,7 @@ describe("CodeExplainer", () => {
         },
       },
       complexity: 3,
+      shouldContinue: false,
     };
 
     const result = codeExplainer.canInvoke(spec);

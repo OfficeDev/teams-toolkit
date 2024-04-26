@@ -5,6 +5,7 @@ import { CancellationToken, ChatResponseStream, LanguageModelChatUserMessage } f
 import { ExecutionResultEnum } from "../../../../src/officeChat/common/skills/executionResultEnum";
 import { SkillSet } from "../../../../src/officeChat/common/skills/skillset";
 import { ISkill } from "../../../../src/officeChat/common/skills/iSkill";
+import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
 
 describe("skillset", () => {
   let invokeParametersInit: () => any;
@@ -22,12 +23,15 @@ describe("skillset", () => {
         codeSnippet: "some code",
         codeExplanation: "some explanation",
         codeTaskBreakdown: ["task1", "task2"],
+        codeSample: "",
+        apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
         complexity: 0,
+        shouldContinue: false,
       };
 
       const model: LanguageModelChatUserMessage = {

@@ -10,6 +10,7 @@ import path = require("path");
 import * as helper from "../../../../src/chat/commands/create/helper";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
+import { SampleData } from "../../../../src/officeChat/common/samples/sampleData";
 
 describe("projectCreator", () => {
   let invokeParametersInit: () => any;
@@ -27,12 +28,15 @@ describe("projectCreator", () => {
         codeSnippet: "some code",
         codeExplanation: "some explanation",
         codeTaskBreakdown: ["task1", "task2"],
+        codeSample: "",
+        apiDeclarationsReference: new Map<string, SampleData>(),
         isCustomFunction: false,
         telemetryData: {
           properties: { property1: "value1", property2: "value2" },
           measurements: { measurement1: 1, measurement2: 2 },
         },
         complexity: 0,
+        shouldContinue: false,
       };
 
       const model: LanguageModelChatUserMessage = {
@@ -83,6 +87,8 @@ describe("projectCreator", () => {
       codeSnippet: "Some code snippet",
       codeExplanation: "Some code explanation",
       codeTaskBreakdown: ["task1", "task2"],
+      codeSample: "",
+      apiDeclarationsReference: new Map<string, SampleData>(),
       isCustomFunction: true,
       telemetryData: {
         properties: {
@@ -95,6 +101,7 @@ describe("projectCreator", () => {
         },
       },
       complexity: 3,
+      shouldContinue: false,
     };
 
     const result = project_creator.canInvoke(spec);

@@ -15,17 +15,16 @@ describe("SampleProvider", () => {
   it("top K most relevant scenario sample codes LLM", async () => {
     sandbox
       .stub(utils, "getCopilotResponseAsString")
-      .resolves('{"selectedSampleCodes":["description1", "description2"]}');
-    const k = 2;
+      .resolves('{"picked":["description1", "description2"]}');
+    const sample = "a fake code sample";
     const scenario = "insert annotation into document";
     const host = "Word";
-    const topKSamples =
-      await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesLLM(
-        null as any,
-        host,
-        scenario,
-        k
-      );
+    const topKSamples = await SampleProvider.getInstance().getMostRelevantDeclarationsUsingLLM(
+      null as any,
+      host,
+      scenario,
+      sample
+    );
 
     expect(topKSamples).to.exist;
     expect(topKSamples).to.be.an("map");

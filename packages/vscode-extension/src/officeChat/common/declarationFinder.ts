@@ -144,7 +144,7 @@ export class DeclarationFinder {
       while (!summarySectionNext.done) {
         const node = summarySectionNext.value;
         if (node.kind === "PlainText") {
-          description += ((node as DocPlainText).text as string).trim().replace("`", "'") + " ";
+          description += (node as DocPlainText).text.trim().replace("`", "'") + " ";
         }
         if (node.kind === "Paragraph") {
           const paragraph = node as DocParagraph;
@@ -153,7 +153,8 @@ export class DeclarationFinder {
           while (!paragraphNext.done) {
             const paragraphNode = paragraphNext.value;
             if (paragraphNode.kind === "PlainText") {
-              description = (paragraphNode.text as string).trim().replace("`", "'") + " ";
+              description +=
+                (paragraphNode as unknown as DocPlainText).text.trim().replace("`", "'") + " ";
             }
             paragraphNext = paragraphIterator.next();
           }

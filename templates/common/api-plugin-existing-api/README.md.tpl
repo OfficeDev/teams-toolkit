@@ -37,7 +37,7 @@ When you extend Copilot for Microsoft 365, you maximize the efficiency of your a
 
 {{#OAuth}}
 > [!NOTE]
-> Teams Toolkit will ask you for your Client ID and Client Secret for Oauth2 during provision. These information will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.
+> Teams Toolkit will ask you for your Client ID and Client Secret for Oauth2 during provision. These information will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your Client ID and Client Secret.
 {{/OAuth}}
 
 ## What's included in the template

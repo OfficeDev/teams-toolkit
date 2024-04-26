@@ -25,7 +25,6 @@ import {
   getDeclarationsPrompt,
   getFixIssueDefaultSystemPrompt,
   getFixIssueUserPrompt,
-  getGenerateCodeSamplePrompt,
 } from "../../officePrompts";
 import { localize } from "../../../utils/localizeUtils";
 import { getTokenLimitation } from "../../consts";

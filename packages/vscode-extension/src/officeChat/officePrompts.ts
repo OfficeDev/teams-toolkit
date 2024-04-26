@@ -733,7 +733,7 @@ class ${className} extends OfficeExtension.ClientObject {
 
   # Your tasks:
   For the given description of user ask: 
-  "${codeSpec.replace('"', "'")}"
+  "${codeSpec.replace(/"/g, "'")}"
   and list of Office JavaScript Add-ins API object class names: '
   ${classNamesList.join(
     ","

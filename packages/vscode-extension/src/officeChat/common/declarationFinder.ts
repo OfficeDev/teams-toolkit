@@ -4,8 +4,7 @@
 import ts = require("typescript");
 import { fetchRawFileContent } from "./utils";
 import { SampleData } from "./samples/sampleData";
-import { DocComment, DocNode, DocParagraph, DocPlainText, TSDocParser } from "@microsoft/tsdoc";
-import { CancellationToken } from "vscode";
+import { DocParagraph, DocPlainText, TSDocParser } from "@microsoft/tsdoc";
 
 export class DeclarationFinder {
   private static DECLARATION_FILE_NAME = "office-js.d.ts";
@@ -145,7 +144,7 @@ export class DeclarationFinder {
       while (!summarySectionNext.done) {
         const node = summarySectionNext.value;
         if (node.kind === "PlainText") {
-          description += (node as DocPlainText).text.trim().replace("`", "'") + " ";
+          description += ((node as DocPlainText).text as string).trim().replace("`", "'") + " ";
         }
         if (node.kind === "Paragraph") {
           const paragraph = node as DocParagraph;
@@ -154,7 +153,7 @@ export class DeclarationFinder {
           while (!paragraphNext.done) {
             const paragraphNode = paragraphNext.value;
             if (paragraphNode.kind === "PlainText") {
-              description += (paragraphNode as DocPlainText).text.trim().replace("`", "'") + " ";
+              description = (paragraphNode.text as string).trim().replace("`", "'") + " ";
             }
             paragraphNext = paragraphIterator.next();
           }

@@ -29,7 +29,7 @@
         "messageTeamMembers"
     ],
     "copilotGpts" [
-        "id": "gpt_1",
+        "id": "declarativeCopilot",
         "file": "declarativeCopilot.json"
     ],
     "validDomains": []

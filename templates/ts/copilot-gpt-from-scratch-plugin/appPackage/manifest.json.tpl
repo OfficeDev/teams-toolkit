@@ -31,8 +31,8 @@
   ],
   "copilotGpts": [
     {
-        "id": "repairGPT",
-        "file": "repair-gpt.json"
+        "id": "repairDeclarativeCopilot",
+        "file": "repairDeclarativeCopilot.json"
     }
   ],
   "permissions": [

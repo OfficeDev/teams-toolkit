@@ -241,12 +241,13 @@ export class CreateOauthDriver implements StepDriver {
       tokenExchangeEndpoint: authInfo.tokenExchangeEndpoint,
       tokenRefreshEndpoint: args.refreshUrl ?? authInfo.tokenRefreshEndpoint,
       scopes: authInfo.scopes,
-      manageableByUsers: [
-        {
-          userId: userId,
-          accessType: OauthRegistrationUserAccessType.ReadWrite,
-        },
-      ],
+      // TODO: add this part back after TDP update
+      // manageableByUsers: [
+      //   {
+      //     userId: userId,
+      //     accessType: OauthRegistrationUserAccessType.ReadWrite,
+      //   },
+      // ],
     } as OauthRegistration;
   }
 }

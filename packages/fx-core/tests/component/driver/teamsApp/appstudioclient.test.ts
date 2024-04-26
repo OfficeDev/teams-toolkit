@@ -986,7 +986,7 @@ describe("App Studio API Test", () => {
 
       const response = {
         data: {
-          configurationId: {
+          configurationRegistrationId: {
             oAuthConfigId: "fakeId",
           },
         },
@@ -997,7 +997,7 @@ describe("App Studio API Test", () => {
         appStudioToken,
         fakeOauthRegistration
       );
-      chai.assert.equal(res.configurationId.oAuthConfigId, "fakeId");
+      chai.assert.equal(res.configurationRegistrationId.oAuthConfigId, "fakeId");
     });
 
     it("Graph API failure", async () => {

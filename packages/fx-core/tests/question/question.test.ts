@@ -1131,9 +1131,9 @@ describe("oauthQuestion", async () => {
       platform: Platform.VSCode,
       outputEnvVarNames: new Map<string, string>(),
     };
-    inputs.outputEnvVarNames.set("registrationId", "registrationId");
+    inputs.outputEnvVarNames.set("configurationId", "configurationId");
     mockedEnvRestore = mockedEnv({
-      registrationId: "fake-id",
+      configurationId: "fake-id",
     });
     const question = oauthQuestion();
     const condition = question.condition;

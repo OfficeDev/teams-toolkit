@@ -1000,7 +1000,7 @@ export function oauthQuestion(): IQTreeNode {
     data: { type: "group" },
     condition: (inputs: Inputs) => {
       return (
-        inputs.outputEnvVarNames && !process.env[inputs.outputEnvVarNames.get("registrationId")]
+        inputs.outputEnvVarNames && !process.env[inputs.outputEnvVarNames.get("configurationId")]
       );
     },
     children: [

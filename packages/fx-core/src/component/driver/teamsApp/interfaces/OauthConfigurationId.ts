@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 export interface OauthConfigurationId {
-  configurationId: ConfigurationRegistrationId;
+  configurationRegistrationId: ConfigurationRegistrationId;
 }
 
 export interface ConfigurationRegistrationId {

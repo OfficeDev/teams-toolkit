@@ -922,7 +922,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         case ProjectTypeOptions.customCopilot().id:
           return getLocalizedString("core.createProjectQuestion.projectType.customCopilot.title");
         case ProjectTypeOptions.customizeGpt().id:
-          return "Choose GPT type";
+          return "Choose Declarative Copilot type";
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }

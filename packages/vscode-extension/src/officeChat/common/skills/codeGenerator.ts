@@ -248,7 +248,6 @@ export class CodeGenerator implements ISkill {
       }
 
       const k = host.toLowerCase() == "powerpoint" ? 2 : 1;
-      
       const samples = await SampleProvider.getInstance().getTopKMostRelevantScenarioSampleCodesLLM(
         token,
         host,

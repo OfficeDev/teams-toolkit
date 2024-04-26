@@ -846,8 +846,6 @@ function registerOfficeDevMenuCommands(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openHelpFeedbackLinkCmd);
 
-  // fx-extension.openOfficeDevDocument is registered in registerOfficeDevRegistration
-
   const openGetStartedLinkCmd = vscode.commands.registerCommand(
     "fx-extension.openGetStarted",
     (...args) => Correlator.run(officeDevHandlers.openGetStartedLinkHandler, args)

@@ -873,7 +873,7 @@ export class CapabilityOptions {
   static customizeGptWithPlugin(): OptionItem {
     return {
       id: "declarative-copilot-with-plugin-from-scratch",
-      label: "Declarative Copilot with a plugin",
+      label: "Declarative Copilot with a plugin from Azure Functions",
       detail:
         "A declarative Copilot containing a Copilot plugin with a new API from Azure Functions",
     };
@@ -922,7 +922,7 @@ export function capabilityQuestion(): SingleSelectQuestion {
         case ProjectTypeOptions.customCopilot().id:
           return getLocalizedString("core.createProjectQuestion.projectType.customCopilot.title");
         case ProjectTypeOptions.customizeGpt().id:
-          return "Choose the GPT type";
+          return "Choose GPT type";
         default:
           return getLocalizedString("core.createCapabilityQuestion.titleNew");
       }

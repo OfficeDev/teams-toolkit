@@ -15,6 +15,16 @@ to install the app to.
 3. Right-click your project and select `Teams Toolkit > Preview in > Teams`.
 4. To trigger the Message Extension, you can click the `+` under compose message area to find your message extension.
 
+{{#ApiKey}}
+> [!NOTE]
+> Teams Toolkit will ask you for your API key during provision. The API key will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.
+{{/ApiKey}}
+
+{{#OAuth}}
+> [!NOTE]
+> Teams Toolkit will ask you for your Client ID and Client Secret for Oauth2 during provision. These information will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your Client ID and Client Secret.
+{{/OAuth}}
+
 ## Learn more
 
 - [Extend Teams platform with APIs](https://aka.ms/teamsfx-api-plugin)

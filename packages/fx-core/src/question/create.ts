@@ -873,7 +873,7 @@ export class CapabilityOptions {
   static customizeGptWithPlugin(): OptionItem {
     return {
       id: "declarative-copilot-with-plugin-from-scratch",
-      label: "Declarative Copilot with a plugin from Azure Functions",
+      label: "Declarative Copilot with a plugin using Azure Functions",
       detail:
         "A declarative Copilot containing a Copilot plugin with a new API from Azure Functions",
     };

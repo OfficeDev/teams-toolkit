@@ -22,8 +22,6 @@ import {
   TeamsAppManifest,
   PluginManifestSchema,
   FunctionObject,
-  FunctionParameters,
-  FunctionParameter,
   AuthObject,
 } from "@microsoft/teams-manifest";
 import { AdaptiveCardGenerator } from "./adaptiveCardGenerator";
@@ -76,48 +74,21 @@ export class ManifestUpdater {
     };
   }
 
-  static mapOpenAPISchemaToFuncParam(
-    schema: OpenAPIV3.SchemaObject,
-    method: string,
-    pathUrl: string
-  ): FunctionParameter {
-    let parameter: FunctionParameter;
-
+  static checkSchema(schema: OpenAPIV3.SchemaObject, method: string, pathUrl: string): void {
     if (schema.type === "array") {
       const items = schema.items as OpenAPIV3.SchemaObject;
-      parameter = {
-        type: "array",
-        items: ManifestUpdater.mapOpenAPISchemaToFuncParam(items, method, pathUrl),
-      };
+      ManifestUpdater.checkSchema(items, method, pathUrl);
     } else if (
-      schema.type === "string" ||
-      schema.type === "boolean" ||
-      schema.type === "integer" ||
-      schema.type === "number"
+      schema.type !== "string" &&
+      schema.type !== "boolean" &&
+      schema.type !== "integer" &&
+      schema.type !== "number"
     ) {
-      parameter = {
-        type: schema.type,
-      };
-    } else {
       throw new SpecParserError(
         Utils.format(ConstantString.UnsupportedSchema, method, pathUrl, JSON.stringify(schema)),
         ErrorType.UpdateManifestFailed
       );
     }
-
-    if (schema.enum) {
-      parameter.enum = schema.enum;
-    }
-
-    if (schema.description) {
-      parameter.description = schema.description;
-    }
-
-    if (schema.default) {
-      parameter.default = schema.default;
-    }
-
-    return parameter;
   }
 
   static async generatePluginManifestSchema(
@@ -169,53 +140,22 @@ export class ManifestUpdater {
               const paramObject = operationItem.parameters as OpenAPIV3.ParameterObject[];
               const requestBody = operationItem.requestBody as OpenAPIV3.ParameterObject;
 
-              const parameters: Required<FunctionParameters> = {
-                type: "object",
-                properties: {},
-                required: [],
-              };
-
               if (paramObject) {
                 for (let i = 0; i < paramObject.length; i++) {
                   const param = paramObject[i];
-
                   const schema = param.schema as OpenAPIV3.SchemaObject;
-
-                  parameters.properties[param.name] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
-                    schema,
-                    method,
-                    pathUrl
-                  );
-
+                  ManifestUpdater.checkSchema(schema, method, pathUrl);
                   confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(param.name));
-
-                  if (param.required) {
-                    parameters.required.push(param.name);
-                  }
-
-                  if (!parameters.properties[param.name].description) {
-                    parameters.properties[param.name].description = param.description ?? "";
-                  }
                 }
               }
 
               if (requestBody) {
                 const requestJsonBody = requestBody.content!["application/json"];
                 const requestBodySchema = requestJsonBody.schema as OpenAPIV3.SchemaObject;
-
                 if (requestBodySchema.type === "object") {
-                  if (requestBodySchema.required) {
-                    parameters.required.push(...requestBodySchema.required);
-                  }
-
                   for (const property in requestBodySchema.properties) {
                     const schema = requestBodySchema.properties[property] as OpenAPIV3.SchemaObject;
-                    parameters.properties[property] = ManifestUpdater.mapOpenAPISchemaToFuncParam(
-                      schema,
-                      method,
-                      pathUrl
-                    );
-
+                    ManifestUpdater.checkSchema(schema, method, pathUrl);
                     confirmationBodies.push(ManifestUpdater.getConfirmationBodyItem(property));
                   }
                 } else {
@@ -235,10 +175,6 @@ export class ManifestUpdater {
                 name: operationId,
                 description: description,
               };
-
-              if (paramObject || requestBody) {
-                funcObj.parameters = parameters;
-              }
 
               if (options.allowResponseSemantics) {
                 const { json } = Utils.getResponseJson(operationItem);

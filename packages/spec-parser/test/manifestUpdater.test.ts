@@ -79,16 +79,6 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
         ],
         runtimes: [
@@ -213,16 +203,6 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
             capabilities: {
               response_semantics: {
                 data_path: "$",
@@ -382,30 +362,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             name: "createPet",
             description: "Create a new pet in the store",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
         ],
         runtimes: [
@@ -547,30 +507,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             name: "createPet",
             description: "Create a new pet in the store",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
         ],
         runtimes: [
@@ -702,30 +642,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             name: "createPet",
             description: "Create a new pet in the store",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
         ],
         runtimes: [
@@ -862,33 +782,6 @@ describe("updateManifestWithAiPlugin", () => {
         {
           name: "createPet",
           description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-              status: {
-                type: "string",
-                description: "Status of the pet",
-                enum: ["available", "pending", "sold"],
-              },
-              age: {
-                type: "string",
-                description: "Date time of the pet",
-              },
-              arrayProp: {
-                type: "array",
-                items: {
-                  type: "string",
-                  description: "Prop of the pet",
-                  default: "2021-01-01T00:00:00Z",
-                },
-              },
-            },
-          },
         },
       ],
       runtimes: [
@@ -1017,34 +910,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             name: "createPet",
             description: "Create a new pet in the store",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-                id: {
-                  type: "string",
-                  description: "Id of the pet",
-                },
-              },
-            },
             capabilities: {
               confirmation: {
                 type: "AdaptiveCard",
@@ -1198,30 +1067,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             name: "createPet",
             description: "Create a new pet in the store",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
             capabilities: {
               confirmation: {
                 type: "AdaptiveCard",
@@ -1370,30 +1219,10 @@ describe("updateManifestWithAiPlugin", () => {
         {
           name: "getPets",
           description: "Returns all pets from the system that the user has access to",
-          parameters: {
-            type: "object",
-            properties: {
-              limit: {
-                type: "integer",
-                description: "Maximum number of pets to return",
-              },
-            },
-            required: ["limit"],
-          },
         },
         {
           name: "createPet",
           description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-            },
-          },
         },
       ],
       runtimes: [
@@ -1509,30 +1338,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             description: "",
             name: "createPet",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
         ],
         runtimes: [
@@ -1727,72 +1536,22 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             description: "Create a pet using pet name",
             name: "createPet",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
           {
             description: "Delete a pet using pet name",
             name: "deletePet",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
           {
             description: "",
             name: "patchPet",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
           {
             description: "This is a long long long long long description that max length is 68",
             name: "putPet",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
         ],
         runtimes: [
@@ -1919,30 +1678,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             description: "",
             name: "createPet",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
         ],
         runtimes: [
@@ -2084,58 +1823,18 @@ describe("updateManifestWithAiPlugin", () => {
         {
           name: "getPets2",
           description: "Returns all pets from the system that the user has access to",
-          parameters: {
-            type: "object",
-            properties: {
-              limit: {
-                type: "integer",
-                description: "Maximum number of pets to return",
-              },
-            },
-            required: ["limit"],
-          },
         },
         {
           name: "createPet2",
           description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-            },
-          },
         },
         {
           name: "getPets",
           description: "Returns all pets from the system that the user has access to",
-          parameters: {
-            type: "object",
-            properties: {
-              limit: {
-                type: "integer",
-                description: "Maximum number of pets to return",
-              },
-            },
-            required: ["limit"],
-          },
         },
         {
           name: "createPet",
           description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-            },
-          },
         },
       ],
       runtimes: [
@@ -2180,30 +1879,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets2",
             description: "Returns all pets from the system that the user has access to",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             name: "createPet2",
             description: "Create a new pet in the store",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet",
-                },
-              },
-            },
           },
         ],
         runtimes: [
@@ -2316,30 +1995,10 @@ describe("updateManifestWithAiPlugin", () => {
         {
           name: "getPets",
           description: "Returns all pets from the system that the user has access to",
-          parameters: {
-            type: "object",
-            properties: {
-              limit: {
-                type: "integer",
-                description: "Maximum number of pets to return",
-              },
-            },
-            required: ["limit"],
-          },
         },
         {
           name: "createPet",
           description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-            },
-          },
         },
       ],
       runtimes: [
@@ -2469,30 +2128,10 @@ describe("updateManifestWithAiPlugin", () => {
         {
           name: "getPets",
           description: "Returns all pets from the system that the user has access to",
-          parameters: {
-            type: "object",
-            properties: {
-              limit: {
-                type: "integer",
-                description: "Maximum number of pets to return",
-              },
-            },
-            required: ["limit"],
-          },
         },
         {
           name: "createPet",
           description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-            },
-          },
         },
       ],
       runtimes: [
@@ -2527,30 +2166,10 @@ describe("updateManifestWithAiPlugin", () => {
           {
             name: "getPets",
             description: "Returns all pets from the system that the user has access to - old",
-            parameters: {
-              type: "object",
-              properties: {
-                limit: {
-                  type: "integer",
-                  description: "Maximum number of pets to return - old",
-                },
-              },
-              required: ["limit"],
-            },
           },
           {
             name: "createPet",
             description: "Create a new pet in the store - old",
-            parameters: {
-              type: "object",
-              required: ["name"],
-              properties: {
-                name: {
-                  type: "string",
-                  description: "Name of the pet - old",
-                },
-              },
-            },
           },
         ],
         runtimes: [
@@ -2672,30 +2291,10 @@ describe("updateManifestWithAiPlugin", () => {
         {
           name: "getPets",
           description: "Returns all pets from the system that the user has access to",
-          parameters: {
-            type: "object",
-            properties: {
-              limit: {
-                type: "integer",
-                description: "Maximum number of pets to return",
-              },
-            },
-            required: ["limit"],
-          },
         },
         {
           name: "createPet",
           description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-            },
-          },
         },
       ],
       runtimes: [
@@ -2820,34 +2419,10 @@ describe("updateManifestWithAiPlugin", () => {
         {
           name: "getPets",
           description: "Returns all pets from the system that the user has access to",
-          parameters: {
-            type: "object",
-            properties: {
-              limit: {
-                type: "integer",
-                description: "Maximum number of pets to return",
-              },
-              id: {
-                type: "string",
-                description: "",
-              },
-            },
-            required: ["limit"],
-          },
         },
         {
           name: "createPet",
           description: "Create a new pet in the store",
-          parameters: {
-            type: "object",
-            required: ["name"],
-            properties: {
-              name: {
-                type: "string",
-                description: "Name of the pet",
-              },
-            },
-          },
         },
       ],
       runtimes: [

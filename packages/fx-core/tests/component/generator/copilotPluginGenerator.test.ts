@@ -442,55 +442,6 @@ describe("copilotPluginGenerator", function () {
     assert.isTrue(updateManifestBasedOnOpenAIPlugin.calledOnce);
   });
 
-  it("error if adding plugin for GPT basic", async function () {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: "path",
-      [QuestionNames.Capabilities]: CapabilityOptions.customizeGptWithPlugin().id,
-      [QuestionNames.CustomizeGptWithPluginStart]: CapabilityOptions.copilotPluginApiSpec().id,
-      [QuestionNames.ApiSpecLocation]: "https://test.com",
-      [QuestionNames.ApiOperation]: ["operation1"],
-      supportedApisFromApiSpec: apiOperations,
-    };
-    const context = createContextV3();
-    sandbox
-      .stub(SpecParser.prototype, "validate")
-      .resolves({ status: ValidationStatus.Valid, errors: [], warnings: [] });
-    sandbox.stub(fs, "ensureDir").resolves();
-    sandbox.stub(manifestUtils, "_readAppManifest").resolves(
-      ok({
-        ...teamsManifest,
-        copilotGpts: [
-          {
-            id: "1",
-            file: "test",
-          },
-        ],
-      })
-    );
-    sandbox.stub(CopilotPluginHelper, "isYamlSpecFile").resolves(false);
-    sandbox.stub(fs, "ensureFile").resolves();
-    sandbox
-      .stub(copilotGptManifestUtils, "addPlugin")
-      .resolves(err(new SystemError("testSource", "testName", "", "")));
-    sandbox
-      .stub(SpecParser.prototype, "generateForCopilot")
-      .resolves({ allSuccess: true, warnings: [] });
-    sandbox.stub(Generator, "getDefaultVariables").resolves(undefined);
-    sandbox.stub(Generator, "generateTemplate").resolves(ok(undefined));
-
-    const result = await CopilotPluginGenerator.generatePluginFromApiSpec(
-      context,
-      inputs,
-      "projectPath"
-    );
-
-    assert.isTrue(result.isErr());
-    if (result.isErr()) {
-      assert.equal(result.error.source, "testSource");
-    }
-  });
-
   it("failed to download template generator", async function () {
     const inputs: Inputs = {
       platform: Platform.VSCode,

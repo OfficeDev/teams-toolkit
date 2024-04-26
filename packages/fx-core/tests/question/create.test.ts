@@ -3291,12 +3291,6 @@ describe("scaffold question", () => {
             assert.isTrue(options.length === 2);
 
             return ok({ type: "success", result: CapabilityOptions.customizeGptWithPlugin().id });
-          } else if (question.name === QuestionNames.CustomizeGptWithPluginStart) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.staticOptions;
-            assert.isTrue(options.length === 2);
-
-            return ok({ type: "success", result: CapabilityOptions.copilotPluginNewApi().id });
           } else if (question.name === QuestionNames.ProgrammingLanguage) {
             return ok({ type: "success", result: "javascript" });
           } else if (question.name === QuestionNames.AppName) {
@@ -3310,64 +3304,7 @@ describe("scaffold question", () => {
         assert.deepEqual(questions, [
           QuestionNames.ProjectType,
           QuestionNames.Capabilities,
-          QuestionNames.CustomizeGptWithPluginStart,
           QuestionNames.ProgrammingLanguage,
-          QuestionNames.Folder,
-          QuestionNames.AppName,
-        ]);
-      });
-
-      it("customize GPT with plugin from existing API", async () => {
-        const inputs: Inputs = {
-          platform: Platform.VSCode,
-        };
-        const questions: string[] = [];
-        const visitor: QuestionTreeVisitor = async (
-          question: Question,
-          ui: UserInteraction,
-          inputs: Inputs,
-          step?: number,
-          totalSteps?: number
-        ) => {
-          questions.push(question.name);
-
-          await callFuncs(question, inputs);
-
-          if (question.name === QuestionNames.ProjectType) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 6);
-            return ok({ type: "success", result: ProjectTypeOptions.customizeGpt().id });
-          } else if (question.name === QuestionNames.Capabilities) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.dynamicOptions!(inputs);
-            assert.isTrue(options.length === 2);
-
-            return ok({ type: "success", result: CapabilityOptions.customizeGptWithPlugin().id });
-          } else if (question.name === QuestionNames.CustomizeGptWithPluginStart) {
-            const select = question as SingleSelectQuestion;
-            const options = await select.staticOptions;
-            assert.isTrue(options.length === 2);
-
-            return ok({ type: "success", result: CapabilityOptions.copilotPluginApiSpec().id });
-          } else if (question.name === QuestionNames.ApiSpecLocation) {
-            return ok({ type: "success", result: "https://test.com" });
-          } else if (question.name === QuestionNames.ApiOperation) {
-            return ok({ type: "success", result: ["testOperation1"] });
-          } else if (question.name === QuestionNames.AppName) {
-            return ok({ type: "success", result: "test001" });
-          } else if (question.name === QuestionNames.Folder) {
-            return ok({ type: "success", result: "./" });
-          }
-          return ok({ type: "success", result: undefined });
-        };
-        await traverse(createProjectQuestionNode(), inputs, ui, undefined, visitor);
-        assert.deepEqual(questions, [
-          QuestionNames.ProjectType,
-          QuestionNames.Capabilities,
-          QuestionNames.CustomizeGptWithPluginStart,
-          QuestionNames.ApiSpecLocation,
-          QuestionNames.ApiOperation,
           QuestionNames.Folder,
           QuestionNames.AppName,
         ]);

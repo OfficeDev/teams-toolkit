@@ -23,6 +23,16 @@ This app template allows Teams to interact directly with third-party data, apps,
 4. Select `Preview in Teams (Edge)` or `Preview in Teams (Chrome)` from the launch configuration dropdown.
 5. To trigger the Message Extension, you can click the `+` under compose message area to find your message extension.
 
+{{#ApiKey}}
+> [!NOTE]
+> Teams Toolkit will ask you for your API key during provision. The API key will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your API key.
+{{/ApiKey}}
+
+{{#OAuth}}
+> [!NOTE]
+> Teams Toolkit will ask you for your Client ID and Client Secret for Oauth2 during provision. These information will be securely stored with [Teams Developer Portal](https://dev.teams.microsoft.com/home) and used by Teams client to access your API in runtime. Teams Toolkit will not store your Client ID and Client Secret.
+{{/OAuth}}
+
 ## What's included in the template
 
 | Folder       | Contents                                     |

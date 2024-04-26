@@ -61,6 +61,7 @@ import { isValidHttpUrl } from "../../../question/util";
 import { merge } from "lodash";
 import { TemplateNames } from "../templates/templateNames";
 import { copilotGptManifestUtils } from "../../driver/teamsApp/utils/CopilotGptManifestUtils";
+import { isCopilotAuthEnabled } from "../../../common/featureFlags";
 
 const fromApiSpecComponentName = "copilot-plugin-existing-api";
 const pluginFromApiSpecComponentName = "api-copilot-plugin-existing-api";
@@ -111,9 +112,7 @@ export class CopilotPluginGenerator {
     destinationPath: string,
     actionContext?: ActionContext
   ): Promise<Result<CopilotPluginGeneratorResult, FxError>> {
-    const templateName = inputs.apiAuthData
-      ? fromApiSpecWithApiKeyTemplateName
-      : fromApiSpecTemplateName;
+    const templateName = fromApiSpecTemplateName;
     const componentName = fromApiSpecComponentName;
 
     merge(actionContext?.telemetryProps, { [telemetryProperties.templateName]: templateName });
@@ -307,6 +306,7 @@ export class CopilotPluginGenerator {
               allowBearerTokenAuth: true, // Currently, API key auth support is actually bearer token auth
               allowMultipleParameters: true,
               projectType: type,
+              allowOauth2: isCopilotAuthEnabled(),
             }
       );
       const validationRes = await specParser.validate();

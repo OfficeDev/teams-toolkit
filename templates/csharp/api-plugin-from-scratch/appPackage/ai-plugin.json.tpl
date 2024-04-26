@@ -6,19 +6,7 @@
   "functions": [
     {
       "name": "repair",
-      "description": "Search for repairs",
-      "parameters": {
-        "type": "object",
-        "properties": {
-          "assignedTo": {
-            "type": "string",
-            "description": "The person assigned to the repair"
-          }
-        },
-        "required": [
-          "assignedTo"
-        ]
-      }
+      "description": "Search for repairs"
     }    
   ],
   "runtimes": [
